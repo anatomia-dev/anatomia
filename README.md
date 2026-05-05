@@ -3,7 +3,6 @@
 [![CI](https://github.com/TettoLabs/anatomia/actions/workflows/test.yml/badge.svg)](https://github.com/TettoLabs/anatomia/actions)
 [![npm](https://img.shields.io/npm/v/anatomia-cli)](https://www.npmjs.com/package/anatomia-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/TettoLabs/anatomia/branch/main/graph/badge.svg)](https://codecov.io/gh/TettoLabs/anatomia)
 
 Anatomia is the engineering judgment your AI doesn't have. Four agents scope, plan, build, and verify every change. Contracts are sealed before code is written — typed assertions the verifier checks against the code, not Build's account of what it did. Every run produces a proof chain entry — what was asserted, what was found, what shipped. A fifth agent learns from that record and promotes what it finds to rules that shape future builds. Not opinion. Mechanical proof.
 
