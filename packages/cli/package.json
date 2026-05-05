@@ -43,7 +43,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm typecheck && rm -rf dist && tsup && cp -r templates dist/ && find dist -name '.DS_Store' -delete",
+    "build": "pnpm typecheck && rm -rf dist && tsup && cp -r templates dist/",
     "dev": "tsup --watch",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
