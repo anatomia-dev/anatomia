@@ -1,6 +1,6 @@
 /**
  * Unit tests for ana init preflight — focused on the SIGKILL recovery
- * detection path added in S19/NEW-001 Option B.
+ * detection path.
  *
  * The swap-based atomic rename:
  *   rename .ana/ → .ana.old-{ts}       (step 1)

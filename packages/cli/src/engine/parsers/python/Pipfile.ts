@@ -2,7 +2,6 @@
  * Parse Python Pipfile (Pipenv format)
  *
  * Based on: Pipfile specification
- * Research: START_HERE.md lines 294-348
  */
 
 /**

@@ -1,14 +1,14 @@
 /**
- * Pattern inference engine (Item 14a — orchestrator + public API surface).
+ * Pattern inference engine.
  *
  * 3-stage detection pipeline:
- * - Stage 1 (CP0): Dependency-based detection (0.75-0.85 confidence)
+ * - Stage 1: Dependency-based detection (0.75-0.85 confidence)
  *   — dependencies.ts
- * - Stage 2 (CP1): File sampling (reuses STEP_1.3 sampleFiles)
- * - Stage 3 (CP1): Tree-sitter confirmation (boosts to 0.90-0.95)
+ * - Stage 2: File sampling (reuses parsed file list)
+ * - Stage 3: Tree-sitter confirmation (boosts to 0.90-0.95)
  *   — confirmation.ts
  *
- * Post-processing (CP2-3):
+ * Post-processing:
  * - Confidence filtering (≥0.7 threshold) — confidence.ts
  * - Multi-pattern handling (SQLAlchemy sync + async) — confirmation.ts
  *
@@ -33,16 +33,16 @@ import { filterByConfidence } from './confidence.js';
 // ============================================================================
 
 /**
- * Infer patterns from project analysis (STEP_2.1 main entry point)
+ * Infer patterns from project analysis
  *
  * @param rootPath - Project root directory
- * @param analysis - AnalysisResult from STEP_1 (includes parsed field)
+ * @param analysis - AnalysisResult (includes parsed field)
  * @returns PatternAnalysis with detected patterns + metadata
  *
  * @example
  * ```typescript
- * const analysis = await analyze('/path/to/project');
- * // analysis.patterns will contain:
+ * const input: DeepTierInput = { projectType, framework, structure, parsed };
+ * // After inference, patterns will contain:
  * {
  *   validation: { library: 'pydantic', confidence: 0.95, evidence: [...] },
  *   database: { library: 'sqlalchemy', variant: 'async', confidence: 0.95, evidence: [...] },
@@ -63,7 +63,7 @@ export async function inferPatterns(
   const startTime = Date.now();
 
   try {
-    // Stage 1: Dependency-based detection (CP0)
+    // Stage 1: Dependency-based detection
     // Use pre-read deps from census if provided, else fall back to filesystem.
     const stage1Start = Date.now();
     const deps = options?.deps ?? [];
@@ -83,11 +83,11 @@ export async function inferPatterns(
       console.log(`[Pattern Inference] Detected ${Object.keys(dependencyPatterns).length} patterns from dependencies`);
     }
 
-    // Stage 2: File sampling (reuses STEP_1.3 parsed files - no re-parsing)
-    // Already done in STEP_1.3, data available in analysis.parsed
+    // Stage 2: File sampling (reuses parsed files — no re-parsing)
+    // Data available in analysis.parsed
     const sampledFiles = analysis.parsed?.files?.length || 0;
 
-    // Stage 3: Tree-sitter confirmation (CP1)
+    // Stage 3: Tree-sitter confirmation
     const stage3Start = Date.now();
     const confirmedPatterns = await confirmPatternsWithTreeSitter(
       rootPath,
@@ -100,7 +100,7 @@ export async function inferPatterns(
       console.log(`[Pattern Inference] Stage 3 (confirmation): ${stage3Duration}ms`);
     }
 
-    // Post-processing: Confidence filtering (CP2)
+    // Post-processing: Confidence filtering
     const filteredPatterns = filterByConfidence(confirmedPatterns, 0.7);
 
     if (process.env['VERBOSE']) {

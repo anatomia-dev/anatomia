@@ -1,8 +1,7 @@
 /**
- * Import convention analyzer (STEP_2.2 CP1)
+ * Import convention analyzer
  *
  * Classifies imports as absolute, relative, or external.
- * Based on: START_HERE.md lines 329-384
  */
 
 import type { ImportInfo } from '../../types/parsed.js';
@@ -140,7 +139,7 @@ export function classifyGoImport(
 /**
  * Analyze import convention from parsed imports
  *
- * Statistical analysis following CP0 pattern (majority voting, 0.7 threshold).
+ * Statistical analysis (majority voting, 0.7 threshold).
  *
  * @param imports - Imports from analysis.parsed.files
  * @param projectType - Language for classification function selection

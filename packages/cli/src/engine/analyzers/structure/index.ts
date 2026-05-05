@@ -1,5 +1,5 @@
 /**
- * Structure analyzer (Item 14b — orchestrator + public API surface).
+ * Structure analyzer.
  *
  * Analyzes project directory structure to detect:
  * - Entry points (entry-points.ts)
@@ -166,13 +166,13 @@ function mapDirectoriesToPurposes(directories: string[]): Record<string, string>
 }
 
 /**
- * Analyze project directory structure (STEP_1.2 main entry point).
+ * Analyze project directory structure.
  *
  * Orchestrates all structure sub-analyzers and computes overall confidence.
  *
  * @param rootPath - Absolute path to project root
- * @param projectType - Detected project type (from STEP_1.1)
- * @param framework - Detected framework (from STEP_1.1, can be null)
+ * @param projectType - Detected project type
+ * @param framework - Detected framework (can be null)
  * @returns Complete structure analysis
  */
 export async function analyzeStructure(
@@ -234,7 +234,7 @@ export async function analyzeStructure(
 }
 
 // Re-export the public API so tests and engine/index.ts can continue
-// importing by name through the folder. INFRA-014 removed two dead
+// importing by name through the folder. Removed two dead
 // re-exports (buildAsciiTree, findConfigFiles) that had zero external
 // consumers — `analyzeStructure` above uses the direct imports at the
 // top of the file. If a consumer outside this folder needs either

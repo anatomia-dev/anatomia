@@ -1,11 +1,10 @@
 /**
  * Ruby dependency parser (Gemfile).
  *
- * Low-level parser only — `readRubyDependencies` (the higher-level
- * reader that wrapped this) was deleted in S19/INFRA-013 as dead code.
- * No production code path consumes Ruby dependency data today; the
- * parser is retained as a tested utility in case Ruby support ships
- * later.
+ * Low-level parser only — the higher-level reader that wrapped this
+ * was deleted as dead code. No production code path consumes Ruby
+ * dependency data today; the parser is retained as a tested utility
+ * in case Ruby support ships later.
  */
 
 export function parseGemfile(content: string): string[] {

@@ -5,7 +5,7 @@ import type { PatternConfidence } from '../../../../src/engine/types/patterns.js
 
 describe('Pattern Confirmation Performance', () => {
   it('completes in <100ms when using cached parsed data', async () => {
-    // Create analysis with pre-parsed files (simulates STEP_1.3 cache hit)
+    // Create analysis with pre-parsed files (simulates cache hit)
     const analysis: AnalysisResult = {
       projectType: 'python',
       framework: 'fastapi',

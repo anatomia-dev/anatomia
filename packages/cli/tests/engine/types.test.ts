@@ -111,20 +111,17 @@ describe('AnalysisResult types', () => {
 });
 
 /**
- * Compile-time type-unification assertions (Item 16).
+ * Compile-time type-unification assertions.
  *
  * The body of these `it` blocks is irrelevant at runtime — the assertions
- * live in the type annotations on the declarations. If Item 3 (convention
- * unification) or Item 6 (pattern unification) ever regresses, tsc will
- * refuse to compile this file.
+ * live in the type annotations on the declarations. If convention unification
+ * or pattern unification ever regresses, tsc will refuse to compile this file.
  *
- * IMPORTANT: enforcement becomes real once Item 19 lands. Until then,
+ * IMPORTANT: enforcement becomes real once tsconfig.test.json +
+ * `typecheck.enabled: true` is added in vitest.config.ts. Until then,
  * `tests/` is excluded from tsconfig.json and vitest's default transform
  * (esbuild) strips types without full checking — so today these assertions
  * guard against gross regressions only (missing fields, renamed types).
- * Once Item 19 adds tsconfig.test.json + `typecheck.enabled: true` in
- * vitest.config.ts, any structural divergence between EngineResult's
- * inline shape and the analyzer types will fail typecheck:tests.
  */
 describe('type-unification compile-time assertions', () => {
   it('EngineResult.conventions is the analyzer ConventionAnalysis type (Item 3)', () => {
@@ -151,7 +148,7 @@ describe('type-unification compile-time assertions', () => {
     void _same2;
 
     // Individual pattern categories accept the union directly — no
-    // intermediate PatternDetail mapping (Item 6 deleted that).
+    // intermediate PatternDetail mapping (deleted).
     type DatabasePattern = PatternsField['database'];
     const _asSingle: DatabasePattern = {} as PatternConfidence | undefined;
     const _asMulti: DatabasePattern = {} as MultiPattern | undefined;
@@ -162,7 +159,7 @@ describe('type-unification compile-time assertions', () => {
   });
 
   it('EngineResult.commands composes DetectedCommands & { packageManager } (Item 7a)', () => {
-    // Item 7a: scan-engine composes detectCommands() output with packageManager.
+    // scan-engine composes detectCommands() output with packageManager.
     // If EngineResult['commands'] regresses to an inline type that omits any
     // DetectedCommands field, this block fails to compile.
     const commandsField = {} as EngineResult['commands'];
@@ -181,7 +178,7 @@ describe('type-unification compile-time assertions', () => {
   });
 
   it('EngineResult.git is GitInfo directly (Item 7b)', () => {
-    // Item 7b: inline git shape was byte-identical to GitInfo, so the field
+    // Inline git shape was byte-identical to GitInfo, so the field
     // imports the detector type directly. Any inline divergence fails here.
     const _a: GitInfo = {} as EngineResult['git'];
     const _b: EngineResult['git'] = {} as GitInfo;
@@ -192,7 +189,7 @@ describe('type-unification compile-time assertions', () => {
   });
 
   it('EngineResult.deployment composes DetectedDeployment & DetectedCI (Item 7d)', () => {
-    // Item 7d: scan-engine merges detectDeployment() + detectCI() via spread.
+    // scan-engine merges detectDeployment() + detectCI() via spread.
     // The field type matches that runtime shape exactly — both halves must
     // be assignable from EngineResult['deployment'] and vice versa.
     const deployField = {} as EngineResult['deployment'];

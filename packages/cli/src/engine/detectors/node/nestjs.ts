@@ -30,8 +30,8 @@ export function detectNestjs(
     indicators.push('src/main.ts found');
   }
 
-  // Note: scanForImports decorator scan deferred to Lane 0+ (analyzer scope).
-  // The dep + hint check provides 0.90-0.95 confidence, sufficient for Lane 0.
+  // Note: scanForImports decorator scan deferred to analyzer scope.
+  // The dep + hint check provides 0.90-0.95 confidence, sufficient for detection.
 
   return {
     framework: 'nestjs',

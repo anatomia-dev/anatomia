@@ -1,5 +1,5 @@
 /**
- * Pattern inference types (STEP_2.1)
+ * Pattern inference types
  *
  * Defines types for detected coding patterns:
  * - Error handling (exceptions, error returns)
@@ -50,7 +50,7 @@ export const PatternConfidenceSchema = z.object({
   variant: z.string().optional(),         // 'async', 'sync' for databases; framework-specific variants
   confidence: z.number().min(0).max(1),   // 0.0-1.0 score
   evidence: z.array(z.string()),          // Human-readable evidence (e.g., 'pydantic in dependencies')
-  primary: z.boolean().optional(),        // true if dominant pattern (multi-pattern scenarios in CP3)
+  primary: z.boolean().optional(),        // true if dominant pattern (multi-pattern scenarios)
 });
 
 export type PatternConfidence = z.infer<typeof PatternConfidenceSchema>;
@@ -187,7 +187,7 @@ export function getPatternLibrary(
  */
 export const PatternAnalysisSchema = z.object({
   // 5 pattern categories (all optional - not all projects have all patterns)
-  // UPDATED (CP3): Now support union types (PatternConfidence | MultiPattern)
+  // Supports union types (PatternConfidence | MultiPattern)
   errorHandling: z.union([PatternConfidenceSchema, MultiPatternSchema]).optional(),
   validation: z.union([PatternConfidenceSchema, MultiPatternSchema]).optional(),
   database: z.union([PatternConfidenceSchema, MultiPatternSchema]).optional(),
@@ -200,7 +200,7 @@ export const PatternAnalysisSchema = z.object({
   formHandling: z.union([PatternConfidenceSchema, MultiPatternSchema]).optional(),
 
   // Metadata
-  sampledFiles: z.number(),               // How many files sampled (0 in CP0, 20 in CP1+)
+  sampledFiles: z.number(),               // How many files sampled (0 when no sampling, 20 when sampled)
   detectionTime: z.number(),              // Milliseconds for inference
   threshold: z.number(),                  // Confidence threshold used (0.7)
 });

@@ -1,5 +1,5 @@
 /**
- * Test directory detection (Item 14b — extracted from structure.ts).
+ * Test directory detection.
  *
  * Per-language helpers + the public findTestLocations orchestrator. Each
  * helper returns a TestLocationResult describing where tests live for a
@@ -117,7 +117,6 @@ async function findRustTestLocation(rootPath: string): Promise<TestLocationResul
  * @param framework - Framework (null if unknown)
  * @returns Test location detection result
  *
- * Implementation: CP3
  */
 export async function findTestLocations(
   rootPath: string,

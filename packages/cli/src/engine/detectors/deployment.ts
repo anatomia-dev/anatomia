@@ -1,7 +1,7 @@
 /**
  * Deployment platform and CI detection from census config entries.
  *
- * Lane 0: receives pre-discovered config entries from census instead of
+ * Receives pre-discovered config entries from census instead of
  * walking the filesystem via rootPath.
  */
 
@@ -10,7 +10,7 @@ import type { DeploymentEntry, CiWorkflowEntry } from '../types/census.js';
 /**
  * Detected deployment platform metadata. Both fields null when no platform
  * detected — a single always-populated shape instead of `{...} | null`
- * simplifies composition at the consumer (Item 7d).
+ * simplifies composition at the consumer.
  */
 export interface DetectedDeployment {
   platform: string | null;

@@ -2,7 +2,7 @@
  * ana setup - Setup-related commands
  *
  * Subcommands:
- * - complete: Validate context files and finalize setup (D12.4)
+ * - complete: Validate context files and finalize setup
  */
 
 import { Command } from 'commander';
@@ -31,7 +31,7 @@ export function registerSetupCommand(program: Command): void {
   setupCommand.addCommand(createCheckCommand());
   setupCommand.addCommand(createIndexCommand(), { hidden: true });
 
-  // S19/SETUP-002: bare `ana setup` should tell the user that setup is an
+  // Bare `ana setup` should tell the user that setup is an
   // agent flow, not a CLI action. `ana init` and `ana scan` have root
   // actions because they ARE CLI operations; `ana setup` is different —
   // the main operation runs inside a Claude Code agent. Showing auto-
@@ -73,7 +73,7 @@ export function registerSetupCommand(program: Command): void {
 
     console.log(chalk.blue('\nValidating setup...\n'));
 
-    // Run D12.3 validation
+    // Run validation
     const result = await validateSetupCompletion(cwd);
 
     // --force overrides to "complete"

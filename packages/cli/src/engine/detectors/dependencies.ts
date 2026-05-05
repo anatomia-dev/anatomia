@@ -57,7 +57,7 @@ export const AUTH_PACKAGES: Record<string, string> = {
  * — unit runners are the entry point in nearly every multi-framework
  * project.
  *
- * SCAN-050: `stack.testing` is `string[]`, so every matched framework is
+ * `stack.testing` is `string[]`, so every matched framework is
  * collected (deduplicated by display name via a Set). A project with Jest
  * and Playwright reports both, not just "whichever alphabetised first".
  */
@@ -89,7 +89,7 @@ export const PAYMENT_PACKAGES: Record<string, string> = {
 /**
  * AI/LLM packages.
  *
- * Naming convention (Item 18): the base SDK uses `'Vercel AI'` to match the
+ * Naming convention: the base SDK uses `'Vercel AI'` to match the
  * stack identity in AI_SDK_PACKAGES below. Provider integrations use
  * parenthesized variants (`'Vercel AI (Anthropic)'`, `(OpenAI)`, `(Google)`).
  * This keeps one SDK identity, multiple provider integrations — and lets the
@@ -149,7 +149,7 @@ export const EMAIL_PACKAGES: Record<string, string> = {
  * PostHog deliberately NOT listed here — it lives in EXTERNAL_SERVICE_PACKAGES
  * (scan-engine.ts) with category 'analytics'. Previously duplicated here as
  * 'monitoring', which meant whichever detection loop ran first "won" the
- * category. Latent drift trap (Item 11) — if detection order changed, PostHog
+ * category. Latent drift trap — if detection order changed, PostHog
  * would flip from 'analytics' to 'monitoring' without anyone noticing.
  * Single source of truth now.
  */
@@ -222,7 +222,7 @@ export interface DependencyDetectionResult {
   /**
    * Every testing framework detected in the dependency map, deduplicated
    * by display name. Empty array means no testing framework detected.
-   * SCAN-050: was `string | null` (only the first match), which silently
+   * Was `string | null` (only the first match), which silently
    * dropped every secondary framework in multi-framework projects.
    */
   testing: string[];

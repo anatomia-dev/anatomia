@@ -9,7 +9,7 @@ import type { FrameworkHintEntry } from '../../types/census.js';
 /**
  * Detect Flask framework.
  *
- * Note: scanForImports (import verification) deferred to Lane 0+ analyzer scope.
+ * Note: scanForImports (import verification) deferred to analyzer scope.
  */
 export function detectFlask(
   dependencies: string[],
@@ -30,7 +30,7 @@ export function detectFlask(
 
   const confidence = calculateConfidence({
     dependencyFound: true,
-    importsFound: false,  // deferred to Lane 0+ (analyzer scope)
+    importsFound: false,  // deferred to analyzer scope
     configFilesFound: hasAppPy,
   });
 

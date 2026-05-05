@@ -1,5 +1,5 @@
 /**
- * Python framework detectors in PRIORITY ORDER (Item 17).
+ * Python framework detectors in PRIORITY ORDER.
  *
  * First match wins. Web frameworks (FastAPI, Django, Flask) are checked
  * before CLI frameworks (Typer/Click) because a project can be both a

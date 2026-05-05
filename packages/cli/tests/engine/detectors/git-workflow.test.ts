@@ -1,5 +1,5 @@
 /**
- * Tests for S24 git workflow pattern detection signals:
+ * Tests for git workflow pattern detection signals:
  * commitFormat, branchPatterns, hooks, mergeStrategy, coAuthor
  */
 

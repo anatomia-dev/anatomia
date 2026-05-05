@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { confirmPatternsWithTreeSitter } from '../../../../src/engine/analyzers/patterns/index.js';
 import type { AnalysisResult, ParsedFile } from '../../../../src/engine/types/index.js';
 import type { PatternConfidence } from '../../../../src/engine/types/patterns.js';
+import { isMultiPattern } from '../../../../src/engine/types/patterns.js';
 import { ParserManager } from '../../../../src/engine/parsers/treeSitter.js';
 import { skipIfNoWasm } from '../../fixtures.js';
 
@@ -634,7 +635,7 @@ describe.skipIf(!wasmAvailable)('Tree-sitter Pattern Confirmation', () => {
         structure: {
           directories: {},
           entryPoints: ['app/main.py'],
-          testLocation: 'tests/',  // From STEP_1.2
+          testLocation: 'tests/',
           architecture: 'layered',
           directoryTree: '',
           configFiles: ['pytest.ini'],
@@ -1368,11 +1369,11 @@ describe.skipIf(!wasmAvailable)('Tree-sitter Pattern Confirmation', () => {
 
       // Should be a MultiPattern
       expect(df).toBeDefined();
-      expect('patterns' in (df as any)).toBe(true);
-      const multi = df as any;
-      expect(multi.patterns.length).toBe(2);
-      expect(multi.primary.library).toBeDefined();
-      expect(multi.primary.library).toBe('react-query'); // more files → primary
+      expect(isMultiPattern(df)).toBe(true);
+      if (!isMultiPattern(df)) throw new Error('expected MultiPattern');
+      expect(df.patterns.length).toBe(2);
+      expect(df.primary.library).toBeDefined();
+      expect(df.primary.library).toBe('react-query'); // more files → primary
     });
 
     // @ana A024
@@ -1421,7 +1422,7 @@ describe.skipIf(!wasmAvailable)('Tree-sitter Pattern Confirmation', () => {
 
       // Should NOT be a MultiPattern
       expect(df).toBeDefined();
-      expect('patterns' in (df as any)).toBe(false);
+      expect(isMultiPattern(df)).toBe(false);
     });
   });
 

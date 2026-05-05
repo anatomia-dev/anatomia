@@ -1,10 +1,10 @@
 /**
  * Main framework detector (dispatches to language-specific registries).
  *
- * Item 17: per-language detector order lives in `detectors/node/framework-registry.ts`
+ * Per-language detector order lives in `detectors/node/framework-registry.ts`
  * and `detectors/python/framework-registry.ts` as arrays of detector references.
  *
- * Lane 0: detectors receive pre-read dependency lists and census framework hints
+ * Detectors receive pre-read dependency lists and census framework hints
  * instead of rootPath. The function is synchronous — no filesystem reads.
  */
 

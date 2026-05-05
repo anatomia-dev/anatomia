@@ -2,7 +2,6 @@
  * Go dependency parser (go.mod)
  *
  * Based on: Go modules reference
- * Research: START_HERE.md lines 537-601
  */
 
 import * as path from 'node:path';

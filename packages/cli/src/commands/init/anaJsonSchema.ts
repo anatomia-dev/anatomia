@@ -4,8 +4,8 @@
  * Single source of truth for the on-disk ana.json shape. Consumed by:
  *
  * 1. `init` re-init merge — strips orphaned fields (e.g., `scanStaleDays`
- *    from pre-S18 installs), catches invalid enum values (e.g.,
- *    `setupPhase: "guided"` from pre-S18 installs) and defaults them to
+ *    from older installs), catches invalid enum values (e.g.,
+ *    `setupPhase: "guided"` from older installs) and defaults them to
  *    sensible initial values, preserving user fields verbatim.
  * 2. `setup check` dashboard — reads the file through the schema so that
  *    the ✓/○/✗ display and the completion validator both see the same

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { ImportInfo } from '../../../src/engine/types/parsed.js';
 import {
   classifyPythonImport,
   classifyTSImport,
@@ -83,7 +84,7 @@ describe('classifyGoImport', () => {
 
 describe('analyzeImportConvention', () => {
   it('detects absolute majority (83%)', () => {
-    const imports: any[] = [
+    const imports: ImportInfo[] = [
       { module: 'src.models', names: [], line: 1 },
       { module: 'src.utils', names: [], line: 2 },
       { module: 'src.api', names: [], line: 3 },
@@ -100,7 +101,7 @@ describe('analyzeImportConvention', () => {
   });
 
   it('detects relative majority (75%)', () => {
-    const imports: any[] = [
+    const imports: ImportInfo[] = [
       { module: '../models', names: [], line: 1 },
       { module: '../utils', names: [], line: 2 },
       { module: './local', names: [], line: 3 },
@@ -114,7 +115,7 @@ describe('analyzeImportConvention', () => {
   });
 
   it('detects mixed imports (50/50)', () => {
-    const imports: any[] = [
+    const imports: ImportInfo[] = [
       { module: 'src.models', names: [], line: 1 },
       { module: 'src.utils', names: [], line: 2 },
       { module: '.models', names: [], line: 3 },
@@ -128,7 +129,7 @@ describe('analyzeImportConvention', () => {
   });
 
   it('handles no internal imports (library project)', () => {
-    const imports: any[] = [
+    const imports: ImportInfo[] = [
       { module: 'fastapi', names: [], line: 1 },  // All external
       { module: 'pydantic', names: [], line: 2 },
     ];

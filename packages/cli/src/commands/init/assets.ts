@@ -50,10 +50,9 @@ import { getPatternLibrary } from '../../engine/types/patterns.js';
  * - plans/active/, plans/completed/
  * - state/
  *
- * Step files and framework-snippets directories removed (D10.9).
- * docs/ directory removed (S18 Phase 3 Pass 2 — SCHEMAS.md was the only
- * file that lived here and it had drifted catastrophically vs. the agent
- * definitions; agent files in templates/.claude/agents/ are the spec).
+ * Step files, framework-snippets, and docs directories removed — they had
+ * drifted vs. the agent definitions; agent files in templates/.claude/agents/
+ * are the spec.
  *
  * @param tmpAnaPath - Path to temp .ana/ directory
  */
@@ -80,10 +79,10 @@ state/
 }
 
 /**
- * Phase 5: Generate context scaffolds (D8.3 — consolidated 7→2)
+ * Phase 5: Generate context scaffolds
  *
  * Writes 2 context files:
- * - project-context.md: scan-seeded D6.6 format with 6 sections
+ * - project-context.md: scan-seeded format with 6 sections
  * - design-principles.md: static human-content template
  *
  * @param tmpAnaPath - Temp .ana/ path
@@ -415,7 +414,7 @@ async function generateAgentsMd(cwd: string, engineResult: EngineResult | null):
   }
 
   // Scan-derived constraints — real constraints only, no generic
-  // boilerplate. S19/CLI-011: removed two slop lines that used to ship
+  // boilerplate. Removed two slop lines that used to ship
   // here unconditionally ("Follow existing patterns in the codebase" and
   // "Run tests before committing"). Both were content-free and violated
   // "every character earns its place." If nothing was detected, skip

@@ -70,8 +70,8 @@ async function readPackageManagerField(cwd: string): Promise<string | null> {
  *      Respects bun/yarn/pnpm declarations — no 'npm' lie.
  *   3. Plain package.json with no declared manager → default to 'npm'.
  *   4. No package.json either → null. Non-Node projects (Python / Go /
- *      Rust) have no package manager in the Node sense; pre-S19 this
- *      fell back to 'npm' which was a semantic lie (S19/SCAN-032).
+ *      Rust) have no package manager in the Node sense; previously this
+ *      fell back to 'npm' which was a semantic lie.
  *
  * @param cwd - Directory to start searching from
  * @returns Detected package manager name, or null if not a Node project

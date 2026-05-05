@@ -32,7 +32,7 @@ import { findProjectRoot } from '../utils/validators.js';
  *
  * Previously duplicated at FILE_CONFIGS['project-context'].expectedSections
  * and inside validateSetupCompletion. Adding a section required updating
- * both places; S19/NEW-FOUND-1 caught the drift.
+ * both places; a later review caught the drift.
  */
 const PROJECT_CONTEXT_SECTIONS = [
   'What This Project Does',
@@ -43,7 +43,7 @@ const PROJECT_CONTEXT_SECTIONS = [
   'Domain Vocabulary',
 ] as const;
 
-/** Per-file configuration for structural validation (D12.3 — no line counts) */
+/** Per-file configuration for structural validation (no line counts) */
 interface FileConfig {
   expectedSections: readonly string[];
 }
@@ -145,7 +145,7 @@ interface AllFilesResult {
 }
 
 /**
- * Check line count for a file (D12.3 — no volumetric validation)
+ * Check line count for a file (no volumetric validation)
  *
  * Line counts are informational only. Always passes.
  *
@@ -600,7 +600,7 @@ function displayFileResult(result: FileCheckResult): void {
 }
 
 // ============================================================
-// S16: Setup Dashboard — ✓/○/✗ display
+// Setup Dashboard — ✓/○/✗ display
 // ============================================================
 
 /** Setup progress phase */
@@ -658,7 +658,7 @@ export async function readSetupProgress(cwd: string): Promise<SetupProgress | nu
 /**
  * Read scan.json — try `.ana/scan.json` first, fall back to `.ana/state/scan.json`.
  *
- * Runs the parsed JSON through `parseEngineResultPartial` (Item 27) to catch
+ * Runs the parsed JSON through `parseEngineResultPartial` to catch
  * schemaVersion drift, missing stack fields, and malformed commands. On Zod
  * validation failure, logs a warning and treats the file as missing —
  * preserves the fail-soft null-return contract the diagnostic command
@@ -713,11 +713,11 @@ async function readScanJson(cwd: string): Promise<Record<string, unknown> | null
 /**
  * Read ana.json through the canonical schema.
  *
- * S19/NEW-008: uses AnaJsonSchema (same schema the init re-init merge
- * consumes) so the dashboard, the completion validator, and the init
- * pipeline all see the same validated shape. Per-field `.catch()`
- * handles drift from pre-S18 installs gracefully — invalid fields
- * get stripped via .catch(), scanStaleDays gets stripped, etc.
+ * Uses AnaJsonSchema (same schema the init re-init merge consumes) so
+ * the dashboard, the completion validator, and the init pipeline all
+ * see the same validated shape. Per-field `.catch()` handles drift
+ * from older installs gracefully — invalid fields get stripped via
+ * .catch(), scanStaleDays gets stripped, etc.
  *
  * @param cwd - Project root directory
  * @returns Validated ana.json or null if not found / unreadable
@@ -882,7 +882,7 @@ export async function checkContextForDashboard(cwd: string, filename: string): P
       // agree on this file. Previously this branch had its own inline
       // HTML-comment-strip-and-filter logic that duplicated
       // fileHasRealContent's semantics exactly — a latent drift trap
-      // surfaced by the S19 polish pass.
+      // surfaced during a later polish pass.
       if (fileHasRealContent(content)) {
         return { symbol: chalk.green('✓'), description: 'populated' };
       }
@@ -916,7 +916,7 @@ export async function checkContextForDashboard(cwd: string, filename: string): P
 /**
  * Run cross-reference consistency checks.
  *
- * Ternary result model (S19/SETUP-025):
+ * Ternary result model:
  *   ✓ aligned            — every skill with a populated Detected section
  *                          mentions the corresponding ana.json field
  *   ✗ mismatch           — at least one skill's Detected contradicts ana.json
@@ -991,12 +991,12 @@ export async function checkConsistency(
       if (isUnpopulated(detectedSection)) {
         notYetVerified.push('testing-standards');
       } else {
-        // Semantic cross-ref (S19/SETUP-026): prefer detected stack.testing
-        // from scan.json over a hardcoded keyword list. Falls back to the
-        // test command itself if scan.json is unavailable.
-        // SCAN-050: stack.testing is `string[]` — a match on ANY detected
-        // framework satisfies the cross-ref. We only build a mismatch if
-        // NONE of the detected frameworks appear in the Detected section.
+        // Prefer detected stack.testing from scan.json over a hardcoded
+        // keyword list. Falls back to the test command itself if scan.json
+        // is unavailable.
+        // stack.testing is `string[]` — a match on ANY detected framework
+        // satisfies the cross-ref. We only build a mismatch if NONE of the
+        // detected frameworks appear in the Detected section.
         const testingStack = (scanJson?.['stack'] as Record<string, unknown> | undefined)?.['testing'];
         const testingFrameworks: string[] = Array.isArray(testingStack)
           ? (testingStack.filter((v): v is string => typeof v === 'string'))
@@ -1095,7 +1095,7 @@ function extractSection(content: string, sectionName: string): string | null {
   return inSection ? sectionLines.join('\n') : null;
 }
 
-// --- Setup Completion Validation (D12.3) ---
+// --- Setup Completion Validation ---
 
 export interface SetupValidationResult {
   setupPhase: 'context-complete' | 'complete';
@@ -1134,7 +1134,7 @@ export interface SetupValidationResult {
  * section of project-context.md as "populated" — including sections
  * that contained only a `*Not yet captured*` placeholder. The
  * dashboard displayed "6/6 sections populated" on a completely
- * un-enriched scaffold. S19 polish follow-up.
+ * un-enriched scaffold.
  *
  * @param content - File content
  * @param sectionName - Section heading text (without ##)
@@ -1208,7 +1208,7 @@ function isScaffoldTemplateLine(trimmed: string): boolean {
  * Count how many of the given sections have real (non-template) content.
  *
  * Shared by `checkContextForDashboard` (dashboard display) and
- * `validateSetupCompletion` (completion validator). Before S19, the
+ * `validateSetupCompletion` (completion validator). Previously, the
  * dashboard used a looser `hasNonTemplateContent` variant and the
  * validator used the stricter `hasRealContent` — the two disagreed on
  * multiline HTML comments and gave contradictory verdicts on the same
@@ -1249,7 +1249,7 @@ function fileHasRealContent(content: string): boolean {
 }
 
 /**
- * Validate setup completion state (D12.3 criteria).
+ * Validate setup completion state.
  * Used by both `ana setup complete` CLI and referenced by orchestrator Step 17.
  *
  * @param cwd - Project root directory
@@ -1291,7 +1291,7 @@ export async function validateSetupCompletion(cwd: string): Promise<SetupValidat
     // File missing is fine — principles are optional
   }
 
-  // --- 3. Skill format (D6.4) ---
+  // --- 3. Skill format validation ---
   let skillsCalibrated = 0;
   const skills = await discoverSkills(cwd);
   skillsCalibrated = skills.length;
@@ -1346,7 +1346,7 @@ async function displaySetupDashboard(cwd: string): Promise<boolean> {
   let hasErrors = false;
 
   // --- Setup Status ---
-  // S19/SETUP-008: ana.json is the source of truth for setup completion.
+  // ana.json is the source of truth for setup completion.
   // setup-progress.json is a transient coordination file used only when
   // setup is actively partial. Once setupPhase === 'complete', the progress
   // file is deleted by `ana setup complete` and phase granularity is
@@ -1374,9 +1374,9 @@ async function displaySetupDashboard(cwd: string): Promise<boolean> {
         const date = new Date(status.timestamp).toLocaleDateString();
         console.log(`  ${chalk.green('✓')} ${phase.label}: completed ${date}`);
       } else if (status?.skipped) {
-        // S19/SETUP-044: the setup agent writes `skipped: true` for phases
-        // the user deliberately skipped (e.g., design-principles). Render
-        // that explicit state rather than showing "not started."
+        // The setup agent writes `skipped: true` for phases the user
+        // deliberately skipped (e.g., design-principles). Render that
+        // explicit state rather than showing "not started."
         console.log(`  ${chalk.gray('⊘')} ${phase.label}: skipped`);
       } else {
         console.log(`  ${chalk.yellow('○')} ${phase.label}: not started`);

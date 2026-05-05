@@ -58,7 +58,7 @@ export interface ReadmeResult {
  * point — `tsc` then forces `createEmptyEngineResult()` below to populate it
  * and any consumer that destructures the shape to handle it.
  *
- * After Phase 1 (Items 3, 6, 7a/b/d), five sub-fields compose their detector
+ * After Phase 1, five sub-fields compose their detector
  * types directly rather than duplicating them inline:
  * - `commands: DetectedCommands & { packageManager: string | null }`
  * - `git: GitInfo`
@@ -86,7 +86,7 @@ export interface EngineResult {
      * Every testing framework detected in dependencies, deduplicated by
      * display name. Empty array means "no testing detected"; previously
      * `string | null`, which silently dropped every non-primary framework
-     * in multi-framework projects. See SCAN-050.
+     * in multi-framework projects.
      *
      * Consumers that want a single display name should use
      * `testing[0] ?? null` or `testing.join(', ')` — the first entry is
@@ -108,16 +108,15 @@ export interface EngineResult {
     total: number;
   };
   structure: Array<{ path: string; purpose: string }>;
-  // Composed from the detector's DetectedCommands (Item 7a) — adding a field
+  // Composed from the detector's DetectedCommands — adding a field
   // to DetectedCommands now flows through automatically. The only extra field
   // scan-engine appends on top is packageManager, which is nullable because
   // non-Node projects (Python, Go, Rust) have no package manager in the Node
-  // sense (S19/SCAN-032 — pre-fix, the detector fell back to "npm" which was
-  // a semantic lie that propagated into ana.json for every non-Node project).
+  // sense — the detector previously fell back to "npm", which was a semantic
+  // lie that propagated into ana.json for every non-Node project.
   commands: DetectedCommands & { packageManager: string | null };
-  // Imported directly from the git detector (Item 7b) — inline shape was
-  // byte-identical to GitInfo, so importing eliminates a drift trap at zero
-  // semantic cost.
+  // Imported directly from the git detector — inline shape was byte-identical
+  // to GitInfo, so importing eliminates a drift trap at zero semantic cost.
   git: GitInfo;
   monorepo: {
     isMonorepo: boolean;
@@ -134,8 +133,8 @@ export interface EngineResult {
     // the stack (e.g., a standalone analytics service). Populated by
     // annotateServiceRoles() at scan time. Consumers filter for display with
     // `stackRoles.length === 0` instead of fragile substring matching
-    // (Item 5 — replaced 4 copies of `!stackValues.some(v => v.includes(svc.name))`).
-    // SCAN-003: typed as a branded union so typos fail at compile time —
+    // Replaced 4 copies of `!stackValues.some(v => v.includes(svc.name))`.
+    // Typed as a branded union so typos fail at compile time —
     // the set is closed, every push site uses one of these 5 literals, and
     // the type IS the source of truth (adding a role means editing it here).
     stackRoles: StackRole[];
@@ -165,7 +164,7 @@ export interface EngineResult {
     issue: string;
     resolution: string;
   }>;
-  // Deterministic checks surfacing what AI got wrong (S21).
+  // Deterministic checks surfacing what AI got wrong.
   // Always an array — empty when no rules fire, never null.
   findings: Array<{
     id: string;
@@ -174,20 +173,17 @@ export interface EngineResult {
     detail: string | null;
     category: 'security' | 'reliability' | 'quality';
   }>;
-  // Composed from the deployment detectors (Item 7d). detectDeployment returns
+  // Composed from the deployment detectors. detectDeployment returns
   // DetectedDeployment (platform+configFile nullable), detectCI returns
   // DetectedCI (ci nullable). scan-engine merges them with
   // object spread — the type matches the runtime shape exactly now.
   deployment: DetectedDeployment & DetectedCI;
-  // Deep tier only (null when surface). Item 6 unification: pattern detection
-  // uses the analyzer's PatternAnalysis type directly — previously there was a
-  // duplicate PatternDetail-based inline type and a mapToPatternDetail wash in
-  // scan-engine that coalesced `variant` to `''` (lossy) and dropped MultiPattern
-  // information entirely. Same mapping-trap pattern as Item 3 (conventions).
+  // Deep tier only (null when surface). Uses the analyzer's PatternAnalysis
+  // type directly — no translation layer that could lose variant or MultiPattern
+  // information.
   patterns: PatternAnalysis | null;
-  // Convention analysis uses the analyzer's type directly (Item 3 unification —
-  // previously had a duplicate ConventionDetail-based inline type and a
-  // mapConventions wash in scan-engine that dropped fields when they were added.)
+  // Convention analysis uses the analyzer's type directly — no translation
+  // layer that could silently drop fields when they're added.
   conventions: ConventionAnalysis | null;
 
   // README extraction — populated by detectReadme() in scan-engine.
@@ -332,7 +328,7 @@ export interface EngineResult {
  *
  * Used as a fallback when scan fails gracefully and downstream scaffolds still
  * need a well-typed result to operate on. Lives next to the EngineResult type
- * definition (Item 8) so that adding a field to EngineResult is a single-file
+ * definition so that adding a field to EngineResult is a single-file
  * edit — the factory was previously in commands/init.ts, requiring a parallel
  * update whenever a new field was added to the type.
  *

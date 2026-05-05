@@ -20,7 +20,6 @@ import type { Tree, Node as TSNode } from 'web-tree-sitter';
 import { findProjectRoot } from '../utils/validators.js';
 import type { SymbolEntry, SymbolIndex } from '../types/symbol-index.js';
 
-// SymbolEntry + SymbolIndex moved to src/types/symbol-index.ts (Item 13).
 // Imported above for internal use. No re-export from this file — consumers
 // (check.ts) now import directly from src/types/ to eliminate cross-command
 // type imports.

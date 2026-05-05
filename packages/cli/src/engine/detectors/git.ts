@@ -16,7 +16,7 @@ export interface GitInfo {
   contributorCount: number | null;
   defaultBranch: string | null;
   branches: string[] | null;
-  // S24 — workflow pattern detection
+  // Workflow pattern detection
   commitFormat: {
     conventional: boolean;
     confidence: number;
@@ -42,7 +42,7 @@ export interface GitInfo {
     detected: boolean;
     pattern: string | null;
   } | null;
-  // S24 P2 — project activity signals
+  // Project activity signals
   recentActivity: {
     windowDays: number;
     highChurnFiles: Array<{ path: string; commits: number }>;

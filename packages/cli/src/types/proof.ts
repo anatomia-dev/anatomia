@@ -1,5 +1,5 @@
 /**
- * Proof chain types (Item 13).
+ * Proof chain types.
  *
  * Extracted from commands/work.ts so proof.ts can import without a
  * cross-command dependency. The types are pure — they reference
@@ -60,7 +60,7 @@ export interface ProofChainEntry {
   timing: ProofSummary['timing'];
   hashes: Record<string, string>;
   completed_at: string;
-  // S23 pipeline hardening — intelligence capture
+  // Intelligence capture
   modules_touched: string[];
   scope_summary?: string | undefined;
   findings: Array<{

@@ -1,8 +1,5 @@
 /**
  * Project type detection (Python, Node, Go, Rust, Ruby, PHP)
- *
- * Implementation: CP1
- * Research: START_HERE.md section 1
  */
 
 import * as fs from 'node:fs/promises';

@@ -1,5 +1,5 @@
 /**
- * Git activity signals tests (S24 P2 Item 2)
+ * Git activity signals tests
  *
  * Tests high-churn files, active contributors, weekly commit tempo,
  * adaptive window, and null/empty cases.

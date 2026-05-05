@@ -3,7 +3,6 @@
  * Supports: PEP 621 (standard) and Poetry format
  *
  * Based on: PEP 621, Poetry dependency specification
- * Research: START_HERE.md lines 222-291
  */
 
 /**
@@ -18,7 +17,7 @@
  *
  * Note: Poetry 2.0+ prefers PEP 621 format, but legacy format still common.
  * Modern Python projects increasingly use [project.optional-dependencies] for
- * test/dev deps (SCAN-023) — without that branch, a project with pytest in
+ * test/dev deps — without that branch, a project with pytest in
  * `test = [...]` gets zero testing detection and a false missing-tests
  * blind spot.
  *

@@ -1,5 +1,5 @@
 /**
- * Config file discovery (Item 14b — extracted from structure.ts).
+ * Config file discovery.
  */
 
 import { exists, joinPath } from '../../utils/file.js';
@@ -13,7 +13,6 @@ import type { ProjectType } from '../../types/index.js';
  * @param projectType - Project type (affects which configs to look for)
  * @returns Array of config file paths found
  *
- * Implementation: CP3
  */
 export async function findConfigFiles(
   rootPath: string,

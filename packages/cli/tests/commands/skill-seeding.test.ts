@@ -97,8 +97,8 @@ describe('skill seeding', () => {
   }, 30000);
 
   it('Path B: re-init preserves user-edited ## Gotchas (Item 12 allowGotchaInjection semantic)', async () => {
-    // Item 12 collapsed Path A (reinit: .ana/ present + skill file exists) and
-    // Path B (partial install: .ana/ missing + skill file exists) onto a single
+    // Path A (reinit: .ana/ present + skill file exists) and Path B (partial
+    // install: .ana/ missing + skill file exists) collapsed onto a single
     // branch that sets `allowGotchaInjection = false` when the skill file
     // already exists. This test pins the semantic: once the user has edited
     // ## Gotchas, a subsequent init MUST NOT overwrite their content even

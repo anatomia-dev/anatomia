@@ -1,8 +1,7 @@
 /**
- * Indentation analyzer (STEP_2.2 CP2)
+ * Indentation analyzer
  *
  * Detects spaces vs tabs and width via GCD algorithm.
- * Based on: START_HERE.md lines 702-768
  */
 
 import type { IndentationConvention } from '../../types/conventions.js';

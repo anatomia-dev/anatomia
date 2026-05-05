@@ -8,8 +8,7 @@ import { ConventionAnalysisSchema } from './conventions.js';
  * Project types supported by Anatomia detection.
  *
  * Internal — only the derived `ProjectType` union is exported. The schema
- * itself has zero external consumers; keeping it `export` invited dead
- * references (INFRA-014 audit). Re-export the schema the day something
+ * itself has zero external consumers. Re-export the schema the day something
  * outside this file needs to validate a project type at runtime.
  */
 const ProjectTypeSchema = z.enum([
@@ -30,50 +29,50 @@ export type ProjectType = z.infer<typeof ProjectTypeSchema>;
  *
  * Range: 0.0 (no confidence) to 1.0 (certain). Internal — consumers that
  * need a runtime-validated confidence score get it transitively through
- * `AnalysisResultSchema`. INFRA-014 audit found zero external consumers.
+ * `AnalysisResultSchema`.
  */
 const ConfidenceScoreSchema = z.number().min(0.0).max(1.0);
 
 /**
  * Analysis result from project detection
  *
- * STEP_1.1 provides: projectType, framework, confidence, indicators
- * STEP_1.2 adds: structure (entry points, architecture, tests, directory tree)
- * STEP_1.3 adds: parsed (tree-sitter results)
- * STEP_2.1 adds: patterns (pattern inference results)
- * STEP_2.2 adds: conventions (convention detection results)
+ * Detection provides: projectType, framework, confidence, indicators
+ * Structure adds: entry points, architecture, tests, directory tree
+ * Parsing adds: tree-sitter results
+ * Patterns adds: pattern inference results
+ * Conventions adds: convention detection results
  */
 export const AnalysisResultSchema = z.object({
-  // Project identification (STEP_1.1)
+  // Project identification
   projectType: ProjectTypeSchema,
   framework: z.string().nullable(), // null if no framework detected
 
-  // Confidence scores (STEP_1.1)
+  // Confidence scores
   confidence: z.object({
     projectType: ConfidenceScoreSchema,
     framework: ConfidenceScoreSchema,
   }),
 
-  // Indicators (STEP_1.1)
+  // Indicators
   indicators: z.object({
     projectType: z.array(z.string()), // Files found: ["package.json", "package-lock.json"]
     framework: z.array(z.string()), // Signals found: ["next in dependencies", "next.config.js exists"]
   }),
 
-  // Metadata (STEP_1.1)
+  // Metadata
   detectedAt: z.string(), // ISO timestamp
   version: z.string(), // Tool version (e.g., "0.1.0-alpha")
 
-  // STEP_1.2 adds structure analysis (optional field)
+  // Structure analysis (optional — populated by structure analyzer)
   structure: StructureAnalysisSchema.optional(),
 
-  // STEP_1.3 adds tree-sitter parsing (optional field)
+  // Tree-sitter parsing (optional — populated by parser)
   parsed: ParsedAnalysisSchema.optional(),
 
-  // STEP_2.1 adds pattern inference (optional field)
+  // Pattern inference (optional — populated by pattern analyzer)
   patterns: PatternAnalysisSchema.optional(),
 
-  // STEP_2.2 adds convention detection (optional field)
+  // Convention detection (optional — populated by convention analyzer)
   conventions: ConventionAnalysisSchema.optional(),
 });
 
@@ -86,7 +85,7 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
  * inferPatterns, and detectConventions. Only includes the fields those functions
  * actually read — no confidence, indicators, detectedAt, or version.
  *
- * S20 Disease E: eliminates the `as AnalysisResult` type casts in scan-engine.ts.
+ * Eliminates `as AnalysisResult` type casts in scan-engine.ts.
  */
 export interface DeepTierInput {
   projectType: ProjectType;
@@ -116,10 +115,8 @@ export function createEmptyAnalysisResult(): AnalysisResult {
   };
 }
 
-// validateAnalysisResult DELETED — S20 cleanup. Zero production callers.
-// AnalysisResultSchema used by types.test.ts and parsed-integration.test.ts for shape validation.
 
-// Export structure analysis types (STEP_1.2)
+// Export structure analysis types
 export type {
   StructureAnalysis,
   EntryPointResult,
@@ -134,7 +131,7 @@ export {
   createEmptyStructureAnalysis,
 } from './structure.js';
 
-// Export parsed analysis types (STEP_1.3)
+// Export parsed analysis types
 export type {
   ParsedAnalysis,
   ParsedFile,
@@ -155,22 +152,21 @@ export {
   createEmptyParsedAnalysis,
 } from './parsed.js';
 
-// Export pattern analysis types (STEP_2.1)
+// Export pattern analysis types
 export type {
   PatternAnalysis,
   PatternConfidence,
-  MultiPattern,  // CP3
+  MultiPattern,
 } from './patterns.js';
 export {
   PatternAnalysisSchema,
   PatternConfidenceSchema,
-  MultiPatternSchema,  // CP3
+  MultiPatternSchema,
   createEmptyPatternAnalysis,
-  isMultiPattern,  // CP3 - type guard
+  isMultiPattern,
 } from './patterns.js';
 
-// Export convention analysis types (STEP_2.2)
-// typeHints + docstrings exports removed — phantom analyzers deleted (Item 4).
+// Export convention analysis types
 export type {
   ConventionAnalysis,
   NamingConvention,

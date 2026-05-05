@@ -336,7 +336,7 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
     result = await getPackages(normalizedRoot);
   } catch {
     // Non-Node project or empty directory — continue with fallback
-    // Lane 0+ target: non-Node monorepo support (Python workspaces, Go modules)
+    // Future target: non-Node monorepo support (Python workspaces, Go modules)
   }
 
   // @manypkg returns tool.type 'root' when it can't determine the package manager.

@@ -1,5 +1,5 @@
 /**
- * Shared types for the init command (Item 14c — extracted from init.ts).
+ * Shared types for the init command.
  *
  * These types are used across multiple split files: index.ts (action
  * handler), preflight.ts (validateInitPreconditions), and potentially
@@ -18,7 +18,7 @@ export type InitState = 'fresh' | 'reinit' | 'upgrade' | 'corrupted';
 
 /** Pre-flight validation result.
  *
- * S19/NEW-001: Backup paths removed — the swap-based atomic rename no
+ * Backup paths removed — the swap-based atomic rename no
  * longer copies user state to /tmp before deleting .ana/. Instead, the
  * existing .ana/ is left in place until the replacement is fully built,
  * then swapped atomically via preserveUserState + oldPath rename. User

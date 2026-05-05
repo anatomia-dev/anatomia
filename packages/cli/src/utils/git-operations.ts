@@ -1,5 +1,5 @@
 /**
- * Shared git utilities for commands (Item 13).
+ * Shared git utilities for commands.
  *
  * Extracted from commands/artifact.ts so that pr.ts and work.ts don't have
  * to cross-command-import them. These are leaf utilities — read ana.json

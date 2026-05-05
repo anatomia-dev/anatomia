@@ -1,5 +1,5 @@
 /**
- * Unit tests for service → stack role annotation (Item 5, Item 16).
+ * Unit tests for service → stack role annotation.
  *
  * annotateServiceRoles replaces 4 copies of `!stackValues.some(v => v.includes(svc.name))`
  * substring matching with exact-match role annotation. Tests cover:

@@ -1,5 +1,5 @@
 /**
- * Symbol index types (Item 13).
+ * Symbol index types.
  *
  * Extracted from commands/symbol-index.ts so check.ts (and any future
  * consumer) can import the types without a cross-command dependency.

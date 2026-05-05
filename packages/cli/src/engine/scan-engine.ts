@@ -8,9 +8,6 @@
  * 4. Command detection (always runs)
  * 5. External services, schemas, secrets (always runs)
  * 6. Tree-sitter deep analysis (only when depth === 'deep')
- *
- * The existing analyze() in index.ts is called for deep tier only.
- * It has 503 tests — we wrap it, not rewrite it.
  */
 
 import * as path from 'node:path';
@@ -57,7 +54,7 @@ interface MonorepoInfo {
  * `package.json`. Python projects keep their deps in pyproject.toml /
  * requirements.txt / Pipfile; Go projects use go.mod. Without an explicit
  * read, pytest and Go's built-in `testing` package never surface on surface-
- * tier scans — so SCAN-033's missing-tests blind spot fires even when tests
+ * tier scans — so the missing-tests blind spot fires even when tests
  * exist and the framework is obvious from the dep file.
  *
  * Deep tier catches these via the pattern analyzer (inferPatterns); this
@@ -118,11 +115,9 @@ function detectUiSystem(allDeps: Record<string, string>): string | null {
   return 'Tailwind CSS';
 }
 
-// detectMonorepoInfo and findWorkspacePackages DELETED — S20 Disease D.
-// Census (via @manypkg/get-packages) is now the single source for monorepo
-// detection, workspace packages, and aggregated dependencies. The hand-rolled
-// YAML/JSON parsing was redundant with census and handled fewer workspace tool
-// types (@manypkg supports pnpm, yarn, npm, lerna, bolt, bun, rush).
+// Census (via @manypkg/get-packages) is the single source for monorepo
+// detection, workspace packages, and aggregated dependencies. Covers pnpm,
+// yarn, npm, lerna, bolt, bun, and rush workspace types.
 
 // --- External services detection ---
 
@@ -554,9 +549,9 @@ function extractStructureFromDirect(
   const directories = structureResult.directories;
   // Return every depth-1 directory with a non-"Unknown" purpose. Those two
   // filters ARE the quality gate — nothing noisy survives them, so there's
-  // nothing an arbitrary cap would usefully truncate. Empirically (across
-  // the S18 test dossier + Anatomia dogfood) the post-filter count tops out
-  // in single digits, which is why this is safe to return unbounded.
+  // nothing an arbitrary cap would usefully truncate. Empirically the
+  // post-filter count tops out in single digits, which is why this is safe
+  // to return unbounded.
   return Object.entries(directories)
     .filter(([dirPath, purpose]) => {
       const depth = dirPath.split('/').filter(Boolean).length;
@@ -569,16 +564,6 @@ function extractStructureFromDirect(
     .sort((a, b) => a.path.localeCompare(b.path));
 }
 
-// mapToPatternDetail + mapPatterns deleted (Item 6) — same rationale as Item 3
-// for conventions. EngineResult.patterns now uses PatternAnalysis directly, so
-// no translation layer. The old mapToPatternDetail coalesced `variant` to the
-// empty string `''` (lossy — couldn't distinguish "no variant" from "variant is
-// empty string") and discarded the MultiPattern union member entirely by only
-// returning the .primary. Direct assignment preserves both.
-
-// mapConventions + mapNaming deleted (Item 3). The analyzer's ConventionAnalysis
-// type is now EngineResult.conventions directly — no translation layer that
-// silently drops fields when they're added.
 
 // --- Main function ---
 
@@ -602,18 +587,10 @@ function extractStructureFromDirect(
  *   conventions). Used by `ana scan --quick` for fast stack-only
  *   detection. Sub-1s even on large projects.
  *
- * Relationship to `analyze()`: `scanProject` is the public scan API;
- * `analyze()` (in `engine/index.ts`) is the legacy orchestrator that
- * `scanProject` dynamic-imports internally for the project-type / framework
- * / structure / parsed / patterns / conventions phases. The dynamic import
- * is deliberate — tree-sitter loads native WASM at module-evaluation time
- * and top-level imports would crash `ana --help`. Do not call `analyze()`
- * directly from new code; go through `scanProject()`.
- *
- * Failure modes: the engine phases are fail-soft. If `analyze()` throws,
- * `scanProject` continues with dependency-only detection and a truncated
- * stack. If an optional detector (patterns, git, schemas) fails, the
- * corresponding `EngineResult` field is `null` or empty. The function
+ * Failure modes: the engine phases are fail-soft. If a detection phase
+ * throws, `scanProject` continues with dependency-only detection and a
+ * truncated stack. If an optional detector (patterns, git, schemas) fails,
+ * the corresponding `EngineResult` field is `null` or empty. The function
  * does NOT throw for normal project-shape variations (missing `package.json`,
  * non-git directory, empty project) — it returns a well-formed
  * `EngineResult` with the absent data reported as blind spots.
@@ -654,7 +631,7 @@ export async function scanProject(
   // 0. Census — shared project model. Detectors receive census data instead of rootPath.
   const census = await buildCensus(rootPath);
 
-  // 1. Monorepo info from census (single source — Disease D fix)
+  // 1. Monorepo info from census (single source of truth)
   const primaryRoot = census.sourceRoots.find(r => r.isPrimary);
   const mono: MonorepoInfo = {
     isMonorepo: census.layout === 'monorepo',
@@ -670,13 +647,12 @@ export async function scanProject(
   // 2. Package manager
   const packageManager = await detectPackageManager(rootPath);
 
-  // 3. Dependencies from census (single source — Disease D fix)
+  // 3. Dependencies from census (single source of truth)
   const allDeps = census.allDeps;
   const depResult = detectFromDeps(allDeps);
 
-  // 4. Direct detection phases (replaces analyze() — Lane 0 Step 7).
-  //    Project type, framework, and structure run for all tiers.
-  //    Tree-sitter parsing, patterns, conventions are deep-tier only.
+  // 4. Direct detection phases — project type, framework, structure, and
+  //    deep-tier analysis (tree-sitter parsing, patterns, conventions).
   const projectTypeResult = await detectProjectType(rootPath);
 
   // Read language-specific deps. Census allDeps covers Node (package.json);
@@ -692,7 +668,7 @@ export async function scanProject(
     }
   } catch { /* dep reading failed — continue with census deps */ }
 
-  // ANA-SCAN-058: In monorepos, framework detection uses primary root deps
+  // In monorepos, framework detection uses primary root deps
   // only. A demo site's Next.js shouldn't define the project identity when
   // the primary product is a CLI. Detection fields (database, auth, testing,
   // payments, aiSdk, services) stay on allDeps — they're project-wide facts.
@@ -779,8 +755,7 @@ export async function scanProject(
   // 5. Build stack (dependency primary, analyzer enriches).
   // All 8 fields assigned at construction time — detectAiSdk is a pure
   // function over allDeps, so inlining it here is equivalent to a later
-  // assignment but keeps construction and population in one expression
-  // (Item 2.1 fix + cosmetic inline).
+  // assignment but keeps construction and population in one expression.
   const stack: EngineResult['stack'] = {
     language: null,
     framework: null,
@@ -794,8 +769,8 @@ export async function scanProject(
         : `${mono.tool} monorepo`)
       : null,
     aiSdk: detectAiSdk(allDeps),
-    // ANA-SCAN-058: uiSystem scoped to primary in monorepos (same rationale
-    // as framework — a demo site's Tailwind shouldn't define a CLI's identity).
+    // uiSystem scoped to primary in monorepos (same rationale as framework —
+    // a demo site's Tailwind shouldn't define a CLI's identity).
     uiSystem: census.layout === 'monorepo'
       ? detectUiSystem(census.primaryDeps)
       : detectUiSystem(allDeps),
@@ -824,14 +799,13 @@ export async function scanProject(
     }
   }
 
-  // SCAN-023: surface-tier non-Node testing enrichment. The dependency-
-  // detection path (detectFromDeps) only sees `package.json` — Python/Go/Rust
-  // projects have their own dep files that never reach allDeps, so pytest
-  // in pyproject.toml or testify in go.mod flow nowhere at surface tier.
-  // Read the project-type's own dep file here and surface any recognized
-  // testing framework so the missing-tests blind spot (SCAN-033) doesn't
-  // fire on modern Python projects. Deep tier handles this via patterns;
-  // surface tier needs an explicit read.
+  // Surface-tier non-Node testing enrichment. The dependency-detection path
+  // (detectFromDeps) only sees `package.json` — Python/Go/Rust projects have
+  // their own dep files that never reach allDeps, so pytest in pyproject.toml
+  // or testify in go.mod flow nowhere at surface tier. Read the project-type's
+  // own dep file here and surface any recognized testing framework so the
+  // missing-tests blind spot doesn't fire on modern Python projects. Deep tier
+  // handles this via patterns; surface tier needs an explicit read.
   if (stack.testing.length === 0 && projectTypeResult.type !== 'unknown') {
     const nonNodeTesting = await detectNonNodeTesting(rootPath, projectTypeResult.type);
     if (nonNodeTesting.length > 0) {
@@ -899,8 +873,8 @@ export async function scanProject(
   const ci = detectCI(census.configs.ciWorkflows);
 
   // Annotate services with the stack roles they fulfill. Display code uses
-  // `stackRoles.length === 0` to filter standalone services, replacing 4 copies
-  // of fragile substring dedup (Item 5).
+  // `stackRoles.length === 0` to filter standalone services, replacing fragile
+  // substring dedup.
   const annotatedServices = annotateServiceRoles(
     externalServices,
     stack,
@@ -934,7 +908,7 @@ export async function scanProject(
   if (secrets.envFileExists && !secrets.gitignoreCoversEnv) {
     blindSpots.push({ area: 'Secrets', issue: '.env file exists but .gitignore may not cover it', resolution: 'Add .env to .gitignore' });
   }
-  // S19/SCAN-033: flag missing test coverage. Two-state model lets us
+  // Flag missing test coverage. Two-state model lets us
   // distinguish "no testing at all" (actionable) from "tests exist but
   // framework unrecognized" (informational — common for Go's built-in
   // `go test` and lesser-known frameworks).

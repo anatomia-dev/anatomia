@@ -1,8 +1,7 @@
 /**
- * Convention detection orchestrator (STEP_2.2 CP3)
+ * Convention detection orchestrator
  *
  * Combines all 5 convention analyzers into single detectConventions() function.
- * Based on: START_HERE.md lines 1059-1098
  */
 
 import { join, basename } from 'node:path';
@@ -29,20 +28,20 @@ import { analyzeCodePatterns } from './codePatterns.js';
  * 2. Imports (absolute vs relative)
  * 3. Indentation (spaces/tabs with width)
  *
- * typeHints + docstrings were removed (Item 4) — they read fields that don't
+ * typeHints + docstrings were removed — they read fields that don't
  * exist on FunctionInfo and always returned defaults. Phantom detection
  * deleted rather than shipped as zeros.
  *
  * Samples 50 files (broader than patterns' 20) for statistical validity.
  *
  * @param rootPath - Project root directory
- * @param analysis - AnalysisResult from STEP_1 + STEP_2.1 (needs parsed.files)
+ * @param analysis - AnalysisResult with parsed files (needs parsed.files)
  * @returns Convention analysis or empty if detection fails
  *
  * @example
  * ```typescript
- * const analysis = await analyze(projectRoot);
- * const conventions = await detectConventions(projectRoot, analysis);
+ * const input: DeepTierInput = { projectType, framework, structure, parsed };
+ * const conventions = await detectConventions(projectRoot, input);
  *
  * console.log(conventions.naming?.files.majority);  // 'snake_case'
  * console.log(conventions.imports?.style);          // 'absolute'
@@ -60,7 +59,7 @@ export async function detectConventions(
   const startTime = Date.now();
 
   try {
-    // Require parsed data from STEP_1.3
+    // Require parsed data from the parsing phase
     if (!analysis.parsed) {
       throw new Error('Parsed data required for convention detection');
     }

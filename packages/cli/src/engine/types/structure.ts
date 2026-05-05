@@ -92,7 +92,7 @@ export type TestLocationResult = z.infer<typeof TestLocationResultSchema>;
  * Comprehensive analysis of project directory structure including
  * entry points, architecture pattern, test locations, and directory tree.
  *
- * Extends AnalysisResult from STEP_1.1 as optional field.
+ * Extends AnalysisResult as optional field.
  *
  * @example
  * ```typescript
