@@ -2,8 +2,8 @@
  * EngineResult — the unified scan output schema.
  *
  * Returned by scanProject(). Consumed by scan.ts for terminal/JSON output
- * and by init.ts for context generation. D2-compliant schema with typed
- * patterns, conventions, deployment, and Phase 1+ null stubs.
+ * and by init.ts for context generation. Typed schema with patterns,
+ * conventions, deployment, and null stubs for fields not yet populated.
  *
  * CROSS-CUTTING: Adding a field requires changes in 5+ locations:
  *   1. Type definition below
