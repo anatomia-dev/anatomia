@@ -1,0 +1,248 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Code Comment Cleanup"
+
+assertions:
+  # AC1 + AC2: scan-engine.ts analyze() contamination
+  - id: A001
+    says: "The scan engine header describes the actual pipeline without referencing deleted functions"
+    block: "scan-engine.ts has no analyze() references"
+    target: "grep.scanEngine.analyze"
+    matcher: "equals"
+    value: 0
+
+  # AC3: engine/index.ts tombstones
+  - id: A002
+    says: "The engine barrel file contains only clean re-exports"
+    block: "engine/index.ts has no tombstone comments"
+    target: "file.engineIndex.lineCount"
+    matcher: "equals"
+    value: 4
+
+  # AC4: treeSitter.ts checkpoint list
+  - id: A003
+    says: "Tree-sitter parser header has no implementation checkpoint references"
+    block: "treeSitter.ts has no checkpoint list"
+    target: "grep.treeSitter.checkpoints"
+    matcher: "equals"
+    value: 0
+
+  # AC5: dead document references
+  - id: A004
+    says: "No source files reference the nonexistent START_HERE.md document"
+    block: "zero START_HERE.md references in src/"
+    target: "grep.src.startHere"
+    matcher: "equals"
+    value: 0
+
+  - id: A005
+    says: "No source files reference the nonexistent ATLAS3 directory"
+    block: "zero ATLAS3 references in src/"
+    target: "grep.src.atlas3"
+    matcher: "equals"
+    value: 0
+
+  # AC7: confidence.ts design doc
+  - id: A006
+    says: "The confidence utility has no references to nonexistent design documents"
+    block: "confidence.ts has no ATLAS3 reference"
+    target: "grep.confidence.atlas3"
+    matcher: "equals"
+    value: 0
+
+  # AC8: sprint references
+  - id: A007
+    says: "No bare sprint identifiers remain in source files"
+    block: "zero sprint refs in src/"
+    target: "grep.src.sprintRefs"
+    matcher: "equals"
+    value: 0
+
+  - id: A008
+    says: "No bare sprint identifiers remain in test files"
+    block: "zero sprint refs in tests/"
+    target: "grep.tests.sprintRefs"
+    matcher: "equals"
+    value: 0
+
+  # AC9: plan identifiers
+  - id: A009
+    says: "No implementation plan identifiers remain in the codebase"
+    block: "zero plan refs in src/ and tests/"
+    target: "grep.all.planRefs"
+    matcher: "equals"
+    value: 0
+
+  # AC10: design doc identifiers
+  - id: A010
+    says: "No backlog or design document identifiers remain in the codebase"
+    block: "zero design doc refs in src/ and tests/"
+    target: "grep.all.designDocRefs"
+    matcher: "equals"
+    value: 0
+
+  # AC11: any type replacements
+  - id: A011
+    says: "AI SDK detection tests use proper types instead of any casts"
+    block: "ai-sdk-detection.test.ts has no as-any casts"
+    target: "grep.aiSdkTest.asAny"
+    matcher: "equals"
+    value: 0
+
+  - id: A012
+    says: "Import convention tests use the ImportInfo type instead of any arrays"
+    block: "imports.test.ts has no any[] annotations"
+    target: "grep.importsTest.anyArray"
+    matcher: "equals"
+    value: 0
+
+  - id: A013
+    says: "Contract tests use proper types instead of any casts"
+    block: "analyzer-contract.test.ts has no as-any casts"
+    target: "grep.contractTest.asAny"
+    matcher: "equals"
+    value: 0
+
+  - id: A014
+    says: "Pattern confirmation tests use the isMultiPattern type guard instead of any casts"
+    block: "confirmation.test.ts has no as-any casts"
+    target: "grep.confirmationTest.asAny"
+    matcher: "equals"
+    value: 0
+
+  # AC12: JSDoc @example blocks
+  - id: A015
+    says: "No JSDoc examples reference the deleted analyze function"
+    block: "zero @example blocks referencing analyze()"
+    target: "grep.src.exampleAnalyze"
+    matcher: "equals"
+    value: 0
+
+  # AC6: ruby.ts/php.ts exception
+  - id: A016
+    says: "Ruby parser explains why it exists without using sprint identifiers"
+    block: "ruby.ts has no sprint refs"
+    target: "grep.ruby.sprintRefs"
+    matcher: "equals"
+    value: 0
+
+  - id: A017
+    says: "Ruby parser still explains why the higher-level reader was removed"
+    block: "ruby.ts retains parser rationale"
+    target: "grep.ruby.retainedExplanation"
+    matcher: "contains"
+    value: "retained"
+
+  - id: A018
+    says: "PHP parser explains why it exists without using sprint identifiers"
+    block: "php.ts has no sprint refs"
+    target: "grep.php.sprintRefs"
+    matcher: "equals"
+    value: 0
+
+  # AC17: test file rename
+  - id: A019
+    says: "The sprint-named test file has been renamed to describe what it tests"
+    block: "s11-detection.test.ts renamed to detection-overrides.test.ts"
+    target: "file.detectionOverrides.exists"
+    matcher: "truthy"
+
+  - id: A020
+    says: "The old sprint-named test file no longer exists"
+    block: "s11-detection.test.ts no longer exists"
+    target: "file.s11Detection.exists"
+    matcher: "equals"
+    value: false
+
+  # AC16: ticket refs in tests
+  - id: A021
+    says: "No ticket identifiers remain in test files"
+    block: "zero ticket refs in tests/"
+    target: "grep.tests.ticketRefs"
+    matcher: "equals"
+    value: 0
+
+  # AC18 + AC19: build health
+  - id: A022
+    says: "All existing tests continue to pass after the cleanup"
+    block: "all tests pass"
+    target: "testSuite.passed"
+    matcher: "equals"
+    value: 1883
+
+  - id: A023
+    says: "The build compiles without type errors"
+    block: "typecheck passes"
+    target: "typecheck.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A024
+    says: "No lint errors are introduced by the cleanup"
+    block: "lint passes"
+    target: "lint.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  # Wave 1: Fix lies
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/engine/index.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/treeSitter.ts"
+    action: modify
+  - path: "packages/cli/src/engine/utils/confidence.ts"
+    action: modify
+  - path: "packages/cli/src/engine/types/conventions.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/projectType.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/python/Pipfile.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/python/pyproject.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/go.ts"
+    action: modify
+  - path: "packages/cli/src/engine/analyzers/conventions/naming.ts"
+    action: modify
+  - path: "packages/cli/src/engine/analyzers/conventions/indentation.ts"
+    action: modify
+  - path: "packages/cli/src/engine/analyzers/conventions/index.ts"
+    action: modify
+  - path: "packages/cli/src/engine/analyzers/conventions/imports.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/ruby.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/php.ts"
+    action: modify
+  # Wave 2: ~50 src/ files with identifier refs (too many to list individually)
+  # Builder will discover via grep. High-density files listed in spec.
+  - path: "packages/cli/src/engine/types/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/check.ts"
+    action: modify
+  - path: "packages/cli/src/engine/analyzers/patterns/confirmation.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/queries.ts"
+    action: modify
+  - path: "packages/cli/src/data/gotchas.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/skills.ts"
+    action: modify
+  - path: "packages/cli/src/engine/types/engineResult.ts"
+    action: modify
+  # Wave 3: test file rename
+  - path: "packages/cli/tests/engine/detectors/s11-detection.test.ts"
+    action: delete
+  - path: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    action: create
+  # Wave 4: any type replacements
+  - path: "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/conventions/imports.test.ts"
+    action: modify
+  - path: "packages/cli/tests/contract/analyzer-contract.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/analyzers/patterns/confirmation.test.ts"
+    action: modify
