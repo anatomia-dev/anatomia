@@ -12599,6 +12599,314 @@
           "suggested_action": "monitor"
         }
       ]
+    },
+    {
+      "slug": "proof-system-near-term",
+      "feature": "Proof System Near-Term — Learn Infrastructure Foundation",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 27,
+        "satisfied": 27,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Push failure triggers a pull-then-retry before giving up",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Commit failure clearly tells the user changes were not saved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Lesson command retries push the same way close does",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Promote command retries push the same way close does",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Strengthen command retries push the same way close does",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Commits touching only proof chain files skip the full build check",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Commits touching source code still run the full build check",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Health severity counts exclude closed and promoted findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Health action counts exclude closed and promoted findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Health and audit now agree on severity counts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Finding lookup returns both the finding and its parent entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Finding lookup returns null when the ID does not exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "No inline finding-search loops remain in the proof commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Audit severity filter returns only findings matching requested severities",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Audit entry filter returns only findings from the requested pipeline run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Audit filters work with JSON output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Audit filters work with full output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Audit severity filter handles unclassified findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Audit with nonexistent entry returns zero findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Both audit filters can be combined for intersection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Learn template documents the lesson command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Learn template documents the context command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Learn template documents audit severity and entry filters",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Learn template includes a guide on when to use each command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Learn template positions stale findings as candidates, not conclusions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Dogfood copy matches the template's Reference section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "All existing tests continue to pass",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 17,
+        "met": 17
+      },
+      "timing": {
+        "total_minutes": 82,
+        "think": 18,
+        "plan": 12,
+        "build": 45,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:48cc19bdccc324db0e4b4f65b88d042c83bab75f3ecd7f387545dca69ddb9fe1",
+        "contract": "sha256:94a2f43a41e4cfeee2406ba78bbffd2936dad5f69dcf819f69eaf35709f1253a",
+        "plan": "sha256:04359a47477257ab5800256793d7dfd85a00fd1e1a43ff37e392b623c320e0da",
+        "spec": "sha256:41709e44d2a28426c1315d8071abfdf1119bf39938a75969fe428553b26adf48",
+        "build-report": "sha256:20d1b8232c6cb07115ee1fbc41f051e150cbb40cd329bea3bd9042590d021e6d",
+        "build-data": "sha256:5fda30a79c825047ebfc2ee34ca50e06c36e5fac4200554c9671360cf45d349d",
+        "verify-report": "sha256:e64dfcbc5e72474dab8fa493a8637b3dada4dcfd124a93a47d59cf5d39afda56",
+        "verify-data": "sha256:3df6bca87b6bc0c8af1fb74999e1ff5f5d08bcce1581d3c96867e43e0db255fd"
+      },
+      "completed_at": "2026-05-05T20:03:50.173Z",
+      "modules_touched": [
+        ".claude/agents/ana-learn.md",
+        ".husky/pre-commit",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "Fix the infrastructure that makes Learn sessions slow, error-prone, and wasteful. Six changes that each address a verified problem from 3 Learn sessions. The proof commands have push error handling that confuses Learn, a pre-commit hook that wastes 30s per close on JSON files, severity counts that lie, duplicated search loops, an audit command without filters, and a template missing critical guidance.",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A001 test verifies retry success path, not the failure message — contract matcher/value ('Push failed after retry') never asserted",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 4231,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "proof-system-near-term-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A018 uses toBeGreaterThan(0) — weak assertion; the fixture has exactly 1 unclassified finding, test should use toBe(1)",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 4361,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A018"
+          ],
+          "id": "proof-system-near-term-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "pullBeforeRead calls process.exit(1) on rebase conflict without running git rebase --abort first — leaves dirty rebase state",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 117,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "proof-system-near-term-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Audit severity filter uses reverse-index splice loop — O(n²) on large finding sets; Array.filter() would be clearer and faster",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 1886,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "proof-system-near-term-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-commit filter also skips for .claude/-only commits — broader than contract A006 specifies (only mentions .ana/). Pragmatic but unspecified.",
+          "file": ".husky/pre-commit",
+          "anchor": null,
+          "line": 15,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "proof-system-near-term-C5",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No dedicated push retry tests for lesson, promote, or strengthen — shared helper covers them but no integration test proves the wiring",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003",
+            "A004",
+            "A005"
+          ],
+          "id": "proof-system-near-term-C6",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test coverage for pre-commit bypass behavior (A006/A007) — shell hook not exercised in vitest suite",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A006",
+            "A007"
+          ],
+          "id": "proof-system-near-term-C7",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof context finding 'Lesson command catch block at proof.ts:1141 loses error detail' — this build replaces that catch block with commitAndPushProofChanges which includes stderr. Stale finding likely resolved.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "proof-system-near-term-C8",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-commit bypass expanded to .claude/ beyond spec — user-requested deviation",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Push retry test uses local bare remote — covers the happy path but not true network failures",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Commit failure test uses index.lock trick — fragile if git behavior changes",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ]
     }
   ],
   "schema": 1
