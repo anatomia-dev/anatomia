@@ -773,7 +773,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
   if (proof.result === 'UNKNOWN') {
     const verifyReportPath = path.join(completedPlanDir, 'verify_report.md');
     if (fs.existsSync(verifyReportPath)) {
-      console.error(`Warning: Entry '${slug}' has result UNKNOWN but a verify report exists. Check verify_report.md for a Result line.`);
+      console.error(chalk.yellow(`Warning: Entry '${slug}' has result UNKNOWN but a verify report exists. Check verify_report.md for a Result line.`));
     }
   }
 

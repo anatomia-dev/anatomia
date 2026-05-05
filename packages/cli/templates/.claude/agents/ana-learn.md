@@ -156,7 +156,7 @@ When diagnosing a "skill gap" — where a rule exists but agents don't follow it
 
 When reading findings, these fields inform your triage decisions:
 - **`severity`** (risk / debt / observation) — priority ordering. Risk findings need attention first.
-- **`suggested_action`** (promote / scope / monitor / accept) — what the classifier recommended. Accept-action findings were classified by the verifier — validate the classification before acting.
+- **`suggested_action`** (promote / scope / monitor / accept) — what the classifier recommended. Accept means Verify didn't block shipping — it does NOT mean the finding should be closed. Evaluate each accept finding on its own merits.
 - **`file`** — the file where the finding was observed. If the file no longer exists, the finding is likely closable.
 - **`anchor`** — a code construct (function name, variable, class) referenced by the finding. If present, used for staleness checking.
 - **`related_assertions`** — links findings to spec assertions. Multiple findings with the same assertion pattern suggest a spec quality issue.

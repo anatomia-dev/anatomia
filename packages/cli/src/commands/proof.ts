@@ -113,6 +113,7 @@ function pullBeforeRead(proofRoot: string): void {
     if (pullResult.exitCode !== 0) {
       const errorMessage = pullResult.stderr;
       if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
+        runGit(['rebase', '--abort'], { cwd: proofRoot });
         console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
         process.exit(1);
       }

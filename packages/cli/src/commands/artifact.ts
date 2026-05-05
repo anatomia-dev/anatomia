@@ -99,7 +99,7 @@ function runPreCheckAndStore(slug: string, slugDir: string, projectRoot: string)
 
   // TAMPERED blocks save
   if (preCheckResult.seal === 'TAMPERED') {
-    console.error(chalk.red('ERROR: Contract tampered since plan commit. Cannot save verify report.'));
+    console.error(chalk.red('Error: Contract tampered since plan commit. Cannot save verify report.'));
     console.error(chalk.gray('The contract was modified after it was sealed by the planner.'));
     console.error(chalk.gray('This invalidates the verification. Re-plan or restore the contract.'));
     process.exit(1);
@@ -1333,6 +1333,17 @@ export function saveAllArtifacts(slug: string): void {
       const planPath = path.join(planDir, 'plan.md');
       if (fs.existsSync(planPath) && !artifactPaths.includes(path.relative(projectRoot, planPath))) {
         runGit(['add', planPath], { cwd: projectRoot });
+      }
+    }
+
+    // Clean up orphaned artifacts — files tracked in git but no longer on disk
+    // (e.g., Plan restructured from spec-1.md + spec-2.md to spec.md)
+    const artifactPattern = /^(scope|plan|spec(-\d+)?|contract|build_report(_\d+)?|verify_report(_\d+)?)\.(md|yaml)$/;
+    const trackedFiles = runGit(['ls-files'], { cwd: planDir }).stdout.split('\n').filter(Boolean);
+    const diskFiles = new Set(entries);
+    for (const tracked of trackedFiles) {
+      if (artifactPattern.test(tracked) && !diskFiles.has(tracked)) {
+        runGit(['rm', path.relative(projectRoot, path.join(planDir, tracked))], { cwd: projectRoot });
       }
     }
   } catch (error) {

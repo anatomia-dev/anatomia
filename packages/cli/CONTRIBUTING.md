@@ -385,7 +385,7 @@ Use this for: init pipeline phases, anything downstream of the atomic rename, an
 
 TypeScript already has `T | null` and `T | undefined`. Those express "might fail" at the type level with zero runtime overhead. A `Result<T, E>` wrapper type adds an allocation per call, forces every caller to unwrap, and duplicates the work the type system already does.
 
-The 118 catch blocks in `src/` are all legitimately one of the three patterns above. None needed a Result wrapper. Document your error handling with a one-line comment at the catch site if it is not obvious which pattern applies.
+The catch blocks in `src/` are all legitimately one of the three patterns above. None needed a Result wrapper. Document your error handling with a one-line comment at the catch site if it is not obvious which pattern applies.
 
 ---
 

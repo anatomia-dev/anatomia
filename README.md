@@ -195,6 +195,8 @@ cd packages/cli && pnpm vitest run
 
 See [CONTRIBUTING.md](https://github.com/TettoLabs/anatomia/blob/main/packages/cli/CONTRIBUTING.md) for extension guides and [ARCHITECTURE.md](https://github.com/TettoLabs/anatomia/blob/main/packages/cli/ARCHITECTURE.md) for the module map.
 
+This project is built with Anatomia. The `.ana/` directory is the proof — every feature was scoped, planned, built, and verified through the same pipeline this tool installs for you.
+
 ## License
 
 MIT

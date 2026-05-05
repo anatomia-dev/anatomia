@@ -31,6 +31,10 @@ jobs:
       # Copy root docs into package for npm (same as prepublishOnly)
       - run: cp README.md packages/cli/README.md && cp CHANGELOG.md packages/cli/CHANGELOG.md
 
+      - run: cd packages/cli && pnpm typecheck:tests
+
+      - run: cd packages/cli && pnpm lint
+
       - run: cd packages/cli && pnpm vitest run
 
       - name: Verify version matches tag
