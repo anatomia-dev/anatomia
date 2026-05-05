@@ -15,5 +15,32 @@
   "spec": {
     "saved_at": "2026-05-05T19:16:53.057Z",
     "hash": "sha256:176e11c2a7807e46b7b8b5f9d8a022d0a1c190c8734f8753e7218028a8670125"
-  }
+  },
+  "build-report": {
+    "saved_at": "2026-05-05T20:17:44.819Z",
+    "hash": "sha256:d927aefd8a256b5f3ae940e7eb7a82a98b70d6b9584bcf7bd4f550694f903790"
+  },
+  "build-data": {
+    "saved_at": "2026-05-05T20:17:44.820Z",
+    "hash": "sha256:88603dbcba3a98a7687ee32b2dabfb8bdc1d1cd18cf85c66557ef82a06a8c273"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/agents.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/commands/setup.ts",
+    "packages/cli/src/commands/verify.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/templates/.claude/skills/ai-patterns/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/api-patterns/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/coding-standards/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/data-access/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/deployment/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/git-workflow/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/testing-standards/ENRICHMENT.md",
+    "packages/cli/templates/.claude/skills/troubleshooting/ENRICHMENT.md"
+  ]
 }

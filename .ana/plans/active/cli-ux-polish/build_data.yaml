@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "commandsGroup() is Commander v14-specific — downgrade would break grouped help silently"
+    file: "packages/cli/src/index.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "15 pre-existing lint warnings in untouched files (no-explicit-any, unused eslint-disable)"
+    severity: observation
+    suggested_action: accept
