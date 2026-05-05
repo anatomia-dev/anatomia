@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-52 runs · 71 active · 64 lessons · 0 promoted · 159 closed
+53 runs · 74 active · 65 lessons · 0 promoted · 159 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 71 total)
+## Active Findings (30 shown of 74 total)
 
 ### .github/workflows/release.yml
 
@@ -36,6 +36,10 @@
 - **code:** npm pack dry-run doesn't include README.md or CHANGELOG.md — prepublishOnly required first — *V1 Release Prep*
 - **code:** prepublishOnly relies on relative ../../ path — breaks if package depth changes — *V1 Documentation Overhaul*
 - **code:** README.md and CHANGELOG.md cannot be verified with npm pack --dry-run — only exist after prepublishOnly — *V1 Documentation Overhaul*
+
+### packages/cli/src/commands/agents.ts
+
+- **code:** agents.ts file header comment still says 'List deployed agents' — stale after description change — *CLI UX Polish — First 10 Minutes*
 
 ### packages/cli/src/commands/proof.ts
 
@@ -75,23 +79,16 @@
 
 - **test:** A016-A019 @ana tags point to pre-existing branchPrefix template tests, not command entry point validation — *Security Hardening — Command Injection Elimination*
 
-### packages/cli/tests/engine/detectors/documentation.test.ts
-
-- **test:** documentation.test.ts assertion removed for packages/cli/README.md — justified but reduces dogfood coverage — *V1 Documentation Overhaul*
-
 ### packages/cli/tests/utils/git-operations.test.ts
 
 - **test:** A010 test mocks process.exit — after mock, readArtifactBranch continues and returns invalid branch to caller. Correct in production but test pattern allows post-exit execution. — *Security Hardening — Command Injection Elimination*
 - **test:** Enforcement test (A023) asserts on source code content via grep — violates testing-standards skill rule 'never assert on source code content' but is the only practical way to enforce convention. Spec explicitly requested this pattern. — *Security Hardening — Command Injection Elimination*
 - **test:** Enforcement test comment-filter heuristic checks line prefix only (starts with //, *, /*). An execSync buried mid-line after non-comment code wouldn't be caught if the line also starts with a comment-like pattern. Low probability given codebase conventions. — *Security Hardening — Command Injection Elimination*
 
-### README.md
-
-- **code:** README Development section uses absolute GitHub URLs for CONTRIBUTING/ARCHITECTURE — correct since README is at root — *V1 Documentation Overhaul*
-- **code:** Scan output block in README is representative example, not live output — cannot be mechanically validated — *V1 Documentation Overhaul*
-
 ### General
 
+- **code:** addHelpCommand(false) breaks 'ana help <cmd>' — users who learned that pattern get an error — *CLI UX Polish — First 10 Minutes*
+- **test:** No contract assertions are covered by @ana-tagged tests — all verified by source inspection and live invocation only — *CLI UX Polish — First 10 Minutes*
 - **test:** No test coverage for pre-commit bypass behavior (A006/A007) — shell hook not exercised in vitest suite — *Proof System Near-Term — Learn Infrastructure Foundation*
 - **test:** No dedicated integration tests for command entry point injection rejection — saveArtifact, completeWork, createPr, strengthen — *Security Hardening — Command Injection Elimination*
 - **test:** No dedicated tests for v1-release-prep contract — assertions verified by source inspection only — *V1 Release Prep*

@@ -12907,6 +12907,222 @@
           "suggested_action": "monitor"
         }
       ]
+    },
+    {
+      "slug": "cli-ux-polish",
+      "feature": "CLI UX Polish — First 10 Minutes",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 19,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Scan results tell users to scaffold context, not fix issues",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Scan results no longer promise to fix issues",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Scan help shows usage examples",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Scan help shows at least two example commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Init help shows usage examples",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Work start help shows usage examples",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Top-level help groups commands under Getting Started",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Top-level help groups commands under Pipeline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Top-level help groups commands under Intelligence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Scan appears before init in the help output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Help output does not contain internal jargon",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Help output does not reference contract seals",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Help output does not reference plan artifacts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Help output does not reference deployed agents",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Version output uses ana/ prefix instead of anatomia-cli/",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Version output does not use the old anatomia-cli prefix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Setup help does not show the internal index subcommand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Every enrichment template starts with an internal marker comment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Artifact save help shows usage examples",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 85,
+        "think": 4,
+        "plan": 13,
+        "build": 61,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:679b39010e6593c6d6d948914c22a81f6ea00dc9c3a8bd385442bb02656e5061",
+        "contract": "sha256:b37cd041989aeedc17d948c2b136fa701862d1c4e0c1f9b4b8f4466504f238fa",
+        "plan": "sha256:8b4992a7d23dde1da82b8e6cd920bb40174a3d0c29f34cf70fc7955fcbc8ef99",
+        "spec": "sha256:176e11c2a7807e46b7b8b5f9d8a022d0a1c190c8734f8753e7218028a8670125",
+        "build-report": "sha256:d927aefd8a256b5f3ae940e7eb7a82a98b70d6b9584bcf7bd4f550694f903790",
+        "build-data": "sha256:88603dbcba3a98a7687ee32b2dabfb8bdc1d1cd18cf85c66557ef82a06a8c273",
+        "verify-report": "sha256:8baf7242664f14e895f164724e35a8d18a3dc0ddd33c9ae763b127c75fa9bf9e",
+        "verify-data": "sha256:7f761974c3f2f19eabd140873cb571f986a52252204ea11e309b4b2f692c9072"
+      },
+      "completed_at": "2026-05-05T20:31:26.549Z",
+      "modules_touched": [
+        "packages/cli/src/commands/agents.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/commands/setup.ts",
+        "packages/cli/src/commands/verify.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/templates/.claude/skills/ai-patterns/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/api-patterns/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/coding-standards/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/data-access/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/deployment/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/git-workflow/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/testing-standards/ENRICHMENT.md",
+        "packages/cli/templates/.claude/skills/troubleshooting/ENRICHMENT.md"
+      ],
+      "scope_summary": "Make the first 10 minutes of using Anatomia feel professional. A developer who runs `ana --help` should immediately understand what the tool does, which commands matter, and how to start. Right now: flat command list, jargon descriptions, no examples, wrong ordering, misleading CTA. Every competitor (gh, npm, docker) has grouped commands, clear descriptions, and examples. We don't.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "agents.ts file header comment still says 'List deployed agents' — stale after description change",
+          "file": "packages/cli/src/commands/agents.ts",
+          "anchor": null,
+          "line": 1,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "cli-ux-polish-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "addHelpCommand(false) breaks 'ana help <cmd>' — users who learned that pattern get an error",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "cli-ux-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No contract assertions are covered by @ana-tagged tests — all verified by source inspection and live invocation only",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "cli-ux-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec says 'AC9: setup --help does NOT show index subcommand' but the live output shows a 'Commands:' section header — hidden subcommand works correctly but the Commands section header remains visible because non-hidden subcommands exist",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "cli-ux-polish-C4",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "commandsGroup() is Commander v14-specific — downgrade would break grouped help silently",
+          "file": "packages/cli/src/index.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "15 pre-existing lint warnings in untouched files (no-explicit-any, unused eslint-disable)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ]
     }
   ],
   "schema": 1
