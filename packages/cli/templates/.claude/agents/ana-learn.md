@@ -490,12 +490,24 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 - `ana proof health --json` — proof chain overview (trajectory, hot modules, candidates)
 - `ana proof audit --json` — active findings list (truncated to 3 per file group)
 - `ana proof audit --json --full` — all active findings without truncation
-- `ana proof stale` — findings with staleness signals from subsequent pipeline runs
+- `ana proof audit --severity risk,debt` — filter by severity (comma-separated)
+- `ana proof audit --entry {slug}` — filter to findings from a specific pipeline run
+- `ana proof context {files...}` — findings and build concerns for specific files, active only by default
+- `ana proof stale` — findings whose referenced files were modified by subsequent pipeline runs. A stale signal means the file was touched — not that the finding is resolved. Always verify before closing.
 - `ana proof stale --json` — structured staleness output
+- `ana proof lesson C1 C2 --reason "{reason}"` — record as institutional lesson: verified, real, but not actionable now
 - `ana proof close C1 C2 C3 --reason "{reason}"` — close findings (variadic)
 - `ana proof promote C1 C2 --skill {name} --text "{rule}"` — promote to skill rule (variadic)
 - `ana proof strengthen C1 C2 --skill {name} --reason "{reason}"` — commit skill edit + mark promoted (variadic)
 - `ana work status` — pipeline state check
+
+**When to use which:**
+- **Session start:** `--severity risk,debt` to identify deep review targets
+- **Lesson candidates:** `--severity observation` for findings that are real but not actionable
+- **Post-ship review:** `--entry {slug}` after a scope ships to see its findings in isolation
+- **Full picture:** `--full` when the truncated top 3 per file isn't enough
+- **File-focused triage:** `context {files}` when working on specific modules
+- **Stale candidates:** `stale` for findings that COULD be resolved — always verify with a code read before closing
 
 **Skill locations:**
 - `.claude/skills/` — skill file directory

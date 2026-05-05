@@ -25,7 +25,7 @@ import { spawnSync } from 'node:child_process';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain } from '../types/proof.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
-import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, truncateSummary, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
+import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, truncateSummary, findFindingById, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
 import type { ProofContextResult } from '../utils/proofSummary.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 
@@ -96,6 +96,86 @@ function createExitError(opts: {
     }
     process.exit(1);
   };
+}
+
+/**
+ * Pull latest changes before reading the proof chain.
+ *
+ * Checks for remotes and pulls with rebase. On conflict, exits with error.
+ * On network failure, warns and continues with local data.
+ *
+ * @param proofRoot - Project root directory
+ */
+function pullBeforeRead(proofRoot: string): void {
+  const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
+  if (remotes) {
+    const pullResult = runGit(['pull', '--rebase'], { cwd: proofRoot });
+    if (pullResult.exitCode !== 0) {
+      const errorMessage = pullResult.stderr;
+      if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
+        console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
+        process.exit(1);
+      }
+      console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
+    }
+  }
+}
+
+/**
+ * Commit proof chain changes and push with one retry on failure.
+ *
+ * Uses spawnSync for commit (captures stderr for error messages) and
+ * runGit for push (returns exitCode/stderr). On push failure: pulls
+ * with rebase and retries once. On rebase conflict, aborts the rebase
+ * and warns. On second push failure, warns.
+ *
+ * @param options - Commit and push options
+ * @param options.proofRoot - Project root directory
+ * @param options.files - Files to stage (relative paths)
+ * @param options.message - Commit message (without co-author trailer)
+ * @param options.coAuthor - Co-author trailer string
+ */
+function commitAndPushProofChanges(options: {
+  proofRoot: string;
+  files: string[];
+  message: string;
+  coAuthor: string;
+}): void {
+  // Stage and commit
+  runGit(['add', ...options.files], { cwd: options.proofRoot });
+  const commitMessage = `${options.message}\n\nCo-authored-by: ${options.coAuthor}`;
+  const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: options.proofRoot });
+  if (commitResult.status !== 0) {
+    const stderr = commitResult.stderr?.toString() || 'Commit failed';
+    console.error(chalk.red(`Error: Failed to commit. Changes NOT saved to git.`));
+    console.error(chalk.dim(stderr));
+    process.exit(1);
+  }
+
+  // Push with one retry
+  const pushResult = runGit(['push'], { cwd: options.proofRoot });
+  if (pushResult.exitCode === 0) return;
+
+  // Push failed — pull --rebase and retry
+  const pullResult = runGit(['pull', '--rebase'], { cwd: options.proofRoot });
+  if (pullResult.exitCode !== 0) {
+    const pullStderr = pullResult.stderr;
+    if (pullStderr.includes('conflict') || pullStderr.includes('Cannot rebase') || pullStderr.includes('CONFLICT')) {
+      // Abort the rebase to clean up
+      runGit(['rebase', '--abort'], { cwd: options.proofRoot });
+      console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
+      return;
+    }
+    // Network failure on pull — can't retry
+    console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
+    return;
+  }
+
+  // Retry push after successful pull
+  const retryResult = runGit(['push'], { cwd: options.proofRoot });
+  if (retryResult.exitCode !== 0) {
+    console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
+  }
 }
 
 // @ana A005, A006
@@ -668,21 +748,7 @@ export function registerProofCommand(program: Command): void {
           return;
         }
 
-        // Pull before reading chain
-        {
-          const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
-          if (remotes) {
-            const pullResult = runGit(['pull', '--rebase'], { cwd: proofRoot });
-            if (pullResult.exitCode !== 0) {
-              const errorMessage = pullResult.stderr;
-              if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
-                console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
-                process.exit(1);
-              }
-              console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
-            }
-          }
-        }
+        pullBeforeRead(proofRoot);
       }
 
       // Read chain
@@ -704,25 +770,15 @@ export function registerProofCommand(program: Command): void {
       const skipped: Array<{ id: string; reason: string }> = [];
 
       for (const id of ids) {
-        // Find the finding across all entries
-        let foundFinding: ProofChainEntry['findings'][0] | null = null;
-        let foundEntry: ProofChainEntry | null = null;
+        const result = findFindingById(chain, id);
 
-        for (const entry of chain.entries) {
-          for (const finding of entry.findings || []) {
-            if (finding.id === id) {
-              foundFinding = finding;
-              foundEntry = entry;
-              break;
-            }
-          }
-          if (foundFinding) break;
-        }
-
-        if (!foundFinding || !foundEntry) {
+        if (!result) {
           skipped.push({ id, reason: 'not found' });
           continue;
         }
+
+        const foundFinding = result.finding as ProofChainEntry['findings'][0];
+        const foundEntry = result.entry as ProofChainEntry;
 
         if (foundFinding.status === 'closed') {
           skipped.push({ id, reason: 'already closed' });
@@ -757,14 +813,8 @@ export function registerProofCommand(program: Command): void {
           if (skip.reason === 'not found') {
             exitError('FINDING_NOT_FOUND', `Finding "${skip.id}" not found.`);
           } else {
-            // Find the original finding for context
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_CLOSED', `Finding "${skip.id}" is already closed.`, {
               closed_by: originalFinding?.closed_by ?? 'unknown',
               closed_at: originalFinding?.closed_at ?? 'unknown',
@@ -823,23 +873,15 @@ export function registerProofCommand(program: Command): void {
 
       // Git: stage, commit, push — one commit for the batch
       const coAuthor = readCoAuthor(proofRoot);
-      try {
-        runGit(['add', '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: proofRoot });
-        const idList = closed.length <= 3
-          ? closed.map(c => c.id).join(', ')
-          : `${closed.slice(0, 2).map(c => c.id).join(', ')}, ... (${closed.length} total)`;
-        const commitMessage = `[proof] Close ${idList}: ${options.reason}\n\nCo-authored-by: ${coAuthor}`;
-        const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: proofRoot });
-        if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
-      } catch {
-        console.error(chalk.red('Error: Failed to commit. Changes saved to proof_chain.json but not committed.'));
-        process.exit(1);
-      }
-
-      const closePushResult = runGit(['push'], { cwd: proofRoot });
-      if (closePushResult.exitCode !== 0) {
-        console.error(chalk.yellow('Warning: Push failed. Changes committed locally. Run `git push` manually.'));
-      }
+      const idList = closed.length <= 3
+        ? closed.map(c => c.id).join(', ')
+        : `${closed.slice(0, 2).map(c => c.id).join(', ')}, ... (${closed.length} total)`;
+      commitAndPushProofChanges({
+        proofRoot,
+        files: ['.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'],
+        message: `[proof] Close ${idList}: ${options.reason}`,
+        coAuthor,
+      });
 
       // Output
       if (useJson) {
@@ -953,21 +995,7 @@ export function registerProofCommand(program: Command): void {
           return;
         }
 
-        // Pull before reading chain
-        {
-          const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
-          if (remotes) {
-            const pullResult = runGit(['pull', '--rebase'], { cwd: proofRoot });
-            if (pullResult.exitCode !== 0) {
-              const errorMessage = pullResult.stderr;
-              if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
-                console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
-                process.exit(1);
-              }
-              console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
-            }
-          }
-        }
+        pullBeforeRead(proofRoot);
       }
 
       // Read chain
@@ -989,25 +1017,15 @@ export function registerProofCommand(program: Command): void {
       const skipped: Array<{ id: string; reason: string }> = [];
 
       for (const id of ids) {
-        // Find the finding across all entries
-        let foundFinding: ProofChainEntry['findings'][0] | null = null;
-        let foundEntry: ProofChainEntry | null = null;
+        const result = findFindingById(chain, id);
 
-        for (const entry of chain.entries) {
-          for (const finding of entry.findings || []) {
-            if (finding.id === id) {
-              foundFinding = finding;
-              foundEntry = entry;
-              break;
-            }
-          }
-          if (foundFinding) break;
-        }
-
-        if (!foundFinding || !foundEntry) {
+        if (!result) {
           skipped.push({ id, reason: 'not found' });
           continue;
         }
+
+        const foundFinding = result.finding as ProofChainEntry['findings'][0];
+        const foundEntry = result.entry as ProofChainEntry;
 
         if (foundFinding.status === 'closed') {
           skipped.push({ id, reason: 'already closed' });
@@ -1052,26 +1070,16 @@ export function registerProofCommand(program: Command): void {
           if (skip.reason === 'not found') {
             exitError('FINDING_NOT_FOUND', `Finding "${skip.id}" not found.`);
           } else if (skip.reason === 'already closed') {
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_CLOSED', `Finding "${skip.id}" is already closed.`, {
               closed_by: originalFinding?.closed_by ?? 'unknown',
               closed_at: originalFinding?.closed_at ?? 'unknown',
               closed_reason: originalFinding?.closed_reason ?? '',
             });
           } else if (skip.reason === 'already promoted') {
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_PROMOTED', `Finding "${skip.id}" is already promoted.`, {
               promoted_to: originalFinding?.promoted_to ?? 'unknown',
             });
@@ -1130,23 +1138,15 @@ export function registerProofCommand(program: Command): void {
 
       // Git: stage, commit, push
       const coAuthor = readCoAuthor(proofRoot);
-      try {
-        runGit(['add', '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: proofRoot });
-        const idList = lessoned.length <= 3
-          ? lessoned.map(l => l.id).join(', ')
-          : `${lessoned.slice(0, 2).map(l => l.id).join(', ')}, ... (${lessoned.length} total)`;
-        const commitMessage = `[proof] Lesson: ${idList}\n\nCo-authored-by: ${coAuthor}`;
-        const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: proofRoot });
-        if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
-      } catch {
-        console.error(chalk.red('Error: Failed to commit. Changes saved to proof_chain.json but not committed.'));
-        process.exit(1);
-      }
-
-      const lessonPushResult = runGit(['push'], { cwd: proofRoot });
-      if (lessonPushResult.exitCode !== 0) {
-        console.error(chalk.yellow('Warning: Push failed. Changes committed locally. Run `git push` manually.'));
-      }
+      const idList = lessoned.length <= 3
+        ? lessoned.map(l => l.id).join(', ')
+        : `${lessoned.slice(0, 2).map(l => l.id).join(', ')}, ... (${lessoned.length} total)`;
+      commitAndPushProofChanges({
+        proofRoot,
+        files: ['.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'],
+        message: `[proof] Lesson: ${idList}`,
+        coAuthor,
+      });
 
       // Output
       if (useJson) {
@@ -1284,21 +1284,7 @@ export function registerProofCommand(program: Command): void {
         return;
       }
 
-      // Pull before reading chain
-      {
-        const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
-        if (remotes) {
-          const pullResult = runGit(['pull', '--rebase'], { cwd: proofRoot });
-          if (pullResult.exitCode !== 0) {
-            const errorMessage = pullResult.stderr;
-            if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
-              console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
-              process.exit(1);
-            }
-            console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
-          }
-        }
-      }
+      pullBeforeRead(proofRoot);
 
       // Read chain
       if (!fs.existsSync(proofChainPath)) {
@@ -1319,22 +1305,14 @@ export function registerProofCommand(program: Command): void {
       const skipped: Array<{ id: string; reason: string }> = [];
 
       for (const id of ids) {
-        let foundFinding: ProofChainEntry['findings'][0] | null = null;
+        const result = findFindingById(chain, id);
 
-        for (const entry of chain.entries) {
-          for (const finding of entry.findings || []) {
-            if (finding.id === id) {
-              foundFinding = finding;
-              break;
-            }
-          }
-          if (foundFinding) break;
-        }
-
-        if (!foundFinding) {
+        if (!result) {
           skipped.push({ id, reason: 'not found' });
           continue;
         }
+
+        const foundFinding = result.finding as ProofChainEntry['findings'][0];
 
         if (foundFinding.status === 'promoted') {
           skipped.push({ id, reason: 'already promoted' });
@@ -1369,24 +1347,14 @@ export function registerProofCommand(program: Command): void {
           if (skip.reason === 'not found') {
             exitError('FINDING_NOT_FOUND', `Finding "${skip.id}" not found.`);
           } else if (skip.reason === 'already promoted') {
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_PROMOTED', `Finding "${skip.id}" is already promoted.`, {
               promoted_to: originalFinding?.promoted_to ?? 'unknown',
             });
           } else {
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_CLOSED', `Finding "${skip.id}" is already closed.`, {
               closed_by: originalFinding?.closed_by ?? 'unknown',
               closed_at: originalFinding?.closed_at ?? 'unknown',
@@ -1476,23 +1444,15 @@ export function registerProofCommand(program: Command): void {
 
       // Git: stage, commit, push — one commit for the batch
       const coAuthor = readCoAuthor(proofRoot);
-      try {
-        runGit(['add', '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md', skillRelPath], { cwd: proofRoot });
-        const idList = promoted.length <= 3
-          ? promoted.map(p => p.id).join(', ')
-          : `${promoted.slice(0, 2).map(p => p.id).join(', ')}, ... (${promoted.length} total)`;
-        const commitMessage = `[proof] Promote ${idList} to ${skillName}\n\nCo-authored-by: ${coAuthor}`;
-        const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: proofRoot });
-        if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
-      } catch {
-        console.error(chalk.red('Error: Failed to commit. Changes saved but not committed.'));
-        process.exit(1);
-      }
-
-      const promotePushResult = runGit(['push'], { cwd: proofRoot });
-      if (promotePushResult.exitCode !== 0) {
-        console.error(chalk.yellow('Warning: Push failed. Changes committed locally. Run `git push` manually.'));
-      }
+      const idList = promoted.length <= 3
+        ? promoted.map(p => p.id).join(', ')
+        : `${promoted.slice(0, 2).map(p => p.id).join(', ')}, ... (${promoted.length} total)`;
+      commitAndPushProofChanges({
+        proofRoot,
+        files: ['.ana/proof_chain.json', '.ana/PROOF_CHAIN.md', skillRelPath],
+        message: `[proof] Promote ${idList} to ${skillName}`,
+        coAuthor,
+      });
 
       // Output
       if (useJson) {
@@ -1676,21 +1636,7 @@ export function registerProofCommand(program: Command): void {
         return;
       }
 
-      // Pull before reading chain
-      {
-        const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
-        if (remotes) {
-          const pullResult = runGit(['pull', '--rebase'], { cwd: proofRoot });
-          if (pullResult.exitCode !== 0) {
-            const errorMessage = pullResult.stderr;
-            if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
-              console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
-              process.exit(1);
-            }
-            console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
-          }
-        }
-      }
+      pullBeforeRead(proofRoot);
 
       // Read chain
       if (!fs.existsSync(proofChainPath)) {
@@ -1711,22 +1657,14 @@ export function registerProofCommand(program: Command): void {
       const skipped: Array<{ id: string; reason: string }> = [];
 
       for (const id of ids) {
-        let foundFinding: ProofChainEntry['findings'][0] | null = null;
+        const result = findFindingById(chain, id);
 
-        for (const entry of chain.entries) {
-          for (const finding of entry.findings || []) {
-            if (finding.id === id) {
-              foundFinding = finding;
-              break;
-            }
-          }
-          if (foundFinding) break;
-        }
-
-        if (!foundFinding) {
+        if (!result) {
           skipped.push({ id, reason: 'not found' });
           continue;
         }
+
+        const foundFinding = result.finding as ProofChainEntry['findings'][0];
 
         if (foundFinding.status === 'promoted') {
           skipped.push({ id, reason: 'already promoted' });
@@ -1761,24 +1699,14 @@ export function registerProofCommand(program: Command): void {
           if (skip.reason === 'not found') {
             exitError('FINDING_NOT_FOUND', `Finding "${skip.id}" not found.`);
           } else if (skip.reason === 'already promoted') {
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_PROMOTED', `Finding "${skip.id}" is already promoted.`, {
               promoted_to: originalFinding?.promoted_to ?? 'unknown',
             });
           } else {
-            let originalFinding: ProofChainEntry['findings'][0] | null = null;
-            for (const entry of chain.entries) {
-              for (const finding of entry.findings || []) {
-                if (finding.id === skip.id) { originalFinding = finding; break; }
-              }
-              if (originalFinding) break;
-            }
+            const original = findFindingById(chain, skip.id);
+            const originalFinding = original?.finding as ProofChainEntry['findings'][0] | undefined;
             exitError('ALREADY_CLOSED', `Finding "${skip.id}" is already closed.`, {
               closed_by: originalFinding?.closed_by ?? 'unknown',
               closed_at: originalFinding?.closed_at ?? 'unknown',
@@ -1794,7 +1722,7 @@ export function registerProofCommand(program: Command): void {
       // Write updated chain
       fs.writeFileSync(proofChainPath, JSON.stringify(chain, null, 2));
 
-      // Regenerate PROOF_CHAIN.md
+      // Regenerate PROOF_CHAIN.MD
       const health = computeChainHealth(chain);
       const dashboardMd = generateDashboard(chain.entries, {
         runs: health.chain_runs,
@@ -1808,20 +1736,12 @@ export function registerProofCommand(program: Command): void {
 
       // Git: stage skill file + proof chain files, commit, push — one commit for the batch
       const coAuthor = readCoAuthor(proofRoot);
-      try {
-        runGit(['add', skillRelPath, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: proofRoot });
-        const commitMessage = `[learn] Strengthen ${skillName}: ${options.reason}\n\nCo-authored-by: ${coAuthor}`;
-        const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: proofRoot });
-        if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
-      } catch {
-        console.error(chalk.red('Error: Failed to commit. Changes saved but not committed.'));
-        process.exit(1);
-      }
-
-      const strengthenPushResult = runGit(['push'], { cwd: proofRoot });
-      if (strengthenPushResult.exitCode !== 0) {
-        console.error(chalk.yellow('Warning: Push failed. Changes committed locally. Run `git push` manually.'));
-      }
+      commitAndPushProofChanges({
+        proofRoot,
+        files: [skillRelPath, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'],
+        message: `[learn] Strengthen ${skillName}: ${options.reason}`,
+        coAuthor,
+      });
 
       // Output
       if (useJson) {
@@ -1862,7 +1782,9 @@ export function registerProofCommand(program: Command): void {
     .description('List active findings grouped by file')
     .option('--json', 'Output JSON format')
     .option('--full', 'Return all findings without truncation (requires --json)')
-    .action(async (options: { json?: boolean; full?: boolean }) => {
+    .option('--severity <values>', 'Filter by severity (comma-separated: risk,debt,observation,unclassified)')
+    .option('--entry <slug>', 'Filter to findings from a specific pipeline run')
+    .action(async (options: { json?: boolean; full?: boolean; severity?: string; entry?: string }) => {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
       const parentOpts = proofCommand.opts();
@@ -1949,6 +1871,32 @@ export function registerProofCommand(program: Command): void {
           if (finding.line !== undefined) auditFinding.line = finding.line;
           if (finding.related_assertions !== undefined) auditFinding.related_assertions = finding.related_assertions;
           activeFindings.push(auditFinding);
+        }
+      }
+
+      // Apply --severity filter (post-collection, before grouping)
+      if (options.severity) {
+        const allowedSeverities = new Set(options.severity.split(',').map(s => s.trim()));
+        // Map 'unclassified' filter value to the '—' sentinel used in activeFindings
+        const matchesSeverity = (sev: string): boolean => {
+          if (allowedSeverities.has(sev)) return true;
+          if (sev === '—' && allowedSeverities.has('unclassified')) return true;
+          return false;
+        };
+        for (let i = activeFindings.length - 1; i >= 0; i--) {
+          if (!matchesSeverity(activeFindings[i]!.severity)) {
+            activeFindings.splice(i, 1);
+          }
+        }
+      }
+
+      // Apply --entry filter (post-collection, before grouping)
+      if (options.entry) {
+        const entrySlug = options.entry;
+        for (let i = activeFindings.length - 1; i >= 0; i--) {
+          if (activeFindings[i]!.entry_slug !== entrySlug) {
+            activeFindings.splice(i, 1);
+          }
         }
       }
 

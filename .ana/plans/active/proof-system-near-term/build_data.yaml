@@ -1,0 +1,11 @@
+schema: 1
+concerns:
+  - summary: "Pre-commit bypass expanded to .claude/ beyond spec — user-requested deviation"
+    severity: observation
+    suggested_action: accept
+  - summary: "Push retry test uses local bare remote — covers the happy path but not true network failures"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Commit failure test uses index.lock trick — fragile if git behavior changes"
+    severity: observation
+    suggested_action: monitor

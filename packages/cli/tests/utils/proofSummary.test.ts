@@ -19,6 +19,7 @@ import {
   getProofContext,
   extractScopeSummary,
   generateDashboard,
+  findFindingById,
   computeChainHealth,
   computeHealthReport,
   detectHealthChange,
@@ -1964,6 +1965,110 @@ describe('getProofContext new fields', () => {
   });
 });
 
+describe('findFindingById', () => {
+  // @ana A011
+  it('returns finding and entry when found', () => {
+    const chain = {
+      entries: [{
+        slug: 'fix-auth',
+        feature: 'Fix Auth',
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Missing validation' },
+          { id: 'F002', category: 'test', summary: 'No edge case test' },
+        ],
+      }],
+    };
+    const result = findFindingById(chain, 'F001');
+    expect(result).not.toBeNull();
+    expect(result!.finding.id).toBe('F001');
+    expect(result!.entry.slug).toBe('fix-auth');
+  });
+
+  // @ana A012
+  it('returns null for missing id', () => {
+    const chain = {
+      entries: [{
+        slug: 'fix-auth',
+        feature: 'Fix Auth',
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Missing validation' },
+        ],
+      }],
+    };
+    const result = findFindingById(chain, 'F999');
+    expect(result).toBeNull();
+  });
+
+  it('finds finding in second entry and returns correct entry', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'first',
+          feature: 'First',
+          findings: [{ id: 'F001', category: 'code', summary: 'First finding' }],
+        },
+        {
+          slug: 'second',
+          feature: 'Second',
+          findings: [{ id: 'F002', category: 'test', summary: 'Second finding' }],
+        },
+      ],
+    };
+    const result = findFindingById(chain, 'F002');
+    expect(result).not.toBeNull();
+    expect(result!.finding.id).toBe('F002');
+    expect(result!.entry.slug).toBe('second');
+  });
+
+  it('returns finding regardless of status (caller decides)', () => {
+    const chain = {
+      entries: [{
+        slug: 'fix-auth',
+        feature: 'Fix Auth',
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Closed finding', status: 'closed' },
+          { id: 'F002', category: 'code', summary: 'Promoted finding', status: 'promoted' },
+          { id: 'F003', category: 'code', summary: 'Lesson finding', status: 'lesson' },
+        ],
+      }],
+    };
+    expect(findFindingById(chain, 'F001')).not.toBeNull();
+    expect(findFindingById(chain, 'F002')).not.toBeNull();
+    expect(findFindingById(chain, 'F003')).not.toBeNull();
+  });
+
+  it('handles entries with no findings array', () => {
+    const chain = {
+      entries: [
+        { slug: 'empty', feature: 'Empty' },
+        {
+          slug: 'has-findings',
+          feature: 'Has Findings',
+          findings: [{ id: 'F001', category: 'code', summary: 'Found' }],
+        },
+      ],
+    };
+    const result = findFindingById(chain, 'F001');
+    expect(result).not.toBeNull();
+    expect(result!.entry.slug).toBe('has-findings');
+  });
+
+  it('handles finding with no status field (treated as active by convention)', () => {
+    const chain = {
+      entries: [{
+        slug: 'fix-auth',
+        feature: 'Fix Auth',
+        findings: [
+          { id: 'F001', category: 'code', summary: 'No status' },
+        ],
+      }],
+    };
+    const result = findFindingById(chain, 'F001');
+    expect(result).not.toBeNull();
+    expect(result!.finding['status']).toBeUndefined();
+  });
+});
+
 describe('computeChainHealth', () => {
   // @ana A026
   it('returns by_severity with correct counts for mixed severity values', () => {
@@ -2054,8 +2159,8 @@ describe('computeChainHealth', () => {
     expect(health.findings.by_action.unclassified).toBe(0);
   });
 
-  // @ana A030
-  it('preserves existing status counts alongside new breakdowns', () => {
+  // @ana A030, A008, A009
+  it('preserves existing status counts alongside new breakdowns (active-only severity/action)', () => {
     const chain = {
       entries: [{
         findings: [
@@ -2070,9 +2175,13 @@ describe('computeChainHealth', () => {
     expect(health.findings.closed).toBe(1);
     expect(health.findings.lesson).toBe(1);
     expect(health.findings.total).toBe(3);
+    // by_severity and by_action count active findings only
     expect(health.findings.by_severity.risk).toBe(1);
-    expect(health.findings.by_severity.debt).toBe(1);
-    expect(health.findings.by_severity.observation).toBe(1);
+    expect(health.findings.by_severity.debt).toBe(0);
+    expect(health.findings.by_severity.observation).toBe(0);
+    expect(health.findings.by_action.scope).toBe(1);
+    expect(health.findings.by_action.accept).toBe(0);
+    expect(health.findings.by_action.monitor).toBe(0);
   });
 
   it('counts across multiple entries', () => {
@@ -2089,6 +2198,36 @@ describe('computeChainHealth', () => {
     expect(health.findings.by_severity.debt).toBe(1);
     expect(health.findings.by_action.promote).toBe(1);
     expect(health.findings.by_action.scope).toBe(1);
+  });
+
+  // @ana A010
+  it('health by_severity matches audit active-only counts for same chain', () => {
+    const chain = {
+      entries: [{
+        findings: [
+          { status: 'active', severity: 'risk', suggested_action: 'promote' },
+          { status: 'active', severity: 'debt', suggested_action: 'scope' },
+          { status: 'closed', severity: 'risk', suggested_action: 'accept' },
+          { status: 'promoted', severity: 'debt', suggested_action: 'monitor' },
+          { status: 'lesson', severity: 'observation', suggested_action: 'accept' },
+        ],
+      }],
+    };
+    const health = computeChainHealth(chain);
+    // by_severity should only count the 2 active findings
+    expect(health.findings.by_severity).toEqual({
+      risk: 1, debt: 1, observation: 0, unclassified: 0,
+    });
+    // by_action should only count the 2 active findings
+    expect(health.findings.by_action).toEqual({
+      promote: 1, scope: 1, monitor: 0, accept: 0, unclassified: 0,
+    });
+    // status counts still include all
+    expect(health.findings.total).toBe(5);
+    expect(health.findings.active).toBe(2);
+    expect(health.findings.closed).toBe(1);
+    expect(health.findings.promoted).toBe(1);
+    expect(health.findings.lesson).toBe(1);
   });
 });
 

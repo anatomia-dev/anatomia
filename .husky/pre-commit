@@ -8,6 +8,16 @@
 
 set -e
 
+# Skip build/typecheck/lint for commits that only touch .ana/ or .claude/ files
+# (proof chain updates, skill edits, agent definitions — no TypeScript to check)
+STAGED_FILES=$(git diff --cached --name-only)
+if [ -n "$STAGED_FILES" ]; then
+  NON_ANA_FILES=$(echo "$STAGED_FILES" | grep -v '^\.ana/' | grep -v '^\.claude/' || true)
+  if [ -z "$NON_ANA_FILES" ]; then
+    exit 0
+  fi
+fi
+
 cd packages/cli
 pnpm run build
 pnpm typecheck

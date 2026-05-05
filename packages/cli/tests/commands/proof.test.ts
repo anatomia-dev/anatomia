@@ -4171,4 +4171,231 @@ describe('ana proof', () => {
       expect(json.results.reason).toBe('json-test');
     });
   });
+
+  // --- Push retry tests ---
+
+  // @ana A001
+  describe('close retries push after pull on failure', () => {
+    it('retries push after pull when push fails', async () => {
+      // Create a bare remote and clone it
+      const bareDir = path.join(tempDir, 'remote.git');
+      const workDir = path.join(tempDir, 'work');
+      execSync(`git init --bare ${bareDir}`, { stdio: 'ignore' });
+
+      // Create initial repo with proof chain, push to bare
+      execSync(`git clone ${bareDir} ${workDir}`, { stdio: 'ignore' });
+      execSync('git config user.email "test@test.com"', { cwd: workDir, stdio: 'ignore' });
+      execSync('git config user.name "Test"', { cwd: workDir, stdio: 'ignore' });
+
+      const anaDir = path.join(workDir, '.ana');
+      await fs.mkdir(anaDir, { recursive: true });
+      await fs.writeFile(path.join(anaDir, 'ana.json'), JSON.stringify({ artifactBranch: 'main' }));
+
+      const entry = {
+        slug: 'test-retry',
+        feature: 'Test Push Retry',
+        result: 'PASS',
+        author: { name: 'Dev', email: 'dev@test.com' },
+        contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+        assertions: [],
+        acceptance_criteria: { total: 1, met: 1 },
+        timing: { total_minutes: 10 },
+        hashes: {},
+        completed_at: '2026-04-20T10:00:00Z',
+        modules_touched: [],
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Test finding', file: 'src/test.ts', anchor: null, status: 'active', severity: 'risk' },
+        ],
+        rejection_cycles: 0,
+        previous_failures: [],
+        build_concerns: [],
+      };
+
+      await fs.writeFile(path.join(anaDir, 'proof_chain.json'), JSON.stringify({ entries: [entry] }, null, 2));
+      execSync('git add -A && git commit -m "init"', { cwd: workDir, stdio: 'ignore' });
+      execSync('git branch -M main', { cwd: workDir, stdio: 'ignore' });
+      execSync('git push -u origin main', { cwd: workDir, stdio: 'ignore' });
+
+      // Create a conflicting commit on the remote (via a second clone)
+      const conflictDir = path.join(tempDir, 'conflict');
+      execSync(`git clone ${bareDir} ${conflictDir}`, { stdio: 'ignore' });
+      execSync('git config user.email "other@test.com"', { cwd: conflictDir, stdio: 'ignore' });
+      execSync('git config user.name "Other"', { cwd: conflictDir, stdio: 'ignore' });
+      // Make a non-conflicting change so push succeeds but our push fails
+      await fs.writeFile(path.join(conflictDir, 'dummy.txt'), 'conflict');
+      execSync('git add -A && git commit -m "conflict" && git push', { cwd: conflictDir, stdio: 'ignore' });
+
+      // Now run close from workDir — push will fail, then pull+retry should succeed
+      process.chdir(workDir);
+      const { stdout, stderr, exitCode } = runProof(['close', 'F001', '--reason', 'retry-test']);
+
+      // The command should succeed (exit 0) because the retry succeeds
+      expect(exitCode).toBe(0);
+      const output = stdout + stderr;
+      // Should show the finding was closed
+      expect(output).toContain('F001');
+    });
+  });
+
+  // @ana A002
+  describe('close commit failure shows NOT saved message', () => {
+    it('shows NOT saved when commit fails', async () => {
+      await createCloseTestProject([closeEntry]);
+      process.chdir(tempDir);
+
+      // Lock the index to simulate a concurrent git operation that blocks commit
+      await fs.writeFile(path.join(tempDir, '.git', 'index.lock'), 'locked');
+
+      const { stderr, exitCode } = runProof(['close', 'F001', '--reason', 'test']);
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain('NOT saved');
+    });
+  });
+
+  // --- Audit filter tests ---
+
+  const multiSeverityEntry = {
+    slug: 'multi-sev',
+    feature: 'Multi Severity',
+    result: 'PASS' as const,
+    author: { name: 'Dev', email: 'dev@test.com' },
+    contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+    assertions: [],
+    acceptance_criteria: { total: 1, met: 1 },
+    timing: { total_minutes: 10 },
+    hashes: {},
+    completed_at: '2026-04-20T10:00:00Z',
+    modules_touched: [],
+    findings: [
+      { id: 'F001', category: 'code', summary: 'Risk finding', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
+      { id: 'F002', category: 'code', summary: 'Debt finding', file: 'src/b.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'monitor' },
+      { id: 'F003', category: 'code', summary: 'Observation finding', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+      { id: 'F004', category: 'code', summary: 'Unclassified finding', file: 'src/d.ts', anchor: null, status: 'active' },
+    ],
+    rejection_cycles: 0,
+    previous_failures: [],
+    build_concerns: [],
+  };
+
+  const secondEntry = {
+    slug: 'other-entry',
+    feature: 'Other Entry',
+    result: 'PASS' as const,
+    author: { name: 'Dev', email: 'dev@test.com' },
+    contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+    assertions: [],
+    acceptance_criteria: { total: 1, met: 1 },
+    timing: { total_minutes: 10 },
+    hashes: {},
+    completed_at: '2026-04-21T10:00:00Z',
+    modules_touched: [],
+    findings: [
+      { id: 'F010', category: 'test', summary: 'Other finding', file: 'src/e.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'promote' },
+    ],
+    rejection_cycles: 0,
+    previous_failures: [],
+    build_concerns: [],
+  };
+
+  // @ana A014
+  describe('audit --severity risk,debt returns only risk and debt findings', () => {
+    it('filters to requested severities', async () => {
+      await createProofChain([multiSeverityEntry, secondEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--severity', 'risk,debt', '--json']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      expect(json.results.by_severity.observation).toBe(0);
+      expect(json.results.by_severity.unclassified).toBe(0);
+      // Should have risk findings from both entries + debt from first
+      expect(json.results.total_active).toBe(3);
+    });
+  });
+
+  // @ana A015
+  describe('audit --entry returns only findings from that entry', () => {
+    it('filters to requested entry slug', async () => {
+      await createProofChain([multiSeverityEntry, secondEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--entry', 'multi-sev', '--json']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      expect(json.results.total_active).toBe(4);
+      // No findings from other-entry
+      const allFiles = json.results.by_file.flatMap((g: { findings: Array<{ entry_slug: string }> }) => g.findings.map((f: { entry_slug: string }) => f.entry_slug));
+      expect(allFiles.every((s: string) => s === 'multi-sev')).toBe(true);
+    });
+  });
+
+  // @ana A016
+  describe('audit --severity with --json returns valid filtered JSON', () => {
+    it('returns valid JSON envelope', async () => {
+      await createProofChain([multiSeverityEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--severity', 'risk', '--json']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      expect(json.command).toBe('proof audit');
+      expect(json.results.total_active).toBe(1);
+    });
+  });
+
+  // @ana A017
+  describe('audit --severity with --json --full returns untruncated filtered results', () => {
+    it('returns untruncated results', async () => {
+      await createProofChain([multiSeverityEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--severity', 'risk,debt', '--json', '--full']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      expect(json.results.overflow_files).toBe(0);
+    });
+  });
+
+  // @ana A018
+  describe('audit --severity unclassified returns findings without severity', () => {
+    it('returns unclassified findings', async () => {
+      await createProofChain([multiSeverityEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--severity', 'unclassified', '--json']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      expect(json.results.total_active).toBeGreaterThan(0);
+    });
+  });
+
+  // @ana A019
+  describe('audit --entry nonexistent returns empty results', () => {
+    it('returns zero findings for nonexistent entry', async () => {
+      await createProofChain([multiSeverityEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--entry', 'nonexistent', '--json']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      expect(json.results.total_active).toBe(0);
+    });
+  });
+
+  // @ana A020
+  describe('audit --severity risk --entry slug returns intersection', () => {
+    it('returns intersection of both filters', async () => {
+      await createProofChain([multiSeverityEntry, secondEntry]);
+      process.chdir(tempDir);
+      const { stdout, exitCode } = runProof(['audit', '--severity', 'risk', '--entry', 'multi-sev', '--json']);
+      expect(exitCode).toBe(0);
+      const json = JSON.parse(stdout);
+      // Only F001 from multi-sev is risk
+      expect(json.results.total_active).toBe(1);
+    });
+  });
+
+  // @ana A013
+  describe('proof.ts has zero inline finding-search loops', () => {
+    it('no inline finding.id === id patterns remain in proof.ts', async () => {
+      const proofSrc = await fs.readFile(path.join(__dirname, '../../src/commands/proof.ts'), 'utf-8');
+      // The pattern "finding.id === id" was the inline search — should be gone
+      const matches = proofSrc.match(/finding\.id === id/g);
+      expect(matches).toBeNull();
+    });
+  });
 });

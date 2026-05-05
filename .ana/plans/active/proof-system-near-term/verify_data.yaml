@@ -1,0 +1,56 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A001 test verifies retry success path, not the failure message — contract matcher/value ('Push failed after retry') never asserted"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 4231
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
+
+  - category: test
+    summary: "A018 uses toBeGreaterThan(0) — weak assertion; the fixture has exactly 1 unclassified finding, test should use toBe(1)"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 4361
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A018"]
+
+  - category: code
+    summary: "pullBeforeRead calls process.exit(1) on rebase conflict without running git rebase --abort first — leaves dirty rebase state"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 117
+    severity: risk
+    suggested_action: scope
+
+  - category: code
+    summary: "Audit severity filter uses reverse-index splice loop — O(n²) on large finding sets; Array.filter() would be clearer and faster"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 1886
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "Pre-commit filter also skips for .claude/-only commits — broader than contract A006 specifies (only mentions .ana/). Pragmatic but unspecified."
+    file: ".husky/pre-commit"
+    line: 15
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "No dedicated push retry tests for lesson, promote, or strengthen — shared helper covers them but no integration test proves the wiring"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003", "A004", "A005"]
+
+  - category: test
+    summary: "No test coverage for pre-commit bypass behavior (A006/A007) — shell hook not exercised in vitest suite"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A006", "A007"]
+
+  - category: upstream
+    summary: "Proof context finding 'Lesson command catch block at proof.ts:1141 loses error detail' — this build replaces that catch block with commitAndPushProofChanges which includes stderr. Stale finding likely resolved."
+    severity: observation
+    suggested_action: monitor

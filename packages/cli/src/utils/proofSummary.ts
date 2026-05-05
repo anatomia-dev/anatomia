@@ -1194,6 +1194,31 @@ export function computeStaleness(
 }
 
 /**
+ * Find a finding by its ID across all entries in the chain.
+ *
+ * Returns both the finding and its parent entry so callers have access
+ * to entry-level metadata (slug, feature name) for output formatting.
+ *
+ * @param chain - Parsed proof chain with entries array
+ * @param chain.entries - Array of proof chain entries to search
+ * @param id - Finding ID to search for (e.g., "F001")
+ * @returns The matching finding and its parent entry, or null if not found
+ */
+export function findFindingById(
+  chain: { entries: Array<{ slug?: string; feature?: string; findings?: Array<{ id: string; [key: string]: unknown }> }> },
+  id: string,
+): { finding: { id: string; [key: string]: unknown }; entry: { slug?: string; feature?: string; findings?: Array<{ id: string; [key: string]: unknown }> } } | null {
+  for (const entry of chain.entries) {
+    for (const finding of entry.findings || []) {
+      if (finding.id === id) {
+        return { finding, entry };
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Compute chain health counts from a parsed ProofChain object.
  *
  * Pure synchronous function — caller handles file I/O.
@@ -1233,18 +1258,22 @@ export function computeChainHealth(chain: { entries: Array<{ findings?: Array<{ 
         case 'closed': closed++; break;
         default: active++; break; // undefined = active
       }
-      switch (f.severity) {
-        case 'risk': sevRisk++; break;
-        case 'debt': sevDebt++; break;
-        case 'observation': sevObservation++; break;
-        default: sevUnclassified++; break;
-      }
-      switch (f.suggested_action) {
-        case 'promote': actPromote++; break;
-        case 'scope': actScope++; break;
-        case 'monitor': actMonitor++; break;
-        case 'accept': actAccept++; break;
-        default: actUnclassified++; break;
+      // Severity and action breakdowns count active findings only
+      const isActive = !f.status || f.status === 'active';
+      if (isActive) {
+        switch (f.severity) {
+          case 'risk': sevRisk++; break;
+          case 'debt': sevDebt++; break;
+          case 'observation': sevObservation++; break;
+          default: sevUnclassified++; break;
+        }
+        switch (f.suggested_action) {
+          case 'promote': actPromote++; break;
+          case 'scope': actScope++; break;
+          case 'monitor': actMonitor++; break;
+          case 'accept': actAccept++; break;
+          default: actUnclassified++; break;
+        }
       }
     }
   }
