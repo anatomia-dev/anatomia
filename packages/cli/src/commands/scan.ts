@@ -319,7 +319,7 @@ function formatHumanReadable(
     if (findings === 0) {
       lines.push(chalk.gray('  Run `ana init` to get started.'));
     } else {
-      lines.push(chalk.gray(`  Found ${findings} issues. Run \`ana init\` to fix them.`));
+      lines.push(chalk.gray(`  Found ${findings} issues. Run \`ana init\` to scaffold context and agents for your project.`));
     }
   } else {
     const skills = computeSkillManifest(result);
@@ -356,6 +356,7 @@ export function registerScanCommand(program: Command): void {
     .option('--save', 'Save scan results to .ana/scan.json')
     .option('-q, --quiet', 'Suppress informational stdout')
     .option('--quick', 'Fast scan — skip deep code analysis')
+    .addHelpText('after', '\nEXAMPLES\n  $ ana scan .\n  $ ana scan /path/to/project --json')
     .action(async (targetPath: string, options: ScanOptions) => {
     const rootPath = path.resolve(targetPath);
 

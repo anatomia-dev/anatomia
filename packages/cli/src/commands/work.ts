@@ -1387,6 +1387,7 @@ export function registerWorkCommand(program: Command): void {
   const startCommand = new Command('start')
     .description('Start a new work item')
     .argument('<slug>', 'Kebab-case slug for the work item')
+    .addHelpText('after', '\nEXAMPLES\n  $ ana work start fix-auth-timeout')
     .action(async (slug: string) => {
       await startWork(slug);
     });

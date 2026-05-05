@@ -1416,6 +1416,7 @@ export function registerArtifactCommand(program: Command): void {
     .description('Commit a pipeline artifact to the correct branch')
     .argument('<type>', 'Artifact type: scope, plan, spec, spec-N, contract, build-report, build-report-N, verify-report, verify-report-N')
     .argument('<slug>', 'Work item slug (e.g., add-status-command)')
+    .addHelpText('after', '\nEXAMPLES\n  $ ana artifact save scope my-feature\n  $ ana artifact save-all my-feature')
     .action((type: string, slug: string) => {
       saveArtifact(type, slug);
     });

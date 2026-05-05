@@ -1,3 +1,5 @@
+<!-- Internal: read by ana-setup only. Not for manual editing. -->
+
 # Coding Standards — Enrichment Guide
 
 **Who reads this:** Only the setup agent during `ana-setup`. NOT read by Build, Plan, Verify, or Think.
