@@ -13898,6 +13898,385 @@
         "completed_at": "2026-05-06T10:21:53.858Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "non-main-artifact-branch-tests",
+      "feature": "Non-Main Artifact Branch Tests",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Work status detects the correct stage when the artifact branch is develop",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Work status shows the develop branch name in its output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Work status detects build-in-progress when feature branch exists on develop-based project",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Starting work succeeds when on the develop artifact branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Starting work fails when not on the configured develop branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Saving a scope is allowed when on the develop artifact branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Saving a build report is rejected when on the develop artifact branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Saving a build report succeeds from a feature branch when artifact branch is develop",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Completing work succeeds when the artifact branch is develop",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Init display shows the configured artifact branch instead of the git default",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 59,
+        "think": 1,
+        "plan": 13,
+        "build": 45,
+        "verify": 0
+      },
+      "hashes": {
+        "scope": "sha256:59f784162f4cb625d24319e7767807229fba821a1e9e2f1d745e3bd2946218aa",
+        "contract": "sha256:0254b0110eab2c97c1ec4cbd667104a2d9ba647f796b8f7f18a75060deb371b5",
+        "plan": "sha256:847bbc338953110bd42411fc2bc10093d8c47baf74a1119d1f70fb370b06af20",
+        "spec": "sha256:d8c4c63d2c537e89ae0e2827fe93f0460df11a9253f7ccb358fd188fdc361787",
+        "build-report": "sha256:d45a81643cd155fb49bb3810a5931c22366046d2cf2009c939d0ff93bdfd3a23",
+        "verify-report": "sha256:ba95ed0a9e97eb6a772956a20e42813413909877200d35e8281930ebc86bc86e",
+        "build-data": "sha256:5ab07c1bf982749115201cf418bc556d961deaad98c9c0071fc2694c2a0c43ab",
+        "verify-data": "sha256:41ce96964546de88ba40bb7ef5c10bff2401c94c6c827997764d86351b356654"
+      },
+      "completed_at": "2026-05-06T19:14:51.142Z",
+      "modules_touched": [],
+      "scope_summary": "Every test assumes the artifact branch is `main`. The `artifactBranch` field in `ana.json` supports any branch name, and the runtime code reads it correctly via `readArtifactBranch()` — but zero tests exercise a non-main value. A team using `develop` as their artifact branch hits untested code paths in `work start`, `artifact save`, `work complete`, `work status`, and `proof` commands. Add parameterized tests proving non-main values work, and fix a display bug where init shows the git default branch instead of the configured artifact branch.",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A010 has no runtime test — verified by source inspection only",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 634,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "non-main-artifact-branch-tests-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "completeWork test builds fixture manually (60 lines) instead of using createMergedProject helper",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 2759,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "non-main-artifact-branch-tests-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A010 contract assertion uses source-level target (state.ts:634) — fragile if line numbers shift",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "non-main-artifact-branch-tests-C3",
+          "status": "lesson"
+        },
+        {
+          "category": "test",
+          "summary": "Pre-existing worktree.test.ts failure — detectWorktreeSlug('') returns slug when run inside worktree",
+          "file": "packages/cli/tests/utils/worktree.test.ts",
+          "anchor": null,
+          "line": 125,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "non-main-artifact-branch-tests-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Worktree test failures in 8 unrelated test files (check, proof, worktree, etc.) due to path resolution in worktree context",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) not introduced by this build",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-06T19:03:56.546Z",
+        "completed_at": "2026-05-06T19:14:51.140Z",
+        "commit_count": 0
+      }
+    },
+    {
+      "slug": "rejection-artifact-preservation",
+      "feature": "Rejection Cycle Artifact Preservation",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 16,
+        "satisfied": 16,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A previously committed verify report is preserved when a new version is saved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The archived verify report contains the original content, not the new version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A previously committed verify data file is preserved alongside the report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The archived verify data contains the original content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A previously committed build report is preserved when a new version is saved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The archived build report contains the original content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Second rejection creates a second archive instead of overwriting the first",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Both archive rounds are preserved after multiple rejections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "First-time saves do not create spurious archive files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Saving identical content does not create an archive",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Archive files are included in the same commit as the new artifacts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Phase-numbered reports archive with both phase and round suffixes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Batch save preserves previous artifact versions just like individual save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Archive failures do not block the artifact save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Files deleted from disk but present in git history are still archived",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Build data companion files are preserved alongside build reports",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 52,
+        "think": 1,
+        "plan": 9,
+        "build": 42,
+        "verify": 0
+      },
+      "hashes": {
+        "scope": "sha256:15a42c0ac67ef22e45df473caa8f0059aead1d89bdcc7b5c00fc5ab5ecf3bf5f",
+        "contract": "sha256:e3cbee6d7997a2b7bdd907e87623e77c2630f42eaafc3db42481d9d0cbe79f10",
+        "plan": "sha256:dac18f45f0ee5a30efd61194cb097ed898e36dc60b0e79c62fd219d8788af66d",
+        "spec": "sha256:bdf481ef6ad65f3117daa1f3b0ac0f6317a07b55325878240fe208b0cc426778",
+        "build-report": "sha256:2070bc726a04431d50be27359cb6a3f8d5d1f25a0732f35a80fc4f431c16a160",
+        "verify-report": "sha256:9f2622d68139e4aaaa86093c8441650c3f2956505854aef9dbb7e11a863a8f2d",
+        "build-data": "sha256:1e7ede2c2db83c3c571a4f629f492ccf5b576b21a2a92fad8ebdf0dc986c7ea5",
+        "verify-data": "sha256:4b30fc11d3dd01610585c6d30ec1334ad5def8076f0431f8d9ff3eddeeeb4155"
+      },
+      "completed_at": "2026-05-06T19:17:33.185Z",
+      "modules_touched": [],
+      "scope_summary": "When a pipeline run has rejection cycles (FAIL → fix → PASS), intermediate artifacts are lost. The Verify agent correctly deletes previous reports before writing fresh ones — this ensures write independence across rounds. But the FAIL-round verify report, its companion YAML, and the pre-fix build report are gone by the time `artifact save` runs. The proof chain entry records `rejection_cycles` count and `previous_failures` summaries, but the full artifacts are permanently lost.",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A014 test does not exercise actual archive failure (catch branch). Tests first-save no-op, not error recovery.",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 2856,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A014"
+          ],
+          "id": "rejection-artifact-preservation-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "archivePreviousVersion uses string equality for content comparison — could produce false archives on Windows with CRLF line endings from git",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 193,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "rejection-artifact-preservation-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No upper bound on round numbers — a slug that goes through many rejection cycles will accumulate archive files with no cleanup mechanism",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 212,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "rejection-artifact-preservation-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Double YAML parse in companion success message (pre-existing, not introduced by this build)",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": "yaml.parse in companion validation message",
+          "line": 1039,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "rejection-artifact-preservation-C4",
+          "status": "closed",
+          "closed_reason": "code changed, anchor absent",
+          "closed_at": "2026-05-06T19:17:33.229Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A010 test catches process.exit(0) as throw — structurally correct but test name suggests content-identity check while the code path is no-changes-to-commit",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 2766,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "rejection-artifact-preservation-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "worktree.test.ts detectWorktreeSlug test fails environmentally when run inside worktree",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "archivePreviousVersion relies on correct projectRoot for git show path — silent failure if wrong",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:169 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-06T19:04:52.123Z",
+        "completed_at": "2026-05-06T19:17:33.182Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1

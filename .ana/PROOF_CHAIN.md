@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-55 runs · 84 active · 67 lessons · 0 promoted · 159 closed
+57 runs · 91 active · 68 lessons · 0 promoted · 160 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/tests/commands/proof.test.ts | 10 | 4 |
-| packages/cli/tests/commands/work.test.ts | 8 | 6 |
+| packages/cli/tests/commands/work.test.ts | 9 | 7 |
 | packages/cli/src/commands/proof.ts | 7 | 5 |
 | packages/cli/src/utils/proofSummary.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 5 | 4 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 84 total)
+## Active Findings (30 shown of 91 total)
 
 ### .husky/pre-commit
 
@@ -26,9 +26,18 @@
 
 - **code:** agents.ts file header comment still says 'List deployed agents' — stale after description change — *CLI UX Polish — First 10 Minutes*
 
+### packages/cli/src/commands/artifact.ts
+
+- **code:** archivePreviousVersion uses string equality for content comparison — could produce false archives on Windows with CRLF line endings from git — *Rejection Cycle Artifact Preservation*
+- **code:** No upper bound on round numbers — a slug that goes through many rejection cycles will accumulate archive files with no cleanup mechanism — *Rejection Cycle Artifact Preservation*
+
 ### packages/cli/src/commands/init/index.ts
 
 - **test:** Guard commands (A028-A032) have no integration tests — *Worktree Isolation*
+
+### packages/cli/src/commands/init/state.ts
+
+- **test:** A010 has no runtime test — verified by source inspection only — *Non-Main Artifact Branch Tests*
 
 ### packages/cli/src/commands/proof.ts
 
@@ -44,23 +53,16 @@
 - **test:** Phase detection logic (A001-A003, A006-A011) has no dedicated tagged tests — *Worktree Isolation*
 - **code:** guardFailResult JSDoc first line says 'Write proof chain files' — copy-paste from writeProofChain description — *Proof Intelligence Hardening*
 
-### packages/cli/src/engine/detectors/git.ts
-
-- **code:** git.ts in src/engine/detectors/ retains execSync — architecturally correct (engine boundary, not commands/utils) but is the last remaining execSync in the codebase outside tests. Future hardening could migrate this to spawnSync for consistency. — *Security Hardening — Command Injection Elimination*
-
-### packages/cli/src/utils/git-operations.ts
-
-- **code:** getCurrentBranch still uses execSync — not hardened by this phase — *Security Hardening — Command Injection Elimination*
-
-### packages/cli/src/utils/validators.ts
-
-- **code:** SLUG_PATTERN exported but only consumed by test file — no source imports the raw regex — *Security Hardening — Command Injection Elimination*
-
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** branchExists exported only for test imports — not used by production code — *Worktree Isolation*
 - **code:** isWorktreeDirectory false-positive risk in git submodules — *Worktree Isolation*
 - **code:** detectWorktreeSlug path-based detection fragile if project root contains .ana/worktrees/ — *Worktree Isolation*
+
+### packages/cli/tests/commands/artifact.test.ts
+
+- **test:** A014 test does not exercise actual archive failure (catch branch). Tests first-save no-op, not error recovery. — *Rejection Cycle Artifact Preservation*
+- **test:** A010 test catches process.exit(0) as throw — structurally correct but test name suggests content-identity check while the code path is no-changes-to-commit — *Rejection Cycle Artifact Preservation*
 
 ### packages/cli/tests/commands/check.test.ts
 
@@ -74,19 +76,15 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
-- **test:** A016-A019 @ana tags point to pre-existing branchPrefix template tests, not command entry point validation — *Security Hardening — Command Injection Elimination*
+- **test:** completeWork test builds fixture manually (60 lines) instead of using createMergedProject helper — *Non-Main Artifact Branch Tests*
 
 ### packages/cli/tests/engine/types.test.ts
 
 - **test:** types.test.ts compile-time assertions use expect(true).toBe(true) — sentinel pattern, but acceptable because the real assertion is TypeScript compilation — *Code Comment Cleanup*
 
-### packages/cli/tests/utils/git-operations.test.ts
-
-- **test:** A010 test mocks process.exit — after mock, readArtifactBranch continues and returns invalid branch to caller. Correct in production but test pattern allows post-exit execution. — *Security Hardening — Command Injection Elimination*
-- **test:** Enforcement test (A023) asserts on source code content via grep — violates testing-standards skill rule 'never assert on source code content' but is the only practical way to enforce convention. Spec explicitly requested this pattern. — *Security Hardening — Command Injection Elimination*
-
 ### packages/cli/tests/utils/worktree.test.ts
 
+- **test:** Pre-existing worktree.test.ts failure — detectWorktreeSlug('') returns slug when run inside worktree — *Non-Main Artifact Branch Tests*
 - **test:** A012 and A037 use typeof assertions instead of value assertions — *Worktree Isolation*
 
 ### General
@@ -94,5 +92,4 @@
 - **code:** addHelpCommand(false) breaks 'ana help <cmd>' — users who learned that pattern get an error — *CLI UX Polish — First 10 Minutes*
 - **test:** No contract assertions are covered by @ana-tagged tests — all verified by source inspection and live invocation only — *CLI UX Polish — First 10 Minutes*
 - **test:** No test coverage for pre-commit bypass behavior (A006/A007) — shell hook not exercised in vitest suite — *Proof System Near-Term — Learn Infrastructure Foundation*
-- **test:** No dedicated integration tests for command entry point injection rejection — saveArtifact, completeWork, createPr, strengthen — *Security Hardening — Command Injection Elimination*
 

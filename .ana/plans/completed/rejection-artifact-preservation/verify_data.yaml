@@ -1,0 +1,35 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A014 test does not exercise actual archive failure (catch branch). Tests first-save no-op, not error recovery."
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 2856
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A014"]
+  - category: code
+    summary: "archivePreviousVersion uses string equality for content comparison — could produce false archives on Windows with CRLF line endings from git"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 193
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "No upper bound on round numbers — a slug that goes through many rejection cycles will accumulate archive files with no cleanup mechanism"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 212
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Double YAML parse in companion success message (pre-existing, not introduced by this build)"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1039
+    severity: debt
+    suggested_action: accept
+    anchor: "yaml.parse in companion validation message"
+  - category: test
+    summary: "A010 test catches process.exit(0) as throw — structurally correct but test name suggests content-identity check while the code path is no-changes-to-commit"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 2766
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010"]

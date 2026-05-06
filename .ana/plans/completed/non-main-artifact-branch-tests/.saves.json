@@ -1,0 +1,36 @@
+{
+  "work_started_at": "2026-05-06T18:15:49.645Z",
+  "scope": {
+    "saved_at": "2026-05-06T18:16:33.353Z",
+    "hash": "sha256:59f784162f4cb625d24319e7767807229fba821a1e9e2f1d745e3bd2946218aa"
+  },
+  "contract": {
+    "saved_at": "2026-05-06T18:29:38.764Z",
+    "hash": "sha256:0254b0110eab2c97c1ec4cbd667104a2d9ba647f796b8f7f18a75060deb371b5"
+  },
+  "plan": {
+    "saved_at": "2026-05-06T18:29:38.765Z",
+    "hash": "sha256:847bbc338953110bd42411fc2bc10093d8c47baf74a1119d1f70fb370b06af20"
+  },
+  "spec": {
+    "saved_at": "2026-05-06T18:29:38.765Z",
+    "hash": "sha256:d8c4c63d2c537e89ae0e2827fe93f0460df11a9253f7ccb358fd188fdc361787"
+  },
+  "build_started_at": "2026-05-06T19:03:56.546Z",
+  "build-report": {
+    "saved_at": "2026-05-06T19:14:39.258Z",
+    "hash": "sha256:d45a81643cd155fb49bb3810a5931c22366046d2cf2009c939d0ff93bdfd3a23"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-06T19:14:39.258Z",
+    "hash": "sha256:ba95ed0a9e97eb6a772956a20e42813413909877200d35e8281930ebc86bc86e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-06T19:14:39.258Z",
+    "hash": "sha256:5ab07c1bf982749115201cf418bc556d961deaad98c9c0071fc2694c2a0c43ab"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-06T19:14:39.258Z",
+    "hash": "sha256:41ce96964546de88ba40bb7ef5c10bff2401c94c6c827997764d86351b356654"
+  }
+}
