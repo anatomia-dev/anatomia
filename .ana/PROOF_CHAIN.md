@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-53 runs · 74 active · 65 lessons · 0 promoted · 159 closed
+54 runs · 76 active · 66 lessons · 0 promoted · 159 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 74 total)
+## Active Findings (30 shown of 76 total)
 
 ### .github/workflows/release.yml
 
@@ -34,8 +34,6 @@
 ### packages/cli/package.json
 
 - **code:** npm pack dry-run doesn't include README.md or CHANGELOG.md — prepublishOnly required first — *V1 Release Prep*
-- **code:** prepublishOnly relies on relative ../../ path — breaks if package depth changes — *V1 Documentation Overhaul*
-- **code:** README.md and CHANGELOG.md cannot be verified with npm pack --dry-run — only exist after prepublishOnly — *V1 Documentation Overhaul*
 
 ### packages/cli/src/commands/agents.ts
 
@@ -69,6 +67,10 @@
 
 - **code:** SLUG_PATTERN exported but only consumed by test file — no source imports the raw regex — *Security Hardening — Command Injection Elimination*
 
+### packages/cli/tests/commands/check.test.ts
+
+- **code:** check.test.ts fixture uses 'active sprints' — slightly odd phrasing for a mock project-context but acceptable — *Code Comment Cleanup*
+
 ### packages/cli/tests/commands/proof.test.ts
 
 - **test:** A001 test verifies retry success path, not the failure message — contract matcher/value ('Push failed after retry') never asserted — *Proof System Near-Term — Learn Infrastructure Foundation*
@@ -78,6 +80,10 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** A016-A019 @ana tags point to pre-existing branchPrefix template tests, not command entry point validation — *Security Hardening — Command Injection Elimination*
+
+### packages/cli/tests/engine/types.test.ts
+
+- **test:** types.test.ts compile-time assertions use expect(true).toBe(true) — sentinel pattern, but acceptable because the real assertion is TypeScript compilation — *Code Comment Cleanup*
 
 ### packages/cli/tests/utils/git-operations.test.ts
 

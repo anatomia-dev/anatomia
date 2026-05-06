@@ -13123,6 +13123,343 @@
           "suggested_action": "accept"
         }
       ]
+    },
+    {
+      "slug": "code-comment-cleanup",
+      "feature": "Code Comment Cleanup",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The scan engine header describes the actual pipeline without referencing deleted functions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The engine barrel file contains only clean re-exports",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Tree-sitter parser header has no implementation checkpoint references",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "No source files reference the nonexistent START_HERE.md document",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "No source files reference the nonexistent ATLAS3 directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The confidence utility has no references to nonexistent design documents",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "No bare sprint identifiers remain in source files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "No bare sprint identifiers remain in test files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "No implementation plan identifiers remain in the codebase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "No backlog or design document identifiers remain in the codebase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "AI SDK detection tests use proper types instead of any casts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Import convention tests use the ImportInfo type instead of any arrays",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Contract tests use proper types instead of any casts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Pattern confirmation tests use the isMultiPattern type guard instead of any casts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "No JSDoc examples reference the deleted analyze function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Ruby parser explains why it exists without using sprint identifiers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Ruby parser still explains why the higher-level reader was removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "PHP parser explains why it exists without using sprint identifiers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The sprint-named test file has been renamed to describe what it tests",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The old sprint-named test file no longer exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "No ticket identifiers remain in test files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "All existing tests continue to pass after the cleanup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The build compiles without type errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "No lint errors are introduced by the cleanup",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 177,
+        "think": 1,
+        "plan": 14,
+        "build": 157,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:91a936892b17b1b467653aacd7ba3b7dfa03cacf7a036de840805a661316fdf2",
+        "contract": "sha256:a8e4e5e6175355e926367af535dee8e79a1efe2f807b3e31639888d9d748bb2b",
+        "plan": "sha256:af0fbfa367cf18bf99235ea0992040f2bd422e72592bb5f133b0ebe3b706df3e",
+        "spec": "sha256:75f53c7ba9cde8c3c4bdc008321e9c851d005a4373defe8fd9102afc99855f9f",
+        "build-report": "sha256:1d69315a0d6845e8a86017916b5f3cbcdae3b849d24caa50faaad8e7dadcf5eb",
+        "build-data": "sha256:9160b905a4a5a370bc7f9825dcb3689d3cc52247ba34ab2733cd12d81225c474",
+        "verify-report": "sha256:4e80d5120ce9af309ca649c1aa17089dba0784d1b38552291ea464f9a59b93ae",
+        "verify-data": "sha256:599d8b2198c8ac2dfe67ffaa9d8f3294e88b97d4f88b5f318df7b0081f16fe08"
+      },
+      "completed_at": "2026-05-06T00:11:52.029Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/check.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/src/commands/init/preflight.ts",
+        "packages/cli/src/commands/init/skills.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/init/types.ts",
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/commands/setup.ts",
+        "packages/cli/src/commands/symbol-index.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/constants.ts",
+        "packages/cli/src/data/gotchas.ts",
+        "packages/cli/src/engine/analyzers/conventions/imports.ts",
+        "packages/cli/src/engine/analyzers/conventions/indentation.ts",
+        "packages/cli/src/engine/analyzers/conventions/index.ts",
+        "packages/cli/src/engine/analyzers/conventions/naming.ts",
+        "packages/cli/src/engine/analyzers/patterns/confidence.ts",
+        "packages/cli/src/engine/analyzers/patterns/confirmation.ts",
+        "packages/cli/src/engine/analyzers/patterns/dependencies.ts",
+        "packages/cli/src/engine/analyzers/patterns/index.ts",
+        "packages/cli/src/engine/analyzers/structure/architecture.ts",
+        "packages/cli/src/engine/analyzers/structure/config-files.ts",
+        "packages/cli/src/engine/analyzers/structure/entry-points.ts",
+        "packages/cli/src/engine/analyzers/structure/index.ts",
+        "packages/cli/src/engine/analyzers/structure/test-locations.ts",
+        "packages/cli/src/engine/analyzers/structure/tree-builder.ts",
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/commands.ts",
+        "packages/cli/src/engine/detectors/dependencies.ts",
+        "packages/cli/src/engine/detectors/deployment.ts",
+        "packages/cli/src/engine/detectors/framework.ts",
+        "packages/cli/src/engine/detectors/git.ts",
+        "packages/cli/src/engine/detectors/node/framework-registry.ts",
+        "packages/cli/src/engine/detectors/node/nestjs.ts",
+        "packages/cli/src/engine/detectors/node/other.ts",
+        "packages/cli/src/engine/detectors/packageManager.ts",
+        "packages/cli/src/engine/detectors/projectType.ts",
+        "packages/cli/src/engine/detectors/python/fastapi.ts",
+        "packages/cli/src/engine/detectors/python/flask.ts",
+        "packages/cli/src/engine/detectors/python/framework-registry.ts",
+        "packages/cli/src/engine/index.ts",
+        "packages/cli/src/engine/parsers/go.ts",
+        "packages/cli/src/engine/parsers/node.ts",
+        "packages/cli/src/engine/parsers/php.ts",
+        "packages/cli/src/engine/parsers/python/Pipfile.ts",
+        "packages/cli/src/engine/parsers/python/pyproject.ts",
+        "packages/cli/src/engine/parsers/queries.ts",
+        "packages/cli/src/engine/parsers/ruby.ts",
+        "packages/cli/src/engine/parsers/treeSitter.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/src/engine/types/conventions.ts",
+        "packages/cli/src/engine/types/engineResult-partial.ts",
+        "packages/cli/src/engine/types/engineResult.ts",
+        "packages/cli/src/engine/types/index.ts",
+        "packages/cli/src/engine/types/patterns.ts",
+        "packages/cli/src/engine/types/structure.ts",
+        "packages/cli/src/engine/utils/confidence.ts",
+        "packages/cli/src/engine/utils/routeHandlers.ts",
+        "packages/cli/src/engine/utils/serviceAnnotation.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/types/symbol-index.ts",
+        "packages/cli/src/utils/displayNames.ts",
+        "packages/cli/src/utils/git-operations.ts",
+        "packages/cli/src/utils/gotchas.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/src/utils/scaffold-generators.ts",
+        "packages/cli/tests/commands/check-dashboard.test.ts",
+        "packages/cli/tests/commands/check.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+        "packages/cli/tests/commands/init/preflight.test.ts",
+        "packages/cli/tests/commands/injectors.test.ts",
+        "packages/cli/tests/commands/setup-complete-integration.test.ts",
+        "packages/cli/tests/commands/setup-completion.test.ts",
+        "packages/cli/tests/commands/skill-seeding.test.ts",
+        "packages/cli/tests/contract/analyzer-contract.test.ts",
+        "packages/cli/tests/e2e/init-flow.test.ts",
+        "packages/cli/tests/engine/analyzers/patterns/confirmation.test.ts",
+        "packages/cli/tests/engine/analyzers/patterns/integration.test.ts",
+        "packages/cli/tests/engine/analyzers/patterns/performance.test.ts",
+        "packages/cli/tests/engine/conventions/edge-cases.test.ts",
+        "packages/cli/tests/engine/conventions/http-method-filter.test.ts",
+        "packages/cli/tests/engine/conventions/imports.test.ts",
+        "packages/cli/tests/engine/conventions/integration.test.ts",
+        "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts",
+        "packages/cli/tests/engine/detectors/architecture-discipline.test.ts",
+        "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
+        "packages/cli/tests/engine/detectors/git-activity.test.ts",
+        "packages/cli/tests/engine/detectors/git-workflow.test.ts",
+        "packages/cli/tests/engine/integration/parsed-integration.test.ts",
+        "packages/cli/tests/engine/parsers/node.test.ts",
+        "packages/cli/tests/engine/scanProject.test.ts",
+        "packages/cli/tests/engine/types.test.ts",
+        "packages/cli/tests/engine/types/engineResult-partial.test.ts",
+        "packages/cli/tests/engine/types/patterns-helpers.test.ts",
+        "packages/cli/tests/engine/utils/route-handlers.test.ts",
+        "packages/cli/tests/engine/utils/service-annotation.test.ts",
+        "packages/cli/tests/engine/version-detection.test.ts",
+        "packages/cli/tests/scaffolds/all-scaffolds.test.ts",
+        "packages/cli/tests/templates/cross-platform.test.ts"
+      ],
+      "scope_summary": "The codebase carries its construction history. A contributor opens scan-engine.ts and reads about `analyze()` — a function deleted months ago. They copy a JSDoc example and get \"function not found.\" They see `S19/SCAN-032` and learn nothing. 286 internal references across 97 files reference sprints, deleted functions, nonexistent documents, and implementation plan identifiers. The code works. The comments lie.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "check.test.ts fixture uses 'active sprints' — slightly odd phrasing for a mock project-context but acceptable",
+          "file": "packages/cli/tests/commands/check.test.ts",
+          "anchor": null,
+          "line": 76,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "code-comment-cleanup-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "types.test.ts compile-time assertions use expect(true).toBe(true) — sentinel pattern, but acceptable because the real assertion is TypeScript compilation",
+          "file": "packages/cli/tests/engine/types.test.ts",
+          "anchor": null,
+          "line": 140,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "code-comment-cleanup-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Lint warning (unused eslint-disable at line 169) pre-existing — not introduced by this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "code-comment-cleanup-C3",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 1,
+      "previous_failures": [
+        {
+          "id": "A003",
+          "summary": "SS-10 remained at treeSitter.ts:100"
+        },
+        {
+          "id": "A008",
+          "summary": "6 sprint refs across 5 test files"
+        },
+        {
+          "id": "A009",
+          "summary": "STEP_0.1 in cross-platform.test.ts:27"
+        },
+        {
+          "id": "A010",
+          "summary": "13+ Item/D refs across 6 test files"
+        },
+        {
+          "id": "A021",
+          "summary": "6 ticket refs across 4 test files"
+        }
+      ],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:169 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "readme.test.ts 'Item 1/2/3' natural language matches grep pattern for design doc refs",
+          "file": "packages/cli/tests/engine/detectors/readme.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ]
     }
   ],
   "schema": 1
