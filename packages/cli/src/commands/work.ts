@@ -1046,7 +1046,7 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
           if (!options?.json) {
             console.log(chalk.yellow('Recovering incomplete completion — retrying commit...'));
           }
-          runGit(['add', '.ana/plans/', '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: projectRoot });
+          runGit(['add', `.ana/plans/completed/${slug}/`, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: projectRoot });
           const commitMessage = `[${slug}] Complete — archived to plans/completed\n\nCo-authored-by: ${coAuthor}`;
           const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
           if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
@@ -1272,7 +1272,7 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
 
   // 10. Stage and commit
   try {
-    runGit(['add', '.ana/plans/', '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: projectRoot });
+    runGit(['add', `.ana/plans/active/${slug}/`, `.ana/plans/completed/${slug}/`, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: projectRoot });
     const commitMessage = `[${slug}] Complete — archived to plans/completed\n\nCo-authored-by: ${coAuthor}`;
     const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
