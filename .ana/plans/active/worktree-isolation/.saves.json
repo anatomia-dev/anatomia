@@ -17,12 +17,12 @@
     "hash": "sha256:ed50f8accbf1c6d8e7931407a2ce2bb009cb7e9cc0c27c2f66457c7a665968de"
   },
   "build-report": {
-    "saved_at": "2026-05-06T07:33:10.652Z",
-    "hash": "sha256:9d7239c143f29b785c30a7553c6a03dcb358242df1ddb0d41398c0fb394e4427"
+    "saved_at": "2026-05-06T07:56:31.641Z",
+    "hash": "sha256:6b53ba8c3769754bd47a6ffc0b8891506c244fa4703d5f42b999b80945ab47c7"
   },
   "build-data": {
-    "saved_at": "2026-05-06T07:33:10.653Z",
-    "hash": "sha256:4fe4a759b67266b3da07f95d7dcdce5b9d9433af677a1b67d34577bd0cea1342"
+    "saved_at": "2026-05-06T07:56:31.643Z",
+    "hash": "sha256:aa93ff28f08d594af75c4ed1deb22783238cb4c87aef5272ff6b911e272f8941"
   },
   "modules_touched": [
     ".claude/agents/ana-build.md",
@@ -34,6 +34,7 @@
     "packages/cli/src/commands/scan.ts",
     "packages/cli/src/commands/setup.ts",
     "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
     "packages/cli/src/utils/worktree.ts",
     "packages/cli/templates/.claude/agents/ana-build.md",
     "packages/cli/templates/.claude/agents/ana-verify.md",
@@ -53,5 +54,6 @@
   "verify-data": {
     "saved_at": "2026-05-06T07:45:06.771Z",
     "hash": "sha256:5fd2c5d00cee40c851138c93925d2b60b821d7eed07c960eef50fca7917462e2"
-  }
+  },
+  "build_started_at": "2026-05-06T07:46:18.963Z"
 }
