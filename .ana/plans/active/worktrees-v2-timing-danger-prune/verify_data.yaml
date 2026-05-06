@@ -1,0 +1,68 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Builder deleted archivePreviousVersion function and all 4 call sites from artifact.ts — shipped feature removed without authorization"
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: risk
+    suggested_action: scope
+    related_assertions: []
+
+  - category: test
+    summary: "Builder deleted 5 tests from prior features (non-main-artifact-branch-tests, rejection-artifact-preservation) totaling 484 lines from artifact.test.ts and work.test.ts"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: risk
+    suggested_action: scope
+
+  - category: code
+    summary: "Double H2 heading — worktree.ts writes '## Proof Findings' wrapper, and proofFindings content starts with '## Risk Profile', producing two stacked H2 headers"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1597
+    severity: debt
+    suggested_action: scope
+
+  - category: test
+    summary: "A013/A014 tests are type-level sentinels — construct PipelineStats manually instead of testing computePipelineStats computation"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 3432
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A013", "A014"]
+
+  - category: test
+    summary: "A019/A020 tagged test only verifies plan_agent — verify_agent not tested, verified by source inspection only"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3207
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A020"]
+
+  - category: test
+    summary: "A017 (build_agent) has no direct test — verified by source inspection of writeTimestamp call sites only"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A017"]
+
+  - category: upstream
+    summary: "Contract A007 value says 60 but test fixture produces 45 — behavior correct, contract value doesn't match fixture"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]
+
+  - category: upstream
+    summary: "Contract A011 value says 60 but test fixture's gap timing produces 1500 — behavior correct, contract value doesn't match fixture"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A011"]
+
+  - category: upstream
+    summary: "Stale finding — proofSummary.ts cache invalidation (known from Clean Ground for F3) still present, affects risk profile accuracy"
+    severity: observation
+    suggested_action: monitor
+
+  - category: test
+    summary: "detectWorktreeSlug empty-string test is environment-dependent — fails when run from inside a worktree directory (pre-existing)"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 125
+    severity: debt
+    suggested_action: scope
