@@ -14062,6 +14062,221 @@
         "completed_at": "2026-05-06T19:14:51.140Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "rejection-artifact-preservation",
+      "feature": "Rejection Cycle Artifact Preservation",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 16,
+        "satisfied": 16,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A previously committed verify report is preserved when a new version is saved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The archived verify report contains the original content, not the new version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A previously committed verify data file is preserved alongside the report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The archived verify data contains the original content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A previously committed build report is preserved when a new version is saved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The archived build report contains the original content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Second rejection creates a second archive instead of overwriting the first",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Both archive rounds are preserved after multiple rejections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "First-time saves do not create spurious archive files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Saving identical content does not create an archive",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Archive files are included in the same commit as the new artifacts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Phase-numbered reports archive with both phase and round suffixes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Batch save preserves previous artifact versions just like individual save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Archive failures do not block the artifact save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Files deleted from disk but present in git history are still archived",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Build data companion files are preserved alongside build reports",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 52,
+        "think": 1,
+        "plan": 9,
+        "build": 42,
+        "verify": 0
+      },
+      "hashes": {
+        "scope": "sha256:15a42c0ac67ef22e45df473caa8f0059aead1d89bdcc7b5c00fc5ab5ecf3bf5f",
+        "contract": "sha256:e3cbee6d7997a2b7bdd907e87623e77c2630f42eaafc3db42481d9d0cbe79f10",
+        "plan": "sha256:dac18f45f0ee5a30efd61194cb097ed898e36dc60b0e79c62fd219d8788af66d",
+        "spec": "sha256:bdf481ef6ad65f3117daa1f3b0ac0f6317a07b55325878240fe208b0cc426778",
+        "build-report": "sha256:2070bc726a04431d50be27359cb6a3f8d5d1f25a0732f35a80fc4f431c16a160",
+        "verify-report": "sha256:9f2622d68139e4aaaa86093c8441650c3f2956505854aef9dbb7e11a863a8f2d",
+        "build-data": "sha256:1e7ede2c2db83c3c571a4f629f492ccf5b576b21a2a92fad8ebdf0dc986c7ea5",
+        "verify-data": "sha256:4b30fc11d3dd01610585c6d30ec1334ad5def8076f0431f8d9ff3eddeeeb4155"
+      },
+      "completed_at": "2026-05-06T19:17:33.185Z",
+      "modules_touched": [],
+      "scope_summary": "When a pipeline run has rejection cycles (FAIL → fix → PASS), intermediate artifacts are lost. The Verify agent correctly deletes previous reports before writing fresh ones — this ensures write independence across rounds. But the FAIL-round verify report, its companion YAML, and the pre-fix build report are gone by the time `artifact save` runs. The proof chain entry records `rejection_cycles` count and `previous_failures` summaries, but the full artifacts are permanently lost.",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A014 test does not exercise actual archive failure (catch branch). Tests first-save no-op, not error recovery.",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 2856,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A014"
+          ],
+          "id": "rejection-artifact-preservation-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "archivePreviousVersion uses string equality for content comparison — could produce false archives on Windows with CRLF line endings from git",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 193,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "rejection-artifact-preservation-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No upper bound on round numbers — a slug that goes through many rejection cycles will accumulate archive files with no cleanup mechanism",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 212,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "rejection-artifact-preservation-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Double YAML parse in companion success message (pre-existing, not introduced by this build)",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": "yaml.parse in companion validation message",
+          "line": 1039,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "rejection-artifact-preservation-C4",
+          "status": "closed",
+          "closed_reason": "code changed, anchor absent",
+          "closed_at": "2026-05-06T19:17:33.229Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A010 test catches process.exit(0) as throw — structurally correct but test name suggests content-identity check while the code path is no-changes-to-commit",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 2766,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "rejection-artifact-preservation-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "worktree.test.ts detectWorktreeSlug test fails environmentally when run inside worktree",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "archivePreviousVersion relies on correct projectRoot for git show path — silent failure if wrong",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:169 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-06T19:04:52.123Z",
+        "completed_at": "2026-05-06T19:17:33.182Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
