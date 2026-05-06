@@ -60,7 +60,7 @@ describe('worktree utilities', () => {
     branchPrefix?: string;
     createBranch?: string;
   }): Promise<void> {
-    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git init -b main', { cwd: tempDir, stdio: 'ignore' });
     execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
     execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
 
