@@ -355,9 +355,10 @@ function gatherArtifactState(
  * @param slug - Work item slug
  * @param artifacts - Artifact state
  * @param workBranch - Work branch name or null
+ * @param projectRoot - Optional project root for worktree existence check
  * @returns Stage name
  */
-function determineStage(slug: string, artifacts: ArtifactState, workBranch: string | null): string {
+function determineStage(slug: string, artifacts: ArtifactState, workBranch: string | null, projectRoot?: string): string {
   const { scope, plan, specs, buildReports, verifyReports } = artifacts;
   const totalPhases = specs.length;
 
@@ -374,6 +375,10 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
   // Single-spec workflow
   if (totalPhases === 1) {
     if (!workBranch) {
+      // Check if a worktree exists — build may be in progress even without a detected branch
+      if (projectRoot && worktreeExists(projectRoot, slug)) {
+        return 'build-in-progress';
+      }
       return 'ready-for-build';
     }
 
@@ -416,6 +421,9 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
   // Multi-spec workflow
   if (totalPhases > 1) {
     if (!workBranch) {
+      if (projectRoot && worktreeExists(projectRoot, slug)) {
+        return 'phase-1-build-in-progress';
+      }
       return 'phase-1-ready-for-build';
     }
 
@@ -696,7 +704,7 @@ export function getWorkStatus(options: { json?: boolean }): void {
     }
 
     const workBranch = getWorkBranch(slug, branchPrefix);
-    const stage = determineStage(slug, artifacts, workBranch);
+    const stage = determineStage(slug, artifacts, workBranch, projectRoot);
     const nextAction = getNextAction(stage, slug, branchPrefix);
 
     // Check for worktree info
@@ -1019,13 +1027,15 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
       const pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
       if (pullResult.exitCode !== 0) {
         const errorMessage = pullResult.stderr;
-        if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
+        const lowerError = errorMessage.toLowerCase();
+        if (lowerError.includes('conflict') || errorMessage.includes('Cannot rebase') || errorMessage.includes('could not apply')) {
           console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
+          console.error(chalk.gray(`  git stderr: ${errorMessage.split('\n')[0]}`));
           process.exit(1);
         }
         if (errorMessage) {
-          console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
-          console.error(chalk.yellow('  Run `git pull` manually to sync before completing.'));
+          console.error(chalk.yellow(`⚠ Warning: Pull failed. Continuing with local data.`));
+          console.error(chalk.gray(`  git stderr: ${errorMessage.split('\n')[0]}`));
         }
       }
     }
