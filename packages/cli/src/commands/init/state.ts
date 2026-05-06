@@ -631,7 +631,7 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
 
   // Config values
   if (engineResult) {
-    const artifactBranch = engineResult.git.defaultBranch ?? engineResult.git.branch ?? 'main';
+    const artifactBranch = anaConfig?.['artifactBranch'] as string ?? engineResult.git.defaultBranch ?? engineResult.git.branch ?? 'main';
     console.log(`  ${chalk.bold('Branch:')}   ${artifactBranch}`);
     // Show the test command from ana.json (scoped for monorepos) if available,
     // otherwise fall back to the raw engine result command.

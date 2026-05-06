@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A010 has no runtime test — verified by source inspection only"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 634
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A010"]
+  - category: test
+    summary: "completeWork test builds fixture manually (60 lines) instead of using createMergedProject helper"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 2759
+    severity: debt
+    suggested_action: accept
+  - category: upstream
+    summary: "A010 contract assertion uses source-level target (state.ts:634) — fragile if line numbers shift"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A010"]
+  - category: test
+    summary: "Pre-existing worktree.test.ts failure — detectWorktreeSlug('') returns slug when run inside worktree"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 125
+    severity: observation
+    suggested_action: scope
