@@ -28,5 +28,18 @@
     "packages/cli/src/commands/init/state.ts",
     "packages/cli/tests/commands/artifact.test.ts",
     "packages/cli/tests/commands/work.test.ts"
-  ]
+  ],
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:0254b0110eab2c97c1ec4cbd667104a2d9ba647f796b8f7f18a75060deb371b5",
+    "run_at": "2026-05-06T19:09:44.707Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-06T19:09:44.750Z",
+    "hash": "sha256:ba95ed0a9e97eb6a772956a20e42813413909877200d35e8281930ebc86bc86e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-06T19:09:44.750Z",
+    "hash": "sha256:41ce96964546de88ba40bb7ef5c10bff2401c94c6c827997764d86351b356654"
+  }
 }
