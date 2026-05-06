@@ -15,5 +15,18 @@
   "spec": {
     "saved_at": "2026-05-06T18:29:38.765Z",
     "hash": "sha256:d8c4c63d2c537e89ae0e2827fe93f0460df11a9253f7ccb358fd188fdc361787"
-  }
+  },
+  "build-report": {
+    "saved_at": "2026-05-06T18:53:30.465Z",
+    "hash": "sha256:d45a81643cd155fb49bb3810a5931c22366046d2cf2009c939d0ff93bdfd3a23"
+  },
+  "build-data": {
+    "saved_at": "2026-05-06T18:53:30.466Z",
+    "hash": "sha256:5ab07c1bf982749115201cf418bc556d961deaad98c9c0071fc2694c2a0c43ab"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ]
 }
