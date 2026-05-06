@@ -1140,6 +1140,50 @@ Tests: 5 passed
         expect(chain.entries[0].assertions[0].says).toBe('Creates item successfully');
       });
 
+      // @ana A021
+      it('writes worktree metadata to proof chain entry when worktree exists', async () => {
+        await createProofProject('test-wt');
+
+        // Create a worktree directory so completeWork detects it
+        const wtDir = path.join(tempDir, '.ana', 'worktrees', 'test-wt');
+        await fs.mkdir(wtDir, { recursive: true });
+
+        // Add build_started_at to .saves.json (used as worktree created_at)
+        const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-wt', '.saves.json');
+        const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+        saves['build_started_at'] = '2026-04-01T10:45:00.000Z';
+        await fs.writeFile(savesPath, JSON.stringify(saves), 'utf-8');
+        execSync('git add -A && git commit -m "add worktree dir"', { cwd: tempDir, stdio: 'ignore' });
+
+        await completeWork('test-wt');
+
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        expect(chain.entries).toHaveLength(1);
+        const entry = chain.entries[0];
+        expect(entry.worktree).toBeDefined();
+        expect(entry.worktree.used).toBe(true);
+        expect(entry.worktree.created_at).toBe('2026-04-01T10:45:00.000Z');
+        expect(entry.worktree.completed_at).toBeTruthy();
+        expect(typeof entry.worktree.commit_count).toBe('number');
+      });
+
+      it('writes worktree.used false when no worktree directory exists', async () => {
+        await createProofProject('test-no-wt');
+
+        await completeWork('test-no-wt');
+
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        expect(chain.entries).toHaveLength(1);
+        const entry = chain.entries[0];
+        expect(entry.worktree).toBeDefined();
+        expect(entry.worktree.used).toBe(false);
+        expect(entry.worktree.created_at).toBeNull();
+        expect(entry.worktree.completed_at).toBeTruthy();
+        expect(entry.worktree.commit_count).toBe(0);
+      });
+
       // @ana A017
       it('UNVERIFIED fallback when assertions lack verify status', async () => {
         // Create a project where verify report has PASS but no compliance table

@@ -747,9 +747,10 @@ function guardFailResult(result: string, context?: string): void {
  * @param slug - Work item slug
  * @param proof - Proof summary data
  * @param projectRoot - Project root directory
+ * @param worktreeMeta - Optional worktree metadata to include in the proof chain entry
  * @returns Chain health counts: total runs and cumulative findings
  */
-async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: string): Promise<ProofChainStats> {
+async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: string, worktreeMeta?: ProofChainEntry['worktree']): Promise<ProofChainStats> {
   const anaDir = path.join(projectRoot, '.ana');
 
   // Ensure .ana directory exists
@@ -827,6 +828,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     rejection_cycles: proof.rejection_cycles,
     previous_failures: proof.previous_failures,
     build_concerns: proof.build_concerns ?? [],
+    ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 
   // Assign status to new findings (AC5)
@@ -1219,9 +1221,27 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
     process.exit(1);
   }
 
-  // 8c. Remove worktree if it exists (must run from main tree, before branch delete)
+  // 8c. Capture worktree metadata BEFORE removal (needed for proof chain)
   const wtPath = getWorktreePath(projectRoot, slug);
-  if (fs.existsSync(wtPath)) {
+  const worktreeUsed = fs.existsSync(wtPath);
+  let worktreeCommitCount = 0;
+  if (worktreeUsed) {
+    const wtInfo = getWorktreeInfo(projectRoot, slug, branchPrefix);
+    worktreeCommitCount = wtInfo?.commitCount ?? 0;
+  }
+
+  // Read build_started_at from .saves.json as worktree created_at proxy
+  let worktreeCreatedAt: string | null = null;
+  try {
+    const savesPath = path.join(activePath, '.saves.json');
+    if (fs.existsSync(savesPath)) {
+      const saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
+      worktreeCreatedAt = saves['build_started_at'] ?? null;
+    }
+  } catch { /* fall back to null */ }
+
+  // 8d. Remove worktree (must run from main tree, before branch delete)
+  if (worktreeUsed) {
     await removeWorktree(projectRoot, slug);
   }
   // else: Worktree was already removed manually — AC11 (skip silently)
@@ -1234,7 +1254,13 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
 
   // 9a. Generate proof summary and write proof chain
   const proof = generateProofSummary(completedPath);
-  const stats = await writeProofChain(slug, proof, projectRoot);
+  const worktreeMeta = {
+    used: worktreeUsed,
+    created_at: worktreeCreatedAt,
+    completed_at: new Date().toISOString(),
+    commit_count: worktreeCommitCount,
+  };
+  const stats = await writeProofChain(slug, proof, projectRoot, worktreeMeta);
 
   // 10. Stage and commit
   try {
