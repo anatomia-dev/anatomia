@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "worktree.test.ts detectWorktreeSlug test fails environmentally when run inside worktree"
+    severity: observation
+    suggested_action: monitor
+  - summary: "archivePreviousVersion relies on correct projectRoot for git show path — silent failure if wrong"
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:169 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept
