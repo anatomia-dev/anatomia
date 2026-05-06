@@ -1,0 +1,183 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Worktrees V2 — Phase Timing + Danger Map + Prune"
+
+assertions:
+  # Danger Map — Risk Profile
+  - id: A001
+    says: "Build gets a ranked list of risky files before starting work"
+    block: "writes risk profile to worktree-context.md when contract has file_changes with findings"
+    target: "worktreeContext.content"
+    matcher: "contains"
+    value: "## Risk Profile"
+
+  - id: A002
+    says: "Files with more severe findings appear first in the risk profile"
+    block: "ranks files by severity-weighted finding count"
+    target: "worktreeContext.riskProfile.firstFile.score"
+    matcher: "greater"
+    value: 0
+
+  - id: A003
+    says: "Risk scores use severity weights: risk=3, debt=2, observation=1"
+    block: "computes risk score from severity weights"
+    target: "worktreeContext.riskProfile.fileScore"
+    matcher: "equals"
+    value: 5
+
+  - id: A004
+    says: "No empty risk section appears when files have no known issues"
+    block: "omits risk profile when file_changes files have zero findings"
+    target: "worktreeContext.content"
+    matcher: "not_contains"
+    value: "## Risk Profile"
+
+  - id: A005
+    says: "Bad contract YAML doesn't crash the build setup"
+    block: "falls back to raw string when contract YAML is unparseable"
+    target: "worktreeContext.contractAssertions"
+    matcher: "exists"
+
+  - id: A006
+    says: "Risk profile shows findings but not build concerns"
+    block: "excludes build concerns from risk profile"
+    target: "worktreeContext.riskProfile"
+    matcher: "not_contains"
+    value: "build concern"
+
+  # Phase Timing — _started_at timestamps
+  - id: A007
+    says: "Build duration measures actual build time, not idle time between saves"
+    block: "uses build_started_at for build duration when available"
+    target: "timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A008
+    says: "Verify duration measures actual verify time, not idle time between saves"
+    block: "uses verify_started_at for verify duration when available"
+    target: "timing.verify"
+    matcher: "equals"
+    value: 30
+
+  - id: A009
+    says: "Old pipeline entries without start timestamps still compute correctly"
+    block: "falls back to artifact-gap timing when _started_at absent"
+    target: "timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A010
+    says: "Impossible timestamps don't produce nonsense durations"
+    block: "falls back when build_started_at is later than build-report save"
+    target: "timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A011
+    says: "Impossibly long build times fall back to gap timing"
+    block: "falls back when computed duration exceeds 24 hours"
+    target: "timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A012
+    says: "Negative durations from clock skew are caught and corrected"
+    block: "falls back when computed duration is negative"
+    target: "timing.build"
+    matcher: "greater"
+    value: -1
+
+  # Pipeline Stats — median_plan
+  - id: A013
+    says: "Health report shows how long planning typically takes"
+    block: "computes median_plan from timing.plan values"
+    target: "pipelineStats.median_plan"
+    matcher: "exists"
+
+  - id: A014
+    says: "Missing plan timing doesn't crash the stats"
+    block: "returns median_plan null when no entries have timing.plan"
+    target: "pipelineStats.median_plan"
+    matcher: "equals"
+    value: null
+
+  # Health Display — plan column
+  - id: A015
+    says: "Pipeline breakdown shows all four phases: scope, plan, build, verify"
+    block: "displays plan in pipeline breakdown"
+    target: "healthOutput"
+    matcher: "contains"
+    value: "plan"
+
+  - id: A016
+    says: "Plan phase is hidden when there's not enough data"
+    block: "omits plan from breakdown when median_plan is null"
+    target: "healthOutput"
+    matcher: "not_contains"
+    value: "plan"
+
+  # Agent Identity
+  - id: A017
+    says: "Each pipeline phase records which agent ran it"
+    block: "writes agent identity alongside timestamp"
+    target: "saves.build_agent"
+    matcher: "equals"
+    value: "ana-build"
+
+  - id: A018
+    says: "Scoping agent is recorded as ana"
+    block: "writes work_agent as ana"
+    target: "saves.work_agent"
+    matcher: "equals"
+    value: "ana"
+
+  - id: A019
+    says: "Planning agent is recorded as ana-plan"
+    block: "writes plan_agent as ana-plan"
+    target: "saves.plan_agent"
+    matcher: "equals"
+    value: "ana-plan"
+
+  - id: A020
+    says: "Verify agent is recorded as ana-verify"
+    block: "writes verify_agent as ana-verify"
+    target: "saves.verify_agent"
+    matcher: "equals"
+    value: "ana-verify"
+
+  # Worktree Prune
+  - id: A021
+    says: "Stale worktree records are cleaned up before listing work items"
+    block: "calls git worktree prune before discoverSlugs"
+    target: "getWorkStatus.pruneCall"
+    matcher: "exists"
+
+  - id: A022
+    says: "Prune failures don't break the status command"
+    block: "swallows git worktree prune errors silently"
+    target: "getWorkStatus.result"
+    matcher: "exists"
+
+  # Type
+  - id: A023
+    says: "PipelineStats type includes median plan duration"
+    block: "PipelineStats has median_plan field"
+    target: "PipelineStats.median_plan"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify

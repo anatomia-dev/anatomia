@@ -353,6 +353,32 @@ Content...`;
     });
   });
 
+  describe('non-main artifact branch', () => {
+    // @ana A006
+    it('saveArtifact scope allowed on develop artifact branch', async () => {
+      await createTestProject({ artifactBranch: 'develop', currentBranch: 'develop' });
+      await createArtifact('test-slug', 'scope.md');
+
+      expect(() => saveArtifact('scope', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A007
+    it('saveArtifact build-report rejected on develop artifact branch', async () => {
+      await createTestProject({ artifactBranch: 'develop', currentBranch: 'develop' });
+      await createArtifact('test-slug', 'build_report.md');
+
+      expect(() => saveArtifact('build-report', 'test-slug')).toThrow();
+    });
+
+    // @ana A008
+    it('saveArtifact build-report allowed on feature branch with develop artifact branch', async () => {
+      await createTestProject({ artifactBranch: 'develop', currentBranch: 'feature/test-slug' });
+      await createArtifact('test-slug', 'build_report.md');
+
+      expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
+    });
+  });
+
   describe('configurable branchPrefix', () => {
     // @ana A014
     it('artifact save error uses configured prefix in checkout hint', async () => {

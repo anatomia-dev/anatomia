@@ -16,29 +16,5 @@
     "saved_at": "2026-05-06T18:35:44.019Z",
     "hash": "sha256:bdf481ef6ad65f3117daa1f3b0ac0f6317a07b55325878240fe208b0cc426778"
   },
-  "build-report": {
-    "saved_at": "2026-05-06T18:54:35.881Z",
-    "hash": "sha256:2070bc726a04431d50be27359cb6a3f8d5d1f25a0732f35a80fc4f431c16a160"
-  },
-  "build-data": {
-    "saved_at": "2026-05-06T18:54:35.882Z",
-    "hash": "sha256:1e7ede2c2db83c3c571a4f629f492ccf5b576b21a2a92fad8ebdf0dc986c7ea5"
-  },
-  "modules_touched": [
-    "packages/cli/src/commands/artifact.ts",
-    "packages/cli/tests/commands/artifact.test.ts"
-  ],
-  "pre-check": {
-    "seal": "INTACT",
-    "seal_hash": "sha256:e3cbee6d7997a2b7bdd907e87623e77c2630f42eaafc3db42481d9d0cbe79f10",
-    "run_at": "2026-05-06T19:10:24.725Z"
-  },
-  "verify-report": {
-    "saved_at": "2026-05-06T19:10:24.761Z",
-    "hash": "sha256:9f2622d68139e4aaaa86093c8441650c3f2956505854aef9dbb7e11a863a8f2d"
-  },
-  "verify-data": {
-    "saved_at": "2026-05-06T19:10:24.761Z",
-    "hash": "sha256:4b30fc11d3dd01610585c6d30ec1334ad5def8076f0431f8d9ff3eddeeeb4155"
-  }
+  "build_started_at": "2026-05-06T19:04:52.123Z"
 }

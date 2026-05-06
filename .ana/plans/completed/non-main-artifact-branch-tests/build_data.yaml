@@ -1,0 +1,8 @@
+schema: 1
+concerns:
+  - summary: "Worktree test failures in 8 unrelated test files (check, proof, worktree, etc.) due to path resolution in worktree context"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) not introduced by this build"
+    severity: observation
+    suggested_action: accept

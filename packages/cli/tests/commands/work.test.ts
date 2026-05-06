@@ -2721,6 +2721,99 @@ file_changes:
     });
 
   });
+
+  describe('non-main artifact branch', () => {
+    // @ana A001, A002
+    it('getWorkStatus discovers slugs with artifactBranch develop', async () => {
+      await createWorkTestProject({
+        artifactBranch: 'develop',
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = captureOutput(() => getWorkStatus({ json: false }));
+      expect(output).toContain('ready-for-plan');
+      expect(output).toContain('develop');
+    });
+
+    // @ana A003
+    it('getWorkStatus detects build-in-progress with develop artifact branch', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      await createWorkTestProject({
+        artifactBranch: 'develop',
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+        }],
+      });
+
+      const output = captureOutput(() => getWorkStatus({ json: false }));
+      expect(output).toContain('build-in-progress');
+    });
+
+    // @ana A009
+    it('completeWork succeeds with develop artifact branch', async () => {
+      // Full completeWork fixture with develop artifact branch
+      execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+      const anaDir = path.join(tempDir, '.ana');
+      await fs.mkdir(anaDir, { recursive: true });
+      await fs.writeFile(
+        path.join(anaDir, 'ana.json'),
+        JSON.stringify({ artifactBranch: 'develop', branchPrefix: 'feature/' }),
+        'utf-8'
+      );
+
+      execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git branch -M develop', { cwd: tempDir, stdio: 'ignore' });
+
+      const slugPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(slugPath, { recursive: true });
+      await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+      await fs.writeFile(
+        path.join(slugPath, 'plan.md'),
+        '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md',
+        'utf-8'
+      );
+      await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec', 'utf-8');
+      execSync('git add -A && git commit -m "add planning"', { cwd: tempDir, stdio: 'ignore' });
+
+      // Create feature branch
+      execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+      await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build', 'utf-8');
+      await fs.writeFile(
+        path.join(slugPath, 'verify_report.md'),
+        '# Verify Report\n\n**Result:** PASS',
+        'utf-8'
+      );
+      await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify({
+        'build-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+        'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+      }), 'utf-8');
+      execSync('git add -A && git commit -m "add reports"', { cwd: tempDir, stdio: 'ignore' });
+
+      // Merge to develop
+      execSync('git checkout develop', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git merge --no-ff feature/test-slug -m "merge"', { cwd: tempDir, stdio: 'ignore' });
+
+      await completeWork('test-slug');
+
+      // Verify directory moved to completed
+      const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+      expect(fsSync.existsSync(completedPath)).toBe(true);
+
+      // Verify feature branch deleted
+      const branches = execSync('git branch', { cwd: tempDir, encoding: 'utf-8' });
+      expect(branches).not.toContain('feature/test-slug');
+    });
+  });
+
 });
 
 /**
@@ -2973,6 +3066,37 @@ describe('ana work start', () => {
     const errorOutput = errors.join('\n');
     expect(errorOutput).toContain('feature/other-thing');
     expect(errorOutput).toContain('main');
+    mockExit.mockRestore();
+  });
+
+  // @ana A004
+  it('startWork succeeds on develop artifact branch', async () => {
+    await createStartTestProject({ artifactBranch: 'develop' });
+
+    await startWork('fix-auth-timeout');
+
+    const slugDir = path.join(tempDir, '.ana', 'plans', 'active', 'fix-auth-timeout');
+    expect(fsSync.existsSync(slugDir)).toBe(true);
+  });
+
+  // @ana A005
+  it('startWork rejects when not on develop artifact branch', async () => {
+    await createStartTestProject({ artifactBranch: 'develop', currentBranch: 'feature/other-thing' });
+
+    const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit');
+    }) as never);
+    const originalError = console.error;
+    const errors: string[] = [];
+    console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+
+    await expect(startWork('fix-auth-timeout')).rejects.toThrow('process.exit');
+
+    console.error = originalError;
+    expect(mockExit).toHaveBeenCalledWith(1);
+    const errorOutput = errors.join('\n');
+    expect(errorOutput).toContain('feature/other-thing');
+    expect(errorOutput).toContain('develop');
     mockExit.mockRestore();
   });
 });
