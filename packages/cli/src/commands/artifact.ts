@@ -167,6 +167,78 @@ function captureModulesTouched(projectRoot: string, slugDir: string): void {
 }
 
 /**
+ * Archive a previously committed version of a file before it is overwritten.
+ *
+ * Extracts the committed content via `git show HEAD:{path}`, compares it to
+ * the current disk content, and writes it to a `_r{N}` archive file if
+ * the content differs. Follows the `captureModulesTouched` pattern: standalone
+ * helper, catches errors internally, warns instead of throwing.
+ *
+ * @param projectRoot - Project root directory
+ * @param relFilePath - File path relative to project root
+ * @param planDir - Absolute path to the slug plan directory
+ * @returns Relative path of the archive file (for staging), or null if no archive was created
+ */
+function archivePreviousVersion(projectRoot: string, relFilePath: string, planDir: string): string | null {
+  try {
+    // 1. Get committed version from HEAD
+    const gitResult = runGit(['show', `HEAD:${relFilePath}`], { cwd: projectRoot });
+    if (gitResult.exitCode !== 0) return null; // No committed version
+    const committedContent = gitResult.stdout;
+
+    // 2. Compare with disk content (if file exists)
+    const absPath = path.join(projectRoot, relFilePath);
+    if (fs.existsSync(absPath)) {
+      const diskContent = fs.readFileSync(absPath, 'utf-8');
+      if (diskContent === committedContent) return null; // No change
+    }
+    // If file doesn't exist on disk but does in git, that's a valid archive case
+
+    // 3. Determine next round number by scanning planDir for existing _r{N} files
+    const fileName = path.basename(relFilePath);
+    const ext = path.extname(fileName);
+    const baseName = fileName.slice(0, -ext.length);
+
+    const roundPattern = new RegExp(`^${escapeRegExp(baseName)}_r(\\d+)${escapeRegExp(ext)}$`);
+    let maxRound = 0;
+    const dirEntries = fs.readdirSync(planDir);
+    for (const entry of dirEntries) {
+      const match = entry.match(roundPattern);
+      if (match?.[1]) {
+        const n = parseInt(match[1], 10);
+        if (n > maxRound) maxRound = n;
+      }
+    }
+    const nextRound = maxRound + 1;
+
+    // 4. Write archive file
+    const archiveFileName = `${baseName}_r${nextRound}${ext}`;
+    const archiveAbsPath = path.join(planDir, archiveFileName);
+    fs.writeFileSync(archiveAbsPath, committedContent, 'utf-8');
+
+    // 5. Log
+    console.log(chalk.gray(`Archived ${fileName} → ${archiveFileName} (previous round)`));
+
+    // 6. Return relative path for staging
+    return path.relative(projectRoot, archiveAbsPath);
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error(chalk.yellow(`Warning: Could not archive previous ${path.basename(relFilePath)}: ${errMsg}`));
+    return null;
+  }
+}
+
+/**
+ * Escape special regex characters in a string.
+ *
+ * @param s - String to escape
+ * @returns Escaped string safe for use in RegExp
+ */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Artifact type information after parsing
  */
 interface ArtifactTypeInfo {
@@ -837,6 +909,15 @@ export function saveArtifact(type: string, slug: string): void {
     }
   }
 
+  // 6b-pre. Archive previous version for archivable types (before file-exists check)
+  const archiveRelPaths: string[] = [];
+  const isArchivable = typeInfo.baseType === 'verify-report' || typeInfo.baseType === 'build-report';
+  if (isArchivable) {
+    const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+    const archivePath = archivePreviousVersion(projectRoot, relFilePath, slugDir);
+    if (archivePath) archiveRelPaths.push(archivePath);
+  }
+
   // 6b. Verify file exists
   if (!fs.existsSync(filePath)) {
     console.error(chalk.red(`Error: No ${typeInfo.displayName.toLowerCase()} found at \`${relFilePath}\`.`));
@@ -844,7 +925,7 @@ export function saveArtifact(type: string, slug: string): void {
     process.exit(1);
   }
 
-  // 6a. Validate format for all artifact types
+  // 6c. Validate format for all artifact types
   if (typeInfo.baseType === 'plan') {
     const error = validatePlanFormat(filePath);
     if (error) {
@@ -959,6 +1040,13 @@ export function saveArtifact(type: string, slug: string): void {
       : (yaml.parse(fs.readFileSync(companionPath, 'utf-8')).concerns?.length ?? 0);
     const warningInfo = result.warnings.length > 0 ? `, ${result.warnings.length} warnings` : '';
     console.log(chalk.green(`✓ ${companionFileName} validated (${findingCount} ${typeInfo.baseType === 'verify-report' ? 'findings' : 'concerns'}${warningInfo})`));
+
+    // Archive companion if it has a committed version
+    if (isArchivable && relCompanionPath) {
+      const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+      const companionArchivePath = archivePreviousVersion(projectRoot, relCompanionPath, slugDir);
+      if (companionArchivePath) archiveRelPaths.push(companionArchivePath);
+    }
   }
 
   // 7b. Check if file is tracked (before staging, for create vs update message)
@@ -994,6 +1082,11 @@ export function saveArtifact(type: string, slug: string): void {
     // Stage companion YAML alongside report
     if (relCompanionPath && companionPath && fs.existsSync(companionPath)) {
       runGit(['add', relCompanionPath], { cwd: projectRoot });
+    }
+
+    // Stage archive files alongside new artifacts
+    for (const archivePath of archiveRelPaths) {
+      runGit(['add', archivePath], { cwd: projectRoot });
     }
 
     // Special case: verify-report also stages plan.md if it exists
@@ -1289,6 +1382,20 @@ export function saveAllArtifacts(slug: string): void {
     captureModulesTouched(projectRoot, planDir);
   }
 
+  // 3d. Archive previous versions for archivable artifacts and companions
+  const archiveRelPaths: string[] = [];
+  for (const artifact of artifacts) {
+    if (artifact.typeInfo.baseType === 'verify-report' || artifact.typeInfo.baseType === 'build-report') {
+      const relPath = path.relative(projectRoot, artifact.path);
+      const ap = archivePreviousVersion(projectRoot, relPath, planDir);
+      if (ap) archiveRelPaths.push(ap);
+    }
+  }
+  for (const companion of companions) {
+    const ap = archivePreviousVersion(projectRoot, companion.relPath, planDir);
+    if (ap) archiveRelPaths.push(ap);
+  }
+
   // 4. Validate branch — planning artifacts must be on artifact branch
   const artifactBranch = readArtifactBranch(projectRoot);
   const currentBranch = getCurrentBranch();
@@ -1331,6 +1438,11 @@ export function saveAllArtifacts(slug: string): void {
     // Stage companion YAMLs alongside their reports
     for (const companion of companions) {
       runGit(['add', companion.relPath], { cwd: projectRoot });
+    }
+
+    // Stage archive files alongside new artifacts
+    for (const archivePath of archiveRelPaths) {
+      runGit(['add', archivePath], { cwd: projectRoot });
     }
 
     // Special case: if verify-report exists, also stage plan.md

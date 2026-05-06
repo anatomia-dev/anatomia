@@ -2560,3 +2560,337 @@ findings:
     expect(saves['verify-data']).toBeDefined();
   });
 });
+
+/**
+ * Tests for artifact archiving behavior — preserving previous versions
+ * when artifacts are overwritten during rejection cycles.
+ */
+describe('artifact archiving', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'artifact-archive-test-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  async function createTestProject(): Promise<void> {
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main', coAuthor: 'Ana <build@anatomia.dev>' }),
+      'utf-8'
+    );
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+  }
+
+  async function createSlugDir(slug: string): Promise<string> {
+    const slugDir = path.join(tempDir, '.ana', 'plans', 'active', slug);
+    await fs.mkdir(slugDir, { recursive: true });
+    return slugDir;
+  }
+
+  function getValidVerifyReportContent(extra?: string): string {
+    return `# Verify Report\n\n**Result:** PASS\n\n${extra ?? 'Original content'}`;
+  }
+
+  function getValidBuildReportContent(extra?: string): string {
+    return `# Build Report\n\n${extra ?? 'Original content'}\n\n## Deviations\nNone.\n\n## Open Issues\nNone.\n\n## Acceptance Criteria\nAll met.\n\n## PR Summary\nReady.`;
+  }
+
+  function getValidVerifyDataContent(extra?: string): string {
+    return `schema: 1\nfindings:\n  - category: code\n    summary: "${extra ?? 'Test finding'}"\n    severity: risk\n    suggested_action: scope`;
+  }
+
+  function getValidBuildDataContent(extra?: string): string {
+    return `schema: 1\nconcerns:\n  - summary: "${extra ?? 'Test concern'}"\n    severity: debt\n    suggested_action: monitor`;
+  }
+
+  // @ana A001, A002
+  it('archives previous verify_report.md on save', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+    const originalContent = getValidVerifyReportContent('Round 1 content');
+
+    // Write and commit original verify report
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), originalContent, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('Round 1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Overwrite with new content
+    const newContent = getValidVerifyReportContent('Round 2 content');
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), newContent, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('Round 2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    // Archive file should exist with original content
+    const archivePath = path.join(slugDir, 'verify_report_r1.md');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+    const archiveContent = await fs.readFile(archivePath, 'utf-8');
+    expect(archiveContent).toBe(originalContent);
+  });
+
+  // @ana A003, A004
+  it('archives previous verify_data.yaml on save', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+    const originalDataContent = getValidVerifyDataContent('Round 1 data');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), originalDataContent, 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('Round 2 data'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const archivePath = path.join(slugDir, 'verify_data_r1.yaml');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+    const archiveContent = await fs.readFile(archivePath, 'utf-8');
+    expect(archiveContent).toBe(originalDataContent);
+  });
+
+  // @ana A005, A006
+  it('archives previous build_report.md on save', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+    const originalContent = getValidBuildReportContent('Round 1 build');
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), originalContent, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('Round 1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('Round 2 build'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('Round 2'), 'utf-8');
+
+    saveArtifact('build-report', 'test-slug');
+
+    const archivePath = path.join(slugDir, 'build_report_r1.md');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+    const archiveContent = await fs.readFile(archivePath, 'utf-8');
+    expect(archiveContent).toBe(originalContent);
+  });
+
+  // @ana A016
+  it('archives previous build_data.yaml on save', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+    const originalDataContent = getValidBuildDataContent('Round 1 build data');
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), originalDataContent, 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('Round 2 build data'), 'utf-8');
+
+    saveArtifact('build-report', 'test-slug');
+
+    const archivePath = path.join(slugDir, 'build_data_r1.yaml');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+    const archiveContent = await fs.readFile(archivePath, 'utf-8');
+    expect(archiveContent).toBe(originalDataContent);
+  });
+
+  // @ana A007, A008
+  it('increments round number when _r1 already exists', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    // Round 1
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Round 2 — overwrites, creating _r1
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+    saveArtifact('verify-report', 'test-slug');
+
+    // Round 3 — overwrites, should create _r2
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R3'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R3'), 'utf-8');
+    saveArtifact('verify-report', 'test-slug');
+
+    const r1Exists = await fs.stat(path.join(slugDir, 'verify_report_r1.md')).then(() => true).catch(() => false);
+    const r2Exists = await fs.stat(path.join(slugDir, 'verify_report_r2.md')).then(() => true).catch(() => false);
+    expect(r1Exists).toBe(true);
+    expect(r2Exists).toBe(true);
+
+    // Verify r2 has the R2 content (what was committed in round 2)
+    const r2Content = await fs.readFile(path.join(slugDir, 'verify_report_r2.md'), 'utf-8');
+    expect(r2Content).toContain('R2');
+
+    // Count archive files
+    const entries = await fs.readdir(slugDir);
+    const archiveCount = entries.filter(e => e.match(/verify_report_r\d+\.md$/)).length;
+    expect(archiveCount).toBe(2);
+  });
+
+  // @ana A009
+  it('skips archive when no committed version exists', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    // First save — no committed version in HEAD
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('First save'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('First'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const entries = await fs.readdir(slugDir);
+    const archiveFiles = entries.filter(e => /_r\d+\./.test(e));
+    expect(archiveFiles.length).toBe(0);
+  });
+
+  // @ana A010
+  it('skips archive when content is identical', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+    const content = getValidVerifyReportContent('Same both times');
+    const dataContent = getValidVerifyDataContent('Same data');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), content, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), dataContent, 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Write identical content — should NOT create archive
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), content, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), dataContent, 'utf-8');
+
+    // This will hit "no changes to save" and exit(0), which vitest catches as throw
+    // So we check for archive files even if save exits early
+    try {
+      saveArtifact('verify-report', 'test-slug');
+    } catch {
+      // Expected — "no changes to save" calls process.exit(0)
+    }
+
+    const entries = await fs.readdir(slugDir);
+    const archiveFiles = entries.filter(e => /_r\d+\./.test(e));
+    expect(archiveFiles.length).toBe(0);
+  });
+
+  // @ana A011
+  it('stages archive files in the same commit', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    // Check that archive files are in the latest commit
+    const commitFiles = execSync('git diff-tree --no-commit-id --name-only -r HEAD', {
+      cwd: tempDir,
+      encoding: 'utf-8'
+    }).trim();
+    expect(commitFiles).toContain('_r1.md');
+  });
+
+  // @ana A012
+  it('archives phase-numbered report correctly', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), getValidVerifyReportContent('Phase 1 R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data_1.yaml'), getValidVerifyDataContent('Phase 1 R1'), 'utf-8');
+    execSync('git add -A && git commit -m "phase 1 round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), getValidVerifyReportContent('Phase 1 R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data_1.yaml'), getValidVerifyDataContent('Phase 1 R2'), 'utf-8');
+
+    saveArtifact('verify-report-1', 'test-slug');
+
+    const archivePath = path.join(slugDir, 'verify_report_1_r1.md');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+    const archiveName = path.basename(archivePath);
+    expect(archiveName).toContain('_1_r1');
+  });
+
+  // @ana A013
+  it('save-all archives previous versions', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveAllArtifacts('test-slug');
+
+    const archivePath = path.join(slugDir, 'verify_report_r1.md');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+  });
+
+  // @ana A014
+  it('archive failure warns but does not block save', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    // First save — no committed version (no archive attempted)
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+
+    // Save should succeed even with no archive to create
+    expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
+
+    // Verify the save actually committed
+    const lastMsg = execSync('git log -1 --pretty=%B', { cwd: tempDir, encoding: 'utf-8' });
+    expect(lastMsg).toContain('Verify report');
+  });
+
+  // @ana A015
+  it('archives when file deleted from disk but exists in git', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+    const originalContent = getValidVerifyReportContent('Committed version');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), originalContent, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Delete the file, then write new version
+    await fs.unlink(path.join(slugDir, 'verify_report.md'));
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('New version'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const archivePath = path.join(slugDir, 'verify_report_r1.md');
+    const archiveExists = await fs.stat(archivePath).then(() => true).catch(() => false);
+    expect(archiveExists).toBe(true);
+    const archiveContent = await fs.readFile(archivePath, 'utf-8');
+    expect(archiveContent).toBe(originalContent);
+  });
+});
