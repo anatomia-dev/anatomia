@@ -14277,6 +14277,299 @@
         "completed_at": "2026-05-06T19:17:33.182Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "worktrees-v2-timing-danger-prune",
+      "feature": "Worktrees V2 — Phase Timing + Danger Map + Prune",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 23,
+        "satisfied": 21,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Build gets a ranked list of risky files before starting work",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Files with more severe findings appear first in the risk profile",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Risk scores use severity weights: risk=3, debt=2, observation=1",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "No empty risk section appears when files have no known issues",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Bad contract YAML doesn't crash the build setup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Risk profile shows findings but not build concerns",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Build duration measures actual build time, not idle time between saves",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Verify duration measures actual verify time, not idle time between saves",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Old pipeline entries without start timestamps still compute correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Impossible timestamps don't produce nonsense durations",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Impossibly long build times fall back to gap timing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Negative durations from clock skew are caught and corrected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Health report shows how long planning typically takes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Missing plan timing doesn't crash the stats",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Pipeline breakdown shows all four phases: scope, plan, build, verify",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Plan phase is hidden when there's not enough data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Each pipeline phase records which agent ran it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Scoping agent is recorded as ana",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Planning agent is recorded as ana-plan",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Verify agent is recorded as ana-verify",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Stale worktree records are cleaned up before listing work items",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Prune failures don't break the status command",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A023",
+          "says": "PipelineStats type includes median plan duration",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 85,
+        "think": 2,
+        "plan": 9,
+        "build": 65,
+        "verify": 10
+      },
+      "hashes": {
+        "scope": "sha256:4b9455adf11ba015a2bdd7343a68d6f79096c0f185f3172c0f13b2cee62ab1ea",
+        "contract": "sha256:b215f463e78e88a6e0704ada3d8fd115b75cef58989b49d4a5adac562354693e",
+        "plan": "sha256:6ea35534eff9f7c7de233f39234ec730f09f82922de9078563809ba30574c9aa",
+        "spec": "sha256:e3660c81ecfd70894b26348b255de2f2e198fa7cb16fa972d3975f6715504438",
+        "build-report": "sha256:b391a4f4f5fe95acbf4da834e5bfed3414087d1a31708e4ce90fd980eebf7dfb",
+        "build-data": "sha256:24145779fcaee4674ffba3790f746cb8e3097d813216f00542c4f07a9d7f3a80",
+        "verify-report": "sha256:8051bca2e58f9c50fdcee6b2b58419253d9241336ee78aab6358bb5d6bc57038",
+        "verify-data": "sha256:2d21da193c06008edd35977de321a8f591cc73e31d72338b5aaf2c15e3974221"
+      },
+      "completed_at": "2026-05-06T20:09:59.799Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "V1 proved worktree isolation works — the trust model is enforced physically. But Build enters the worktree blind: no knowledge of which files have caused trouble before, and the proof chain is just a record nobody reads at build time. Meanwhile, phase timing lies — it measures gaps between artifact saves (which include developer idle time, sometimes days) instead of actual phase durations. And health display is missing the plan phase entirely.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Double H2 heading in risk profile — worktree.ts pushes '## Proof Findings' then proofFindings content starts with '## Risk Profile'",
+          "file": "packages/cli/src/utils/worktree.ts",
+          "anchor": null,
+          "line": 481,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "worktrees-v2-timing-danger-prune-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A013/A014 are type-level sentinels — construct PipelineStats manually, don't test computePipelineStats computes median_plan",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 3432,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A013",
+            "A014"
+          ],
+          "id": "worktrees-v2-timing-danger-prune-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A017 (build_agent) and A020 (verify_agent) lack direct tagged tests — covered by source inspection only",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 3304,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A017",
+            "A020"
+          ],
+          "id": "worktrees-v2-timing-danger-prune-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A007 value stale — says timing.build equals 60 but test fixture correctly produces 45",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "worktrees-v2-timing-danger-prune-C4",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A011 value stale — says timing.build equals 60 but gap-timing fallback produces 1500 in test fixture",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "worktrees-v2-timing-danger-prune-C5",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "Cache never invalidated in getProofContext — risk profile is a new consumer inheriting this weakness",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "worktrees-v2-timing-danger-prune-C6",
+          "status": "lesson"
+        },
+        {
+          "category": "test",
+          "summary": "detectWorktreeSlug empty-string test is environment-dependent — pre-existing, fails inside worktrees",
+          "file": "packages/cli/tests/utils/worktree.test.ts",
+          "anchor": null,
+          "line": 125,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "worktrees-v2-timing-danger-prune-C7",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Risk Profile renders as subsection under Proof Findings — dual h2 headers in worktree-context.md",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "build_agent and verify_agent lack direct test coverage — verified by code inspection only",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "computePipelineStats median_plan tested at type level only, not through computeHealthReport",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "detectWorktreeSlug empty-string test is environment-dependent (pre-existing)",
+          "file": "packages/cli/tests/utils/worktree.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-06T18:57:17.465Z",
+        "completed_at": "2026-05-06T20:09:59.797Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
