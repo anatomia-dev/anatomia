@@ -29,6 +29,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { getProjectName } from '../../utils/validators.js';
+import { isWorktreeDirectory } from '../../utils/worktree.js';
 import type { InitCommandOptions } from './types.js';
 import { validateInitPreconditions } from './preflight.js';
 import {
@@ -58,6 +59,12 @@ export function registerInitCommand(program: Command): void {
     .option('-y, --yes', 'Skip confirmation prompts (non-interactive mode)')
     .addHelpText('after', '\nEXAMPLES\n  $ ana init\n  $ ana init --yes')
     .action(async (options: InitCommandOptions, command: Command) => {
+    // Reject running from a worktree
+    if (isWorktreeDirectory()) {
+      console.error(chalk.red('Error: Run init from the main project directory, not from a worktree.'));
+      process.exit(1);
+    }
+
     // Reject positional arguments (init operates on cwd)
     if (command.args.length > 0) {
       console.error(chalk.red(`Error: ana init does not accept a path argument.`));

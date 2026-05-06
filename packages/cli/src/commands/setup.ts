@@ -10,6 +10,7 @@ import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { pathExists, findProjectRoot } from '../utils/validators.js';
+import { isWorktreeDirectory } from '../utils/worktree.js';
 import { createCheckCommand } from './check.js';
 import { createIndexCommand } from './symbol-index.js';
 import { validateSetupCompletion } from './check.js';
@@ -51,6 +52,12 @@ export function registerSetupCommand(program: Command): void {
     .description('Validate context files and finalize setup')
     .option('--force', 'Force complete regardless of validation')
     .action(async (options: SetupCompleteOptions) => {
+    // Guard: cannot run from inside a worktree
+    if (isWorktreeDirectory()) {
+      console.error(chalk.red('Error: Run setup from the main project directory, not from a worktree.'));
+      process.exit(1);
+    }
+
     const cwd = findProjectRoot();
     const anaPath = path.join(cwd, '.ana');
     const anaJsonPath = path.join(anaPath, 'ana.json');

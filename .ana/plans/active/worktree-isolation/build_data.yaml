@@ -1,0 +1,24 @@
+schema: 1
+concerns:
+  - summary: "Phase detection globSync could be slow with many plans"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "process.exit in startWork prevents unit testing phase detection"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "_branchPrefix parameter in getNextAction is unused"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "11 phase detection contract assertions lack dedicated tagged tests"
+    severity: debt
+    suggested_action: monitor
+  - summary: "5 guard contract assertions lack dedicated tagged tests"
+    severity: observation
+    suggested_action: monitor

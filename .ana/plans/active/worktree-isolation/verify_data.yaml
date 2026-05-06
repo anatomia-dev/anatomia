@@ -1,0 +1,54 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A021 has no tagged test — verified by source inspection only"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1257
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A021"]
+  - category: test
+    summary: "Phase detection logic (A001-A003, A006-A011) has no dedicated tagged tests"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "Guard commands (A028-A032) have no integration tests"
+    file: "packages/cli/src/commands/init/index.ts"
+    severity: debt
+    suggested_action: monitor
+  - category: test
+    summary: "A012 and A037 use typeof assertions instead of value assertions"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 186
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A012", "A037"]
+  - category: code
+    summary: "branchExists exported only for test imports — not used by production code"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 526
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "isWorktreeDirectory false-positive risk in git submodules"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 54
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "detectWorktreeSlug path-based detection fragile if project root contains .ana/worktrees/"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 76
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "proof.ts WRONG_BRANCH primary error still says 'Switch to main' even in worktree context"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 752
+    severity: observation
+    suggested_action: scope
+  - category: upstream
+    summary: "Spec estimated 50-55 new tests; build delivered 28"
+    severity: observation
+    suggested_action: accept

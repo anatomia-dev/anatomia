@@ -15,5 +15,45 @@
   "spec": {
     "saved_at": "2026-05-06T06:53:36.179Z",
     "hash": "sha256:ed50f8accbf1c6d8e7931407a2ce2bb009cb7e9cc0c27c2f66457c7a665968de"
-  }
+  },
+  "build-report": {
+    "saved_at": "2026-05-06T07:56:31.641Z",
+    "hash": "sha256:6b53ba8c3769754bd47a6ffc0b8891506c244fa4703d5f42b999b80945ab47c7"
+  },
+  "build-data": {
+    "saved_at": "2026-05-06T07:56:31.643Z",
+    "hash": "sha256:aa93ff28f08d594af75c4ed1deb22783238cb4c87aef5272ff6b911e272f8941"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/commands/setup.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/worktree.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/worktree.test.ts"
+  ],
+  "verify_started_at": "2026-05-06T07:35:52.762Z",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:bd850d83d0dd9f47973e390afdbe0bcd201b71484595d37f5f769d0f40e14efb",
+    "run_at": "2026-05-06T08:07:27.080Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-06T08:07:27.122Z",
+    "hash": "sha256:a77523d102228eb933950e5748046b12497559958159dd445e8841ea4e5ce550"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-06T08:07:27.122Z",
+    "hash": "sha256:8de0ff181d4d4afbb6b233ec4f9cbe9b1a3795fe17b26dcc82f9c3289c7144d2"
+  },
+  "build_started_at": "2026-05-06T08:00:37.276Z"
 }

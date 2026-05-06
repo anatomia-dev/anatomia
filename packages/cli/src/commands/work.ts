@@ -21,6 +21,7 @@ import { globSync } from 'glob';
 import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { generateProofSummary, resolveFindingPaths, generateDashboard, computeChainHealth, wrapJsonResponse, detectHealthChange, type ProofSummary } from '../utils/proofSummary.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
+import { isWorktreeDirectory, detectWorktreeSlug, worktreeExists, getWorktreeInfo, createWorktree, removeWorktree, getWorktreePath } from '../utils/worktree.js';
 import type { ProofChainEntry, ProofChain, ProofChainStats } from '../types/proof.js';
 
 /**
@@ -77,6 +78,13 @@ interface WorkItem {
   workBranch: string | null;
   stage: string;
   nextAction: string;
+  worktreeInfo?: {
+    path: string;
+    branch: string;
+    commitCount: number;
+    lastActivityDays: number;
+    isStale: boolean;
+  } | null;
 }
 
 /**
@@ -475,10 +483,10 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
  *
  * @param stage - Pipeline stage
  * @param slug - Work item slug
- * @param branchPrefix - Configured branch prefix
+ * @param _branchPrefix - Configured branch prefix (unused, kept for API compat)
  * @returns Copy-pasteable command
  */
-function getNextAction(stage: string, slug: string, branchPrefix: string): string {
+function getNextAction(stage: string, slug: string, _branchPrefix: string): string {
   if (stage === 'ready-for-plan') {
     return 'claude --agent ana-plan';
   }
@@ -488,19 +496,19 @@ function getNextAction(stage: string, slug: string, branchPrefix: string): strin
   }
 
   if (stage === 'build-in-progress') {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-build`;
+    return 'claude --agent ana-build';
   }
 
   if (stage === 'ready-for-verify') {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-verify`;
+    return 'claude --agent ana-verify';
   }
 
   if (stage === 'ready-for-re-verify') {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-verify`;
+    return 'claude --agent ana-verify';
   }
 
   if (stage === 'needs-fixes') {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-build`;
+    return 'claude --agent ana-build';
   }
 
   if (stage === 'ready-to-merge') {
@@ -509,23 +517,23 @@ function getNextAction(stage: string, slug: string, branchPrefix: string): strin
 
   // Multi-phase stages
   if (stage.includes('ready-for-build')) {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-build`;
+    return 'claude --agent ana-build';
   }
 
   if (stage.includes('ready-for-re-verify')) {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-verify`;
+    return 'claude --agent ana-verify';
   }
 
   if (stage.includes('ready-for-verify')) {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-verify`;
+    return 'claude --agent ana-verify';
   }
 
   if (stage.includes('build-in-progress')) {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-build`;
+    return 'claude --agent ana-build';
   }
 
   if (stage.includes('needs-fixes')) {
-    return `git checkout ${branchPrefix}${slug} && claude --agent ana-build`;
+    return 'claude --agent ana-build';
   }
 
   return '(unknown stage)';
@@ -602,6 +610,14 @@ function printHumanReadable(output: StatusOutput): void {
       }
     }
 
+    // Show worktree info if exists
+    if (item.worktreeInfo) {
+      const wt = item.worktreeInfo;
+      const activityLabel = wt.lastActivityDays === 0 ? 'today' : `${wt.lastActivityDays}d ago`;
+      const staleFlag = wt.isStale ? chalk.yellow(' ⚠ stale') : '';
+      console.log(`    Worktree: ${path.relative(process.cwd(), wt.path) || wt.path} (${wt.commitCount} commit${wt.commitCount !== 1 ? 's' : ''}, last activity ${activityLabel})${staleFlag}`);
+    }
+
     // Show stage and next action
     console.log(`    ${chalk.bold('Stage:')} ${item.stage}`);
     console.log(chalk.cyan(`    → ${item.nextAction}\n`));
@@ -675,6 +691,9 @@ export function getWorkStatus(options: { json?: boolean }): void {
     const stage = determineStage(slug, artifacts, workBranch);
     const nextAction = getNextAction(stage, slug, branchPrefix);
 
+    // Check for worktree info
+    const wtInfo = getWorktreeInfo(projectRoot, slug, branchPrefix);
+
     items.push({
       slug,
       totalPhases: artifacts.specs.length,
@@ -682,6 +701,7 @@ export function getWorkStatus(options: { json?: boolean }): void {
       workBranch,
       stage,
       nextAction,
+      worktreeInfo: wtInfo,
     });
   }
 
@@ -727,9 +747,10 @@ function guardFailResult(result: string, context?: string): void {
  * @param slug - Work item slug
  * @param proof - Proof summary data
  * @param projectRoot - Project root directory
+ * @param worktreeMeta - Optional worktree metadata to include in the proof chain entry
  * @returns Chain health counts: total runs and cumulative findings
  */
-async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: string): Promise<ProofChainStats> {
+async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: string, worktreeMeta?: ProofChainEntry['worktree']): Promise<ProofChainStats> {
   const anaDir = path.join(projectRoot, '.ana');
 
   // Ensure .ana directory exists
@@ -807,6 +828,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     rejection_cycles: proof.rejection_cycles,
     previous_failures: proof.previous_failures,
     build_concerns: proof.build_concerns ?? [],
+    ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 
   // Assign status to new findings (AC5)
@@ -945,6 +967,12 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
  * @param options.json - When true, output structured JSON envelope instead of console output
  */
 export async function completeWork(slug: string, options?: { json?: boolean }): Promise<void> {
+  // 0a. Guard: cannot run from inside a worktree
+  if (isWorktreeDirectory()) {
+    console.error(chalk.red('Error: Run work complete from the main project directory, not from a worktree.'));
+    process.exit(1);
+  }
+
   // 0. Validate slug format
   try {
     validateSlug(slug);
@@ -1193,6 +1221,31 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
     process.exit(1);
   }
 
+  // 8c. Capture worktree metadata BEFORE removal (needed for proof chain)
+  const wtPath = getWorktreePath(projectRoot, slug);
+  const worktreeUsed = fs.existsSync(wtPath);
+  let worktreeCommitCount = 0;
+  if (worktreeUsed) {
+    const wtInfo = getWorktreeInfo(projectRoot, slug, branchPrefix);
+    worktreeCommitCount = wtInfo?.commitCount ?? 0;
+  }
+
+  // Read build_started_at from .saves.json as worktree created_at proxy
+  let worktreeCreatedAt: string | null = null;
+  try {
+    const savesPath = path.join(activePath, '.saves.json');
+    if (fs.existsSync(savesPath)) {
+      const saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
+      worktreeCreatedAt = saves['build_started_at'] ?? null;
+    }
+  } catch { /* fall back to null */ }
+
+  // 8d. Remove worktree (must run from main tree, before branch delete)
+  if (worktreeUsed) {
+    await removeWorktree(projectRoot, slug);
+  }
+  // else: Worktree was already removed manually — AC11 (skip silently)
+
   // 9. Move the directory
   const completedDir = path.join(projectRoot, '.ana', 'plans', 'completed');
   await fsPromises.mkdir(completedDir, { recursive: true });
@@ -1201,7 +1254,13 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
 
   // 9a. Generate proof summary and write proof chain
   const proof = generateProofSummary(completedPath);
-  const stats = await writeProofChain(slug, proof, projectRoot);
+  const worktreeMeta = {
+    used: worktreeUsed,
+    created_at: worktreeCreatedAt,
+    completed_at: new Date().toISOString(),
+    commit_count: worktreeCommitCount,
+  };
+  const stats = await writeProofChain(slug, proof, projectRoot, worktreeMeta);
 
   // 10. Stage and commit
   try {
@@ -1288,7 +1347,14 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
 }
 
 /**
- * Start a new work item: validate inputs, create directory, record start time.
+ * Start or resume a work item. Phase-aware universal entry point.
+ *
+ * New slug (Think): creates directory, records work_started_at.
+ * Scope-only (Plan): records plan_started_at, validates artifact branch.
+ * Spec+contract (Build): creates worktree, records build_started_at.
+ * Build report (Verify): prints worktree path, records verify_started_at.
+ * Verify FAIL (Fix): prints worktree path, records build_started_at.
+ * From inside worktree (Resume): prints current path.
  *
  * @param slug - Kebab-case slug for the work item
  * @returns void — exits with code 1 on validation failures
@@ -1305,33 +1371,60 @@ export async function startWork(slug: string): Promise<void> {
   // 2. Read project config
   const projectRoot = findProjectRoot();
   const artifactBranch = readArtifactBranch(projectRoot);
+  const branchPrefix = readBranchPrefix(projectRoot);
 
-  // 3. Validate branch — must be on artifact branch
-  const currentBranch = getCurrentBranch();
-  if (!currentBranch) {
-    console.error(chalk.red('Error: Not a git repository.'));
-    process.exit(1);
-  }
-  if (currentBranch !== artifactBranch) {
-    console.error(chalk.red(`Error: You're on \`${currentBranch}\`. Work items must be started on \`${artifactBranch}\`.`));
-    console.error(chalk.gray(`Run: git checkout ${artifactBranch} && git pull`));
-    process.exit(1);
+  // 3. Check if we're inside a worktree
+  const currentWorktreeSlug = detectWorktreeSlug();
+
+  if (currentWorktreeSlug) {
+    // Inside a worktree — check if it's the same slug
+    if (currentWorktreeSlug === slug) {
+      // Resume: print path
+      const wtPath = process.cwd();
+      const branchName = `${branchPrefix}${slug}`;
+      let commitCount = 0;
+      try {
+        const result = runGit(['rev-list', '--count', `${artifactBranch}..HEAD`]);
+        if (result.exitCode === 0) commitCount = parseInt(result.stdout) || 0;
+      } catch { /* ignore */ }
+
+      console.log(`Already in worktree for \`${slug}\`.`);
+      console.log(`  Path: ${wtPath}`);
+      console.log(`  Branch: ${branchName}`);
+      console.log(`  Commits: ${commitCount} since branch point`);
+      return;
+    } else {
+      // Different slug — reject
+      console.error(chalk.red(`Error: You're in worktree \`${currentWorktreeSlug}\`. Switch to the main project directory first.`));
+      process.exit(1);
+    }
   }
 
-  // 4. Check slug uniqueness — active and completed
+  // 4. Check if slug exists in active plans
   const activePath = path.join(projectRoot, '.ana', 'plans', 'active', slug);
   const completedPath = path.join(projectRoot, '.ana', 'plans', 'completed', slug);
-  if (fs.existsSync(activePath)) {
-    console.error(chalk.red(`Error: Slug '${slug}' already exists in active plans. Choose a different name.`));
-    process.exit(1);
-  }
-  if (fs.existsSync(completedPath)) {
-    console.error(chalk.red(`Error: Slug '${slug}' already exists in completed plans. Choose a different name.`));
-    process.exit(1);
-  }
 
-  // 5. Pull latest (skip if no remotes)
-  {
+  if (!fs.existsSync(activePath)) {
+    // New slug — Think phase
+    // Must be on artifact branch
+    const currentBranch = getCurrentBranch();
+    if (!currentBranch) {
+      console.error(chalk.red('Error: Not a git repository.'));
+      process.exit(1);
+    }
+    if (currentBranch !== artifactBranch) {
+      console.error(chalk.red(`Error: You're on \`${currentBranch}\`. Work items must be started on \`${artifactBranch}\`.`));
+      console.error(chalk.gray(`Run: git checkout ${artifactBranch} && git pull`));
+      process.exit(1);
+    }
+
+    // Check completed
+    if (fs.existsSync(completedPath)) {
+      console.error(chalk.red(`Error: Slug '${slug}' already exists in completed plans. Choose a different name.`));
+      process.exit(1);
+    }
+
+    // Pull latest
     const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
     if (remotes) {
       const pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
@@ -1341,15 +1434,204 @@ export async function startWork(slug: string): Promise<void> {
           console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
           process.exit(1);
         }
-        // Non-conflict failures: continue silently (no remote, no upstream, etc.)
       }
     }
+
+    // Create directory
+    await fsPromises.mkdir(activePath, { recursive: true });
+
+    // Write work_started_at
+    await writeTimestamp(activePath, 'work_started_at');
+
+    console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
+    return;
   }
 
-  // 6. Create directory
-  await fsPromises.mkdir(activePath, { recursive: true });
+  // Slug exists — determine phase from artifacts
+  const hasScope = fs.existsSync(path.join(activePath, 'scope.md'));
+  const hasPlan = fs.existsSync(path.join(activePath, 'plan.md'));
+  const hasSpec = fs.existsSync(path.join(activePath, 'spec.md'));
+  const hasContract = fs.existsSync(path.join(activePath, 'contract.yaml'));
+  const hasBuildReport = fs.existsSync(path.join(activePath, 'build_report.md'));
+  const hasVerifyReport = fs.existsSync(path.join(activePath, 'verify_report.md'));
 
-  // 7. Write work_started_at to .saves.json
+  // Check for numbered specs/reports too
+  const hasNumberedSpec = globSync(path.join(activePath, 'spec-*.md')).length > 0;
+  const hasNumberedBuildReport = globSync(path.join(activePath, 'build_report_*.md')).length > 0;
+  const hasNumberedVerifyReport = globSync(path.join(activePath, 'verify_report_*.md')).length > 0;
+
+  const specExists = hasSpec || hasNumberedSpec;
+  const buildReportExists = hasBuildReport || hasNumberedBuildReport;
+  const verifyReportExists = hasVerifyReport || hasNumberedVerifyReport;
+
+  // Phase: scope only → Plan
+  if (hasScope && !hasPlan && !specExists) {
+    // Must be on artifact branch
+    const currentBranch = getCurrentBranch();
+    if (!currentBranch) {
+      console.error(chalk.red('Error: Not a git repository.'));
+      process.exit(1);
+    }
+    if (currentBranch !== artifactBranch) {
+      console.error(chalk.red(`Error: You're on \`${currentBranch}\`. Plan phase must run on \`${artifactBranch}\`.`));
+      console.error(chalk.gray(`Run: git checkout ${artifactBranch} && git pull`));
+      process.exit(1);
+    }
+
+    await writeTimestamp(activePath, 'plan_started_at');
+    console.log(`Resuming \`${slug}\` — Plan phase. Run \`claude --agent ana-plan\`.`);
+    return;
+  }
+
+  // Phase: spec+contract exists, no build report → Build (create worktree)
+  if ((specExists || hasContract) && !buildReportExists) {
+    return await startBuildPhase(projectRoot, activePath, slug, branchPrefix, artifactBranch);
+  }
+
+  // Phase: build report exists, no verify report → Verify (print worktree)
+  if (buildReportExists && !verifyReportExists) {
+    await writeTimestamp(activePath, 'verify_started_at');
+    return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Verify');
+  }
+
+  // Phase: verify report exists with FAIL → Fix (print worktree)
+  if (verifyReportExists) {
+    // Check verify result
+    let isFail = false;
+    const verifyPath = path.join(activePath, 'verify_report.md');
+    if (fs.existsSync(verifyPath)) {
+      const content = fs.readFileSync(verifyPath, 'utf-8');
+      isFail = /\*\*Result:\*\*\s*FAIL/i.test(content);
+    }
+    // Also check numbered
+    if (!isFail) {
+      const numberedReports = globSync(path.join(activePath, 'verify_report_*.md'));
+      for (const report of numberedReports) {
+        const content = fs.readFileSync(report, 'utf-8');
+        if (/\*\*Result:\*\*\s*FAIL/i.test(content)) {
+          isFail = true;
+          break;
+        }
+      }
+    }
+
+    if (isFail) {
+      await writeTimestamp(activePath, 'build_started_at');
+      return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Fix');
+    }
+
+    // PASS — nothing to do
+    console.log(`\`${slug}\` has passed verification. Run \`ana work complete ${slug}\` to archive.`);
+    return;
+  }
+
+  // Fallback — shouldn't reach here
+  console.log(`Resuming \`${slug}\`. Check \`ana work status\` for current stage.`);
+}
+
+/**
+ * Start the Build phase: create or enter the worktree.
+ *
+ * @param projectRoot - Project root directory
+ * @param activePath - Path to the active plan directory
+ * @param slug - Work item slug
+ * @param branchPrefix - Branch prefix
+ * @param artifactBranch - Artifact branch name
+ * @returns Promise that resolves when the build phase is started
+ */
+async function startBuildPhase(
+  projectRoot: string,
+  activePath: string,
+  slug: string,
+  branchPrefix: string,
+  artifactBranch: string
+): Promise<void> {
+  // Record build_started_at on artifact branch BEFORE creating worktree
+  await writeTimestamp(activePath, 'build_started_at');
+
+  // Check if worktree already exists (resume case)
+  if (worktreeExists(projectRoot, slug)) {
+    return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Build');
+  }
+
+  // Build context data from contract
+  let contextData: { contractAssertions?: string; proofFindings?: string; summary?: string } | undefined;
+  const contractPath = path.join(activePath, 'contract.yaml');
+  if (fs.existsSync(contractPath)) {
+    const contractContent = fs.readFileSync(contractPath, 'utf-8');
+    contextData = { contractAssertions: contractContent };
+  }
+
+  // Create worktree
+  console.log(`Creating worktree for \`${slug}\`...`);
+  try {
+    const result = await createWorktree(projectRoot, slug, branchPrefix, contextData);
+    const branchLabel = result.branchIsNew ? '(new)' : '(existing)';
+    console.log(`  Branch: ${result.branch} ${branchLabel}`);
+    console.log(`  Path: ${path.relative(process.cwd(), result.worktreePath) || result.worktreePath}`);
+    console.log(`  Dependencies: ${result.depsInstalled ? 'installed' : 'skipped'}`);
+    if (result.envFilesLinked.length > 0) {
+      console.log(`  Env files: ${result.envFilesLinked.join(', ')} → symlinked`);
+    } else {
+      console.log('  Env files: none detected');
+    }
+    console.log(`  Context: ${result.contextFileWritten ? 'worktree-context.md written' : 'not written'}`);
+    console.log(`\nWorktree ready. Run:`);
+    console.log(`  cd ${path.relative(process.cwd(), result.worktreePath) || result.worktreePath}`);
+  } catch (error) {
+    console.error(chalk.red(`Error: Failed to create worktree: ${error instanceof Error ? error.message : 'Unknown error'}`));
+    process.exit(1);
+  }
+}
+
+/**
+ * Print info about an existing worktree.
+ *
+ * @param projectRoot - Project root directory
+ * @param slug - Work item slug
+ * @param branchPrefix - Branch prefix
+ * @param artifactBranch - Artifact branch name
+ * @param phase - Current phase label (e.g., 'Build', 'Verify', 'Fix')
+ */
+function printExistingWorktree(
+  projectRoot: string,
+  slug: string,
+  branchPrefix: string,
+  artifactBranch: string,
+  phase: string
+): void {
+  const wtPath = getWorktreePath(projectRoot, slug);
+  const branchName = `${branchPrefix}${slug}`;
+
+  if (!fs.existsSync(wtPath)) {
+    console.log(`No worktree for \`${slug}\`. ${phase} phase — worktree may need to be recreated.`);
+    return;
+  }
+
+  let commitCount = 0;
+  try {
+    const result = runGit(
+      ['rev-list', '--count', `${artifactBranch}..${branchName}`],
+      { cwd: wtPath }
+    );
+    if (result.exitCode === 0) commitCount = parseInt(result.stdout) || 0;
+  } catch { /* ignore */ }
+
+  console.log(`Worktree exists for \`${slug}\`.`);
+  console.log(`  Path: ${path.relative(process.cwd(), wtPath) || wtPath}`);
+  console.log(`  Branch: ${branchName}`);
+  console.log(`  Commits: ${commitCount} since branch point`);
+  console.log(`\ncd ${path.relative(process.cwd(), wtPath) || wtPath}`);
+}
+
+/**
+ * Write a timestamp to .saves.json.
+ *
+ * @param activePath - Path to the active plan directory
+ * @param key - Timestamp key (e.g., 'work_started_at', 'build_started_at')
+ * @returns Promise that resolves when the timestamp is written
+ */
+async function writeTimestamp(activePath: string, key: string): Promise<void> {
   const savesPath = path.join(activePath, '.saves.json');
   let saves: Record<string, unknown> = {};
   if (fs.existsSync(savesPath)) {
@@ -1359,11 +1641,8 @@ export async function startWork(slug: string): Promise<void> {
       // Start fresh if corrupted
     }
   }
-  saves['work_started_at'] = new Date().toISOString();
+  saves[key] = new Date().toISOString();
   await fsPromises.writeFile(savesPath, JSON.stringify(saves, null, 2), 'utf-8');
-
-  // 8. Confirm
-  console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
 }
 
 /**

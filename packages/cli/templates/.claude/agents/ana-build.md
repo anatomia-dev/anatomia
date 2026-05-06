@@ -27,7 +27,7 @@ Your build report is for the developer. AnaVerify forms an independent assessmen
 
 ### 0. Pipeline Awareness
 
-Run `ana work status` immediately — this is a read-only check, not a commitment to start work. This tells you what work items exist, their stages, and whether you're on the correct branch.
+Run `ana work status` immediately — this is a read-only check, not a commitment to start work. This tells you what work items exist and their stages.
 
 ### 1. Load Skills and Context
 
@@ -50,13 +50,11 @@ Do NOT read `.ana/context/design-principles.md` (that's for Think and Plan). Do 
 ### 2. Find Work
 
 Run `ana work status` to discover work. Look for items at these stages:
-- **"ready-for-build"** — Spec exists, no feature branch yet. You'll create one.
-- **"build-in-progress"** — Feature branch exists but no build report. Previous session may have crashed. Resume.
+- **"ready-for-build"** — Spec exists, worktree not yet created. `ana work start` will create it.
+- **"build-in-progress"** — Worktree exists but no build report. Previous session may have crashed. Resume.
 - **"needs-fixes"** — Verification failed. Read the verify report, fix what failed.
 
-Your current branch may be left over from a previous session. Always verify with `ana work status` before starting. If you're on a feature branch for a different slug, switch to the artifact branch first.
-
-If the command says you're on the wrong branch, tell the developer: "You're on {branch}. Building requires the feature branch. Want me to switch or create it?" Wait for the switch before you begin.
+Run `ana work start {slug}` to enter the worktree. The CLI handles worktree creation or resume. See **Enter the Worktree** below.
 
 ### 3. Respond
 
@@ -102,29 +100,17 @@ Record the results: how many tests, how many passed, how many failed.
 
 **If baseline passes:** Record the count. This is your proof that any future failures are from your changes, not pre-existing.
 
-### 4. Create or Resume Branch
+### 4. Enter the Worktree
 
-Read `branchPrefix` from `.ana/ana.json` (default: `feature/`). Use `{branchPrefix}{slug}` for all branch names.
+Run `ana work start {slug}`. The CLI creates or locates the worktree and prints the path. `cd` to the printed path.
 
-Based on `ana work status` output:
+Read `.ana/worktree-context.md` inside the worktree — it contains the contract assertions and proof chain context for the files you will modify.
 
-**If "ready-for-build":**
-```bash
-git checkout {artifactBranch} && git pull
-git checkout -b {branchPrefix}{slug}
-```
+If resuming ("build-in-progress" or "needs-fixes"): run `ana work start {slug}` the same way — it detects the existing worktree and prints the path. Run `git log --oneline {artifactBranch}..HEAD` to see what was already committed. Compare against the spec's File Changes to determine what's done vs remaining. Resume from the first incomplete item. Do NOT redo completed work. If "needs-fixes", follow the full protocol in **Resume After Failed Verify** below.
 
-**If "build-in-progress":**
-```bash
-git checkout {branchPrefix}{slug} && git pull
-```
-Run `git log --oneline {artifactBranch}..HEAD` to see what was already committed. Compare against the spec's File Changes to determine what's done vs remaining. Resume from the first incomplete item. Do NOT redo completed work.
+**NEVER run `git checkout {artifactBranch}` from inside the worktree.** This produces a fatal error ("already checked out") and corrupts nothing but wastes the session. The worktree is always on the feature branch. The artifact branch is the main tree — you do not need to touch it.
 
-**If "needs-fixes":**
-```bash
-git checkout {branchPrefix}{slug} && git pull
-```
-Follow the full protocol in **Resume After Failed Verify** below.
+Do not use `isolation: "worktree"` for subagent calls. Nested worktrees are unsupported.
 
 ### 5. Plan Your Commits
 
@@ -431,7 +417,7 @@ If you include an acceptance criteria checklist in the report, use these markers
 When `ana work status` reports a multi-phase stage (e.g., "phase-2-ready-for-build"):
 
 1. Read the spec for that phase (e.g., `spec-2.md`) — `ana work status` tells you which phase
-2. Check out the existing branch: `git checkout {branchPrefix}{slug} && git pull`
+2. Run `ana work start {slug}` and `cd` to the printed worktree path (worktree already exists from previous phase)
 3. The branch already has previous phases' work — build on top of it
 4. Commit with phase-numbered messages: `[{slug}:s{N}] {description}`
 5. Write `build_report_{N}.md` (matching the spec number)
@@ -534,7 +520,7 @@ ana artifact save build-report-1 {slug}
 
 **Skills:** `/git-workflow` (always). Coding-standards, testing-standards, api-patterns, data-access, ai-patterns, deployment available on demand — Build Brief in spec is the primary source.
 
-**Branch naming:** `{branchPrefix}{slug}`
+**Branch naming:** `{branchPrefix}{slug}` (managed by worktree — do not checkout manually)
 **Commit format:** `[{slug}] {description}` or `[{slug}:s{N}] {description}` for multi-phase
 **Co-author trailer:** Read from `ana.json` `coAuthor` field. Add to every commit.
 

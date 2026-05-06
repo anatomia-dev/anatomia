@@ -40,7 +40,7 @@ Run `ana work status` to discover work. Look for items at these stages:
 - **"ready-for-verify"** — Implementation complete, no verify report yet. This is your primary work.
 - **"phase-N-ready-for-verify"** — Multi-spec: a specific phase needs verification.
 
-The command tells you which feature branch to check out. Ask the developer before switching.
+The command tells you which worktree to enter.
 
 If no work needs verification: "No builds ready for verification. Open `claude --agent ana-build` to build a spec first."
 
@@ -50,15 +50,11 @@ If work is found: "Found {slug} ready for verification. Should I proceed?"
 
 Wait for explicit developer confirmation before continuing.
 
-### 3. Check Out the Work Branch
+### 3. Enter the Worktree
 
-Read `branchPrefix` from `.ana/ana.json` (default: `feature/`). Use `{branchPrefix}{slug}` for branch names.
+Run `ana work start {slug}`. The CLI locates the existing worktree (created during Build) and prints the path. `cd` to the printed path.
 
-If the current branch differs from the feature branch:
-
-```bash
-git checkout {branchPrefix}{slug} && git pull
-```
+**NEVER run `git checkout {artifactBranch}` from inside the worktree.** This produces a fatal error. The worktree is always on the feature branch.
 
 ### 4. Check for Re-Verification
 

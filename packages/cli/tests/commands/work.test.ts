@@ -166,7 +166,8 @@ describe('ana work status', () => {
 
       const output = captureOutput(() => getWorkStatus({ json: false }));
       expect(output).toContain('build-in-progress');
-      expect(output).toContain('git checkout feature/test-slug && claude --agent ana-build');
+      expect(output).toContain('claude --agent ana-build');
+      expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
     it('with feature branch + build_report → ready-for-verify', async () => {
@@ -183,7 +184,8 @@ describe('ana work status', () => {
 
       const output = captureOutput(() => getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-verify');
-      expect(output).toContain('git checkout feature/test-slug && claude --agent ana-verify');
+      expect(output).toContain('claude --agent ana-verify');
+      expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
     it('with verify_report PASS → ready-to-merge', async () => {
@@ -225,7 +227,8 @@ describe('ana work status', () => {
 
       const output = captureOutput(() => getWorkStatus({ json: false }));
       expect(output).toContain('needs-fixes');
-      expect(output).toContain('git checkout feature/test-slug && claude --agent ana-build');
+      expect(output).toContain('claude --agent ana-build');
+      expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
     it('with verify_report no Result line → verify-status-unknown', async () => {
@@ -421,7 +424,7 @@ describe('ana work status', () => {
 
   describe('configurable branchPrefix', () => {
     // @ana A008, A009
-    it('getNextAction uses configured prefix in stage commands', async () => {
+    it('getNextAction no longer includes git checkout with branch prefix', async () => {
       const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
       await createWorkTestProject({
         slugs: [{
@@ -434,8 +437,9 @@ describe('ana work status', () => {
       });
 
       const output = captureOutput(() => getWorkStatus({ json: false }));
-      expect(output).toContain('dev/');
-      expect(output).not.toContain('feature/');
+      // Next action should NOT contain git checkout anymore
+      expect(output).toContain('claude --agent ana-build');
+      expect(output).not.toContain('git checkout dev/');
     });
 
     // @ana A010
@@ -474,7 +478,7 @@ describe('ana work status', () => {
     });
 
     // @ana A021, A022
-    it('empty branchPrefix produces bare slug branch', async () => {
+    it('empty branchPrefix produces bare slug branch in status', async () => {
       const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
       await createWorkTestProject({
         slugs: [{
@@ -486,10 +490,12 @@ describe('ana work status', () => {
         branchPrefix: '',
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
-      // Should contain "git checkout test-slug" not "/test-slug"
-      expect(output).toContain('git checkout test-slug');
-      expect(output).not.toContain('/test-slug');
+      const output = captureOutput(() => getWorkStatus({ json: true }));
+      const json = JSON.parse(output);
+      // Work branch should be bare slug (no prefix)
+      expect(json.items[0].workBranch).toBe('test-slug');
+      // Next action should not contain git checkout
+      expect(json.items[0].nextAction).not.toContain('git checkout');
     });
 
     // @ana A016, A017
@@ -1132,6 +1138,50 @@ Tests: 5 passed
         expect(chain.entries[0].assertions).toHaveLength(2);
         expect(chain.entries[0].assertions[0].id).toBe('A001');
         expect(chain.entries[0].assertions[0].says).toBe('Creates item successfully');
+      });
+
+      // @ana A021
+      it('writes worktree metadata to proof chain entry when worktree exists', async () => {
+        await createProofProject('test-wt');
+
+        // Create a worktree directory so completeWork detects it
+        const wtDir = path.join(tempDir, '.ana', 'worktrees', 'test-wt');
+        await fs.mkdir(wtDir, { recursive: true });
+
+        // Add build_started_at to .saves.json (used as worktree created_at)
+        const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-wt', '.saves.json');
+        const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+        saves['build_started_at'] = '2026-04-01T10:45:00.000Z';
+        await fs.writeFile(savesPath, JSON.stringify(saves), 'utf-8');
+        execSync('git add -A && git commit -m "add worktree dir"', { cwd: tempDir, stdio: 'ignore' });
+
+        await completeWork('test-wt');
+
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        expect(chain.entries).toHaveLength(1);
+        const entry = chain.entries[0];
+        expect(entry.worktree).toBeDefined();
+        expect(entry.worktree.used).toBe(true);
+        expect(entry.worktree.created_at).toBe('2026-04-01T10:45:00.000Z');
+        expect(entry.worktree.completed_at).toBeTruthy();
+        expect(typeof entry.worktree.commit_count).toBe('number');
+      });
+
+      it('writes worktree.used false when no worktree directory exists', async () => {
+        await createProofProject('test-no-wt');
+
+        await completeWork('test-no-wt');
+
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        expect(chain.entries).toHaveLength(1);
+        const entry = chain.entries[0];
+        expect(entry.worktree).toBeDefined();
+        expect(entry.worktree.used).toBe(false);
+        expect(entry.worktree.created_at).toBeNull();
+        expect(entry.worktree.completed_at).toBeTruthy();
+        expect(entry.worktree.commit_count).toBe(0);
       });
 
       // @ana A017
@@ -2871,23 +2921,18 @@ describe('ana work start', () => {
   });
 
   // @ana A019
-  it('rejects slug that exists in active plans', async () => {
+  it('resumes existing slug in active plans (phase detection)', async () => {
     await createStartTestProject({ activeSlugs: ['fix-auth-timeout'] });
 
-    const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
-      throw new Error('process.exit');
-    }) as never);
-    const originalError = console.error;
-    const errors: string[] = [];
-    console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+    const originalLog = console.log;
+    const logs: string[] = [];
+    console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
 
-    await expect(startWork('fix-auth-timeout')).rejects.toThrow('process.exit');
+    await startWork('fix-auth-timeout');
 
-    console.error = originalError;
-    expect(mockExit).toHaveBeenCalledWith(1);
-    expect(errors.join('\n')).toContain('already exists');
-    expect(errors.join('\n')).toContain('active');
-    mockExit.mockRestore();
+    console.log = originalLog;
+    // Phase detection handles existing slugs — no error, prints resume message
+    expect(logs.join('\n')).toContain('fix-auth-timeout');
   });
 
   // @ana A020

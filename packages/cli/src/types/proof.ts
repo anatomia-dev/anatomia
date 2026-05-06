@@ -87,6 +87,12 @@ export interface ProofChainEntry {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
   }>;
+  worktree?: {
+    used: boolean;
+    created_at: string | null;
+    completed_at: string;
+    commit_count: number;
+  };
 }
 
 /**

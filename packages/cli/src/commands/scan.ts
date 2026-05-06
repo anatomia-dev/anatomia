@@ -25,6 +25,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { EngineResult } from '../engine/types/engineResult.js';
 import { computeSkillManifest, CORE_SKILLS } from '../constants.js';
 import { selectPrimarySchema } from '../utils/scaffold-generators.js';
+import { isWorktreeDirectory } from '../utils/worktree.js';
 
 /**
  * Display names imported from shared utility
@@ -376,6 +377,11 @@ export function registerScanCommand(program: Command): void {
     } catch {
       console.error(chalk.red(`Error: Path not found: ${rootPath}`));
       process.exit(1);
+    }
+
+    // Warn if --save from a worktree
+    if (options.save && isWorktreeDirectory()) {
+      console.warn(chalk.yellow("Warning: You're in a worktree. Saving scan.json here is probably not intended. Run from the main project directory to update the project scan."));
     }
 
     // --save creates .ana/ if needed

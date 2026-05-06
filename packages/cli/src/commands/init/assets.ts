@@ -72,6 +72,7 @@ export async function createDirectoryStructure(tmpAnaPath: string): Promise<void
   // Create .gitignore for runtime state files
   const gitignoreContent = `# Anatomia runtime state — local to each developer
 state/
+worktrees/
 `;
   await fs.writeFile(path.join(tmpAnaPath, '.gitignore'), gitignoreContent, 'utf-8');
 
