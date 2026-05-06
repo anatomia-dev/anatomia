@@ -1,32 +1,18 @@
 schema: 1
 findings:
   - category: code
-    summary: "SS-10 checkpoint reference remains in treeSitter.ts ParserManager JSDoc"
-    file: "packages/cli/src/engine/parsers/treeSitter.ts"
-    line: 100
-    severity: risk
-    suggested_action: scope
-    related_assertions: ["A003"]
-  - category: code
-    summary: "Sprint/ticket/plan refs remain in 12+ test files — Wave 3 cleanup incomplete"
-    file: "packages/cli/tests"
-    severity: risk
-    suggested_action: scope
-    related_assertions: ["A008", "A009", "A010", "A021"]
-  - category: code
-    summary: "src/ cleanup is thorough — zero sprint, ticket, plan, or design doc refs"
-    file: "packages/cli/src"
+    summary: "check.test.ts fixture uses 'active sprints' — slightly odd phrasing for a mock project-context but acceptable"
+    file: "packages/cli/tests/commands/check.test.ts"
+    line: 76
     severity: observation
     suggested_action: accept
-    related_assertions: ["A007"]
   - category: test
-    summary: "detection-overrides.test.ts:141 still contains S19/SCAN-032 in test description"
-    file: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
-    line: 141
-    severity: debt
-    suggested_action: scope
-    related_assertions: ["A008", "A021"]
+    summary: "types.test.ts compile-time assertions use expect(true).toBe(true) — sentinel pattern, but acceptable because the real assertion is TypeScript compilation"
+    file: "packages/cli/tests/engine/types.test.ts"
+    line: 140
+    severity: observation
+    suggested_action: accept
   - category: upstream
-    summary: "Lint warning (unused eslint-disable) at line 169 — pre-existing, not introduced by this build"
+    summary: "Lint warning (unused eslint-disable at line 169) pre-existing — not introduced by this build"
     severity: observation
     suggested_action: monitor
