@@ -28,6 +28,7 @@ import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, truncateSummary, findFindingById, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
 import type { ProofContextResult } from '../utils/proofSummary.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
+import { isWorktreeDirectory } from '../utils/worktree.js';
 
 /**
  * Box-drawing characters for terminal output
@@ -727,6 +728,9 @@ export function registerProofCommand(program: Command): void {
             return lines;
           }
           if (code === 'WRONG_BRANCH') {
+            if (isWorktreeDirectory()) {
+              return ["  You're in a worktree. Proof commands modify the proof chain on the artifact branch. Run from the main project directory."];
+            }
             const artifactBranch = readArtifactBranch(proofRoot);
             return [`  Run: git checkout ${artifactBranch}`];
           }
@@ -974,6 +978,9 @@ export function registerProofCommand(program: Command): void {
             return [`  Promoted to: ${context['promoted_to']}`];
           }
           if (code === 'WRONG_BRANCH') {
+            if (isWorktreeDirectory()) {
+              return ["  You're in a worktree. Proof commands modify the proof chain on the artifact branch. Run from the main project directory."];
+            }
             const artifactBranch = readArtifactBranch(proofRoot);
             return [`  Run: git checkout ${artifactBranch}`];
           }
@@ -1241,6 +1248,9 @@ export function registerProofCommand(program: Command): void {
             return lines;
           }
           if (code === 'WRONG_BRANCH') {
+            if (isWorktreeDirectory()) {
+              return ["  You're in a worktree. Proof commands modify the proof chain on the artifact branch. Run from the main project directory."];
+            }
             const artifactBranch = readArtifactBranch(proofRoot);
             return [`  Run: git checkout ${artifactBranch}`];
           }
@@ -1577,6 +1587,9 @@ export function registerProofCommand(program: Command): void {
             return lines;
           }
           if (code === 'WRONG_BRANCH') {
+            if (isWorktreeDirectory()) {
+              return ["  You're in a worktree. Proof commands modify the proof chain on the artifact branch. Run from the main project directory."];
+            }
             const artifactBranch = readArtifactBranch(proofRoot);
             return [`  Run: git checkout ${artifactBranch}`];
           }

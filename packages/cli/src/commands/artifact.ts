@@ -1141,7 +1141,7 @@ export function saveAllArtifacts(slug: string): void {
   }
 
   // 2. Scan for artifacts
-  const artifacts: Array<{ file: string; type: string; typeInfo: ArtifactTypeInfo; path: string }> = [];
+  let artifacts: Array<{ file: string; type: string; typeInfo: ArtifactTypeInfo; path: string }> = [];
   const entries = fs.readdirSync(planDir);
 
   for (const entry of entries) {
@@ -1292,11 +1292,21 @@ export function saveAllArtifacts(slug: string): void {
   // 4. Validate branch — planning artifacts must be on artifact branch
   const artifactBranch = readArtifactBranch(projectRoot);
   const currentBranch = getCurrentBranch();
-  const hasPlanningArtifacts = artifacts.some(a => a.typeInfo.category === 'planning');
-  if (hasPlanningArtifacts && currentBranch && currentBranch !== artifactBranch) {
-    console.error(chalk.red(`Error: Planning artifacts must be saved on \`${artifactBranch}\`. You're on \`${currentBranch}\`.`));
-    console.error(chalk.gray(`Run: git checkout ${artifactBranch} && git pull`));
-    process.exit(1);
+
+  // When on a non-artifact branch (e.g., in a worktree), filter to
+  // build-verify category only. Planning artifacts from the branch point
+  // are inherited but shouldn't trigger the branch check.
+  if (currentBranch && currentBranch !== artifactBranch) {
+    const buildVerifyOnly = artifacts.filter(a => a.typeInfo.category === 'build-verify');
+    if (buildVerifyOnly.length === 0 && artifacts.length > 0) {
+      console.error(chalk.red(`Error: Planning artifacts must be saved on \`${artifactBranch}\`. You're on \`${currentBranch}\`.`));
+      console.error(chalk.gray(`Run: git checkout ${artifactBranch} && git pull`));
+      process.exit(1);
+    }
+    // Replace artifacts list with only build-verify items
+    if (buildVerifyOnly.length < artifacts.length) {
+      artifacts = buildVerifyOnly;
+    }
   }
 
   // 5. Read coAuthor
