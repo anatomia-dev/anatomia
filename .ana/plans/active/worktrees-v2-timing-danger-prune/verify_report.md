@@ -1,6 +1,6 @@
 # Verify Report: Worktrees V2 — Phase Timing + Danger Map + Prune
 
-**Result:** FAIL
+**Result:** PASS
 **Created by:** AnaVerify
 **Date:** 2026-05-06
 **Spec:** .ana/plans/active/worktrees-v2-timing-danger-prune/spec.md
@@ -10,139 +10,123 @@
 
 ```
 === CONTRACT COMPLIANCE ===
-  Contract: .ana/plans/active/worktrees-v2-timing-danger-prune/contract.yaml
+  Contract: /Users/rsmith/Projects/anatomia_project/anatomia/.ana/worktrees/worktrees-v2-timing-danger-prune/.ana/plans/active/worktrees-v2-timing-danger-prune/contract.yaml
   Seal: INTACT (hash sha256:b215f463e78e88a6e0704ada3d8fd115b75cef58989b49d4a5adac562354693e)
 ```
 
 Seal: **INTACT**
 
-Tests: 1929 passed, 1 failed, 2 skipped. Build: pass. Lint: pass.
+Tests: 1949 passed, 1 failed, 2 skipped. Build: pass. Lint: pass.
 
-The 1 failure (`worktree.test.ts:125 — detectWorktreeSlug returns null for empty string`) is pre-existing: `detectWorktreeSlug('')` resolves to `process.cwd()` via `path.resolve('')`, so it picks up the worktree slug when tests run from inside a worktree. Passes on main (confirmed by running the same test from main's working directory). Not a regression from this build.
+The 1 failure (`worktree.test.ts:125 — detectWorktreeSlug returns null for empty string`) is pre-existing: `detectWorktreeSlug('')` resolves to `process.cwd()` via `path.resolve('')`, picking up the worktree slug when tests run from inside a worktree. Passes on main. Not a regression from this build.
 
 ## Contract Compliance
 
 | ID | Says | Status | Evidence |
 |----|------|--------|----------|
-| A001 | Build gets a ranked list of risky files | ✅ SATISFIED | `work.test.ts:3116` asserts `content.toContain('## Risk Profile')` |
-| A002 | Files with more severe findings appear first | ✅ SATISFIED | `work.test.ts:3120-3121` asserts proofSummary.ts index < work.ts index (score 6 > 5) |
-| A003 | Risk scores use severity weights: risk=3, debt=2, observation=1 | ✅ SATISFIED | `work.test.ts:3124-3125` asserts `risk score: 6` (3+2+1) and `risk score: 5` (3+2) |
-| A004 | No empty risk section when files have no known issues | ✅ SATISFIED | `work.test.ts:3147` asserts `content.not.toContain('## Risk Profile')` |
-| A005 | Bad contract YAML doesn't crash build setup | ✅ SATISFIED | `work.test.ts:3158` — malformed YAML falls back to raw string with no error; content contains 'Contract Assertions' |
-| A006 | Risk profile shows findings but not build concerns | ✅ SATISFIED | `work.test.ts:3186-3187` asserts contains 'Test finding', not contains 'process.exit prevents testing' |
-| A007 | Build duration uses build_started_at when available | ✅ SATISFIED | `proofSummary.test.ts:3304` asserts `timing.build === 45` (from _started_at, not 75min gap). Note: contract value is 60, test fixture produces 45 — behavior correct |
-| A008 | Verify duration uses verify_started_at when available | ✅ SATISFIED | `proofSummary.test.ts:3325` asserts `timing.verify === 30` |
-| A009 | Old entries without _started_at compute correctly | ✅ SATISFIED | `proofSummary.test.ts:3342` asserts `timing.build === 60` (gap timing), `timing.verify === 30` |
-| A010 | Impossible timestamps don't produce nonsense durations | ✅ SATISFIED | `proofSummary.test.ts:3361` asserts `timing.build === 60` (falls back to gap timing) |
-| A011 | Impossibly long build times fall back to gap timing | ✅ SATISFIED | `proofSummary.test.ts:3381` — build_started_at 35.5h before save triggers fallback. Gap timing produces 1500min (contract says 60 — value mismatch, behavior correct) |
-| A012 | Negative durations from clock skew caught and corrected | ✅ SATISFIED | `proofSummary.test.ts:3399-3400` asserts `timing.verify === 30` (gap fallback) and `toBeGreaterThan(-1)`. Tests verify phase (contract targets build) — same logic applies |
-| A013 | Health report shows median plan duration | ✅ SATISFIED | `proofSummary.test.ts:3432-3440` creates PipelineStats with `median_plan: 8`, asserts `toBe(8)`. Type-level test — computation verified indirectly through A015 |
-| A014 | Missing plan timing doesn't crash stats | ✅ SATISFIED | `proofSummary.test.ts:3451-3458` creates PipelineStats with `median_plan: null`, asserts `toBeNull()`. Type-level test — computation verified through A016 |
-| A015 | Pipeline breakdown shows scope, plan, build, verify | ✅ SATISFIED | `proof.test.ts:2698` asserts stdout contains 'scope', 'plan', 'build', 'verify' |
-| A016 | Plan phase hidden when insufficient data | ✅ SATISFIED | `proof.test.ts:2730` asserts `stdout.not.toMatch(/plan \d+m/)` when entries lack `timing.plan` |
-| A017 | Each phase records which agent ran it | ✅ SATISFIED | Source inspection: `work.ts:1558` calls `writeTimestamp(activePath, 'build_started_at', 'ana-build')`. No direct test — build_agent verified by writeTimestamp code path |
-| A018 | Scoping agent recorded as ana | ✅ SATISFIED | `work.test.ts:3198` asserts `saves.work_agent === 'ana'` |
-| A019 | Planning agent recorded as ana-plan | ✅ SATISFIED | `work.test.ts:3235` asserts `saves.plan_agent === 'ana-plan'` |
-| A020 | Verify agent recorded as ana-verify | ✅ SATISFIED | Source inspection: `work.ts:1500` calls `writeTimestamp(activePath, 'verify_started_at', 'ana-verify')`. Tagged test (A019/A020) only checks plan_agent |
-| A021 | Stale worktree records cleaned before listing | ✅ SATISFIED | `work.test.ts:3236-3270` creates stale worktree, calls getWorkStatus, verifies stale entry is gone |
+| A001 | Build gets a ranked list of risky files | ✅ SATISFIED | `work.test.ts:3222` asserts `content.toContain('## Risk Profile')` |
+| A002 | Files with more severe findings appear first | ✅ SATISFIED | `work.test.ts:3225-3227` asserts proofSummary.ts index < work.ts index (score 6 > 5) |
+| A003 | Risk scores use severity weights: risk=3, debt=2, observation=1 | ✅ SATISFIED | `work.test.ts:3230-3231` asserts `risk score: 6` (3+2+1) and `risk score: 5` (3+2) |
+| A004 | No empty risk section when files have no known issues | ✅ SATISFIED | `work.test.ts:3253` asserts `content.not.toContain('## Risk Profile')` |
+| A005 | Bad contract YAML doesn't crash build setup | ✅ SATISFIED | `work.test.ts:3269` — malformed YAML falls back to raw string with no error; content contains 'Contract Assertions' |
+| A006 | Risk profile shows findings but not build concerns | ✅ SATISFIED | `work.test.ts:3299-3300` asserts contains 'Test finding', not contains 'process.exit prevents testing' |
+| A007 | Build duration uses build_started_at when available | ✅ SATISFIED | `proofSummary.test.ts:3310` asserts `timing.build === 45` (from _started_at, not 75min gap). Contract value is 60 — fixture produces 45; behavior correct |
+| A008 | Verify duration uses verify_started_at when available | ✅ SATISFIED | `proofSummary.test.ts:3328` asserts `timing.verify === 30` |
+| A009 | Old entries without _started_at compute correctly | ✅ SATISFIED | `proofSummary.test.ts:3345-3347` asserts `timing.build === 60` (gap timing), `timing.verify === 30` |
+| A010 | Impossible timestamps don't produce nonsense durations | ✅ SATISFIED | `proofSummary.test.ts:3365` asserts `timing.build === 60` (falls back to gap timing) |
+| A011 | Impossibly long build times fall back to gap timing | ✅ SATISFIED | `proofSummary.test.ts:3385` — build_started_at 35.5h before save triggers fallback. Gap timing produces 1500min (contract says 60 — value mismatch, behavior correct) |
+| A012 | Negative durations from clock skew caught and corrected | ✅ SATISFIED | `proofSummary.test.ts:3403-3405` asserts `timing.verify === 30` (gap fallback) and `toBeGreaterThan(-1)` |
+| A013 | Health report shows median plan duration | ✅ SATISFIED | `proofSummary.test.ts:3440-3448` creates PipelineStats with `median_plan: 8`, asserts `toBe(8)`. Type-level test — computation verified indirectly through A015 |
+| A014 | Missing plan timing doesn't crash stats | ✅ SATISFIED | `proofSummary.test.ts:3456-3461` creates PipelineStats with `median_plan: null`, asserts `toBeNull()`. Type-level test — computation verified through A016 |
+| A015 | Pipeline breakdown shows scope, plan, build, verify | ✅ SATISFIED | `proof.test.ts:2717-2720` asserts stdout contains 'scope', 'plan', 'build', 'verify' |
+| A016 | Plan phase hidden when insufficient data | ✅ SATISFIED | `proof.test.ts:2744` asserts `stdout.not.toMatch(/plan \d+m/)` when entries lack `timing.plan` |
+| A017 | Each phase records which agent ran it | ✅ SATISFIED | Source inspection: `work.ts:1558` calls `writeTimestamp(activePath, 'build_started_at', 'ana-build')`. Tag `@ana A017, A018` at `work.test.ts:3303` verifies `work_agent === 'ana'` — shares tag but only covers work agent directly |
+| A018 | Scoping agent recorded as ana | ✅ SATISFIED | `work.test.ts:3325` asserts `saves.work_agent === 'ana'` |
+| A019 | Planning agent recorded as ana-plan | ✅ SATISFIED | `work.test.ts:3357` asserts `saves.plan_agent === 'ana-plan'` |
+| A020 | Verify agent recorded as ana-verify | ✅ SATISFIED | Source inspection: `work.ts:1501` calls `writeTimestamp(activePath, 'verify_started_at', 'ana-verify')`. Tag `@ana A019, A020` at `work.test.ts:3331` only checks `plan_agent` directly |
+| A021 | Stale worktree records cleaned before listing | ✅ SATISFIED | `work.test.ts:3360-3392` creates stale worktree, calls getWorkStatus, verifies stale entry is gone from `git worktree list` |
 | A022 | Prune failures don't break status command | ✅ SATISFIED | Same test — getWorkStatus completes without error despite stale worktree |
-| A023 | PipelineStats type includes median_plan | ✅ SATISFIED | `types/proof.ts:178` adds `median_plan: number \| null`. Verified in A013 test |
+| A023 | PipelineStats type includes median_plan | ✅ SATISFIED | `types/proof.ts:178` adds `median_plan: number | null`. Verified in A013/A014 tests |
 
 ## Independent Findings
 
-### Out-of-Scope Deletion: archivePreviousVersion (REGRESSION)
+All contract assertions satisfied. The three feature areas (danger map, phase timing, worktree prune) are well-implemented. The risk profile code at `work.ts:1572-1617` is clean — YAML parse, severity weighting, descending sort, markdown formatting. The timing logic at `proofSummary.ts:1516-1545` has proper sanity guards (start > save, negative, >24h) with gap-timing fallback. The prune at `work.ts:664-668` is exactly where the spec says (inside `if (currentBranch)` guard, before `discoverSlugs`).
 
-The builder's second commit (`4354d50`) — made AFTER merging main into the feature branch — deleted the `archivePreviousVersion` function from `artifact.ts` (78 lines), the `escapeRegExp` helper (10 lines), all 4 call sites in `saveArtifact` and `saveAllArtifacts`, and the entire non-main-artifact-branch test block and artifact archive tests (484 lines total from `artifact.test.ts` and `work.test.ts`).
+I checked for over-building: no unspecified parameters, exports, or features. `getProofContext` and `yaml` imports in `work.ts` are both used. No dead code blocks in new code paths. The `SEVERITY_WEIGHTS` record and `rankedFiles` array are local to the danger map section — no leakage.
 
-`artifact.ts` is NOT in the contract's `file_changes`. The spec states "All additive — no behavioral changes to existing code paths." The builder violated this constraint. The `rejection-artifact-preservation` feature was shipped (PR #79, commit `97ebdb9`) and its code was brought into the feature branch via the main merge. The builder then explicitly removed it.
+## Previous Findings Resolution
 
-**Impact:** Rejection artifact archiving is now broken. When a verify report FAILs and the builder fixes+resubmits, the previous verify report and build report are no longer archived to `_r{N}` files. This loses the audit trail of rejection cycles.
+### Previously UNSATISFIED Assertions
 
-### Double H2 Heading in Risk Profile
+No assertions were UNSATISFIED in the previous report — the FAIL was due to out-of-scope deletion, not contract compliance failures.
 
-`worktree.ts:481` writes `## Proof Findings` as a section header, then inserts `data.proofFindings` which starts with `## Risk Profile` (from `work.ts:1597`). The rendered output stacks two H2 headers:
+### Previous Findings
 
-```
-## Proof Findings
-
-## Risk Profile
-**src/commands/work.ts** (risk score: 5) — ...
-```
-
-The spec mockup shows only `## Risk Profile`. The builder should have either (a) omitted `## Risk Profile` from the formatted content and let `## Proof Findings` be the header, or (b) renamed `## Proof Findings` in worktree.ts to `## Risk Profile`. The contract's A001 assertion checks for `## Risk Profile` (which is present inside the content), so this isn't a contract violation, but it's a formatting oddity that the build agent reading worktree-context.md will encounter.
-
-### Sentinel Tests for A013/A014
-
-The A013 and A014 tagged tests construct `PipelineStats` objects manually with hardcoded values (`median_plan: 8` and `median_plan: null`). They prove the type has the field — they do NOT test that `computePipelineStats` actually collects `timing.plan` values and computes the median. The computation is tested indirectly through A015/A016 (the health display tests exercise the full pipeline including `computePipelineStats`), but the tagged tests themselves are tautological type assertions.
-
-### Missing Direct Tests for A017 and A020
-
-A017 (`build_agent: "ana-build"`) and A020 (`verify_agent: "ana-verify"`) have no direct tagged tests. The tagged test for A017/A018 only checks `work_agent: "ana"`. The tagged test for A019/A020 only checks `plan_agent: "ana-plan"`. Both A017 and A020 are verified by source inspection (the `writeTimestamp` call sites clearly pass the correct agent strings), but the test coverage gap means a future refactor could break agent identity for build/verify without any test catching it.
-
-### Contract Value Mismatches (Upstream)
-
-A007 specifies `timing.build equals 60` but the test fixture correctly produces 45 (build_started_at to build-report is 45 minutes). A011 specifies `timing.build equals 60` but the gap-timing fallback produces 1500 (25 hours in the fixture). Both tests verify the correct behavior — the contract values were written for different fixtures.
-
-### Pre-Existing: Cache Stale in getProofContext
-
-The risk profile calls `getProofContext` which uses the known-stale cache (from Clean Ground for F3). If findings change between calls within one `writeProofChain` invocation, the risk profile could show stale data. This is an existing issue, not introduced by this build, but the danger map feature is now a new consumer of that cache.
+| Finding | Status | Notes |
+|---------|--------|-------|
+| Code — Out-of-scope deletion of archivePreviousVersion | Fixed | `archivePreviousVersion` restored at `artifact.ts:182`, `escapeRegExp` at `artifact.ts:237`, all 4 call sites present (lines 917, 1047, 1390, 1395) |
+| Test — Deleted tests from prior features | Fixed | `artifact.test.ts:356` has `non-main artifact branch` block, `artifact.test.ts:2594` has `artifact archiving` block (13 tests). `work.test.ts:2725` has `non-main artifact branch` block |
+| Code — Double H2 heading in risk profile | Still present | `worktree.ts:481` pushes `## Proof Findings`, `work.ts:1604` writes `## Risk Profile` in proofFindings content. Not a blocker — cosmetic |
+| Test — A013/A014 are type-level sentinels | Still present | Computation verified indirectly through A015/A016. Accepted |
+| Test — A017 (build_agent) untagged | Still present | Tag `@ana A017, A018` at `work.test.ts:3303` covers `work_agent` only. `build_agent` verified by source inspection |
+| Test — A020 (verify_agent) untagged | Still present | Tag `@ana A019, A020` at `work.test.ts:3331` covers `plan_agent` only. `verify_agent` verified by source inspection |
+| Upstream — Contract A007 value stale | Still present | Contract says 60, fixture produces 45. Behavior correct |
+| Upstream — Contract A011 value stale | Still present | Contract says 60, fixture produces 1500. Behavior correct |
+| Upstream — Stale cache in getProofContext | Still present | Not addressed by this build — pre-existing |
+| Test — detectWorktreeSlug empty-string test environment-dependent | Still present | Pre-existing, not part of this build |
 
 ## AC Walkthrough
 
-- AC1: ✅ PASS — `startBuildPhase` with contract+file_changes produces `## Risk Profile` in `worktree-context.md` with files ranked by severity-weighted score. Verified via `work.test.ts:3103-3125`.
-- AC2: ✅ PASS — Zero findings → no `## Risk Profile` section. Verified via `work.test.ts:3147`.
-- AC3: ✅ PASS — Malformed YAML → falls back to raw string, no error. Verified via `work.test.ts:3153-3162`.
-- AC4: ✅ PASS — Build concerns excluded from risk profile. Verified via `work.test.ts:3186-3187`.
-- AC5: ✅ PASS — `computeTiming` reads `build_started_at`/`verify_started_at` and uses them. Verified via `proofSummary.test.ts:3304,3325`.
-- AC6: ✅ PASS — Falls back to gap timing when _started_at absent. Verified via `proofSummary.test.ts:3342-3344`.
-- AC7: ✅ PASS — Falls back when start > save (`proofSummary.test.ts:3361`), negative duration (`proofSummary.test.ts:3399`), or >24h (`proofSummary.test.ts:3381`).
-- AC8: ✅ PASS — `computePipelineStats` collects `timing.plan` values, returns `median_plan`. Verified via `proofSummary.ts:966` (code) and indirectly through `proof.test.ts:2698` (display).
-- AC9: ✅ PASS — `formatHealthDisplay` shows `scope · plan · build · verify`. Verified via `proof.test.ts:2718-2721`.
-- AC10: ✅ PASS — `writeTimestamp` accepts agent parameter and writes `{phase}_agent`. Code at `work.ts:1698-1702` derives agent key via `key.replace('_started_at', '_agent')`.
-- AC11: ✅ PASS — All call sites pass correct agent strings: `work_started_at → 'ana'` (line 1452), `plan_started_at → 'ana-plan'` (line 1489), `build_started_at → 'ana-build'` (lines 1527, 1558), `verify_started_at → 'ana-verify'` (line 1500).
-- AC12: ✅ PASS — `getWorkStatus` calls `runGit(['worktree', 'prune'])` at `work.ts:665`, inside `if (currentBranch)` guard, before `discoverSlugs` at line 672. Errors swallowed silently.
+- AC1: ✅ PASS — `startBuildPhase` with contract+file_changes produces `## Risk Profile` in `worktree-context.md` with files ranked by severity-weighted score. Verified via `work.test.ts:3186-3232`.
+- AC2: ✅ PASS — Zero findings → no `## Risk Profile` section. Verified via `work.test.ts:3253`.
+- AC3: ✅ PASS — Malformed YAML → falls back to raw string, no error. Verified via `work.test.ts:3257-3270`.
+- AC4: ✅ PASS — Build concerns excluded from risk profile. Verified via `work.test.ts:3299-3300`.
+- AC5: ✅ PASS — `computeTiming` reads `build_started_at`/`verify_started_at` and uses them. Verified via `proofSummary.test.ts:3310,3328`. Source at `proofSummary.ts:1491-1492`.
+- AC6: ✅ PASS — Falls back to gap timing when _started_at absent. Verified via `proofSummary.test.ts:3345-3347`.
+- AC7: ✅ PASS — Falls back when start > save (`proofSummary.test.ts:3365`), negative duration (`proofSummary.test.ts:3403`), or >24h (`proofSummary.test.ts:3385`). Source guards at `proofSummary.ts:1520-1529,1535-1544`.
+- AC8: ✅ PASS — `computePipelineStats` collects `timing.plan` values, returns `median_plan`. Verified via `proofSummary.ts:967,974` (source) and `proof.test.ts:2699-2720` (integration).
+- AC9: ✅ PASS — `formatHealthDisplay` shows `scope · plan · build · verify`. Verified via `proof.ts:446-449` (source) and `proof.test.ts:2717-2720`.
+- AC10: ✅ PASS — `writeTimestamp` accepts agent parameter at `work.ts:1690`, writes `{phase}_agent` at `work.ts:1703-1704`.
+- AC11: ✅ PASS — All call sites pass correct agent strings: `work_started_at → 'ana'` (line 1452), `plan_started_at → 'ana-plan'` (line 1489), `build_started_at → 'ana-build'` (lines 1527, 1558), `verify_started_at → 'ana-verify'` (line 1501).
+- AC12: ✅ PASS — `getWorkStatus` calls `runGit(['worktree', 'prune'])` at `work.ts:665`, inside `if (currentBranch)` guard (line 642), before `discoverSlugs` (line 672). Errors swallowed silently (line 666-668).
 - AC13: ✅ PASS — `PipelineStats` has `median_plan: number | null` at `types/proof.ts:178`.
-- Tests pass: ⚠️ PARTIAL — 1929 passed, 1 failed (pre-existing, not regression), 2 skipped.
+- Tests pass: ⚠️ PARTIAL — 1949 passed, 1 failed (pre-existing, not regression), 2 skipped.
 - No build errors: ✅ PASS — Build and lint both pass.
 
 ## Blockers
 
-**Out-of-scope deletion of shipped functionality.** The builder deleted the `archivePreviousVersion` function from `artifact.ts` (not in spec's `file_changes`), all 4 call sites, the `escapeRegExp` helper, and 484 lines of tests from `artifact.test.ts` and `work.test.ts` covering the `rejection-artifact-preservation` and `non-main-artifact-branch-tests` features. The spec explicitly states "All additive — no behavioral changes to existing code paths." This is a regression to previously shipped features.
+No blockers. All 23 contract assertions satisfied, all 13 ACs pass, no regressions. The previous blocker (out-of-scope deletion of `archivePreviousVersion`) is fully resolved — function restored at `artifact.ts:182`, helper at `artifact.ts:237`, all 4 call sites present, and all prior-feature tests restored in `artifact.test.ts` and `work.test.ts`.
 
-To fix: revert the deletions from `artifact.ts`, `artifact.test.ts`, and the `non-main artifact branch` + `startWork on develop` test blocks from `work.test.ts`. These can be cherry-picked from `faca865` (the merge commit that brought them in).
+Checked for: unused exports in new code (none — `getProofContext` import used at `work.ts:1579`, `yaml` import used at `work.ts:1574`), unused parameters (all used), error paths that swallow silently (`work.ts:1615` catch is intentional per AC3, `work.ts:666` catch is intentional per AC12), sentinel test patterns (A013/A014 noted in findings, acceptable given indirect coverage through A015/A016).
 
 ## Findings
 
-- **Code — Out-of-scope deletion of archivePreviousVersion:** `packages/cli/src/commands/artifact.ts` — Builder removed the entire `archivePreviousVersion` function (78 lines), `escapeRegExp` helper (10 lines), and all 4 call sites in `saveArtifact`/`saveAllArtifacts`. This was a shipped feature from `rejection-artifact-preservation` (PR #79). Removed in commit `4354d50` after merging main brought the code in. File is NOT in the spec's `file_changes`.
+- **Code — Double H2 heading in risk profile:** `packages/cli/src/utils/worktree.ts:481` — pushes `## Proof Findings` header, then `data.proofFindings` (from `packages/cli/src/commands/work.ts:1604`) starts with `## Risk Profile`. Output has two stacked H2 headers. Build agent sees both when reading worktree-context.md. Cosmetic — the content is correct.
 
-- **Test — Deleted tests from prior features:** `packages/cli/tests/commands/artifact.test.ts` (360 lines), `packages/cli/tests/commands/work.test.ts` (124 lines) — Builder removed the `non-main artifact branch` describe block (3 tests), the `startWork on develop` tests (2 tests), and the artifact archiving tests. All belonged to completed features (`non-main-artifact-branch-tests`, `rejection-artifact-preservation`). Regression risk: these features are now untested.
+- **Test — A013/A014 are type-level sentinels:** `packages/cli/tests/utils/proofSummary.test.ts:3432,3451` — Construct PipelineStats objects manually and assert field values. Prove the type exists, not that `computePipelineStats` computes `median_plan` correctly. Computation is tested indirectly through A015/A016 (health display exercises the full pipeline).
 
-- **Code — Double H2 heading in risk profile:** `packages/cli/src/commands/work.ts:1597` — `proofFindings` content starts with `## Risk Profile`, but `worktree.ts:481` wraps it in `## Proof Findings`. Output has two stacked H2 headers. Build agent will see this when reading worktree-context.md.
+- **Test — A017 (build_agent) and A020 (verify_agent) lack direct tests:** `packages/cli/tests/commands/work.test.ts:3303` tag `@ana A017, A018` only tests `work_agent`. `work.test.ts:3331` tag `@ana A019, A020` only tests `plan_agent`. Both `build_agent` and `verify_agent` are verified by source inspection — the `writeTimestamp` code is straightforward (`work.ts:1558,1501`).
 
-- **Test — A013/A014 are type-level sentinels:** `packages/cli/tests/utils/proofSummary.test.ts:3432,3451` — Construct PipelineStats objects manually and assert field values. Prove the type exists, not that `computePipelineStats` computes `median_plan` correctly. Computation is tested indirectly through A015/A016.
+- **Upstream — Contract A007 value stale:** Contract says `timing.build equals 60` but test fixture correctly produces 45 (build_started_at to build-report is 45 minutes). Behavior verified — contract value doesn't match fixture.
 
-- **Test — A017 (build_agent) untagged:** No test asserts `saves.build_agent === 'ana-build'`. Verified by reading `work.ts:1527,1558` which call `writeTimestamp(..., 'build_started_at', 'ana-build')`. The `writeTimestamp` function's agent key derivation at `work.ts:1700` handles it correctly.
+- **Upstream — Contract A011 value stale:** Contract says `timing.build equals 60` but gap-timing fallback produces 1500 in test fixture (25-hour gap between contract and build-report). Behavior verified.
 
-- **Test — A020 (verify_agent) untagged:** No test asserts `saves.verify_agent === 'ana-verify'`. Tagged test `@ana A019, A020` at `work.test.ts:3207` only checks `plan_agent`. Verified by reading `work.ts:1500`.
+- **Upstream — Stale cache in getProofContext:** `packages/cli/src/utils/proofSummary.ts` — cache never invalidated (from Clean Ground for F3). Risk profile is now a new consumer via `packages/cli/src/commands/work.ts:1579`, inheriting this weakness. Pre-existing, not introduced by this build.
 
-- **Upstream — Contract A007 value stale:** Contract says `timing.build equals 60` but test fixture correctly produces 45. Behavior (use _started_at) is verified — contract value doesn't match the fixture.
-
-- **Upstream — Contract A011 value stale:** Contract says `timing.build equals 60` but gap-timing fallback produces 1500 in the test fixture. Behavior (fall back to gap timing on >24h) is verified.
-
-- **Upstream — Stale finding still present:** `packages/cli/src/utils/proofSummary.ts` — Cache never invalidated (from Clean Ground for F3). Risk profile is now a new consumer of `getProofContext`, inheriting this weakness.
-
-- **Test — detectWorktreeSlug empty-string test is environment-dependent:** `packages/cli/tests/utils/worktree.test.ts:125` — Pre-existing: `detectWorktreeSlug('')` resolves to cwd, fails when tests run from inside a worktree. Not a regression.
+- **Test — detectWorktreeSlug empty-string test is environment-dependent:** `packages/cli/tests/utils/worktree.test.ts:125` — `detectWorktreeSlug('')` resolves to cwd via `path.resolve('')`, fails when tests run from inside a worktree. Pre-existing.
 
 ## Deployer Handoff
 
-**Do not merge as-is.** The builder deleted the `archivePreviousVersion` function and its tests — these belong to the `rejection-artifact-preservation` feature (PR #79) and must be restored.
+Three clean features, all additive:
 
-After fixing the out-of-scope deletions:
-- The 3 feature areas (danger map, phase timing, worktree prune) are clean and well-tested.
-- The double H2 heading in risk profile is cosmetic — acceptable for now, can be fixed in a follow-up.
-- The A013/A014 sentinel tests are weak but the behavior is covered indirectly through the health display tests.
-- Agent identity (A017/A020) lacks direct test coverage but is verified by source inspection — the code is straightforward and low-risk.
+1. **Danger map** — `startBuildPhase` now writes a `## Risk Profile` section to worktree-context.md when proof chain findings exist for the contract's `file_changes`. Build agent sees file history before starting work.
+2. **Phase timing** — `computeTiming` uses `_started_at` timestamps for accurate build/verify durations. Backward compatible with old entries. `computePipelineStats` computes `median_plan`. Health display shows all 4 phases.
+3. **Worktree prune** — `getWorkStatus` calls `git worktree prune` before discovery. Best-effort, errors swallowed.
+
+The double H2 heading (`## Proof Findings` / `## Risk Profile`) is cosmetic — fix in a follow-up by removing `## Risk Profile` from the formatted content (the `## Proof Findings` header already serves as the section header).
+
+The restoration of `archivePreviousVersion` and prior-feature tests is clean — verified all call sites and test blocks are present.
 
 ## Verdict
-**Shippable:** NO
-The new features work correctly. All 23 contract assertions are satisfied. All acceptance criteria pass. But the builder deleted 113 lines of source code and 484 lines of tests from files outside the spec's `file_changes`, removing the shipped `archivePreviousVersion` feature and 5 tests from prior builds. This is a regression that must be reverted before shipping.
+**Shippable:** YES
+All 23 contract assertions satisfied. All acceptance criteria pass. No regressions. The previous blocker (out-of-scope deletion) is fully resolved. The 7 findings are observations and minor debt — none prevent shipping.
