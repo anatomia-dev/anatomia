@@ -16,5 +16,37 @@
     "saved_at": "2026-05-06T18:49:11.390Z",
     "hash": "sha256:e3660c81ecfd70894b26348b255de2f2e198fa7cb16fa972d3975f6715504438"
   },
-  "build_started_at": "2026-05-06T18:57:17.465Z"
+  "build_started_at": "2026-05-06T18:57:17.465Z",
+  "build-report": {
+    "saved_at": "2026-05-06T19:53:48.089Z",
+    "hash": "sha256:b391a4f4f5fe95acbf4da834e5bfed3414087d1a31708e4ce90fd980eebf7dfb"
+  },
+  "build-data": {
+    "saved_at": "2026-05-06T19:53:48.090Z",
+    "hash": "sha256:24145779fcaee4674ffba3790f746cb8e3097d813216f00542c4f07a9d7f3a80"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/proofSummary.test.ts"
+  ],
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b215f463e78e88a6e0704ada3d8fd115b75cef58989b49d4a5adac562354693e",
+    "run_at": "2026-05-06T20:03:23.411Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-06T20:03:23.440Z",
+    "hash": "sha256:8051bca2e58f9c50fdcee6b2b58419253d9241336ee78aab6358bb5d6bc57038"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-06T20:03:23.440Z",
+    "hash": "sha256:2d21da193c06008edd35977de321a8f591cc73e31d72338b5aaf2c15e3974221"
+  }
 }

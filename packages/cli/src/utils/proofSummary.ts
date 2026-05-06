@@ -964,12 +964,14 @@ function computePipelineStats(entries: Array<{
 
   const totals = validEntries.map(e => e.timing!.total_minutes!);
   const scopes = validEntries.map(e => e.timing!.think ?? e.timing!.scope ?? null).filter((v): v is number => v !== null);
+  const plans = validEntries.map(e => e.timing!.plan ?? null).filter((v): v is number => v !== null);
   const builds = validEntries.map(e => e.timing!.build ?? null).filter((v): v is number => v !== null);
   const verifies = validEntries.map(e => e.timing!.verify ?? null).filter((v): v is number => v !== null);
 
   return {
     median_total: floorMedian(totals),
     median_scope: scopes.length > 0 ? floorMedian(scopes) : null,
+    median_plan: plans.length > 0 ? floorMedian(plans) : null,
     median_build: builds.length > 0 ? floorMedian(builds) : null,
     median_verify: verifies.length > 0 ? floorMedian(verifies) : null,
     entries_with_timing: validEntries.length,
@@ -1479,11 +1481,15 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
     return entry?.saved_at ? new Date(entry.saved_at).getTime() : null;
   };
 
-  // work_started_at is a top-level ISO string, not a { saved_at, hash } object
-  const workStartedAtRaw = saves['work_started_at'];
-  const workStartedAt = typeof workStartedAtRaw === 'string'
-    ? new Date(workStartedAtRaw).getTime()
-    : null;
+  // Top-level ISO strings for raw timestamps (not { saved_at, hash } objects)
+  const readRawTimestamp = (key: string): number | null => {
+    const raw = saves[key];
+    return typeof raw === 'string' ? new Date(raw).getTime() : null;
+  };
+
+  const workStartedAt = readRawTimestamp('work_started_at');
+  const buildStartedAt = readRawTimestamp('build_started_at');
+  const verifyStartedAt = readRawTimestamp('verify_started_at');
 
   const scopeTime = getTime('scope');
   const contractTime = getTime('contract');
@@ -1506,11 +1512,36 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
     timing.think = Math.round((contractTime - scopeTime) / 60000);
     timing.plan = Math.round((contractTime - scopeTime) / 60000);
   }
+
+  // Build duration: prefer _started_at over artifact-gap timing
+  const MAX_PHASE_MS = 24 * 60 * 60 * 1000; // 24 hours
   if (buildTime && contractTime) {
-    timing.build = Math.round((buildTime - contractTime) / 60000);
+    let usedStartedAt = false;
+    if (buildStartedAt !== null && buildStartedAt <= buildTime) {
+      const durationMs = buildTime - buildStartedAt;
+      if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
+        timing.build = Math.round(durationMs / 60000);
+        usedStartedAt = true;
+      }
+    }
+    if (!usedStartedAt) {
+      timing.build = Math.round((buildTime - contractTime) / 60000);
+    }
   }
+
+  // Verify duration: prefer _started_at over artifact-gap timing
   if (verifyTime && buildTime) {
-    timing.verify = Math.round((verifyTime - buildTime) / 60000);
+    let usedStartedAt = false;
+    if (verifyStartedAt !== null && verifyStartedAt <= verifyTime) {
+      const durationMs = verifyTime - verifyStartedAt;
+      if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
+        timing.verify = Math.round(durationMs / 60000);
+        usedStartedAt = true;
+      }
+    }
+    if (!usedStartedAt) {
+      timing.verify = Math.round((verifyTime - buildTime) / 60000);
+    }
   }
   return timing;
 }

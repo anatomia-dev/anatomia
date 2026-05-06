@@ -1,0 +1,44 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Double H2 heading in risk profile — worktree.ts pushes '## Proof Findings' then proofFindings content starts with '## Risk Profile'"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 481
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001"]
+  - category: test
+    summary: "A013/A014 are type-level sentinels — construct PipelineStats manually, don't test computePipelineStats computes median_plan"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 3432
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A013", "A014"]
+  - category: test
+    summary: "A017 (build_agent) and A020 (verify_agent) lack direct tagged tests — covered by source inspection only"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3304
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A017", "A020"]
+  - category: upstream
+    summary: "Contract A007 value stale — says timing.build equals 60 but test fixture correctly produces 45"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]
+  - category: upstream
+    summary: "Contract A011 value stale — says timing.build equals 60 but gap-timing fallback produces 1500 in test fixture"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A011"]
+  - category: upstream
+    summary: "Cache never invalidated in getProofContext — risk profile is a new consumer inheriting this weakness"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "detectWorktreeSlug empty-string test is environment-dependent — pre-existing, fails inside worktrees"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 125
+    severity: observation
+    suggested_action: scope

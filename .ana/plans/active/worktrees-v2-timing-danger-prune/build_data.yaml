@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "Risk Profile renders as subsection under Proof Findings — dual h2 headers in worktree-context.md"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "build_agent and verify_agent lack direct test coverage — verified by code inspection only"
+    severity: observation
+    suggested_action: monitor
+  - summary: "computePipelineStats median_plan tested at type level only, not through computeHealthReport"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "detectWorktreeSlug empty-string test is environment-dependent (pre-existing)"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    severity: debt
+    suggested_action: scope

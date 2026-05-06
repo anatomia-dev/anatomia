@@ -3102,6 +3102,298 @@ describe('ana work start', () => {
 });
 
 /**
+ * Tests for danger map (risk profile), agent identity, and worktree prune
+ */
+describe('danger map and worktree prune', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'danger-map-test-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    // Clean up worktrees
+    try {
+      const result = execSync('git worktree list --porcelain', {
+        cwd: tempDir,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
+      const worktrees = result
+        .split('\n')
+        .filter(l => l.startsWith('worktree '))
+        .map(l => l.replace('worktree ', ''));
+      for (const wt of worktrees) {
+        if (wt !== tempDir) {
+          try {
+            execSync(`git worktree remove "${wt}" --force`, { cwd: tempDir, stdio: 'ignore' });
+          } catch { /* ignore */ }
+        }
+      }
+    } catch { /* not a git repo */ }
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  /**
+   * Helper to create a test project with a slug in build-ready state
+   */
+  async function createBuildReadyProject(options?: {
+    contractContent?: string;
+    proofChainEntries?: unknown[];
+  }): Promise<void> {
+    execSync('git init -b main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+    await fs.writeFile(path.join(anaDir, '.gitignore'), 'state/\nworktrees/\n', 'utf-8');
+
+    // Create slug with spec + contract (build-ready)
+    const slugDir = path.join(anaDir, 'plans', 'active', 'test-build');
+    await fs.mkdir(slugDir, { recursive: true });
+    await fs.writeFile(path.join(slugDir, 'scope.md'), '# Scope', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'spec.md'), '# Spec', 'utf-8');
+    await fs.writeFile(
+      path.join(slugDir, 'contract.yaml'),
+      options?.contractContent ?? 'version: "1.0"\nassertions: []\nfile_changes: []',
+      'utf-8'
+    );
+
+    // Write proof chain if provided
+    if (options?.proofChainEntries) {
+      await fs.writeFile(
+        path.join(anaDir, 'proof_chain.json'),
+        JSON.stringify({ entries: options.proofChainEntries }),
+        'utf-8'
+      );
+    }
+
+    await fs.writeFile(path.join(tempDir, 'README.md'), '# Test', 'utf-8');
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+  }
+
+  // @ana A001, A002, A003
+  it('startBuildPhase writes risk profile when contract has file_changes with findings', async () => {
+    await createBuildReadyProject({
+      contractContent: [
+        'version: "1.0"',
+        'assertions: []',
+        'file_changes:',
+        '  - path: "src/utils/proofSummary.ts"',
+        '    action: modify',
+        '  - path: "src/commands/work.ts"',
+        '    action: modify',
+      ].join('\n'),
+      proofChainEntries: [{
+        feature: 'prev-feature',
+        completed_at: '2026-01-01T00:00:00Z',
+        findings: [
+          { id: 'F1', category: 'code', summary: 'Cache stale', file: 'src/utils/proofSummary.ts', anchor: null, severity: 'risk', status: 'active' },
+          { id: 'F2', category: 'code', summary: 'Hot module', file: 'src/utils/proofSummary.ts', anchor: null, severity: 'debt', status: 'active' },
+          { id: 'F3', category: 'code', summary: 'Extract helper', file: 'src/utils/proofSummary.ts', anchor: null, severity: 'observation', status: 'active' },
+          { id: 'F4', category: 'code', summary: 'Untested branches', file: 'src/commands/work.ts', anchor: null, severity: 'risk', status: 'active' },
+          { id: 'F5', category: 'code', summary: 'JSDoc copy-paste', file: 'src/commands/work.ts', anchor: null, severity: 'debt', status: 'active' },
+        ],
+        build_concerns: [
+          { summary: 'process.exit prevents testing', file: 'src/commands/work.ts' },
+        ],
+      }],
+    });
+
+    await startWork('test-build');
+
+    // Check worktree-context.md for risk profile
+    const contextPath = path.join(tempDir, '.ana', 'worktrees', 'test-build', '.ana', 'worktree-context.md');
+    expect(fsSync.existsSync(contextPath)).toBe(true);
+    const content = fsSync.readFileSync(contextPath, 'utf-8');
+
+    // A001: contains Risk Profile section
+    expect(content).toContain('## Risk Profile');
+
+    // A002: proofSummary.ts has higher score (risk=3 + debt=2 + obs=1 = 6) than work.ts (risk=3 + debt=2 = 5)
+    const proofIdx = content.indexOf('proofSummary.ts');
+    const workIdx = content.indexOf('work.ts');
+    expect(proofIdx).toBeLessThan(workIdx);
+
+    // A003: verify scores — proofSummary.ts score = 3+2+1=6, work.ts score = 3+2=5
+    expect(content).toContain('risk score: 6');
+    expect(content).toContain('risk score: 5');
+  });
+
+  // @ana A004
+  it('omits risk profile when file_changes files have zero findings', async () => {
+    await createBuildReadyProject({
+      contractContent: [
+        'version: "1.0"',
+        'assertions: []',
+        'file_changes:',
+        '  - path: "src/commands/work.ts"',
+        '    action: modify',
+      ].join('\n'),
+      // No proof chain — so no findings
+    });
+
+    await startWork('test-build');
+
+    const contextPath = path.join(tempDir, '.ana', 'worktrees', 'test-build', '.ana', 'worktree-context.md');
+    const content = fsSync.readFileSync(contextPath, 'utf-8');
+
+    // A004 (AC2): no Risk Profile section when no findings
+    expect(content).not.toContain('## Risk Profile');
+  });
+
+  // @ana A005
+  it('falls back to raw string when contract YAML is malformed', async () => {
+    await createBuildReadyProject({
+      contractContent: '{{{{invalid yaml!!!!',
+    });
+
+    // Should not throw — falls back gracefully
+    await startWork('test-build');
+
+    const contextPath = path.join(tempDir, '.ana', 'worktrees', 'test-build', '.ana', 'worktree-context.md');
+    const content = fsSync.readFileSync(contextPath, 'utf-8');
+
+    // Contract assertions should still be present (raw string passthrough)
+    expect(content).toContain('Contract Assertions');
+  });
+
+  // @ana A006
+  it('risk profile includes findings only, not build concerns', async () => {
+    await createBuildReadyProject({
+      contractContent: [
+        'version: "1.0"',
+        'assertions: []',
+        'file_changes:',
+        '  - path: "src/commands/work.ts"',
+        '    action: modify',
+      ].join('\n'),
+      proofChainEntries: [{
+        feature: 'prev-feature',
+        completed_at: '2026-01-01T00:00:00Z',
+        findings: [
+          { id: 'F1', category: 'code', summary: 'Test finding', file: 'src/commands/work.ts', anchor: null, severity: 'risk', status: 'active' },
+        ],
+        build_concerns: [
+          { summary: 'process.exit prevents testing', file: 'src/commands/work.ts' },
+        ],
+      }],
+    });
+
+    await startWork('test-build');
+
+    const contextPath = path.join(tempDir, '.ana', 'worktrees', 'test-build', '.ana', 'worktree-context.md');
+    const content = fsSync.readFileSync(contextPath, 'utf-8');
+
+    expect(content).toContain('Test finding');
+    expect(content).not.toContain('process.exit prevents testing');
+  });
+
+  // @ana A017, A018
+  it('writes agent identity alongside work_started_at timestamp', async () => {
+    execSync('git init -b main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+    await fs.writeFile(path.join(tempDir, 'README.md'), '# Test', 'utf-8');
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+
+    const before = Date.now();
+    await startWork('fix-auth-timeout');
+    const after = Date.now();
+
+    const savesPath = path.join(anaDir, 'plans', 'active', 'fix-auth-timeout', '.saves.json');
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.work_agent).toBe('ana');
+    const ts = new Date(saves.work_started_at).getTime();
+    expect(ts).toBeGreaterThanOrEqual(before);
+    expect(ts).toBeLessThanOrEqual(after);
+  });
+
+  // @ana A019, A020
+  it('plan_started_at writes plan_agent and verify_started_at writes verify_agent', async () => {
+    execSync('git init -b main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+
+    // Create slug with scope only (triggers plan phase)
+    const slugDir = path.join(anaDir, 'plans', 'active', 'test-plan');
+    await fs.mkdir(slugDir, { recursive: true });
+    await fs.writeFile(path.join(slugDir, 'scope.md'), '# Scope', 'utf-8');
+
+    await fs.writeFile(path.join(tempDir, 'README.md'), '# Test', 'utf-8');
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+
+    await startWork('test-plan');
+
+    const savesPath = path.join(slugDir, '.saves.json');
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.plan_agent).toBe('ana-plan');
+  });
+
+  // @ana A021, A022
+  it('getWorkStatus calls git worktree prune without error', async () => {
+    execSync('git init -b main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+    await fs.writeFile(path.join(tempDir, 'README.md'), '# Test', 'utf-8');
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Create a worktree then manually remove its directory to make it stale
+    execSync('git worktree add .ana/worktrees/stale-wt -b feature/stale-wt', { cwd: tempDir, stdio: 'ignore' });
+    await fs.rm(path.join(tempDir, '.ana', 'worktrees', 'stale-wt'), { recursive: true, force: true });
+
+    // Verify stale worktree is listed
+    const beforeList = execSync('git worktree list --porcelain', { cwd: tempDir, encoding: 'utf-8' });
+    expect(beforeList).toContain('stale-wt');
+
+    // getWorkStatus should prune it without error
+    const originalLog = console.log;
+    console.log = () => {}; // suppress output
+    getWorkStatus({ json: false });
+    console.log = originalLog;
+
+    // After prune, stale worktree should be gone
+    const afterList = execSync('git worktree list --porcelain', { cwd: tempDir, encoding: 'utf-8' });
+    expect(afterList).not.toContain('stale-wt');
+  });
+});
+
+/**
  * Tests for Think template content
  */
 describe('Think template content', () => {

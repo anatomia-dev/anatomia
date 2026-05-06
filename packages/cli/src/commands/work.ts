@@ -18,8 +18,9 @@ import * as fs from 'node:fs';
 import * as fsPromises from 'node:fs/promises';
 import * as path from 'node:path';
 import { globSync } from 'glob';
+import * as yaml from 'yaml';
 import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
-import { generateProofSummary, resolveFindingPaths, generateDashboard, computeChainHealth, wrapJsonResponse, detectHealthChange, type ProofSummary } from '../utils/proofSummary.js';
+import { generateProofSummary, resolveFindingPaths, generateDashboard, computeChainHealth, wrapJsonResponse, detectHealthChange, getProofContext, type ProofSummary } from '../utils/proofSummary.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { isWorktreeDirectory, detectWorktreeSlug, worktreeExists, getWorktreeInfo, createWorktree, removeWorktree, getWorktreePath } from '../utils/worktree.js';
 import type { ProofChainEntry, ProofChain, ProofChainStats } from '../types/proof.js';
@@ -658,6 +659,13 @@ export function getWorkStatus(options: { json?: boolean }): void {
       }
     }
     // Silently continue with local state on fetch failure
+
+    // Prune stale worktree records before discovery
+    try {
+      runGit(['worktree', 'prune']);
+    } catch {
+      // Swallow errors silently — prune is best-effort
+    }
   }
 
   // Discover slugs
@@ -1441,7 +1449,7 @@ export async function startWork(slug: string): Promise<void> {
     await fsPromises.mkdir(activePath, { recursive: true });
 
     // Write work_started_at
-    await writeTimestamp(activePath, 'work_started_at');
+    await writeTimestamp(activePath, 'work_started_at', 'ana');
 
     console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
     return;
@@ -1478,7 +1486,7 @@ export async function startWork(slug: string): Promise<void> {
       process.exit(1);
     }
 
-    await writeTimestamp(activePath, 'plan_started_at');
+    await writeTimestamp(activePath, 'plan_started_at', 'ana-plan');
     console.log(`Resuming \`${slug}\` — Plan phase. Run \`claude --agent ana-plan\`.`);
     return;
   }
@@ -1490,7 +1498,7 @@ export async function startWork(slug: string): Promise<void> {
 
   // Phase: build report exists, no verify report → Verify (print worktree)
   if (buildReportExists && !verifyReportExists) {
-    await writeTimestamp(activePath, 'verify_started_at');
+    await writeTimestamp(activePath, 'verify_started_at', 'ana-verify');
     return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Verify');
   }
 
@@ -1516,7 +1524,7 @@ export async function startWork(slug: string): Promise<void> {
     }
 
     if (isFail) {
-      await writeTimestamp(activePath, 'build_started_at');
+      await writeTimestamp(activePath, 'build_started_at', 'ana-build');
       return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Fix');
     }
 
@@ -1547,7 +1555,7 @@ async function startBuildPhase(
   artifactBranch: string
 ): Promise<void> {
   // Record build_started_at on artifact branch BEFORE creating worktree
-  await writeTimestamp(activePath, 'build_started_at');
+  await writeTimestamp(activePath, 'build_started_at', 'ana-build');
 
   // Check if worktree already exists (resume case)
   if (worktreeExists(projectRoot, slug)) {
@@ -1560,6 +1568,53 @@ async function startBuildPhase(
   if (fs.existsSync(contractPath)) {
     const contractContent = fs.readFileSync(contractPath, 'utf-8');
     contextData = { contractAssertions: contractContent };
+
+    // Danger map: parse contract to extract file_changes, query proof context
+    try {
+      const parsed = yaml.parse(contractContent);
+      const fileChanges: Array<{ path: string }> = parsed?.file_changes ?? [];
+      const filePaths = fileChanges.map(fc => fc.path).filter(Boolean);
+
+      if (filePaths.length > 0) {
+        const contexts = getProofContext(filePaths, projectRoot);
+
+        // Build risk profile: rank files by severity-weighted finding count
+        const SEVERITY_WEIGHTS: Record<string, number> = { risk: 3, debt: 2, observation: 1 };
+        const rankedFiles: Array<{ filePath: string; score: number; findings: Array<{ severity: string; summary: string }> }> = [];
+
+        for (const ctx of contexts) {
+          // Findings only — not build concerns (AC4)
+          if (ctx.findings.length === 0) continue;
+          let score = 0;
+          const findingEntries: Array<{ severity: string; summary: string }> = [];
+          for (const f of ctx.findings) {
+            const sev = f.severity ?? '';
+            const weight = SEVERITY_WEIGHTS[sev] ?? 0;
+            score += weight;
+            findingEntries.push({ severity: sev || 'unknown', summary: f.summary });
+          }
+          rankedFiles.push({ filePath: ctx.query, score, findings: findingEntries });
+        }
+
+        // Sort descending by score
+        rankedFiles.sort((a, b) => b.score - a.score);
+
+        // Format as markdown if any files have findings (AC2: omit entirely when zero)
+        if (rankedFiles.length > 0) {
+          const lines: string[] = ['## Risk Profile', ''];
+          for (const file of rankedFiles) {
+            lines.push(`**${file.filePath}** (risk score: ${file.score}) — ${file.findings.length} finding${file.findings.length === 1 ? '' : 's'}`);
+            for (const f of file.findings) {
+              lines.push(`  - ${f.severity}: ${f.summary}`);
+            }
+            lines.push('');
+          }
+          contextData.proofFindings = lines.join('\n').trimEnd();
+        }
+      }
+    } catch {
+      // AC3: YAML parse failure — fall back to raw string behavior, no danger map
+    }
   }
 
   // Create worktree
@@ -1629,9 +1684,10 @@ function printExistingWorktree(
  *
  * @param activePath - Path to the active plan directory
  * @param key - Timestamp key (e.g., 'work_started_at', 'build_started_at')
+ * @param agent - Optional agent identity string (e.g., 'ana-build')
  * @returns Promise that resolves when the timestamp is written
  */
-async function writeTimestamp(activePath: string, key: string): Promise<void> {
+async function writeTimestamp(activePath: string, key: string, agent?: string): Promise<void> {
   const savesPath = path.join(activePath, '.saves.json');
   let saves: Record<string, unknown> = {};
   if (fs.existsSync(savesPath)) {
@@ -1642,6 +1698,11 @@ async function writeTimestamp(activePath: string, key: string): Promise<void> {
     }
   }
   saves[key] = new Date().toISOString();
+  if (agent) {
+    // Derive agent key: 'build_started_at' → 'build_agent', 'work_started_at' → 'work_agent'
+    const agentKey = key.replace('_started_at', '_agent');
+    saves[agentKey] = agent;
+  }
   await fsPromises.writeFile(savesPath, JSON.stringify(saves, null, 2), 'utf-8');
 }
 

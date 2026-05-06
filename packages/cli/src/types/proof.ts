@@ -175,6 +175,7 @@ export interface VerificationStats {
 export interface PipelineStats {
   median_total: number;
   median_scope: number | null;
+  median_plan: number | null;
   median_build: number | null;
   median_verify: number | null;
   entries_with_timing: number;

@@ -444,6 +444,7 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
 
     const parts: string[] = [];
     if (report.pipeline.median_scope !== null) parts.push(`scope ${report.pipeline.median_scope}m`);
+    if (report.pipeline.median_plan !== null) parts.push(`plan ${report.pipeline.median_plan}m`);
     if (report.pipeline.median_build !== null) parts.push(`build ${report.pipeline.median_build}m`);
     if (report.pipeline.median_verify !== null) parts.push(`verify ${report.pipeline.median_verify}m`);
     const breakdown = parts.length > 0 ? ` (${parts.join(' \u00b7 ')})` : '';

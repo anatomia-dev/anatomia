@@ -2695,8 +2695,8 @@ describe('ana proof', () => {
       expect(stdout).toContain('0 issues before shipping');
     });
 
-    // @ana A009, A010
-    it('displays median pipeline time with phase breakdown', async () => {
+    // @ana A009, A010, A015
+    it('displays median pipeline time with phase breakdown including plan', async () => {
       const entries = Array.from({ length: 5 }, (_, i) => {
         const entry = makeHealthEntry({ slug: `slug-${i}`, risks: 1 });
         entry['timing'] = {
@@ -2715,8 +2715,33 @@ describe('ana proof', () => {
       expect(stdout).toContain('Pipeline');
       expect(stdout).toContain('Median:');
       expect(stdout).toContain('scope');
+      expect(stdout).toContain('plan');
       expect(stdout).toContain('build');
       expect(stdout).toContain('verify');
+    });
+
+    // @ana A016
+    it('omits plan from pipeline breakdown when median_plan is null', async () => {
+      // Entries with timing but no plan values
+      const entries = Array.from({ length: 5 }, (_, i) => {
+        const entry = makeHealthEntry({ slug: `slug-${i}`, risks: 1 });
+        entry['timing'] = {
+          total_minutes: 50 + i * 10,
+          think: 8 + i,
+          build: 20 + i * 3,
+          verify: 10 + i * 2,
+        };
+        return entry;
+      });
+      await createProofChain(entries);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['health']);
+      expect(stdout).toContain('Pipeline');
+      expect(stdout).toContain('scope');
+      expect(stdout).toContain('build');
+      // plan should not appear since no entries have timing.plan
+      expect(stdout).not.toMatch(/plan \d+m/);
     });
 
     // @ana A011
