@@ -15,7 +15,7 @@
  * this file. Declaration order relies on function hoisting: SKILL_INJECTORS
  * is defined before the inject* functions it references.
  *
- * Path protection semantic (Item 12): re-init AND partial install (fresh
+ * Path protection semantic: re-init AND partial install (fresh
  * init where skill file already exists from manual creation or prior
  * install with deleted .ana/) both refresh Detected but skip gotcha
  * injection. The `allowGotchaInjection` flag makes this explicit rather
@@ -64,7 +64,7 @@ function extractDominanceFromEvidence(
 }
 
 /**
- * Scaffold and seed skill files using dynamic manifest (D8.2, D8.9)
+ * Scaffold and seed skill files using dynamic manifest.
  *
  * Uses computeSkillManifest() to determine which skills to scaffold.
  * Fresh init: copy template + inject Detected.
@@ -81,7 +81,7 @@ function extractDominanceFromEvidence(
  * for that skill and engineResult is available. Returns content unchanged
  * otherwise.
  *
- * Extracted helper (Item 12) so the old 2-copies-of-Detected-injection
+ * Extracted helper so the old 2-copies-of-Detected-injection
  * (Path B inline + Paths A/C shared) collapse to a single call site.
  *
  * @param content - Skill file content (SKILL.md)
@@ -102,12 +102,12 @@ function injectDetectedIfAvailable(
 }
 
 /**
- * Scaffold and seed skill files using dynamic manifest (D8.2, D8.9).
+ * Scaffold and seed skill files using dynamic manifest.
  *
  * Uses computeSkillManifest() to determine which skills to scaffold.
  * Fresh init: copy template + inject Detected + optional gotchas.
  * Re-init: read existing file, REPLACE ## Detected section, preserve
- * human content (and skip gotcha injection — see Item 12 refactor).
+ * human content (and skip gotcha injection).
  *
  * @param skillsPath - Path to .claude/skills/ directory
  * @param templatesDir - Path to CLI templates directory
@@ -276,7 +276,7 @@ function injectCodingStandards(result: EngineResult): string {
     }
   }
   // Pattern display — handles PatternConfidence | MultiPattern union via
-  // getPatternLibrary helper (Item 6). MultiPattern cases show the primary
+  // getPatternLibrary helper. MultiPattern cases show the primary
   // library name; variant is looked up from the single-pattern case only
   // (MultiPattern's primary already represents the chosen variant).
   const ehLib = getPatternLibrary(result.patterns?.errorHandling);
@@ -317,7 +317,7 @@ function injectTestingStandards(result: EngineResult): string {
   const lines: string[] = [];
   if (result.stack.testing.length > 0) {
     const testCount = result.files.test > 0 ? ` (${result.files.test} test files)` : '';
-    // SCAN-050: join all detected frameworks (was single-value before).
+    // Join all detected frameworks (was single-value before).
     lines.push(`- Framework: ${result.stack.testing.join(', ')}${testCount}`);
   }
   if (result.commands.test) {
@@ -330,7 +330,7 @@ function injectTestingStandards(result: EngineResult): string {
     const variant = t && !isMultiPattern(t) && t.variant ? ` (${t.variant})` : '';
     lines.push(`- Testing patterns: ${testLib}${variant}`);
   }
-  // Item 10 — use TEST_DIRECTORY_NAMES (single source of truth) so projects
+  // Use TEST_DIRECTORY_NAMES (single source of truth) so projects
   // with __tests__/, spec/, e2e/, cypress/, etc. are recognized as having a
   // dedicated test directory. Previously only tests/ and test/ counted, so
   // Jest-convention and E2E-only projects incorrectly reported "co-located."
@@ -368,13 +368,13 @@ function injectDeployment(result: EngineResult): string {
  * Build the `ai-patterns` skill's Detected section body.
  *
  * Shows the detected AI SDK (if any) and a deduped "Also detected" line for
- * additional AI services that aren't the same SDK. After Item 18, the filter
- * is a plain exact-match (`s.name !== sdk`) — the previous 3-way match
+ * additional AI services that aren't the same SDK. The filter is a plain
+ * exact-match (`s.name !== sdk`) — the previous 3-way match
  * existed only because AI_PACKAGES named the base SDK `'Vercel AI SDK'`
  * while AI_SDK_PACKAGES used `'Vercel AI'`. That split was the root cause of
  * the filter complexity; standardizing on `'Vercel AI'` collapses both sides.
  *
- * Exported for direct unit testing (Item 16).
+ * Exported for direct unit testing.
  *
  * @param result - Engine scan result.
  * @returns Detected section body (empty string if no AI data).
@@ -419,7 +419,7 @@ function injectDataAccess(result: EngineResult): string {
 }
 
 /**
- * Replace ## Detected section content while preserving all other sections (D6.13)
+ * Replace ## Detected section content while preserving all other sections.
  *
  * Machine/human boundary: ## Detected is machine-owned (auto-refreshable),
  * ## Rules, ## Gotchas, ## Examples are human-owned (never overwritten).

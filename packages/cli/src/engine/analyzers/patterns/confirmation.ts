@@ -1,5 +1,5 @@
 /**
- * Tree-sitter pattern confirmation (Item 14a — extracted from patterns.ts).
+ * Tree-sitter pattern confirmation.
  *
  * Stage 3 of pattern inference: AST-level confirmation of patterns detected
  * from dependencies. Each confirmer inspects parsed imports and class/
@@ -36,14 +36,14 @@ const COMPONENT_EXTENSIONS = ['.tsx', '.jsx', '.vue'];
 const COMPONENT_DIRECTORIES = ['components', 'pages', 'app'];
 
 // ============================================================================
-// STAGE 3: TREE-SITTER CONFIRMATION (CP1)
+// STAGE 3: TREE-SITTER CONFIRMATION
 // ============================================================================
 
 /**
  * Confirm patterns using tree-sitter analysis (Stage 3)
  *
- * OPTIMIZATION: Reuses analysis.parsed.files from STEP_1.3 (no re-parsing needed).
- * 98.9% cache hit rate from STEP_1.3 ASTCache means this is nearly instant.
+ * OPTIMIZATION: Reuses parsed files from the parsing phase (no re-parsing needed).
+ * 98.9% cache hit rate from the ASTCache means this is nearly instant.
  *
  * Boosts confidence based on code evidence:
  * - Imports found: +0.15 (0.75 → 0.90)
@@ -52,7 +52,7 @@ const COMPONENT_DIRECTORIES = ['components', 'pages', 'app'];
  *
  * @param rootPath - Project root (not used, but kept for consistency)
  * @param initialPatterns - Patterns from detectFromDependencies() (Stage 1 baseline)
- * @param analysis - DeepTierInput with parsed field from STEP_1.3
+ * @param analysis - DeepTierInput with parsed files from the parsing phase
  * @returns Patterns with boosted confidence based on code evidence
  */
 export async function confirmPatternsWithTreeSitter(
@@ -63,7 +63,7 @@ export async function confirmPatternsWithTreeSitter(
   // Copy initial patterns (will mutate confidence and evidence)
   const confirmed = { ...initialPatterns };
 
-  // Get parsed files from STEP_1.3 (already cached, no re-parsing)
+  // Get parsed files (already cached, no re-parsing)
   const parsedFiles = analysis.parsed?.files || [];
 
   // Confirm each category (each function mutates confirmed object)
@@ -101,7 +101,7 @@ async function confirmValidationPattern(
   parsedFiles: ParsedFile[],
   _analysis: DeepTierInput
 ): Promise<void> {
-  if (!patterns['validation']) return;  // No validation pattern detected in CP0
+  if (!patterns['validation']) return;  // No validation pattern detected in dependency stage
 
   const library = patterns['validation'].library;
 
@@ -331,7 +331,7 @@ async function confirmErrorHandlingPattern(
   // Go error returns (already high confidence)
   else if (library === 'error-returns') {
     // Go error returns are language convention
-    // Confidence already 1.0 from CP0, just add evidence
+    // Confidence already 1.0 from dependency detection, just add evidence
     if (!patterns['errorHandling'].evidence.includes('Go error return convention confirmed')) {
       patterns['errorHandling'].evidence.push('Go error return convention confirmed');
     }
@@ -341,7 +341,7 @@ async function confirmErrorHandlingPattern(
 /**
  * Confirm database pattern usage and detect variants
  *
- * UPDATED (CP3): Now detects multiple patterns (e.g., SQLAlchemy sync + async)
+ * Detects multiple patterns (e.g., SQLAlchemy sync + async)
  * Uses detectMultipleDatabasePatterns() for variant detection.
  *
  * SQLAlchemy: Distinguish async vs sync based on imports (AsyncSession vs Session)
@@ -358,7 +358,7 @@ async function confirmDatabasePattern(
 ): Promise<void> {
   // Parameter type widened to accept the full union — previously narrowed to
   // PatternConfidence but the function assigns MultiPattern at line below via
-  // a cast that silenced the type mismatch (Item 2.5 root fix). After this
+  // a cast that silenced the type mismatch. After this
   // change the cast is unnecessary and the isMultiPattern guard below makes
   // the code honest about which branch is running.
   const dbPattern = patterns['database'];
@@ -372,7 +372,7 @@ async function confirmDatabasePattern(
   // From here on, dbPattern is narrowed to PatternConfidence.
   const library = dbPattern.library;
 
-  // SQLAlchemy confirmation with multi-pattern detection (CP3)
+  // SQLAlchemy confirmation with multi-pattern detection
   if (library === 'sqlalchemy') {
     // Detect if multiple patterns exist (sync + async)
     const multiPattern = await detectMultipleDatabasePatterns(parsedFiles);
@@ -611,7 +611,7 @@ async function confirmAuthPattern(
 /**
  * Confirm testing pattern presence
  *
- * Uses structure.testLocation from STEP_1.2 (test directory already detected).
+ * Uses structure.testLocation from structure analysis (test directory already detected).
  * Boosts confidence if test directory found.
  * @param patterns
  * @param parsedFiles
@@ -626,7 +626,7 @@ async function confirmTestingPattern(
 
   const framework = patterns['testing'].library;
 
-  // Use test location from STEP_1.2 structure analysis
+  // Use test location from structure analysis
   const testLocation = analysis.structure?.testLocation;
 
   if (testLocation) {
@@ -661,7 +661,7 @@ async function confirmTestingPattern(
 }
 
 // ============================================================================
-// MULTI-PATTERN DETECTION (CP3)
+// MULTI-PATTERN DETECTION
 // ============================================================================
 
 /**
@@ -681,7 +681,7 @@ async function confirmTestingPattern(
  * 2. If tied: async preferred over sync (modern pattern)
  * 3. If still tied: higher confidence wins
  *
- * @param parsedFiles - Parsed files from STEP_1.3
+ * @param parsedFiles - Parsed files from the parsing phase
  * @returns Multi-pattern, single pattern, or null
  */
 export async function detectMultipleDatabasePatterns(

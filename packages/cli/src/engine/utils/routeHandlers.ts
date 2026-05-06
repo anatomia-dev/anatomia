@@ -1,5 +1,5 @@
 /**
- * Route-handler file detection + HTTP method name filtering (Item 9).
+ * Route-handler file detection + HTTP method name filtering.
  *
  * Framework route handlers export functions named after HTTP methods
  * (GET, POST, etc.). In those files, the names are framework convention,

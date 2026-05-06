@@ -1,5 +1,5 @@
 /**
- * Directory tree rendering (Item 14b — extracted from structure.ts).
+ * Directory tree rendering.
  */
 
 import { basename } from 'node:path';
@@ -15,7 +15,6 @@ import { basename } from 'node:path';
  * @param maxDirs - Maximum directories to show (default: 40)
  * @returns ASCII tree string (max 50 lines)
  *
- * Implementation: CP2
  */
 export async function buildAsciiTree(
   rootPath: string,

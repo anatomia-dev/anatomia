@@ -13,11 +13,10 @@ const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
 const FRAMEWORK_DISPLAY_NAMES: Record<string, string> = {
   nextjs: 'Next.js', react: 'React', vue: 'Vue', angular: 'Angular',
   svelte: 'Svelte', express: 'Express', fastify: 'Fastify', nestjs: 'NestJS',
-  // S19/SCAN-040: 'react-router' is React Router v7 (merged successor of
-  // Remix); 'remix' is legacy Remix installations. Same framework going
-  // forward; we report the name that matches the installed packages.
+  // 'react-router' is React Router v7 (merged successor of Remix);
+  // 'remix' is legacy Remix installations. Same framework going forward;
+  // we report the name that matches the installed packages.
   'react-router': 'React Router', remix: 'Remix',
-  // S19/SCAN-041: Hono (edge-runtime web framework)
   hono: 'Hono',
   fastapi: 'FastAPI', django: 'Django', flask: 'Flask', rails: 'Rails',
   sinatra: 'Sinatra', gin: 'Gin', echo: 'Echo', fiber: 'Fiber',

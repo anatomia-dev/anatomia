@@ -1,5 +1,5 @@
 /**
- * Runtime utilities + state/display for ana init (Item 14c — extracted from init.ts).
+ * Runtime utilities + state/display for ana init.
  *
  * confirm lives here (not in preflight.ts) so preflight.ts can import it
  * without a cycle: preflight → state is one-way.
@@ -82,7 +82,7 @@ export async function runAnalyzer(
 }
 
 /**
- * Display scan progress after analysis (D7.6)
+ * Display scan progress after analysis
  *
  * Shows incremental detection results. Null values skipped.
  *
@@ -119,7 +119,7 @@ export function displayDetectionSummary(result: EngineResult): void {
     console.log(chalk.green('  ✓ Patterns: ') + `${detected} detected (${depth})`);
   }
 
-  // Services (deduped against stack + deployment via annotated stackRoles, Item 5).
+  // Services (deduped against stack + deployment via annotated stackRoles).
   if (result.externalServices.length > 0) {
     const dedupedSvcs = result.externalServices.filter(svc => svc.stackRoles.length === 0);
     if (dedupedSvcs.length > 0) {
@@ -312,9 +312,9 @@ export function makeTestCommandNonInteractive(
  * Phase 7: Create ana.json (D1 schema)
  *
  * Creates project config with detected data. Every field is a contract
- * consumed by pipeline agents — see D1 for the canonical schema.
+ * consumed by pipeline agents.
  *
- * Returns the in-memory config so preserveUserState (S19/NEW-001) can
+ * Returns the in-memory config so preserveUserState can
  * merge it with restored user fields without a redundant read from disk.
  *
  * @param tmpAnaPath - Temp .ana/ path
@@ -399,7 +399,7 @@ export async function createAnaJson(
 }
 
 /**
- * S19/NEW-001: Preserve user state into the tmpDir build.
+ * Preserve user state into the tmpDir build.
  *
  * Reads directly from the still-existing `.ana/` (the swap-based rename
  * means the old install is untouched until the atomic swap succeeds).
@@ -558,7 +558,7 @@ export async function atomicRename(tmpAnaPath: string, anaPath: string): Promise
 }
 
 /**
- * Display completion UX after init (D8.8)
+ * Display completion UX after init
  *
  * Dynamic skill counts, conditional callout, two-path next steps.
  * Null values skipped throughout.
@@ -583,7 +583,7 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     if (engineResult.deployment?.platform) {
       console.log(`  ${chalk.bold('Deploy:')}   ${engineResult.deployment.platform}`);
     }
-    // Services (deduped via annotated stackRoles, Item 5).
+    // Services (deduped via annotated stackRoles).
     if (engineResult.externalServices.length > 0) {
       const uniqueServices = engineResult.externalServices.filter(svc => svc.stackRoles.length === 0);
       if (uniqueServices.length > 0) {
@@ -605,8 +605,8 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     const analysis = engineResult;
     const manifest = computeSkillManifest(analysis);
     // Widen coreSkills to string[] so .includes() accepts the any-string
-    // manifest entries (Item 2.6 — CORE_SKILLS is a readonly literal union
-    // tuple, .includes() expects its narrow union, manifest is string[]).
+    // manifest entries (CORE_SKILLS is a readonly literal union tuple,
+    // .includes() expects its narrow union, manifest is string[]).
     const coreSkills: string[] = [...CORE_SKILLS];
     const conditionalSkills = manifest.filter(s => !coreSkills.includes(s));
 

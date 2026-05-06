@@ -7,7 +7,7 @@
  * manifest, and returns a PreflightResult telling the orchestrator whether
  * to proceed.
  *
- * S19/NEW-001: preflight no longer backs up or deletes `.ana/`. The
+ * Preflight no longer backs up or deletes `.ana/`. The
  * existing installation is left in place until the atomic swap at the
  * end of the pipeline. User state is copied from the live `.ana/` into
  * tmpDir by preserveUserState (state.ts). "No changes made" in the
@@ -146,7 +146,7 @@ export async function validateInitPreconditions(
       }
     }
 
-    // S19/NEW-001: No backup, no deletion. The existing .ana/ stays put
+    // No backup, no deletion. The existing .ana/ stays put
     // until the atomic swap at the end of the pipeline. preserveUserState
     // (state.ts) will read context/, state/setup-progress.json, and
     // ana.json directly from the live .ana/ when building the replacement

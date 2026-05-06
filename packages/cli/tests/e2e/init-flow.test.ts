@@ -50,8 +50,7 @@ describe('ana init E2E', () => {
 
     const anaPath = path.join(tmpProject, '.ana');
 
-    // Verify directories (4 — hooks removed S19/NEW-005, modes removed S18,
-    // setup/ removed D10.9/S16, docs/ removed S18 Phase 3 Pass 2)
+    // Verify directories (4)
     const dirs = [
       'context',
       'plans/active',
@@ -64,7 +63,7 @@ describe('ana init E2E', () => {
       expect(exists, `Directory missing: ${dir}`).toBe(true);
     }
 
-    // Verify generated files (2 — S15 consolidated 7→2)
+    // Verify generated files (2)
     const generatedFiles = [
       'context/project-context.md',
       'context/design-principles.md',
@@ -75,8 +74,8 @@ describe('ana init E2E', () => {
       expect(exists, `Generated file missing: ${file}`).toBe(true);
     }
 
-    // .ana/hooks/ removed (S19/NEW-005 — the dead PostToolUse hook chain
-    // was computing validation then discarding it; entire chain deleted)
+    // .ana/hooks/ removed (the PostToolUse hook chain was computing
+    // validation then discarding it; entire chain deleted)
 
     // Verify .gitkeep files in plan directories
     const activeGitkeepExists = await fileExists(path.join(anaPath, 'plans/active/.gitkeep'));
@@ -93,9 +92,9 @@ describe('ana init E2E', () => {
     expect(meta.lastScanAt).toBeDefined();
     expect(meta.name).toBeDefined();
 
-    // Count assertion removed (S19/INFRA-011 — each expected file is
-    // already individually asserted above by name; the total count added
-    // zero information and required manual updates on every manifest change)
+    // Count assertion removed — each expected file is already individually
+    // asserted above by name; the total count added zero information and
+    // required manual updates on every manifest change.
 
     // Verify .gitignore exists and excludes runtime state
     const gitignorePath = path.join(anaPath, '.gitignore');
@@ -168,8 +167,8 @@ describe('ana init E2E', () => {
     const enriched = '# Project Context\n\n## What This Project Does\nEnriched by user.\n';
     await fs.writeFile(path.join(contextPath, 'project-context.md'), enriched);
 
-    // Add derived file to state/ — this should NOT survive re-init (S19/NEW-001
-    // policy: state/ is regenerated, not preserved, except setup-progress.json
+    // Add derived file to state/ — this should NOT survive re-init
+    // (state/ is regenerated, not preserved, except setup-progress.json
     // during a partial setup)
     await fs.writeFile(path.join(statePath, 'test.json'), '{"derived":true}');
 

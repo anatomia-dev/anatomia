@@ -18,7 +18,7 @@ export interface Detection {
  * Detect FastAPI framework in a Python project.
  *
  * Note: scanForImports (import verification, +0.15 confidence) deferred to
- * Lane 0+ analyzer scope. Confidence is now dep+companion based (0.80-0.85).
+ * analyzer scope. Confidence is dep+companion based (0.80-0.85).
  */
 export function detectFastAPI(
   dependencies: string[],
@@ -44,7 +44,7 @@ export function detectFastAPI(
 
   const confidence = calculateConfidence({
     dependencyFound,
-    importsFound: false,  // deferred to Lane 0+ (analyzer scope, not detector)
+    importsFound: false,  // deferred to analyzer scope
     configFilesFound: false,
     frameworkSpecificPatterns: hasCompanions,
   });

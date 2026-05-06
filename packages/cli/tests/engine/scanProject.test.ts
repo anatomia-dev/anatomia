@@ -112,15 +112,15 @@ describe('scanProject()', () => {
     expect(result.schemas['prisma']).toBeDefined();
     expect(result.schemas['prisma']!.found).toBe(true);
     expect(result.schemas['prisma']!.modelCount).toBe(2);
-    // SCAN-042 regression: backwards-compat — monolith layout still works.
+    // Backwards-compat — monolith layout still works.
     expect(result.schemas['prisma']!.path).toBe('prisma/schema.prisma');
   });
 
   // @ana A013
-  // SCAN-042: monorepo sub-package ORM schema detection. 5 of 22 target-
-  // customer projects had Prisma inside a packages/<pkg>/ sub-directory;
-  // the old root-only glob missed them and fired a misleading blind spot.
-  it('detects Prisma schema in a monorepo sub-package (SCAN-042)', async () => {
+  // Monorepo sub-package ORM schema detection. 5 of 22 target-customer
+  // projects had Prisma inside a packages/<pkg>/ sub-directory; the old
+  // root-only glob missed them and fired a misleading blind spot.
+  it('detects Prisma schema in a monorepo sub-package', async () => {
     await createFiles({
       'package.json': JSON.stringify({
         name: 'monorepo-root',
@@ -219,7 +219,7 @@ describe('scanProject()', () => {
   });
 
   // @ana A018, A019, A020
-  it('detects Drizzle schema in a monorepo sub-package (SCAN-042)', async () => {
+  it('detects Drizzle schema in a monorepo sub-package', async () => {
     await createFiles({
       'package.json': JSON.stringify({
         name: 'monorepo-root',
@@ -576,20 +576,20 @@ export const comments = pgTable("comments", {});
   });
 
   // ============================================================================
-  // SCAN-023: Non-Node composition-layer tests
+  // Non-Node composition-layer tests
   //
   // Every existing scanProject fixture was Node/TypeScript. The composition
   // layer (allDeps merge, file counts, packageManager assignment, blind spot
-  // suppression) had zero non-Node coverage — Lane 1's SCAN-032 (nullable
-  // packageManager) and SCAN-033 (missing-tests blind spot) shipped with
-  // Node-only tests. These three fixtures lock non-Node behavior so any
-  // regression surfaces at the composition layer, not at the detector layer.
+  // suppression) had zero non-Node coverage — nullable packageManager and
+  // missing-tests blind spot shipped with Node-only tests. These three
+  // fixtures lock non-Node behavior so any regression surfaces at the
+  // composition layer, not at the detector layer.
   // ============================================================================
 
   it('scans a Python project with pyproject.toml (PEP 621 + optional-dependencies)', async () => {
     // Modern Python project format: PEP 621 [project] table with
     // [project.optional-dependencies] for test/dev deps. This is the format
-    // SCAN-023's pyproject parser fix was specifically added to handle.
+    // the pyproject parser's optional-dependencies support handles.
     await createFiles({
       'pyproject.toml': `[project]
 name = "test-py"
@@ -617,11 +617,11 @@ dev = [
 
     expect(result.stack.language).toBe('Python');
     expect(result.stack.framework).toBe('FastAPI');
-    // SCAN-032 lock: Node package manager never leaks into non-Node results.
+    // Node package manager never leaks into non-Node results.
     expect(result.commands.packageManager).toBeNull();
     expect(result.commands.build).toBeNull();
     expect(result.commands.test).toBeNull();
-    // SCAN-033 + SCAN-023 interaction: pytest IS detected via optional-deps
+    // pytest IS detected via optional-deps
     // (not just top-level `dependencies`), AND a test file exists — so the
     // missing-tests blind spot must not fire.
     expect(
@@ -646,7 +646,7 @@ require github.com/gin-gonic/gin v1.9.1
 
     expect(result.stack.language).toBe('Go');
     expect(result.stack.framework).toBe('Gin');
-    // SCAN-032 lock
+    // Package manager must be null for non-Node
     expect(result.commands.packageManager).toBeNull();
   });
 
@@ -669,7 +669,7 @@ tokio = { version = "1", features = ["full"] }
     // axum isn't in FRAMEWORK_DISPLAY_NAMES — the detector returns the raw
     // framework key and the display layer passes it through.
     expect(result.stack.framework).toBe('axum');
-    // SCAN-032 lock
+    // Package manager must be null for non-Node
     expect(result.commands.packageManager).toBeNull();
   });
 });

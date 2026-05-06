@@ -1,10 +1,10 @@
 /**
  * PHP dependency parser (composer.json).
  *
- * Low-level parser only — `readPhpDependencies` (the higher-level
- * reader that wrapped this) was deleted in S19/INFRA-013 as dead code.
- * No production code path consumes PHP dependency data today; the
- * parser is retained as a tested utility in case PHP support ships later.
+ * Low-level parser only — the higher-level reader that wrapped this
+ * was deleted as dead code. No production code path consumes PHP
+ * dependency data today; the parser is retained as a tested utility
+ * in case PHP support ships later.
  */
 
 export function parseComposerJson(content: string): string[] {

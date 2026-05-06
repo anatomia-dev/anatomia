@@ -1,5 +1,5 @@
 /**
- * Convention detection types (STEP_2.2)
+ * Convention detection types
  *
  * Defines types for detected coding conventions:
  * - Naming (snake_case, camelCase, PascalCase, kebab-case, SCREAMING_SNAKE_CASE)
@@ -7,8 +7,6 @@
  * - Type hints (always, sometimes, never - Python)
  * - Docstrings (google, numpy, rst, jsdoc, tsdoc, none)
  * - Indentation (spaces, tabs with width)
- *
- * Based on: START_HERE.md lines 874-993 (complete schema definitions)
  */
 
 import { z } from 'zod';
@@ -128,7 +126,7 @@ export const ImportConventionSchema = z.object({
 
 export type ImportConvention = z.infer<typeof ImportConventionSchema>;
 
-// typeHints + docstrings analyzers were deleted (Item 4) — they ran on fields
+// typeHints + docstrings analyzers were deleted — they ran on fields
 // that don't exist on FunctionInfo via `as unknown as` casts and always returned
 // defaults. Phantom detection removed entirely, not shipped as zeros pretending
 // to be measurements. Re-add only when tree-sitter extraction supplies real data.

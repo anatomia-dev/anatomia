@@ -21,9 +21,6 @@ import { createHash } from 'node:crypto';
 import * as yaml from 'yaml';
 import { runContractPreCheck } from './verify.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
-// readArtifactBranch + getCurrentBranch moved to utils/git-operations.ts (Item 13).
-// artifact.ts still uses them internally; pr.ts and work.ts now import directly
-// from utils/ instead of cross-command-importing from here.
 import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import type { ContractSchema } from '../types/contract.js';
 
@@ -237,8 +234,6 @@ function parseArtifactType(type: string): ArtifactTypeInfo | null {
   return { category, fileName, displayName, baseType };
 }
 
-// readArtifactBranch + getCurrentBranch moved to utils/git-operations.ts
-// (Item 13). Imported at the top of this file for internal use.
 
 /**
  * Validate plan.md format

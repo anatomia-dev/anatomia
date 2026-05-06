@@ -1,7 +1,7 @@
 /**
  * Integration tests for tree-sitter parsing pipeline.
  *
- * Lane 0 Step 7: the original tests called analyze() which is deleted.
+ * The original tests called analyze() which is deleted.
  * The parsing pipeline is now exercised through:
  * - scanProject(depth: 'deep') in scanProject.test.ts
  * - WASM smoke test in wasm-smoke.test.ts

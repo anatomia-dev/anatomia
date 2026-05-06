@@ -1,5 +1,5 @@
 /**
- * Service → stack role annotation (Item 5).
+ * Service → stack role annotation.
  *
  * Annotates detected external services with the stack roles they fulfill,
  * so display code can dedupe trivially via `stackRoles.length === 0` instead

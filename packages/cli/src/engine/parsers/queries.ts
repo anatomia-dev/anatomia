@@ -25,7 +25,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
     imports: `(import_from_statement module_name: (dotted_name) @import.module)
 (import_statement name: (dotted_name) @import.module)`,
 
-    // STEP_2.1 pattern detection queries
+    // Pattern detection queries
     tryExcept: `(try_statement
   (block) @try.body
   (except_clause) @except
@@ -49,7 +49,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   name: (identifier) @function.name
 )`,
 
-    // STEP_2.2 convention detection queries (CP0)
+    // Convention detection queries
     variables: `(assignment left: (identifier) @variable.name)`,
   },
 
@@ -62,7 +62,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
     decorators: `(decorator) @decorator`,
     imports: `(import_statement source: (string) @import.module)`,
 
-    // STEP_2.1 pattern detection queries
+    // Pattern detection queries
     tryCatch: `(try_statement
   (block) @try.body
   (catch_clause) @catch
@@ -86,7 +86,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   )
 )`,
 
-    // STEP_2.2 convention detection queries (CP0)
+    // Convention detection queries
     // Identical to the tsx.variables entry — both grammars share the same base
     // and use the same lexical_declaration → variable_declarator structure.
     variables: `(lexical_declaration
@@ -103,7 +103,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
     decorators: `(decorator) @decorator`,
     imports: `(import_statement source: (string) @import.module)`,
 
-    // STEP_2.1 pattern detection queries (same as TypeScript)
+    // Pattern detection queries (same as TypeScript)
     tryCatch: `(try_statement
   (block) @try.body
   (catch_clause) @catch
@@ -127,7 +127,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   )
 )`,
 
-    // STEP_2.2 convention detection queries (CP0)
+    // Convention detection queries
     variables: `(lexical_declaration
   (variable_declarator
     name: (identifier) @variable.name))`,
@@ -140,7 +140,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
     exports: `(export_statement) @export`,
     imports: `(import_statement source: (string) @import.module)`,
 
-    // STEP_2.1 pattern detection queries
+    // Pattern detection queries
     tryCatch: `(try_statement
   (block) @try.body
   (catch_clause) @catch
@@ -153,7 +153,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   )
 )`,
 
-    // STEP_2.2 convention detection queries (CP0)
+    // Convention detection queries
     variables: `(variable_declaration
   (variable_declarator
     name: (identifier) @variable.name))`,
@@ -165,7 +165,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
     structs: `(type_spec name: (type_identifier) @struct.name type: (struct_type))`,
     imports: `(import_spec path: (interpreted_string_literal) @import.path)`,
 
-    // STEP_2.1 pattern detection queries
+    // Pattern detection queries
     ifErrNotNil: `(if_statement
   condition: (binary_expression
     left: (identifier) @var
@@ -183,7 +183,7 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   )
 )`,
 
-    // STEP_2.2 convention detection queries (CP0)
+    // Convention detection queries
     variables: `(var_declaration
   (var_spec
     name: (identifier) @variable.name))`,
@@ -206,7 +206,7 @@ export type QueryType =
   | 'interfaces'
   | 'methods'
   | 'structs'
-  // STEP_2.1 pattern detection queries
+  // Pattern detection queries
   | 'tryExcept'      // Python
   | 'baseModelClass' // Python
   | 'specificImport' // Python
@@ -216,7 +216,7 @@ export type QueryType =
   | 'namedImport'    // TypeScript
   | 'ifErrNotNil'    // Go
   | 'structWithTags' // Go
-  // STEP_2.2 convention detection queries (CP0)
+  // Convention detection queries
   | 'variables'      // All languages
   | 'shortVars';     // Go only
 

@@ -1,5 +1,5 @@
 /**
- * Architecture classification (Item 14b — extracted from structure.ts).
+ * Architecture classification.
  *
  * Heuristic classifiers that inspect directory names + entry points to
  * detect layered, domain-driven, or microservices architecture patterns.
@@ -126,7 +126,6 @@ function isMicroservices(directories: string[], projectType: string): {
  * @param projectType
  * @returns Architecture classification result
  *
- * Implementation: CP2
  */
 export function classifyArchitecture(
   directories: string[],

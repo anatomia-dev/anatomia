@@ -74,7 +74,7 @@ describe('readNodeDependencies', () => {
     // Phase 2 finding: because of that upstream swallowing, the outer catch
     // in readNodeDependencies is not reachable from any input we can
     // construct (the file utility and parsePackageJson both have their own
-    // try/catch). Item 2.7's `_error` → `error` rename was therefore a
+    // try/catch). The `_error` → `error` rename was therefore a
     // correctness-of-dead-code fix — worth doing for future-proofing but
     // not exercisable via an integration test without monkey-patching fs.
     // Noted for a future cleanup pass (delete the dead catch or remove the

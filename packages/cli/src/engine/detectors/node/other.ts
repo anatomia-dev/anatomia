@@ -22,7 +22,7 @@ export function detectOtherNodeFrameworks(
   if (dependencies.includes('koa')) {
     return { framework: 'koa', confidence: 0.85, indicators: ['koa in dependencies'] };
   }
-  // Hono — lightweight web framework for edge runtimes (S19/SCAN-041)
+  // Hono — lightweight web framework for edge runtimes
   if (dependencies.includes('hono')) {
     return { framework: 'hono', confidence: 0.85, indicators: ['hono in dependencies'] };
   }

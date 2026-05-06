@@ -699,8 +699,6 @@ export function getWorkStatus(options: { json?: boolean }): void {
   }
 }
 
-// ProofChainEntry moved to src/types/proof.ts (Item 13).
-// Imported above for internal use in this file.
 
 // ProofChain, ProofChainStats imported from types/proof.ts
 

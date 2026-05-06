@@ -1,11 +1,10 @@
 /**
- * ana init - Initialize .ana/ context framework (Item 14c orchestrator).
+ * ana init - Initialize .ana/ context framework.
  *
- * Exports registerInitCommand (Item 22 registration consistency). The
- * action handler orchestrates the 9-phase init pipeline by calling into
- * sibling modules.
+ * Exports registerInitCommand. The action handler orchestrates the 9-phase
+ * init pipeline by calling into sibling modules.
  *
- * S19/NEW-001: Swap-based atomic rename replaces the backup-then-delete
+ * Swap-based atomic rename replaces the backup-then-delete
  * flow. The existing `.ana/` is left in place throughout phases 2-9. At
  * the swap step we:
  *   1. Build the replacement fully in tmpDir
@@ -69,10 +68,10 @@ export function registerInitCommand(program: Command): void {
     const cwd = process.cwd();
     const anaPath = path.join(cwd, '.ana');
 
-    // Phase 1: Pre-scan validation (D7)
+    // Phase 1: Pre-scan validation
     //   - Classifies the existing install (fresh/reinit/upgrade/corrupted)
     //   - Detects stale .ana.old-* dirs from an interrupted prior init
-    //   - Does NOT back up, does NOT delete (S19/NEW-001 Option B)
+    //   - Does NOT back up, does NOT delete
     const preflight = await validateInitPreconditions(cwd, anaPath, options);
     if (!preflight.canProceed) {
       return; // Exit already handled in validation
@@ -101,7 +100,7 @@ export function registerInitCommand(program: Command): void {
       const newAnaConfig = await createAnaJson(tmpAnaPath, engineResult);
       await buildSymbolIndexSafe(cwd, tmpAnaPath);
 
-      // S19/NEW-001: preserve user state from the still-existing .ana/
+      // Preserve user state from the still-existing .ana/
       if (preflight.anaExisted) {
         await preserveUserState(anaPath, tmpAnaPath, newAnaConfig);
       }

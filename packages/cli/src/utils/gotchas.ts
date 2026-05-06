@@ -28,7 +28,7 @@ export function matchTriggers(triggers: Record<string, string>, result: EngineRe
     const stackValue = (result.stack as Record<string, string | string[] | null>)[key];
     if (stackValue === value) return true;
     if (Array.isArray(stackValue) && stackValue.includes(value)) return true;
-    // Service category match (S19/SETUP-042)
+    // Service category match
     if (result.externalServices.some(svc => svc.category === key && svc.name === value)) {
       return true;
     }

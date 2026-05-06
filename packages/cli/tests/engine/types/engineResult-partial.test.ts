@@ -1,5 +1,5 @@
 /**
- * Unit tests for the partial runtime validator (Item 27).
+ * Unit tests for the partial runtime validator.
  *
  * The schema guards the three invariants in scan.json that downstream
  * consumers (ana setup check, setup agent scaffolding, init re-read)
@@ -63,7 +63,7 @@ describe('EngineResultPartialSchema', () => {
     const data = validShape();
     data.stack.language = null;
     data.stack.framework = null;
-    // SCAN-050: testing is string[], not string|null. Empty array is the
+    // testing is string[], not string|null. Empty array is the
     // canonical "no framework detected" value.
     data.stack.testing = [];
     expect(() => parseEngineResultPartial(data)).not.toThrow();
@@ -107,15 +107,15 @@ describe('EngineResultPartialSchema', () => {
     }
   });
 
-  it('rejects missing stack field (e.g. aiSdk added in Item 2.1)', () => {
+  it('rejects missing stack field (e.g. aiSdk)', () => {
     const data = validShape() as Partial<ReturnType<typeof validShape>>;
-    // aiSdk was added in Item 2.1; an old scan.json missing it should fail
+    // aiSdk is required; an old scan.json missing it should fail
     delete (data.stack as Partial<NonNullable<typeof data.stack>>).aiSdk;
     expect(() => parseEngineResultPartial(data)).toThrow(ZodError);
   });
 
   it('accepts commands.packageManager: null (non-Node projects have no package manager)', () => {
-    // S19/SCAN-032: packageManager is nullable because Python/Go/Rust
+    // packageManager is nullable because Python/Go/Rust
     // projects legitimately have no package manager in the Node sense.
     // The pre-fix schema required a string, which forced scan-engine to
     // fall back to 'npm' for every non-Node project — a semantic lie.

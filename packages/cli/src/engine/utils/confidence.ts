@@ -7,7 +7,6 @@
  * - Config: 5% (bonus)
  * - Patterns: 5% (bonus)
  *
- * Design: /ATLAS3/efforts/STEP_1_1_DETECTION/artifacts/CP2_confidence_algorithm.md
  */
 
 export interface ConfidenceSignals {

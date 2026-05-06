@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import { execSync } from 'node:child_process';
 
 /**
- * Tests for `ana setup check` command (S15: 2 context files, structural validation)
+ * Tests for `ana setup check` command.
  *
  * Uses temp directories with .ana/context/ structure for isolation.
  */
@@ -73,7 +73,7 @@ We chose TypeScript for type safety.
 - src/engine/analyze.ts — project scanner
 
 ## Active Constraints
-Do not modify engine types during S15.
+Do not modify engine types during active sprints.
 
 ## Domain Vocabulary
 - Scaffold: auto-generated context file
@@ -130,9 +130,9 @@ ${extra}`;
     });
   });
 
-  describe('structural validation (D12.3 — no line counts)', () => {
+  describe('structural validation (no line counts)', () => {
     it('line count always passes regardless of file size', async () => {
-      // Even very short files pass line count (D12.3)
+      // Even very short files pass line count
       await createContextFile('project-context.md', generateProjectContext());
 
       const { stdout } = runCheck('project-context.md --json');

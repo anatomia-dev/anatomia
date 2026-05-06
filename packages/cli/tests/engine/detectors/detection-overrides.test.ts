@@ -1,8 +1,6 @@
 /**
- * S11 detection improvements tests
- *
- * Tests: TypeScript language override, Prisma provider parsing,
- * package manager inheritance
+ * Tests for detection override scenarios: TypeScript language override,
+ * Prisma provider parsing, package manager inheritance.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -140,8 +138,8 @@ describe('Package manager inheritance', () => {
     expect(pm).toBe('pnpm');
   });
 
-  it('returns null when no lockfile found (S19/SCAN-032)', async () => {
-    // No lockfile anywhere in temp dir. Pre-S19 this fell back to 'npm',
+  it('returns null when no lockfile found', async () => {
+    // No lockfile anywhere in temp dir. Previously this fell back to 'npm',
     // which was a semantic lie for non-Node projects (Python/Go/Rust).
     // Now null — downstream display code already guards with truthy check.
     const pm = await detectPackageManager(tempDir);
@@ -161,7 +159,7 @@ describe('Package manager inheritance', () => {
     expect(pm).toBe('pnpm');
   });
 
-  // S19/SCAN-032 refinement: package.json's `packageManager` field is
+  // package.json's `packageManager` field is
   // the corepack-standard way to declare manager intent. A project with
   // that field set but no lockfile yet (fresh install) should respect
   // the declaration rather than defaulting to 'npm'. The alternative

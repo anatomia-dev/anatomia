@@ -1,5 +1,5 @@
 /**
- * Unit tests for route-handler file detection (Item 9, Item 16).
+ * Unit tests for route-handler file detection.
  *
  * The function answers: "is this file path one where HTTP method identifiers
  * (GET, POST, ...) are framework convention rather than user naming choices?"

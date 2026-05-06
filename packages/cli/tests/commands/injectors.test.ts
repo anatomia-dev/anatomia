@@ -1,11 +1,11 @@
 /**
- * Unit tests for skill Detected-section injectors + shared stack helpers (Item 16).
+ * Unit tests for skill Detected-section injectors + shared stack helpers.
  *
  * Covers three previously-untested functions:
- *   - injectAiPatterns (skills.ts) — the 3-way B1 filter for AI service dedup.
- *     Item 18 will simplify this to exact match after Vercel AI naming is
- *     standardized; these tests lock in the current semantic so the Item 18
- *     simplification can be verified with a single filter update.
+ *   - injectAiPatterns (skills.ts) — the filter for AI service dedup.
+ *     Now simplified to exact match after Vercel AI naming was standardized;
+ *     these tests lock in the current semantic so further simplifications can
+ *     be verified with a single filter update.
  *   - getStackSummary (constants.ts) — 7-field ordered stack filter used by
  *     CLAUDE.md, AGENTS.md, init success output, scaffold generators.
  *   - matchGotchas (utils/gotchas.ts) — trigger-based gotcha matching against
@@ -25,7 +25,7 @@ function makeService(name: string, category: string): ExternalService {
   return { name, category, source: 'dep', configFound: false, stackRoles: [] };
 }
 
-describe('injectAiPatterns (B1 filter — simplified to exact match in Item 18)', () => {
+describe('injectAiPatterns (simplified to exact match filter)', () => {
   it('shows both SDK and a distinct provider variant', () => {
     const result = createEmptyEngineResult();
     result.stack.aiSdk = 'OpenAI';
@@ -50,7 +50,7 @@ describe('injectAiPatterns (B1 filter — simplified to exact match in Item 18)'
   });
 
   it('filters the exact-match duplicate (sdk === svc.name)', () => {
-    // Post-Item 18 this is the ONLY dedup path. AI_PACKAGES['ai'] now returns
+    // Currently this is the ONLY dedup path. AI_PACKAGES['ai'] now returns
     // 'Vercel AI', matching AI_SDK_PACKAGES, so the stack and service have
     // identical names and a plain `s.name !== sdk` is sufficient. The old
     // 3-way match (`${sdk} SDK` + `sdk.replace(' SDK', '')`) was dead code
@@ -197,15 +197,12 @@ describe('matchGotchas', () => {
     expect(testing?.some(g => g.includes('watch mode'))).toBe(true);
   });
 
-  // SCAN-050: matchGotchas was extended with an array-aware branch because
-  // stack.testing is now `string[]`. Without the branch, strict `===`
-  // equality fails on `['Vitest'] === 'Vitest'` and the existing Vitest
-  // gotcha silently stops firing on every Vitest project (not just
-  // multi-framework ones — ALL Vitest projects). This test exercises the
-  // multi-framework path specifically: Jest + Vitest together. A pure
-  // single-value implementation would have dropped Vitest on the floor
-  // (it was either "first value wins" or the strict-equality failure).
-  it('matches array-valued stack.testing on multi-framework projects (SCAN-050)', () => {
+  // matchGotchas uses an array-aware branch because stack.testing is now
+  // `string[]`. Without the branch, strict `===` equality fails on
+  // `['Vitest'] === 'Vitest'` and the existing Vitest gotcha silently stops
+  // firing on every Vitest project. This test exercises the multi-framework
+  // path specifically: Jest + Vitest together.
+  it('matches array-valued stack.testing on multi-framework projects', () => {
     const result = createEmptyEngineResult();
     result.stack.testing = ['Jest', 'Vitest'];
     const matches = matchGotchas(result);
@@ -216,19 +213,18 @@ describe('matchGotchas', () => {
     expect(testing?.some(g => g.includes('watch mode'))).toBe(true);
   });
 
-  // S19/SETUP-042: matchGotchas was extended to match triggers against
-  // externalServices by category, not just primary stack fields. The
-  // above tests all exercise the stack-field path (database/framework/
-  // testing). These tests exercise the externalServices-category path
-  // so a regression in the extension is caught — the old code would
-  // have silently ignored service-category triggers.
+  // matchGotchas also matches triggers against externalServices by category,
+  // not just primary stack fields. The above tests all exercise the
+  // stack-field path (database/framework/testing). These tests exercise the
+  // externalServices-category path so a regression is caught — the old code
+  // would have silently ignored service-category triggers.
 
   it('matches a service-category trigger via externalServices (Inngest jobs path)', () => {
     // Inngest is detected as a service in the 'jobs' category via
-    // JOBS_PACKAGES, NOT as a stack field. Pre-S19 the gotcha system
+    // JOBS_PACKAGES, NOT as a stack field. Previously the gotcha system
     // could not reach it because triggers only matched against
-    // result.stack. After the extension, { jobs: 'Inngest' } triggers
-    // match against externalServices where category='jobs' && name='Inngest'.
+    // result.stack. Now { jobs: 'Inngest' } triggers match against
+    // externalServices where category='jobs' && name='Inngest'.
     const result = createEmptyEngineResult();
     result.externalServices = [{
       name: 'Inngest',
@@ -278,10 +274,9 @@ describe('matchGotchas', () => {
     expect(apiPatterns?.some(g => g.includes('Inngest')) ?? false).toBe(false);
   });
 
-  // S19/IDEA-010: Playwright gotcha fires on both pure-Playwright projects
-  // and multi-framework projects (Jest + Playwright, Vitest + Playwright).
-  // The gotcha matcher uses the SCAN-050 array-aware equality branch;
-  // without it, `['Vitest','Playwright'].includes('Playwright')` works but
+  // Playwright gotcha fires on both pure-Playwright projects and
+  // multi-framework projects (Jest + Playwright, Vitest + Playwright).
+  // The gotcha matcher uses the array-aware equality branch; without it,
   // `['Playwright'] === 'Playwright'` is false — proof the matcher update
   // is load-bearing for this trigger.
   it('fires Playwright gotcha on a pure-Playwright project (IDEA-010)', () => {

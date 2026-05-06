@@ -127,7 +127,7 @@ describe('Engine Interface Contract', () => {
 
       // Should not throw — proves scaffold generators accept EngineResult shape
       expect(() =>
-        generateProjectContextScaffold(result as any)
+        generateProjectContextScaffold(result)
       ).not.toThrow();
     });
   });

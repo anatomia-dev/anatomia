@@ -1,10 +1,10 @@
 /**
- * Contract matrix for `makeTestCommandNonInteractive` (SCAN-050 / absorbed INFRA-008).
+ * Contract matrix for `makeTestCommandNonInteractive`.
  *
  * The function transforms a raw `package.json` test script into a form safe
  * to run in CI / pipeline contexts (no watch mode, no interactive prompts).
  *
- * 15 cases locked in the SCAN-050 vault:
+ * 15 cases:
  *   1-6   Vitest variants (watch default + subcommand + flag + wrappers)
  *   7-9   Jest variants (default + --watch + --watchAll)
  *   10-11 Mocha variants (--watch + default)
@@ -13,10 +13,9 @@
  *   14    multi-framework Jest + Playwright
  *   15    `pnpm run test -- --run` — protects Anatomia's own CI command
  *
- * The multi-framework case is the SCAN-050 behaviour change: the function
- * now accepts `string[]` and uses `.includes()` for membership so projects
- * with both Jest and Playwright still get the Jest transform without the
- * Playwright membership mis-routing the call.
+ * The multi-framework case accepts `string[]` and uses `.includes()` for
+ * membership so projects with both Jest and Playwright still get the Jest
+ * transform without the Playwright membership mis-routing the call.
  */
 
 import { describe, it, expect } from 'vitest';

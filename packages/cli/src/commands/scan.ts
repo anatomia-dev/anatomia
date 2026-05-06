@@ -205,7 +205,7 @@ function formatHumanReadable(
   }
 
   if (!hasStack) {
-    // S19/SCAN-045: ancestor walk for subdirectory scan
+    // Ancestor walk for subdirectory scan
     const manifestMarkers = ['package.json', 'go.mod', 'Cargo.toml', 'pyproject.toml'];
     const MAX_ANCESTOR_DEPTH = 5;
     let ancestorRoot: string | null = null;
@@ -416,8 +416,8 @@ export function registerScanCommand(program: Command): void {
 
           // Update lastScanAt in ana.json.
           //
-          // S19/NEW-004 (reframed): must use result.overview.scannedAt,
-          // not a fresh new Date(). The check.ts dashboard compares
+          // Must use result.overview.scannedAt, not a fresh new Date().
+          // The check.ts dashboard compares
           // ana.json.lastScanAt against scan.json.overview.scannedAt with
           // string equality — if these two timestamps disagree by a few
           // milliseconds (as a fresh Date() always would), every dashboard
@@ -435,7 +435,6 @@ export function registerScanCommand(program: Command): void {
             }
           }
 
-          // checkDrift removed (S18/D13)
         } catch (writeError) {
           console.error(chalk.yellow(`Warning: Failed to save scan results. ${writeError instanceof Error ? writeError.message : ''}`));
         }

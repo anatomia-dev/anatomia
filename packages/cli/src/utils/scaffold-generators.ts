@@ -1,12 +1,9 @@
 /**
- * Scaffold generators for context files (S15 consolidation: 7→2)
+ * Scaffold generators for context files
  *
  * Two generators:
- * - generateProjectContextScaffold: scan-seeded D6.6 format with 6 sections
+ * - generateProjectContextScaffold: scan-seeded format with 6 sections
  * - generateDesignPrinciplesTemplate: static human-content template
- *
- * Old generators (patterns, conventions, workflow, testing, debugging)
- * were migrated to skill templates in S13.
  *
  * @module scaffold-generators
  */
@@ -37,7 +34,7 @@ export function selectPrimarySchema(
 }
 
 /**
- * Generate project-context.md scaffold (D6.6 format)
+ * Generate project-context.md scaffold
  *
  * Produces 6 sections with scan-seeded **Detected:** lines.
  * Machine sections show detected data; human sections show section-specific placeholders.
@@ -187,7 +184,7 @@ export function generateProjectContextScaffold(result: EngineResult): string {
 /**
  * Generate design-principles.md template (static, no scan data)
  *
- * Returns the S13 template — 100% human content placeholder.
+ * Returns a 100% human content placeholder template.
  * No EngineResult data injected.
  *
  * @returns Markdown template string

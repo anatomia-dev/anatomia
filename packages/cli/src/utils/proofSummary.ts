@@ -64,7 +64,7 @@ export interface ProofSummary {
   hashes: Record<string, string>;
   completed_at: string;
   scope_summary?: string | undefined;
-  // S23 pipeline hardening — intelligence capture
+  // Intelligence capture
   findings: Array<{
     category: string;
     summary: string;
@@ -1430,7 +1430,7 @@ export function parseFindings(content: string): Array<{ category: string; summar
 /**
  * Parse rejection cycle data from verify report's Previous Findings Resolution section.
  *
- * Looks for the machine-parseable table defined by Item 4 (S23 pipeline hardening):
+ * Looks for the machine-parseable table in the Previous Findings Resolution section:
  *   ### Previously UNSATISFIED Assertions
  *   | ID | Previous Issue | Current Status | Resolution |
  *

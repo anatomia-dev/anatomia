@@ -1,0 +1,18 @@
+schema: 1
+findings:
+  - category: code
+    summary: "check.test.ts fixture uses 'active sprints' — slightly odd phrasing for a mock project-context but acceptable"
+    file: "packages/cli/tests/commands/check.test.ts"
+    line: 76
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "types.test.ts compile-time assertions use expect(true).toBe(true) — sentinel pattern, but acceptable because the real assertion is TypeScript compilation"
+    file: "packages/cli/tests/engine/types.test.ts"
+    line: 140
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Lint warning (unused eslint-disable at line 169) pre-existing — not introduced by this build"
+    severity: observation
+    suggested_action: monitor

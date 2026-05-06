@@ -68,36 +68,36 @@ describe('AI SDK detection', () => {
 describe('computeSkillManifest with aiSdk', () => {
   it('includes ai-patterns when stack.aiSdk is set', () => {
     const result = { ...createEmptyEngineResult(), stack: { ...createEmptyEngineResult().stack, aiSdk: 'Anthropic' } };
-    const skills = computeSkillManifest(result as any);
+    const skills = computeSkillManifest(result);
     expect(skills).toContain('ai-patterns');
   });
 
   it('does NOT include ai-patterns when stack.aiSdk is null', () => {
     const result = createEmptyEngineResult();
-    const skills = computeSkillManifest(result as any);
+    const skills = computeSkillManifest(result);
     expect(skills).not.toContain('ai-patterns');
   });
 
   it('includes data-access when stack.database is set', () => {
     const result = { ...createEmptyEngineResult(), stack: { ...createEmptyEngineResult().stack, database: 'Prisma' } };
-    const skills = computeSkillManifest(result as any);
+    const skills = computeSkillManifest(result);
     expect(skills).toContain('data-access');
   });
 
   it('includes api-patterns when stack.framework is set', () => {
     const result = { ...createEmptyEngineResult(), stack: { ...createEmptyEngineResult().stack, framework: 'Next.js' } };
-    const skills = computeSkillManifest(result as any);
+    const skills = computeSkillManifest(result);
     expect(skills).toContain('api-patterns');
   });
 
-  // SETUP-028: CLI frameworks have zero API surface — api-patterns is noise.
+  // CLI frameworks have zero API surface — api-patterns is noise.
   // Four CLI framework values are passthrough (no display-name transform) so
   // they match `stack.framework` exactly.
   it.each(['typer', 'click', 'clap-cli', 'cobra-cli'])(
     'does NOT include api-patterns when stack.framework is CLI framework %s',
     (cliFramework) => {
       const result = { ...createEmptyEngineResult(), stack: { ...createEmptyEngineResult().stack, framework: cliFramework } };
-      const skills = computeSkillManifest(result as any);
+      const skills = computeSkillManifest(result);
       expect(skills).not.toContain('api-patterns');
     },
   );
@@ -107,7 +107,7 @@ describe('computeSkillManifest with aiSdk', () => {
     // to the CLI framework exclusion above: proves the Set check is tight
     // (only the 4 CLI values are excluded, everything else still fires).
     const result = { ...createEmptyEngineResult(), stack: { ...createEmptyEngineResult().stack, framework: 'FastAPI' } };
-    const skills = computeSkillManifest(result as any);
+    const skills = computeSkillManifest(result);
     expect(skills).toContain('api-patterns');
   });
 });

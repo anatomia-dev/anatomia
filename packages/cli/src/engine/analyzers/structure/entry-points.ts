@@ -1,5 +1,5 @@
 /**
- * Entry point detection (Item 14b — extracted from structure.ts).
+ * Entry point detection.
  *
  * Framework-aware priority-ordered entry point lookup. First match wins.
  */
@@ -44,7 +44,7 @@ const ENTRY_POINT_PATTERNS: Record<string, string[]> = {
     'src/main.rs', // Binary/application
     'src/lib.rs', // Library
   ],
-  // Ruby, PHP deferred to STEP_2 (not core focus)
+  // Ruby, PHP deferred (not core focus)
   ruby: [],
   php: [],
   mixed: [], // Monorepo - no single entry point
@@ -161,7 +161,6 @@ async function getPackageJsonEntry(rootPath: string): Promise<string | null> {
  * // → { entryPoints: ['manage.py'], confidence: 1.0, source: 'framework-convention' }
  * ```
  *
- * Implementation: CP1
  */
 export async function findEntryPoints(
   rootPath: string,

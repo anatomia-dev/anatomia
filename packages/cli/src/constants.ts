@@ -3,7 +3,6 @@
  *
  * Centralizes magic strings and numbers for maintainability.
  *
- * === VAULT CONSTANTS (D8.5) ===
  * CONTEXT_FILES, CORE_SKILLS, CONDITIONAL_SKILL_TRIGGERS, computeSkillManifest
  * are the single source of truth for the file manifest.
  * Hooks, check.ts, init, and display code should read from these.
@@ -13,14 +12,14 @@
 import type { EngineResult } from './engine/types/engineResult.js';
 
 // ============================================================
-// VAULT: File Manifest (D6.1, D8.5)
+// File Manifest
 // ============================================================
 
-/** Context files in .ana/context/ (D6.1) */
+/** Context files in .ana/context/ */
 export const CONTEXT_FILES = ['design-principles', 'project-context'] as const;
 
 /**
- * Directory names recognized as test directories (Item 10).
+ * Directory names recognized as test directories.
  *
  * Single source of truth for "is this entry a test dir?" checks. Used by
  * init.ts's injectTestingStandards to decide "dedicated test directory" vs
@@ -45,7 +44,7 @@ export const TEST_DIRECTORY_NAMES: ReadonlySet<string> = new Set([
   'playwright',
 ]);
 
-/** Core skills — always scaffolded (D6.1) */
+/** Core skills — always scaffolded */
 export const CORE_SKILLS = [
   'coding-standards',
   'testing-standards',
@@ -73,7 +72,7 @@ const NON_API_FRAMEWORKS = new Set<string>([
 ]);
 
 /**
- * Conditional skills — scaffolded only when scan detects the trigger (D6.1)
+ * Conditional skills — scaffolded only when scan detects the trigger
  */
 export const CONDITIONAL_SKILL_TRIGGERS: Record<string, (result: EngineResult) => boolean> = {
   'ai-patterns': (r) => !!r?.stack?.aiSdk,
@@ -83,7 +82,7 @@ export const CONDITIONAL_SKILL_TRIGGERS: Record<string, (result: EngineResult) =
 
 /**
  * Compute which skills to scaffold based on scan results.
- * This function IS Anatomia's adaptive intelligence. (D8.2, D8.9)
+ * This function IS Anatomia's adaptive intelligence.
  *
  * @param engineResult - Scan engine result
  * @returns Array of skill names to scaffold
@@ -108,13 +107,13 @@ export function computeSkillManifest(engineResult: EngineResult): string[] {
  * testing report (N1 finding) flagged this as an open UX question: should
  * "pnpm monorepo" appear in the CLAUDE.md Stack line? Current answer is
  * no — workspace is surfaced in the Monorepo section of scan output and
- * in AGENTS.md metadata, not in the identity line. S19 may revisit.
+ * in AGENTS.md metadata, not in the identity line.
  *
  * @param result - Scan engine result
  * @returns Array of display-ready stack strings (e.g., ["TypeScript", "Next.js", "Supabase"])
  */
 export function getStackSummary(result: EngineResult): string[] {
-  // stack.testing is `string[]` (SCAN-050). Join detected frameworks with
+  // stack.testing is `string[]`. Join detected frameworks with
   // a comma so multi-framework projects surface correctly in the single-
   // line stack summary; empty array means "no testing detected" and is
   // filtered out alongside the other null values.
@@ -142,7 +141,7 @@ export const SCAFFOLD_MARKER = '<!-- SCAFFOLD - Setup will fill this file -->';
 /** Validation thresholds */
 export const MIN_FILE_SIZE_WARNING = 20; // Lines
 export const MAX_FILE_SIZE_WARNING = 1500; // Lines
-/** Context files required for setup complete validation (S15: 7→2) */
+/** Context files required for setup complete validation */
 export const REQUIRED_CONTEXT_FILES = [
   'context/project-context.md',
   'context/design-principles.md',

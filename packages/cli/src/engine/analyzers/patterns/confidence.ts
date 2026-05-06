@@ -1,5 +1,5 @@
 /**
- * Pattern confidence utilities (Item 14a — extracted from patterns.ts).
+ * Pattern confidence utilities.
  *
  * Pure post-processing helpers that operate on detected patterns:
  * - filterByConfidence: threshold-based filtering
@@ -13,14 +13,14 @@
 import type { PatternConfidence } from '../../types/patterns.js';
 
 // ============================================================================
-// CONFIDENCE SCORING AND FILTERING (CP2)
+// CONFIDENCE SCORING AND FILTERING
 // ============================================================================
 
 /**
  * Filter patterns by confidence threshold
  *
  * Returns only patterns meeting or exceeding threshold.
- * Default threshold: 0.7 (from STEP_2 Gate requirements)
+ * Default threshold: 0.7
  *
  * @param patterns - All detected patterns (from confirmPatternsWithTreeSitter)
  * @param threshold - Minimum confidence (default: 0.7)
@@ -63,7 +63,7 @@ export function filterByConfidence(
  * - Action: What should happen (auto-apply/verify/confirm/flag-manual)
  * - Expected accuracy: Calibrated accuracy target per bucket
  *
- * Buckets (from STEP_2_PART1.md confidence methodology):
+ * Buckets:
  * - High (≥0.90): Auto-apply in templates (expected ≥95% accurate)
  * - Moderate (0.70-0.89): Verify before applying (expected ≥85% accurate)
  * - Low (0.50-0.69): User confirmation required (expected ≥70% accurate)

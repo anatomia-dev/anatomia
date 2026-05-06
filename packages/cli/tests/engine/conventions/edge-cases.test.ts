@@ -91,7 +91,7 @@ describe.skipIf(!wasmAvailable)('Convention Detection Edge Cases', () => {
   });
 
   // "handles TypeScript project (no type hints)" test removed — typeHints analyzer
-  // was deleted (Item 4, phantom detection on nonexistent fields).
+  // was deleted (phantom detection on nonexistent fields).
 
   it('handles all unknown naming (ambiguous single-word names)', async () => {
 
@@ -179,7 +179,7 @@ describe.skipIf(!wasmAvailable)('Convention Detection Edge Cases', () => {
   });
 
   // "handles no docstrings (coverage 0%)" test removed — docstrings analyzer
-  // was deleted (Item 4). The prior test was a THP Q3 "sentinel test": it
+  // was deleted. The prior test was a THP Q3 "sentinel test": it
   // asserted coverage === 0, but the analyzer ALWAYS returned 0 regardless of
   // input because it read a `docstring` field that doesn't exist on FunctionInfo
   // via an `as unknown as` cast. The test would have passed on any input.

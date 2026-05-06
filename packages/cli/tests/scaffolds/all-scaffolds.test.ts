@@ -9,11 +9,11 @@ import {
 import { createEmptyEngineResult } from '../../src/engine/types/engineResult.js';
 import { generatePrimaryPackageAgentsMd } from '../../src/commands/init/assets.js';
 
-describe('scaffold generators (S15 consolidated: 2 generators)', () => {
+describe('scaffold generators (2 generators)', () => {
   const result = createEmptyEngineResult();
 
   describe('generateProjectContextScaffold', () => {
-    it('produces scaffold with D6.6 sections', () => {
+    it('produces scaffold with expected sections', () => {
       const output = generateProjectContextScaffold(result);
       expect(output).toContain('<!-- SCAFFOLD');
       expect(output).toContain('# Project Context');

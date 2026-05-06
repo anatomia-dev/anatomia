@@ -6,7 +6,7 @@ import { validateSetupCompletion } from '../../src/commands/check.js';
 import { fileExists } from '../../src/commands/init/preflight.js';
 
 /**
- * Tests for setup completion validation (D12.3 criteria)
+ * Tests for setup completion validation
  * and setup-progress.json lifecycle.
  */
 

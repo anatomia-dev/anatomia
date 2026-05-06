@@ -1,7 +1,7 @@
 /**
- * File-scoped HTTP method filter integration test (Item 9, Item 16 H1).
+ * File-scoped HTTP method filter integration test.
  *
- * Item 9 replaced the previous global HTTP-method filter (which dropped any
+ * The file-scoped filter replaced the previous global HTTP-method filter (which dropped any
  * function named GET/POST/... from naming stats) with a file-scoped filter
  * that only suppresses those identifiers inside framework route-handler files
  * (app/**\/route.ts, routes/**\/+server.ts). This test exercises the full
@@ -45,7 +45,7 @@ describe('file-scoped HTTP method filter', () => {
   });
 
   it('does NOT filter a GET function in a plain utility file', () => {
-    // This is the bug Item 9 fixed: a user-defined `GET` in utils/http.ts
+    // This is the bug the file-scoped filter fixed: a user-defined `GET` in utils/http.ts
     // should be counted as SCREAMING_SNAKE_CASE, not silently dropped.
     const files: ParsedFile[] = [
       makeParsed('utils/http.ts', ['GET']),

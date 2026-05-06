@@ -1,12 +1,12 @@
 /**
  * Architectural discipline test: converted detectors must not import filesystem modules.
  *
- * Disease A cure: detectors receive census data as pure function input.
- * This test prevents regression — if a developer adds a new detector with
- * fs.readFile, the test catches it.
+ * Detectors receive census data as pure function input. This test prevents
+ * regression — if a developer adds a new detector with fs.readFile, the
+ * test catches it.
  *
  * Scope: framework detectors (framework.ts, node/*, python/*) and
- * deployment.ts. These were converted in Lane 0 Steps 5b-5f.
+ * deployment.ts.
  *
  * Excluded (not yet converted, still legitimately read filesystem):
  *   - packageManager.ts (reads lock files to detect manager)
@@ -14,7 +14,6 @@
  *   - dependencies.ts (reads package.json for dep aggregation)
  *   - commands.ts (reads package.json for scripts)
  *   - git.ts (reads .git for git info)
- * These are Lane 0+ conversion targets.
  */
 
 import { describe, it, expect } from 'vitest';

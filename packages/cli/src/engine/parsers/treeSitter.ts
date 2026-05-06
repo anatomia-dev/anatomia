@@ -7,13 +7,6 @@
  * - Imports (module dependencies)
  * - Exports (TypeScript/JavaScript only)
  * - Decorators (Python @app.get, TypeScript @Controller)
- *
- * Implementation status:
- * - CP0: Types and ParserManager ✓
- * - CP1: Query system and extraction ✓
- * - CP2: Caching layer ✓
- * - CP3: Integration with analyze() ✓
- * - SS-10: WASM migration ✓
  */
 
 import { accessSync } from 'node:fs';
@@ -104,7 +97,7 @@ function resolveWasmPath(packageName: string, wasmFileName: string): string {
  *
  * Performance: Saves 100-200ms over 20 files (5-10ms × 20 files avoided)
  *
- * WASM Migration (SS-10):
+ * WASM Migration:
  * - Must call initialize() once before any parsing
  * - Grammars are pre-loaded during initialization
  * - getParser() is sync after initialization
@@ -870,12 +863,11 @@ function countErrors(node: TSNode): number {
  *
  * @param filePath - Absolute path to source file
  * @param language - Language to parse ('python' | 'typescript' | 'tsx' | 'javascript' | 'go')
- * @param cache - Optional ASTCache instance (CP2 will implement)
+ * @param cache - Optional ASTCache instance
  * @returns ParsedFile with extracted functions, classes, imports, etc.
  *
  * Performance: ≤25ms per medium file (5KB), ≤150ms per large file (100KB)
  *
- * Implementation: CP1 (queries + extraction), CP2 (cache integration)
  *
  * @example
  * ```typescript
@@ -887,9 +879,9 @@ function countErrors(node: TSNode): number {
 export async function parseFile(
   filePath: string,
   language: string,
-  cache?: ASTCache  // Cache now functional (CP2)
+  cache?: ASTCache  // Cache instance
 ): Promise<ParsedFile> {
-  // Check cache first (CP2 integration)
+  // Check cache first
   if (cache) {
     const cached = await cache.get(filePath);
     if (cached) {
@@ -937,7 +929,7 @@ export async function parseFile(
   }
 
   try {
-    // Extract elements using queries (from CP1)
+    // Extract elements using queries
     let functions = extractFunctions(tree, content, language);
     let classes = extractClasses(tree, content, language);
     const imports = extractImports(tree, content, language);
@@ -967,7 +959,7 @@ export async function parseFile(
       errors: errorCount,
     };
 
-    // Store in cache for next run (CP2 integration)
+    // Store in cache for next run
     if (cache) {
       const cacheData: Omit<ASTCacheEntry, 'mtimeMs' | 'cachedAt'> = {
         functions: result.functions,
@@ -1006,8 +998,8 @@ export async function parseFile(
  *
  * @example
  * ```typescript
- * const analysis = await analyze(rootPath);
- * const parsed = await parseProjectFiles(rootPath, analysis, { maxFiles: 20 });
+ * const input: DeepTierInput = { structure, projectType, framework, deps };
+ * const parsed = await parseProjectFiles(rootPath, input, { maxFiles: 20 });
  * // → { files: ParsedFile[], totalParsed: 20, cacheHits: 15, cacheMisses: 5 }
  * ```
  */
@@ -1029,7 +1021,7 @@ export async function parseProjectFiles(
   // Initialize cache
   const cache = new ASTCacheClass(projectRoot);
 
-  // Use pre-sampled file list from proportional sampler (wired in Lane 0 Fix 1)
+  // Use pre-sampled file list from proportional sampler
   if (!options.preSampledFiles) {
     return { files: [], totalParsed: 0, cacheHits: 0, cacheMisses: 0 };
   }

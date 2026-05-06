@@ -1,5 +1,5 @@
 /**
- * Tests for S16 check.ts dashboard — setup status, skill counting, consistency, symbols
+ * Tests for check.ts dashboard — setup status, skill counting, consistency, symbols
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -336,8 +336,8 @@ describe('skill check', () => {
 // ── Consistency Checks ──
 
 describe('consistency checks', () => {
-  it('reports "awaiting setup enrichment" when Detected is empty (S19/SETUP-025)', async () => {
-    // Create skill files with empty Detected (template state). The pre-S19
+  it('reports "awaiting setup enrichment" when Detected is empty', async () => {
+    // Create skill files with empty Detected (template state). The previous
     // behavior silently reported "aligned" here, which was phantom
     // verification: the check was skipped because there was nothing to
     // compare against, but the ✓ symbol implied verification had passed.
@@ -523,8 +523,8 @@ Simplicity over complexity. Ship incrementally.
     expect(result.symbol).toContain('✓');
   });
 
-  // S19/SETUP-024 + SETUP-027: dashboard and validator must agree on
-  // per-section content. Before the unification, the dashboard showed
+  // Dashboard and validator must agree on per-section content. Before the
+  // unification, the dashboard showed
   // "6 sections populated" based on the raw heading count even when
   // only 1 section had real content, because it used a different
   // (looser) content-detection function than the completion validator.
@@ -563,7 +563,7 @@ Real content only here.
     expect(result.description).toBe('1/6 sections populated');
   });
 
-  // S19 polish: hasRealContent used to count scaffold-template lines
+  // hasRealContent used to count scaffold-template lines
   // (italic *Not yet captured* placeholders and **Detected:** scan-seeded
   // lines) as real content. A fresh `ana init` on a healthy project
   // generated a project-context.md that reported "6/6 sections populated"
@@ -728,8 +728,8 @@ Widget, Gadget, Thingamajig.
     expect(result.symbol).toContain('○');
   });
 
-  it('project-context with multiline comment in critical section reports empty (SETUP-027)', async () => {
-    // The pre-S19 dashboard used hasNonTemplateContent which didn't track
+  it('project-context with multiline comment in critical section reports empty', async () => {
+    // The old dashboard used hasNonTemplateContent which didn't track
     // multiline HTML comment state, so a multiline comment was treated as
     // real content. The completion validator used hasRealContent which
     // DID track it correctly. Same file, opposite verdicts. Unified here.

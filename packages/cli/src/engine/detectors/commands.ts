@@ -21,7 +21,7 @@ export interface DetectedCommands {
  *
  * If packageManager is null (no lockfile found — typically a non-Node
  * project), returns all-null commands without attempting to read
- * package.json. S19/SCAN-032.
+ * package.json.
  */
 export async function detectCommands(
   cwd: string,

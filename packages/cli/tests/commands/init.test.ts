@@ -61,7 +61,7 @@ describe('ana init', () => {
         '.claude/settings.json',
         // Agent files (from AGENT_FILES constant)
         ...AGENT_FILES.map(f => '.claude/agents/' + f),
-        // 5 core skill files (S15: troubleshooting added via computeSkillManifest)
+        // 5 core skill files
         '.claude/skills/testing-standards/SKILL.md',
         '.claude/skills/coding-standards/SKILL.md',
         '.claude/skills/git-workflow/SKILL.md',
@@ -103,10 +103,10 @@ describe('ana init', () => {
       };
 
       expect(meta.name).toBe('unknown');
-      // S19/SCAN-032: createEmptyEngineResult defaults packageManager to
-      // null because a project with no detected lockfile has no package
-      // manager in the Node sense. Previously this was 'npm', which was
-      // a semantic lie for Python/Go/Rust projects.
+      // createEmptyEngineResult defaults packageManager to null because a
+      // project with no detected lockfile has no package manager in the Node
+      // sense. Previously this was 'npm', which was a semantic lie for
+      // Python/Go/Rust projects.
       expect(meta.packageManager).toBeNull();
       expect(meta.framework).toBeNull();
       expect(meta.anaVersion).toBeDefined();
@@ -178,10 +178,10 @@ describe('ana init', () => {
 
   describe('.claude/ configuration', () => {
     it('ships empty hooks object in settings template', async () => {
-      // S19: PostToolUse hook chain removed (S18/D5 left it dead — hook
-      // computed validation results then discarded them). Template ships
-      // with empty hooks object as placeholder; if future hooks are added
-      // the merge logic in mergeHooksSettings handles user-settings merging.
+      // PostToolUse hook chain removed (it computed validation results then
+      // discarded them). Template ships with empty hooks object as placeholder;
+      // if future hooks are added the merge logic in mergeHooksSettings
+      // handles user-settings merging.
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');

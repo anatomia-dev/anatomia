@@ -71,7 +71,7 @@ describe.skipIf(!wasmAvailable)('detectConventions orchestrator', () => {
   });
 
   // "includes typeHints only for Python projects" test removed — typeHints
-  // analyzer was deleted (Item 4, phantom detection).
+  // analyzer was deleted (phantom detection).
 
   it('naming includes all 5 sub-categories', async () => {
 

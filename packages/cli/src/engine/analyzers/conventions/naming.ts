@@ -1,5 +1,5 @@
 /**
- * Naming convention analyzer (STEP_2.2 CP0)
+ * Naming convention analyzer
  *
  * Detects naming conventions:
  * - Files: snake_case, camelCase, kebab-case, PascalCase
@@ -7,8 +7,6 @@
  * - Functions: snake_case, camelCase
  * - Classes: PascalCase, snake_case (Python sometimes)
  * - Constants: SCREAMING_SNAKE_CASE
- *
- * Based on: START_HERE.md lines 95-224 (regex patterns, classification algorithm)
  */
 
 import { readFile } from 'node:fs/promises';
@@ -199,7 +197,7 @@ export function analyzeNamingConvention(
     PascalCase: 0,
     'kebab-case': 0,
     SCREAMING_SNAKE_CASE: 0,
-    lowercase: 0,  // added when NamingStyle gained 'lowercase' (Item 2.4)
+    lowercase: 0,
     unknown: 0,
   };
 
@@ -276,7 +274,7 @@ export function analyzeNamingConvention(
  * Extract variables from parsed files using tree-sitter queries
  *
  * Uses 'variables' and 'shortVars' queries added in Task 7.
- * Reuses QueryCache and ParserManager infrastructure from STEP_1.3.
+ * Reuses QueryCache and ParserManager infrastructure.
  *
  * @param files - Parsed files from analysis.parsed.files
  * @param rootPath - Project root for file path resolution
@@ -371,9 +369,9 @@ export async function extractVariables(
 /**
  * Analyze function naming convention
  *
- * Uses function names from STEP_1.3 parsed.files (already extracted).
+ * Uses function names from parsed files (already extracted).
  *
- * @param files - Parsed files from STEP_1.3
+ * @param files - Parsed files
  * @param language - Project language
  * @returns Function naming convention
  *
@@ -393,7 +391,7 @@ export function analyzeFunctionNaming(
   language: string
 ): NamingConventionResult {
   // Extract function names. HTTP method names (GET/POST/...) are filtered
-  // ONLY inside route-handler files — Item 9 file-scoped filter. In any other
+  // ONLY inside route-handler files — file-scoped filter. In any other
   // file, a function named GET is a regular identifier (and would be
   // classified as SCREAMING_SNAKE_CASE) rather than framework convention.
   const functionNames = files.flatMap(f => {
@@ -410,7 +408,7 @@ export function analyzeFunctionNaming(
 /**
  * Analyze class naming convention
  *
- * Uses class names from STEP_1.3 parsed.files.
+ * Uses class names from parsed files.
  *
  * @param files - Parsed files
  * @param language - Project language

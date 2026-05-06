@@ -6,7 +6,7 @@
  *   1. Known fields with valid values → passed through.
  *   2. Known fields with invalid values → per-field .catch() fires;
  *      ONLY that field resets to its default. Other fields survive.
- *   3. Unknown fields → stripped via .strip() (prevents pre-S18 fossils
+ *   3. Unknown fields → stripped via .strip() (prevents older install fossils
  *      like scanStaleDays from surviving forever in user installs).
  *   4. Missing fields → .default() supplies a sensible initial value so
  *      the re-init merge never has to backfill from newJson.
@@ -52,7 +52,7 @@ describe('AnaJsonSchema', () => {
     });
   });
 
-  describe('drift from pre-S18 installs', () => {
+  describe('drift from legacy installs', () => {
     it('strips scanStaleDays fossil without touching other fields', () => {
       const input = {
         anaVersion: '0.1.0',

@@ -1,5 +1,5 @@
 /**
- * Pattern detection from package manifests (Item 14a — extracted from patterns.ts).
+ * Pattern detection from package manifests.
  *
  * Stage 1 of pattern inference: fast dependency-based detection.
  * Reads package.json / requirements.txt / go.mod and returns PatternConfidence
@@ -83,7 +83,7 @@ function detectValidationPattern(
   if (deps.includes('pydantic')) {
     return {
       library: 'pydantic',
-      confidence: 0.75,  // Dependency only (CP1 will boost to 0.90-0.95)
+      confidence: 0.75,  // Dependency only (tree-sitter confirmation boosts to 0.90-0.95)
       evidence: ['pydantic in dependencies'],
     };
   }
@@ -306,7 +306,7 @@ function detectAuthPattern(
 
   // FastAPI OAuth2
   if (framework === 'fastapi' && deps.includes('fastapi')) {
-    // OAuth2PasswordBearer is built into FastAPI (check in CP1 with imports)
+    // OAuth2PasswordBearer is built into FastAPI (confirmed via import analysis)
     return {
       library: 'oauth2-jwt',
       confidence: 0.75,  // Will boost to 0.90+ if OAuth2PasswordBearer imports found
@@ -454,8 +454,8 @@ async function detectTestingPattern(
     };
   }
 
-  // Go testing (built-in - detect in CP1 with *_test.go file pattern)
-  // For now, return null (CP1 will detect via file patterns)
+  // Go testing (built-in — detected via *_test.go file pattern)
+  // Return null — detected via file patterns in the confirmation stage
 
   return null;  // No testing framework detected in dependencies
 }
@@ -476,7 +476,7 @@ function detectErrorHandlingPattern(
     return {
       library: 'exceptions',
       variant: 'fastapi-httpexception',
-      confidence: 0.80,  // Will boost to 0.95 if HTTPException imports found in CP1
+      confidence: 0.80,  // Boosts to 0.95 if HTTPException imports found in confirmation stage
       evidence: ['FastAPI uses HTTPException for error handling'],
     };
   }

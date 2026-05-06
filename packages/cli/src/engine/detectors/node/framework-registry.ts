@@ -1,10 +1,10 @@
 /**
- * Node.js framework detectors in PRIORITY ORDER (Item 17).
+ * Node.js framework detectors in PRIORITY ORDER.
  *
  * First match wins. Priority matters for disambiguation — Next.js depends on
  * React, Nest.js wraps Express, so the "parent" framework is always checked
  * before its dependency. The registry exists to make the priority chain the
- * single point of truth: before Item 17, the order was duplicated between
+ * single point of truth: previously the order was duplicated between
  * `detectors/framework.ts` (a hand-rolled sequence of `if (x.framework) return x`
  * blocks) and the priority comment inside each detector file. Splitting them
  * into a central array means adding or reordering a detector is a single-file
@@ -17,7 +17,7 @@
  *
  * Signature contract: every detector in this array MUST accept
  * `(dependencies: string[], hints: FrameworkHintEntry[])` and return `Detection`.
- * Lane 0 converted all detectors from async rootPath-based to sync census-based.
+ * All detectors receive census data directly instead of rootPath.
  */
 
 import type { Detection } from '../python/fastapi.js';

@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import { validateSetupCompletion } from '../../src/commands/check.js';
 
 /**
- * Integration tests for setup completion validation (D12.3).
+ * Integration tests for setup completion validation.
  * Tests validateSetupCompletion against realistic project structures.
  */
 

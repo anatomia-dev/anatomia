@@ -12,7 +12,7 @@ describe.skipIf(!wasmAvailable)('Pattern Inference Integration', () => {
     await ParserManager.getInstance().initialize();
   });
 
-  // analyze() integration tests deleted — analyze() removed in Lane 0 Step 7.
+  // analyze() integration tests deleted — analyze() was removed.
   // The equivalent behavior is tested via scanProject() in scanProject.test.ts.
 
   describe('inferPatterns() orchestrator', () => {

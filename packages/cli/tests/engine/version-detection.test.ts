@@ -1,5 +1,5 @@
 /**
- * Version detection tests (Item 3)
+ * Version detection tests
  *
  * Validates that version strings from package.json are stored on
  * EngineResult.versions for all detected stack dependencies.

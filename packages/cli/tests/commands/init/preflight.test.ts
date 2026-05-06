@@ -1,6 +1,6 @@
 /**
  * Unit tests for ana init preflight — focused on the SIGKILL recovery
- * detection path added in S19/NEW-001 Option B.
+ * detection path.
  *
  * The swap-based atomic rename:
  *   rename .ana/ → .ana.old-{ts}       (step 1)
@@ -27,7 +27,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { validateInitPreconditions } from '../../../src/commands/init/preflight.js';
 
-describe('validateInitPreconditions — SIGKILL recovery detection (S19/NEW-001)', () => {
+describe('validateInitPreconditions — SIGKILL recovery detection', () => {
   let tmpDir: string;
 
   beforeEach(async () => {

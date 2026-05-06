@@ -1,5 +1,5 @@
 /**
- * Unit tests for getPatternLibrary + isMultiPattern (Item 6, Item 16).
+ * Unit tests for getPatternLibrary + isMultiPattern.
  *
  * These helpers collapse the PatternConfidence | MultiPattern union at
  * consumer sites. The helper exists so there's ONE place to look for pattern
@@ -45,7 +45,7 @@ describe('getPatternLibrary', () => {
   });
 
   it('still returns .library when variant is empty string', () => {
-    // Item 6 fix: previously mapToPatternDetail coalesced variant to '' which
+    // Previously mapToPatternDetail coalesced variant to '' which
     // masked the single-vs-multi distinction. The helper should not be fooled
     // by an empty variant — a PatternConfidence without `patterns` is still
     // treated as single, returning .library directly.
