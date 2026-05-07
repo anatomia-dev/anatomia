@@ -1024,7 +1024,64 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
   {
     const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
     if (remotes) {
-      const pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
+      let pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
+
+      // Handle "untracked working tree files would be overwritten" — caused by
+      // Build/Verify agents writing artifacts to main instead of the worktree.
+      // If the untracked files match what's coming from the merge, remove them and retry.
+      if (pullResult.exitCode !== 0 && pullResult.stderr.includes('untracked working tree files would be overwritten')) {
+        const untrackedLines = pullResult.stderr.split('\n')
+          .filter(line => line.startsWith('\t'))
+          .map(line => line.trim());
+
+        // Only auto-clean files inside this slug's plan directory
+        const planPrefix = `.ana/plans/active/${slug}/`;
+        const slugFiles = untrackedLines.filter(f => f.startsWith(planPrefix));
+        const nonSlugFiles = untrackedLines.filter(f => !f.startsWith(planPrefix));
+
+        if (nonSlugFiles.length > 0) {
+          // Untracked files outside this slug's directory — don't touch, fail with context
+          console.error(chalk.red('Error: Pull blocked by untracked files outside this work item:'));
+          for (const f of nonSlugFiles) {
+            console.error(chalk.gray(`  ${f}`));
+          }
+          console.error(chalk.gray('Remove or stash these files, then retry.'));
+          process.exit(1);
+        }
+
+        if (slugFiles.length > 0) {
+          // Verify each file matches what the merge would bring (compare against remote)
+          let allMatch = true;
+          for (const relPath of slugFiles) {
+            const localPath = path.join(projectRoot, relPath);
+            const localContent = fs.readFileSync(localPath, 'utf-8');
+            const remoteResult = runGit(['show', `origin/${artifactBranch}:${relPath}`], { cwd: projectRoot });
+            if (remoteResult.exitCode !== 0 || remoteResult.stdout !== localContent) {
+              allMatch = false;
+              break;
+            }
+          }
+
+          if (allMatch) {
+            // Safe to remove — files are identical to what the merge brings
+            for (const relPath of slugFiles) {
+              fs.unlinkSync(path.join(projectRoot, relPath));
+            }
+            console.log(chalk.yellow(`⚠ Removed ${slugFiles.length} untracked artifact${slugFiles.length !== 1 ? 's' : ''} from main (written by agent to wrong tree).`));
+
+            // Retry pull
+            pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
+          } else {
+            console.error(chalk.red('Error: Pull blocked by untracked files that differ from the merged version:'));
+            for (const f of slugFiles) {
+              console.error(chalk.gray(`  ${f}`));
+            }
+            console.error(chalk.gray('These files were written to main but differ from the PR. Inspect and remove manually.'));
+            process.exit(1);
+          }
+        }
+      }
+
       if (pullResult.exitCode !== 0) {
         const errorMessage = pullResult.stderr;
         const lowerError = errorMessage.toLowerCase();
