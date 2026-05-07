@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "getAgentInfoList recomputes maxModelLen inside loop for mixed model display"
+    file: "packages/cli/src/commands/agents.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "KNOWN_MODEL_NAMES list is hardcoded — new model names won't get --all hint"
+    file: "packages/cli/src/commands/agents.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) unrelated to this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
