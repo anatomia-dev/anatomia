@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "MAINTENANCE_MANUAL decision 7 now contradicts implementation — says 44px icon buttons but we changed to 34px visual"
+    file: "website/MAINTENANCE_MANUAL.md"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
