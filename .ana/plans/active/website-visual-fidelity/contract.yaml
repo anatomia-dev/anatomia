@@ -1,0 +1,248 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Website Visual Fidelity"
+
+assertions:
+  # A1 — TetrisSnake perimeter walker
+  - id: A001
+    says: "The pricing animation walks the frame border clockwise instead of bouncing randomly"
+    block: "TetrisSnake perimeter walker"
+    target: "TetrisSnake.perimeterWalk"
+    matcher: "exists"
+
+  - id: A002
+    says: "The animation builds permanent border blocks that accumulate over time"
+    block: "TetrisSnake perimeter walker"
+    target: "TetrisSnake.placedBlocks"
+    matcher: "exists"
+
+  - id: A003
+    says: "The animation clears old blocks periodically to prevent density buildup"
+    block: "TetrisSnake perimeter walker"
+    target: "TetrisSnake.lapClearance"
+    matcher: "exists"
+
+  - id: A004
+    says: "The animation reads the brand color every frame to track theme changes"
+    block: "TetrisSnake perimeter walker"
+    target: "TetrisSnake.perFrameBrandColor"
+    matcher: "exists"
+
+  # A2 — Highlighted card inversion
+  - id: A005
+    says: "The Team pricing card has a dark background that makes it stand out"
+    block: "highlighted card inversion"
+    target: "cardHighlighted.background"
+    matcher: "equals"
+    value: "var(--fg-strong)"
+
+  - id: A006
+    says: "The highlighted card text is light-colored for readability on dark background"
+    block: "highlighted card inversion"
+    target: "cardHighlighted.color"
+    matcher: "equals"
+    value: "var(--bg)"
+
+  - id: A007
+    says: "The highlighted card border becomes invisible against the dark background"
+    block: "highlighted card inversion"
+    target: "cardHighlighted.borderColor"
+    matcher: "equals"
+    value: "transparent"
+
+  - id: A008
+    says: "The highlighted card CTA button uses the brand color background"
+    block: "highlighted card inversion"
+    target: "cardHighlighted.ctaBackground"
+    matcher: "contains"
+    value: "--color-brand"
+
+  # A3 — Compat tile inversion
+  - id: A009
+    says: "The compatibility tile has a dark background that makes it stand out"
+    block: "compat tile inversion"
+    target: "tCompat.background"
+    matcher: "equals"
+    value: "var(--fg-strong)"
+
+  - id: A010
+    says: "Compatibility chips are visible against the dark tile background"
+    block: "compat tile inversion"
+    target: "tCompat.compatChip.background"
+    matcher: "contains"
+    value: "color-mix"
+
+  - id: A011
+    says: "Compatibility chip text uses the page background color for contrast"
+    block: "compat tile inversion"
+    target: "tCompat.compatChip.color"
+    matcher: "equals"
+    value: "var(--bg)"
+
+  # A4 — Footer tagline
+  - id: A012
+    says: "The footer tagline is displayed at a large display size"
+    block: "footer tagline display lockup"
+    target: "footerTagline.fontSize"
+    matcher: "contains"
+    value: "clamp(32px, 3.6vw, 44px)"
+
+  - id: A013
+    says: "The footer tagline italic word uses Fraunces with optical sizing"
+    block: "footer tagline display lockup"
+    target: "footerTagline.em.fontVariationSettings"
+    matcher: "contains"
+    value: "opsz"
+
+  # A5 — Pricing heading
+  - id: A014
+    says: "The pricing heading is large and prominent"
+    block: "pricing heading size"
+    target: "pricingHeading.fontSize"
+    matcher: "contains"
+    value: "clamp(40px,5.5vw,68px)"
+
+  - id: A015
+    says: "The pricing heading has tight line height and letter spacing"
+    block: "pricing heading size"
+    target: "pricingHeading.letterSpacing"
+    matcher: "contains"
+    value: "-0.04em"
+
+  # A6 — Price flag pill
+  - id: A016
+    says: "The price flag is a rounded pill badge"
+    block: "price flag pill"
+    target: "cardFlag.borderRadius"
+    matcher: "equals"
+    value: "999px"
+
+  - id: A017
+    says: "The price flag has a soft brand background"
+    block: "price flag pill"
+    target: "cardFlag.background"
+    matcher: "equals"
+    value: "var(--brand-soft)"
+
+  - id: A018
+    says: "The price flag uses the correct small font size"
+    block: "price flag pill"
+    target: "cardFlag.fontSize"
+    matcher: "equals"
+    value: "9.5px"
+
+  # A7 — Price amount size
+  - id: A019
+    says: "The price amount is displayed at 48px"
+    block: "price amount size"
+    target: "cardPriceValue.fontSize"
+    matcher: "equals"
+    value: "48px"
+
+  # A8 — Footer commit pill
+  - id: A020
+    says: "The footer commit link is a rounded pill"
+    block: "footer commit pill"
+    target: "footerCommit.borderRadius"
+    matcher: "equals"
+    value: "999px"
+
+  - id: A021
+    says: "The footer commit pill has a transparent border that appears on hover"
+    block: "footer commit pill"
+    target: "footerCommit.border"
+    matcher: "contains"
+    value: "transparent"
+
+  # A9 — Section spacing
+  - id: A022
+    says: "Section spacing is 116px for comfortable visual breathing room"
+    block: "section spacing token"
+    target: "spacingSection.value"
+    matcher: "equals"
+    value: "116px"
+
+  - id: A023
+    says: "Bento section uses the spacing token instead of a hardcoded value"
+    block: "section spacing token"
+    target: "bentoSection.padding"
+    matcher: "contains"
+    value: "var(--spacing-section)"
+
+  - id: A024
+    says: "Pricing section uses the spacing token instead of a hardcoded value"
+    block: "section spacing token"
+    target: "pricingSection.padding"
+    matcher: "contains"
+    value: "var(--spacing-section)"
+
+  # A10 — Dark mode fg-strong
+  - id: A025
+    says: "Dark mode uses a warm off-white instead of pure white for strong text"
+    block: "dark mode fg-strong"
+    target: "darkTheme.fgStrong"
+    matcher: "equals"
+    value: "#FBFAF6"
+
+  # A11 — Scan metrics hairline grid
+  - id: A026
+    says: "Scan metrics use a hairline grid with 1px gaps between cells"
+    block: "scan metrics hairline grid"
+    target: "metricGrid.gap"
+    matcher: "equals"
+    value: "1px"
+
+  - id: A027
+    says: "Scan metric cells use the card background for contrast against hairlines"
+    block: "scan metrics hairline grid"
+    target: "metric.background"
+    matcher: "equals"
+    value: "var(--bg-card)"
+
+  # A12 — Agent chips grid
+  - id: A028
+    says: "Agent chips are arranged in a two-column grid"
+    block: "agent chips stacked layout"
+    target: "chipGrid.gridTemplateColumns"
+    matcher: "equals"
+    value: "1fr 1fr"
+
+  - id: A029
+    says: "Each agent chip stacks its content vertically"
+    block: "agent chips stacked layout"
+    target: "chip.flexDirection"
+    matcher: "equals"
+    value: "column"
+
+  - id: A030
+    says: "Agent chip markup uses block-level elements for vertical stacking"
+    block: "agent chips stacked layout"
+    target: "AgentsTile.chipMarkup"
+    matcher: "contains"
+    value: "div"
+
+  # A13 — Pricing section border
+  - id: A031
+    says: "The pricing section has a subtle top border separating it from content above"
+    block: "pricing section border"
+    target: "pricingSection.borderTop"
+    matcher: "contains"
+    value: "var(--hairline)"
+
+file_changes:
+  - path: "website/app/globals.css"
+    action: modify
+  - path: "website/components/pricing/TetrisSnake.tsx"
+    action: modify
+  - path: "website/components/pricing/pricing.module.css"
+    action: modify
+  - path: "website/components/pricing/Pricing.tsx"
+    action: modify
+  - path: "website/components/bento/bento.module.css"
+    action: modify
+  - path: "website/components/bento/tiles/AgentsTile.tsx"
+    action: modify
+  - path: "website/components/footer/Footer.tsx"
+    action: modify
+  - path: "website/components/pricing/PriceCard.tsx"
+    action: modify
