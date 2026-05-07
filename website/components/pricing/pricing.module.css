@@ -1,7 +1,8 @@
 /* Pricing section — tetris frame, card layout. */
 
 .section {
-  padding: 88px 0 64px;
+  padding: var(--spacing-section) 0 64px;
+  border-top: 1px solid var(--hairline);
 }
 
 .top {
@@ -43,20 +44,57 @@
 }
 .card:hover { border-color: var(--border); }
 .cardHighlighted {
-  border-color: var(--color-brand);
+  background: var(--fg-strong);
+  color: var(--bg);
+  border-color: transparent;
 }
 .cardHighlighted:hover {
-  border-color: var(--color-brand);
+  border-color: transparent;
+}
+.cardHighlighted .cardName,
+.cardHighlighted .cardPriceValue {
+  color: var(--bg);
+}
+.cardHighlighted .cardSub,
+.cardHighlighted .cardFeature {
+  color: color-mix(in oklch, var(--bg) 70%, transparent);
+}
+.cardHighlighted .cardPriceUnit {
+  color: color-mix(in oklch, var(--bg) 70%, transparent);
+}
+.cardHighlighted .cardFeatureTick {
+  color: var(--color-brand);
+}
+.cardHighlighted .cardFlag {
+  background: var(--color-brand);
+  color: #000;
+}
+.cardHighlighted .cardFeatures {
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding-top: 24px;
+}
+.cardHighlighted .cardCta a,
+.cardHighlighted .cardCta button {
+  background: var(--color-brand) !important;
+  color: #000 !important;
 }
 
 .cardFlag {
+  display: inline-block;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-brand);
+  white-space: nowrap;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
   margin-bottom: 14px;
+}
+[data-theme="dark"] .cardFlag {
+  color: var(--color-brand);
 }
 
 .cardName {
@@ -73,7 +111,7 @@
   margin-top: 8px;
 }
 .cardPriceValue {
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--fg-strong);
@@ -92,6 +130,8 @@
 
 .cardFeatures {
   margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--hairline);
   display: flex;
   flex-direction: column;
   gap: 10px;

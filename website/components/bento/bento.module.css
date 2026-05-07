@@ -2,7 +2,7 @@
    No @apply — uses var() tokens from globals.css. */
 
 .section {
-  padding: 88px 0 64px;
+  padding: var(--spacing-section) 0 64px;
 }
 
 .heading {
@@ -111,6 +111,31 @@
   .tAgents { grid-column: span 2; }
   .tDiff { grid-column: span 3; }
   .tCompat { grid-column: span 3; }
+}
+
+/* --- Compat tile inversion --- */
+.tCompat {
+  background: var(--fg-strong);
+  color: var(--bg);
+  border-color: transparent;
+}
+.tCompat h3,
+.tCompat .tileEyebrow {
+  color: var(--bg);
+}
+.tCompat .tileEyebrow .tileNum {
+  color: var(--color-brand);
+}
+.tCompat p {
+  color: color-mix(in oklch, var(--bg) 70%, transparent);
+}
+.tCompat .compatChip {
+  background: color-mix(in oklch, var(--bg) 8%, transparent);
+  color: var(--bg);
+  border: none;
+}
+.tCompat .compatCatch {
+  color: color-mix(in oklch, var(--bg) 70%, transparent);
 }
 
 /* Tetris corner markers */
@@ -268,13 +293,16 @@
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 1px;
+  background: var(--hairline);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
   margin-top: 18px;
 }
 .metric {
-  padding: 12px;
-  background: var(--bg-deep);
-  border-radius: var(--radius-sm);
+  padding: 14px;
+  background: var(--bg-card);
   text-align: center;
 }
 .metricV {
@@ -294,16 +322,16 @@
 
 /* --- Agent chips --- */
 .chipGrid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 18px;
 }
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
   background: var(--bg-deep);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
@@ -311,14 +339,14 @@
   font-size: 11px;
 }
 .chipN {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-brand);
+  color: var(--ink-45);
 }
-.chipName { font-weight: 600; color: var(--fg-strong); }
-.chipRole { color: var(--ink-45); }
+.chipName { font-size: 14px; font-weight: 600; color: var(--fg-strong); }
+.chipRole { font-size: 11px; color: var(--ink-60); }
 
 /* --- Diff lines --- */
 .diffBlock {
