@@ -16,9 +16,9 @@ export function AgentsTile() {
         <div className={styles.chipGrid}>
           {agents.chips.map((c) => (
             <div key={c.name} className={styles.chip}>
-              <span className={styles.chipN}>{c.n}</span>
-              <span className={styles.chipName}>{c.name}</span>
-              <span className={styles.chipRole}>{c.role}</span>
+              <div className={styles.chipN}>{c.n}</div>
+              <div className={styles.chipName}>{c.name}</div>
+              <div className={styles.chipRole}>{c.role}</div>
             </div>
           ))}
         </div>

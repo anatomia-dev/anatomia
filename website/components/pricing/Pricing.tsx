@@ -20,7 +20,7 @@ export function Pricing() {
                 <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--color-brand)" }} />
                 {copy.pricing.eyebrow}
               </div>
-              <h2 className="mt-3.5 text-[clamp(32px,3.8vw,52px)] leading-[1.05] tracking-tight" style={{ color: "var(--fg-strong)" }}>
+              <h2 className="mt-3.5 text-[clamp(40px,5.5vw,68px)] leading-[1.02] tracking-[-0.04em]" style={{ color: "var(--fg-strong)" }}>
                 {copy.pricing.title}
               </h2>
               <p className="mt-3.5 text-base leading-relaxed" style={{ maxWidth: "52ch", color: "var(--ink-60)" }}>

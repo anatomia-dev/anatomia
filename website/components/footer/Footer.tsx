@@ -36,10 +36,20 @@ export async function Footer() {
               <span style={{ color: "var(--color-brand)" }}>]</span>
             </Link>
 
-            <p className="text-lg font-semibold" style={{ color: "var(--fg-strong)" }}>
+            <p style={{
+              fontSize: "clamp(32px, 3.6vw, 44px)",
+              fontWeight: 600,
+              lineHeight: 1.0,
+              letterSpacing: "-0.02em",
+              color: "var(--fg-strong)",
+            }}>
               {tagline.map((p, i) =>
                 p.em ? (
-                  <em key={i} className="font-serif italic" style={{ color: "var(--color-brand)" }}>
+                  <em key={i} className="font-serif italic" style={{
+                    color: "var(--color-brand)",
+                    fontVariationSettings: '"opsz" 96',
+                    fontWeight: 400,
+                  }}>
                     {p.t}
                   </em>
                 ) : (
@@ -101,13 +111,13 @@ export async function Footer() {
             <span
               className="rounded-full"
               style={{
-                color: "var(--ink-60)",
+                color: "var(--ink-45)",
                 padding: "3px 10px",
                 border: "1px solid var(--border-soft)",
-                background: "var(--bg-elev)",
+                borderRadius: "999px",
               }}
             >
-              <span style={{ color: "var(--ink-45)" }}>commit</span> ·{" "}
+              <span style={{ color: "var(--ink-30)" }}>commit</span> ·{" "}
               <span>{latest.hash}</span> ·{" "}
               <span>{formatAge(latest.ts)}</span>
             </span>

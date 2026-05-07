@@ -15214,6 +15214,309 @@
         "completed_at": "2026-05-07T06:55:20.145Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "website-visual-fidelity",
+      "feature": "Website Visual Fidelity",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 31,
+        "satisfied": 31,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The pricing animation walks the frame border clockwise instead of bouncing randomly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The animation builds permanent border blocks that accumulate over time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The animation clears old blocks periodically to prevent density buildup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The animation reads the brand color every frame to track theme changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The Team pricing card has a dark background that makes it stand out",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The highlighted card text is light-colored for readability on dark background",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The highlighted card border becomes invisible against the dark background",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The highlighted card CTA button uses the brand color background",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The compatibility tile has a dark background that makes it stand out",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Compatibility chips are visible against the dark tile background",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Compatibility chip text uses the page background color for contrast",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The footer tagline is displayed at a large display size",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The footer tagline italic word uses Fraunces with optical sizing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The pricing heading is large and prominent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The pricing heading has tight line height and letter spacing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The price flag is a rounded pill badge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The price flag has a soft brand background",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The price flag uses the correct small font size",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The price amount is displayed at 48px",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The footer commit link is a rounded pill",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The footer commit pill has a transparent border that appears on hover",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Section spacing is 116px for comfortable visual breathing room",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Bento section uses the spacing token instead of a hardcoded value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Pricing section uses the spacing token instead of a hardcoded value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Dark mode uses a warm off-white instead of pure white for strong text",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Scan metrics use a hairline grid with 1px gaps between cells",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Scan metric cells use the card background for contrast against hairlines",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Agent chips are arranged in a two-column grid",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Each agent chip stacks its content vertically",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Agent chip markup uses block-level elements for vertical stacking",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The pricing section has a subtle top border separating it from content above",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 52,
+        "think": 2,
+        "plan": 15,
+        "build": 28,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:b1abf2208f5a67f49b26fc08b042a818f6f66e7ca07cec17cc6aa25e911854e1",
+        "contract": "sha256:4c689c479eeca16953db2e2daca4d9d3ce08a296bae9d68011c0dea9ed1d91d2",
+        "plan": "sha256:cf61e014ec014d6f85462944cc8a010dc3d17335963415d7ffd61228d8f63acd",
+        "spec": "sha256:86d8d3188770f7c52dfefd11e0fd7f9f3d1d165df9b2b45cad49bffda8da91e7",
+        "build-report": "sha256:cde1f9669b660053d4a493dd3eedc9b7423dda1c0507a9fbc81159013f335fdc",
+        "build-data": "sha256:9aa03dffc5a9cd5a5778115d3cba1ac59c4500060b175151edd1482efc5c0c53",
+        "verify-report": "sha256:16386ae2c4169a92e036d8fe157042dbe05b21b3aa6a30de40f5e2a51edeb722",
+        "verify-data": "sha256:b8da6e3087b7805ec0afbd8f6ee7eb3c96a7dc2cdc14864d70af561757335bf4"
+      },
+      "completed_at": "2026-05-07T07:32:07.750Z",
+      "modules_touched": [
+        "website/app/globals.css",
+        "website/components/bento/bento.module.css",
+        "website/components/bento/tiles/AgentsTile.tsx",
+        "website/components/footer/Footer.tsx",
+        "website/components/pricing/Pricing.tsx",
+        "website/components/pricing/TetrisSnake.tsx",
+        "website/components/pricing/pricing.module.css"
+      ],
+      "scope_summary": "Fix 13 visual regressions between the locked handoff HTML and the shipped website. Every item was validated against both the handoff source (`Anatomia Landing Refresh handoff.html`) and the live implementation. The site is live at anatomia.dev — these differences are visible to anyone comparing the design reference.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "tCompat hover state leaks through inversion — base .tile:hover sets border-color: var(--border)",
+          "file": "website/components/bento/bento.module.css",
+          "anchor": null,
+          "line": 61,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "website-visual-fidelity-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "TetrisSnake trail fade math off by 2 ticks — fades to 0 at age 18 but filter removes at age 20",
+          "file": "website/components/pricing/TetrisSnake.tsx",
+          "anchor": null,
+          "line": 104,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-visual-fidelity-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "DPR cap at 2 added without spec guidance — prevents large canvas on 3x displays",
+          "file": "website/components/pricing/TetrisSnake.tsx",
+          "anchor": null,
+          "line": 50,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-visual-fidelity-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "cardPriceUnit override added for highlighted card — not in spec but necessary for visibility",
+          "file": "website/components/pricing/pricing.module.css",
+          "anchor": null,
+          "line": 63,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-visual-fidelity-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "TetrisSnake getComputedStyle called every frame — potential performance concern on low-end mobile",
+          "file": "website/components/pricing/TetrisSnake.tsx",
+          "anchor": null,
+          "line": 44,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "website-visual-fidelity-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "TetrisSnake placed blocks array grows unbounded between lap clears — no cap on array size",
+          "file": "website/components/pricing/TetrisSnake.tsx",
+          "anchor": null,
+          "line": 77,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-visual-fidelity-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "No automated visual regression tests — all 13 changes require manual browser verification",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Compat tile hover border may look odd against inverted dark background",
+          "file": "website/components/bento/bento.module.css",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Highlighted CTA uses !important to override Button Tailwind utilities",
+          "file": "website/components/pricing/pricing.module.css",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-07T07:14:17.403Z",
+        "completed_at": "2026-05-07T07:32:07.747Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
