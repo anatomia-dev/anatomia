@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-59 runs · 100 active · 72 lessons · 0 promoted · 160 closed
+60 runs · 104 active · 73 lessons · 0 promoted · 160 closed
 
 ## Hot Modules
 
@@ -16,11 +16,12 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 100 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/agents.ts
 
-- **code:** agents.ts file header comment still says 'List deployed agents' — stale after description change — *CLI UX Polish — First 10 Minutes*
+- **code:** Double error message on unknown agent in setModel() — throws after console.error, catch block re-prints — *Agent Dashboard Phase 1*
+- **code:** maxModelLen computed inside the loop body on every iteration instead of once before the loop — *Agent Dashboard Phase 1*
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -44,6 +45,10 @@
 - **test:** A021 has no tagged test — verified by source inspection only — *Worktree Isolation*
 - **test:** Phase detection logic (A001-A003, A006-A011) has no dedicated tagged tests — *Worktree Isolation*
 
+### packages/cli/src/utils/agent-config.ts
+
+- **code:** AgentFrontmatter interface exported but never imported outside agent-config.ts — *Agent Dashboard Phase 1*
+
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** detectWorktreeSlug empty-string guard removed — unrelated to website-lift scope — *Website Lift*
@@ -51,6 +56,10 @@
 - **code:** branchExists exported only for test imports — not used by production code — *Worktree Isolation*
 - **code:** isWorktreeDirectory false-positive risk in git submodules — *Worktree Isolation*
 - **code:** detectWorktreeSlug path-based detection fragile if project root contains .ana/worktrees/ — *Worktree Isolation*
+
+### packages/cli/tests/commands/agents.test.ts
+
+- **test:** A002 test uses toBeGreaterThan(templateSize) — correct intent but could assert exact expected value since skill content is fixture-controlled — *Agent Dashboard Phase 1*
 
 ### packages/cli/tests/commands/artifact.test.ts
 
@@ -60,10 +69,6 @@
 ### packages/cli/tests/commands/check.test.ts
 
 - **code:** check.test.ts fixture uses 'active sprints' — slightly odd phrasing for a mock project-context but acceptable — *Code Comment Cleanup*
-
-### packages/cli/tests/commands/proof.test.ts
-
-- **test:** A001 test verifies retry success path, not the failure message — contract matcher/value ('Push failed after retry') never asserted — *Proof System Near-Term — Learn Infrastructure Foundation*
 
 ### packages/cli/tests/commands/work.test.ts
 
@@ -90,9 +95,4 @@
 - **code:** Hardcoded version 'v1.0.2' will go stale — *Website Lift*
 - **code:** Empty entries returns [] instead of mockFeed — blank state possible — *Website Lift*
 - **code:** extractFeatureEm on single-word feature returns that word — acceptable for display — *Website Lift*
-
-### General
-
-- **code:** addHelpCommand(false) breaks 'ana help <cmd>' — users who learned that pattern get an error — *CLI UX Polish — First 10 Minutes*
-- **test:** No contract assertions are covered by @ana-tagged tests — all verified by source inspection and live invocation only — *CLI UX Polish — First 10 Minutes*
 

@@ -14961,6 +14961,259 @@
         "completed_at": "2026-05-07T04:23:33.910Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "agent-dashboard-p1",
+      "feature": "Agent Dashboard Phase 1",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Agent listing shows how many characters each agent uses",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Character count includes both the agent template and its loaded skills",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Running model with no arguments shows each agent's current model",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Agents without a model setting show as using the default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Setting an agent's model writes the value to its frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Setting a model does not change the rest of the agent file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Clearing a model removes the model line from frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Clearing a model confirms the agent will use the default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Setting model for all agents updates every agent file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "When all agents use the same model, a single footer shows the shared model",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "When agents use different models, each agent shows its model inline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Agents without a model field appear in the listing instead of being skipped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Trying to set a model for a nonexistent agent shows available agent names",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "When the agent name looks like a model name, the error suggests the --all syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Clearing a model that is already default tells the user it's a no-op",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Agents with skills show the skill count in the listing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Agents without skills show zero skills",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Writing a model preserves all other frontmatter fields exactly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Writing a model does not touch content after the frontmatter block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Bulk model set skips corrupt files with a warning and continues",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Bulk model set reports how many agents were successfully updated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Frontmatter parser handles agent files that have no frontmatter block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Frontmatter parser extracts skills as an array from inline YAML syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Running agents when no agents directory exists shows a helpful error",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 104,
+        "think": 1,
+        "plan": 79,
+        "build": 10,
+        "verify": 14
+      },
+      "hashes": {
+        "scope": "sha256:989bc239e16f0d6ddbc49e0620d5a968d1903db41db2a3e66f195e3647488880",
+        "contract": "sha256:afb74c4f2c3aa0abf1a81a01498d91f046fded6d52cc3b572d51ffd62e663d9d",
+        "plan": "sha256:ad3a87931f41410a9db4d23f6c6543944ee88de0f8c022688c18097b59b68b10",
+        "spec": "sha256:60e6626fc79bd677fac9ef27d89f57e25fd40d131c4a96c54ce24d4e62652265",
+        "build-report": "sha256:06dd93063827085695a1b34f4a6cdcb4546c61f92b52dba8f7c313503ae08e31",
+        "build-data": "sha256:744754954d11895a038036ac9481e7216def462a726ed4d3c5e5507f6b79b82a",
+        "verify-report": "sha256:c819d78e8b05e7fa737010fd5c6599108bc88d2684fa15cf463a9660ce785fa5",
+        "verify-data": "sha256:30ec220a889a88e78e7e10f745a0f44f212a2c1f45207941d518bdb69b7f3c6b"
+      },
+      "completed_at": "2026-05-07T06:55:20.148Z",
+      "modules_touched": [
+        "packages/cli/src/commands/agents.ts",
+        "packages/cli/src/utils/agent-config.ts",
+        "packages/cli/tests/commands/agents.test.ts",
+        "packages/cli/tests/utils/agent-config.test.ts"
+      ],
+      "scope_summary": "Agent model configuration requires hand-editing markdown frontmatter — open a file, find `model:`, know the exact identifier, save. Six agents means six manual edits. `ana agents` currently shows name, model, description and nothing else. The user wants CLI-driven model configuration and visibility into what each agent costs in context characters.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Double error message on unknown agent in setModel() — throws after console.error, catch block re-prints",
+          "file": "packages/cli/src/commands/agents.ts",
+          "anchor": null,
+          "line": 197,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "agent-dashboard-p1-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "AgentFrontmatter interface exported but never imported outside agent-config.ts",
+          "file": "packages/cli/src/utils/agent-config.ts",
+          "anchor": null,
+          "line": 13,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "agent-dashboard-p1-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "maxModelLen computed inside the loop body on every iteration instead of once before the loop",
+          "file": "packages/cli/src/commands/agents.ts",
+          "anchor": null,
+          "line": 130,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "agent-dashboard-p1-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A002 test uses toBeGreaterThan(templateSize) — correct intent but could assert exact expected value since skill content is fixture-controlled",
+          "file": "packages/cli/tests/commands/agents.test.ts",
+          "anchor": null,
+          "line": 141,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "agent-dashboard-p1-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Stale proof chain finding about agents.ts file header — resolved by this build (now says 'Agent dashboard and model management')",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "agent-dashboard-p1-C5",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "getAgentInfoList recomputes maxModelLen inside loop for mixed model display",
+          "file": "packages/cli/src/commands/agents.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "KNOWN_MODEL_NAMES list is hardcoded — new model names won't get --all hint",
+          "file": "packages/cli/src/commands/agents.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) unrelated to this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-07T06:44:40.636Z",
+        "completed_at": "2026-05-07T06:55:20.145Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
