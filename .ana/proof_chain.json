@@ -15517,6 +15517,340 @@
         "completed_at": "2026-05-07T07:32:07.747Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "website-dead-links",
+      "feature": "Dead Links & Missing Pages",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 31,
+        "satisfied": 31,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Every page uses the same primary navigation bar",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The sub-page route group no longer exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "No file in the codebase imports the old SubNav component",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "No placeholder hash links remain in the site copy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The agents section has a scroll anchor on the landing page",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Proof feed rows display information without being clickable links",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The proof entry data no longer carries a URL field",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Proof feed rows have no arrow icon suggesting clickability",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The version pill in the navigation bar is not a link",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The commit pill in the footer is not a link",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The footer commit pill has a rounded pill shape",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The changelog page exists and can be built",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The CLI reference page exists and can be built",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The examples page exists and can be built",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The about page exists and can be built",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The license page exists and can be built",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Each new page exports SEO metadata with the Anatomia brand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Footer product links use absolute paths for landing page sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Navigation links use absolute paths for landing page sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Navigation links point to the agents section with an absolute path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Navigation links point to pricing with an absolute path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The desktop nav install button links to pricing with an absolute path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The mobile nav install button links to pricing with an absolute path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The CLI reference card on the docs page shows coming soon status",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The examples card on the docs page shows coming soon status",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The proof feed history link points to the real GitHub commit log",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The sitemap lists all nine public pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The website builds successfully with no errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The docs page renders inside the marketing layout with the main nav",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The manifesto page renders inside the marketing layout with the main nav",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The contact page renders inside the marketing layout with the main nav",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 54,
+        "think": 7,
+        "plan": 6,
+        "build": 31,
+        "verify": 10
+      },
+      "hashes": {
+        "scope": "sha256:30465b556ccd0a0c5359b0e68e05a8e9826c61ccffe8bce9d53320e84f846f39",
+        "contract": "sha256:603d8d1f63d1e7b27de772501c47fde1a9f55b605ee5a5fe3ea656a8fab66ef0",
+        "plan": "sha256:8df643f5bc01baa8a16da082e78d998e696dc7be027d6e777e30dd13b5e06738",
+        "spec": "sha256:fd5db807b1f30764296a789fd2da19e419f4b25c28d5887c472c6db7441e6e94",
+        "build-report": "sha256:1c915b38da964cdb2359a563c60d049232f725891a1327184c46939c923c076e",
+        "build-data": "sha256:684d71bfa6f275c429200b0536ad45c14139e4b03feb28155142cc2b6559eb85",
+        "verify-report": "sha256:9f28b6306d72f5312ab3539e836575732c469694eff19c2f1b90f922a58be699",
+        "verify-data": "sha256:096b8f3c2ac06409a9dd2a6a7beedb6eabbb51e037ffd896c10bf02b258f429e"
+      },
+      "completed_at": "2026-05-07T07:37:51.557Z",
+      "modules_touched": [
+        "website/app/(marketing)/about/page.tsx",
+        "website/app/(marketing)/changelog/page.tsx",
+        "website/app/(marketing)/cli/page.tsx",
+        "website/app/(marketing)/contact/page.tsx",
+        "website/app/(marketing)/docs/page.tsx",
+        "website/app/(marketing)/examples/page.tsx",
+        "website/app/(marketing)/license/page.tsx",
+        "website/app/(marketing)/manifesto/page.tsx",
+        "website/app/(sub)/layout.tsx",
+        "website/app/sitemap.ts",
+        "website/components/about/About.tsx",
+        "website/components/about/about.module.css",
+        "website/components/bento/tiles/AgentsTile.tsx",
+        "website/components/changelog/Changelog.tsx",
+        "website/components/changelog/changelog.module.css",
+        "website/components/cli-ref/CliRef.tsx",
+        "website/components/cli-ref/cli-ref.module.css",
+        "website/components/docs/DocsNext.tsx",
+        "website/components/examples/Examples.tsx",
+        "website/components/examples/examples.module.css",
+        "website/components/footer/Footer.tsx",
+        "website/components/hero/Hero.tsx",
+        "website/components/license/License.tsx",
+        "website/components/license/license.module.css",
+        "website/components/nav/Nav.tsx",
+        "website/components/nav/NavMobile.tsx",
+        "website/components/proof-feed/ProofFeed.tsx",
+        "website/components/sub-nav/SubNav.tsx",
+        "website/lib/copy.ts",
+        "website/lib/proof-feed.ts"
+      ],
+      "scope_summary": "Eliminate every dead link on the site, unify navigation across all pages, and build the 5 missing pages that the footer promises. A verification product with dead links is a credibility failure — every `href=\"#\"`, every 404, every anchor that scrolls nowhere undermines the core message. The user wants zero dead links, consistent nav, and every footer link resolving to a real destination.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "proofFeed.headTitle says 'Click one.' but rows are no longer clickable",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "line": 224,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "website-dead-links-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "proofFeed.headSub says 'Each row links to the contract...' but rows no longer link",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "line": 226,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "website-dead-links-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "MAINTENANCE_MANUAL.md still references (sub) route group and SubNav — now deleted",
+          "file": "website/MAINTENANCE_MANUAL.md",
+          "anchor": null,
+          "line": 19,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "website-dead-links-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Five new CSS modules duplicate identical eyebrow/title blocks — no shared base",
+          "file": "website/components/about/about.module.css",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-dead-links-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Hardcoded version 'v1.0.2' in proof-feed.ts will go stale — still present from Website Lift",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 70,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-dead-links-C5",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "mapEntry never produces kind 'chore' — still present from Website Lift",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 74,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-dead-links-C6",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "DocsNext.tsx uses `as string` cast to work around type narrowing after status change",
+          "file": "website/components/docs/DocsNext.tsx",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Hero eyebrow pill arrow icon removed — visual change not covered by spec",
+          "file": "website/components/hero/Hero.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "CSS module eyebrow/title pattern duplicated across 5 new component stylesheets",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-07T07:21:30.798Z",
+        "completed_at": "2026-05-07T07:37:51.555Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1

@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-61 runs · 110 active · 73 lessons · 0 promoted · 160 closed
+62 runs · 114 active · 75 lessons · 0 promoted · 160 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 114 total)
 
 ### packages/cli/src/commands/agents.ts
 
@@ -28,18 +28,9 @@
 - **code:** archivePreviousVersion uses string equality for content comparison — could produce false archives on Windows with CRLF line endings from git — *Rejection Cycle Artifact Preservation*
 - **code:** No upper bound on round numbers — a slug that goes through many rejection cycles will accumulate archive files with no cleanup mechanism — *Rejection Cycle Artifact Preservation*
 
-### packages/cli/src/commands/init/index.ts
-
-- **test:** Guard commands (A028-A032) have no integration tests — *Worktree Isolation*
-
 ### packages/cli/src/commands/init/state.ts
 
 - **test:** A010 has no runtime test — verified by source inspection only — *Non-Main Artifact Branch Tests*
-
-### packages/cli/src/commands/work.ts
-
-- **test:** A021 has no tagged test — verified by source inspection only — *Worktree Isolation*
-- **test:** Phase detection logic (A001-A003, A006-A011) has no dedicated tagged tests — *Worktree Isolation*
 
 ### packages/cli/src/utils/agent-config.ts
 
@@ -72,7 +63,10 @@
 
 - **test:** detectWorktreeSlug empty-string test is environment-dependent — pre-existing, fails inside worktrees — *Worktrees V2 — Phase Timing + Danger Map + Prune*
 - **test:** Pre-existing worktree.test.ts failure — detectWorktreeSlug('') returns slug when run inside worktree — *Non-Main Artifact Branch Tests*
-- **test:** A012 and A037 use typeof assertions instead of value assertions — *Worktree Isolation*
+
+### website/components/about/about.module.css
+
+- **code:** Five new CSS modules duplicate identical eyebrow/title blocks — no shared base — *Dead Links & Missing Pages*
 
 ### website/components/bento/bento.module.css
 
@@ -89,10 +83,19 @@
 - **code:** TetrisSnake getComputedStyle called every frame — potential performance concern on low-end mobile — *Website Visual Fidelity*
 - **code:** TetrisSnake placed blocks array grows unbounded between lap clears — no cap on array size — *Website Visual Fidelity*
 
+### website/lib/copy.ts
+
+- **code:** proofFeed.headTitle says 'Click one.' but rows are no longer clickable — *Dead Links & Missing Pages*
+- **code:** proofFeed.headSub says 'Each row links to the contract...' but rows no longer link — *Dead Links & Missing Pages*
+
 ### website/lib/proof-feed.ts
 
 - **code:** mapEntry never produces kind 'chore' — only 'fix' or 'feature' — *Website Lift*
 - **code:** Hardcoded version 'v1.0.2' will go stale — *Website Lift*
 - **code:** Empty entries returns [] instead of mockFeed — blank state possible — *Website Lift*
 - **code:** extractFeatureEm on single-word feature returns that word — acceptable for display — *Website Lift*
+
+### website/MAINTENANCE_MANUAL.md
+
+- **code:** MAINTENANCE_MANUAL.md still references (sub) route group and SubNav — now deleted — *Dead Links & Missing Pages*
 
