@@ -51,6 +51,91 @@ function mockFeed(): ProofEntry[] {
 const PROOF_CHAIN_URL =
   "https://raw.githubusercontent.com/TettoLabs/anatomia/main/.ana/proof_chain.json";
 
+const GITHUB_TAGS_URL =
+  "https://api.github.com/repos/TettoLabs/anatomia/tags";
+
+const GITHUB_COMMITS_URL =
+  "https://api.github.com/repos/TettoLabs/anatomia/commits";
+
+const VERSION_FALLBACK = "v1.0.2";
+
+/**
+ * Build GitHub API headers with conditional auth.
+ * @param extras - additional headers to merge
+ * @returns headers object for fetch
+ */
+function githubHeaders(
+  extras: Record<string, string> = {},
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "User-Agent": "anatomia-web",
+    Accept: "application/vnd.github.v3+json",
+    ...extras,
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+  return headers;
+}
+
+/**
+ * Fetch the latest release tag from the GitHub tags API.
+ * Uses 1-hour ISR cache. Falls back to hardcoded version on failure.
+ * @returns latest version string (e.g. "v1.0.3")
+ */
+export async function getLatestVersion(): Promise<string> {
+  try {
+    const res = await fetch(GITHUB_TAGS_URL, {
+      next: { revalidate: 3600 },
+      headers: githubHeaders(),
+    });
+    if (!res.ok) return VERSION_FALLBACK;
+
+    const tags: { name: string }[] = await res.json();
+    if (!tags || tags.length === 0) return VERSION_FALLBACK;
+
+    return tags[0].name;
+  } catch {
+    return VERSION_FALLBACK;
+  }
+}
+
+export interface LatestCommit {
+  hash: string;
+  ts: string;
+}
+
+/**
+ * Fetch the latest commit SHA and timestamp from the GitHub commits API.
+ * Uses 5-minute ISR cache. Falls back to placeholder values on failure.
+ * @returns object with 7-char hash and ISO timestamp
+ */
+export async function getLatestCommit(): Promise<LatestCommit> {
+  const fallback: LatestCommit = {
+    hash: "0000000",
+    ts: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch(GITHUB_COMMITS_URL, {
+      next: { revalidate: 300 },
+      headers: githubHeaders(),
+    });
+    if (!res.ok) return fallback;
+
+    const commits: { sha: string; commit: { committer: { date: string } } }[] =
+      await res.json();
+    if (!commits || commits.length === 0) return fallback;
+
+    return {
+      hash: commits[0].sha.slice(0, 7),
+      ts: commits[0].commit.committer.date,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 interface ProofChainEntry {
   slug: string;
   feature: string;
@@ -65,9 +150,9 @@ function extractFeatureEm(feature: string): string {
   return beforeDash.split(/\s+/).slice(0, 3).join(" ");
 }
 
-function mapEntry(entry: ProofChainEntry): ProofEntry {
+function mapEntry(entry: ProofChainEntry, version: string): ProofEntry {
   return {
-    version: "v1.0.2",
+    version,
     hash: entry.hashes.scope.slice(7, 14),
     ts: entry.completed_at,
     kind: entry.slug.startsWith("fix-") ? "fix" : "feature",
@@ -87,6 +172,8 @@ function mapEntry(entry: ProofChainEntry): ProofEntry {
  */
 export async function getProofFeed(): Promise<ProofEntry[]> {
   try {
+    const version = await getLatestVersion();
+
     const res = await fetch(PROOF_CHAIN_URL, {
       next: { revalidate: 60 },
       headers: { "User-Agent": "anatomia-web" },
@@ -99,7 +186,7 @@ export async function getProofFeed(): Promise<ProofEntry[]> {
     return data.entries
       .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
       .slice(0, 6)
-      .map(mapEntry);
+      .map((e) => mapEntry(e, version));
   } catch {
     return mockFeed();
   }
