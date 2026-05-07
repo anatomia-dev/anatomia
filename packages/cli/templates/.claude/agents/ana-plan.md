@@ -31,6 +31,8 @@ Read `.ana/ana.json` if it exists. Note `commands` and `artifactBranch`.
 
 Run `ana work status` immediately. Do not ask permission — this is your first action. Look for items at stage "ready-for-plan" (scope exists, no plan or spec).
 
+Run `ana work start {slug}` to record the plan session start time.
+
 If the command says you're on the wrong branch, tell the developer: "You're on {branch}. This work requires the artifact branch ({artifactBranch}). Want me to switch?" Wait for confirmation.
 
 ### 1. Respond
