@@ -4,7 +4,7 @@
  * Tests actual command execution in temp project directory.
  * Validates all files/directories created correctly:
  * - .ana/ (context, docs, plans, hooks, state)
- * - .claude/ with settings.json, agents/ (9 files), and skills/ (6 dirs)
+ * - .claude/ with settings.json, agents/ (6 files), and skills/ (8 dirs)
  * - CLAUDE.md at project root
  * Total: 51 files
  */
@@ -110,17 +110,18 @@ describe('ana init E2E', () => {
     const settingsExists = await fileExists(path.join(claudePath, 'settings.json'));
     expect(settingsExists).toBe(true);
 
-    // Verify .claude/agents/ directory with 9 agent files
+    // Verify .claude/agents/ directory with 6 agent files
     const agentsExists = await dirExists(path.join(claudePath, 'agents'));
     expect(agentsExists).toBe(true);
 
-    // Verify all 5 agent files exist
+    // Verify all 6 agent files exist
     const agentFiles = [
       'ana.md',
       'ana-plan.md',
       'ana-setup.md',
       'ana-build.md',
       'ana-verify.md',
+      'ana-learn.md',
     ];
 
     for (const agentFile of agentFiles) {
@@ -128,7 +129,10 @@ describe('ana init E2E', () => {
       expect(agentExists, `Agent file missing: ${agentFile}`).toBe(true);
     }
 
-    // Verify .claude/skills/ directory with 6 skill directories
+    // Verify .claude/skills/ directory with core skill directories
+    // Note: ai-patterns, api-patterns, data-access are conditional —
+    // only scaffolded when scan detects aiSdk, framework, or database.
+    // This minimal fixture triggers none of those conditions.
     const skillsExists = await dirExists(path.join(claudePath, 'skills'));
     expect(skillsExists).toBe(true);
 
