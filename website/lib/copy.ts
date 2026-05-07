@@ -35,9 +35,9 @@ export const copy = {
   nav: {
     brand: "anatomia",
     links: [
-      { label: "Pipeline", href: "#pipeline" },
-      { label: "Agents", href: "#agents" },
-      { label: "Pricing", href: "#pricing" },
+      { label: "Pipeline", href: "/#pipeline" },
+      { label: "Agents", href: "/#agents" },
+      { label: "Pricing", href: "/#pricing" },
       { label: "Docs", href: "/docs" },
     ],
     ctaInstall: "Install",
@@ -197,7 +197,7 @@ export const copy = {
           "Configurable agents · pick your model",
           "Works with Claude, Cursor, Codex, Zed",
         ],
-        cta: { label: "Install", command: "npx anatomia init", href: "#" },
+        cta: { label: "Install", command: "npx anatomia init", href: "/#pricing" },
       },
       {
         name: "Team",
@@ -213,7 +213,8 @@ export const copy = {
           "Parallel pipelines · shared context",
           "SSO · priority support",
         ],
-        cta: { label: "Join the waitlist", href: "#" },
+        // TODO: Replace with waitlist form URL when available
+        cta: { label: "Join the waitlist", href: "/contact" },
       },
     ],
   },
@@ -224,7 +225,7 @@ export const copy = {
     headSub:
       "This isn\u2019t a changelog. Each row links to the contract Plan wrote before the work began, with Verify\u2019s independent account stapled to it. The claims, the matchers, the pass/fail \u2014 all there.",
     footSource: "github.com/TettoLabs/anatomia/commits",
-    footLink: { label: "Full history \u2192", href: "#" },
+    footLink: { label: "Full history \u2192", href: "https://github.com/TettoLabs/anatomia/commits/main" },
   },
 
   docs: {
@@ -281,10 +282,10 @@ export const copy = {
       tail: "You don't have to keep every proof. The ones you commit become part of your history; the rest are local.",
     },
     next: [
-      { title: "CLI reference", status: "Live", desc: "Every command, every flag, every config key. The boring but complete version of this page.", href: "/cli" },
-      { title: "Examples", status: "Live", desc: "A dozen worked changes with their proof chains — rate limits, schema migrations, refactors, bugfixes.", href: "/examples" },
-      { title: "Writing assertions", status: "Draft", desc: "How to turn informal intent into assertions the verifier can actually check. The highest-leverage skill.", href: "#" },
-      { title: "Custom agents", status: "Draft", desc: "Swap in your own planner, writer, or verifier. The pipeline is stages, not models; any model that honors the contracts fits.", href: "#" },
+      { title: "CLI reference", status: "Coming soon", desc: "Every command, every flag, every config key. The boring but complete version of this page.", href: "/cli" },
+      { title: "Examples", status: "Coming soon", desc: "A dozen worked changes with their proof chains — rate limits, schema migrations, refactors, bugfixes.", href: "/examples" },
+      { title: "Writing assertions", status: "Draft", desc: "How to turn informal intent into assertions the verifier can actually check. The highest-leverage skill.", href: "/docs" },
+      { title: "Custom agents", status: "Draft", desc: "Swap in your own planner, writer, or verifier. The pipeline is stages, not models; any model that honors the contracts fits.", href: "/docs" },
     ],
     coda: "Stuck? Open an issue on GitHub or email hello@anatomia.dev.",
   },
@@ -334,6 +335,88 @@ export const copy = {
     coda: ["Based in San Francisco.", "Mon–Fri, normal hours."],
   },
 
+  changelog: {
+    eyebrow: "Changelog",
+    title: "What\u2019s *new*.",
+    entries: [
+      {
+        version: "v1.0.2",
+        date: "May 2026",
+        items: [
+          "Worktree isolation \u2014 concurrent agents, each in their own git index.",
+          "Rejection artifact preservation \u2014 git-history extraction at save time.",
+          "Non-main artifact branch support with 8 new tests.",
+        ],
+      },
+      {
+        version: "v1.0.1",
+        date: "April 2026",
+        items: [
+          "Phase timing with sanity guards and danger map risk profile.",
+          "Code comment cleanup \u2014 286 internal references removed across 97 files.",
+        ],
+      },
+      {
+        version: "v1.0.0",
+        date: "April 2026",
+        items: [
+          "Initial public release.",
+          "CLI UX polish \u2014 command grouping, jargon-free descriptions, help examples.",
+          "Full pipeline: think, plan, build, verify.",
+        ],
+      },
+    ],
+  },
+
+  cliRef: {
+    eyebrow: "CLI Reference",
+    title: "Every command, every *flag*.",
+    body: "The complete CLI reference is coming soon. In the meantime, run `anatomia --help` for a full list of commands, or browse the source on GitHub.",
+    githubHref: "https://github.com/TettoLabs/anatomia",
+  },
+
+  examples: {
+    eyebrow: "Examples",
+    title: "Worked changes with *proof*.",
+    body: "Example proof chains are coming soon. Each will walk through a real change \u2014 the intent, the plan, the contract, the build, and the verification \u2014 so you can see what the pipeline produces end to end.",
+  },
+
+  about: {
+    eyebrow: "About",
+    title: "Two people. One *idea*.",
+    body: [
+      "Anatomia started with a simple observation: AI writes more code every month, and almost none of it arrives with evidence. A diff, a confident summary, no proof. We thought that was a solvable problem.",
+      "We\u2019re a two-person team based in San Francisco. We built Anatomia because we wanted to ship AI-written code we could actually stand behind \u2014 not code we hoped was correct. The pipeline exists to make that possible: four agents, four artifacts, mechanical verification.",
+      "Everything is open source, MIT-licensed, and runs on your machine. We believe the best way to earn trust is to make the proof readable.",
+    ],
+  },
+
+  license: {
+    eyebrow: "License",
+    title: "MIT \u2014 free *forever*.",
+    body: `MIT License
+
+Copyright (c) 2026 TettoLabs
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`,
+  },
+
   footer: {
     brand: "anatomia",
     tagline: "Ship with *proof*.",
@@ -344,9 +427,9 @@ export const copy = {
       {
         title: "Product",
         links: [
-          { label: "Pipeline", href: "#pipeline" },
-          { label: "Agents", href: "#agents" },
-          { label: "Pricing", href: "#pricing" },
+          { label: "Pipeline", href: "/#pipeline" },
+          { label: "Agents", href: "/#agents" },
+          { label: "Pricing", href: "/#pricing" },
           { label: "Changelog", href: "/changelog" },
         ],
       },
