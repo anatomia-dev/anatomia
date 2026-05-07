@@ -28,7 +28,6 @@ describe.skipIf(!wasmAvailable)('Tree-sitter performance', () => {
     const files = await sampleSourceFiles(projectRoot, 20);
 
     if (files.length === 0) {
-      console.log('⏭️  Skipping (no parseable files found)');
       return;
     }
 

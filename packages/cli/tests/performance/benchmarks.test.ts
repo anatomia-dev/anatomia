@@ -36,7 +36,6 @@ describe('performance benchmarks', () => {
     const duration = Date.now() - start;
     const seconds = duration / 1000;
 
-    console.log(`  ana init: ${seconds.toFixed(2)}s`);
     expect(seconds).toBeLessThan(20);
   }, 25000); // 25s timeout
 });
