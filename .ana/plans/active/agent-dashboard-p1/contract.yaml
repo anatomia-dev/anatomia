@@ -1,0 +1,191 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Agent Dashboard Phase 1"
+
+assertions:
+  # AC1: Character counts in display
+  - id: A001
+    says: "Agent listing shows how many characters each agent uses"
+    block: "displays character count for each agent"
+    target: "output"
+    matcher: "contains"
+    value: "chars"
+
+  - id: A002
+    says: "Character count includes both the agent template and its loaded skills"
+    block: "character count includes template plus skill file sizes"
+    target: "charCount"
+    matcher: "greater"
+    value: 0
+
+  # AC2: Model read subcommand
+  - id: A003
+    says: "Running model with no arguments shows each agent's current model"
+    block: "model subcommand with no args shows all agent models"
+    target: "output"
+    matcher: "contains"
+    value: "Agent models"
+
+  - id: A004
+    says: "Agents without a model setting show as using the default"
+    block: "model read shows (default) for agents without model field"
+    target: "output"
+    matcher: "contains"
+    value: "(default)"
+
+  # AC3: Model set
+  - id: A005
+    says: "Setting an agent's model writes the value to its frontmatter"
+    block: "model set writes model to agent frontmatter"
+    target: "frontmatter.model"
+    matcher: "equals"
+    value: "sonnet"
+
+  - id: A006
+    says: "Setting a model does not change the rest of the agent file"
+    block: "model set preserves other frontmatter fields and body"
+    target: "otherFieldsPreserved"
+    matcher: "truthy"
+
+  # AC4: Model clear
+  - id: A007
+    says: "Clearing a model removes the model line from frontmatter"
+    block: "model clear with --default removes model line"
+    target: "frontmatter.model"
+    matcher: "exists"
+
+  - id: A008
+    says: "Clearing a model confirms the agent will use the default"
+    block: "model clear prints confirmation message"
+    target: "output"
+    matcher: "contains"
+    value: "default"
+
+  # AC5: Model --all
+  - id: A009
+    says: "Setting model for all agents updates every agent file"
+    block: "model --all writes to every agent file"
+    target: "updatedFileCount"
+    matcher: "equals"
+    value: 6
+
+  # AC6: Uniform vs mixed model display
+  - id: A010
+    says: "When all agents use the same model, a single footer shows the shared model"
+    block: "uniform model shows single footer line"
+    target: "output"
+    matcher: "contains"
+    value: "Model:"
+
+  - id: A011
+    says: "When agents use different models, each agent shows its model inline"
+    block: "mixed models show per-agent model inline"
+    target: "output"
+    matcher: "contains"
+    value: "mixed"
+
+  # AC7: Default model display
+  - id: A012
+    says: "Agents without a model field appear in the listing instead of being skipped"
+    block: "agents without model field are listed with (default)"
+    target: "agentCount"
+    matcher: "equals"
+    value: 2
+
+  # AC8: Unknown agent error
+  - id: A013
+    says: "Trying to set a model for a nonexistent agent shows available agent names"
+    block: "model set for unknown agent shows available agents"
+    target: "errorOutput"
+    matcher: "contains"
+    value: "Unknown agent"
+
+  - id: A014
+    says: "When the agent name looks like a model name, the error suggests the --all syntax"
+    block: "model set with model-like agent name suggests --all"
+    target: "errorOutput"
+    matcher: "contains"
+    value: "--all"
+
+  # AC9: Clear when already default
+  - id: A015
+    says: "Clearing a model that is already default tells the user it's a no-op"
+    block: "model clear when no model line prints already-default message"
+    target: "output"
+    matcher: "contains"
+    value: "already uses default"
+
+  # AC10: Skills count
+  - id: A016
+    says: "Agents with skills show the skill count in the listing"
+    block: "displays skill count for agents with skills"
+    target: "output"
+    matcher: "contains"
+    value: "skill"
+
+  - id: A017
+    says: "Agents without skills show zero skills"
+    block: "displays 0 skills for agents without skills field"
+    target: "output"
+    matcher: "contains"
+    value: "0 skills"
+
+  # AC11: Frontmatter preservation
+  - id: A018
+    says: "Writing a model preserves all other frontmatter fields exactly"
+    block: "setFrontmatterField preserves all other fields"
+    target: "preservedFields"
+    matcher: "truthy"
+
+  - id: A019
+    says: "Writing a model does not touch content after the frontmatter block"
+    block: "setFrontmatterField preserves body content including --- rules"
+    target: "bodyPreserved"
+    matcher: "truthy"
+
+  # AC12: --all with corrupt files
+  - id: A020
+    says: "Bulk model set skips corrupt files with a warning and continues"
+    block: "--all skips files with missing frontmatter and warns"
+    target: "skippedWithWarning"
+    matcher: "truthy"
+
+  - id: A021
+    says: "Bulk model set reports how many agents were successfully updated"
+    block: "--all reports count of updated agents"
+    target: "output"
+    matcher: "contains"
+    value: "agents"
+
+  # Frontmatter parsing edge cases
+  - id: A022
+    says: "Frontmatter parser handles agent files that have no frontmatter block"
+    block: "parseFrontmatter returns null for files without frontmatter"
+    target: "result"
+    matcher: "equals"
+    value: null
+
+  - id: A023
+    says: "Frontmatter parser extracts skills as an array from inline YAML syntax"
+    block: "parseFrontmatter extracts skills array"
+    target: "result.skills"
+    matcher: "contains"
+    value: "git-workflow"
+
+  # Error handling
+  - id: A024
+    says: "Running agents when no agents directory exists shows a helpful error"
+    block: "list errors when agents directory is missing"
+    target: "error"
+    matcher: "contains"
+    value: "init"
+
+file_changes:
+  - path: "packages/cli/src/commands/agents.ts"
+    action: modify
+  - path: "packages/cli/src/utils/agent-config.ts"
+    action: create
+  - path: "packages/cli/tests/commands/agents.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/agent-config.test.ts"
+    action: create
