@@ -15,7 +15,7 @@ export async function Footer() {
 
   return (
     <footer
-      className="mt-10 border-t pt-15 pb-9"
+      className="border-t pt-15 pb-9"
       style={{
         background: "var(--footer-bg)",
         borderColor: "var(--hairline)",
@@ -49,6 +49,7 @@ export async function Footer() {
                     color: "var(--color-brand)",
                     fontVariationSettings: '"opsz" 96',
                     fontWeight: 400,
+                    letterSpacing: "-0.02em",
                   }}>
                     {p.t}
                   </em>
@@ -108,15 +109,7 @@ export async function Footer() {
           <span>{copy.footer.legal}</span>
 
           {latest && (
-            <span
-              className="rounded-full"
-              style={{
-                color: "var(--ink-45)",
-                padding: "3px 10px",
-                border: "1px solid var(--border-soft)",
-                borderRadius: "999px",
-              }}
-            >
+            <span>
               <span style={{ color: "var(--ink-30)" }}>commit</span> ·{" "}
               <span>{latest.hash}</span> ·{" "}
               <span>{formatAge(latest.ts)}</span>
