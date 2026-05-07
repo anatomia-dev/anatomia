@@ -1371,7 +1371,8 @@ async function displaySetupDashboard(cwd: string): Promise<boolean> {
     for (const phase of phases) {
       const status = progress?.phases?.[phase.key];
       if (status?.completed && status.timestamp) {
-        const date = new Date(status.timestamp).toLocaleDateString();
+        const d = new Date(status.timestamp);
+        const date = isNaN(d.getTime()) ? status.timestamp : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         console.log(`  ${chalk.green('✓')} ${phase.label}: completed ${date}`);
       } else if (status?.skipped) {
         // The setup agent writes `skipped: true` for phases the user

@@ -28,6 +28,22 @@ import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, truncateSummary, findFindingById, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
 import type { ProofContextResult } from '../utils/proofSummary.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
+
+/**
+ * Format an ISO timestamp as a local-timezone YYYY-MM-DD date string.
+ * Uses getFullYear/getMonth/getDate (local timezone) — no ICU locale dependency.
+ *
+ * @param iso - ISO 8601 timestamp string
+ * @returns Local date in YYYY-MM-DD format, or the raw string if unparseable
+ */
+function formatLocalDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 import { isWorktreeDirectory } from '../utils/worktree.js';
 
 /**
@@ -220,7 +236,7 @@ function formatHumanReadable(entry: ProofChainEntry): string {
 
   // Parse completed_at for timestamp
   const completedDate = new Date(entry.completed_at);
-  const dateStr = completedDate.toISOString().split('T')[0];
+  const dateStr = formatLocalDate(entry.completed_at);
   const timeStr = completedDate.toTimeString().slice(0, 5);
   const timestamp = `${dateStr} ${timeStr}`;
 
@@ -374,7 +390,7 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
   const runs = isZero ? 0 : reportOrZero.runs;
 
   // Date for header
-  const dateStr = new Date().toISOString().split('T')[0] ?? '';
+  const dateStr = formatLocalDate(new Date().toISOString());
 
   // Box header — same dimensions as formatHumanReadable
   const boxWidth = 71;
@@ -564,7 +580,7 @@ function formatListTable(entries: ProofChainEntry[]): string {
     const result = resultColor(resultPadded);
     const ratio = `${entry.contract.satisfied}/${entry.contract.total}`;
     const assertions = ratio.padEnd(13);
-    const date = entry.completed_at ? entry.completed_at.split('T')[0] ?? '' : '';
+    const date = entry.completed_at ? formatLocalDate(entry.completed_at) : '';
     lines.push(`  ${slug}${result}${assertions}${date}`);
   }
 
@@ -2204,7 +2220,7 @@ export function registerProofCommand(program: Command): void {
             : `${f.subsequent_slugs.slice(0, 3).join(', ')}, ... (${f.subsequent_count} entries)`;
           console.log(`    Modified by: ${slugList} (${f.subsequent_count} ${f.subsequent_count !== 1 ? 'entries' : 'entry'})`);
           if (f.completed_at) {
-            const date = f.completed_at.split('T')[0] ?? f.completed_at;
+            const date = formatLocalDate(f.completed_at);
             console.log(`    Created in: ${f.entry_slug} (${date})`);
           }
           console.log('');
@@ -2219,7 +2235,7 @@ export function registerProofCommand(program: Command): void {
           const slugList = f.subsequent_slugs.join(', ');
           console.log(`    Modified by: ${slugList} (${f.subsequent_count} ${f.subsequent_count !== 1 ? 'entries' : 'entry'})`);
           if (f.completed_at) {
-            const date = f.completed_at.split('T')[0] ?? f.completed_at;
+            const date = formatLocalDate(f.completed_at);
             console.log(`    Created in: ${f.entry_slug} (${date})`);
           }
           console.log('');
@@ -2250,7 +2266,7 @@ function formatContextResult(result: ProofContextResult): string {
   // Header
   lines.push(`Proof context for ${result.query}`);
   if (result.touch_count > 0 && result.last_touched) {
-    const lastDate = result.last_touched.split('T')[0] ?? result.last_touched;
+    const lastDate = formatLocalDate(result.last_touched);
     lines.push(`Touched in ${result.touch_count} pipeline cycle${result.touch_count === 1 ? '' : 's'} (last: ${lastDate})`);
   }
   lines.push('');
