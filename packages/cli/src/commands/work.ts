@@ -1508,7 +1508,11 @@ export async function startWork(slug: string): Promise<void> {
 
   // Phase: build report exists, no verify report → Verify (print worktree)
   if (buildReportExists && !verifyReportExists) {
-    await writeTimestamp(activePath, 'verify_started_at', 'ana-verify');
+    // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+    if (worktreeExists(projectRoot, slug)) {
+      const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
+      await writeTimestamp(wtPlanDir, 'verify_started_at', 'ana-verify');
+    }
     return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Verify');
   }
 
@@ -1534,7 +1538,11 @@ export async function startWork(slug: string): Promise<void> {
     }
 
     if (isFail) {
-      await writeTimestamp(activePath, 'build_started_at', 'ana-build');
+      // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+      if (worktreeExists(projectRoot, slug)) {
+        const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
+        await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
+      }
       return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Fix');
     }
 
@@ -1564,11 +1572,11 @@ async function startBuildPhase(
   branchPrefix: string,
   artifactBranch: string
 ): Promise<void> {
-  // Record build_started_at on artifact branch BEFORE creating worktree
-  await writeTimestamp(activePath, 'build_started_at', 'ana-build');
-
   // Check if worktree already exists (resume case)
   if (worktreeExists(projectRoot, slug)) {
+    // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+    const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
+    await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
     return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Build');
   }
 
@@ -1641,6 +1649,11 @@ async function startBuildPhase(
       console.log('  Env files: none detected');
     }
     console.log(`  Context: ${result.contextFileWritten ? 'worktree-context.md written' : 'not written'}`);
+
+    // Record build_started_at in the worktree (not main) to avoid dirty .saves.json blocking git pull
+    const wtPlanDir = path.join(result.worktreePath, '.ana', 'plans', 'active', slug);
+    await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
+
     console.log(`\nWorktree ready. Run:`);
     console.log(`  cd ${path.relative(process.cwd(), result.worktreePath) || result.worktreePath}`);
   } catch (error) {
