@@ -15851,6 +15851,332 @@
         "completed_at": "2026-05-07T07:37:51.555Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "website-production-infra",
+      "feature": "Website Production Infrastructure",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 27,
+        "satisfied": 27,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The version pill shows the real latest release tag, not a hardcoded string",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Version data refreshes every hour via ISR caching",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The site still works when GitHub is unreachable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Proof feed rows use the live version instead of a hardcoded string",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The latest commit SHA comes from the GitHub commits API",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Commit data refreshes every five minutes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The commit pill shows a fallback hash when GitHub is down",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "GitHub auth token is used when available but not required",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Contributors can see which environment variables the site uses",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The GitHub token variable is documented for contributors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The analytics key variable is documented for contributors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Analytics are captured when PostHog is configured",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "No analytics code is loaded when PostHog is not configured",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "PostHog loads dynamically to avoid bloating the initial bundle",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The analytics provider is wired into the root layout",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The landing page has a social sharing preview image",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The docs page has a social sharing preview image",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "OG images exist as real files in the public directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Each OG image is the correct size for social platforms",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "CI catches website lint and type errors on every push",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The website CI job runs the full check suite",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A smoke test verifies all expected pages are in the build",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The smoke test can be run with a single pnpm command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The smoke test checks the routes manifest for expected pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The pre-commit hook stays fast and CLI-only",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "All website checks pass after the changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "PostHog is added as a project dependency",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 18,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 81,
+        "think": 2,
+        "plan": 10,
+        "build": 59,
+        "verify": 10
+      },
+      "hashes": {
+        "scope": "sha256:737a37986e1f922e93c64a65016e56541b962ddae9a90e0ca193be51b1c63c50",
+        "contract": "sha256:9c2d88ba3bb8dcf84d60b30e193ea517c01ba437ac69a1aaa584d8a179ad0a31",
+        "plan": "sha256:49ba4a9f308a926cac7a58c3dbd32f2cb2a0596bd6667f6122186bda0ade5dde",
+        "spec": "sha256:5cf84332f562643f20df38b0713073ddddace58e1a6fec40e5e3759f7818399e",
+        "build-report": "sha256:d89c86c0792efed77992861853392699c72d38eec83b60fb7d95ff2c23432818",
+        "build-data": "sha256:87ddaef14e6fe9ade86725901164f7673be063f827182d3e29a8c54a7339ab04",
+        "verify-report": "sha256:6778ddfe834a0e30fb045dddd52f03aba9b4f13c54e86fd828c485e1a4ce109e",
+        "verify-data": "sha256:1cfe0184cc5b8681c4ac25804abe60afd4f91e12ca3200beedc091d9e81c340b"
+      },
+      "completed_at": "2026-05-07T17:15:20.363Z",
+      "modules_touched": [
+        ".github/workflows/test.yml",
+        "pnpm-lock.yaml",
+        "website/.env.example",
+        "website/.gitignore",
+        "website/app/(marketing)/contact/page.tsx",
+        "website/app/(marketing)/docs/page.tsx",
+        "website/app/(marketing)/manifesto/page.tsx",
+        "website/app/(marketing)/page.tsx",
+        "website/app/layout.tsx",
+        "website/lib/analytics.tsx",
+        "website/lib/proof-feed.ts",
+        "website/package.json",
+        "website/public/og/og-about.png",
+        "website/public/og/og-changelog.png",
+        "website/public/og/og-cli.png",
+        "website/public/og/og-contact.png",
+        "website/public/og/og-docs.png",
+        "website/public/og/og-examples.png",
+        "website/public/og/og-home.png",
+        "website/public/og/og-license.png",
+        "website/public/og/og-manifesto.png",
+        "website/scripts/smoke-test.sh"
+      ],
+      "scope_summary": "Wire the website to real data, add analytics, add CI coverage, and create OG images. After Scopes A (visual fidelity) and B (dead links) ship, the site looks right and every link works. This scope makes it operationally real — live version numbers, real commit hashes, traffic visibility, social sharing previews, and CI that catches regressions.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "getLatestCommit() exported but never imported — unused function",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 113,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005",
+            "A006",
+            "A007"
+          ],
+          "id": "website-production-infra-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "LatestCommit interface exported but never imported — unused type",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 103,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "website-production-infra-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "githubHeaders() extras parameter never used with non-default value — YAGNI",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 67,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "website-production-infra-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No tag name validation — non-semver GitHub tags would display as-is in version pill",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 97,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "website-production-infra-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "PostHog useEffect has no cleanup return — posthog.init() could be called on remount",
+          "file": "website/lib/analytics.tsx",
+          "anchor": null,
+          "line": 29,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-production-infra-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "File header comment still says 'Today: static mock data' — stale after live data wiring",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "line": 7,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-production-infra-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes lists (sub)/ paths but pages are under (marketing)/ — stale after Scope B",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-production-infra-C7",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "Stale finding 'Hardcoded version v1.0.2 will go stale' resolved by this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-production-infra-C8",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "OG images use system Helvetica, not Geist font — placeholders needing designer replacement",
+          "file": "website/public/og/",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "getLatestVersion returns first tag regardless of format — non-semver tags could surface",
+          "file": "website/lib/proof-feed.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Contract file_changes reference (sub)/ paths that no longer exist after Scope B",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "AnalyticsProvider children prop default parameter technically unnecessary",
+          "file": "website/lib/analytics.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-07T07:58:31.926Z",
+        "completed_at": "2026-05-07T17:15:20.360Z",
+        "commit_count": 6
+      }
     }
   ],
   "schema": 1

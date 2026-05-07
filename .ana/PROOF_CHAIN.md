@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-62 runs · 114 active · 75 lessons · 0 promoted · 160 closed
+63 runs · 120 active · 77 lessons · 0 promoted · 160 closed
 
 ## Hot Modules
 
@@ -8,29 +8,20 @@
 |------|--------|--------|
 | packages/cli/tests/commands/work.test.ts | 10 | 8 |
 | packages/cli/tests/commands/proof.test.ts | 10 | 4 |
+| website/lib/proof-feed.ts | 9 | 2 |
 | packages/cli/src/commands/proof.ts | 7 | 5 |
 | packages/cli/src/utils/proofSummary.ts | 6 | 5 |
-| packages/cli/src/commands/work.ts | 5 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 114 total)
+## Active Findings (30 shown of 120 total)
 
 ### packages/cli/src/commands/agents.ts
 
 - **code:** Double error message on unknown agent in setModel() — throws after console.error, catch block re-prints — *Agent Dashboard Phase 1*
 - **code:** maxModelLen computed inside the loop body on every iteration instead of once before the loop — *Agent Dashboard Phase 1*
-
-### packages/cli/src/commands/artifact.ts
-
-- **code:** archivePreviousVersion uses string equality for content comparison — could produce false archives on Windows with CRLF line endings from git — *Rejection Cycle Artifact Preservation*
-- **code:** No upper bound on round numbers — a slug that goes through many rejection cycles will accumulate archive files with no cleanup mechanism — *Rejection Cycle Artifact Preservation*
-
-### packages/cli/src/commands/init/state.ts
-
-- **test:** A010 has no runtime test — verified by source inspection only — *Non-Main Artifact Branch Tests*
 
 ### packages/cli/src/utils/agent-config.ts
 
@@ -48,12 +39,10 @@
 ### packages/cli/tests/commands/artifact.test.ts
 
 - **test:** A014 test does not exercise actual archive failure (catch branch). Tests first-save no-op, not error recovery. — *Rejection Cycle Artifact Preservation*
-- **test:** A010 test catches process.exit(0) as throw — structurally correct but test name suggests content-identity check while the code path is no-changes-to-commit — *Rejection Cycle Artifact Preservation*
 
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** A017 (build_agent) and A020 (verify_agent) lack direct tagged tests — covered by source inspection only — *Worktrees V2 — Phase Timing + Danger Map + Prune*
-- **test:** completeWork test builds fixture manually (60 lines) instead of using createMergedProject helper — *Non-Main Artifact Branch Tests*
 
 ### packages/cli/tests/utils/proofSummary.test.ts
 
@@ -62,7 +51,6 @@
 ### packages/cli/tests/utils/worktree.test.ts
 
 - **test:** detectWorktreeSlug empty-string test is environment-dependent — pre-existing, fails inside worktrees — *Worktrees V2 — Phase Timing + Danger Map + Prune*
-- **test:** Pre-existing worktree.test.ts failure — detectWorktreeSlug('') returns slug when run inside worktree — *Non-Main Artifact Branch Tests*
 
 ### website/components/about/about.module.css
 
@@ -83,6 +71,10 @@
 - **code:** TetrisSnake getComputedStyle called every frame — potential performance concern on low-end mobile — *Website Visual Fidelity*
 - **code:** TetrisSnake placed blocks array grows unbounded between lap clears — no cap on array size — *Website Visual Fidelity*
 
+### website/lib/analytics.tsx
+
+- **code:** PostHog useEffect has no cleanup return — posthog.init() could be called on remount — *Website Production Infrastructure*
+
 ### website/lib/copy.ts
 
 - **code:** proofFeed.headTitle says 'Click one.' but rows are no longer clickable — *Dead Links & Missing Pages*
@@ -90,6 +82,11 @@
 
 ### website/lib/proof-feed.ts
 
+- **code:** getLatestCommit() exported but never imported — unused function — *Website Production Infrastructure*
+- **code:** LatestCommit interface exported but never imported — unused type — *Website Production Infrastructure*
+- **code:** githubHeaders() extras parameter never used with non-default value — YAGNI — *Website Production Infrastructure*
+- **code:** No tag name validation — non-semver GitHub tags would display as-is in version pill — *Website Production Infrastructure*
+- **code:** File header comment still says 'Today: static mock data' — stale after live data wiring — *Website Production Infrastructure*
 - **code:** mapEntry never produces kind 'chore' — only 'fix' or 'feature' — *Website Lift*
 - **code:** Hardcoded version 'v1.0.2' will go stale — *Website Lift*
 - **code:** Empty entries returns [] instead of mockFeed — blank state possible — *Website Lift*
