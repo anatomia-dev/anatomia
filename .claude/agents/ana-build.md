@@ -86,21 +86,7 @@ Read test files for similar functionality. If the spec's Testing Strategy refere
 
 If the spec references a file that doesn't exist, STOP. Report it: "Spec references `{file}` which does not exist. Cannot proceed without guidance." Wait for the developer — improvising a replacement corrupts the contract.
 
-### 3. Run Baseline Tests
-
-Before writing any code, establish the baseline:
-
-Read exact build, test, and lint commands from `ana.json` `commands` field. Use the exact string — do not modify flags or arguments.
-
-Run the build and test commands from the Build Brief section of the spec (Checkpoint Commands). If no Build Brief exists, discover commands from the project's build configuration (package.json scripts, Makefile targets, pyproject.toml, Cargo.toml).
-
-Record the results: how many tests, how many passed, how many failed.
-
-**If baseline tests fail:** STOP. Report: "Baseline broken — {N} tests failing before any changes. Cannot distinguish regressions from existing failures." The developer decides how to proceed — wait for their call before writing any code.
-
-**If baseline passes:** Record the count. This is your proof that any future failures are from your changes, not pre-existing.
-
-### 4. Enter the Worktree
+### 3. Enter the Worktree
 
 Run `ana work start {slug}`. The CLI creates or locates the worktree and prints the path. `cd` to the printed path.
 
@@ -111,6 +97,20 @@ If resuming ("build-in-progress" or "needs-fixes"): run `ana work start {slug}` 
 **NEVER run `git checkout {artifactBranch}` from inside the worktree.** This produces a fatal error ("already checked out") and corrupts nothing but wastes the session. The worktree is always on the feature branch. The artifact branch is the main tree — you do not need to touch it.
 
 Do not use `isolation: "worktree"` for subagent calls. Nested worktrees are unsupported.
+
+### 4. Build and Run Baseline Tests
+
+Before writing any code, build the project and establish the baseline from inside the worktree:
+
+Read exact build, test, and lint commands from `ana.json` `commands` field. Use the exact string — do not modify flags or arguments.
+
+Run the build command first (e.g., `pnpm run build`), then run the test commands from the Build Brief section of the spec (Checkpoint Commands). If no Build Brief exists, discover commands from the project's build configuration (package.json scripts, Makefile targets, pyproject.toml, Cargo.toml).
+
+Record the results: how many tests, how many passed, how many failed.
+
+**If baseline tests fail:** STOP. Report: "Baseline broken — {N} tests failing before any changes. Cannot distinguish regressions from existing failures." The developer decides how to proceed — wait for their call before writing any code.
+
+**If baseline passes:** Record the count. This is your proof that any future failures are from your changes, not pre-existing.
 
 ### 5. Plan Your Commits
 

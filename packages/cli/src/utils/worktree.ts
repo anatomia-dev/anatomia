@@ -107,6 +107,7 @@ export function isWorktreeDirectory(dir?: string): boolean {
  * @returns The slug name, or null if not in a worktree
  */
 export function detectWorktreeSlug(dir?: string): string | null {
+  if (dir === '') return null;
   const checkDir = path.resolve(dir ?? process.cwd());
   // Primary: read .ana/worktree-meta.json (written at creation time)
   const metaPath = path.join(checkDir, '.ana', 'worktree-meta.json');
