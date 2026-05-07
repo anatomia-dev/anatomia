@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Double error message on unknown agent in setModel() — throws after console.error, catch block re-prints"
+    file: "packages/cli/src/commands/agents.ts"
+    line: 197
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A013"]
+  - category: code
+    summary: "AgentFrontmatter interface exported but never imported outside agent-config.ts"
+    file: "packages/cli/src/utils/agent-config.ts"
+    line: 13
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "maxModelLen computed inside the loop body on every iteration instead of once before the loop"
+    file: "packages/cli/src/commands/agents.ts"
+    line: 130
+    severity: debt
+    suggested_action: accept
+  - category: test
+    summary: "A002 test uses toBeGreaterThan(templateSize) — correct intent but could assert exact expected value since skill content is fixture-controlled"
+    file: "packages/cli/tests/commands/agents.test.ts"
+    line: 141
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Stale proof chain finding about agents.ts file header — resolved by this build (now says 'Agent dashboard and model management')"
+    severity: observation
+    suggested_action: monitor

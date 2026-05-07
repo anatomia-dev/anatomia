@@ -17,7 +17,7 @@
     "saved_at": "2026-05-07T06:18:02.497Z",
     "hash": "sha256:60e6626fc79bd677fac9ef27d89f57e25fd40d131c4a96c54ce24d4e62652265"
   },
-  "build_started_at": "2026-05-07T06:26:34.975Z",
+  "build_started_at": "2026-05-07T06:44:40.636Z",
   "build_agent": "ana-build",
   "build-report": {
     "saved_at": "2026-05-07T06:35:30.496Z",
@@ -32,5 +32,18 @@
     "packages/cli/src/utils/agent-config.ts",
     "packages/cli/tests/commands/agents.test.ts",
     "packages/cli/tests/utils/agent-config.test.ts"
-  ]
+  ],
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:afb74c4f2c3aa0abf1a81a01498d91f046fded6d52cc3b572d51ffd62e663d9d",
+    "run_at": "2026-05-07T06:49:21.645Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-07T06:49:21.675Z",
+    "hash": "sha256:c819d78e8b05e7fa737010fd5c6599108bc88d2684fa15cf463a9660ce785fa5"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-07T06:49:21.675Z",
+    "hash": "sha256:30ec220a889a88e78e7e10f745a0f44f212a2c1f45207941d518bdb69b7f3c6b"
+  }
 }
