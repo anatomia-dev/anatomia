@@ -16,5 +16,24 @@
   "spec": {
     "saved_at": "2026-05-07T06:43:34.039Z",
     "hash": "sha256:86d8d3188770f7c52dfefd11e0fd7f9f3d1d165df9b2b45cad49bffda8da91e7"
-  }
+  },
+  "build_started_at": "2026-05-07T07:03:18.003Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-07T07:11:11.100Z",
+    "hash": "sha256:cde1f9669b660053d4a493dd3eedc9b7423dda1c0507a9fbc81159013f335fdc"
+  },
+  "build-data": {
+    "saved_at": "2026-05-07T07:11:11.101Z",
+    "hash": "sha256:9aa03dffc5a9cd5a5778115d3cba1ac59c4500060b175151edd1482efc5c0c53"
+  },
+  "modules_touched": [
+    "website/app/globals.css",
+    "website/components/bento/bento.module.css",
+    "website/components/bento/tiles/AgentsTile.tsx",
+    "website/components/footer/Footer.tsx",
+    "website/components/pricing/Pricing.tsx",
+    "website/components/pricing/TetrisSnake.tsx",
+    "website/components/pricing/pricing.module.css"
+  ]
 }
