@@ -1,0 +1,54 @@
+schema: 1
+findings:
+  - category: code
+    summary: "getLatestCommit() exported but never imported — unused function"
+    file: "website/lib/proof-feed.ts"
+    line: 113
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A005", "A006", "A007"]
+
+  - category: code
+    summary: "LatestCommit interface exported but never imported — unused type"
+    file: "website/lib/proof-feed.ts"
+    line: 103
+    severity: debt
+    suggested_action: monitor
+
+  - category: code
+    summary: "githubHeaders() extras parameter never used with non-default value — YAGNI"
+    file: "website/lib/proof-feed.ts"
+    line: 67
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "No tag name validation — non-semver GitHub tags would display as-is in version pill"
+    file: "website/lib/proof-feed.ts"
+    line: 97
+    severity: risk
+    suggested_action: scope
+
+  - category: code
+    summary: "PostHog useEffect has no cleanup return — posthog.init() could be called on remount"
+    file: "website/lib/analytics.tsx"
+    line: 29
+    severity: observation
+    suggested_action: accept
+
+  - category: code
+    summary: "File header comment still says 'Today: static mock data' — stale after live data wiring"
+    file: "website/lib/proof-feed.ts"
+    line: 7
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "Contract file_changes lists (sub)/ paths but pages are under (marketing)/ — stale after Scope B"
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Stale finding 'Hardcoded version v1.0.2 will go stale' resolved by this build"
+    severity: observation
+    suggested_action: accept
