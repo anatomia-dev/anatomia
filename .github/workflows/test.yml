@@ -63,3 +63,28 @@ jobs:
           files: ./packages/cli/coverage/coverage-final.json
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  website:
+    name: Website Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check (lint + typecheck + build)
+        run: pnpm --filter anatomia-website check
