@@ -18,7 +18,7 @@ export function NavMobile() {
     <>
       {/* Hamburger button — visible only on mobile */}
       <button
-        className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)] md:hidden"
+        className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] md:hidden after:absolute after:inset-[-5px] after:content-['']"
         style={{ color: "var(--ink-60)" }}
         onClick={toggle}
         aria-label={open ? "Close menu" : "Open menu"}
@@ -57,7 +57,7 @@ export function NavMobile() {
               <ThemeToggle />
               <button
                 onClick={close}
-                className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)]"
+                className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] after:absolute after:inset-[-5px] after:content-['']"
                 style={{ color: "var(--ink-60)" }}
                 aria-label="Close menu"
               >

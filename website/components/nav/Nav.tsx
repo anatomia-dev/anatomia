@@ -89,7 +89,7 @@ export async function Nav() {
             href={copy.nav.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-150"
+            className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-150 after:absolute after:inset-[-5px] after:content-['']"
             style={{ color: "var(--ink-60)" }}
             aria-label="GitHub"
           >

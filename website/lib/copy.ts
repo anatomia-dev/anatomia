@@ -50,7 +50,7 @@ export const copy = {
       feature:
         "*Proof chains* are live — every change now ships with receipts.",
     },
-    headline: "Your AI doesn't know your codebase. *Ana* does.",
+    headline: "Your AI doesn't know your codebase. *ana* does.",
     subhead:
       "Four specialized agents. Four sealed artifacts. Ana scopes. Plan designs. Build implements and reports honestly. Verify forms an independent account — it never reads Build's report. You compare the two.",
     ctas: {
@@ -221,9 +221,9 @@ export const copy = {
 
   proofFeed: {
     kicker: "Ship log",
-    headTitle: "Every commit has *receipts*.\nClick one.",
+    headTitle: "Every commit has *receipts*.",
     headSub:
-      "This isn\u2019t a changelog. Each row links to the contract Plan wrote before the work began, with Verify\u2019s independent account stapled to it. The claims, the matchers, the pass/fail \u2014 all there.",
+      "This isn\u2019t a changelog. Each row is the verification record \u2014 the contract Plan wrote before the work began, with Verify\u2019s independent account stapled to it. The claims, the matchers, the pass/fail \u2014 all there.",
     footSource: "github.com/TettoLabs/anatomia/commits",
     footLink: { label: "Full history \u2192", href: "https://github.com/TettoLabs/anatomia/commits/main" },
   },

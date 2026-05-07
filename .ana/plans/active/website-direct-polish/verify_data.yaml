@@ -1,0 +1,36 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Pricing h2 and blurb with maxWidth may not visually center without margin auto"
+    file: "website/components/pricing/Pricing.tsx"
+    line: 23
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005"]
+  - category: code
+    summary: "Pseudo-element touch targets on nav buttons break if overflow:hidden is added to button"
+    file: "website/components/nav/Nav.tsx"
+    line: 92
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A025"]
+  - category: code
+    summary: ":has() bonding rule depends on ProofFeed being direct previous sibling of footer in DOM"
+    file: "website/app/globals.css"
+    line: 231
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A016"]
+  - category: upstream
+    summary: "meta.description in copy.ts still says 'Ana' (capitalized) while hero headline now uses lowercase 'ana'"
+    file: "website/lib/copy.ts"
+    line: 31
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A022"]
+  - category: code
+    summary: "globals.css footer rule applies margin-top to ALL footer elements including any future non-marketing footers"
+    file: "website/app/globals.css"
+    line: 228
+    severity: observation
+    suggested_action: accept

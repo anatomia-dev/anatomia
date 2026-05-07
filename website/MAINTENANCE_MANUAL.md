@@ -13,12 +13,12 @@ app/
   layout.tsx              Root layout (fonts, theme bootstrap, skip link)
   globals.css             Design tokens, themes, base reset, utilities
   fonts.ts                Self-hosted Geist + Geist Mono + Fraunces
-  (marketing)/            Public marketing pages
+  (marketing)/            Public marketing pages (all 9 pages)
     layout.tsx            Nav + Footer wrapper
     page.tsx              Landing page (composes all sections)
-  (sub)/                  Sub-pages with SubNav
-    layout.tsx            Footer only (SubNav rendered per-page)
-    docs/manifesto/contact/
+    about/changelog/cli/contact/docs/examples/license/manifesto/
+  (app)/                  Platform boundary (empty — future)
+    README.md
 
 components/
   ui/                     Design system primitives (3 files)
@@ -168,7 +168,7 @@ const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
 ## How to Add a New Page
 
-1. Decide which route group: `(marketing)` for Nav+Footer pages, `(sub)` for SubNav pages.
+1. All pages go in `(marketing)/`. It provides the Nav + Footer wrapper.
 2. Create `app/(group)/your-page/page.tsx`.
 3. Add metadata export.
 4. If it needs copy, add entries to `lib/copy.ts`.
@@ -308,7 +308,7 @@ In Tailwind v4, utilities come from `@theme` tokens or Tailwind's built-in class
 | CSS Module | lowercase-kebab | `hero.module.css`, `proof-feed.module.css` |
 | Lib file | lowercase-kebab | `proof-feed.ts`, `copy.ts` |
 | Route page | `page.tsx` | `app/(marketing)/page.tsx` |
-| Route layout | `layout.tsx` | `app/(sub)/layout.tsx` |
+| Route layout | `layout.tsx` | `app/(marketing)/layout.tsx` |
 
 ---
 

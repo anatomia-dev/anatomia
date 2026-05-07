@@ -224,6 +224,14 @@ section[id] { scroll-margin-top: 72px; }
 /* hairline top border — common divider */
 .hairline-top { border-top: 1px solid var(--hairline); }
 
+/* Footer default margin — in CSS (not Tailwind) so the :has() override works */
+footer { margin-top: 40px; }
+
+/* Proof-feed bonding — collapsed card sits flush against footer */
+section[data-component="proof-feed"]:has([data-open="false"]) + footer {
+  margin-top: 0;
+}
+
 /* Nav CTA — dark mode inversion (warm off-paper key against dark plate) */
 [data-theme="dark"] .nav-cta {
   background: #FBFAF6 !important;

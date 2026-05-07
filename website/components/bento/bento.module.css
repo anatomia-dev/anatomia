@@ -119,6 +119,9 @@
   color: var(--bg);
   border-color: transparent;
 }
+.tCompat:hover {
+  border-color: transparent;
+}
 .tCompat h3,
 .tCompat .tileEyebrow {
   color: var(--bg);

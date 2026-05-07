@@ -7,14 +7,16 @@
 
 .top {
   margin-bottom: 48px;
+  text-align: center;
 }
 
 .frame {
   position: relative;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md);
-  padding: 48px;
+  padding: 40px 64px;
   overflow: hidden;
+}
+@media (max-width: 720px) {
+  .frame { padding: 28px 20px; }
 }
 
 .inner {
@@ -25,9 +27,9 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 18px;
+  gap: 14px;
 }
-@media (min-width: 720px) {
+@media (min-width: 820px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -43,6 +45,9 @@
   transition: border-color 220ms;
 }
 .card:hover { border-color: var(--border); }
+@media (min-width: 1024px) {
+  .card { padding: 40px; }
+}
 .cardHighlighted {
   background: var(--fg-strong);
   color: var(--bg);
