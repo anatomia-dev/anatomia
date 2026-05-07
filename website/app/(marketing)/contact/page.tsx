@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Contact · Anatomia",
   description:
     "Two ways to reach us — GitHub for the fast lane, email for everything else.",
+  openGraph: {
+    images: [{ url: "/og/og-contact.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function ContactPage() {

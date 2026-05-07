@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     url: "https://anatomia.dev",
     siteName: "Anatomia",
     type: "website",
+    images: [{ url: "/og/og-home.png", width: 1200, height: 630 }],
   },
   icons: {
     icon: "/favicon.svg",

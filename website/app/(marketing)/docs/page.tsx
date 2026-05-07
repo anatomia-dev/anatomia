@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Docs · Anatomia",
   description:
     "Quickstart: install, init, plan, run, verify. Get a proof chain in your repo in five minutes.",
+  openGraph: {
+    images: [{ url: "/og/og-docs.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function DocsPage() {
