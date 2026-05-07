@@ -13,13 +13,6 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  // Custom rules
-  {
-    rules: {
-      // Disable setState in effect rule - legitimate patterns for client-side mounting
-      'react-hooks/set-state-in-effect': 'off',
-    },
-  },
 ]);
 
 export default eslintConfig;

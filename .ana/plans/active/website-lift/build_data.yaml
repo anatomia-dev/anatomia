@@ -1,0 +1,18 @@
+schema: 1
+concerns:
+  - summary: "Documentation dogfood test assertion changed from exists to not-exists for website/README.md"
+    file: "packages/cli/tests/engine/detectors/documentation.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "detectWorktreeSlug tests fail when run from inside worktree path — environmental, not a regression"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "version field hardcoded to v1.0.2 in proof feed mapping — needs phase 2 to fetch latest tag"
+    file: "website/lib/proof-feed.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "proof-feed.ts file header comment still references mock-only state"
+    file: "website/lib/proof-feed.ts"
+    severity: observation
+    suggested_action: accept

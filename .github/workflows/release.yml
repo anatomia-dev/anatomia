@@ -26,7 +26,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
+      - run: pnpm --filter anatomia-cli build
 
       # Copy root docs into package for npm (same as prepublishOnly)
       - run: cp README.md packages/cli/README.md && cp CHANGELOG.md packages/cli/CHANGELOG.md

@@ -1,65 +1,63 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Providers } from "@/components/Providers";
-import { LandingNav } from "@/components/LandingNav";
-import { LandingFooter } from "@/components/LandingFooter";
+import { geistSans, geistMono, fraunces } from "./fonts";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Anatomia — Verified AI development. Ship with proof.",
-  description: "Anatomia reads your source code, learns your patterns, and structures every AI change through a verified pipeline. Open source. MIT License. Works with Claude Code.",
+  title: "Anatomia — Verified AI development",
+  description:
+    "Your AI doesn't know your codebase. Ana does. Four sealed agents, one verified diff.",
+  metadataBase: new URL("https://anatomia.dev"),
+  openGraph: {
+    title: "Anatomia — Verified AI development",
+    description: "The independent verification layer for AI-written code.",
+    url: "https://anatomia.dev",
+    siteName: "Anatomia",
+    type: "website",
+  },
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
-    apple: [
-      { url: "/favicon.svg", sizes: "180x180", type: "image/svg+xml" },
-    ],
+    icon: "/favicon.svg",
   },
 };
 
+/**
+ * Prevent theme FOUC on hard reload.
+ * Raw <script> runs synchronously before React hydrates.
+ * Sets data-theme on <html> so CSS tokens resolve on first paint.
+ */
+const themeBootstrap = `
+(function () {
+  try {
+    var stored = localStorage.getItem('anatomia-theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (_) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="light"
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        {/* Favicon - must be in head for immediate browser recognition */}
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/icon.svg" sizes="180x180" type="image/svg+xml" />
-        {/* Preconnect to critical domains */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-      >
-        {/* Skip links for accessibility */}
-        <a href="#main-content" className="skip-link">
+      <body>
+        <a href="#main" className="skip-link">
           Skip to main content
         </a>
-        <a href="#pricing" className="skip-link" style={{ left: "calc(50% + 200px)" }}>
-          Skip to pricing
-        </a>
-
-        <Providers>
-          <LandingNav />
-          <main id="main-content" className="flex-1" role="main">
-            {children}
-          </main>
-          <LandingFooter />
-        </Providers>
+        {children}
+        {/* Analytics provider: wire PostHog here when ready */}
       </body>
     </html>
   );

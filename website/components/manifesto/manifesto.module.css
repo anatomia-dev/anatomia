@@ -1,0 +1,120 @@
+/* Manifesto — editorial essay with Fraunces serif, drop cap, pull quote.
+   Needs a module for ::first-letter and .pull pseudo-element rule. */
+
+.article {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-45);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--color-brand);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 5.2vw, 56px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  margin-bottom: 40px;
+  max-width: 16ch;
+}
+.title :global(em) {
+  font-style: italic;
+  color: var(--color-brand);
+}
+
+/* Body paragraphs — Fraunces serif */
+.body {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--ink-75);
+  margin-bottom: 28px;
+}
+.body :global(em) {
+  font-style: italic;
+  color: var(--fg-strong);
+}
+
+/* Drop cap on first paragraph */
+.lede::first-letter {
+  font-family: var(--font-serif);
+  font-size: 3.4em;
+  font-weight: 600;
+  float: left;
+  line-height: 0.8;
+  margin-right: 8px;
+  margin-top: 6px;
+  color: var(--color-brand);
+}
+
+/* Pull quote */
+.pull {
+  font-family: var(--font-serif);
+  font-size: clamp(22px, 2.8vw, 30px);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--fg-strong);
+  padding: 28px 0 28px 24px;
+  margin: 36px 0;
+  border-left: 2px solid var(--color-brand);
+}
+
+/* Signature */
+.signature {
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-45);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.signatureWho {
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+/* Outbound links */
+.outbound {
+  margin-top: 32px;
+  display: flex;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.outbound a {
+  color: var(--ink-60);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink-15);
+  padding-bottom: 1px;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.outbound a:hover {
+  color: var(--fg);
+  border-color: var(--color-brand);
+}

@@ -277,10 +277,8 @@ describe('documentation inventory — dogfood', () => {
     expect(result.files.some(f => f.path === 'packages/cli/ARCHITECTURE.md')).toBe(true);
     expect(result.files.some(f => f.path === 'packages/cli/CONTRIBUTING.md')).toBe(true);
 
-    // website README (should be old)
-    const websiteReadme = result.files.find(f => f.path === 'website/README.md');
-    expect(websiteReadme).toBeDefined();
-    expect(websiteReadme!.lastModifiedDays).toBeGreaterThanOrEqual(0);
+    // website has no README (production prototype replaced demo-site)
+    expect(result.files.some(f => f.path === 'website/README.md')).toBe(false);
 
     // No docs directory, no landing page (CLI tool)
     expect(result.docsDirectory).toBeNull();

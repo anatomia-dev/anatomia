@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: code
+    summary: "mapEntry never produces kind 'chore' — only 'fix' or 'feature'"
+    file: "website/lib/proof-feed.ts"
+    line: 74
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A020"]
+  - category: code
+    summary: "detectWorktreeSlug empty-string guard removed — unrelated to website-lift scope"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 109
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "Hardcoded version 'v1.0.2' will go stale"
+    file: "website/lib/proof-feed.ts"
+    line: 71
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Empty entries returns [] instead of mockFeed — blank state possible"
+    file: "website/lib/proof-feed.ts"
+    line: 99
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "extractFeatureEm on single-word feature returns that word — acceptable for display"
+    file: "website/lib/proof-feed.ts"
+    line: 64
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "release.yml doc-copy finding from proof chain still present — not addressed by this build"
+    severity: observation
+    suggested_action: monitor

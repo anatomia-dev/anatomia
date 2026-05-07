@@ -1,198 +1,268 @@
+/*
+  app/globals.css
+  =======================================================================
+  Anatomia — single source of truth for design tokens.
+  Ported from Anatomia Landing Refresh handoff.html, locked to:
+
+     brand color    #7A1B1B       (oxblood)
+     paper          "snow"        (warm off-white #F7F7F4 in light mode)
+     pattern        "noise"       (SVG fractal grain, no grid)
+     typography     "grotesk"     (Geist — Geist Mono for code — Fraunces for serif)
+     radius         "medium"      (6 / 10 / 14 px)
+
+  Tailwind v4 `@theme` exposes tokens as utilities AND as CSS vars:
+     --color-brand: #7A1B1B;     →  bg-brand, text-brand, border-brand
+     --font-sans:   Geist, ...   →  font-sans
+  =======================================================================
+*/
+
 @import "tailwindcss";
 
-/* Dark mode custom variant (Tailwind v4) */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-/* Theme color tokens - Design from option15/16.html */
+/* -------------------------------------------------------------------
+   @theme — Tailwind v4 token layer (utility-generating)
+   ------------------------------------------------------------------- */
 @theme {
-  /* Semantic color tokens (work with next-themes) */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  /* Typography */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+
+  /* Brand (oxblood) */
+  --color-brand: #7A1B1B;
+  --color-brand-ink: #ffffff;
+
+  /* Radius scale — "medium" from the HTML tweaks */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Semantic colors — theme-aware. Resolves to light/dark values via [data-theme].
+     Enables Tailwind utilities: text-fg, text-fg-strong, bg-surface, etc.
+     Eliminates inline style={{ color: "var(--ink-60)" }} throughout components. */
+  --color-fg: var(--fg);
+  --color-fg-strong: var(--fg-strong);
+  --color-bg: var(--bg);
+  --color-surface: var(--bg-card);
+  --color-surface-elevated: var(--bg-elev);
+  --color-surface-deep: var(--bg-deep);
   --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-border-soft: var(--border-soft);
+  --color-hairline: var(--hairline);
+  --color-ink-75: var(--ink-75);
+  --color-ink-60: var(--ink-60);
+  --color-ink-45: var(--ink-45);
+  --color-ink-30: var(--ink-30);
+  --color-ink-15: var(--ink-15);
 
-  /* Font family tokens */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-
-  /* Radius tokens (from option15/16) */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
+  /* Layout */
+  --spacing-section: 88px;
+  --spacing-cell: 48px;
 }
 
-/* Base theme variables - Light Theme (option16.html "Clean Report") */
-@layer base {
-  :root {
-    /* Backgrounds */
-    --background: 250 250 250;        /* #fafafa - Clean white-gray */
-    --foreground: 10 10 20;           /* #0a0a14 - Near black */
+/* -------------------------------------------------------------------
+   :root — mode-agnostic derived tokens
+   ------------------------------------------------------------------- */
+:root {
+  --brand-soft: color-mix(in oklch, var(--color-brand) 14%, transparent);
+  --brand-deep: color-mix(in oklch, var(--color-brand) 65%, #000 35%);
 
-    /* Cards */
-    --card: 255 255 255;              /* #ffffff - Pure white cards */
-    --card-foreground: 10 10 20;      /* #0a0a14 */
+  --page-max: 1320px;
+  --gutter: 10vw;
+}
 
-    /* Primary (Blue accent) */
-    --primary: 37 99 235;             /* #2563eb - Blue 600 */
-    --primary-foreground: 255 255 255; /* #ffffff */
+/* ===================================================================
+   LIGHT THEME  ([data-theme="light"])
+   "snow" paper: warm off-white #F7F7F4
+   =================================================================== */
+[data-theme="light"] {
+  --fg: #0b0b10;
+  --fg-strong: #000000;
+  --bg: #F7F7F4;
+  --bg-elev: #ffffff;
+  --bg-deep: #F0EFE9;
+  --bg-card: #ffffff;
+  --nav-bg: rgba(247, 247, 244, 0.85);
+  --footer-bg: #F0EFE9;
+  --border: rgba(11, 11, 16, 0.12);
+  --border-soft: rgba(11, 11, 16, 0.08);
+  --hairline: rgba(11, 11, 16, 0.06);
+  --ink-75: rgba(11, 11, 16, 0.78);
+  --ink-60: rgba(11, 11, 16, 0.62);
+  --ink-45: rgba(11, 11, 16, 0.48);
+  --ink-30: rgba(11, 11, 16, 0.32);
+  --ink-15: rgba(11, 11, 16, 0.15);
+  --btn-2-bg: transparent;
+  --btn-2-border: rgba(11, 11, 16, 0.22);
+  --btn-2-text: #0b0b10;
+  --terminal-bg: #0b0b10;
+  --terminal-fg: #F7F7F4;
+  --paper-texture: radial-gradient(rgba(11, 11, 16, 0.045) 1px, transparent 1px);
+}
 
-    /* Secondary */
-    --secondary: 228 228 231;         /* #e4e4e7 - Zinc 200 */
-    --secondary-foreground: 10 10 20; /* #0a0a14 */
+/* ===================================================================
+   DARK THEME  ([data-theme="dark"])
+   =================================================================== */
+[data-theme="dark"] {
+  --fg: #F7F7F4;
+  --fg-strong: #ffffff;
+  --bg: #0A0A0D;
+  --bg-elev: #111117;
+  --bg-deep: #070709;
+  --bg-card: #0F0F14;
+  --nav-bg: rgba(10, 10, 13, 0.82);
+  --footer-bg: #070709;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.06);
+  --ink-75: rgba(255, 255, 255, 0.82);
+  --ink-60: rgba(255, 255, 255, 0.66);
+  --ink-45: rgba(255, 255, 255, 0.50);
+  --ink-30: rgba(255, 255, 255, 0.34);
+  --ink-15: rgba(255, 255, 255, 0.16);
+  --btn-2-bg: rgba(255, 255, 255, 0.04);
+  --btn-2-border: rgba(255, 255, 255, 0.18);
+  --btn-2-text: #F7F7F4;
+  --terminal-bg: #050507;
+  --terminal-fg: #F7F7F4;
+  --paper-texture: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
 
-    /* Muted */
-    --muted: 244 244 245;             /* #f4f4f5 - Zinc 100 */
-    --muted-foreground: 113 113 122;  /* #71717a - Zinc 500 */
+/* ===================================================================
+   BASE RESET
+   Note: Tailwind v4's preflight already handles box-sizing, margin,
+   and padding resets. We only add box-sizing here as a safety net.
+   Do NOT add `margin: 0; padding: 0` — it overrides Tailwind utilities
+   like px-6, mx-auto, py-3 etc. due to cascade ordering.
+   =================================================================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
 
-    /* Accent */
-    --accent: 228 228 231;            /* #e4e4e7 - Zinc 200 */
-    --accent-foreground: 10 10 20;    /* #0a0a14 */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
 
-    /* Borders & Inputs */
-    --border: 228 228 231;            /* #e4e4e7 - Zinc 200 */
-    --input: 228 228 231;             /* #e4e4e7 */
-    --ring: 10 10 20;                 /* #0a0a14 - Focus ring */
-  }
-
-  /* Dark Theme (option15.html "Blade Runner") */
-  [data-theme="dark"] {
-    /* Backgrounds */
-    --background: 10 10 20;           /* #0a0a14 - Deep navy-black */
-    --foreground: 255 255 255;        /* #ffffff - Pure white */
-
-    /* Cards */
-    --card: 26 26 46;                 /* #1a1a2e - Slightly lighter navy */
-    --card-foreground: 255 255 255;   /* #ffffff */
-
-    /* Primary (Blue accent) */
-    --primary: 156 194 244;           /* #9cc2f4 - Light blue from option15 */
-    --primary-foreground: 10 10 20;   /* #0a0a14 - Dark text on light blue */
-
-    /* Secondary */
-    --secondary: 39 39 58;            /* #27273a - Zinc 800 equivalent */
-    --secondary-foreground: 255 255 255; /* #ffffff */
-
-    /* Muted */
-    --muted: 39 39 58;                /* #27273a - Zinc 800 */
-    --muted-foreground: 161 161 170;  /* #a1a1aa - Zinc 400 */
-
-    /* Accent */
-    --accent: 39 39 58;               /* #27273a - Zinc 800 */
-    --accent-foreground: 255 255 255; /* #ffffff */
-
-    /* Borders & Inputs */
-    --border: 39 39 58;               /* #27273a - Zinc 800 */
-    --input: 39 39 58;                /* #27273a */
-    --ring: 156 194 244;              /* #9cc2f4 - Blue focus ring */
-  }
-
-  /* Global base styles */
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    background: #fafafa;
-    color: #0a0a14;
-    /* Premium OpenType features */
-    font-feature-settings: "liga" 1, "calt" 1, "kern" 1;
-  }
-
-  /* ==================== PREMIUM TYPOGRAPHY (Item 7) ==================== */
-
-  /* Widow & orphan prevention */
-  h1, h2, h3, h4, h5, h6 {
-    text-wrap: balance;
-  }
-
-  p {
-    text-wrap: pretty;
-  }
-
-  /* Tabular numbers for metrics alignment */
-  .tabular-nums,
-  [class*="metric"],
-  [class*="price"],
-  [class*="score"],
-  [class*="percentage"] {
-    font-variant-numeric: tabular-nums lining-nums;
-  }
-
-  /* Premium link styling */
-  a:not([class*="button"]):not([class*="btn"]):not([class*="nav"]):not(.no-underline) {
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
-    text-decoration-color: currentColor;
-    opacity: 0.5;
-    transition:
-      text-decoration-thickness 200ms ease,
-      text-underline-offset 200ms ease,
-      opacity 200ms ease;
-  }
-
-  a:not([class*="button"]):not([class*="btn"]):not([class*="nav"]):not(.no-underline):hover {
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.25em;
-    opacity: 1;
-  }
-
-  /* Light theme (default) */
-  [data-theme="light"] body,
-  :root body {
-    background: #fafafa;
-    color: #0a0a14;
-  }
-
-  /* Dark theme override */
-  [data-theme="dark"] body {
-    background: #0a0a14;
-    color: #ffffff;
-  }
-
-  /* Smooth transitions for theme switching */
-  * {
-    transition-property: color, background-color, border-color, fill, stroke;
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Disable transitions during theme change (prevents flash) */
-  [data-theme-changing] * {
-    transition: none !important;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-/* ==================== ANIMATION KEYFRAMES ==================== */
-@keyframes glow-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+body {
+  font-family: var(--font-sans);
+  color: var(--fg);
+  background: var(--bg);
+  font-feature-settings: "ss01" 1, "cv11" 1, "kern" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-@keyframes cell-reveal {
+h1, h2, h3, h4 {
+  text-wrap: balance;
+  letter-spacing: -0.035em;
+  color: var(--fg-strong);
+  font-weight: 600;
+}
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+button {
+  font-family: inherit; cursor: pointer;
+  border: none; background: none; color: inherit;
+}
+::selection { background: var(--color-brand); color: var(--color-brand-ink); }
+
+section[id] { scroll-margin-top: 72px; }
+
+/* ===================================================================
+   HERO NOISE PATTERN — full-bleed SVG grain (data-pattern="noise")
+   The <HeroNoise /> component renders the SVG; this rule sizes + masks it.
+   Kept in globals.css because it sits on the hero background layer.
+   =================================================================== */
+.hero-noise {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 40%,
+    black,
+    transparent 85%
+  );
+  mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 40%,
+    black,
+    transparent 85%
+  );
+}
+[data-theme="dark"] .hero-noise {
+  opacity: 0.4;
+  mix-blend-mode: screen;
+}
+
+/* ===================================================================
+   UTILITIES — small, widely shared. Component-level styles live in
+   CSS Modules or Tailwind utilities, not here.
+   =================================================================== */
+
+/* paper-texture backdrop — optional dot-grain wash on large surfaces */
+.paper {
+  background-image: var(--paper-texture);
+  background-size: 4px 4px;
+}
+
+/* hairline top border — common divider */
+.hairline-top { border-top: 1px solid var(--hairline); }
+
+/* Nav CTA — dark mode inversion (warm off-paper key against dark plate) */
+[data-theme="dark"] .nav-cta {
+  background: #FBFAF6 !important;
+  color: #0A0A0D !important;
+  box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] .nav-cta:hover {
+  background: #FFFFFF !important;
+}
+
+/* skip link for accessibility — hidden until focused */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--color-brand);
+  color: var(--color-brand-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 16px;
+}
+
+/* ===================================================================
+   SCROLL-DRIVEN REVEAL ANIMATION
+   CSS-only section reveal on scroll entry. Zero JS, compositor thread.
+   Applied to sections via the .reveal class.
+   Honors prefers-reduced-motion (disabled globally above).
+   =================================================================== */
+@keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -200,358 +270,18 @@
   }
 }
 
-@keyframes ticker-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+.reveal {
+  animation: reveal-up ease both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 25%;
 }
 
-@keyframes industry-fade {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-/* ==================== LIGHT THEME SPECIFIC VARIABLES ==================== */
-:root {
-  /* Core colors for light theme */
-  --background: 250 250 250;
-  --foreground: 10 10 20;
-  /* Foreground color (for use in style attributes) */
-  --foreground-color: #0a0a14;
-  /* Card/cell background */
-  --bg-card: #ffffff;
-  /* Logo fill - Supabase green */
-  --logo-fill: #10B981;
-  /* Single brand color - no gradient */
-  --green-from: #10B981;
-  --green-to: #10B981;
-  --cyan: #06b6d4;
-  --green: #10b981;
-  --input-glow-gradient:
-    radial-gradient(circle farthest-side at 0 100%, #3ECF8E, transparent),
-    radial-gradient(circle farthest-side at 100% 0, #2dd4bf, transparent),
-    radial-gradient(circle farthest-side at 100% 100%, #10b981, transparent),
-    radial-gradient(circle farthest-side at 0 0, #06b6d4, transparent);
-  --bg-gradient: #fafafa;
-  --bg-input: #ffffff;
-  /* Text opacity values - WCAG AA compliant (4.5:1 min contrast) */
-  --text-muted-75: rgba(0, 0, 0, 0.75);
-  --text-muted-65: rgba(0, 0, 0, 0.65);
-  --text-muted-60: rgba(0, 0, 0, 0.6);
-  --text-muted-50: rgba(0, 0, 0, 0.6);  /* Raised from 0.5 for a11y */
-  --text-muted-45: rgba(0, 0, 0, 0.55); /* Raised from 0.45 for a11y */
-  --text-muted-40: rgba(0, 0, 0, 0.55); /* Raised from 0.4 for a11y */
-  --text-muted-35: rgba(0, 0, 0, 0.55); /* Raised from 0.35 for a11y */
-  --text-muted-30: rgba(0, 0, 0, 0.5);  /* Raised from 0.3 for a11y */
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --border-light: rgba(0, 0, 0, 0.1);
-  /* Hero dots (green with higher opacity) */
-  --dots-opacity: 0.8;
-  --dots-color: #10B981;
-  /* Placeholder color - WCAG AA compliant */
-  --placeholder-color: rgba(0, 0, 0, 0.55);
-  /* Nav and footer backgrounds */
-  --nav-bg: rgba(255, 255, 255, 0.95);
-  --footer-bg: #f5f5f5;
-  /* Pricing button colors (light theme) - Emerald */
-  --btn-primary-bg: #10B981;
-  --btn-primary-text: #ffffff;
-  --btn-secondary-bg: transparent;
-  --btn-secondary-border: rgba(0, 0, 0, 0.2);
-  --btn-secondary-text: #0a0a14;
-}
-
-/* ==================== DARK THEME SPECIFIC VARIABLES ==================== */
-[data-theme="dark"] {
-  /* Foreground color (for use in style attributes) */
-  --foreground-color: #ffffff;
-  /* Card/cell background */
-  --bg-card: rgba(10, 10, 20, 0.8);
-  /* Logo fill - Supabase green */
-  --logo-fill: #10B981;
-  /* Single brand color - no gradient */
-  --green-from: #10B981;
-  --green-to: #10B981;
-  --cyan: #06b6d4;
-  --green: #10b981;
-  /* Input glow gradient */
-  --input-glow-gradient:
-    radial-gradient(circle farthest-side at 0 100%, #a0e0ff, transparent),
-    radial-gradient(circle farthest-side at 100% 0, #ffffff, transparent),
-    radial-gradient(circle farthest-side at 100% 100%, #b0a0ff, transparent),
-    radial-gradient(circle farthest-side at 0 0, #d0e5ff, #141316);
-  --bg-gradient: linear-gradient(180deg, #0a0a14 0%, #1a1a2e 50%, #0f0f1a 100%);
-  --bg-input: #161A25;
-  /* Text opacity values - WCAG AA compliant (4.5:1 min contrast) */
-  --text-muted-75: rgba(255, 255, 255, 0.75);
-  --text-muted-65: rgba(255, 255, 255, 0.65);
-  --text-muted-60: rgba(255, 255, 255, 0.6);
-  --text-muted-50: rgba(255, 255, 255, 0.6);  /* Raised from 0.5 for a11y */
-  --text-muted-45: rgba(255, 255, 255, 0.55); /* Raised from 0.45 for a11y */
-  --text-muted-40: rgba(255, 255, 255, 0.55); /* Raised from 0.4 for a11y */
-  --text-muted-35: rgba(255, 255, 255, 0.55); /* Raised from 0.35 for a11y */
-  --text-muted-30: rgba(255, 255, 255, 0.5);  /* Raised from 0.3 for a11y */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-light: rgba(255, 255, 255, 0.1);
-  /* Hero dots (green with higher opacity for dark theme) */
-  --dots-opacity: 0.7;
-  --dots-color: #10B981;
-  /* Placeholder color - WCAG AA compliant */
-  --placeholder-color: rgba(255, 255, 255, 0.55);
-  /* Nav and footer backgrounds */
-  --nav-bg: rgba(10, 10, 20, 0.98);
-  --footer-bg: linear-gradient(180deg, #0a0a14 0%, #1a1a2e 100%);
-  /* Pricing button colors (dark theme) - Emerald */
-  --btn-primary-bg: #10B981;
-  --btn-primary-text: #ffffff;
-  --btn-secondary-bg: rgba(255, 255, 255, 0.08);
-  --btn-secondary-border: rgba(255, 255, 255, 0.15);
-  --btn-secondary-text: rgba(255, 255, 255, 0.95);
-}
-
-/* ==================== INDUSTRY COLORS ==================== */
-:root {
-  --industry-hvac: #ff2e63;
-  --industry-hvac-glow: rgba(255, 46, 99, 0.5);
-  --industry-law: #4169ff;
-  --industry-law-glow: rgba(65, 105, 255, 0.5);
-  --industry-roofing: #ff9f1c;
-  --industry-roofing-glow: rgba(255, 159, 28, 0.5);
-  --industry-dental: #2dce89;
-  --industry-dental-glow: rgba(45, 206, 137, 0.5);
-  --industry-plumbing: #00d4ff;
-  --industry-plumbing-glow: rgba(0, 212, 255, 0.5);
-  --industry-electrical: #ffd700;
-  --industry-electrical-glow: rgba(255, 215, 0, 0.5);
-  --industry-landscaping: #10b981;
-  --industry-landscaping-glow: rgba(16, 185, 129, 0.5);
-  --industry-home: #a855f7;
-  --industry-home-glow: rgba(168, 85, 247, 0.5);
-}
-
-/* ==================== FORM FIELD ANIMATIONS (Item 3) ==================== */
-
-/* Premium placeholder behavior - fade on focus */
-input::placeholder,
-textarea::placeholder {
-  opacity: 0.6;
-  transition: opacity 350ms ease-in-out;
-}
-
-input:focus::placeholder,
-textarea:focus::placeholder {
-  opacity: 0;
-}
-
-/* Hero input - keep placeholder visible with caret */
-input.hero-input:focus::placeholder {
-  opacity: 0.6;
-}
-
-/* Premium caret color */
-input,
-textarea {
-  caret-color: #3b82f6;
-}
-
-/* CSS-only validation states (when not using controlled components) */
-input:valid:not(:placeholder-shown):not(:focus) {
-  border-color: rgba(34, 197, 94, 0.4);
-}
-
-input:invalid:not(:placeholder-shown):not(:focus) {
-  border-color: rgba(239, 68, 68, 0.5);
-}
-
-/* Shake animation for invalid fields */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10% { transform: translateX(-5px); }
-  20% { transform: translateX(5px); }
-  30% { transform: translateX(-5px); }
-  40% { transform: translateX(5px); }
-  50% { transform: translateX(-3px); }
-  60% { transform: translateX(3px); }
-  70% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
-  90% { transform: translateX(-1px); }
-}
-
-.anim-shake {
-  animation: shake 400ms cubic-bezier(0.36, 0, 0.66, -0.56);
-}
-
-/* Checkmark draw animation for valid fields */
-@keyframes draw-check {
-  0% { stroke-dashoffset: 24; opacity: 0; }
-  50% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 1; }
-}
-
-.anim-draw-check path {
-  stroke-dasharray: 24;
-  animation: draw-check 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* ==================== SKELETON/LOADING ANIMATIONS (Item 4) ==================== */
-
-/* Shimmer animation for skeleton loaders */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--skeleton-base, rgba(0,0,0,0.06)) 0%,
-    var(--skeleton-shine, rgba(0,0,0,0.1)) 50%,
-    var(--skeleton-base, rgba(0,0,0,0.06)) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s linear infinite;
-  border-radius: 4px;
-}
-
-[data-theme="dark"] .skeleton {
-  --skeleton-base: rgba(255,255,255,0.06);
-  --skeleton-shine: rgba(255,255,255,0.1);
-}
-
-/* Pulse animation alternative */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.anim-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Skeleton → Content smooth transition */
-.skeleton-fade-out {
-  opacity: 0;
-  transition: opacity 300ms ease-in-out;
-}
-
-.content-fade-in {
-  opacity: 1;
-  transition: opacity 300ms ease-in-out;
-}
-
-.content-hidden {
-  opacity: 0;
-}
-
-/* ==================== ACCESSIBILITY AAA (Item 9) ==================== */
-
-/* Enhanced focus indicators - WCAG 2.4.13 AAA (3px minimum) */
-*:focus-visible {
-  outline: 3px solid currentColor;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgba(54, 120, 255, 0.2);
-}
-
-/* Theme-specific focus colors */
-[data-theme="dark"] *:focus-visible {
-  box-shadow: 0 0 0 5px rgba(156, 194, 244, 0.25);
-}
-
-/* Skip links - visually hidden until focused */
-.skip-link {
-  position: absolute;
-  top: -100px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  padding: 16px 24px;
-  background: var(--foreground-color);
-  color: var(--background-color);
-  font-weight: 600;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: top 200ms ease-in-out;
-}
-
-.skip-link:focus {
-  top: 16px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: more) {
-  * {
-    --text-muted-60: rgba(var(--foreground), 0.85);
-    --text-muted-50: rgba(var(--foreground), 0.8);
-    --text-muted-40: rgba(var(--foreground), 0.75);
-  }
-
-  *:focus-visible {
-    outline-width: 4px;
-    outline-offset: 3px;
-  }
-}
-
-/* Ensure interactive elements have minimum touch target (44x44px) */
-button,
-a,
-input,
-select,
-textarea {
-  min-height: 44px;
-}
-
-/* Exception for inline links */
-p a,
-span a,
-li a {
-  min-height: auto;
-}
-
-/* Screen reader only utility */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* ==================== UTILITY CLASSES ==================== */
-.anim-glow-shift {
-  animation: glow-shift 12s ease-in-out infinite;
-  background-size: 120% 120%;
-}
-
-.anim-cell-reveal {
-  animation: cell-reveal 0.6s ease-out forwards;
-}
-
-.anim-ticker {
-  animation: ticker-scroll 35s linear infinite;
-}
-
-/* ==================== REDUCED MOTION SUPPORT ==================== */
-@media (prefers-reduced-motion: reduce) {
-  .anim-glow-shift,
-  .anim-cell-reveal,
-  .anim-ticker {
-    animation: none !important;
-  }
-
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+/* ===================================================================
+   FOCUS INDICATORS — WCAG AAA
+   Visible focus rings on all interactive elements.
+   =================================================================== */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+  border-radius: 2px;
 }

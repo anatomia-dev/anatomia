@@ -1,0 +1,117 @@
+/* Pricing section — tetris frame, card layout. */
+
+.section {
+  padding: 88px 0 64px;
+}
+
+.top {
+  margin-bottom: 48px;
+}
+
+.frame {
+  position: relative;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 48px;
+  overflow: hidden;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 720px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Price card */
+.card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 220ms;
+}
+.card:hover { border-color: var(--border); }
+.cardHighlighted {
+  border-color: var(--color-brand);
+}
+.cardHighlighted:hover {
+  border-color: var(--color-brand);
+}
+
+.cardFlag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-bottom: 14px;
+}
+
+.cardName {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+}
+
+.cardPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 8px;
+}
+.cardPriceValue {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--fg-strong);
+}
+.cardPriceUnit {
+  font-size: 14px;
+  color: var(--ink-45);
+}
+
+.cardSub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-45);
+  margin-top: 4px;
+}
+
+.cardFeatures {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.cardFeature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink-75);
+  line-height: 1.45;
+}
+.cardFeatureTick {
+  color: var(--color-brand);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cardCta {
+  margin-top: 28px;
+}
