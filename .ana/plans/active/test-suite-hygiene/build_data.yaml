@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Conditional skills (ai-patterns, api-patterns, data-access) have no E2E test coverage"
+    file: "packages/cli/tests/e2e/init-flow.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "quality.trajectory assertion uses toHaveProperty instead of toBeTypeOf — null when insufficient entries"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "5 remaining toBeGreaterThan(0) in proofSummary.test.ts outside spec scope"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    severity: observation
+    suggested_action: monitor
