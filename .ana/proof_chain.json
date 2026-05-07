@@ -16413,6 +16413,289 @@
         "completed_at": "2026-05-07T17:17:26.867Z",
         "commit_count": 4
       }
+    },
+    {
+      "slug": "website-direct-polish",
+      "feature": "Website Direct Polish",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 28,
+        "satisfied": 28,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Pricing frame has no static CSS border",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Pricing frame has no border-radius",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Pricing frame preserves overflow hidden for TetrisSnake containment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Pricing frame content is centered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Pricing headline has a max-width constraint",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Pricing frame has correct desktop padding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Pricing frame has compact padding on mobile",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Pricing grid uses tighter gap between cards",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Pricing grid switches to two columns at the right breakpoint",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Price cards get more padding on large screens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Footer tagline italic text has refined letter-spacing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Footer commit display has no visible border",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Footer commit display has no pill padding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Footer margin comes from CSS, not Tailwind utility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Footer has a default top margin in global CSS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Collapsed proof feed sits flush against footer with no gap",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Proof feed headline no longer asks users to click",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Proof feed description does not promise clickable rows",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Compatibility tile does not flash a border on hover",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Maintenance manual no longer references the deleted sub route group",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Maintenance manual does not reference SubNav",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Hero headline uses lowercase ana to match the brand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Hero headline does not use uppercase Ana",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Nav icon buttons are 34px visually instead of 44px",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Nav icon buttons have expanded touch targets via pseudo-element",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Theme toggle button is 34px visually",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Mobile nav hamburger button is 34px visually",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Website builds successfully with all changes applied",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 18,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 34,
+        "think": 1,
+        "plan": 9,
+        "build": 5,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:f5435fd0bdb8a9fa635857be4c70d2c9c7b039f93ecf47248175c9ab3c30219b",
+        "contract": "sha256:de97c7400321271c3ec4625fb1e0e0d459fef05494aefa15d6c4ac03b86c6b3f",
+        "plan": "sha256:35f29cab7672957d86873bdcd9189042c0de5dc7510adbb05f8269a8cea53c98",
+        "spec": "sha256:8aa69e0a777ad8113cfb9208214795a8b510025f5af1f45af7aa8ef7505aff36",
+        "build-report": "sha256:a652975739fd465dff4b92df1ccc582eb8fa2f6daa1f4bbc03daf7e0d6812ad7",
+        "build-data": "sha256:c55d2cc0d3474a611230ebd68e7c2744941dd9e28f13a63dbb44188e8255129f",
+        "verify-report": "sha256:aaf8f9f6b5a26745149415b09947b1b55203565d774163dd4963bb4852463970",
+        "verify-data": "sha256:9545dffd3c068e47b3025fc999e09470093e7979a70e1cfbed99708a7ef8bfba"
+      },
+      "completed_at": "2026-05-07T18:08:18.493Z",
+      "modules_touched": [
+        "website/MAINTENANCE_MANUAL.md",
+        "website/app/globals.css",
+        "website/components/bento/bento.module.css",
+        "website/components/footer/Footer.tsx",
+        "website/components/nav/Nav.tsx",
+        "website/components/nav/NavMobile.tsx",
+        "website/components/nav/ThemeToggle.tsx",
+        "website/components/pricing/Pricing.tsx",
+        "website/components/pricing/pricing.module.css",
+        "website/lib/copy.ts"
+      ],
+      "scope_summary": "Fix 12 visual and copy regressions found during post-merge review of the live site against the handoff HTML. These are the gap between \"it builds\" and \"it matches the design.\" The pricing frame is the most visible — it has a static CSS border instead of letting the TetrisSnake canvas be the border, and the content is left-aligned instead of centered. The footer tagline font is missing letter-spacing, the commit pill has a visible border that shouldn't be there, the proof feed copy promises interactivity that was removed, and the nav is taller than designed.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Pricing h2 and blurb with maxWidth may not visually center without margin auto",
+          "file": "website/components/pricing/Pricing.tsx",
+          "anchor": null,
+          "line": 23,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "website-direct-polish-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pseudo-element touch targets on nav buttons break if overflow:hidden is added to button",
+          "file": "website/components/nav/Nav.tsx",
+          "anchor": null,
+          "line": 92,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A025"
+          ],
+          "id": "website-direct-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": ":has() bonding rule depends on ProofFeed being direct previous sibling of footer in DOM",
+          "file": "website/app/globals.css",
+          "anchor": null,
+          "line": 231,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A016"
+          ],
+          "id": "website-direct-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "meta.description in copy.ts still says 'Ana' (capitalized) while hero headline now uses lowercase 'ana'",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "line": 31,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A022"
+          ],
+          "id": "website-direct-polish-C4",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "globals.css footer rule applies margin-top to ALL footer elements including any future non-marketing footers",
+          "file": "website/app/globals.css",
+          "anchor": null,
+          "line": 228,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-direct-polish-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "MAINTENANCE_MANUAL decision 7 now contradicts implementation — says 44px icon buttons but we changed to 34px visual",
+          "file": "website/MAINTENANCE_MANUAL.md",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-07T17:31:04.934Z",
+        "completed_at": "2026-05-07T18:08:18.490Z",
+        "commit_count": 8
+      }
     }
   ],
   "schema": 1

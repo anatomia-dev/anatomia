@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-64 runs · 125 active · 78 lessons · 0 promoted · 160 closed
+65 runs · 129 active · 79 lessons · 0 promoted · 160 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 125 total)
+## Active Findings (30 shown of 129 total)
 
 ### packages/cli/src/commands/agents.ts
 
@@ -34,10 +34,6 @@
 
 - **code:** AgentFrontmatter interface exported but never imported outside agent-config.ts — *Agent Dashboard Phase 1*
 
-### packages/cli/src/utils/worktree.ts
-
-- **code:** detectWorktreeSlug empty-string guard removed — unrelated to website-lift scope — *Website Lift*
-
 ### packages/cli/tests/commands/agents.test.ts
 
 - **test:** A002 test uses toBeGreaterThan(templateSize) — correct intent but could assert exact expected value since skill content is fixture-controlled — *Agent Dashboard Phase 1*
@@ -45,6 +41,11 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Fix-phase test (early-return) has no @ana tag — not linked to any contract assertion — *Fix Pipeline Phase Timing*
+
+### website/app/globals.css
+
+- **code:** :has() bonding rule depends on ProofFeed being direct previous sibling of footer in DOM — *Website Direct Polish*
+- **code:** globals.css footer rule applies margin-top to ALL footer elements including any future non-marketing footers — *Website Direct Polish*
 
 ### website/components/about/about.module.css
 
@@ -54,9 +55,17 @@
 
 - **code:** tCompat hover state leaks through inversion — base .tile:hover sets border-color: var(--border) — *Website Visual Fidelity*
 
+### website/components/nav/Nav.tsx
+
+- **code:** Pseudo-element touch targets on nav buttons break if overflow:hidden is added to button — *Website Direct Polish*
+
 ### website/components/pricing/pricing.module.css
 
 - **code:** cardPriceUnit override added for highlighted card — not in spec but necessary for visibility — *Website Visual Fidelity*
+
+### website/components/pricing/Pricing.tsx
+
+- **code:** Pricing h2 and blurb with maxWidth may not visually center without margin auto — *Website Direct Polish*
 
 ### website/components/pricing/TetrisSnake.tsx
 
@@ -82,9 +91,6 @@
 - **code:** No tag name validation — non-semver GitHub tags would display as-is in version pill — *Website Production Infrastructure*
 - **code:** File header comment still says 'Today: static mock data' — stale after live data wiring — *Website Production Infrastructure*
 - **code:** mapEntry never produces kind 'chore' — only 'fix' or 'feature' — *Website Lift*
-- **code:** Hardcoded version 'v1.0.2' will go stale — *Website Lift*
-- **code:** Empty entries returns [] instead of mockFeed — blank state possible — *Website Lift*
-- **code:** extractFeatureEm on single-word feature returns that word — acceptable for display — *Website Lift*
 
 ### website/MAINTENANCE_MANUAL.md
 
