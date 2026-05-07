@@ -3428,6 +3428,166 @@ describe('computeTiming with build_started_at and verify_started_at', () => {
   });
 });
 
+describe('computeTiming with plan_started_at', () => {
+  let tempDir: string;
+  let slugDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'timing-plan-test-'));
+    slugDir = path.join(tempDir, 'test-plan-timing');
+    await fs.promises.mkdir(slugDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  // @ana A004
+  it('uses plan_started_at for plan duration when available', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      plan_started_at: '2026-04-01T10:15:00Z',
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      build_started_at: '2026-04-01T11:00:00Z',
+      'build-report': { saved_at: '2026-04-01T11:45:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:30:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // plan = contract - plan_started_at = 15min (not 30min gap from scope)
+    expect(summary.timing.plan).toBe(15);
+    // think should still use scope - work_started_at = 20min
+    expect(summary.timing.think).toBe(20);
+  });
+
+  // @ana A005
+  it('falls back to artifact-gap when plan_started_at absent', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // plan = contract - scope = 30min (gap timing, no plan_started_at)
+    expect(summary.timing.plan).toBe(30);
+  });
+
+  // @ana A008
+  it('falls back when plan_started_at is after contractTime', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      plan_started_at: '2026-04-01T11:00:00Z', // AFTER contract
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Falls back to gap timing: contract - scope = 30min
+    expect(summary.timing.plan).toBe(30);
+  });
+
+  // @ana A009
+  it('falls back when plan duration exceeds 24 hours', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      plan_started_at: '2026-03-30T10:00:00Z', // 48h before contract
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Falls back to gap timing: contract - scope = 30min
+    expect(summary.timing.plan).toBe(30);
+  });
+
+  // @ana A010
+  it('backward compat: old entries without plan_started_at still produce correct plan timing', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // plan = contract - scope = 30min (same as before plan_started_at existed)
+    expect(summary.timing.plan).toBe(30);
+    expect(summary.timing.think).toBe(20);
+  });
+
+  // @ana A017
+  it('verify_started_at still consumed by computeTiming', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      plan_started_at: '2026-04-01T10:15:00Z',
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      verify_started_at: '2026-04-01T11:45:00Z',
+      'verify-report': { saved_at: '2026-04-01T12:15:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // verify = verify-report - verify_started_at = 30min
+    expect(summary.timing.verify).toBe(30);
+  });
+
+  it('plan_started_at exactly equal to contractTime produces 0 duration', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      plan_started_at: '2026-04-01T10:30:00Z', // same as contract
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // plan = contract - plan_started_at = 0min (valid)
+    expect(summary.timing.plan).toBe(0);
+  });
+
+  it('plan_started_at present but insane falls back to artifact-gap', async () => {
+    const saves = {
+      work_started_at: '2026-04-01T09:40:00Z',
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      plan_started_at: 'not-a-date',
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    await fs.promises.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Falls back: NaN from invalid date → readRawTimestamp returns null → gap timing
+    expect(summary.timing.plan).toBe(30);
+  });
+});
+
 describe('computePipelineStats with median_plan', () => {
   // @ana A013
   it('computes median_plan from timing.plan values', () => {

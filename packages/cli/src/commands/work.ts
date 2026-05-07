@@ -1406,6 +1406,56 @@ export async function startWork(slug: string): Promise<void> {
         if (result.exitCode === 0) commitCount = parseInt(result.stdout) || 0;
       } catch { /* ignore */ }
 
+      // Detect phase from local artifacts and write appropriate timestamp
+      const localProjectRoot = findProjectRoot();
+      const localActivePath = path.join(localProjectRoot, '.ana', 'plans', 'active', slug);
+
+      if (fs.existsSync(localActivePath)) {
+        const hasSpec = fs.existsSync(path.join(localActivePath, 'spec.md'));
+        const hasContract = fs.existsSync(path.join(localActivePath, 'contract.yaml'));
+        const hasBuildReport = fs.existsSync(path.join(localActivePath, 'build_report.md'));
+        const hasVerifyReport = fs.existsSync(path.join(localActivePath, 'verify_report.md'));
+
+        const hasNumberedSpec = globSync(path.join(localActivePath, 'spec-*.md')).length > 0;
+        const hasNumberedBuildReport = globSync(path.join(localActivePath, 'build_report_*.md')).length > 0;
+        const hasNumberedVerifyReport = globSync(path.join(localActivePath, 'verify_report_*.md')).length > 0;
+
+        const specExists = hasSpec || hasNumberedSpec;
+        const buildReportExists = hasBuildReport || hasNumberedBuildReport;
+        const verifyReportExists = hasVerifyReport || hasNumberedVerifyReport;
+
+        if (verifyReportExists) {
+          // Check if FAIL → Fix phase
+          let isFail = false;
+          const verifyPath = path.join(localActivePath, 'verify_report.md');
+          if (fs.existsSync(verifyPath)) {
+            const content = fs.readFileSync(verifyPath, 'utf-8');
+            isFail = /\*\*Result:\*\*\s*FAIL/i.test(content);
+          }
+          if (!isFail) {
+            const numberedReports = globSync(path.join(localActivePath, 'verify_report_*.md'));
+            for (const report of numberedReports) {
+              const content = fs.readFileSync(report, 'utf-8');
+              if (/\*\*Result:\*\*\s*FAIL/i.test(content)) {
+                isFail = true;
+                break;
+              }
+            }
+          }
+          if (isFail) {
+            await writeTimestamp(localActivePath, 'build_started_at', 'ana-build', true);
+          }
+        } else if (buildReportExists) {
+          // Verify phase: build report exists, no verify report
+          await writeTimestamp(localActivePath, 'verify_started_at', 'ana-verify');
+        } else if (specExists || hasContract) {
+          // Build phase: spec/contract exists, no build report
+          await writeTimestamp(localActivePath, 'build_started_at', 'ana-build');
+        }
+      } else if (!worktreeExists(projectRoot, slug)) {
+        console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
+      }
+
       console.log(`Already in worktree for \`${slug}\`.`);
       console.log(`  Path: ${wtPath}`);
       console.log(`  Branch: ${branchName}`);
@@ -1512,6 +1562,8 @@ export async function startWork(slug: string): Promise<void> {
     if (worktreeExists(projectRoot, slug)) {
       const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
       await writeTimestamp(wtPlanDir, 'verify_started_at', 'ana-verify');
+    } else {
+      console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
     }
     return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Verify');
   }
@@ -1539,9 +1591,12 @@ export async function startWork(slug: string): Promise<void> {
 
     if (isFail) {
       // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+      // Force overwrite: FAIL→Fix is a new build session, so the old build_started_at is stale
       if (worktreeExists(projectRoot, slug)) {
         const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
-        await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
+        await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build', true);
+      } else {
+        console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
       }
       return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Fix');
     }
@@ -1708,9 +1763,10 @@ function printExistingWorktree(
  * @param activePath - Path to the active plan directory
  * @param key - Timestamp key (e.g., 'work_started_at', 'build_started_at')
  * @param agent - Optional agent identity string (e.g., 'ana-build')
+ * @param force - When true, overwrite existing timestamp (used by FAIL→Fix path)
  * @returns Promise that resolves when the timestamp is written
  */
-async function writeTimestamp(activePath: string, key: string, agent?: string): Promise<void> {
+async function writeTimestamp(activePath: string, key: string, agent?: string, force: boolean = false): Promise<void> {
   const savesPath = path.join(activePath, '.saves.json');
   let saves: Record<string, unknown> = {};
   if (fs.existsSync(savesPath)) {
@@ -1719,6 +1775,10 @@ async function writeTimestamp(activePath: string, key: string, agent?: string): 
     } catch {
       // Start fresh if corrupted
     }
+  }
+  // Write-once guard: skip if key already exists unless force is true
+  if (!force && saves[key] !== undefined) {
+    return;
   }
   saves[key] = new Date().toISOString();
   if (agent) {
