@@ -3102,6 +3102,254 @@ describe('ana work start', () => {
 });
 
 /**
+ * Tests for early-return phase detection and write-once guard
+ */
+describe('work start early-return phase detection', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'work-earlyret-test-'));
+    originalCwd = process.cwd();
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  /**
+   * Helper to create a project that looks like we're inside a worktree.
+   * Sets up .ana/worktree-meta.json so detectWorktreeSlug returns the slug,
+   * and .ana/ana.json so findProjectRoot resolves to tempDir.
+   */
+  async function createWorktreeTestProject(slug: string, artifacts: {
+    scope?: boolean;
+    plan?: boolean;
+    spec?: boolean;
+    contract?: boolean;
+    buildReport?: boolean;
+    verifyReport?: boolean;
+    verifyResult?: 'PASS' | 'FAIL';
+  } = {}): Promise<string> {
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+
+    // Init git so runGit calls don't fail
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    // ana.json for findProjectRoot
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+
+    // worktree-meta.json so detectWorktreeSlug returns slug
+    await fs.writeFile(
+      path.join(anaDir, 'worktree-meta.json'),
+      JSON.stringify({ slug }),
+      'utf-8'
+    );
+
+    // Initial commit
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Create active plan directory with artifacts
+    const slugDir = path.join(anaDir, 'plans', 'active', slug);
+    await fs.mkdir(slugDir, { recursive: true });
+
+    if (artifacts.scope) {
+      await fs.writeFile(path.join(slugDir, 'scope.md'), '# Scope', 'utf-8');
+    }
+    if (artifacts.plan) {
+      await fs.writeFile(path.join(slugDir, 'plan.md'), '# Plan', 'utf-8');
+    }
+    if (artifacts.spec) {
+      await fs.writeFile(path.join(slugDir, 'spec.md'), '# Spec', 'utf-8');
+    }
+    if (artifacts.contract) {
+      await fs.writeFile(path.join(slugDir, 'contract.yaml'), 'version: "1.0"', 'utf-8');
+    }
+    if (artifacts.buildReport) {
+      await fs.writeFile(path.join(slugDir, 'build_report.md'), '# Build Report', 'utf-8');
+    }
+    if (artifacts.verifyReport) {
+      const result = artifacts.verifyResult || 'PASS';
+      await fs.writeFile(
+        path.join(slugDir, 'verify_report.md'),
+        `# Verify Report\n\n**Result:** ${result}`,
+        'utf-8'
+      );
+    }
+
+    process.chdir(tempDir);
+    return slugDir;
+  }
+
+  // @ana A002
+  it('early-return writes build_started_at during Build phase', async () => {
+    const slugDir = await createWorktreeTestProject('my-feature', {
+      scope: true, plan: true, spec: true, contract: true,
+    });
+
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+
+    await startWork('my-feature');
+
+    console.log = originalLog;
+
+    const savesPath = path.join(slugDir, '.saves.json');
+    expect(fsSync.existsSync(savesPath)).toBe(true);
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.build_started_at).toBeDefined();
+    expect(saves.build_agent).toBe('ana-build');
+    expect(logs.join('\n')).toContain('Already in worktree');
+  });
+
+  // @ana A001
+  it('early-return writes verify_started_at during Verify phase', async () => {
+    const slugDir = await createWorktreeTestProject('my-feature', {
+      scope: true, plan: true, spec: true, contract: true, buildReport: true,
+    });
+
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+
+    await startWork('my-feature');
+
+    console.log = originalLog;
+
+    const savesPath = path.join(slugDir, '.saves.json');
+    expect(fsSync.existsSync(savesPath)).toBe(true);
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.verify_started_at).toBeDefined();
+    expect(saves.verify_agent).toBe('ana-verify');
+  });
+
+  // @ana A016
+  it('early-return during Verify does not write build_started_at', async () => {
+    const slugDir = await createWorktreeTestProject('my-feature', {
+      scope: true, plan: true, spec: true, contract: true, buildReport: true,
+    });
+
+    await startWork('my-feature');
+
+    const savesPath = path.join(slugDir, '.saves.json');
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.build_started_at).toBeUndefined();
+    expect(saves.verify_started_at).toBeDefined();
+  });
+
+  it('early-return writes build_started_at during Fix phase (FAIL verify)', async () => {
+    const slugDir = await createWorktreeTestProject('my-feature', {
+      scope: true, plan: true, spec: true, contract: true,
+      buildReport: true, verifyReport: true, verifyResult: 'FAIL',
+    });
+
+    const before = Date.now();
+    await startWork('my-feature');
+    const after = Date.now();
+
+    const savesPath = path.join(slugDir, '.saves.json');
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.build_started_at).toBeDefined();
+    expect(saves.build_agent).toBe('ana-build');
+    const ts = new Date(saves.build_started_at).getTime();
+    expect(ts).toBeGreaterThanOrEqual(before);
+    expect(ts).toBeLessThanOrEqual(after);
+  });
+
+  // @ana A011
+  it('write-once guard preserves existing timestamp', async () => {
+    const slugDir = await createWorktreeTestProject('my-feature', {
+      scope: true, plan: true, spec: true, contract: true, buildReport: true,
+    });
+
+    // Pre-write a verify_started_at timestamp
+    const savesPath = path.join(slugDir, '.saves.json');
+    const existingTimestamp = '2026-04-01T10:00:00Z';
+    await fs.writeFile(savesPath, JSON.stringify({
+      verify_started_at: existingTimestamp,
+      verify_agent: 'ana-verify',
+    }), 'utf-8');
+
+    await startWork('my-feature');
+
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    expect(saves.verify_started_at).toBe(existingTimestamp);
+  });
+
+  // @ana A012
+  it('force parameter overwrites existing timestamp', async () => {
+    const slugDir = await createWorktreeTestProject('my-feature', {
+      scope: true, plan: true, spec: true, contract: true,
+      buildReport: true, verifyReport: true, verifyResult: 'FAIL',
+    });
+
+    // Pre-write a build_started_at timestamp
+    const savesPath = path.join(slugDir, '.saves.json');
+    const oldTimestamp = '2026-04-01T10:00:00Z';
+    await fs.writeFile(savesPath, JSON.stringify({
+      build_started_at: oldTimestamp,
+      build_agent: 'ana-build',
+    }), 'utf-8');
+
+    await startWork('my-feature');
+
+    const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+    // FAIL→Fix path uses force: true, so build_started_at should be overwritten
+    expect(saves.build_started_at).not.toBe(oldTimestamp);
+  });
+
+  // @ana A013
+  it('missing worktree produces warning', async () => {
+    // Set up a project on main (not a worktree) with build_report to trigger Verify path
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+
+    const slugDir = path.join(anaDir, 'plans', 'active', 'my-feature');
+    await fs.mkdir(slugDir, { recursive: true });
+    await fs.writeFile(path.join(slugDir, 'scope.md'), '# Scope', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'plan.md'), '# Plan', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'spec.md'), '# Spec', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'contract.yaml'), 'version: "1.0"', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), '# Build Report', 'utf-8');
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+
+    process.chdir(tempDir);
+
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+
+    // This hits the Verify path on main — worktree doesn't exist
+    await startWork('my-feature');
+
+    console.log = originalLog;
+    const output = logs.join('\n');
+    expect(output).toContain('Worktree not found');
+    expect(output).toContain('Timestamp skipped');
+  });
+});
+
+/**
  * Tests for danger map (risk profile), agent identity, and worktree prune
  */
 describe('danger map and worktree prune', () => {

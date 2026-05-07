@@ -52,7 +52,7 @@ Wait for explicit developer confirmation before continuing.
 
 ### 3. Enter the Worktree
 
-Run `ana work start {slug}`. The CLI locates the existing worktree (created during Build) and prints the path. `cd` to the printed path.
+`ana work status` already printed the worktree path. `cd` to the worktree path, THEN run `ana work start {slug}` to record the verify session start time. The session timestamp is only written correctly from inside the worktree.
 
 **NEVER run `git checkout {artifactBranch}` from inside the worktree.** This produces a fatal error. The worktree is always on the feature branch.
 

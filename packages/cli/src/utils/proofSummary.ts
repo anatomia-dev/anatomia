@@ -1488,6 +1488,7 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
   };
 
   const workStartedAt = readRawTimestamp('work_started_at');
+  const planStartedAt = readRawTimestamp('plan_started_at');
   const buildStartedAt = readRawTimestamp('build_started_at');
   const verifyStartedAt = readRawTimestamp('verify_started_at');
 
@@ -1506,7 +1507,20 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
   if (workStartedAt && scopeTime && contractTime) {
     // New behavior: separate think and plan using work_started_at
     timing.think = Math.round((scopeTime - workStartedAt) / 60000);
-    timing.plan = Math.round((contractTime - scopeTime) / 60000);
+
+    // Plan duration: prefer plan_started_at over artifact-gap timing
+    const MAX_PHASE_MS = 24 * 60 * 60 * 1000; // 24 hours
+    let usedPlanStartedAt = false;
+    if (planStartedAt !== null && planStartedAt <= contractTime) {
+      const durationMs = contractTime - planStartedAt;
+      if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
+        timing.plan = Math.round(durationMs / 60000);
+        usedPlanStartedAt = true;
+      }
+    }
+    if (!usedPlanStartedAt) {
+      timing.plan = Math.round((contractTime - scopeTime) / 60000);
+    }
   } else if (contractTime && scopeTime) {
     // Fallback: identical think and plan (backward compat for old entries)
     timing.think = Math.round((contractTime - scopeTime) / 60000);
