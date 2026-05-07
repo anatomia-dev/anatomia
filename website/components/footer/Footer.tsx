@@ -36,10 +36,20 @@ export async function Footer() {
               <span style={{ color: "var(--color-brand)" }}>]</span>
             </Link>
 
-            <p className="text-lg font-semibold" style={{ color: "var(--fg-strong)" }}>
+            <p style={{
+              fontSize: "clamp(32px, 3.6vw, 44px)",
+              fontWeight: 600,
+              lineHeight: 1.0,
+              letterSpacing: "-0.02em",
+              color: "var(--fg-strong)",
+            }}>
               {tagline.map((p, i) =>
                 p.em ? (
-                  <em key={i} className="font-serif italic" style={{ color: "var(--color-brand)" }}>
+                  <em key={i} className="font-serif italic" style={{
+                    color: "var(--color-brand)",
+                    fontVariationSettings: '"opsz" 96',
+                    fontWeight: 400,
+                  }}>
                     {p.t}
                   </em>
                 ) : (
@@ -100,13 +110,16 @@ export async function Footer() {
           {latest && (
             <a
               href={latest.url}
-              className="border-b pb-px transition-colors duration-150"
+              className="inline-flex items-center gap-[2px] transition-colors duration-[180ms] hover:text-[var(--fg)] hover:border-[var(--border-soft)] hover:bg-[var(--bg-elev)]"
               style={{
-                color: "var(--ink-60)",
-                borderColor: "var(--ink-15)",
+                color: "var(--ink-45)",
+                padding: "3px 10px",
+                border: "1px solid transparent",
+                borderRadius: "999px",
+                textDecoration: "none",
               }}
             >
-              <span style={{ color: "var(--ink-45)" }}>commit</span> ·{" "}
+              <span style={{ color: "var(--ink-30)" }}>commit</span> ·{" "}
               <span>{latest.hash}</span> ·{" "}
               <span>{formatAge(latest.ts)}</span>
             </a>

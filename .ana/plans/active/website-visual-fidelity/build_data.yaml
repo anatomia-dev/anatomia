@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "No automated visual regression tests — all 13 changes require manual browser verification"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Compat tile hover border may look odd against inverted dark background"
+    file: "website/components/bento/bento.module.css"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Highlighted CTA uses !important to override Button Tailwind utilities"
+    file: "website/components/pricing/pricing.module.css"
+    severity: debt
+    suggested_action: accept

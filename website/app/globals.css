@@ -56,7 +56,7 @@
   --color-ink-15: var(--ink-15);
 
   /* Layout */
-  --spacing-section: 88px;
+  --spacing-section: 116px;
   --spacing-cell: 48px;
 }
 
@@ -105,7 +105,7 @@
    =================================================================== */
 [data-theme="dark"] {
   --fg: #F7F7F4;
-  --fg-strong: #ffffff;
+  --fg-strong: #FBFAF6;
   --bg: #0A0A0D;
   --bg-elev: #111117;
   --bg-deep: #070709;

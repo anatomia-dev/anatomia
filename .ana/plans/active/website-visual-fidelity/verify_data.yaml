@@ -1,0 +1,44 @@
+schema: 1
+findings:
+  - category: code
+    summary: "tCompat hover state leaks through inversion — base .tile:hover sets border-color: var(--border)"
+    file: "website/components/bento/bento.module.css"
+    line: 61
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A009"]
+
+  - category: code
+    summary: "TetrisSnake trail fade math off by 2 ticks — fades to 0 at age 18 but filter removes at age 20"
+    file: "website/components/pricing/TetrisSnake.tsx"
+    line: 104
+    severity: observation
+    suggested_action: accept
+
+  - category: code
+    summary: "DPR cap at 2 added without spec guidance — prevents large canvas on 3x displays"
+    file: "website/components/pricing/TetrisSnake.tsx"
+    line: 50
+    severity: observation
+    suggested_action: accept
+
+  - category: code
+    summary: "cardPriceUnit override added for highlighted card — not in spec but necessary for visibility"
+    file: "website/components/pricing/pricing.module.css"
+    line: 63
+    severity: observation
+    suggested_action: accept
+
+  - category: code
+    summary: "TetrisSnake getComputedStyle called every frame — potential performance concern on low-end mobile"
+    file: "website/components/pricing/TetrisSnake.tsx"
+    line: 44
+    severity: debt
+    suggested_action: monitor
+
+  - category: code
+    summary: "TetrisSnake placed blocks array grows unbounded between lap clears — no cap on array size"
+    file: "website/components/pricing/TetrisSnake.tsx"
+    line: 77
+    severity: observation
+    suggested_action: monitor
