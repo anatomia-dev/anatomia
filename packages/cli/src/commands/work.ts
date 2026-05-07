@@ -1298,8 +1298,10 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
     // Don't exit - commit succeeded
   }
 
-  // 12. Delete work branch (cleanup)
-  runGit(['branch', '-d', workBranchName], { cwd: projectRoot });
+  // 12. Delete work branch (cleanup — force delete because squash/rebase merges
+  //     create new commits, so the feature branch is never an ancestor of main.
+  //     Safe: step 6 already verified the branch was merged.)
+  runGit(['branch', '-D', workBranchName], { cwd: projectRoot });
   // Silently continue if branch doesn't exist or was already deleted
 
   runGit(['push', 'origin', '--delete', workBranchName], { cwd: projectRoot });
