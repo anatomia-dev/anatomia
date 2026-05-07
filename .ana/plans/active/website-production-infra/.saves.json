@@ -16,5 +16,39 @@
   "spec": {
     "saved_at": "2026-05-07T06:54:53.789Z",
     "hash": "sha256:5cf84332f562643f20df38b0713073ddddace58e1a6fec40e5e3759f7818399e"
-  }
+  },
+  "build_started_at": "2026-05-07T07:43:12.340Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-07T07:53:51.731Z",
+    "hash": "sha256:d89c86c0792efed77992861853392699c72d38eec83b60fb7d95ff2c23432818"
+  },
+  "build-data": {
+    "saved_at": "2026-05-07T07:53:51.732Z",
+    "hash": "sha256:87ddaef14e6fe9ade86725901164f7673be063f827182d3e29a8c54a7339ab04"
+  },
+  "modules_touched": [
+    ".github/workflows/test.yml",
+    "pnpm-lock.yaml",
+    "website/.env.example",
+    "website/.gitignore",
+    "website/app/(marketing)/contact/page.tsx",
+    "website/app/(marketing)/docs/page.tsx",
+    "website/app/(marketing)/manifesto/page.tsx",
+    "website/app/(marketing)/page.tsx",
+    "website/app/layout.tsx",
+    "website/lib/analytics.tsx",
+    "website/lib/proof-feed.ts",
+    "website/package.json",
+    "website/public/og/og-about.png",
+    "website/public/og/og-changelog.png",
+    "website/public/og/og-cli.png",
+    "website/public/og/og-contact.png",
+    "website/public/og/og-docs.png",
+    "website/public/og/og-examples.png",
+    "website/public/og/og-home.png",
+    "website/public/og/og-license.png",
+    "website/public/og/og-manifesto.png",
+    "website/scripts/smoke-test.sh"
+  ]
 }

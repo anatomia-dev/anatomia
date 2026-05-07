@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "OG images use system Helvetica, not Geist font — placeholders needing designer replacement"
+    file: "website/public/og/"
+    severity: debt
+    suggested_action: scope
+  - summary: "getLatestVersion returns first tag regardless of format — non-semver tags could surface"
+    file: "website/lib/proof-feed.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Contract file_changes reference (sub)/ paths that no longer exist after Scope B"
+    severity: observation
+    suggested_action: accept
+  - summary: "AnalyticsProvider children prop default parameter technically unnecessary"
+    file: "website/lib/analytics.tsx"
+    severity: observation
+    suggested_action: accept
