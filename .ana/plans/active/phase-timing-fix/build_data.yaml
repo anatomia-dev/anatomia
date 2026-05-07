@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "MAX_PHASE_MS declared twice in computeTiming — once for plan, once for build/verify"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Early-return phase detection duplicates ~30 lines of artifact-checking from main path"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "A003 contract assertion has no dedicated tagged test — code path pre-existed this spec"
+    severity: observation
+    suggested_action: monitor
