@@ -63,6 +63,7 @@ export interface ProofChainEntry {
   // Intelligence capture
   modules_touched: string[];
   scope_summary?: string | undefined;
+  kind?: 'feature' | 'fix' | 'chore' | undefined;
   findings: Array<{
     id: string;
     category: 'code' | 'test' | 'upstream';

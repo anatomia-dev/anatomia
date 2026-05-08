@@ -836,6 +836,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     completed_at: new Date().toISOString(),
     modules_touched: modulesTouched,
     scope_summary: proof.scope_summary,
+    kind: proof.kind,
     findings: proof.findings.map((c, i) => ({
       ...c,
       id: `${slug}-C${i + 1}`,

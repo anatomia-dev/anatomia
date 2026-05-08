@@ -64,6 +64,7 @@ export interface ProofSummary {
   hashes: Record<string, string>;
   completed_at: string;
   scope_summary?: string | undefined;
+  kind?: 'feature' | 'fix' | 'chore' | undefined;
   // Intelligence capture
   findings: Array<{
     category: string;
@@ -415,6 +416,28 @@ export function extractScopeSummary(scopePath: string): string | undefined {
     if (!intentMatch || !intentMatch[1]) return undefined;
     const paragraph = intentMatch[1].trim();
     return paragraph || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Extracts the kind classification from a scope.md file.
+ * Parses the `**Kind:**` line in the Complexity Assessment section.
+ * Returns undefined if scope.md doesn't exist, has no Kind line, or has an invalid value.
+ *
+ * @param scopePath - Absolute path to scope.md
+ * @returns Parsed kind ('feature' | 'fix' | 'chore'), or undefined
+ */
+export function extractScopeKind(scopePath: string): 'feature' | 'fix' | 'chore' | undefined {
+  if (!fs.existsSync(scopePath)) return undefined;
+  try {
+    const content = fs.readFileSync(scopePath, 'utf-8');
+    const kindMatch = content.match(/\*\*Kind:\*\*\s*(.+)/);
+    if (!kindMatch || !kindMatch[1]) return undefined;
+    const raw = kindMatch[1].trim().toLowerCase();
+    if (raw === 'feature' || raw === 'fix' || raw === 'chore') return raw;
+    return undefined;
   } catch {
     return undefined;
   }
@@ -1789,9 +1812,10 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     }
   }
 
-  // Source 5: scope.md (for scope_summary)
+  // Source 5: scope.md (for scope_summary and kind)
   const scopePath = path.join(slugDir, 'scope.md');
   summary.scope_summary = extractScopeSummary(scopePath);
+  summary.kind = extractScopeKind(scopePath);
 
   return summary;
 }
