@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-67 runs · 137 active · 82 lessons · 0 promoted · 161 closed
+68 runs · 142 active · 83 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 137 total)
+## Active Findings (30 shown of 142 total)
 
 ### packages/cli/src/commands/work.ts
 
@@ -52,13 +52,9 @@
 - **code:** :has() bonding rule depends on ProofFeed being direct previous sibling of footer in DOM — *Website Direct Polish*
 - **code:** globals.css footer rule applies margin-top to ALL footer elements including any future non-marketing footers — *Website Direct Polish*
 
-### website/components/about/about.module.css
+### website/components/hero/ScrollHint.tsx
 
-- **code:** Five new CSS modules duplicate identical eyebrow/title blocks — no shared base — *Dead Links & Missing Pages*
-
-### website/components/bento/bento.module.css
-
-- **code:** tCompat hover state leaks through inversion — base .tile:hover sets border-color: var(--border) — *Website Visual Fidelity*
+- **code:** ScrollHint still links to #pipeline — scroll from hero goes nowhere — *Website nav, scroll targets, compat icons, and copy accuracy*
 
 ### website/components/nav/Nav.tsx
 
@@ -68,13 +64,13 @@
 
 - **code:** Pricing h2 and blurb with maxWidth may not visually center without margin auto — *Website Direct Polish*
 
-### website/components/pricing/TetrisSnake.tsx
-
-- **code:** TetrisSnake trail fade math off by 2 ticks — fades to 0 at age 18 but filter removes at age 20 — *Website Visual Fidelity*
-
 ### website/components/proof-feed/ProofFeed.tsx
 
 - **code:** kindLabel defaults to 'improve' for any unrecognized kind — silent fallback if ProofKind grows — *Ship Log Polish*
+
+### website/components/scan/ScanSlab.tsx
+
+- **code:** ScanSlab still links to #pipeline — scan section CTA goes nowhere — *Website nav, scroll targets, compat icons, and copy accuracy*
 
 ### website/lib/analytics.tsx
 
@@ -82,8 +78,13 @@
 
 ### website/lib/copy.ts
 
+- **code:** Three dead #pipeline links after anchor removal — *Website nav, scroll targets, compat icons, and copy accuracy*
 - **code:** proofFeed.headTitle says 'Click one.' but rows are no longer clickable — *Dead Links & Missing Pages*
-- **code:** proofFeed.headSub says 'Each row links to the contract...' but rows no longer link — *Dead Links & Missing Pages*
+
+### website/lib/icons.tsx
+
+- **code:** brandIconNames exported but never imported — *Website nav, scroll targets, compat icons, and copy accuracy*
+- **code:** Codex icon is a geometric diamond placeholder, not an official brand icon — *Website nav, scroll targets, compat icons, and copy accuracy*
 
 ### website/lib/proof-feed.ts
 
@@ -93,10 +94,6 @@
 - **code:** githubHeaders() extras parameter never used with non-default value — YAGNI — *Website Production Infrastructure*
 - **code:** No tag name validation — non-semver GitHub tags would display as-is in version pill — *Website Production Infrastructure*
 - **code:** File header comment still says 'Today: static mock data' — stale after live data wiring — *Website Production Infrastructure*
-
-### website/MAINTENANCE_MANUAL.md
-
-- **code:** MAINTENANCE_MANUAL.md still references (sub) route group and SubNav — now deleted — *Dead Links & Missing Pages*
 
 ### General
 

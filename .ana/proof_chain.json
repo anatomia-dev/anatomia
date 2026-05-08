@@ -17288,6 +17288,271 @@
         "completed_at": "2026-05-08T01:46:47.003Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "website-nav-copy-polish",
+      "feature": "Website nav, scroll targets, compat icons, and copy accuracy",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 22,
+        "satisfied": 22,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Navigation bar shows exactly three links: Agents, Pricing, Docs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Pipeline link is removed from the navigation bar",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Navigation Install button links to the npm package page",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Navigation Install button opens in a new browser tab",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Hero Install button links to the npm package page",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Hero Install button opens in a new browser tab",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "See the pipeline button scrolls to the agents section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Pricing free-tier Install button links to the npm package page",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Pricing anchor is on an inner element, not the section wrapper",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Pricing inner anchor has scroll margin to clear the fixed navbar",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Pipeline anchor no longer exists on the bento section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Footer Pipeline link points to the agents section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Marquee displays real brand icons instead of placeholder letters",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Brand icons exist for all ten compatible tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Bento compatibility chips show brand icons alongside text",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "About page title makes no claims about team size",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "About page body references Denver, not San Francisco",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "About page body makes no claims about team size",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Contact page says Based in Denver",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Manifesto page content is not modified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "License page content is not modified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Website builds without errors",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 17,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 50,
+        "think": 1,
+        "plan": 7,
+        "build": 16,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:6d13671afd6d31d8e1d1ff149e74f426fa07cfe19f8c47efe382c74ccba56330",
+        "contract": "sha256:731910822a9243870ce068f6da26d371bf90376484201e19be608513e9b726ad",
+        "plan": "sha256:313033fcac14b67f746a7ab1bad12d142fa085154c8b94a76c3f939a98cb088c",
+        "spec": "sha256:ec51d56eba022a5d483d19af03d9b258eda82c631f072df10e6c0475f7ae1a16",
+        "build-report": "sha256:0dd85578f22a550dfa4628897618307e05c91f0141a0dbee9a337aa69a90f8ee",
+        "build-data": "sha256:1b13da8f7b1f622c5c01d415aea7d780e1bab8b44b882a5df5b772b556b2fb7b",
+        "verify-report": "sha256:675aca6b046d7a5a8d04524df2d3fdb0cd455b86c24f46530941faa046a32819",
+        "verify-data": "sha256:fd751ab8e12fe5b71cf94d462fae972ed9264734af86e7ca8b8436231436b165"
+      },
+      "completed_at": "2026-05-08T04:44:27.592Z",
+      "modules_touched": [
+        "website/components/bento/Bento.tsx",
+        "website/components/bento/tiles/CompatTile.tsx",
+        "website/components/hero/Hero.tsx",
+        "website/components/marquee/CompatMarquee.tsx",
+        "website/components/nav/Nav.tsx",
+        "website/components/nav/NavMobile.tsx",
+        "website/components/pricing/Pricing.tsx",
+        "website/lib/copy.ts",
+        "website/lib/icons.tsx"
+      ],
+      "scope_summary": "Navigation links on the marketing site scroll to wrong positions (too much whitespace above content), Install buttons point to `/#pricing` instead of the npm package page, the compat sections use placeholder letter-circles instead of real brand icons, and the About/Contact pages contain inaccurate information (wrong city, false headcount claims). Fix all of it in one pass.",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Three dead #pipeline links after anchor removal",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "line": 309,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "website-nav-copy-polish-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "ScrollHint still links to #pipeline — scroll from hero goes nowhere",
+          "file": "website/components/hero/ScrollHint.tsx",
+          "anchor": null,
+          "line": 24,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "website-nav-copy-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "ScanSlab still links to #pipeline — scan section CTA goes nowhere",
+          "file": "website/components/scan/ScanSlab.tsx",
+          "anchor": null,
+          "line": 163,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "website-nav-copy-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "brandIconNames exported but never imported",
+          "file": "website/lib/icons.tsx",
+          "anchor": null,
+          "line": 86,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "website-nav-copy-polish-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec scoped out manifesto/ScanSlab/ScrollHint but removing id=pipeline creates regressions in those files",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "website-nav-copy-polish-C5",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "Codex icon is a geometric diamond placeholder, not an official brand icon",
+          "file": "website/lib/icons.tsx",
+          "anchor": null,
+          "line": 38,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-nav-copy-polish-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Codex icon is a geometric placeholder — OpenAI removed from Simple Icons",
+          "file": "website/lib/icons.tsx",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Rust and Cursor icons share #000000 fill — may need contrast fix for dark mode",
+          "file": "website/lib/icons.tsx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "CompatTile chip uses inline styles instead of CSS module class for flex layout",
+          "file": "website/components/bento/tiles/CompatTile.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Manifesto outbound link still points to /#pipeline which no longer exists",
+          "file": "website/lib/copy.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-08T04:06:25.533Z",
+        "completed_at": "2026-05-08T04:44:27.588Z",
+        "commit_count": 5
+      }
     }
   ],
   "schema": 1
