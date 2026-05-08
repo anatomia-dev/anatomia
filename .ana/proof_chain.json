@@ -18179,6 +18179,270 @@
         "completed_at": "2026-05-08T18:58:30.145Z",
         "commit_count": 7
       }
+    },
+    {
+      "slug": "scope-validation-integrity",
+      "feature": "Scope Validation Integrity",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Scopes without a Kind field are rejected at save time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Scopes with an invalid Kind like 'fix + chore' are rejected with a message showing the bad value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Scopes with a valid Kind like 'fix' are accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Scopes without a Size field are rejected at save time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Compound sizes like 'small-medium' are accepted using lenient parsing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Sizes with trailing context like 'medium (8 items)' are accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Non-standard size values like 'tiny' are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Scopes without a Multi-phase field are rejected at save time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Multi-phase values with trailing context like 'no (this is Phase 1)' are accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Invalid Multi-phase values like 'maybe' are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Scopes missing the Complexity Assessment section are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Scopes missing the Approach section are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Scopes with an empty Approach section are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Scopes missing the Edge Cases section are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A fully valid scope with all required sections and fields passes validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Kind validation is case-insensitive — 'Feature' and 'FIX' are accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The dogfood ana.md template marks Kind, Size, and Multi-phase as enforced enums",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The shipped ana.md template matches the dogfood template's Complexity Assessment section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A post-merge hook exists that rebuilds the CLI when source files change",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The post-merge hook only rebuilds when CLI source files changed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The six most recent proof chain entries have correct kind values after backfill",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "ci-artifact-path-ignore is classified as chore in the proof chain",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "worktree-artifact-cleanup is classified as fix in the proof chain",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Existing tests continue to pass after validation changes",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 17,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 43,
+        "think": 2,
+        "plan": 10,
+        "build": 17,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:27239e194e9184666144240d21bb67762e0bd743f38b45a99baae5c7cdb08c57",
+        "contract": "sha256:258d09bd9df9ff27b126fcdef70040571951cb921faf60b1655ce81147a9762f",
+        "plan": "sha256:7c803d29c6948ed9a65b012eab323d0800bad7426b33ba67c4faefc2767a1089",
+        "spec": "sha256:e7724889c09503936c6b72235ed3f9bc15db3e1fb827cb44fc3987b138aa372e",
+        "build-report": "sha256:e5352cac974233177f06ad233a520daead26206c3cc5792096d0ff8aef7c3fe7",
+        "build-data": "sha256:53bf4421c85f8abca4788c7bd0416e5e682d55671e174c79f2ebd3da29b72ebc",
+        "verify-report": "sha256:ed5b7b0174433d0f0f2f8abfb29bce12749e411097c88e6ba6ff04162b178867",
+        "verify-data": "sha256:bd9aef4b6386bcaa9a71944ac9c36507ada1ed9c30f5a1a76bcb7c8eef5af8c7"
+      },
+      "completed_at": "2026-05-08T20:41:48.378Z",
+      "modules_touched": [
+        ".claude/agents/ana.md",
+        ".husky/post-merge",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/tests/commands/artifact.test.ts"
+      ],
+      "scope_summary": "Agents write scope fields inconsistently and nothing catches it. Kind was added to the scope template and wired through the CLI — but 1 of 4 post-fix scopes omitted it entirely, 1 wrote an invalid compound value (`fix + chore`), and all 4 produced MISSING in the proof chain because the CLI binary was never rebuilt after the fix merged. The same pattern applies to Size (10 of 70 scopes used non-standard values like `small-medium` or `medium (with explanation)`) and Multi-phase (4 of 70 had trailing context that would break strict parsing). The validator at `ana artifact save scope` checks ACs, Structural Analog, and Intent — but doesn't check any Complexity Assessment fields. Agents populate what they want, the pipeline accepts it silently, and data is lost downstream.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A016 only tests 'Feature' case variant, not 'FIX' — contract says both should be accepted",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 882,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A016"
+          ],
+          "id": "scope-validation-integrity-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Console.error capture pattern repeated verbatim in 8 rejection tests — extraction into a helper would reduce duplication",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 771,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "scope-validation-integrity-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Pre-existing scope validation tests (lines 697-746) still use plain toThrow() without checking error message content",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 711,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "scope-validation-integrity-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Post-merge hook uses set -e but wraps build in if-guard — correct now, but fragile if future edits add unguarded commands",
+          "file": ".husky/post-merge",
+          "anchor": null,
+          "line": 6,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "scope-validation-integrity-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "AC15 cannot be mechanically verified — requires running the website and visually confirming tag display",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A015"
+          ],
+          "id": "scope-validation-integrity-C5",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "En-dash edge case in lenient Size parsing not explicitly tested",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Template sync between dogfood and shipped ana.md not enforced by automated test",
+          "file": ".claude/agents/ana.md",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Post-merge hook not integration-tested — correctness verified by code review only",
+          "file": ".husky/post-merge",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:169 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-08T18:44:43.921Z",
+        "completed_at": "2026-05-08T20:41:48.376Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1

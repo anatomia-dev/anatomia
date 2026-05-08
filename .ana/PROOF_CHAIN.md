@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-71 runs · 153 active · 87 lessons · 0 promoted · 161 closed
+72 runs · 157 active · 88 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -10,17 +10,21 @@
 | packages/cli/tests/commands/work.test.ts | 10 | 8 |
 | packages/cli/src/commands/work.ts | 10 | 6 |
 | website/lib/proof-feed.ts | 10 | 3 |
-| packages/cli/src/utils/proofSummary.ts | 8 | 6 |
+| packages/cli/tests/commands/artifact.test.ts | 8 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 153 total)
+## Active Findings (30 shown of 157 total)
 
 ### .github/workflows/test.yml
 
 - **code:** staging branch in trigger list is a no-op — branch does not exist on remote — *CI path filtering for artifact-only commits*
+
+### .husky/post-merge
+
+- **code:** Post-merge hook uses set -e but wraps build in if-guard — correct now, but fragile if future edits add unguarded commands — *Scope Validation Integrity*
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -30,7 +34,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
-- **code:** Early-return missing-worktree warning uses misleading message when inside worktree but plan dir absent — *Fix Pipeline Phase Timing*
 
 ### packages/cli/src/utils/proofSummary.ts
 
@@ -39,6 +42,9 @@
 
 ### packages/cli/tests/commands/artifact.test.ts
 
+- **test:** A016 only tests 'Feature' case variant, not 'FIX' — contract says both should be accepted — *Scope Validation Integrity*
+- **code:** Console.error capture pattern repeated verbatim in 8 rejection tests — extraction into a helper would reduce duplication — *Scope Validation Integrity*
+- **test:** Pre-existing scope validation tests (lines 697-746) still use plain toThrow() without checking error message content — *Scope Validation Integrity*
 - **test:** A005 EXDEV test doesn't exercise moveFileCrossFs — tests Node.js copyFileSync/unlinkSync directly instead of mocking renameSync to throw EXDEV — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 - **test:** A008 sweep-failure test is a no-op — tests absence of sweep (no main tree copy), not an actual cleanup failure — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 
@@ -55,18 +61,9 @@
 - **test:** proofSummary.test.ts parseFindings uses toBeGreaterThanOrEqual on deterministic fixture data — *Test Suite Hygiene*
 - **test:** Previous Callouts in fixture template strings — stale naming preserved as backward-compat fixtures — *Test Suite Hygiene*
 
-### website/app/globals.css
-
-- **code:** :has() bonding rule depends on ProofFeed being direct previous sibling of footer in DOM — *Website Direct Polish*
-- **code:** globals.css footer rule applies margin-top to ALL footer elements including any future non-marketing footers — *Website Direct Polish*
-
 ### website/components/hero/ScrollHint.tsx
 
 - **code:** ScrollHint still links to #pipeline — scroll from hero goes nowhere — *Website nav, scroll targets, compat icons, and copy accuracy*
-
-### website/components/nav/Nav.tsx
-
-- **code:** Pseudo-element touch targets on nav buttons break if overflow:hidden is added to button — *Website Direct Polish*
 
 ### website/components/pricing/Pricing.tsx
 
