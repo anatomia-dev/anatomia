@@ -1,0 +1,18 @@
+schema: 1
+concerns:
+  - summary: "Codex icon is a geometric placeholder — OpenAI removed from Simple Icons"
+    file: "website/lib/icons.tsx"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Rust and Cursor icons share #000000 fill — may need contrast fix for dark mode"
+    file: "website/lib/icons.tsx"
+    severity: observation
+    suggested_action: monitor
+  - summary: "CompatTile chip uses inline styles instead of CSS module class for flex layout"
+    file: "website/components/bento/tiles/CompatTile.tsx"
+    severity: observation
+    suggested_action: accept
+  - summary: "Manifesto outbound link still points to /#pipeline which no longer exists"
+    file: "website/lib/copy.ts"
+    severity: debt
+    suggested_action: scope

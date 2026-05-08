@@ -18,5 +18,26 @@
   "spec": {
     "saved_at": "2026-05-08T04:05:05.785Z",
     "hash": "sha256:ec51d56eba022a5d483d19af03d9b258eda82c631f072df10e6c0475f7ae1a16"
-  }
+  },
+  "build_started_at": "2026-05-08T04:06:25.533Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-08T04:21:59.163Z",
+    "hash": "sha256:0dd85578f22a550dfa4628897618307e05c91f0141a0dbee9a337aa69a90f8ee"
+  },
+  "build-data": {
+    "saved_at": "2026-05-08T04:21:59.164Z",
+    "hash": "sha256:1b13da8f7b1f622c5c01d415aea7d780e1bab8b44b882a5df5b772b556b2fb7b"
+  },
+  "modules_touched": [
+    "website/components/bento/Bento.tsx",
+    "website/components/bento/tiles/CompatTile.tsx",
+    "website/components/hero/Hero.tsx",
+    "website/components/marquee/CompatMarquee.tsx",
+    "website/components/nav/Nav.tsx",
+    "website/components/nav/NavMobile.tsx",
+    "website/components/pricing/Pricing.tsx",
+    "website/lib/copy.ts",
+    "website/lib/icons.tsx"
+  ]
 }
