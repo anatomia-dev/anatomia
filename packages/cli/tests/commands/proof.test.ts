@@ -1012,7 +1012,7 @@ describe('ana proof', () => {
       expect(finding.status).toBe('closed');
       expect(finding.closed_by).toBe('human');
       expect(finding.closed_reason).toBe('fixed-in-pr');
-      expect(finding.closed_at).toBeDefined();
+      expect(finding.closed_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
 
       // Verify PROOF_CHAIN.md was regenerated
       const dashboard = await fs.readFile(path.join(tempDir, '.ana', 'PROOF_CHAIN.md'), 'utf-8');
@@ -4076,7 +4076,7 @@ describe('ana proof', () => {
       expect(finding.status).toBe('lesson');
       expect(finding.closed_by).toBe('human');
       expect(finding.closed_reason).toBe('team-decision');
-      expect(finding.closed_at).toBeDefined();
+      expect(finding.closed_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
     });
   });
 

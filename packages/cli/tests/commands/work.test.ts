@@ -3148,7 +3148,7 @@ describe('work start early-return phase detection', () => {
     const savesPath = path.join(slugDir, '.saves.json');
     expect(fsSync.existsSync(savesPath)).toBe(true);
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    expect(saves.build_started_at).toBeDefined();
+    expect(saves.build_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
     expect(saves.build_agent).toBe('ana-build');
     expect(logs.join('\n')).toContain('Already in worktree');
   });
@@ -3170,7 +3170,7 @@ describe('work start early-return phase detection', () => {
     const savesPath = path.join(slugDir, '.saves.json');
     expect(fsSync.existsSync(savesPath)).toBe(true);
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    expect(saves.verify_started_at).toBeDefined();
+    expect(saves.verify_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
     expect(saves.verify_agent).toBe('ana-verify');
   });
 
@@ -3200,7 +3200,7 @@ describe('work start early-return phase detection', () => {
 
     const savesPath = path.join(slugDir, '.saves.json');
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    expect(saves.build_started_at).toBeDefined();
+    expect(saves.build_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
     expect(saves.build_agent).toBe('ana-build');
     const ts = new Date(saves.build_started_at).getTime();
     expect(ts).toBeGreaterThanOrEqual(before);

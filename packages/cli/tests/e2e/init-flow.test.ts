@@ -4,7 +4,7 @@
  * Tests actual command execution in temp project directory.
  * Validates all files/directories created correctly:
  * - .ana/ (context, docs, plans, hooks, state)
- * - .claude/ with settings.json, agents/ (6 files), and skills/ (8 dirs)
+ * - .claude/ with settings.json, agents/ (6 files), and skills/ (5 core + 3 conditional dirs)
  * - CLAUDE.md at project root
  * Total: 51 files
  */
@@ -285,6 +285,47 @@ describe('regression tests', () => {
 
     // Should detect Next.js
     expect(scan.stack.framework).toBe('Next.js');
+  }, 30000);
+
+  // @ana A021, A022, A023
+  it('scaffolds conditional skill directories when scan detects triggers', async () => {
+    // Rich fixture: Next.js triggers api-patterns, prisma triggers data-access,
+    // @anthropic-ai/sdk triggers ai-patterns
+    await fs.writeFile(
+      path.join(tmpProject, 'package.json'),
+      JSON.stringify({
+        name: 'full-stack-project',
+        dependencies: {
+          next: '14.0.0',
+          prisma: '5.0.0',
+          '@anthropic-ai/sdk': '0.30.0',
+        },
+        scripts: { build: 'next build', test: 'vitest run' },
+      })
+    );
+
+    await execFileAsync('node', [cliPath, 'init'], {
+      cwd: tmpProject,
+    });
+
+    const claudePath = path.join(tmpProject, '.claude');
+
+    // All 8 skill directories should exist: 5 core + 3 conditional
+    const allSkillDirs = [
+      'testing-standards',
+      'coding-standards',
+      'git-workflow',
+      'deployment',
+      'troubleshooting',
+      'ai-patterns',
+      'api-patterns',
+      'data-access',
+    ];
+
+    for (const skillDir of allSkillDirs) {
+      const skillFileExists = await fileExists(path.join(claudePath, 'skills', skillDir, 'SKILL.md'));
+      expect(skillFileExists, `Skill file missing: ${skillDir}/SKILL.md`).toBe(true);
+    }
   }, 30000);
 
 });
