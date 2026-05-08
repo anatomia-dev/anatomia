@@ -1,0 +1,186 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scope Validation Integrity"
+
+assertions:
+  - id: A001
+    says: "Scopes without a Kind field are rejected at save time"
+    block: "rejects scope missing Kind field"
+    target: "error.message"
+    matcher: "contains"
+    value: "Kind"
+
+  - id: A002
+    says: "Scopes with an invalid Kind like 'fix + chore' are rejected with a message showing the bad value"
+    block: "rejects scope with invalid Kind value"
+    target: "error.message"
+    matcher: "contains"
+    value: "fix + chore"
+
+  - id: A003
+    says: "Scopes with a valid Kind like 'fix' are accepted"
+    block: "accepts scope with valid Kind"
+    target: "validation"
+    matcher: "equals"
+    value: null
+
+  - id: A004
+    says: "Scopes without a Size field are rejected at save time"
+    block: "rejects scope missing Size field"
+    target: "error.message"
+    matcher: "contains"
+    value: "Size"
+
+  - id: A005
+    says: "Compound sizes like 'small-medium' are accepted using lenient parsing"
+    block: "accepts scope with lenient Size value small-medium"
+    target: "validation"
+    matcher: "equals"
+    value: null
+
+  - id: A006
+    says: "Sizes with trailing context like 'medium (8 items)' are accepted"
+    block: "accepts scope with lenient Size value medium with context"
+    target: "validation"
+    matcher: "equals"
+    value: null
+
+  - id: A007
+    says: "Non-standard size values like 'tiny' are rejected"
+    block: "rejects scope with invalid Size value"
+    target: "error.message"
+    matcher: "contains"
+    value: "tiny"
+
+  - id: A008
+    says: "Scopes without a Multi-phase field are rejected at save time"
+    block: "rejects scope missing Multi-phase field"
+    target: "error.message"
+    matcher: "contains"
+    value: "Multi-phase"
+
+  - id: A009
+    says: "Multi-phase values with trailing context like 'no (this is Phase 1)' are accepted"
+    block: "accepts scope with lenient Multi-phase value"
+    target: "validation"
+    matcher: "equals"
+    value: null
+
+  - id: A010
+    says: "Invalid Multi-phase values like 'maybe' are rejected"
+    block: "rejects scope with invalid Multi-phase value"
+    target: "error.message"
+    matcher: "contains"
+    value: "maybe"
+
+  - id: A011
+    says: "Scopes missing the Complexity Assessment section are rejected"
+    block: "rejects scope missing Complexity Assessment section"
+    target: "error.message"
+    matcher: "contains"
+    value: "Complexity Assessment"
+
+  - id: A012
+    says: "Scopes missing the Approach section are rejected"
+    block: "rejects scope missing Approach section"
+    target: "error.message"
+    matcher: "contains"
+    value: "Approach"
+
+  - id: A013
+    says: "Scopes with an empty Approach section are rejected"
+    block: "rejects scope with empty Approach section"
+    target: "error.message"
+    matcher: "contains"
+    value: "Empty"
+
+  - id: A014
+    says: "Scopes missing the Edge Cases section are rejected"
+    block: "rejects scope missing Edge Cases section"
+    target: "error.message"
+    matcher: "contains"
+    value: "Edge Cases"
+
+  - id: A015
+    says: "A fully valid scope with all required sections and fields passes validation"
+    block: "accepts fully valid scope with all required fields"
+    target: "validation"
+    matcher: "equals"
+    value: null
+
+  - id: A016
+    says: "Kind validation is case-insensitive — 'Feature' and 'FIX' are accepted"
+    block: "accepts Kind with mixed case"
+    target: "validation"
+    matcher: "equals"
+    value: null
+
+  - id: A017
+    says: "The dogfood ana.md template marks Kind, Size, and Multi-phase as enforced enums"
+    block: "dogfood template has enforced enum markers"
+    target: "template.content"
+    matcher: "contains"
+    value: "validated by"
+
+  - id: A018
+    says: "The shipped ana.md template matches the dogfood template's Complexity Assessment section"
+    block: "shipped template matches dogfood template"
+    target: "template.sync"
+    matcher: "equals"
+    value: true
+
+  - id: A019
+    says: "A post-merge hook exists that rebuilds the CLI when source files change"
+    block: "post-merge hook exists and is executable"
+    target: "hook.exists"
+    matcher: "truthy"
+
+  - id: A020
+    says: "The post-merge hook only rebuilds when CLI source files changed"
+    block: "post-merge hook checks for CLI source changes"
+    target: "hook.content"
+    matcher: "contains"
+    value: "packages/cli/src"
+
+  - id: A021
+    says: "The six most recent proof chain entries have correct kind values after backfill"
+    block: "proof chain entries have correct kind after backfill"
+    target: "proofChain.entries[-6].kind"
+    matcher: "exists"
+
+  - id: A022
+    says: "ci-artifact-path-ignore is classified as chore in the proof chain"
+    block: "proof chain entries have correct kind after backfill"
+    target: "proofChain.ciArtifactPathIgnore.kind"
+    matcher: "equals"
+    value: "chore"
+
+  - id: A023
+    says: "worktree-artifact-cleanup is classified as fix in the proof chain"
+    block: "proof chain entries have correct kind after backfill"
+    target: "proofChain.worktreeArtifactCleanup.kind"
+    matcher: "equals"
+    value: "fix"
+
+  - id: A024
+    says: "Existing tests continue to pass after validation changes"
+    block: "existing tests pass"
+    target: "testSuite.failures"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
+  - path: ".claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: ".husky/post-merge"
+    action: create
+  - path: "scripts/backfill-kind.ts"
+    action: create
+  - path: ".ana/proof_chain.json"
+    action: modify
