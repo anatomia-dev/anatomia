@@ -3770,9 +3770,12 @@
           "file": "packages/cli/tests/commands/work.test.ts",
           "anchor": "@ana A024",
           "id": "findings-lifecycle-foundation-C5",
-          "status": "active",
+          "status": "closed",
           "severity": "debt",
-          "suggested_action": "scope"
+          "suggested_action": "scope",
+          "closed_reason": "code changed, anchor absent",
+          "closed_at": "2026-05-08T01:46:47.046Z",
+          "closed_by": "mechanical"
         },
         {
           "category": "upstream",
@@ -16978,6 +16981,312 @@
         "created_at": "2026-05-08T01:15:47.940Z",
         "completed_at": "2026-05-08T01:37:08.978Z",
         "commit_count": 6
+      }
+    },
+    {
+      "slug": "test-suite-hygiene",
+      "feature": "Test Suite Hygiene",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 30,
+        "satisfied": 30,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Source-reading test that greps production source for --json option registration is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Source-reading test that greps skills.ts for branchPrefix is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Archaeological source-reading test for step 9a fixup is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Import boundary test in proofSummary has an exemption comment explaining why source-reading is acceptable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Import boundary test in verify has an exemption comment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Template tests have comments explaining templates are shipped artifacts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The entire old-system-removed test file is deleted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The cleanup directory is deleted after removing its only file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Archaeological test verifying parseDiffAddedCommentLines deletion is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Maintenance line test has a name that matches its assertion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Redundant UNKNOWN result test is removed because it duplicates the PASS path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Redundant UNKNOWN warning test is removed because it only tests the PASS path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Callouts section name is updated to Findings in proofSummary test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Timestamp field uses format assertion instead of just checking it exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Contract numeric fields use type assertions instead of just checking they exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "JSON envelope fields in proof tests use type assertions instead of toBeDefined",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Redundant toBeTruthy guard before value assertion is removed in proof tests",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Seal hash assertion uses format pattern match instead of just checking it exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Exact fixture counts replace toBeGreaterThan(0) in proofSummary tests",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "E2E init test checks for the ana-learn agent file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "E2E init test checks for the ai-patterns skill directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "E2E init test checks for the api-patterns skill directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "E2E init test checks for the data-access skill directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Dead loadFixture function is removed from test helpers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "isWasmAvailable is no longer exported but still used internally",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Console timing output is removed from performance benchmarks",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Console skip message is removed from parsing performance test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Console warn for WASM unavailable is removed from fixtures",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "All tests pass after cleanup with no behavioral coverage lost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Test file count decreases by exactly 1 after deleting the archaeological file",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 316,
+        "think": 6,
+        "plan": 9,
+        "build": 169,
+        "verify": 27
+      },
+      "hashes": {
+        "scope": "sha256:8d665a27a0693bc8220616972d5ee9a9f01c611af65fd0da23079ae946106092",
+        "contract": "sha256:970febcff1c6943ecaae0396cebac6f37f3c404b86b598cb4d5a0847b76f2582",
+        "plan": "sha256:7471595489c6d907424fac4b3b1928da722e6c40f93236a66edcf472d2578a7a",
+        "spec": "sha256:fac4c780d645dfd809607daad6ccbf0e2bf13929c36d98db5c49bae34d7c2fa7",
+        "build-report": "sha256:dd9623d2836ea0a666ca49cb5729cebec424373645f00a6e0808280de2816db7",
+        "build-data": "sha256:a51d08c95e713d54f380402e090de450d6ea1c9e3f2191bcf66cacb0884da8a6",
+        "verify-report": "sha256:e506787f4c26771f0dde28b9359fcf199d9444cb0275970e809b25c3e2313171",
+        "verify-data": "sha256:145771fd68412648cbdb5fa2017bfe00aab34420e6b74d23c6c95e5c8189a20e"
+      },
+      "completed_at": "2026-05-08T01:46:47.006Z",
+      "modules_touched": [
+        "packages/cli/tests/cleanup/old-system-removed.test.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/verify.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/e2e/init-flow.test.ts",
+        "packages/cli/tests/engine/fixtures.ts",
+        "packages/cli/tests/engine/performance/parsing-performance.test.ts",
+        "packages/cli/tests/performance/benchmarks.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "Clean the edges of a fundamentally sound 2000+ test suite. Over 64 pipeline runs, tests have accumulated that don't test behavior: source-reading tests that grep `.ts` files for strings, archaeological tests verifying deleted code stays deleted, mislabeled tests whose names contradict their assertions, weak assertions using `toBeDefined()` on deterministic fields, and dead test helper exports. The suite passes — but passing means less when some tests assert nothing meaningful. This is a hygiene pass, not a rewrite.",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "proof.test.ts L744 redundant toBeTruthy guard before non-null assertion",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 744,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "test-suite-hygiene-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "proofSummary.test.ts parseFindings uses toBeGreaterThanOrEqual on deterministic fixture data",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 733,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "test-suite-hygiene-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "E2E scan regression test uses 5 sole toBeDefined() assertions on scan.json keys",
+          "file": "packages/cli/tests/e2e/init-flow.test.ts",
+          "anchor": null,
+          "line": 280,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "test-suite-hygiene-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Previous Callouts in fixture template strings — stale naming preserved as backward-compat fixtures",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 834,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "test-suite-hygiene-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "New conditional skills E2E test depends on scan engine heuristics for prisma/anthropic-sdk detection",
+          "file": "packages/cli/tests/e2e/init-flow.test.ts",
+          "anchor": null,
+          "line": 291,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "test-suite-hygiene-C5",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 1,
+      "previous_failures": [
+        {
+          "id": "A021",
+          "summary": "E2E test didn't assert ai-patterns — conditional on scan"
+        },
+        {
+          "id": "A022",
+          "summary": "E2E test didn't assert api-patterns — conditional on scan"
+        },
+        {
+          "id": "A023",
+          "summary": "E2E test didn't assert data-access — conditional on scan"
+        }
+      ],
+      "build_concerns": [
+        {
+          "summary": "quality.trajectory assertion uses toHaveProperty instead of toBeTypeOf — field is null with insufficient data",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "5 remaining toBeGreaterThan(0) in proofSummary.test.ts outside spec scope",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "severity": "observation",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "E2E scan regression test uses 5 toBeDefined() sole assertions on scan.json keys",
+          "file": "packages/cli/tests/e2e/init-flow.test.ts",
+          "severity": "observation",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts:169",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-08T01:36:45.868Z",
+        "completed_at": "2026-05-08T01:46:47.003Z",
+        "commit_count": 0
       }
     }
   ],

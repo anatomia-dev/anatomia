@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-66 runs · 134 active · 81 lessons · 0 promoted · 160 closed
+67 runs · 137 active · 82 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/tests/commands/work.test.ts | 11 | 9 |
-| packages/cli/tests/commands/proof.test.ts | 10 | 4 |
+| packages/cli/tests/commands/proof.test.ts | 11 | 5 |
+| packages/cli/tests/commands/work.test.ts | 10 | 8 |
 | website/lib/proof-feed.ts | 10 | 3 |
 | packages/cli/src/commands/work.ts | 9 | 5 |
 | packages/cli/src/utils/proofSummary.ts | 8 | 6 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 134 total)
+## Active Findings (30 shown of 137 total)
 
 ### packages/cli/src/commands/work.ts
 
@@ -30,9 +30,22 @@
 - **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — *Ship Log Polish*
 - **code:** ProofChainEntryForContext does not include kind field — consistent with projection pattern, no current consumer needs it — *Ship Log Polish*
 
+### packages/cli/tests/commands/proof.test.ts
+
+- **test:** proof.test.ts L744 redundant toBeTruthy guard before non-null assertion — *Test Suite Hygiene*
+
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Fix-phase test (early-return) has no @ana tag — not linked to any contract assertion — *Fix Pipeline Phase Timing*
+
+### packages/cli/tests/e2e/init-flow.test.ts
+
+- **test:** E2E scan regression test uses 5 sole toBeDefined() assertions on scan.json keys — *Test Suite Hygiene*
+
+### packages/cli/tests/utils/proofSummary.test.ts
+
+- **test:** proofSummary.test.ts parseFindings uses toBeGreaterThanOrEqual on deterministic fixture data — *Test Suite Hygiene*
+- **test:** Previous Callouts in fixture template strings — stale naming preserved as backward-compat fixtures — *Test Suite Hygiene*
 
 ### website/app/globals.css
 
@@ -51,10 +64,6 @@
 
 - **code:** Pseudo-element touch targets on nav buttons break if overflow:hidden is added to button — *Website Direct Polish*
 
-### website/components/pricing/pricing.module.css
-
-- **code:** cardPriceUnit override added for highlighted card — not in spec but necessary for visibility — *Website Visual Fidelity*
-
 ### website/components/pricing/Pricing.tsx
 
 - **code:** Pricing h2 and blurb with maxWidth may not visually center without margin auto — *Website Direct Polish*
@@ -62,9 +71,6 @@
 ### website/components/pricing/TetrisSnake.tsx
 
 - **code:** TetrisSnake trail fade math off by 2 ticks — fades to 0 at age 18 but filter removes at age 20 — *Website Visual Fidelity*
-- **code:** DPR cap at 2 added without spec guidance — prevents large canvas on 3x displays — *Website Visual Fidelity*
-- **code:** TetrisSnake getComputedStyle called every frame — potential performance concern on low-end mobile — *Website Visual Fidelity*
-- **code:** TetrisSnake placed blocks array grows unbounded between lap clears — no cap on array size — *Website Visual Fidelity*
 
 ### website/components/proof-feed/ProofFeed.tsx
 
