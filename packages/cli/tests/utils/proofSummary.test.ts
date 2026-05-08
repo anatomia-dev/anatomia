@@ -18,6 +18,7 @@ import {
   resolveFindingPaths,
   getProofContext,
   extractScopeSummary,
+  extractScopeKind,
   generateDashboard,
   findFindingById,
   computeChainHealth,
@@ -1573,6 +1574,73 @@ describe('extractScopeSummary', () => {
     const scopePath = path.join(tempDir, 'scope.md');
     fs.writeFileSync(scopePath, '# Scope\n\n## Intent\n\n## Other section\n');
     const result = extractScopeSummary(scopePath);
+    expect(result).toBeUndefined();
+  });
+});
+
+// @ana A011, A012, A013, A014, A015, A016, A017
+describe('extractScopeKind', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'scope-kind-test-'));
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  // @ana A012
+  it('parses feature from Kind line', () => {
+    const scopePath = path.join(tempDir, 'scope.md');
+    fs.writeFileSync(scopePath, '# Scope\n\n## Complexity Assessment\n- **Kind:** feature\n- **Size:** small\n');
+    const result = extractScopeKind(scopePath);
+    expect(result).toBe('feature');
+  });
+
+  // @ana A011
+  it('parses fix from Kind line', () => {
+    const scopePath = path.join(tempDir, 'scope.md');
+    fs.writeFileSync(scopePath, '# Scope\n\n## Complexity Assessment\n- **Kind:** fix\n- **Size:** medium\n');
+    const result = extractScopeKind(scopePath);
+    expect(result).toBe('fix');
+  });
+
+  // @ana A013
+  it('parses chore from Kind line', () => {
+    const scopePath = path.join(tempDir, 'scope.md');
+    fs.writeFileSync(scopePath, '# Scope\n\n## Complexity Assessment\n- **Kind:** chore\n- **Size:** large\n');
+    const result = extractScopeKind(scopePath);
+    expect(result).toBe('chore');
+  });
+
+  // @ana A014
+  it('handles case-insensitive values', () => {
+    const scopePath = path.join(tempDir, 'scope.md');
+    fs.writeFileSync(scopePath, '# Scope\n\n## Complexity Assessment\n- **Kind:** Feature\n- **Size:** small\n');
+    const result = extractScopeKind(scopePath);
+    expect(result).toBe('feature');
+  });
+
+  // @ana A015
+  it('returns undefined for invalid kind value', () => {
+    const scopePath = path.join(tempDir, 'scope.md');
+    fs.writeFileSync(scopePath, '# Scope\n\n## Complexity Assessment\n- **Kind:** invalid\n- **Size:** small\n');
+    const result = extractScopeKind(scopePath);
+    expect(result).toBeUndefined();
+  });
+
+  // @ana A016
+  it('returns undefined when Kind line is missing', () => {
+    const scopePath = path.join(tempDir, 'scope.md');
+    fs.writeFileSync(scopePath, '# Scope\n\n## Complexity Assessment\n- **Size:** small\n');
+    const result = extractScopeKind(scopePath);
+    expect(result).toBeUndefined();
+  });
+
+  // @ana A017
+  it('returns undefined when scope file does not exist', () => {
+    const result = extractScopeKind(path.join(tempDir, 'nonexistent.md'));
     expect(result).toBeUndefined();
   });
 });
