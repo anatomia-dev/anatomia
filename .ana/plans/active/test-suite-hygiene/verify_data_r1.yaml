@@ -1,0 +1,51 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A021-A023 assumed all 8 skill dirs are unconditionally scaffolded — ai-patterns, api-patterns, data-access are conditional on scan detecting aiSdk/framework/database"
+    file: "packages/cli/src/commands/init/skills.ts"
+    line: 124
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A021", "A022", "A023"]
+  - category: test
+    summary: "E2E init-flow.test.ts header comment says 'skills/ (8 dirs)' but test only asserts 5 unconditional dirs — comment is misleading"
+    file: "packages/cli/tests/e2e/init-flow.test.ts"
+    line: 7
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "proof.test.ts still has toBeDefined() as sole assertion on finding.closed_at (timestamp field) at two locations — passes for any non-null value"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 1015
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "proofSummary.test.ts parseFindings tests use toBeGreaterThanOrEqual(4) and toBeGreaterThanOrEqual(2) at L733/L736 — weak assertions on deterministic fixture data"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 733
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "proofSummary.test.ts fixture template strings still use 'Previous Callouts' heading (L834, L866) — stale naming in test fixtures representing historical verify reports"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 834
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "work.test.ts has 3 remaining toBeDefined() sole assertions on timestamp fields (saves.build_started_at L3151, saves.verify_started_at L3173, saves.build_started_at L3203) — inconsistent with L3187 which was strengthened to toMatch"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3151
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "E2E scan regression test (init-flow.test.ts L280-284) still uses 5 toBeDefined() sole assertions on scan.json top-level keys — could be strengthened to toBeTypeOf"
+    file: "packages/cli/tests/e2e/init-flow.test.ts"
+    line: 280
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "proof.test.ts L744 expect(parsed).toBeTruthy() guard is still present — the subsequent parsed!['command'] already narrows via non-null assertion. Guard is redundant but harmless"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 744
+    severity: observation
+    suggested_action: accept
