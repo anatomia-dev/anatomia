@@ -60,6 +60,7 @@ jobs:
         run: cd packages/cli && pnpm lint
 
       - name: Run tests
+        timeout-minutes: 15
         run: cd packages/cli && pnpm vitest run
 
       - name: Upload coverage (Ubuntu + Node 20 only)
