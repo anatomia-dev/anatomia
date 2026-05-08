@@ -797,6 +797,28 @@ function validateBuildReportFormat(filePath: string): string | null {
  * @param reportFileName - The report filename (e.g., "verify_report.md")
  * @returns Companion filename, or null if not a report
  */
+/**
+ * Move a file with cross-filesystem fallback.
+ *
+ * Uses renameSync when possible. Falls back to copyFileSync + unlinkSync
+ * when the source and destination are on different filesystems (EXDEV).
+ *
+ * @param src - Source file path
+ * @param dst - Destination file path
+ */
+function moveFileCrossFs(src: string, dst: string): void {
+  try {
+    fs.renameSync(src, dst);
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err && (err as NodeJS.ErrnoException).code === 'EXDEV') {
+      fs.copyFileSync(src, dst);
+      fs.unlinkSync(src);
+    } else {
+      throw err;
+    }
+  }
+}
+
 function deriveCompanionFileName(reportFileName: string): string | null {
   const match = reportFileName.match(/^(verify|build)_report(_\d+)?\.md$/);
   if (!match) return null;
@@ -934,25 +956,47 @@ export function saveArtifact(type: string, slug: string): void {
     if (archivePath) archiveRelPaths.push(archivePath);
   }
 
-  // 6b. Verify file exists
+  // 6b. Verify file exists — auto-move from main tree if needed (Layer 1)
   if (!fs.existsSync(filePath)) {
-    // Check if the file was written to the main tree instead
     if (typeInfo.category !== 'planning') {
       const mainRoot = getMainTreeRoot(projectRoot);
       if (mainRoot !== projectRoot) {
         const mainPath = path.join(mainRoot, relFilePath);
         if (fs.existsSync(mainPath)) {
-          const mainRel = path.relative(process.cwd(), mainPath);
-          console.error(chalk.red(`Error: ${typeInfo.fileName} found on main tree, not in worktree.`));
-          console.error(chalk.gray(`  cp ${mainRel} ${relFilePath}`));
-          console.error(chalk.gray(`  ana artifact save ${typeInfo.baseType} ${slug}`));
-          process.exit(1);
+          // Only move untracked files — tracked files on main indicate something wrong
+          const isMainTracked = spawnSync('git', ['ls-files', '--error-unmatch', relFilePath], {
+            cwd: mainRoot,
+            stdio: 'pipe'
+          }).status === 0;
+          if (isMainTracked) {
+            console.error(chalk.red(`Error: ${typeInfo.fileName} is tracked on the main tree — cannot auto-move.`));
+            process.exit(1);
+          }
+
+          // Move report from main tree to worktree
+          moveFileCrossFs(mainPath, filePath);
+          console.log(chalk.gray(`  ℹ Moved ${typeInfo.fileName} from main tree to worktree`));
+
+          // Move companion alongside report (must happen before companion discovery at line 1029)
+          const compFileName = deriveCompanionFileName(typeInfo.fileName);
+          if (compFileName) {
+            const mainCompPath = path.join(mainRoot, '.ana', 'plans', 'active', slug, compFileName);
+            const wtCompPath = path.join(projectRoot, '.ana', 'plans', 'active', slug, compFileName);
+            if (fs.existsSync(mainCompPath) && !fs.existsSync(wtCompPath)) {
+              moveFileCrossFs(mainCompPath, wtCompPath);
+              console.log(chalk.gray(`  ℹ Moved ${compFileName} from main tree to worktree`));
+            }
+          }
         }
       }
     }
-    console.error(chalk.red(`Error: No ${typeInfo.displayName.toLowerCase()} found at \`${relFilePath}\`.`));
-    console.error(chalk.gray('Write the file first, then run this command.'));
-    process.exit(1);
+
+    // After auto-move attempt, re-check existence
+    if (!fs.existsSync(filePath)) {
+      console.error(chalk.red(`Error: No ${typeInfo.displayName.toLowerCase()} found at \`${relFilePath}\`.`));
+      console.error(chalk.gray('Write the file first, then run this command.'));
+      process.exit(1);
+    }
   }
 
   // 6c. Validate format for all artifact types
@@ -1194,6 +1238,34 @@ export function saveArtifact(type: string, slug: string): void {
       console.error(chalk.yellow(
         'Warning: Push failed. Artifact committed locally. Run `git push` manually.'
       ));
+    }
+  }
+
+  // 10b. Post-save sweep — remove stale copies from main tree (Layer 2)
+  if (typeInfo.category !== 'planning') {
+    const mainRoot = getMainTreeRoot(projectRoot);
+    if (mainRoot !== projectRoot) {
+      const filesToSweep = [relFilePath];
+      if (relCompanionPath) filesToSweep.push(relCompanionPath);
+
+      for (const rel of filesToSweep) {
+        const mainPath = path.join(mainRoot, rel);
+        if (fs.existsSync(mainPath)) {
+          // Only remove untracked files
+          const isMainTracked = spawnSync('git', ['ls-files', '--error-unmatch', rel], {
+            cwd: mainRoot,
+            stdio: 'pipe'
+          }).status === 0;
+          if (!isMainTracked) {
+            try {
+              fs.unlinkSync(mainPath);
+              console.log(chalk.yellow(`  ⚠ Removed stale ${path.basename(rel)} from main tree`));
+            } catch {
+              // Best-effort — cleanup failure never fails the save
+            }
+          }
+        }
+      }
     }
   }
 
