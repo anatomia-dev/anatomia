@@ -39,5 +39,20 @@
     "website/components/pricing/Pricing.tsx",
     "website/lib/copy.ts",
     "website/lib/icons.tsx"
-  ]
+  ],
+  "verify_started_at": "2026-05-08T04:35:15.146Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:731910822a9243870ce068f6da26d371bf90376484201e19be608513e9b726ad",
+    "run_at": "2026-05-08T04:39:31.821Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-08T04:39:31.855Z",
+    "hash": "sha256:675aca6b046d7a5a8d04524df2d3fdb0cd455b86c24f46530941faa046a32819"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-08T04:39:31.855Z",
+    "hash": "sha256:fd751ab8e12fe5b71cf94d462fae972ed9264734af86e7ca8b8436231436b165"
+  }
 }

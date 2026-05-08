@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Three dead #pipeline links after anchor removal"
+    file: "website/lib/copy.ts"
+    line: 309
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A011"]
+  - category: code
+    summary: "ScrollHint still links to #pipeline — scroll from hero goes nowhere"
+    file: "website/components/hero/ScrollHint.tsx"
+    line: 24
+    severity: risk
+    suggested_action: scope
+  - category: code
+    summary: "ScanSlab still links to #pipeline — scan section CTA goes nowhere"
+    file: "website/components/scan/ScanSlab.tsx"
+    line: 163
+    severity: risk
+    suggested_action: scope
+  - category: code
+    summary: "brandIconNames exported but never imported"
+    file: "website/lib/icons.tsx"
+    line: 86
+    severity: debt
+    suggested_action: accept
+  - category: upstream
+    summary: "Spec scoped out manifesto/ScanSlab/ScrollHint but removing id=pipeline creates regressions in those files"
+    severity: observation
+    suggested_action: scope
+  - category: code
+    summary: "Codex icon is a geometric diamond placeholder, not an official brand icon"
+    file: "website/lib/icons.tsx"
+    line: 38
+    severity: observation
+    suggested_action: accept
