@@ -32,11 +32,11 @@ Each fix is CSS/copy/SVG — no new components, no new dependencies, no structur
 - AC2: Marquee title reads "Works with any AI tool" (not "Compatible runtimes").
 - AC3: Marquee animation is noticeably faster on phone/tablet (fewer items need less travel time).
 - AC4: Mobile hamburger nav overlay has a fully opaque background — no page content visible behind menu items.
-- AC5: Hero meta row ("MIT License · Works with Claude, Cursor, Codex · 5 languages parsed · Zero vendor lock-in") stacks cleanly on phone, wraps gracefully on tablet, stays inline on desktop. Tool list updated to reflect new marquee list.
+- AC5: Hero meta row stacks cleanly on phone, wraps gracefully on tablet, stays inline on desktop. Content updated — "Works with Claude, Cursor, Codex" replaced with a short form that reflects the new 6-tool marquee (e.g., "Works with 6+ AI tools" or "Works with any AI tool"). AnaPlan decides exact wording.
 - AC6: Ship log collapsed summary row renders cleanly at all three breakpoints — no overlapping text, no garbled dots. On phone: hide ship dots and verified count, show only kicker + version/count + chevron.
 - AC7: Ship log expanded summary row (open state with "X verified changes") renders cleanly at all breakpoints with no text overlap.
 - AC8: Ship log expanded proof rows show a two-line stacked layout on phone: top line = kind badge + title, bottom line = assertions + age (right-aligned). Tablet shows at minimum kind + title + assertions. Desktop unchanged.
-- AC9: "Full proof chain" link in ship log footer is removed (the target PROOF_CHAIN.md does not exist in the repo).
+- AC9: Ship log footer references to PROOF_CHAIN.md are removed — both the "Full proof chain →" link and the "Source of truth: PROOF_CHAIN.md" label (the file does not exist in the repo). Either remove the footer entirely or replace with content that points to something real.
 - AC10: No regressions on desktop — all existing layouts preserved at >1024px.
 
 ## Edge Cases & Risks
