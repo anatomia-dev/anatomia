@@ -18,5 +18,25 @@
   "spec": {
     "saved_at": "2026-05-08T18:17:57.642Z",
     "hash": "sha256:b1afe8c80875d1fd1f180d8703b5ae13a3beb2b73e95cd4bda93c3fe32084ef2"
-  }
+  },
+  "build_started_at": "2026-05-08T18:27:55.038Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-08T18:39:38.919Z",
+    "hash": "sha256:c03c8c759f49d72764551059a6d78631dcf39d208158e892b02f83b004ed0da1"
+  },
+  "build-data": {
+    "saved_at": "2026-05-08T18:39:38.920Z",
+    "hash": "sha256:523deaddb32be630f38dbb977c2e0386a259e527f7854de47a351d0dc50a5f27"
+  },
+  "modules_touched": [
+    "website/components/hero/hero.module.css",
+    "website/components/marquee/CompatMarquee.tsx",
+    "website/components/marquee/marquee.module.css",
+    "website/components/nav/NavMobile.tsx",
+    "website/components/proof-feed/ProofFeed.tsx",
+    "website/components/proof-feed/proof-feed.module.css",
+    "website/lib/copy.ts",
+    "website/lib/icons.tsx"
+  ]
 }
