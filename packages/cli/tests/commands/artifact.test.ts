@@ -76,10 +76,24 @@ describe('ana artifact save', () => {
 ## Intent
 This is a test scope.
 
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Files affected:** test.ts
+- **Blast radius:** none
+- **Estimated effort:** 1 hour
+- **Multi-phase:** no
+
+## Approach
+Build the feature using existing patterns.
+
 ## Acceptance Criteria
 - AC1: First criterion
 - AC2: Second criterion
 - AC3: Third criterion
+
+## Edge Cases & Risks
+Handle empty input gracefully.
 
 ### Structural Analog
 work.ts — similar pattern`;
@@ -657,10 +671,21 @@ Line 11
 ## Intent
 This adds a new feature.
 
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+Build using existing patterns.
+
 ## Acceptance Criteria
 - AC1: First criterion
 - AC2: Second criterion
 - AC3: Third criterion
+
+## Edge Cases & Risks
+Handle edge cases.
 
 ### Structural Analog
 work.ts — similar command pattern`;
@@ -718,6 +743,506 @@ work.ts`;
       await createArtifact('test-slug', 'scope.md', invalidScope);
 
       expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+    });
+
+    // @ana A011
+    it('rejects scope missing Complexity Assessment section', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Complexity Assessment');
+    });
+
+    // @ana A001
+    it('rejects scope missing Kind field', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Kind');
+    });
+
+    // @ana A002
+    it('rejects scope with invalid Kind value', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** fix + chore
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('fix + chore');
+    });
+
+    // @ana A003, A015
+    it('accepts scope with valid Kind', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** fix
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      expect(() => saveArtifact('scope', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A016
+    it('accepts Kind with mixed case', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** Feature
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      expect(() => saveArtifact('scope', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A004
+    it('rejects scope missing Size field', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Size');
+    });
+
+    // @ana A005
+    it('accepts scope with lenient Size value small-medium', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** small-medium
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      expect(() => saveArtifact('scope', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A006
+    it('accepts scope with lenient Size value medium with context', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium (8 items)
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      expect(() => saveArtifact('scope', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A007
+    it('rejects scope with invalid Size value', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** tiny
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('tiny');
+    });
+
+    // @ana A008
+    it('rejects scope missing Multi-phase field', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Multi-phase');
+    });
+
+    // @ana A009
+    it('accepts scope with lenient Multi-phase value', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Multi-phase:** no (this is Phase 1)
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      expect(() => saveArtifact('scope', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A010
+    it('rejects scope with invalid Multi-phase value', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Multi-phase:** maybe
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('maybe');
+    });
+
+    // @ana A012
+    it('rejects scope missing Approach section', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Multi-phase:** no
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Approach');
+    });
+
+    // @ana A013
+    it('rejects scope with empty Approach section', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+## Edge Cases & Risks
+None.
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Empty');
+    });
+
+    // @ana A014
+    it('rejects scope missing Edge Cases section', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const scope = `# Scope: test
+
+## Intent
+This adds a feature.
+
+## Complexity Assessment
+- **Kind:** feature
+- **Size:** medium
+- **Multi-phase:** no
+
+## Approach
+Build it.
+
+## Acceptance Criteria
+- AC1: First
+- AC2: Second
+- AC3: Third
+
+### Structural Analog
+work.ts`;
+      await createArtifact('test-slug', 'scope.md', scope);
+
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
+      expect(() => saveArtifact('scope', 'test-slug')).toThrow();
+      console.error = originalError;
+      expect(errors.join('\n')).toContain('Edge Cases');
     });
   });
 
