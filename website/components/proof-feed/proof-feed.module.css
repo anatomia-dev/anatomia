@@ -217,10 +217,6 @@
   overflow: hidden;
   min-height: 0;
 }
-.card[data-open="true"] .collapseInner {
-  overflow: visible;
-  transition: overflow 0s linear 0.48s;
-}
 
 /* Inner sections */
 .feedHead {

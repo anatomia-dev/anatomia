@@ -84,12 +84,8 @@
 .glyph {
   width: 16px;
   height: 16px;
-  border-radius: 3px;
-  background: var(--ink-15);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--fg);
-  font-size: 10px;
-  font-weight: 700;
 }
