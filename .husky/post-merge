@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# Post-merge: rebuild CLI if source files changed.
+# Runs after `git pull` merges. Non-blocking — exits 0 even on build failure.
+
+set -e
+
+# Check if CLI source files changed in the merge
+CHANGED_FILES=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
+CLI_SOURCE_CHANGED=$(echo "$CHANGED_FILES" | grep '^packages/cli/src/' || true)
+
+if [ -n "$CLI_SOURCE_CHANGED" ]; then
+  echo "[post-merge] CLI source changed — rebuilding packages/cli..."
+  cd packages/cli
+  if ! pnpm run build; then
+    echo "[post-merge] Build failed — CLI binary may be stale. Run 'cd packages/cli && pnpm run build' manually."
+  fi
+fi

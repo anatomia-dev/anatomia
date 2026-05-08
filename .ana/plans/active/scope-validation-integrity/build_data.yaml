@@ -1,0 +1,18 @@
+schema: 1
+concerns:
+  - summary: "En-dash edge case in lenient Size parsing not explicitly tested"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Template sync between dogfood and shipped ana.md not enforced by automated test"
+    file: ".claude/agents/ana.md"
+    severity: debt
+    suggested_action: scope
+  - summary: "Post-merge hook not integration-tested — correctness verified by code review only"
+    file: ".husky/post-merge"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts:169 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor

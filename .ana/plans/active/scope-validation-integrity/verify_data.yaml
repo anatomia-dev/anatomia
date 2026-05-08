@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A016 only tests 'Feature' case variant, not 'FIX' — contract says both should be accepted"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 882
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A016"]
+  - category: code
+    summary: "Console.error capture pattern repeated verbatim in 8 rejection tests — extraction into a helper would reduce duplication"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 771
+    severity: debt
+    suggested_action: accept
+  - category: test
+    summary: "Pre-existing scope validation tests (lines 697-746) still use plain toThrow() without checking error message content"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 711
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "Post-merge hook uses set -e but wraps build in if-guard — correct now, but fragile if future edits add unguarded commands"
+    file: ".husky/post-merge"
+    line: 6
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "AC15 cannot be mechanically verified — requires running the website and visually confirming tag display"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A015"]

@@ -186,12 +186,12 @@ Write `.ana/plans/active/{slug}/scope.md` with ALL sections:
 What the user wants and why. In their words where possible.
 
 ## Complexity Assessment
-- **Kind:** feature / fix / chore
-- **Size:** small / medium / large
+- **Kind:** feature / fix / chore *(validated by `ana artifact save scope` — exact match required)*
+- **Size:** small / medium / large *(validated by `ana artifact save scope` — first token must match)*
 - **Files affected:** {list}
 - **Blast radius:** what else might be impacted
 - **Estimated effort:** rough time estimate
-- **Multi-phase:** yes/no
+- **Multi-phase:** yes / no *(validated by `ana artifact save scope` — first token must match)*
 
 ## Approach
 Strategic direction. WHAT and WHY, never HOW. A non-technical stakeholder should understand this.

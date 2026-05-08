@@ -411,6 +411,68 @@ function validateScopeFormat(filePath: string): string | null {
     return "Empty 'Intent' section. Scope must explain the purpose of this work.";
   }
 
+  // Check for Complexity Assessment section
+  if (!content.match(/##\s+Complexity\s+Assessment/i)) {
+    return "Missing 'Complexity Assessment' section. Every scope needs a complexity assessment.";
+  }
+
+  // Check for Kind field (strict — exact match only)
+  const kindMatch = content.match(/\*\*Kind:\*\*\s*(.+)/);
+  if (!kindMatch || !kindMatch[1]) {
+    return "Missing 'Kind' field in Complexity Assessment. Add: **Kind:** feature / fix / chore";
+  }
+  const kindRaw = kindMatch[1].trim().toLowerCase();
+  if (kindRaw !== 'feature' && kindRaw !== 'fix' && kindRaw !== 'chore') {
+    return `Kind must be exactly one of: feature, fix, chore. Got: '${kindMatch[1].trim()}'`;
+  }
+
+  // Check for Size field (lenient — first valid token)
+  const sizeMatch = content.match(/\*\*Size:\*\*\s*(.+)/);
+  if (!sizeMatch || !sizeMatch[1]) {
+    return "Missing 'Size' field in Complexity Assessment. Add: **Size:** small / medium / large";
+  }
+  const sizeValue = sizeMatch[1].trim();
+  if (!/^(small|medium|large)\b/i.test(sizeValue)) {
+    return `Size must start with one of: small, medium, large. Got: '${sizeValue}'`;
+  }
+
+  // Check for Multi-phase field (lenient — first valid token)
+  const multiMatch = content.match(/\*\*Multi-phase:\*\*\s*(.+)/);
+  if (!multiMatch || !multiMatch[1]) {
+    return "Missing 'Multi-phase' field in Complexity Assessment. Add: **Multi-phase:** yes / no";
+  }
+  const multiValue = multiMatch[1].trim();
+  if (!/^(yes|no)\b/i.test(multiValue)) {
+    return `Multi-phase must start with one of: yes, no. Got: '${multiValue}'`;
+  }
+
+  // Check for Approach section with content
+  if (!content.match(/##\s+Approach\s*$/im)) {
+    return "Missing 'Approach' section. Scope must describe the strategic direction.";
+  }
+
+  const approachLines: string[] = [];
+  let inApproach = false;
+  for (const line of lines) {
+    if (/^##\s+Approach\s*$/i.test(line)) {
+      inApproach = true;
+      continue;
+    }
+    if (inApproach) {
+      if (/^##/.test(line)) break;
+      approachLines.push(line);
+    }
+  }
+  const approachContent = approachLines.join('\n').trim();
+  if (!approachContent) {
+    return "Empty 'Approach' section. Scope must describe the strategic direction.";
+  }
+
+  // Check for Edge Cases section
+  if (!content.match(/##\s+Edge\s+Cases/i)) {
+    return "Missing 'Edge Cases' section. Scope must identify edge cases and risks.";
+  }
+
   return null; // valid
 }
 
