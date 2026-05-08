@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "A005 EXDEV fallback not directly exercised in integration test — ESM module exports non-configurable"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Layer 2 sweep runs unconditionally on every build-verify save — negligible overhead but always-check design"
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: monitor
