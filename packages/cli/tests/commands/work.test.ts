@@ -3584,6 +3584,184 @@ describe('danger map and worktree prune', () => {
 });
 
 /**
+ * Tests for Layer 3 — split cleanup strategy during work complete.
+ * Build/verify artifacts removed unconditionally, planning artifacts require content-match.
+ */
+describe('work complete auto-clean split strategy', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'work-autoclean-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  /**
+   * Create a project with a remote where the feature branch is merged,
+   * and untracked files on the local main that would block pull.
+   */
+  async function createProjectWithUntrackedConflict(options: {
+    slug: string;
+    untrackedFiles: Array<{ name: string; content: string; matchesRemote: boolean }>;
+  }): Promise<void> {
+    const slug = options.slug;
+    const remoteDir = path.join(tempDir, 'remote');
+    const localDir = path.join(tempDir, 'local');
+
+    // Create bare remote
+    await fs.mkdir(remoteDir, { recursive: true });
+    execSync('git init --bare', { cwd: remoteDir, stdio: 'ignore' });
+
+    // Create local repo cloned from remote
+    execSync(`git clone ${remoteDir} local`, { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: localDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: localDir, stdio: 'ignore' });
+
+    // Create ana.json
+    const anaDir = path.join(localDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main' }),
+      'utf-8'
+    );
+
+    // Create slug with planning artifacts on main
+    const slugPath = path.join(localDir, '.ana', 'plans', 'active', slug);
+    await fs.mkdir(slugPath, { recursive: true });
+    await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec 1', 'utf-8');
+
+    execSync('git add -A && git commit -m "init" && git push', { cwd: localDir, stdio: 'ignore' });
+
+    // Create feature branch with build/verify artifacts
+    execSync(`git checkout -b feature/${slug}`, { cwd: localDir, stdio: 'ignore' });
+    await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build Report', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'build_data.yaml'), 'schema: 1\nconcerns: []', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'verify_data.yaml'), 'schema: 1\nfindings: []', 'utf-8');
+
+    const savesEntries: Record<string, { saved_at: string; hash: string }> = {};
+    savesEntries['build-report'] = { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) };
+    savesEntries['verify-report'] = { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) };
+    await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify(savesEntries), 'utf-8');
+
+    execSync('git add -A && git commit -m "add reports"', { cwd: localDir, stdio: 'ignore' });
+    execSync('git push origin feature/' + slug, { cwd: localDir, stdio: 'ignore' });
+
+    // Merge on remote via local
+    execSync('git checkout main', { cwd: localDir, stdio: 'ignore' });
+    execSync(`git merge --no-ff feature/${slug} -m "merge"`, { cwd: localDir, stdio: 'ignore' });
+    execSync('git push', { cwd: localDir, stdio: 'ignore' });
+
+    // Reset local main to before the merge so pull would bring the merged content
+    execSync('git reset --hard HEAD~1', { cwd: localDir, stdio: 'ignore' });
+
+    // Create untracked files that would block pull
+    for (const file of options.untrackedFiles) {
+      const filePath = path.join(slugPath, file.name);
+      // If matchesRemote, write the same content that the remote has
+      if (file.matchesRemote) {
+        // Get content from remote
+        const remoteContent = execSync(
+          `git show origin/main:.ana/plans/active/${slug}/${file.name}`,
+          { cwd: localDir, encoding: 'utf-8' }
+        );
+        await fs.writeFile(filePath, remoteContent, 'utf-8');
+      } else {
+        await fs.writeFile(filePath, file.content, 'utf-8');
+      }
+    }
+
+    process.chdir(localDir);
+  }
+
+  // @ana A009
+  it('removes build/verify artifacts unconditionally during work complete', async () => {
+    await createProjectWithUntrackedConflict({
+      slug: 'test-slug',
+      untrackedFiles: [
+        { name: 'build_report.md', content: 'DIFFERENT content', matchesRemote: false },
+        { name: 'build_data.yaml', content: 'DIFFERENT', matchesRemote: false },
+      ],
+    });
+
+    // completeWork should remove the build artifacts unconditionally and succeed
+    await expect(completeWork('test-slug')).resolves.not.toThrow();
+  });
+
+  // @ana A012
+  it('removes build/verify data companions unconditionally during work complete', async () => {
+    await createProjectWithUntrackedConflict({
+      slug: 'test-slug',
+      untrackedFiles: [
+        { name: 'verify_report.md', content: 'DIFFERENT', matchesRemote: false },
+        { name: 'verify_data.yaml', content: 'DIFFERENT', matchesRemote: false },
+      ],
+    });
+
+    await expect(completeWork('test-slug')).resolves.not.toThrow();
+  });
+
+  // @ana A010
+  it('keeps content-match guard for planning artifacts during work complete', async () => {
+    await createProjectWithUntrackedConflict({
+      slug: 'test-slug',
+      untrackedFiles: [
+        { name: 'scope.md', content: 'COMPLETELY DIFFERENT from remote', matchesRemote: false },
+      ],
+    });
+
+    // Should fail because planning artifact doesn't match remote content
+    await expect(completeWork('test-slug')).rejects.toThrow();
+  });
+
+  // @ana A011
+  it('handles mixed untracked files with split cleanup strategy', async () => {
+    await createProjectWithUntrackedConflict({
+      slug: 'test-slug',
+      untrackedFiles: [
+        // Build artifact — removed unconditionally (even with different content)
+        { name: 'build_report.md', content: 'DIFFERENT', matchesRemote: false },
+        { name: 'build_data.yaml', content: 'DIFFERENT', matchesRemote: false },
+        // Planning artifact — matches remote content, so removed via content-match
+        { name: 'scope.md', content: '', matchesRemote: true },
+      ],
+    });
+
+    await expect(completeWork('test-slug')).resolves.not.toThrow();
+  });
+});
+
+/**
+ * Tests for Layer 4 — agent template pwd hints
+ */
+describe('agent template pwd hints', () => {
+  // @ana A013
+  it('build template contains pwd path guidance', () => {
+    const templatePath = path.join(__dirname, '..', '..', 'templates', '.claude', 'agents', 'ana-build.md');
+    const templateContent = fsSync.readFileSync(templatePath, 'utf-8');
+    expect(templateContent).toContain('pwd');
+    expect(templateContent).toContain('Write tool resolves paths against the main tree');
+  });
+
+  // @ana A014
+  it('verify template contains pwd path guidance', () => {
+    const templatePath = path.join(__dirname, '..', '..', 'templates', '.claude', 'agents', 'ana-verify.md');
+    const templateContent = fsSync.readFileSync(templatePath, 'utf-8');
+    expect(templateContent).toContain('pwd');
+    expect(templateContent).toContain('Write tool resolves paths against the main tree');
+  });
+});
+
+/**
  * Tests for Think template content
  */
 describe('Think template content', () => {

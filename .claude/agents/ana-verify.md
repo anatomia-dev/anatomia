@@ -282,6 +282,8 @@ Complete the report: Blockers, Findings, Deployer Handoff, Verdict.
 
 ## Verify Report Template
 
+Determine the absolute path with `pwd` before writing — Claude Code's Write tool resolves paths against the main tree, not the worktree.
+
 Write your report in this exact format:
 
 ```markdown

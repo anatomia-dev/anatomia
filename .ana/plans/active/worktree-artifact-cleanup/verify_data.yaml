@@ -1,0 +1,40 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A005 EXDEV test doesn't exercise moveFileCrossFs — tests Node.js copyFileSync/unlinkSync directly instead of mocking renameSync to throw EXDEV"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 3040
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A005"]
+  - category: test
+    summary: "A008 sweep-failure test is a no-op — tests absence of sweep (no main tree copy), not an actual cleanup failure"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 3124
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A008"]
+  - category: code
+    summary: "moveFileCrossFs copy-then-delete is not atomic — if copyFileSync succeeds but unlinkSync fails, source file persists as a stale duplicate"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 814
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A005"]
+  - category: code
+    summary: "Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1084
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A010"]
+  - category: code
+    summary: "Layer 2 post-save sweep calls getMainTreeRoot a second time — already computed in Layer 1 block but not threaded through"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1246
+    severity: debt
+    suggested_action: accept
+  - category: upstream
+    summary: "Dogfood templates (.claude/agents/) also received pwd hint — not in contract file_changes but correct behavior"
+    severity: observation
+    suggested_action: accept

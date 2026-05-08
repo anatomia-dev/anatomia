@@ -1051,34 +1051,62 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
         }
 
         if (slugFiles.length > 0) {
-          // Verify each file matches what the merge would bring (compare against remote)
-          let allMatch = true;
-          for (const relPath of slugFiles) {
-            const localPath = path.join(projectRoot, relPath);
-            const localContent = fs.readFileSync(localPath, 'utf-8');
-            const remoteResult = runGit(['show', `origin/${artifactBranch}:${relPath}`], { cwd: projectRoot });
-            if (remoteResult.exitCode !== 0 || remoteResult.stdout !== localContent) {
-              allMatch = false;
-              break;
+          // Partition into build/verify artifacts (unconditional removal) and
+          // planning artifacts (content-match required)
+          const isBuildVerifyArtifact = (relPath: string): boolean => {
+            const basename = path.basename(relPath);
+            return basename.startsWith('build_report') ||
+              basename.startsWith('build_data') ||
+              basename.startsWith('verify_report') ||
+              basename.startsWith('verify_data');
+          };
+
+          const buildVerifyFiles = slugFiles.filter(f => isBuildVerifyArtifact(f));
+          const planningFiles = slugFiles.filter(f => !isBuildVerifyArtifact(f));
+
+          // Remove build/verify artifacts unconditionally — always agent-written
+          if (buildVerifyFiles.length > 0) {
+            for (const relPath of buildVerifyFiles) {
+              try {
+                fs.unlinkSync(path.join(projectRoot, relPath));
+              } catch {
+                // Best-effort
+              }
+            }
+            console.log(chalk.yellow(`  ⚠ Removed ${buildVerifyFiles.length} untracked build/verify artifact(s) from main (always agent-written).`));
+          }
+
+          // Planning artifacts require content-match before removal
+          if (planningFiles.length > 0) {
+            let allMatch = true;
+            for (const relPath of planningFiles) {
+              const localPath = path.join(projectRoot, relPath);
+              const localContent = fs.readFileSync(localPath, 'utf-8');
+              const remoteResult = runGit(['show', `origin/${artifactBranch}:${relPath}`], { cwd: projectRoot });
+              if (remoteResult.exitCode !== 0 || remoteResult.stdout !== localContent) {
+                allMatch = false;
+                break;
+              }
+            }
+
+            if (allMatch) {
+              for (const relPath of planningFiles) {
+                fs.unlinkSync(path.join(projectRoot, relPath));
+              }
+              console.log(chalk.yellow(`  ⚠ Removed ${planningFiles.length} untracked planning artifact(s) from main (matched merged content).`));
+            } else {
+              console.error(chalk.red('Error: Pull blocked by untracked files that differ from the merged version:'));
+              for (const f of planningFiles) {
+                console.error(chalk.gray(`  ${f}`));
+              }
+              console.error(chalk.gray('These files were written to main but differ from the PR. Inspect and remove manually.'));
+              process.exit(1);
             }
           }
 
-          if (allMatch) {
-            // Safe to remove — files are identical to what the merge brings
-            for (const relPath of slugFiles) {
-              fs.unlinkSync(path.join(projectRoot, relPath));
-            }
-            console.log(chalk.yellow(`⚠ Removed ${slugFiles.length} untracked artifact${slugFiles.length !== 1 ? 's' : ''} from main (written by agent to wrong tree).`));
-
-            // Retry pull
+          // Retry pull if any files were removed
+          if (buildVerifyFiles.length > 0 || planningFiles.length > 0) {
             pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
-          } else {
-            console.error(chalk.red('Error: Pull blocked by untracked files that differ from the merged version:'));
-            for (const f of slugFiles) {
-              console.error(chalk.gray(`  ${f}`));
-            }
-            console.error(chalk.gray('These files were written to main but differ from the PR. Inspect and remove manually.'));
-            process.exit(1);
           }
         }
       }
