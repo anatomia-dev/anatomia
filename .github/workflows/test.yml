@@ -3,8 +3,14 @@ name: Test Suite
 on:
   push:
     branches: [main, staging]
+    paths-ignore:
+      - '.ana/**'
+      - '.claude/**'
   pull_request:
     branches: [main, staging]
+    paths-ignore:
+      - '.ana/**'
+      - '.claude/**'
 
 jobs:
   test:
