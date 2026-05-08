@@ -3616,7 +3616,7 @@ describe('work complete auto-clean split strategy', () => {
 
     // Create bare remote
     await fs.mkdir(remoteDir, { recursive: true });
-    execSync('git init --bare', { cwd: remoteDir, stdio: 'ignore' });
+    execSync('git init --bare -b main', { cwd: remoteDir, stdio: 'ignore' });
 
     // Create local repo cloned from remote
     execSync(`git clone ${remoteDir} local`, { cwd: tempDir, stdio: 'ignore' });
