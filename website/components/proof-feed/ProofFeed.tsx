@@ -104,20 +104,16 @@ export async function ProofFeed() {
                 <span className={styles.rowFeat}>
                   <Formatted text={e.feat} />
                 </span>
-                <span className={styles.rowAssert}>
-                  <span className={styles.rowAssertPass}>{e.passed}</span>/{e.assertions}
+                <span className={styles.rowMeta}>
+                  <span className={styles.rowAssert}>
+                    <span className={styles.rowAssertPass}>{e.passed}</span>/{e.assertions}
+                  </span>
+                  <span className={styles.rowAgo}>{formatAge(e.ts)}</span>
                 </span>
-                <span className={styles.rowAgo}>{formatAge(e.ts)}</span>
               </div>
             ))}
           </div>
 
-          <div className={styles.feedFoot}>
-            <span>Source of truth: <code style={{ color: "var(--ink-60)" }}>{copy.proofFeed.footSource}</code></span>
-            <a className={styles.feedFootLink} href={copy.proofFeed.footLink.href}>
-              {copy.proofFeed.footLink.label}
-            </a>
-          </div>
         </ProofFeedCard>
       </Container>
     </section>

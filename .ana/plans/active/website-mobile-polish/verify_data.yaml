@@ -1,0 +1,39 @@
+schema: 1
+findings:
+  - category: code
+    summary: "rowArrow CSS class defined but never used in ProofFeed.tsx"
+    file: "website/components/proof-feed/proof-feed.module.css"
+    line: 320
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "brandIconNames exported but never imported — pre-existing, out of scope"
+    file: "website/lib/icons.tsx"
+    line: 74
+    severity: observation
+    suggested_action: monitor
+    related_assertions: []
+  - category: code
+    summary: "Copilot/Cline use currentColor — renders as var(--fg) inside .glyph, works in both themes but contrast depends on --ink-15 background chip"
+    file: "website/lib/icons.tsx"
+    line: 23
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003", "A004"]
+  - category: upstream
+    summary: "Manifesto outbound link still points to /#pipeline which no longer exists — pre-existing, not in scope"
+    file: "website/lib/copy.ts"
+    line: 307
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Three dead #pipeline links in copy.ts — pre-existing, not introduced by this build"
+    file: "website/lib/copy.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "kindLabel defaults to 'improve' for unrecognized kind — pre-existing, not in scope"
+    file: "website/components/proof-feed/ProofFeed.tsx"
+    line: 28
+    severity: observation
+    suggested_action: monitor

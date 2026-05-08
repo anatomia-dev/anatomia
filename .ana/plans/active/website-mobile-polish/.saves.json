@@ -18,5 +18,40 @@
   "spec": {
     "saved_at": "2026-05-08T18:17:57.642Z",
     "hash": "sha256:b1afe8c80875d1fd1f180d8703b5ae13a3beb2b73e95cd4bda93c3fe32084ef2"
+  },
+  "build_started_at": "2026-05-08T18:27:55.038Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-08T18:39:38.919Z",
+    "hash": "sha256:c03c8c759f49d72764551059a6d78631dcf39d208158e892b02f83b004ed0da1"
+  },
+  "build-data": {
+    "saved_at": "2026-05-08T18:39:38.920Z",
+    "hash": "sha256:523deaddb32be630f38dbb977c2e0386a259e527f7854de47a351d0dc50a5f27"
+  },
+  "modules_touched": [
+    "website/components/hero/hero.module.css",
+    "website/components/marquee/CompatMarquee.tsx",
+    "website/components/marquee/marquee.module.css",
+    "website/components/nav/NavMobile.tsx",
+    "website/components/proof-feed/ProofFeed.tsx",
+    "website/components/proof-feed/proof-feed.module.css",
+    "website/lib/copy.ts",
+    "website/lib/icons.tsx"
+  ],
+  "verify_started_at": "2026-05-08T18:40:33.695Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f8493b98a1e0b0cc4a8eec45e121e537bcabca74ba9ecdd5d834f0cdf8762a81",
+    "run_at": "2026-05-08T18:45:43.027Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-08T18:45:43.056Z",
+    "hash": "sha256:1a62e6a26c77fddb6e80bd8ac93de2f0a697ebebc4473f33bf0ef81e5b88628a"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-08T18:45:43.056Z",
+    "hash": "sha256:3e52b12d5910c846c1a9edbd7689b7f8212e386b77f2a24d7cb486c6344c81fc"
   }
 }

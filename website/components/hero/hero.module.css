@@ -238,6 +238,14 @@
   gap: 6px;
 }
 .sep { color: var(--ink-15); }
+@media (max-width: 640px) {
+  .heroMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .sep { display: none; }
+}
 
 /* --- Scroll hint --- */
 .scrollHint {

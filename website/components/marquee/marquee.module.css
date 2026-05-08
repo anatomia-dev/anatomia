@@ -54,11 +54,17 @@
 .track {
   display: flex;
   gap: 56px;
-  animation: marquee 40s linear infinite;
+  animation: marquee 24s linear infinite;
   will-change: transform;
 }
 @keyframes marquee {
   to { transform: translateX(-50%); }
+}
+@media (max-width: 1024px) {
+  .track { animation-duration: 20s; }
+}
+@media (max-width: 640px) {
+  .track { animation-duration: 16s; }
 }
 @media (prefers-reduced-motion: reduce) {
   .track { animation: none; }
