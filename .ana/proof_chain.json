@@ -17553,6 +17553,237 @@
         "completed_at": "2026-05-08T04:44:27.588Z",
         "commit_count": 5
       }
+    },
+    {
+      "slug": "worktree-artifact-cleanup",
+      "feature": "Worktree Artifact Path Mismatch — Prevention and Cleanup",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 16,
+        "satisfied": 16,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Saving an artifact that was written to the wrong tree auto-moves it to the correct location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The data companion file moves alongside its report automatically",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "After auto-move, no stale copy remains on the main tree",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Files that are tracked by git on the main tree are never auto-moved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Cross-filesystem moves fall back to copy-then-delete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "After a successful worktree save, stale copies on the main tree are deleted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Post-save sweep only removes untracked files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A cleanup failure during post-save sweep does not fail the save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Build and verify artifacts are removed from main without checking content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Planning artifacts still require content-match before removal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "When build artifacts and planning artifacts are both untracked, each group gets its own cleanup strategy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Build and verify data companions are also removed unconditionally",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The Build agent template instructs agents to use pwd for artifact paths",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The Verify agent template instructs agents to use pwd for artifact paths",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Auto-move operations never touch files outside the current slug directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "When not running from a worktree, auto-move and sweep are silently skipped",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 67,
+        "think": 1,
+        "plan": 19,
+        "build": 12,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:f3bfd904fd1df9fb0a7a7f1439ed745a6fe2a80b7fbd294dbf5a460db1b3f2f6",
+        "contract": "sha256:ad3fa95025a391a434127bf500df851f4b831ebfbd101578dbbfce4b7010f99d",
+        "plan": "sha256:30416c541d660ebb645127ad6bd2c6f5b41651ab0ebe3b15b2af5a01db11ba6a",
+        "spec": "sha256:0061ca1bed907aec1626cb28c03af7ce80fc0e8acf00ebd70bdd4899f38c1f5f",
+        "build-report": "sha256:a5844792d9ec8005dc98f4fd577e1ba92a05c21ddcbc1f36ae9a63d3d1238107",
+        "build-data": "sha256:237bdc4adbce58d6f6d1e706bb44deff9d81a3dcabe15f7bd868868aa898eecf",
+        "verify-report": "sha256:bdfa0868f04ed3e639b6a545960b04a8ea4ccd92c931cd3657bce0f8147d30ee",
+        "verify-data": "sha256:119ef4fcffd3378170d3a613882da18efc8f1b41c6f8a42467aa4816c1e0bc16"
+      },
+      "completed_at": "2026-05-08T04:47:42.435Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "Build and Verify agents run in worktrees but Claude Code's Write tool resolves absolute paths against the main tree. The agent writes `build_report.md` to the main tree. `artifact save` detects this but errors with manual recovery instructions instead of fixing it, leaving a stale copy on main. When `work complete` pulls the merged PR, git refuses because the untracked file would be overwritten. In re-build scenarios (verify FAIL, fix, new artifacts), the stale copy diverges from the PR content, and the existing content-match auto-clean (`be3374f`) can't help.",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A005 EXDEV test doesn't exercise moveFileCrossFs — tests Node.js copyFileSync/unlinkSync directly instead of mocking renameSync to throw EXDEV",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 3040,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "worktree-artifact-cleanup-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A008 sweep-failure test is a no-op — tests absence of sweep (no main tree copy), not an actual cleanup failure",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 3124,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "worktree-artifact-cleanup-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "moveFileCrossFs copy-then-delete is not atomic — if copyFileSync succeeds but unlinkSync fails, source file persists as a stale duplicate",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 814,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "worktree-artifact-cleanup-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1084,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "worktree-artifact-cleanup-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Layer 2 post-save sweep calls getMainTreeRoot a second time — already computed in Layer 1 block but not threaded through",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 1246,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "worktree-artifact-cleanup-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Dogfood templates (.claude/agents/) also received pwd hint — not in contract file_changes but correct behavior",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "worktree-artifact-cleanup-C6",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A005 EXDEV fallback not directly exercised in integration test — ESM module exports non-configurable",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Layer 2 sweep runs unconditionally on every build-verify save — negligible overhead but always-check design",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-08T04:00:45.127Z",
+        "completed_at": "2026-05-08T04:47:42.433Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1

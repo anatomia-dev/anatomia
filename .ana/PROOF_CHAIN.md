@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-68 runs · 142 active · 83 lessons · 0 promoted · 161 closed
+69 runs · 147 active · 84 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -8,18 +8,24 @@
 |------|--------|--------|
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
 | packages/cli/tests/commands/work.test.ts | 10 | 8 |
+| packages/cli/src/commands/work.ts | 10 | 6 |
 | website/lib/proof-feed.ts | 10 | 3 |
-| packages/cli/src/commands/work.ts | 9 | 5 |
 | packages/cli/src/utils/proofSummary.ts | 8 | 6 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 142 total)
+## Active Findings (30 shown of 147 total)
+
+### packages/cli/src/commands/artifact.ts
+
+- **code:** moveFileCrossFs copy-then-delete is not atomic — if copyFileSync succeeds but unlinkSync fails, source file persists as a stale duplicate — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
+- **code:** Layer 2 post-save sweep calls getMainTreeRoot a second time — already computed in Layer 1 block but not threaded through — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 - **code:** Early-return missing-worktree warning uses misleading message when inside worktree but plan dir absent — *Fix Pipeline Phase Timing*
 - **code:** Early-return phase detection adds 3 globSync calls per work start from inside worktree — not cached — *Fix Pipeline Phase Timing*
 - **code:** Race condition in writeTimestamp: read-modify-write on .saves.json is not atomic — *Fix Pipeline Phase Timing*
@@ -29,6 +35,11 @@
 
 - **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — *Ship Log Polish*
 - **code:** ProofChainEntryForContext does not include kind field — consistent with projection pattern, no current consumer needs it — *Ship Log Polish*
+
+### packages/cli/tests/commands/artifact.test.ts
+
+- **test:** A005 EXDEV test doesn't exercise moveFileCrossFs — tests Node.js copyFileSync/unlinkSync directly instead of mocking renameSync to throw EXDEV — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
+- **test:** A008 sweep-failure test is a no-op — tests absence of sweep (no main tree copy), not an actual cleanup failure — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 
 ### packages/cli/tests/commands/proof.test.ts
 
@@ -72,14 +83,9 @@
 
 - **code:** ScanSlab still links to #pipeline — scan section CTA goes nowhere — *Website nav, scroll targets, compat icons, and copy accuracy*
 
-### website/lib/analytics.tsx
-
-- **code:** PostHog useEffect has no cleanup return — posthog.init() could be called on remount — *Website Production Infrastructure*
-
 ### website/lib/copy.ts
 
 - **code:** Three dead #pipeline links after anchor removal — *Website nav, scroll targets, compat icons, and copy accuracy*
-- **code:** proofFeed.headTitle says 'Click one.' but rows are no longer clickable — *Dead Links & Missing Pages*
 
 ### website/lib/icons.tsx
 
@@ -91,9 +97,6 @@
 - **code:** resolveKind falls back to slug heuristic for old entries — chore-type old entries misclassified as feature — *Ship Log Polish*
 - **code:** getLatestCommit() exported but never imported — unused function — *Website Production Infrastructure*
 - **code:** LatestCommit interface exported but never imported — unused type — *Website Production Infrastructure*
-- **code:** githubHeaders() extras parameter never used with non-default value — YAGNI — *Website Production Infrastructure*
-- **code:** No tag name validation — non-semver GitHub tags would display as-is in version pill — *Website Production Infrastructure*
-- **code:** File header comment still says 'Today: static mock data' — stale after live data wiring — *Website Production Infrastructure*
 
 ### General
 
