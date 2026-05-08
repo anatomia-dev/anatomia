@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { copy } from "@/lib/copy";
 import { ThemeToggle } from "./ThemeToggle";
@@ -35,8 +36,8 @@ export function NavMobile() {
         )}
       </button>
 
-      {/* Overlay */}
-      {open && (
+      {/* Overlay — portaled to document.body to escape nav's backdrop-filter stacking context */}
+      {open && typeof document !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-[200] flex flex-col md:hidden"
           style={{ background: "var(--bg)" }}
@@ -106,7 +107,8 @@ export function NavMobile() {
               {copy.nav.ctaInstall}
             </a>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
