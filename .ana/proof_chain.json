@@ -16698,7 +16698,8 @@
         "created_at": "2026-05-07T17:31:04.934Z",
         "completed_at": "2026-05-07T18:08:18.490Z",
         "commit_count": 8
-      }
+      },
+      "kind": "chore"
     },
     {
       "slug": "ship-log-polish",
@@ -16981,7 +16982,8 @@
         "created_at": "2026-05-08T01:15:47.940Z",
         "completed_at": "2026-05-08T01:37:08.978Z",
         "commit_count": 6
-      }
+      },
+      "kind": "chore"
     },
     {
       "slug": "test-suite-hygiene",
@@ -17287,7 +17289,8 @@
         "created_at": "2026-05-08T01:36:45.868Z",
         "completed_at": "2026-05-08T01:46:47.003Z",
         "commit_count": 0
-      }
+      },
+      "kind": "chore"
     },
     {
       "slug": "website-nav-copy-polish",
@@ -17552,7 +17555,8 @@
         "created_at": "2026-05-08T04:06:25.533Z",
         "completed_at": "2026-05-08T04:44:27.588Z",
         "commit_count": 5
-      }
+      },
+      "kind": "fix"
     },
     {
       "slug": "worktree-artifact-cleanup",
@@ -17783,7 +17787,8 @@
         "created_at": "2026-05-08T04:00:45.127Z",
         "completed_at": "2026-05-08T04:47:42.433Z",
         "commit_count": 0
-      }
+      },
+      "kind": "fix"
     },
     {
       "slug": "ci-artifact-path-ignore",
@@ -17912,7 +17917,8 @@
         "created_at": "2026-05-08T04:52:07.926Z",
         "completed_at": "2026-05-08T05:04:36.103Z",
         "commit_count": 3
-      }
+      },
+      "kind": "chore"
     }
   ],
   "schema": 1
