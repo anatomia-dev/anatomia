@@ -40,5 +40,20 @@
     "website/components/proof-feed/proof-feed.module.css",
     "website/lib/copy.ts",
     "website/lib/proof-feed.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-08T01:28:49.853Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:549d53088985743538721ab80713b63e7e506e70958696811bd48796bac166ac",
+    "run_at": "2026-05-08T01:34:01.433Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-08T01:34:01.470Z",
+    "hash": "sha256:99b18ba497cce08569641a2c140df251f49801ff61f4a4642ef9bc322fd6e084"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-08T01:34:01.470Z",
+    "hash": "sha256:e803d910a844a728322337ed9aecf1e031be87edfcae4c70ce3189eed95892fb"
+  }
 }

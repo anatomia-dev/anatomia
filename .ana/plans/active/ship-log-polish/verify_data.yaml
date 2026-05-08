@@ -1,0 +1,42 @@
+schema: 1
+findings:
+  - category: code
+    summary: "extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 435
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A011", "A012", "A013"]
+  - category: code
+    summary: "kindLabel defaults to 'improve' for any unrecognized kind — silent fallback if ProofKind grows"
+    file: "website/components/proof-feed/ProofFeed.tsx"
+    line: 28
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A006", "A007", "A008"]
+  - category: code
+    summary: "resolveKind falls back to slug heuristic for old entries — chore-type old entries misclassified as feature"
+    file: "website/lib/proof-feed.ts"
+    line: 159
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A021"]
+  - category: upstream
+    summary: "Stale finding 'mapEntry never produces kind chore' resolved by this build — resolveKind now handles chore"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Stale finding 'headTitle says Click one but rows not clickable' — not addressed by this build, remains active"
+    file: "website/lib/copy.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "ProofChainEntryForContext does not include kind field — consistent with projection pattern, no current consumer needs it"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 1855
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "A001-A010, A018-A024 verified by source inspection only — no tagged tests for website copy, types, or wiring"
+    severity: observation
+    suggested_action: accept
