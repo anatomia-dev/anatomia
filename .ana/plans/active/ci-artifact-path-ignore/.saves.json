@@ -31,5 +31,20 @@
   },
   "modules_touched": [
     ".github/workflows/test.yml"
-  ]
+  ],
+  "verify_started_at": "2026-05-08T04:54:47.205Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f5e79bcdd55d93d6a6d80b70304fbf78a3d95d5d36c3f827d58203da0046f934",
+    "run_at": "2026-05-08T04:57:27.514Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-08T04:57:27.554Z",
+    "hash": "sha256:ecb69882ddc5ee3451f92f221fea08060b85b040fb3f79ccb32383401c09a74f"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-08T04:57:27.554Z",
+    "hash": "sha256:4cc25d194d651877d4e65ca002af3e9209908df9ade2307f58aec61485534c0a"
+  }
 }
