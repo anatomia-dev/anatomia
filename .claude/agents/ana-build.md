@@ -272,6 +272,8 @@ If a test fails: fix the implementation, not the test. If a contract assertion g
 
 ## Build Report Format
 
+Determine the absolute path with `pwd` before writing — Claude Code's Write tool resolves paths against the main tree, not the worktree.
+
 Write `.ana/plans/active/{slug}/build_report.md` with ALL of these sections:
 
 ```markdown
