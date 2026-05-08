@@ -3,8 +3,8 @@
  * ==================================================================
  * Brand icons for the compatibility marquee and bento tile.
  * SVG paths sourced from Simple Icons (CC0-licensed, simpleicons.org).
- * Codex uses the OpenAI logomark. Copilot and Cline use currentColor
- * for dark-mode safety (their brand colors are near-black).
+ * Codex uses the OpenAI logomark. Cursor, Windsurf, Copilot, and Cline
+ * use currentColor for dark-mode safety (their brand colors are near-black).
  *
  * Usage:
  *   import { BrandIcon } from "@/lib/icons";
@@ -17,9 +17,9 @@ import type React from "react";
 /** Brand colors from Simple Icons. */
 const brandColors: Record<string, string> = {
   "Claude Code": "#D97757",
-  "Cursor": "#000000",
+  "Cursor": "currentColor",
   "Codex": "#412991",
-  "Windsurf": "#0B100F",
+  "Windsurf": "currentColor",
   "Copilot": "currentColor",
   "Cline": "currentColor",
 };
