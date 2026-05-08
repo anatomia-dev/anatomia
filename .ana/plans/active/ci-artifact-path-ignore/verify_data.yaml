@@ -1,0 +1,19 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "paths-ignore is workflow-level — website job also skips on .ana/.claude-only commits"
+    file: ".github/workflows/test.yml"
+    line: 6
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]
+  - category: upstream
+    summary: "Branch protection required checks may block .ana/.claude-only PRs — accepted risk per spec"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "staging branch in trigger list is a no-op — branch does not exist on remote"
+    file: ".github/workflows/test.yml"
+    line: 5
+    severity: debt
+    suggested_action: scope
