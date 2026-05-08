@@ -15,7 +15,7 @@ export function CompatMarquee() {
   return (
     <section className={styles.section} data-component="compat-marquee">
       <Container>
-        <div className={styles.label}>Compatible runtimes</div>
+        <div className={styles.label}>{copy.marquee.title}</div>
         <div className={styles.trackWrap}>
           <div className={styles.track}>
             {doubled.map((name, i) => (

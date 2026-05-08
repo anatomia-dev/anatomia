@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-70 runs · 148 active · 86 lessons · 0 promoted · 161 closed
+71 runs · 153 active · 87 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 148 total)
+## Active Findings (30 shown of 153 total)
 
 ### .github/workflows/test.yml
 
@@ -31,9 +31,6 @@
 
 - **code:** Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 - **code:** Early-return missing-worktree warning uses misleading message when inside worktree but plan dir absent — *Fix Pipeline Phase Timing*
-- **code:** Early-return phase detection adds 3 globSync calls per work start from inside worktree — not cached — *Fix Pipeline Phase Timing*
-- **code:** Race condition in writeTimestamp: read-modify-write on .saves.json is not atomic — *Fix Pipeline Phase Timing*
-- **test:** A003 has no dedicated tagged test — verified by source inspection only — *Fix Pipeline Phase Timing*
 
 ### packages/cli/src/utils/proofSummary.ts
 
@@ -48,10 +45,6 @@
 ### packages/cli/tests/commands/proof.test.ts
 
 - **test:** proof.test.ts L744 redundant toBeTruthy guard before non-null assertion — *Test Suite Hygiene*
-
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** Fix-phase test (early-return) has no @ana tag — not linked to any contract assertion — *Fix Pipeline Phase Timing*
 
 ### packages/cli/tests/e2e/init-flow.test.ts
 
@@ -79,8 +72,13 @@
 
 - **code:** Pricing h2 and blurb with maxWidth may not visually center without margin auto — *Website Direct Polish*
 
+### website/components/proof-feed/proof-feed.module.css
+
+- **code:** rowArrow CSS class defined but never used in ProofFeed.tsx — *Website Mobile Polish + Marquee Overhaul*
+
 ### website/components/proof-feed/ProofFeed.tsx
 
+- **code:** kindLabel defaults to 'improve' for unrecognized kind — pre-existing, not in scope — *Website Mobile Polish + Marquee Overhaul*
 - **code:** kindLabel defaults to 'improve' for any unrecognized kind — silent fallback if ProofKind grows — *Ship Log Polish*
 
 ### website/components/scan/ScanSlab.tsx
@@ -89,17 +87,19 @@
 
 ### website/lib/copy.ts
 
+- **code:** Three dead #pipeline links in copy.ts — pre-existing, not introduced by this build — *Website Mobile Polish + Marquee Overhaul*
 - **code:** Three dead #pipeline links after anchor removal — *Website nav, scroll targets, compat icons, and copy accuracy*
 
 ### website/lib/icons.tsx
 
+- **code:** brandIconNames exported but never imported — pre-existing, out of scope — *Website Mobile Polish + Marquee Overhaul*
+- **code:** Copilot/Cline use currentColor — renders as var(--fg) inside .glyph, works in both themes but contrast depends on --ink-15 background chip — *Website Mobile Polish + Marquee Overhaul*
 - **code:** brandIconNames exported but never imported — *Website nav, scroll targets, compat icons, and copy accuracy*
 - **code:** Codex icon is a geometric diamond placeholder, not an official brand icon — *Website nav, scroll targets, compat icons, and copy accuracy*
 
 ### website/lib/proof-feed.ts
 
 - **code:** resolveKind falls back to slug heuristic for old entries — chore-type old entries misclassified as feature — *Ship Log Polish*
-- **code:** getLatestCommit() exported but never imported — unused function — *Website Production Infrastructure*
 
 ### General
 

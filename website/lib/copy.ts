@@ -59,7 +59,7 @@ export const copy = {
     },
     meta: [
       "MIT License",
-      "Works with Claude, Cursor, Codex",
+      "Works with any AI tool",
       "5 languages parsed",
       "Zero vendor lock-in",
     ],
@@ -80,9 +80,9 @@ export const copy = {
   },
 
   marquee: {
+    title: "Works with any AI tool",
     items: [
-      "Claude Code", "Cursor", "Codex", "Windsurf", "Zed",
-      "GitHub Actions", "pnpm", "TypeScript", "Rust", "Python",
+      "Claude Code", "Cursor", "Codex", "Windsurf", "Copilot", "Cline",
     ],
   },
 
@@ -173,7 +173,7 @@ export const copy = {
       title: "Works with your AI. Not against it.",
       body: "Standard markdown. Git-tracked. Zero lock-in. Claude Code gets native pipeline integration — any tool that reads markdown gets the intelligence.",
       chips: [
-        "Claude Code", "Cursor", "Windsurf", "Codex", "Zed",
+        "Claude Code", "Cursor", "Codex", "Windsurf", "Copilot", "Cline",
       ],
       catchChip: "+ any markdown-aware tool",
     },
@@ -195,7 +195,7 @@ export const copy = {
           "Local proof chain · git-tracked",
           "Context drift detection",
           "Configurable agents · pick your model",
-          "Works with Claude, Cursor, Codex, Zed",
+          "Works with any AI tool",
         ],
         cta: { label: "Install", command: "npx anatomia init", href: "https://www.npmjs.com/package/anatomia-cli" },
       },
@@ -224,8 +224,6 @@ export const copy = {
     headTitle: "Every change has *receipts*.",
     headSub:
       "This isn\u2019t a changelog. Each row is the verification record \u2014 the contract Plan wrote before the work began, with Verify\u2019s independent account stapled to it. The claims, the matchers, the pass/fail \u2014 all there.",
-    footSource: "PROOF_CHAIN.md",
-    footLink: { label: "Full proof chain \u2192", href: "https://github.com/TettoLabs/anatomia/blob/main/PROOF_CHAIN.md" },
   },
 
   docs: {

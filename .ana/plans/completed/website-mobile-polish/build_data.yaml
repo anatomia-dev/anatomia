@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "Copilot and Cline icons use currentColor instead of brand colors — renders as inherited text color, which may not match brand identity"
+    file: "website/lib/icons.tsx"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Cursor (#000000) and Windsurf (#0B100F) icons remain near-black and may be invisible on dark backgrounds — pre-existing issue not introduced by this build"
+    file: "website/lib/icons.tsx"
+    severity: debt
+    suggested_action: scope
+  - summary: "No automated visual regression tests — all responsive changes verified only by build+typecheck, not visual snapshots"
+    severity: observation
+    suggested_action: monitor

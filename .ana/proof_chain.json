@@ -17919,6 +17919,266 @@
         "commit_count": 3
       },
       "kind": "chore"
+    },
+    {
+      "slug": "website-mobile-polish",
+      "feature": "Website Mobile Polish + Marquee Overhaul",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 22,
+        "satisfied": 22,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Marquee shows exactly six AI tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Marquee includes Claude Code, Cursor, Codex, Windsurf, Copilot, and Cline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Every marquee tool has a brand icon that renders",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Cline has a brand icon in the registry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Codex icon is no longer the diamond placeholder",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Marquee title reads 'Works with any AI tool'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Marquee animation is faster than the original 40 seconds",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Mobile nav overlay escapes the parent nav stacking context",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Hero meta row says 'Works with any AI tool' instead of listing specific tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Hero meta row stacks vertically on phone screens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Dot separators are hidden on phone screens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Ship dots are hidden on phone to prevent overlap",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Verified count label is hidden on phone",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Proof rows use a two-line stacked layout on phone",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Assertions are visible on phone in the proof row second line",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The dead link to PROOF_CHAIN.md is removed from the page",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The 'Full proof chain' link is removed from copy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Bento compat chips list the six AI tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Pricing no longer lists specific tool names",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Website builds successfully with no errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Website type checking passes with no errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Icons for tools no longer in the marquee are removed",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 11
+      },
+      "timing": {
+        "total_minutes": 52,
+        "think": 3,
+        "plan": 16,
+        "build": 12,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:20c965e7932d93255484377b2f63f83d2fe103eb055643bc98205990cb8210b6",
+        "contract": "sha256:f8493b98a1e0b0cc4a8eec45e121e537bcabca74ba9ecdd5d834f0cdf8762a81",
+        "plan": "sha256:ccfb99a7d986eb1f5db147c5ebcb3be74e20b93d0c5d07e2984e7c6dc6bfa350",
+        "spec": "sha256:b1afe8c80875d1fd1f180d8703b5ae13a3beb2b73e95cd4bda93c3fe32084ef2",
+        "build-report": "sha256:c03c8c759f49d72764551059a6d78631dcf39d208158e892b02f83b004ed0da1",
+        "build-data": "sha256:523deaddb32be630f38dbb977c2e0386a259e527f7854de47a351d0dc50a5f27",
+        "verify-report": "sha256:1a62e6a26c77fddb6e80bd8ac93de2f0a697ebebc4473f33bf0ef81e5b88628a",
+        "verify-data": "sha256:3e52b12d5910c846c1a9edbd7689b7f8212e386b77f2a24d7cb486c6344c81fc"
+      },
+      "completed_at": "2026-05-08T18:58:30.148Z",
+      "modules_touched": [
+        "website/components/hero/hero.module.css",
+        "website/components/marquee/CompatMarquee.tsx",
+        "website/components/marquee/marquee.module.css",
+        "website/components/nav/NavMobile.tsx",
+        "website/components/proof-feed/ProofFeed.tsx",
+        "website/components/proof-feed/proof-feed.module.css",
+        "website/lib/copy.ts",
+        "website/lib/icons.tsx"
+      ],
+      "scope_summary": "The website's mobile experience is broken in several visible ways: the ship log header text overlaps and garbles, the hamburger nav has no opaque background so content bleeds through, the hero meta row wraps awkwardly, ship log expanded rows lose all proof signal on narrow screens, the compatibility marquee has placeholder icons and a stale tool list, and the \"Full proof chain\" link is a 404. These are all on the primary marketing surface. Fix them, and do it responsively across phone, tablet, and desktop — not just \"desktop and mobile.\"",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "rowArrow CSS class defined but never used in ProofFeed.tsx",
+          "file": "website/components/proof-feed/proof-feed.module.css",
+          "anchor": null,
+          "line": 320,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "website-mobile-polish-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "brandIconNames exported but never imported — pre-existing, out of scope",
+          "file": "website/lib/icons.tsx",
+          "anchor": null,
+          "line": 74,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [],
+          "id": "website-mobile-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Copilot/Cline use currentColor — renders as var(--fg) inside .glyph, works in both themes but contrast depends on --ink-15 background chip",
+          "file": "website/lib/icons.tsx",
+          "anchor": null,
+          "line": 23,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003",
+            "A004"
+          ],
+          "id": "website-mobile-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Manifesto outbound link still points to /#pipeline which no longer exists — pre-existing, not in scope",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "line": 307,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-mobile-polish-C4",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "Three dead #pipeline links in copy.ts — pre-existing, not introduced by this build",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-mobile-polish-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "kindLabel defaults to 'improve' for unrecognized kind — pre-existing, not in scope",
+          "file": "website/components/proof-feed/ProofFeed.tsx",
+          "anchor": null,
+          "line": 28,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-mobile-polish-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Copilot and Cline icons use currentColor instead of brand colors — renders as inherited text color, which may not match brand identity",
+          "file": "website/lib/icons.tsx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Cursor (#000000) and Windsurf (#0B100F) icons remain near-black and may be invisible on dark backgrounds — pre-existing issue not introduced by this build",
+          "file": "website/lib/icons.tsx",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "No automated visual regression tests — all responsive changes verified only by build+typecheck, not visual snapshots",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-08T18:27:55.038Z",
+        "completed_at": "2026-05-08T18:58:30.145Z",
+        "commit_count": 7
+      }
     }
   ],
   "schema": 1
