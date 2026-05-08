@@ -1,15 +1,7 @@
 import { copy } from "@/lib/copy";
+import { BrandIcon } from "@/lib/icons";
 import { Container } from "@/components/ui/Container";
 import styles from "./marquee.module.css";
-
-/** Brand glyph colors — matches handoff CSS. */
-const glyphColors: Record<string, { bg: string; color: string }> = {
-  "Claude Code": { bg: "#f97316", color: "#fff" },
-  "Cursor": { bg: "#000", color: "#fff" },
-  "Windsurf": { bg: "#a855f7", color: "#fff" },
-  "Codex": { bg: "var(--color-brand)", color: "#fff" },
-  "Zed": { bg: "#3b82f6", color: "#fff" },
-};
 
 /**
  * CompatMarquee — CSS-only infinite scroll of compatible tools.
@@ -26,20 +18,14 @@ export function CompatMarquee() {
         <div className={styles.label}>Compatible runtimes</div>
         <div className={styles.trackWrap}>
           <div className={styles.track}>
-            {doubled.map((name, i) => {
-              const colors = glyphColors[name];
-              return (
-                <span key={i} className={styles.item}>
-                  <span
-                    className={styles.glyph}
-                    style={colors ? { background: colors.bg, color: colors.color } : undefined}
-                  >
-                    {name.charAt(0)}
-                  </span>
-                  {name}
+            {doubled.map((name, i) => (
+              <span key={i} className={styles.item}>
+                <span className={styles.glyph}>
+                  <BrandIcon name={name} size={16} />
                 </span>
-              );
-            })}
+                {name}
+              </span>
+            ))}
           </div>
         </div>
       </Container>

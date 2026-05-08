@@ -1,4 +1,5 @@
 import { copy } from "@/lib/copy";
+import { BrandIcon } from "@/lib/icons";
 import styles from "../bento.module.css";
 
 const { compat } = copy.bento;
@@ -15,7 +16,10 @@ export function CompatTile() {
         <p>{compat.body}</p>
         <div className={styles.compatChips}>
           {compat.chips.map((c) => (
-            <span key={c} className={styles.compatChip}>{c}</span>
+            <span key={c} className={styles.compatChip} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <BrandIcon name={c} size={14} />
+              {c}
+            </span>
           ))}
           <span className={styles.compatCatch}>{compat.catchChip}</span>
         </div>
