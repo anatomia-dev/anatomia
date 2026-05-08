@@ -18,5 +18,22 @@
   "spec": {
     "saved_at": "2026-05-08T18:42:50.105Z",
     "hash": "sha256:e7724889c09503936c6b72235ed3f9bc15db3e1fb827cb44fc3987b138aa372e"
-  }
+  },
+  "build_started_at": "2026-05-08T18:44:43.921Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-08T19:02:08.182Z",
+    "hash": "sha256:e5352cac974233177f06ad233a520daead26206c3cc5792096d0ff8aef7c3fe7"
+  },
+  "build-data": {
+    "saved_at": "2026-05-08T19:02:08.183Z",
+    "hash": "sha256:53bf4421c85f8abca4788c7bd0416e5e682d55671e174c79f2ebd3da29b72ebc"
+  },
+  "modules_touched": [
+    ".claude/agents/ana.md",
+    ".husky/post-merge",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/tests/commands/artifact.test.ts"
+  ]
 }
