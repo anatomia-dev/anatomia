@@ -1,0 +1,63 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "CI path filtering for artifact-only commits"
+
+assertions:
+  - id: A001
+    says: "Artifact-only pushes to main skip the CI test suite"
+    block: "push trigger has paths-ignore for .ana/"
+    target: "test.yml.on.push.paths-ignore"
+    matcher: "contains"
+    value: ".ana/**"
+
+  - id: A002
+    says: "Agent metadata pushes to main skip the CI test suite"
+    block: "push trigger has paths-ignore for .claude/"
+    target: "test.yml.on.push.paths-ignore"
+    matcher: "contains"
+    value: ".claude/**"
+
+  - id: A003
+    says: "Artifact-only pull requests skip the CI test suite"
+    block: "pull_request trigger has paths-ignore for .ana/"
+    target: "test.yml.on.pull_request.paths-ignore"
+    matcher: "contains"
+    value: ".ana/**"
+
+  - id: A004
+    says: "Agent metadata pull requests skip the CI test suite"
+    block: "pull_request trigger has paths-ignore for .claude/"
+    target: "test.yml.on.pull_request.paths-ignore"
+    matcher: "contains"
+    value: ".claude/**"
+
+  - id: A005
+    says: "The push trigger still targets main and staging branches"
+    block: "push trigger preserves branch list"
+    target: "test.yml.on.push.branches"
+    matcher: "contains"
+    value: "main"
+
+  - id: A006
+    says: "The pull request trigger still targets main and staging branches"
+    block: "pull_request trigger preserves branch list"
+    target: "test.yml.on.pull_request.branches"
+    matcher: "contains"
+    value: "main"
+
+  - id: A007
+    says: "Website changes are not ignored by CI"
+    block: "paths-ignore does not include website"
+    target: "test.yml.on.push.paths-ignore"
+    matcher: "not_contains"
+    value: "website/**"
+
+  - id: A008
+    says: "The release workflow is untouched"
+    block: "release.yml is unchanged"
+    target: "release.yml"
+    matcher: "exists"
+
+file_changes:
+  - path: ".github/workflows/test.yml"
+    action: modify

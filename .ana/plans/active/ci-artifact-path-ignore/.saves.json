@@ -4,5 +4,19 @@
   "scope": {
     "saved_at": "2026-05-08T04:35:52.820Z",
     "hash": "sha256:9318dde0c292550a2898916ecd87a893a1e1614c7e020d5dffc02a6142915ed4"
+  },
+  "plan_started_at": "2026-05-08T04:41:53.039Z",
+  "plan_agent": "ana-plan",
+  "contract": {
+    "saved_at": "2026-05-08T04:49:43.716Z",
+    "hash": "sha256:f5e79bcdd55d93d6a6d80b70304fbf78a3d95d5d36c3f827d58203da0046f934"
+  },
+  "plan": {
+    "saved_at": "2026-05-08T04:49:43.717Z",
+    "hash": "sha256:a9b6fc90b2266179cb90274e4b7e04e01cfcdefea2488c456c92d7e5153732f9"
+  },
+  "spec": {
+    "saved_at": "2026-05-08T04:49:43.717Z",
+    "hash": "sha256:829772be2dac8e92dc918e9a15b10f5b667d5e2ae3100fb9e046a33dd3523d6e"
   }
 }
