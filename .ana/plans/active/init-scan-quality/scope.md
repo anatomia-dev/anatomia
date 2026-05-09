@@ -10,7 +10,7 @@
 - **Kind:** feature
 - **Size:** medium — new display logic in init, preflight additions, type change for data flow, template update for setup agent
 - **Files affected:** `packages/cli/src/commands/init/preflight.ts`, `packages/cli/src/commands/init/state.ts`, `packages/cli/src/commands/init/types.ts`, `packages/cli/src/commands/init/index.ts`, `packages/cli/src/engine/scan-engine.ts`, `packages/cli/templates/.claude/agents/ana-setup.md`
-- **Blast radius:** Init terminal output only. No changes to scan logic, asset generation, or pipeline commands. The scan engine's blind spot message changes affect both `ana scan` and `ana init` display (shared data), but `ana scan` already displays blind spots — the enhanced message improves both contexts.
+- **Blast radius:** Init terminal output only. No changes to scan logic, asset generation, or pipeline commands. The scan engine's blind spot message changes affect `scan.json` content (consumed by agents and `ana scan`'s finding count), but `ana scan` does not render blind spots — only counts them. The enhanced message improves `scan.json` data quality and the new init display.
 - **Estimated effort:** 3-4 hours
 - **Multi-phase:** no
 
@@ -117,5 +117,4 @@ None for Ana. Open questions for AnaPlan:
 
 ### Things to Investigate
 - Determine whether the blind spot display goes inside `runAnalyzer` (after `displayDetectionSummary` at line 68) or in `index.ts` (after line 101). Inside `runAnalyzer` is self-contained but couples display to analysis. In `index.ts` is separated but requires inspecting `engineResult.blindSpots` in the orchestrator.
-- Determine how to detect the "degraded" state: `engineResult.blindSpots.some(b => b.area === 'Analyzer')` or `engineResult.patterns === null`. The latter is more semantic.
 - `ana scan` does not render blind spots — it only counts them. R6's enhanced message affects `scan.json` content (read by agents) but has no display impact in `ana scan`. Verify the enhanced resolution string doesn't break any consumers that parse `scan.json` blind spot fields.
