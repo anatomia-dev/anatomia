@@ -913,6 +913,82 @@ describe('ana work status', () => {
       });
     });
 
+    describe('--merge flag', () => {
+      // @ana A004
+      it('without --merge flag behaves identically', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+
+        await completeWork('test-slug');
+
+        const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+        expect(fsSync.existsSync(completedPath)).toBe(true);
+      });
+
+      // @ana A019
+      it('verify template includes --merge in PASS output', () => {
+        const templatePath = path.join(__dirname, '../../templates/.claude/agents/ana-verify.md');
+        const content = fsSync.readFileSync(templatePath, 'utf-8');
+        expect(content).toContain('ana work complete --merge');
+      });
+
+      // @ana A020
+      it('getNextAction includes --merge for ready-to-merge', () => {
+        const workSrc = path.join(__dirname, '../../src/commands/work.ts');
+        const content = fsSync.readFileSync(workSrc, 'utf-8');
+        // Verify the getNextAction for ready-to-merge contains --merge
+        expect(content).toContain("Or to merge and complete: ana work complete --merge");
+      });
+
+      // @ana A021
+      it('verification-passed message includes --merge', () => {
+        const workSrc = path.join(__dirname, '../../src/commands/work.ts');
+        const content = fsSync.readFileSync(workSrc, 'utf-8');
+        expect(content).toContain('ana work complete --merge');
+        expect(content).toContain('passed verification');
+      });
+
+      // @ana A022
+      it('ana template includes --merge in state table', () => {
+        const templatePath = path.join(__dirname, '../../templates/.claude/agents/ana.md');
+        const content = fsSync.readFileSync(templatePath, 'utf-8');
+        expect(content).toContain('ana work complete --merge');
+      });
+
+      // @ana A023
+      it('verify template guardrails line 494 unchanged', () => {
+        const templatePath = path.join(__dirname, '../../templates/.claude/agents/ana-verify.md');
+        const content = fsSync.readFileSync(templatePath, 'utf-8');
+        expect(content).toContain("- **Don't merge the PR.** You create it. The developer reviews and merges.");
+      });
+
+      // @ana A024
+      it('verify template guardrails line 498 unchanged', () => {
+        const templatePath = path.join(__dirname, '../../templates/.claude/agents/ana-verify.md');
+        const content = fsSync.readFileSync(templatePath, 'utf-8');
+        expect(content).toContain("- **Don't run `ana work complete`.** That's the developer's job after merging.");
+      });
+
+      // @ana A025
+      it('shows updated message when --merge used from wrong branch', async () => {
+        await createMergedProject({ slug: 'test-slug', merged: false });
+        execSync('git checkout feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+
+        const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
+          throw new Error('process.exit');
+        }) as never);
+        const originalError = console.error;
+        const errorMessages: string[] = [];
+        console.error = (...args: unknown[]) => { errorMessages.push(args.join(' ')); };
+
+        await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
+
+        console.error = originalError;
+        const output = errorMessages.join('\n');
+        expect(output).toContain('`--merge` handles the merge');
+        mockExit.mockRestore();
+      });
+    });
+
     describe('proof chain', () => {
       /**
        * Helper to create a merged project with full proof artifacts

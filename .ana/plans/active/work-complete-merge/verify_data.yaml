@@ -1,0 +1,49 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A020, A021 assert on source code content instead of testing behavior"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 936
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A020", "A021"]
+
+  - category: test
+    summary: "No tests verify --json output for any of the 7 merge failure paths"
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "JSON.parse on gh pr view stdout has no try/catch — malformed response crashes"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1061
+    severity: risk
+    suggested_action: scope
+
+  - category: code
+    summary: "getNextAction multi-line return breaks status output formatting — second line lacks indentation and styling"
+    file: "packages/cli/src/commands/work.ts"
+    line: 524
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A020"]
+
+  - category: code
+    summary: "Auto-merge enabled path writes plain text to stdout before JSON output — pollutes stdout for --json consumers"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1096
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "New test file work-merge.test.ts not in contract file_changes — reasonable deviation for spawnSync mock isolation"
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "Contract A007 and A013 specify lowercase 'merge manually' but code outputs 'Merge manually' — case mismatch in contract value"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007", "A013"]

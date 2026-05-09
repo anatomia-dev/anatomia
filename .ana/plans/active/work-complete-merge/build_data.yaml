@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "wrapJsonError produces different JSON shape than spec's wrapJsonResponse"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Checks-pending detection second clause is broad (any stderr with 'check' AND 'pending')"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: monitor
