@@ -47,12 +47,20 @@ export function NavMobile() {
             <Link
               href="/"
               onClick={close}
-              className="flex items-center gap-2 font-mono text-sm font-semibold"
-              style={{ color: "var(--fg)" }}
+              className="flex items-baseline font-serif text-[15px] font-medium"
+              style={{ color: "var(--fg)", letterSpacing: "-0.02em" }}
             >
-              <span style={{ color: "var(--color-brand)" }}>[</span>
               <span>{copy.nav.brand}</span>
-              <span style={{ color: "var(--color-brand)" }}>]</span>
+              <span
+                className="ml-[0.22em] inline-block"
+                style={{
+                  width: "0.32em",
+                  height: "0.39em",
+                  background: "var(--color-brand)",
+                  position: "relative",
+                  top: "0.03em",
+                }}
+              />
             </Link>
             <div className="flex items-center gap-2.5">
               <ThemeToggle />
