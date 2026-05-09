@@ -18,5 +18,24 @@
   "spec": {
     "saved_at": "2026-05-09T04:42:11.719Z",
     "hash": "sha256:63c8edf19c8d2a18843ff284899a7e6b9508f259031388c21743b0087854da6b"
-  }
+  },
+  "build_started_at": "2026-05-09T19:39:21.328Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-09T20:10:13.888Z",
+    "hash": "sha256:df4af4973b47af58fc0d1ef4d44b925c206446a425725e7e53b0588764a828f5"
+  },
+  "build-data": {
+    "saved_at": "2026-05-09T20:10:13.888Z",
+    "hash": "sha256:866e1d4435153f3ac4414c37f1e6b1f22d44547e2357da3764e7a20c2853bec3"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-verify.md",
+    ".claude/agents/ana.md",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/tests/commands/work-merge.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ]
 }
