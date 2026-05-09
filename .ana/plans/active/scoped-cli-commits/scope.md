@@ -72,7 +72,7 @@ None.
 
 ### Test Infrastructure
 - work.test.ts `describe('ana work complete')` at line 588+ uses real git repos with `execSync('git init')`. Tests create branches, simulate merges, and verify archive behavior.
-- The pattern for the dirty-index test: within an existing `work complete` test setup, add `execSync('echo "unrelated" > unrelated.txt && git add unrelated.txt')` before running `completeWork`, then verify with `execSync('git show --stat HEAD')` that `unrelated.txt` is not in the commit and `execSync('git diff --cached --name-only')` that it's still staged.
+- The pattern for the dirty-index test: within an existing `work complete` test setup, add `execSync('echo "unrelated" > unrelated.txt && git add unrelated.txt')` before running `completeWork`, then verify with `execSync('git diff-tree --no-commit-id --name-only -r HEAD')` that `unrelated.txt` is not in the commit and `execSync('git diff --cached --name-only')` that it's still staged.
 
 ## For AnaPlan
 
