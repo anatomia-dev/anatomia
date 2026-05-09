@@ -22,7 +22,7 @@
 ## PR Summary
 
 - Replace the Bento grid section with a new System section featuring a two-column header, spec strip, and 4-drawer accordion (Agents, Skills, Context, CLI)
-- Extract SectionThread as a shared UI component, used by ScanSlab for the scan→system bridge
+- Extract SectionThread as a shared UI component used by both ScanSlab and SystemSection closers
 - Dynamic CLI version in the man page mock imported from `packages/cli/package.json` at build time
 - Fix all orphaned `#pipeline` and `#agents` anchors across nav, hero, footer, and manifesto to point to `#system`
 - Full responsive CSS module with 5 breakpoints, accessible drawer markup (aria-expanded/controls), and motion-safe animations
@@ -58,10 +58,7 @@
 
 ## Deviations from Contract
 
-### A017: No hardcoded color values appear in the CSS module
-**Instead:** Replaced `rgba(0,0,0,0.014)` hover tint with `color-mix(in srgb, var(--color-brand) 3%, transparent)` — shifts hover from neutral black to brand-tinted
-**Reason:** No `--ink` or neutral overlay custom property exists in the design token system; `--color-brand` was the closest available token
-**Outcome:** Contract satisfied (zero hardcoded values), but hover visual subtly changed from neutral to warm — verifier should assess
+None — contract followed exactly.
 
 ## Fix History
 
@@ -109,7 +106,6 @@ pnpm run lint
 
 ## Git History
 ```
-fbc4a0a [section4-system-bento] Update: Build report
 842a9f9 [section4-system-bento] Fix: closer links to #proof, replace hardcoded rgba with color-mix
 a39e67e [section4-system-bento] Verify report
 66524a0 [section4-system-bento] Build report
