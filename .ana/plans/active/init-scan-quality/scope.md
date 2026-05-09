@@ -19,7 +19,7 @@ Three layers, each addressing a different disease:
 
 **Layer 1 (scan quality):** After the scan completes and before asset generation, display blind spots from `engineResult.blindSpots`. Distinguish three states: full success (checkmark), degraded (warning — tree-sitter failed, surface-tier only), total failure (existing behavior). Enhance the tree-sitter blind spot message in scan-engine.ts to use language-neutral terms describing what was lost. This data already exists — init just needs to show it instead of hiding it.
 
-**Layer 2 (pipeline dependencies):** Add `git user.name`/`user.email` and `gh` checks to init's preflight. Enhance the existing git remote message at preflight.ts line 180-181 with pipeline context — don't add a duplicate check. All checks are warnings, not gates. The `gh` message notes the pipeline works without it (non-GitHub teams shouldn't feel forced). Capture warnings in `PreflightResult` so they can flow to the success message.
+**Layer 2 (pipeline dependencies):** Add `git user.name`/`user.email` and `gh` checks to init's preflight. These checks must be guarded: skip git-user checks if `hasGit` is false (git not installed) — otherwise the user sees "git not installed" followed by "git user not configured," which is confusing and redundant. Enhance the existing git remote message at preflight.ts line 180-181 with pipeline context — don't add a duplicate check. All checks are warnings, not gates. The `gh` message notes the pipeline works without it (non-GitHub teams shouldn't feel forced). Capture warnings in `PreflightResult` so they can flow to the success message.
 
 **Layer 3 (setup validation):** Add environment validation instructions to the setup agent template. The agent runs `gh --version`, `gh auth status`, `git config user.name`, `git config user.email`, `git remote -v` at the end of setup and reports results. Setup is interactive — the developer can fix issues on the spot.
 
@@ -27,13 +27,13 @@ Three layers, each addressing a different disease:
 - AC1: When tree-sitter fails during init, the user sees a warning (not a checkmark) with "Deep scan incomplete" and what was lost in language-neutral terms
 - AC2: When init completes with no blind spots, the user sees "Deep scan complete — no gaps detected"
 - AC3: When init completes with blind spots, each blind spot is displayed with its area, issue, and resolution
-- AC4: When `git user.name` or `git user.email` is not configured, init displays a warning with copy-pasteable fix commands
+- AC4: When `git user.name` or `git user.email` is not configured AND git is installed (`hasGit` is true), init displays a warning with copy-pasteable fix commands. When git is not installed, the git-user check is skipped (the "no git" warning already covers it).
 - AC5: When `gh` is not installed, init displays a warning that includes "The pipeline works without it through Build/Verify" so non-GitHub teams know it's optional
 - AC6: The existing git remote message at preflight.ts line 180-181 is enhanced with pipeline context and a `git remote add origin` suggestion — no second remote check is added
 - AC7: None of the new checks prevent init from completing — all are informational
 - AC8: The init success message includes a "Pipeline readiness" section listing any warnings, displayed before "Next:" — only shown if warnings exist
 - AC9: `PreflightResult` carries a `warnings` field that flows from preflight through the orchestrator to `displaySuccessMessage`
-- AC10: The setup agent template includes environment validation commands at the end of the setup flow, after project calibration
+- AC10: The setup agent template includes environment validation commands at the end of the setup flow — after `setupPhase: "complete"` is written but before the summary is printed. The template explicitly instructs: "Report findings. Do not install software or modify git configuration unless the user explicitly asks."
 - AC11: The tree-sitter blind spot message in scan-engine.ts uses language-neutral terms ("code patterns, conventions, and structure analysis") that work for Python, TypeScript, JavaScript, and Go projects
 - AC12: Re-running `ana init` (reinit) re-runs all dependency checks with updated results
 - AC13: Total analyzer failure ("Analyzer failed — continuing with empty scaffolds") behavior is unchanged
@@ -47,7 +47,7 @@ Three layers, each addressing a different disease:
 
 **`displaySuccessMessage` data flow.** Currently receives `engineResult`, `projectName`, `scanTime`, `anaConfig` — no preflight results. `PreflightResult` needs a `warnings: string[]` field, and the orchestrator in index.ts needs to pass it through. This is a type change + signature change + threading change. Not complex, but it touches 3 files (types.ts, preflight.ts, index.ts, state.ts) beyond what the display change alone requires.
 
-**Setup agent checks are LLM-executed.** The setup agent runs bash commands and interprets results. Unlike init's mechanical checks, these are best-effort. If the agent misparses `gh auth status` output, the user sees wrong information. Acceptable tradeoff — init's checks (R3) are the reliable layer, setup's checks (R5) are the interactive layer. Both together provide coverage.
+**Setup agent checks are LLM-executed.** The setup agent runs bash commands and interprets results. Unlike init's mechanical checks, these are best-effort. If the agent misparses `gh auth status` output, the user sees wrong information. Acceptable tradeoff — init's checks (R3) are the reliable layer, setup's checks (R5) are the interactive layer. Both together provide coverage. The template must explicitly say "do not install software" to prevent the agent from running `brew install gh` or similar when it detects a missing tool.
 
 **Blind spot message format.** The enhanced message must fit the existing three-field structure (`area`, `issue`, `resolution`). Multi-line content in the `resolution` field should work but the planner should verify formatting in both `ana scan` and `ana init` display contexts.
 
@@ -63,7 +63,10 @@ Three layers, each addressing a different disease:
 ## Open Questions
 None for Ana. Open questions for AnaPlan:
 - Where exactly should the blind spot display code live — inside `runAnalyzer` (after `displayDetectionSummary`), or in `index.ts` (after `runAnalyzer` returns)? Both work, but the location affects code organization.
-- How to detect the "degraded" state in R2: check `engineResult.blindSpots` for an entry with `area === 'Analyzer'`, or check whether `engineResult.patterns` is null? The latter is semantic (checks what matters), the former is coupled to the blind spot string.
+
+### Resolved Questions
+- **Degraded state detection:** Use `engineResult.patterns === null && engineResult.overview.depth === 'deep'` — meaning "we asked for deep but got no patterns." This is semantic (checks what matters) and robust (doesn't couple to blind spot strings). `overview.depth` is the requested depth (scan-engine.ts line 942), not the achieved depth, so `depth === 'deep'` with null patterns reliably indicates degradation.
+- **`displayDetectionSummary` contradiction:** No fix needed. When tree-sitter fails, `patterns` is null, so the patterns line (line 115-119) is skipped entirely. R2's "Deep scan incomplete" message won't be contradicted by a "(deep scan)" label.
 
 ## Exploration Findings
 
@@ -77,7 +80,7 @@ None for Ana. Open questions for AnaPlan:
 - [TYPE-VERIFIED] `displaySuccessMessage` signature (state.ts line 571): receives `engineResult`, `projectName`, `scanTime`, `anaConfig`. Does NOT receive preflight results. R7's data flow requires extending this.
 - [TYPE-VERIFIED] `validateInitPreconditions` return type is `PreflightResult` (types.ts lines 27-33). Warnings are `console.log`'d inline and not captured. R3 must capture them.
 - [TYPE-VERIFIED] Blind spots are `EngineResult['blindSpots']` — array of `{ area: string; issue: string; resolution: string }`. Available on `engineResult` after `runAnalyzer` returns.
-- [TYPE-VERIFIED] `ana scan` displays blind spots at scan.ts lines 290-310. This is the display pattern R1 should follow.
+- [CORRECTED] `ana scan` does NOT display blind spots. It only counts them in `countFindings()` (scan.ts line 91). There is no existing blind spot rendering pattern. R1 must design the display from scratch, following `displayDetectionSummary`'s chalk style for consistency.
 - [OBSERVED] The setup agent template (`ana-setup.md`) has 8 steps (Steps 0-8). Step 8 is "Completion" — writes `setupPhase` to `"complete"` and prints summary. R5's environment checks would go before Step 8's completion write, or as a sub-step within Step 8.
 
 ### Test Infrastructure
@@ -87,7 +90,7 @@ None for Ana. Open questions for AnaPlan:
 ## For AnaPlan
 
 ### Structural Analog
-`displayDetectionSummary` (state.ts lines 91-135) — the existing function that shows what the scan found. R1's blind spot display is the mirror: show what the scan missed. Same location (after scan, before assets), same formatting style (chalk-colored terminal output), same data source (engineResult).
+`displayDetectionSummary` (state.ts lines 91-135) — the existing function that shows what the scan found. R1's blind spot display is the mirror: show what the scan missed. Same location (after scan, before assets), same formatting style (chalk-colored terminal output), same data source (engineResult). Note: this is a formatting analog only — there is no existing blind spot rendering code to copy. The display must be written from scratch.
 
 ### Relevant Code Paths
 - `packages/cli/src/commands/init/state.ts` line 58 — `runAnalyzer` function (R1, R2: display goes here or after this returns)
@@ -108,11 +111,11 @@ None for Ana. Open questions for AnaPlan:
 - preflight.ts line 180-181 for the existing remote message style
 
 ### Known Gotchas
-- `displayDetectionSummary` at line 119 shows "Patterns: 5 detected (deep scan)" even when tree-sitter failed. If R2 changes the spinner to "Deep scan incomplete," this line would still show "deep scan." The planner should decide whether to also adjust the detection summary, or whether the blind spot display (R1) is sufficient context.
+- When tree-sitter fails, `patterns` is null and `displayDetectionSummary` line 115 skips the patterns line entirely. No contradiction with R2's "Deep scan incomplete" message. No fix needed for the detection summary in the common case.
 - The `gh` check uses `spawnSync('gh', ['--version'])`. On Windows without WSL, the binary might be `gh.exe`. `spawnSync` handles this — Windows resolves the executable name. But test coverage should include a mock for `gh` not found.
 - The setup agent template is already ~640 lines. R5 adds environment check instructions. Keep them concise — the template is a prompt, not documentation.
 
 ### Things to Investigate
 - Determine whether the blind spot display goes inside `runAnalyzer` (after `displayDetectionSummary` at line 68) or in `index.ts` (after line 101). Inside `runAnalyzer` is self-contained but couples display to analysis. In `index.ts` is separated but requires inspecting `engineResult.blindSpots` in the orchestrator.
 - Determine how to detect the "degraded" state: `engineResult.blindSpots.some(b => b.area === 'Analyzer')` or `engineResult.patterns === null`. The latter is more semantic.
-- Verify that the enhanced blind spot resolution message formats correctly in `ana scan`'s terminal display (scan.ts lines 290-310). Multi-line resolution strings might need indentation.
+- `ana scan` does not render blind spots — it only counts them. R6's enhanced message affects `scan.json` content (read by agents) but has no display impact in `ana scan`. Verify the enhanced resolution string doesn't break any consumers that parse `scan.json` blind spot fields.
