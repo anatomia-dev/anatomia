@@ -10,7 +10,7 @@ Replace the existing Bento section with a new "System" section that shows what `
 - **Kind:** feature
 - **Size:** large — new section with 5-6 components, CSS module, copy.ts additions, page composition change
 - **Files affected:**
-  - `website/lib/copy.ts` — new `system` key with all strings
+  - `website/lib/copy.ts` — new `system` key with all strings + update `#agents`/`#pipeline` anchors to `#system` across hero, nav, footer, manifesto
   - `website/components/system/` — new directory: SystemSection.tsx, Drawer.tsx (client), FileTree.tsx, ManPage.tsx, SpecStrip.tsx, system.module.css
   - `website/app/(marketing)/page.tsx` — replace Bento import with SystemSection
   - `website/components/bento/` — remove (or leave dead, defer cleanup)
@@ -40,7 +40,13 @@ Port the approved handoff HTML into componentized Next.js following the patterns
 - AC13: The website builds without errors
 - AC14: The section closer ("That's the system. Next: **the proof**.") uses the same mechanical pattern as the scan section thread — mono text, oxblood arrow, link to the next section (`#proof`). The arrow has a subtle opacity breathe animation (~3s cycle, 0.4→1→0.4) honoring `prefers-reduced-motion`.
 - AC15: The scan section thread is updated: "feeds the pipeline" → "feeds the system", `href="#pipeline"` → `href="#system"`
-- AC16: The hero scroll hint `href="#pipeline"` is updated to `href="#system"` (first content section after marquee)
+- AC16: All orphaned `#pipeline` and `#agents` anchors are updated to `#system`:
+  - `ScrollHint.tsx` line 24: `href="#pipeline"` → `href="#system"`
+  - `ScanSlab.tsx` line 163: `href="#pipeline"` → `href="#system"`
+  - `copy.ts` hero secondary CTA: `href: "#agents"` → `href: "#system"`
+  - `copy.ts` nav link "Agents": `href: "/#agents"` → `href: "/#system"`
+  - `copy.ts` footer "Pipeline" + "Agents" links: `href: "/#agents"` → `href: "/#system"`
+  - `copy.ts` manifesto outbound: `href: "/#pipeline"` → `href: "/#system"`
 
 ## Edge Cases & Risks
 - **CSS class collisions:** The handoff uses generic names (`.section`, `.container`, `.header`, `.lede`). Using a CSS module eliminates this — all class names are scoped automatically.
