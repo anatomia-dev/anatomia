@@ -1104,7 +1104,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
             process.exit(1);
           } else {
             console.error('Auto-merge is not available for this repository.');
-            console.error(chalk.gray('Merge the PR manually after checks pass, or enable auto-merge in repository settings.'));
+            console.error(chalk.gray('Merge manually after checks pass, or enable auto-merge in repository settings.'));
             console.error(chalk.gray(`Then run: ana work complete ${slug}`));
             if (options?.json) {
               console.log(JSON.stringify(wrapJsonError('work complete', 'AUTO_MERGE_UNAVAILABLE', 'Auto-merge is not available. Merge the PR manually after checks pass, or enable auto-merge in repository settings.', {}, null), null, 2));
@@ -1133,7 +1133,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
         // Multiple merge strategies
         if (stderr.includes('merge strategy') || stderr.includes('multiple merge methods')) {
           console.error(chalk.red('Error: Multiple merge strategies are enabled with no default.'));
-          console.error(chalk.gray('Merge the PR manually via GitHub or specify a strategy:'));
+          console.error(chalk.gray('Merge manually via GitHub or specify a strategy:'));
           console.error(chalk.gray('  gh pr merge --merge    (merge commit)'));
           console.error(chalk.gray('  gh pr merge --squash   (squash)'));
           console.error(chalk.gray('  gh pr merge --rebase   (rebase)'));

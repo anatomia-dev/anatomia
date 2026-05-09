@@ -274,7 +274,7 @@ Use `ana work status` output:
 | Build in progress | "Open `claude --agent ana-build` to resume." |
 | Ready for verify | "Open `claude --agent ana-verify`." |
 | Needs fixes | "Verify found issues. Open `claude --agent ana-build` to fix." |
-| Ready to merge | "Review the PR, merge, then `ana work complete {slug}`." |
+| Ready to merge | "Review the PR, merge, then `ana work complete {slug}`. Or: `ana work complete --merge {slug}`." |
 
 Check `.ana/plans/completed/` when scoping similar work — reference what previous cycles touched.
 
