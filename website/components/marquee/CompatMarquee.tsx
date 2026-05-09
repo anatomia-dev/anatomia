@@ -9,8 +9,9 @@ import styles from "./marquee.module.css";
  */
 export function CompatMarquee() {
   const items = copy.marquee.items;
-  // Duplicate for seamless CSS animation
-  const doubled = [...items, ...items];
+  // Quadruple for seamless CSS animation — ensures track is
+  // always wider than viewport so the reset seam is never visible.
+  const repeated = [...items, ...items, ...items, ...items];
 
   return (
     <section className={styles.section} data-component="compat-marquee">
@@ -18,7 +19,7 @@ export function CompatMarquee() {
         <div className={styles.label}>{copy.marquee.title}</div>
         <div className={styles.trackWrap}>
           <div className={styles.track}>
-            {doubled.map((name, i) => (
+            {repeated.map((name, i) => (
               <span key={i} className={styles.item}>
                 <span className={styles.glyph}>
                   <BrandIcon name={name} size={16} />
