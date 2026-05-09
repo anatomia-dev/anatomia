@@ -18649,6 +18649,290 @@
         "completed_at": "2026-05-09T02:22:41.837Z",
         "commit_count": 4
       }
+    },
+    {
+      "slug": "work-complete-merge",
+      "feature": "work complete --merge flag for structured PR merging",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 25,
+        "satisfied": 25,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Merging and completing in one command produces a successful completion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The merge step calls gh pr merge without a strategy flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The merge step never uses --delete-branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Running without --merge behaves identically to before",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Pending checks trigger auto-merge attempt",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Successful auto-merge tells the user to come back after the PR merges",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Auto-merge failure tells the user to merge manually",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Branch behind shows rebase commands with the worktree path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Branch behind includes force-with-lease push command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Branch behind warns about approval dismissal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Already-merged PR skips the merge step and completes normally",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Missing PR tells the user to create one first",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Multiple merge strategies tells the user to merge manually",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Unknown merge errors show the raw gh output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Base branch mismatch prevents the merge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Missing gh CLI shows install instructions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Failed merge exits before any archive or commit happens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The --admin flag is never passed to gh",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Verify agent PASS output mentions the --merge option",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Work status next-action for ready-to-merge mentions --merge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Verification-passed message mentions the --merge option",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Ana's pipeline state table mentions the --merge option",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Verify agent guardrails are not modified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Verify agent 'don't run work complete' guardrail is unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Wrong branch error mentions --merge context when the flag is used",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 22,
+        "met": 22
+      },
+      "timing": {
+        "total_minutes": 985,
+        "think": 2,
+        "plan": 18,
+        "build": 31,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:707df42eb686dc350e7295867f0aff2b8f26373fca8420f6298913486159a743",
+        "contract": "sha256:95d27b3d98d88e88467cf80b44a0cce8833b6c6fac679890f806cad24aa49806",
+        "plan": "sha256:e6bc43181949dc7afe17f93af22affdc9053014a4de9d7e1e0506ac2b08224ed",
+        "spec": "sha256:63c8edf19c8d2a18843ff284899a7e6b9508f259031388c21743b0087854da6b",
+        "build-report": "sha256:df4af4973b47af58fc0d1ef4d44b925c206446a425725e7e53b0588764a828f5",
+        "build-data": "sha256:866e1d4435153f3ac4414c37f1e6b1f22d44547e2357da3764e7a20c2853bec3",
+        "verify-report": "sha256:73836316254af33309911f4197735e8549d1fbef19c7e631bda0a2106a367a16",
+        "verify-data": "sha256:cc05cdafbf8da39d699caec8c09a6b491a963e54aa45e2705055f09942e0d7d2"
+      },
+      "completed_at": "2026-05-09T20:38:06.453Z",
+      "modules_touched": [
+        ".claude/agents/ana-verify.md",
+        ".claude/agents/ana.md",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "The pipeline manages every step from scope to PR creation, but merge is unmanaged. When developers delegate the merge to an agent (which they inevitably do), the agent improvises with raw `gh` commands — using `--delete-branch` (worktree conflict), `--squash` (opinionated), `--admin` (bypasses branch protection) — producing confusing errors and inconsistent state. Observed live: the verify agent hit every one of these failure modes in sequence when asked to merge PR #95. The user wants a structured merge path that agents can use without improvising.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A020, A021 assert on source code content instead of testing behavior",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 936,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A020",
+            "A021"
+          ],
+          "id": "work-complete-merge-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No tests verify --json output for any of the 7 merge failure paths",
+          "file": "packages/cli/tests/commands/work-merge.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "work-complete-merge-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "JSON.parse on gh pr view stdout has no try/catch — malformed response crashes",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1061,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "work-complete-merge-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "getNextAction multi-line return breaks status output formatting — second line lacks indentation and styling",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 524,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "work-complete-merge-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Auto-merge enabled path writes plain text to stdout before JSON output — pollutes stdout for --json consumers",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1096,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "work-complete-merge-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "New test file work-merge.test.ts not in contract file_changes — reasonable deviation for spawnSync mock isolation",
+          "file": "packages/cli/tests/commands/work-merge.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "work-complete-merge-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A007 and A013 specify lowercase 'merge manually' but code outputs 'Merge manually' — case mismatch in contract value",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007",
+            "A013"
+          ],
+          "id": "work-complete-merge-C7",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "wrapJsonError produces different JSON shape than spec's wrapJsonResponse",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Checks-pending detection second clause is broad (any stderr with 'check' AND 'pending')",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-09T19:39:21.328Z",
+        "completed_at": "2026-05-09T20:38:06.449Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1

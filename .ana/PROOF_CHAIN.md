@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-73 runs · 161 active · 89 lessons · 0 promoted · 161 closed
+74 runs · 167 active · 90 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/tests/commands/work.test.ts | 12 | 9 |
-| packages/cli/src/commands/work.ts | 12 | 7 |
+| packages/cli/src/commands/work.ts | 15 | 8 |
+| packages/cli/tests/commands/work.test.ts | 13 | 10 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
 | website/lib/proof-feed.ts | 10 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 8 | 4 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 161 total)
+## Active Findings (30 shown of 167 total)
 
 ### .github/workflows/test.yml
 
@@ -33,13 +33,12 @@
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** JSON.parse on gh pr view stdout has no try/catch — malformed response crashes — *work complete --merge flag for structured PR merging*
+- **code:** getNextAction multi-line return breaks status output formatting — second line lacks indentation and styling — *work complete --merge flag for structured PR merging*
+- **code:** Auto-merge enabled path writes plain text to stdout before JSON output — pollutes stdout for --json consumers — *work complete --merge flag for structured PR merging*
 - **code:** commitSaves silently swallows commit failures — index.lock or other git errors invisible to user — *Commit timestamps written by work start*
 - **code:** commitSaves mixes runGit (throws) and spawnSync (returns status) for git operations — works correctly but inconsistent API usage — *Commit timestamps written by work start*
 - **code:** Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
-
-### packages/cli/src/utils/proofSummary.ts
-
-- **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — *Ship Log Polish*
 
 ### packages/cli/tests/commands/artifact.test.ts
 
@@ -49,23 +48,16 @@
 - **test:** A005 EXDEV test doesn't exercise moveFileCrossFs — tests Node.js copyFileSync/unlinkSync directly instead of mocking renameSync to throw EXDEV — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 - **test:** A008 sweep-failure test is a no-op — tests absence of sweep (no main tree copy), not an actual cleanup failure — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 
-### packages/cli/tests/commands/proof.test.ts
+### packages/cli/tests/commands/work-merge.test.ts
 
-- **test:** proof.test.ts L744 redundant toBeTruthy guard before non-null assertion — *Test Suite Hygiene*
+- **test:** No tests verify --json output for any of the 7 merge failure paths — *work complete --merge flag for structured PR merging*
+- **code:** New test file work-merge.test.ts not in contract file_changes — reasonable deviation for spawnSync mock isolation — *work complete --merge flag for structured PR merging*
 
 ### packages/cli/tests/commands/work.test.ts
 
+- **test:** A020, A021 assert on source code content instead of testing behavior — *work complete --merge flag for structured PR merging*
 - **test:** A010 test creates untracked file after commit — doesn't test scoped staging during commit — *Commit timestamps written by work start*
 - **test:** A011 no-push test relies on absence of remote as indirect proof — no spy or mock verifying git push not called — *Commit timestamps written by work start*
-
-### packages/cli/tests/e2e/init-flow.test.ts
-
-- **test:** E2E scan regression test uses 5 sole toBeDefined() assertions on scan.json keys — *Test Suite Hygiene*
-
-### packages/cli/tests/utils/proofSummary.test.ts
-
-- **test:** proofSummary.test.ts parseFindings uses toBeGreaterThanOrEqual on deterministic fixture data — *Test Suite Hygiene*
-- **test:** Previous Callouts in fixture template strings — stale naming preserved as backward-compat fixtures — *Test Suite Hygiene*
 
 ### website/components/hero/ScrollHint.tsx
 
@@ -78,7 +70,6 @@
 ### website/components/proof-feed/ProofFeed.tsx
 
 - **code:** kindLabel defaults to 'improve' for unrecognized kind — pre-existing, not in scope — *Website Mobile Polish + Marquee Overhaul*
-- **code:** kindLabel defaults to 'improve' for any unrecognized kind — silent fallback if ProofKind grows — *Ship Log Polish*
 
 ### website/components/scan/ScanSlab.tsx
 
