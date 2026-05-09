@@ -18443,6 +18443,212 @@
         "completed_at": "2026-05-08T20:41:48.376Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "commit-work-start-timestamps",
+      "feature": "Commit timestamps written by work start",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 14,
+        "satisfied": 14,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Starting a new work item commits the timestamp to the artifact branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The start-work commit message identifies the slug",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The start-work commit includes the co-author trailer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Starting a plan phase commits the timestamp to the artifact branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The plan-phase commit message identifies the phase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The plan-phase commit includes the co-author trailer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Repeating work start for the same phase does not create an empty commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Repeating work start for the same phase does not error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The commit only includes the saves file for this work item",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Other files in the slug directory are not included in the commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Work start does not push to the remote",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Comments saying main when meaning the artifact branch are fixed in work.ts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The artifact branch message in artifact.ts no longer hardcodes main",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "References to main project directory and main tree are preserved",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 100,
+        "think": 1,
+        "plan": 4,
+        "build": 6,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:5ea1b779fa68035e3b743645324313776ca70ad1375e1c1c5420ddb7ebb54b0b",
+        "contract": "sha256:586072a4fe4a9f2a32ad663eed3e057dfec5fba7fabc305411fe1db28b92afc7",
+        "plan": "sha256:d4f06da5a769cf753c938dff82432442c9da16156811a5b5dee1e27601e2a4e1",
+        "spec": "sha256:6b72ea8141b5646169fb07ef6e557d792dd3571ce4b1b7f18713c62ca2b94794",
+        "build-report": "sha256:bc82a09605ab51430913845a17644992bc736dc8352943fe2d46a9051bc499ca",
+        "build-data": "sha256:bdfbaade08eefeebb106aafe59ead3b873d1d0bb6cbcadaa1ffd32e70952b1ca",
+        "verify-report": "sha256:ff824ac36f46abe008ba8d067e0dc326c88c340cf8cbf752a9917301ecdcb92e",
+        "verify-data": "sha256:5f7479454c1872259ca9d0bafcc8280c62ec1ea76dad6a05bea867bcc465e2cd"
+      },
+      "completed_at": "2026-05-09T02:22:41.840Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "`ana work start` writes timestamps to `.saves.json` on the artifact branch without committing, creating dirty tracked state that blocks `git pull --rebase` for concurrent pipeline work. The user wants this fixed — it caused a confirmed failure during concurrent work on 2026-05-07 and is a recurring friction source. Secondary: comments and messages in the affected files say \"main\" when they mean \"artifact branch,\" which is misleading for customers using a different artifact branch name.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A010 test creates untracked file after commit — doesn't test scoped staging during commit",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 3124,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "commit-work-start-timestamps-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "commitSaves silently swallows commit failures — index.lock or other git errors invisible to user",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1914,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "commit-work-start-timestamps-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A011 no-push test relies on absence of remote as indirect proof — no spy or mock verifying git push not called",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 3134,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "commit-work-start-timestamps-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "commitSaves mixes runGit (throws) and spawnSync (returns status) for git operations — works correctly but inconsistent API usage",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1897,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "commit-work-start-timestamps-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Race condition in writeTimestamp still present — read-modify-write on .saves.json is not atomic (pre-existing, from Fix Pipeline Phase Timing)",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "commit-work-start-timestamps-C5",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "commitSaves silently swallows commit failures — if git commit fails for a non-lock reason, user gets no feedback",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A011 test verifies no-push indirectly (no remote configured) rather than asserting git push was never called",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-09T01:07:07.747Z",
+        "completed_at": "2026-05-09T02:22:41.837Z",
+        "commit_count": 4
+      }
     }
   ],
   "schema": 1

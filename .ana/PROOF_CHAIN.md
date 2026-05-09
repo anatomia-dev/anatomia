@@ -1,14 +1,14 @@
 # Proof Chain Dashboard
 
-72 runs · 157 active · 88 lessons · 0 promoted · 161 closed
+73 runs · 161 active · 89 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
+| packages/cli/tests/commands/work.test.ts | 12 | 9 |
+| packages/cli/src/commands/work.ts | 12 | 7 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
-| packages/cli/tests/commands/work.test.ts | 10 | 8 |
-| packages/cli/src/commands/work.ts | 10 | 6 |
 | website/lib/proof-feed.ts | 10 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 8 | 4 |
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 157 total)
+## Active Findings (30 shown of 161 total)
 
 ### .github/workflows/test.yml
 
@@ -33,12 +33,13 @@
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** commitSaves silently swallows commit failures — index.lock or other git errors invisible to user — *Commit timestamps written by work start*
+- **code:** commitSaves mixes runGit (throws) and spawnSync (returns status) for git operations — works correctly but inconsistent API usage — *Commit timestamps written by work start*
 - **code:** Layer 3 planning artifact content-match reads file without try-catch — if file is deleted between filter and readFileSync, unhandled ENOENT crashes completeWork — *Worktree Artifact Path Mismatch — Prevention and Cleanup*
 
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — *Ship Log Polish*
-- **code:** ProofChainEntryForContext does not include kind field — consistent with projection pattern, no current consumer needs it — *Ship Log Polish*
 
 ### packages/cli/tests/commands/artifact.test.ts
 
@@ -52,6 +53,11 @@
 
 - **test:** proof.test.ts L744 redundant toBeTruthy guard before non-null assertion — *Test Suite Hygiene*
 
+### packages/cli/tests/commands/work.test.ts
+
+- **test:** A010 test creates untracked file after commit — doesn't test scoped staging during commit — *Commit timestamps written by work start*
+- **test:** A011 no-push test relies on absence of remote as indirect proof — no spy or mock verifying git push not called — *Commit timestamps written by work start*
+
 ### packages/cli/tests/e2e/init-flow.test.ts
 
 - **test:** E2E scan regression test uses 5 sole toBeDefined() assertions on scan.json keys — *Test Suite Hygiene*
@@ -64,10 +70,6 @@
 ### website/components/hero/ScrollHint.tsx
 
 - **code:** ScrollHint still links to #pipeline — scroll from hero goes nowhere — *Website nav, scroll targets, compat icons, and copy accuracy*
-
-### website/components/pricing/Pricing.tsx
-
-- **code:** Pricing h2 and blurb with maxWidth may not visually center without margin auto — *Website Direct Polish*
 
 ### website/components/proof-feed/proof-feed.module.css
 
@@ -93,12 +95,4 @@
 - **code:** Copilot/Cline use currentColor — renders as var(--fg) inside .glyph, works in both themes but contrast depends on --ink-15 background chip — *Website Mobile Polish + Marquee Overhaul*
 - **code:** brandIconNames exported but never imported — *Website nav, scroll targets, compat icons, and copy accuracy*
 - **code:** Codex icon is a geometric diamond placeholder, not an official brand icon — *Website nav, scroll targets, compat icons, and copy accuracy*
-
-### website/lib/proof-feed.ts
-
-- **code:** resolveKind falls back to slug heuristic for old entries — chore-type old entries misclassified as feature — *Ship Log Polish*
-
-### General
-
-- **test:** A001-A010, A018-A024 verified by source inspection only — no tagged tests for website copy, types, or wiring — *Ship Log Polish*
 
