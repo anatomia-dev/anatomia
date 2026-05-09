@@ -120,17 +120,16 @@
 .drawerHead::before {
   content: "";
   position: absolute;
-  left: -8px;
-  right: -8px;
+  left: 0;
+  right: 0;
   top: 0;
   bottom: 0;
-  background: color-mix(in srgb, var(--color-brand) 0%, transparent);
+  background: rgba(168, 60, 50, 0.0);
   transition: background 0.2s ease;
   pointer-events: none;
-  border-radius: 2px;
 }
 .drawerHead:hover::before {
-  background: color-mix(in srgb, var(--color-brand) 3%, transparent);
+  background: rgba(0, 0, 0, 0.014);
 }
 .drawerHead:hover .dName,
 .drawerHead:hover .dToggle {
@@ -160,6 +159,7 @@
 }
 .dTeaser {
   font-size: 14px;
+  font-weight: 400;
   color: var(--ink-45);
   font-family: var(--font-serif);
   font-style: italic;
@@ -308,6 +308,7 @@
   padding-left: 16px;
   color: var(--ink-45);
   font-size: 11px;
+  font-weight: 400;
   font-style: italic;
   font-family: var(--font-serif);
   text-align: right;
@@ -388,6 +389,7 @@
 .manMore {
   margin-top: 12px;
   font-size: 11px;
+  font-weight: 400;
   color: var(--ink-45);
   font-style: italic;
   font-family: var(--font-serif);
