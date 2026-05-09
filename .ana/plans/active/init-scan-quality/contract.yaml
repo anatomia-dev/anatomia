@@ -1,0 +1,176 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Init must surface scan quality and pipeline readiness"
+
+assertions:
+  # Layer 1: Scan quality display
+  - id: A001
+    says: "A degraded scan shows a warning instead of a success checkmark"
+    block: "displays warning spinner when tree-sitter fails"
+    target: "spinner.method"
+    matcher: "equals"
+    value: "warn"
+
+  - id: A002
+    says: "A degraded scan tells the user what analysis was lost in plain language"
+    block: "displays warning spinner when tree-sitter fails"
+    target: "spinner.message"
+    matcher: "contains"
+    value: "Deep scan incomplete"
+
+  - id: A003
+    says: "A clean scan confirms no gaps were detected"
+    block: "displays success spinner when no blind spots exist"
+    target: "spinner.message"
+    matcher: "contains"
+    value: "Deep scan complete"
+
+  - id: A004
+    says: "Tree-sitter failures are described in human terms, not technical jargon"
+    block: "translates Analyzer blind spot to human-readable message"
+    target: "output"
+    matcher: "contains"
+    value: "code patterns, conventions, and structure analysis"
+
+  - id: A005
+    says: "The raw tree-sitter error message is not shown to the user"
+    block: "translates Analyzer blind spot to human-readable message"
+    target: "output"
+    matcher: "not_contains"
+    value: "Tree-sitter"
+
+  - id: A006
+    says: "Each blind spot shows its area and what went wrong"
+    block: "displays non-Analyzer blind spots with their fields"
+    target: "output"
+    matcher: "contains"
+    value: "Database"
+
+  - id: A007
+    says: "Each blind spot shows how to resolve it"
+    block: "displays non-Analyzer blind spots with their fields"
+    target: "output"
+    matcher: "contains"
+    value: "schema.prisma"
+
+  - id: A008
+    says: "No blind spots means no blind spot section is shown"
+    block: "hides blind spot section when array is empty"
+    target: "output"
+    matcher: "not_contains"
+    value: "Blind spots"
+
+  # Layer 2: Pipeline dependency checks
+  - id: A009
+    says: "Missing git user name produces a warning with a fix command"
+    block: "warns when git user.name is not configured"
+    target: "warnings"
+    matcher: "contains"
+    value: "git config --global user.name"
+
+  - id: A010
+    says: "Missing git user email produces a warning with a fix command"
+    block: "warns when git user.email is not configured"
+    target: "warnings"
+    matcher: "contains"
+    value: "git config --global user.email"
+
+  - id: A011
+    says: "Git user checks are skipped when git is not installed"
+    block: "skips git user check when hasGit is false"
+    target: "warnings"
+    matcher: "not_contains"
+    value: "user.name"
+
+  - id: A012
+    says: "Missing GitHub CLI produces a warning that says the pipeline still works"
+    block: "warns when gh CLI is not installed"
+    target: "warnings"
+    matcher: "contains"
+    value: "The pipeline works without it through Build/Verify"
+
+  - id: A013
+    says: "The remote warning now explains what it means for the pipeline"
+    block: "enhances existing remote message with pipeline context"
+    target: "output"
+    matcher: "contains"
+    value: "git remote add origin"
+
+  - id: A014
+    says: "Preflight warnings are captured in the result, not just printed"
+    block: "returns warnings array in PreflightResult"
+    target: "preflight.warnings"
+    matcher: "exists"
+
+  - id: A015
+    says: "No new check prevents init from completing"
+    block: "all new checks are informational"
+    target: "preflight.canProceed"
+    matcher: "equals"
+    value: true
+
+  # Layer 2 continued: Success message pipeline readiness
+  - id: A016
+    says: "Pipeline warnings appear in the success message before next steps"
+    block: "displays pipeline readiness section with warnings"
+    target: "output"
+    matcher: "contains"
+    value: "Pipeline readiness"
+
+  - id: A017
+    says: "No warnings means no pipeline readiness section"
+    block: "hides pipeline readiness when no warnings"
+    target: "output"
+    matcher: "not_contains"
+    value: "Pipeline readiness"
+
+  # Layer 3: Setup agent template
+  - id: A018
+    says: "The setup agent checks environment tools after completing setup"
+    block: "setup template includes environment validation"
+    target: "template"
+    matcher: "contains"
+    value: "gh --version"
+
+  - id: A019
+    says: "The setup agent checks git identity configuration"
+    block: "setup template includes environment validation"
+    target: "template"
+    matcher: "contains"
+    value: "git config user.name"
+
+  - id: A020
+    says: "The setup agent is told not to install software without permission"
+    block: "setup template includes safety guardrail"
+    target: "template"
+    matcher: "contains"
+    value: "Do not install software"
+
+  # Cross-cutting
+  - id: A021
+    says: "Total scan failure still shows the existing graceful message"
+    block: "preserves total analyzer failure behavior"
+    target: "spinner.message"
+    matcher: "contains"
+    value: "Analyzer failed"
+
+  - id: A022
+    says: "Scan engine blind spot messages are not modified"
+    block: "scan-engine.ts blind spot message unchanged"
+    target: "scanEngine.blindSpot.issue"
+    matcher: "contains"
+    value: "Tree-sitter analysis unavailable"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/types.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/preflight.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/index.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-setup.md"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
