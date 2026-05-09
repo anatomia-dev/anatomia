@@ -122,8 +122,8 @@
   position: absolute;
   left: -8px;
   right: -8px;
-  top: 4px;
-  bottom: 4px;
+  top: 0;
+  bottom: 0;
   background: color-mix(in srgb, var(--color-brand) 0%, transparent);
   transition: background 0.2s ease;
   pointer-events: none;
