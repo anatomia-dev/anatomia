@@ -52,24 +52,11 @@ export async function Nav() {
 
           {latest && (
             <span
-              className="hidden items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-[11px] min-[900px]:inline-flex"
-              style={{
-                color: "var(--ink-60)",
-                background: "var(--bg-elev)",
-                border: "1px solid var(--border-soft)",
-              }}
+              className="hidden whitespace-nowrap font-mono text-[11px] min-[900px]:inline"
+              style={{ color: "var(--ink-30)" }}
               aria-label="Latest release"
             >
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{
-                  background: "var(--color-brand)",
-                  boxShadow: "0 0 0 3px color-mix(in oklch, var(--color-brand) 25%, transparent)",
-                }}
-              />
-              <span>{latest.version}</span>
-              <span> · </span>
-              <span>{formatAge(latest.ts)}</span>
+              {latest.version} · {formatAge(latest.ts)}
             </span>
           )}
         </div>
