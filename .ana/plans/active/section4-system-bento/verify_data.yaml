@@ -1,44 +1,43 @@
 schema: 1
 findings:
   - category: code
-    summary: "Closer renders text but does not link to #proof — copy.system.closer.href is defined but never consumed"
-    file: "website/components/system/SystemSection.tsx"
-    line: 56
-    severity: risk
-    suggested_action: scope
-    related_assertions: ["A021"]
-  - category: code
-    summary: "Three hardcoded rgba() values in CSS module — hover/active states use literal colors instead of CSS custom properties"
-    file: "website/components/system/system.module.css"
-    line: 127
+    summary: "Drawer sectionRef prop is dead code — defined but never passed by SystemSection"
+    file: "website/components/system/Drawer.tsx"
+    line: 19
     severity: debt
     suggested_action: accept
-    related_assertions: ["A017"]
+    related_assertions: []
   - category: code
-    summary: "Drawer sectionRef prop is dead code — SystemSection never passes it, Drawer falls back to containerRef"
-    file: "website/components/system/Drawer.tsx"
-    line: 22
-    severity: debt
-    suggested_action: scope
-  - category: code
-    summary: "SectionThread breathe prop and animate-breathe class are dead code — never invoked with breathe=true, and animate-breathe CSS class is undefined"
+    summary: "SectionThread breathe prop applies undefined animate-breathe CSS class — no-op if invoked"
     file: "website/components/ui/SectionThread.tsx"
     line: 31
     severity: debt
-    suggested_action: scope
+    suggested_action: accept
   - category: code
-    summary: "ManPage footer date '2026-05' is hardcoded — will become stale next month"
+    summary: "ManPage footer date '2026-05' is a hardcoded string — will go stale monthly"
     file: "website/components/system/ManPage.tsx"
     line: 60
     severity: observation
     suggested_action: monitor
-  - category: upstream
-    summary: "Stale proof chain findings for #pipeline links in copy.ts, ScanSlab, ScrollHint — all resolved by this build"
-    severity: observation
-    suggested_action: accept
   - category: code
-    summary: "SystemSection closer doesn't use SectionThread component — opportunity for reuse missed, creates pattern duplication"
+    summary: "SystemSection closer does not use SectionThread component — pattern duplication"
     file: "website/components/system/SystemSection.tsx"
     line: 56
     severity: observation
-    suggested_action: monitor
+    suggested_action: accept
+  - category: code
+    summary: "copy.ts systemThread key is defined but never consumed by any component — dead data"
+    file: "website/lib/copy.ts"
+    line: 211
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "color-mix() CSS function used for hover effects — ~93% browser support, older browsers get no hover feedback"
+    file: "website/components/system/system.module.css"
+    line: 127
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Three proof chain findings for #pipeline links resolved by this build — copy.ts, ScanSlab, ScrollHint, manifesto all now point to #system"
+    severity: observation
+    suggested_action: accept
