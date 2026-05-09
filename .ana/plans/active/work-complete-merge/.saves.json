@@ -37,5 +37,20 @@
     "packages/cli/templates/.claude/agents/ana.md",
     "packages/cli/tests/commands/work-merge.test.ts",
     "packages/cli/tests/commands/work.test.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-09T20:11:48.656Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:95d27b3d98d88e88467cf80b44a0cce8833b6c6fac679890f806cad24aa49806",
+    "run_at": "2026-05-09T20:18:07.973Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-09T20:18:08.006Z",
+    "hash": "sha256:73836316254af33309911f4197735e8549d1fbef19c7e631bda0a2106a367a16"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-09T20:18:08.006Z",
+    "hash": "sha256:cc05cdafbf8da39d699caec8c09a6b491a963e54aa45e2705055f09942e0d7d2"
+  }
 }
