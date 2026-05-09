@@ -1,0 +1,111 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "CLI commits scoped to intended paths"
+
+assertions:
+  - id: A001
+    says: "The work complete commit only contains the files it intended to stage"
+    block: "completeWork scoped commit excludes unrelated staged files"
+    target: "commitFiles"
+    matcher: "not_contains"
+    value: "unrelated.txt"
+
+  - id: A002
+    says: "Pre-existing staged files remain staged after a scoped commit"
+    block: "completeWork scoped commit excludes unrelated staged files"
+    target: "stagedAfterCommit"
+    matcher: "contains"
+    value: "unrelated.txt"
+
+  - id: A003
+    says: "The work complete commit includes the archived plan directory"
+    block: "completeWork scoped commit excludes unrelated staged files"
+    target: "commitFiles"
+    matcher: "contains"
+    value: "completed/"
+
+  - id: A004
+    says: "The work complete commit includes the proof chain"
+    block: "completeWork scoped commit excludes unrelated staged files"
+    target: "commitFiles"
+    matcher: "contains"
+    value: "proof_chain.json"
+
+  - id: A005
+    says: "The single artifact save commit uses scoped pathspecs"
+    block: "artifact save single commit is scoped"
+    target: "commitArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A006
+    says: "The multi artifact save commit uses scoped pathspecs"
+    block: "artifact save-all commit is scoped"
+    target: "commitArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A007
+    says: "The single artifact diff check uses scoped pathspecs"
+    block: "artifact save single diff check is scoped"
+    target: "diffArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A008
+    says: "The multi artifact diff check uses scoped pathspecs"
+    block: "artifact save-all diff check is scoped"
+    target: "diffArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A009
+    says: "The saves-only commit uses a scoped pathspec"
+    block: "commitSaves commit is scoped"
+    target: "commitArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A010
+    says: "The saves-only diff check uses a scoped pathspec"
+    block: "commitSaves diff check is scoped"
+    target: "diffArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A011
+    says: "The proof commit uses scoped pathspecs from options.files"
+    block: "commitAndPushProofChanges commit is scoped"
+    target: "commitArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A012
+    says: "The recovery commit uses scoped pathspecs"
+    block: "work complete recovery commit is scoped"
+    target: "commitArgs"
+    matcher: "contains"
+    value: "--"
+
+  - id: A013
+    says: "Orphan file removals are included in the scoped multi-artifact commit"
+    block: "artifact save-all includes orphan removals in scoped commit"
+    target: "stagedPaths"
+    matcher: "contains"
+    value: "orphan"
+
+  - id: A014
+    says: "A clean index produces identical behavior with scoped commits"
+    block: "completeWork scoped commit excludes unrelated staged files"
+    target: "completedDirExists"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
