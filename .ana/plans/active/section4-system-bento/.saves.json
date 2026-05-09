@@ -41,5 +41,20 @@
     "website/components/system/system.module.css",
     "website/components/ui/SectionThread.tsx",
     "website/lib/copy.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-09T20:01:56.829Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:a67daa8f8aa3a01c3c47ad86e3e290dfd3068cb49d89d6d0aea5bf0f84951d75",
+    "run_at": "2026-05-09T20:07:34.164Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-09T20:07:34.220Z",
+    "hash": "sha256:f7f5b7d9b1fb8f4befa9e1a8651a5b484490c804d12e54c6d97f9ff1c7ba020a"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-09T20:07:34.221Z",
+    "hash": "sha256:217886361688bea76a4303506783b94cc5c3cfc28b9d794338ad7f7bdc3b3948"
+  }
 }
