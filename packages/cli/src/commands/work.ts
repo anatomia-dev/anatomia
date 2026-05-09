@@ -1028,7 +1028,7 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
       let pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
 
       // Handle "untracked working tree files would be overwritten" — caused by
-      // Build/Verify agents writing artifacts to main instead of the worktree.
+      // Build/Verify agents writing artifacts to the artifact branch instead of the worktree.
       // If the untracked files match what's coming from the merge, remove them and retry.
       if (pullResult.exitCode !== 0 && pullResult.stderr.includes('untracked working tree files would be overwritten')) {
         const untrackedLines = pullResult.stderr.split('\n')
@@ -1073,7 +1073,7 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
                 // Best-effort
               }
             }
-            console.log(chalk.yellow(`  ⚠ Removed ${buildVerifyFiles.length} untracked build/verify artifact(s) from main (always agent-written).`));
+            console.log(chalk.yellow(`  ⚠ Removed ${buildVerifyFiles.length} untracked build/verify artifact(s) from the artifact branch (always agent-written).`));
           }
 
           // Planning artifacts require content-match before removal
@@ -1093,13 +1093,13 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
               for (const relPath of planningFiles) {
                 fs.unlinkSync(path.join(projectRoot, relPath));
               }
-              console.log(chalk.yellow(`  ⚠ Removed ${planningFiles.length} untracked planning artifact(s) from main (matched merged content).`));
+              console.log(chalk.yellow(`  ⚠ Removed ${planningFiles.length} untracked planning artifact(s) from the artifact branch (matched merged content).`));
             } else {
               console.error(chalk.red('Error: Pull blocked by untracked files that differ from the merged version:'));
               for (const f of planningFiles) {
                 console.error(chalk.gray(`  ${f}`));
               }
-              console.error(chalk.gray('These files were written to main but differ from the PR. Inspect and remove manually.'));
+              console.error(chalk.gray('These files were written to the artifact branch but differ from the PR. Inspect and remove manually.'));
               process.exit(1);
             }
           }
@@ -1385,7 +1385,7 @@ export async function completeWork(slug: string, options?: { json?: boolean }): 
   }
 
   // 12. Delete work branch (cleanup — force delete because squash/rebase merges
-  //     create new commits, so the feature branch is never an ancestor of main.
+  //     create new commits, so the feature branch is never an ancestor of the artifact branch.
   //     Safe: step 6 already verified the branch was merged.)
   runGit(['branch', '-D', workBranchName], { cwd: projectRoot });
   // Silently continue if branch doesn't exist or was already deleted
@@ -1598,6 +1598,7 @@ export async function startWork(slug: string): Promise<void> {
 
     // Write work_started_at
     await writeTimestamp(activePath, 'work_started_at', 'ana');
+    commitSaves(projectRoot, slug, `[${slug}] Start work`);
 
     console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
     return;
@@ -1635,6 +1636,7 @@ export async function startWork(slug: string): Promise<void> {
     }
 
     await writeTimestamp(activePath, 'plan_started_at', 'ana-plan');
+    commitSaves(projectRoot, slug, `[${slug}] Start plan phase`);
     console.log(`Resuming \`${slug}\` — Plan phase. Run \`claude --agent ana-plan\`.`);
     return;
   }
@@ -1646,7 +1648,7 @@ export async function startWork(slug: string): Promise<void> {
 
   // Phase: build report exists, no verify report → Verify (print worktree)
   if (buildReportExists && !verifyReportExists) {
-    // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+    // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
     if (worktreeExists(projectRoot, slug)) {
       const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
       await writeTimestamp(wtPlanDir, 'verify_started_at', 'ana-verify');
@@ -1678,7 +1680,7 @@ export async function startWork(slug: string): Promise<void> {
     }
 
     if (isFail) {
-      // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+      // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
       // Force overwrite: FAIL→Fix is a new build session, so the old build_started_at is stale
       if (worktreeExists(projectRoot, slug)) {
         const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
@@ -1717,7 +1719,7 @@ async function startBuildPhase(
 ): Promise<void> {
   // Check if worktree already exists (resume case)
   if (worktreeExists(projectRoot, slug)) {
-    // Write timestamp to worktree (not main) to avoid dirty .saves.json blocking git pull
+    // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
     const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
     await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
     return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Build');
@@ -1793,7 +1795,7 @@ async function startBuildPhase(
     }
     console.log(`  Context: ${result.contextFileWritten ? 'worktree-context.md written' : 'not written'}`);
 
-    // Record build_started_at in the worktree (not main) to avoid dirty .saves.json blocking git pull
+    // Record build_started_at in the worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
     const wtPlanDir = path.join(result.worktreePath, '.ana', 'plans', 'active', slug);
     await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
 
@@ -1875,6 +1877,43 @@ async function writeTimestamp(activePath: string, key: string, agent?: string, f
     saves[agentKey] = agent;
   }
   await fsPromises.writeFile(savesPath, JSON.stringify(saves, null, 2), 'utf-8');
+}
+
+/**
+ * Commit .saves.json for a slug on the artifact branch.
+ *
+ * Stages only the slug's .saves.json, checks for staged changes, and commits
+ * with the configured co-author. If nothing was staged (write-once no-op),
+ * returns silently without creating an empty commit.
+ *
+ * @param projectRoot - Project root directory
+ * @param slug - Work item slug
+ * @param message - Commit message (without co-author trailer)
+ */
+function commitSaves(projectRoot: string, slug: string, message: string): void {
+  const savesRelPath = path.join('.ana', 'plans', 'active', slug, '.saves.json');
+
+  try {
+    runGit(['add', savesRelPath], { cwd: projectRoot });
+  } catch {
+    // Nothing to stage
+    return;
+  }
+
+  // Check if there are staged changes — status 0 means no differences
+  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet'], { cwd: projectRoot });
+  if (diffResult.status === 0) {
+    return;
+  }
+
+  const coAuthor = readCoAuthor(projectRoot);
+  const commitMessage = `${message}\n\nCo-authored-by: ${coAuthor}`;
+  try {
+    const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
+    if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
+  } catch {
+    // Silent failure — don't block the user's workflow for a convenience commit
+  }
 }
 
 /**

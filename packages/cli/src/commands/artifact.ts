@@ -934,7 +934,7 @@ function validateBranch(
         const planRel = path.join('.ana', 'plans', 'active', slug, typeInfo.fileName);
         const mainFilePath = path.join(projectRoot, planRel);
         if (fs.existsSync(mainFilePath)) {
-          console.error(chalk.red(`Error: ${typeInfo.fileName} is here on main but belongs in the worktree.`));
+          console.error(chalk.red(`Error: ${typeInfo.fileName} is here on the artifact branch but belongs in the worktree.`));
           console.error(chalk.gray(`  cp ${planRel} ${path.join(wtRel, planRel)}`));
           console.error(chalk.gray(`  cd ${wtRel} && ana artifact save ${typeInfo.baseType} ${slug}`));
         } else {
