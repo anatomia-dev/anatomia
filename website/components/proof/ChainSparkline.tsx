@@ -24,7 +24,7 @@ export function ChainSparkline() {
         </span>
       </div>
 
-      <div className={styles.chainSpark} aria-label={c.footLeft}>
+      <div className={styles.chainSpark} aria-label={`showing ${c.pattern.length} of ${c.count} proofs`}>
         {c.pattern.map((p, i) => (
           <span
             key={i}
@@ -32,6 +32,8 @@ export function ChainSparkline() {
               styles.pip,
               classMap[p],
               i === c.pattern.length - 1 ? styles.pipLatest : "",
+              i >= 35 ? styles.pipDesktopOnly : "",
+              i >= 25 ? styles.pipTabletUp : "",
             ]
               .filter(Boolean)
               .join(" ")}

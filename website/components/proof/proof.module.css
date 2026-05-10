@@ -624,10 +624,7 @@
   display: flex;
   gap: 2px;
   padding: 4px 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
-.chainSpark::-webkit-scrollbar { display: none; }
 .pip {
   flex: 1;
   min-width: 6px;
@@ -642,6 +639,15 @@
   transform: scaleY(1.5);
   z-index: 2;
   box-shadow: 0 0 0 2px rgba(46, 93, 58, 0.25);
+}
+/* Hide later pips on smaller screens */
+.pipDesktopOnly {}
+.pipTabletUp {}
+@media (max-width: 720px) {
+  .pipDesktopOnly { display: none; }
+}
+@media (max-width: 480px) {
+  .pipTabletUp { display: none; }
 }
 .chainFoot {
   display: flex;

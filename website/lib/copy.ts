@@ -286,7 +286,7 @@ export const copy = {
     chain: {
       title: "Proof chain",
       count: 126,
-      shown: "55/",
+      shown: "showing ",
       countLabel: "pipeline runs",
       pattern: [
         "G","R","Y","G","G","R","Y","G","G","Y",
