@@ -41,5 +41,20 @@
     "website/components/proof/ProofSection.tsx",
     "website/components/scan/ScanSlab.tsx",
     "website/components/system/SystemSection.tsx"
-  ]
+  ],
+  "verify_started_at": "2026-05-10T18:05:31.439Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:fa21c1b5d37ebb49c38a822ea945edb7e56fa7a42bf69bfb6c94aa488b8b3a18",
+    "run_at": "2026-05-10T18:11:19.966Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-10T18:11:20.000Z",
+    "hash": "sha256:651b82256eb8279693db9aa91f3bcacf9fed79caea8966f5bf247c593f92adf6"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-10T18:11:20.000Z",
+    "hash": "sha256:cadc73928e654adf4ae09d78c1b9c39c58ec2e14014ebd4565a238b17bdf7f3a"
+  }
 }
