@@ -502,34 +502,8 @@ describe('ana init', () => {
     });
   });
 
-  describe('runAnalyzer spinner messages', () => {
-    // @ana A001, A002
-    it('uses warn with "Deep scan incomplete" when Analyzer blind spot exists', () => {
-      // Verified by source inspection: runAnalyzer checks
-      // engineResult.blindSpots.some(bs => bs.area === 'Analyzer')
-      // and calls spinner.warn('Deep scan incomplete') when true.
-      const result = createEmptyEngineResult();
-      result.blindSpots = [{ area: 'Analyzer', issue: 'Tree-sitter analysis unavailable: failed', resolution: 'Rebuild' }];
-      const hasAnalyzerBlindSpot = result.blindSpots.some(bs => bs.area === 'Analyzer');
-      expect(hasAnalyzerBlindSpot).toBe(true);
-    });
-
-    // @ana A003
-    it('uses succeed with "Deep scan complete" when no blind spots', () => {
-      const result = createEmptyEngineResult();
-      expect(result.blindSpots.length).toBe(0);
-      // When blindSpots is empty, spinner.succeed('Deep scan complete — no gaps detected') is called
-    });
-
-    // @ana A021
-    it('preserves total analyzer failure behavior', () => {
-      // Verified by source inspection: the catch block in runAnalyzer
-      // still calls spinner.warn('Analyzer failed — continuing with empty scaffolds')
-      // This path is separate from the blind spot conditional — it fires
-      // when scanProject throws, not when it returns with blind spots.
-      expect(true).toBe(true); // Source inspection — catch block unchanged
-    });
-  });
+  // runAnalyzer spinner messages — tested in init-spinner.test.ts
+  // (requires vi.mock for ora and scan-engine at module level)
 
   describe('displaySuccessMessage pipeline readiness', () => {
     // @ana A016
@@ -593,58 +567,8 @@ describe('ana init', () => {
     });
   });
 
-  describe('PreflightResult warnings', () => {
-    // @ana A014, A015
-    it('PreflightResult interface includes warnings array', () => {
-      // Type-level check: construct a valid PreflightResult
-      const result = {
-        canProceed: true,
-        initState: 'fresh' as const,
-        anaExisted: false,
-        warnings: ['test warning'],
-      };
-      expect(result.warnings).toBeDefined();
-      expect(result.canProceed).toBe(true);
-    });
-
-    // @ana A009
-    it('produces warning with git config --global user.name when unconfigured', () => {
-      // The warning message format includes the fix command
-      const warningMsg = 'git user.name not configured — git config --global user.name "Your Name"';
-      expect(warningMsg).toContain('git config --global user.name');
-    });
-
-    // @ana A010
-    it('produces warning with git config --global user.email when unconfigured', () => {
-      const warningMsg = 'git user.email not configured — git config --global user.email "you@example.com"';
-      expect(warningMsg).toContain('git config --global user.email');
-    });
-
-    // @ana A011
-    it('skips git user check when hasGit is false', () => {
-      // Verified by source: git user checks are inside the `else` branch
-      // of `if (!hasGit)`. When hasGit is false, execution takes the
-      // `if (!hasGit)` path and never reaches the user.name/email checks.
-      // The warnings array won't contain user.name or user.email entries.
-      const warningsWithoutGit: string[] = [];
-      // Simulating: no git = no git user checks added
-      expect(warningsWithoutGit.some(w => w.includes('user.name'))).toBe(false);
-    });
-
-    // @ana A012
-    it('gh CLI warning includes pipeline works message', () => {
-      const warningMsg = 'gh CLI not installed — PR creation unavailable\n      Install from https://cli.github.com/\n      The pipeline works without it through Build/Verify';
-      expect(warningMsg).toContain('The pipeline works without it through Build/Verify');
-    });
-
-    // @ana A013
-    it('remote warning includes git remote add origin', () => {
-      // Verified by source: the enhanced remote message includes
-      // 'git remote add origin' and a warning is added to the array
-      const remoteWarning = 'No remote detected — add one with: git remote add origin <url>';
-      expect(remoteWarning).toContain('git remote add origin');
-    });
-  });
+  // PreflightResult warnings — tested in init-preflight.test.ts
+  // (requires vi.mock for git-operations and child_process at module level)
 
   describe('setup agent template', () => {
     // @ana A018, A019, A020
