@@ -9,8 +9,8 @@
   --color-warn: #B8862B;
   --color-fail: #7A1B1B;
   --color-brand-soft: rgba(122, 27, 27, 0.06);
-  --ink-78: rgba(11, 11, 16, 0.78);
   padding: 0 0 64px;
+  border-top: 1px solid var(--hairline);
   position: relative;
 }
 .section::before {
@@ -429,7 +429,7 @@
   font-family: var(--font-mono);
   font-size: 12.5px;
   line-height: 1.6;
-  color: var(--ink-78);
+  color: var(--ink-75);
   opacity: 0;
   transform: translateY(3px);
 }
@@ -512,7 +512,7 @@
   font-style: normal;
   font-size: 14px;
   line-height: 1.55;
-  color: var(--ink-78);
+  color: var(--ink-75);
 }
 .findingBody em {
   font-style: normal;
@@ -814,6 +814,43 @@
   .ledgerRubric { font-size: 9px; }
   .chainStats { gap: 18px; }
   .chainStatValue { font-size: 18px; }
+}
+
+/* ── Dark theme ── */
+:global([data-theme="dark"]) .section {
+  --color-pass: #5BA372;
+  --color-warn: #D4A84B;
+  --color-fail: #C44040;
+  --color-brand-soft: rgba(200, 100, 100, 0.10);
+}
+:global([data-theme="dark"]) .pile {
+  background: var(--bg-card);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+:global([data-theme="dark"]) .pile1 { background: #141418; }
+:global([data-theme="dark"]) .pile2 { background: #131316; }
+:global([data-theme="dark"]) .pile3 { background: #121215; }
+:global([data-theme="dark"]) .pile4 { background: #111113; }
+:global([data-theme="dark"]) .pile5 { background: #101012; }
+:global([data-theme="dark"]) .pile6 { background: #0F0F11; }
+:global([data-theme="dark"]) .proof {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 24px 56px -28px rgba(0, 0, 0, 0.5);
+}
+:global([data-theme="dark"]) .proofResult {
+  border-color: rgba(91, 163, 114, 0.3);
+  background: rgba(91, 163, 114, 0.08);
+}
+:global([data-theme="dark"]) .assertItem code,
+:global([data-theme="dark"]) .findingBody em {
+  background: rgba(200, 100, 100, 0.12);
+}
+:global([data-theme="dark"]) .chain {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 18px 44px -28px rgba(0, 0, 0, 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {

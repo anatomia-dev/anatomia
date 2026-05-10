@@ -20,7 +20,7 @@ export function ProofSection() {
       data-component="proof"
     >
       <Container>
-        <div className="mx-auto max-w-[1100px] border-t pt-[var(--spacing-section,116px)]" style={{ borderColor: "var(--hairline)" }}>
+        <div className="mx-auto max-w-[1100px] pt-[var(--spacing-section,116px)]">
         {/* Header: two-column intro */}
         <header className={styles.header}>
           <div>
