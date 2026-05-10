@@ -1,0 +1,8 @@
+schema: 1
+concerns:
+  - summary: "Contract assertions A005-A013 verified by code inspection only, no dedicated per-site tests"
+    severity: observation
+    suggested_action: accept
+  - summary: "git commit -- <paths> uses --only semantics (working tree, not index) — safe with synchronous staging but a latent assumption"
+    severity: observation
+    suggested_action: monitor

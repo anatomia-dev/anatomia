@@ -162,7 +162,7 @@ function commitAndPushProofChanges(options: {
   // Stage and commit
   runGit(['add', ...options.files], { cwd: options.proofRoot });
   const commitMessage = `${options.message}\n\nCo-authored-by: ${options.coAuthor}`;
-  const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: options.proofRoot });
+  const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', ...options.files], { stdio: 'pipe', cwd: options.proofRoot });
   if (commitResult.status !== 0) {
     const stderr = commitResult.stderr?.toString() || 'Commit failed';
     console.error(chalk.red(`Error: Failed to commit. Changes NOT saved to git.`));

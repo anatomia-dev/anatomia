@@ -18,7 +18,7 @@ export function SystemSection() {
       data-component="system"
     >
       <Container>
-        <div className="mx-auto max-w-[1100px]">
+        <div className="mx-auto max-w-[1210px]">
         <span id="system" className="scroll-anchor" />
         {/* Header: two-column intro */}
         <header className={styles.header}>

@@ -727,6 +727,41 @@ describe('ana work status', () => {
       });
     });
 
+    describe('scoped commits', () => {
+      // @ana A001, A002, A003, A004, A014
+      it('excludes unrelated staged files from the complete commit', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+
+        // Stage an unrelated file before running completeWork
+        fsSync.writeFileSync(path.join(tempDir, 'unrelated.txt'), 'unrelated');
+        execSync('git add unrelated.txt', { cwd: tempDir, stdio: 'ignore' });
+
+        await completeWork('test-slug');
+
+        // Verify the unrelated file is NOT in the commit
+        const commitFiles = execSync('git diff-tree --no-commit-id --name-only -r HEAD', {
+          cwd: tempDir,
+          encoding: 'utf-8',
+        }).trim();
+        expect(commitFiles).not.toContain('unrelated.txt');
+
+        // Verify expected files ARE in the commit
+        expect(commitFiles).toContain('completed/');
+        expect(commitFiles).toContain('proof_chain.json');
+
+        // Verify the unrelated file IS still staged
+        const stagedFiles = execSync('git diff --cached --name-only', {
+          cwd: tempDir,
+          encoding: 'utf-8',
+        }).trim();
+        expect(stagedFiles).toContain('unrelated.txt');
+
+        // Verify directory moved (clean index = identical behavior)
+        const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+        expect(fsSync.existsSync(completedPath)).toBe(true);
+      });
+    });
+
     describe('branch validation', () => {
       it('errors when not on artifact branch', async () => {
         await createMergedProject({ slug: 'test-slug', merged: false });

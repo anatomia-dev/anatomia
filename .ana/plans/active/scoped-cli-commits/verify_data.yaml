@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: test
+    summary: "No integration tests for artifact.ts or proof.ts scoped commit sites — 9 of 14 assertions verified by source inspection only"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A005", "A006", "A007", "A008", "A009", "A010", "A011", "A012", "A013"]
+  - category: code
+    summary: "git commit -- uses --only semantics (working tree, not index) — safe because git add and commit are adjacent synchronous calls, but undocumented assumption"
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005", "A006"]
+  - category: code
+    summary: "Site 2 stages plan.md with absolute path via runGit but tracks relative path in stagedPaths — works correctly but mixed path convention"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1629
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "Test uses toContain('completed/') for path matching — works in controlled test but would false-positive if any other path contained 'completed/'"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 749
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "commitSaves silently swallows commit failures — pre-existing, still present (see proof context)"
+    severity: observation
+    suggested_action: monitor

@@ -1213,17 +1213,21 @@ export function saveArtifact(type: string, slug: string): void {
   }
 
   // 8. Stage the artifact file(s)
+  const stagedPaths: string[] = [];
   try {
     runGit(['add', relFilePath], { cwd: projectRoot });
+    stagedPaths.push(relFilePath);
 
     // Stage companion YAML alongside report
     if (relCompanionPath && companionPath && fs.existsSync(companionPath)) {
       runGit(['add', relCompanionPath], { cwd: projectRoot });
+      stagedPaths.push(relCompanionPath);
     }
 
     // Stage archive files alongside new artifacts
     for (const archivePath of archiveRelPaths) {
       runGit(['add', archivePath], { cwd: projectRoot });
+      stagedPaths.push(archivePath);
     }
 
     // Special case: verify-report also stages plan.md if it exists
@@ -1231,6 +1235,7 @@ export function saveArtifact(type: string, slug: string): void {
       const relPlanPath = path.join('.ana', 'plans', 'active', slug, 'plan.md');
       if (fs.existsSync(path.join(projectRoot, relPlanPath))) {
         runGit(['add', relPlanPath], { cwd: projectRoot });
+        stagedPaths.push(relPlanPath);
       }
     }
   } catch (error) {
@@ -1260,12 +1265,14 @@ export function saveArtifact(type: string, slug: string): void {
   const savesPath = path.join(slugDir, '.saves.json');
   if (fs.existsSync(savesPath)) {
     try {
-      runGit(['add', path.relative(projectRoot, savesPath)], { cwd: projectRoot });
+      const savesRelPath = path.relative(projectRoot, savesPath);
+      runGit(['add', savesRelPath], { cwd: projectRoot });
+      stagedPaths.push(savesRelPath);
     } catch { /* */ }
   }
 
   // 8a. Check if there are staged changes
-  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet'], { cwd: projectRoot });
+  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
     // status 0 means no differences — nothing to commit
     console.log(chalk.yellow('No changes to save — artifact is already up to date.'));
@@ -1278,7 +1285,7 @@ export function saveArtifact(type: string, slug: string): void {
   const prefix = isTracked ? 'Update: ' : '';
   const commitMessage = `[${slug}] ${prefix}${typeInfo.displayName}\n\nCo-authored-by: ${coAuthor}`;
   try {
-    const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', ...stagedPaths], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch (error) {
     console.error(chalk.red(`Error: Commit failed. ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -1595,26 +1602,32 @@ export function saveAllArtifacts(slug: string): void {
   const allTracked = trackedStatus.every(t => t);
 
   // 6. Stage all artifacts
+  const stagedPaths: string[] = [];
   try {
     for (const artifactPath of artifactPaths) {
       runGit(['add', artifactPath], { cwd: projectRoot });
+      stagedPaths.push(artifactPath);
     }
 
     // Stage companion YAMLs alongside their reports
     for (const companion of companions) {
       runGit(['add', companion.relPath], { cwd: projectRoot });
+      stagedPaths.push(companion.relPath);
     }
 
     // Stage archive files alongside new artifacts
     for (const archivePath of archiveRelPaths) {
       runGit(['add', archivePath], { cwd: projectRoot });
+      stagedPaths.push(archivePath);
     }
 
     // Special case: if verify-report exists, also stage plan.md
     if (artifacts.some(a => a.typeInfo.baseType === 'verify-report')) {
       const planPath = path.join(planDir, 'plan.md');
-      if (fs.existsSync(planPath) && !artifactPaths.includes(path.relative(projectRoot, planPath))) {
+      const relPlanPath = path.relative(projectRoot, planPath);
+      if (fs.existsSync(planPath) && !artifactPaths.includes(relPlanPath)) {
         runGit(['add', planPath], { cwd: projectRoot });
+        stagedPaths.push(relPlanPath);
       }
     }
 
@@ -1625,7 +1638,9 @@ export function saveAllArtifacts(slug: string): void {
     const diskFiles = new Set(entries);
     for (const tracked of trackedFiles) {
       if (artifactPattern.test(tracked) && !diskFiles.has(tracked)) {
-        runGit(['rm', path.relative(projectRoot, path.join(planDir, tracked))], { cwd: projectRoot });
+        const orphanRelPath = path.relative(projectRoot, path.join(planDir, tracked));
+        runGit(['rm', orphanRelPath], { cwd: projectRoot });
+        stagedPaths.push(orphanRelPath);
       }
     }
   } catch (error) {
@@ -1648,12 +1663,14 @@ export function saveAllArtifacts(slug: string): void {
   const savesPathAll = path.join(planDir, '.saves.json');
   if (fs.existsSync(savesPathAll)) {
     try {
-      runGit(['add', path.relative(projectRoot, savesPathAll)], { cwd: projectRoot });
+      const savesRelPathAll = path.relative(projectRoot, savesPathAll);
+      runGit(['add', savesRelPathAll], { cwd: projectRoot });
+      stagedPaths.push(savesRelPathAll);
     } catch { /* */ }
   }
 
   // 7. Check if there are staged changes
-  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet'], { cwd: projectRoot });
+  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
     console.log(chalk.yellow('No changes to save — artifacts are already up to date.'));
     process.exit(0);
@@ -1665,7 +1682,7 @@ export function saveAllArtifacts(slug: string): void {
   const commitMessage = `[${slug}] ${action}: ${typeNames}\n\nCo-authored-by: ${coAuthor}`;
 
   try {
-    const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', ...stagedPaths], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch (error) {
     console.error(chalk.red(`Error: Commit failed. ${error instanceof Error ? error.message : 'Unknown error'}`));
