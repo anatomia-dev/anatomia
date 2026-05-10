@@ -21,7 +21,7 @@ export function ScanSlab() {
       data-component="scan-slab"
     >
       <Container>
-        <div className="mx-auto grid max-w-[1100px] grid-cols-1 items-start gap-8 min-[920px]:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] min-[920px]:gap-14">
+        <div className="mx-auto grid max-w-[1210px] grid-cols-1 items-start gap-8 min-[920px]:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] min-[920px]:gap-14">
 
           {/* Left at desktop, below on mobile */}
           <div
