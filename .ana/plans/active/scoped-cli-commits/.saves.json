@@ -18,5 +18,25 @@
   "spec": {
     "saved_at": "2026-05-09T21:06:03.870Z",
     "hash": "sha256:f5146bd855dff62c052e52029dbc798c0cbaadd83577a41fd4ee56658af39290"
-  }
+  },
+  "build_started_at": "2026-05-10T17:48:10.477Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-10T17:55:33.356Z",
+    "hash": "sha256:bfc54376fe22e210b014c43ee688e8e4f72fa5c9fcaf42076a569463e5be5f81"
+  },
+  "build-data": {
+    "saved_at": "2026-05-10T17:55:33.358Z",
+    "hash": "sha256:64c888b6fb81520c2f0753ba44b64e9a27063032d0e4e798b86604190de0dce0"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "website/components/pricing/Pricing.tsx",
+    "website/components/proof/ProofSection.tsx",
+    "website/components/scan/ScanSlab.tsx",
+    "website/components/system/SystemSection.tsx"
+  ]
 }
