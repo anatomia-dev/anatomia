@@ -588,6 +588,16 @@ After the user accepts:
 
 **Update `.ana/ana.json`:** Read the current file, set `setupPhase` to `"complete"`, write it back. Preserve all other fields.
 
+**Environment validation:** Run these diagnostic commands and report results:
+```bash
+gh --version
+gh auth status
+git config user.name
+git config user.email
+git remote -v
+```
+Report findings. Do not install software or modify git configuration unless the user explicitly asks.
+
 **Present:**
 
 If skills were enriched (option 1):
