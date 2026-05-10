@@ -34,5 +34,20 @@
     "packages/cli/src/utils/update-check.ts",
     "packages/cli/tests/commands/work.test.ts",
     "packages/cli/tests/utils/update-check.test.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-10T22:46:04.885Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:9a72139a73b0172ff82418dd80c6f40afce9c6df594912014588c86143018217",
+    "run_at": "2026-05-10T22:55:19.247Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-10T22:55:19.284Z",
+    "hash": "sha256:5ae699b3d09579394f234466c92dc4b168f45776f6969bf4a4dd3f54b1c30669"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-10T22:55:19.284Z",
+    "hash": "sha256:daae46f961e7a584d2dcf5ad75a9b0d39219b05c39adfffdb3a2b4120682237c"
+  }
 }

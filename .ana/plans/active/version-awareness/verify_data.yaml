@@ -1,0 +1,44 @@
+schema: 1
+findings:
+  - category: code
+    summary: "packageName interpolated via template literal without JSON.stringify in spawn script URL"
+    file: "packages/cli/src/utils/update-check.ts"
+    line: 115
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A023"]
+
+  - category: code
+    summary: "Four of five exports from update-check.ts are unused in production code — only checkForUpdates is imported"
+    file: "packages/cli/src/utils/update-check.ts"
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "A007 tagged test checks return values not output — contract target is 'output' with not_contains 'Error'"
+    file: "packages/cli/tests/utils/update-check.test.ts"
+    line: 320
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]
+
+  - category: test
+    summary: "A010 tagged test checks spawn not called — contract target is updateAvailable equals null, which is tested in untagged CI test"
+    file: "packages/cli/tests/utils/update-check.test.ts"
+    line: 217
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010"]
+
+  - category: code
+    summary: "Spawn script uses require() (CommonJS) inside node -e — works but inconsistent with ESM codebase"
+    file: "packages/cli/src/utils/update-check.ts"
+    line: 108
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "A025 contract assertion is meta — tests that tests pass, not a behavioral contract"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A025"]
