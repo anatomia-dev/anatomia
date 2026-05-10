@@ -207,10 +207,13 @@ section[id] { scroll-margin-top: 96px; }
     transparent 85%
   );
 }
+.hero-noise-dark { display: none; }
 [data-theme="dark"] .hero-noise {
   opacity: 0.7;
   mix-blend-mode: screen;
 }
+[data-theme="dark"] .hero-noise-light { display: none; }
+[data-theme="dark"] .hero-noise-dark { display: block; }
 
 /* ===================================================================
    UTILITIES — small, widely shared. Component-level styles live in

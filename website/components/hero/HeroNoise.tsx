@@ -31,7 +31,8 @@ export function HeroNoise() {
         />
         <feColorMatrix values="0 0 0 0 0.96  0 0 0 0 0.92  0 0 0 0 0.82  0 0 0 0.95 0" />
       </filter>
-      <rect width="100%" height="100%" filter="url(#grainFilterLight)" />
+      <rect className="hero-noise-light" width="100%" height="100%" filter="url(#grainFilterLight)" />
+      <rect className="hero-noise-dark" width="100%" height="100%" filter="url(#grainFilterDark)" />
     </svg>
   );
 }
