@@ -160,14 +160,14 @@
   pointer-events: none;
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  box-shadow: 0 1px 0 rgba(247, 247, 244, 0.6) inset;
 }
-.pile1 { top: -8px;  left: 14px;  right: 14px;  height: 22px;  opacity: 0.95; background: #FCFBF7; }
-.pile2 { top: -16px; left: 30px;  right: 30px;  height: 22px;  opacity: 0.85; background: #F8F6EF; }
-.pile3 { top: -24px; left: 48px;  right: 48px;  height: 22px;  opacity: 0.70; background: #F4F1E7; }
-.pile4 { top: -32px; left: 68px;  right: 68px;  height: 22px;  opacity: 0.55; background: #EFEBDF; }
-.pile5 { top: -40px; left: 90px;  right: 90px;  height: 22px;  opacity: 0.40; background: #EAE5D7; }
-.pile6 { top: -48px; left: 116px; right: 116px; height: 22px;  opacity: 0.26; background: #E5E0CF; }
+.pile1 { top: -8px;  left: 14px;  right: 14px;  height: 22px;  opacity: 0.95; background: #F7F7F4; }
+.pile2 { top: -16px; left: 30px;  right: 30px;  height: 22px;  opacity: 0.85; background: #F3F2ED; }
+.pile3 { top: -24px; left: 48px;  right: 48px;  height: 22px;  opacity: 0.70; background: #EEECE5; }
+.pile4 { top: -32px; left: 68px;  right: 68px;  height: 22px;  opacity: 0.55; background: #E9E6DD; }
+.pile5 { top: -40px; left: 90px;  right: 90px;  height: 22px;  opacity: 0.40; background: #E4E0D5; }
+.pile6 { top: -48px; left: 116px; right: 116px; height: 22px;  opacity: 0.26; background: #DFDACD; }
 
 /* Tiny dates printed on the receding edges */
 .pile::after {
@@ -201,7 +201,7 @@
   border: 1px solid var(--border);
   padding: 44px 56px 36px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 1px 0 rgba(247, 247, 244, 0.7) inset,
     0 24px 56px -28px rgba(11, 11, 16, 0.16),
     0 6px 14px -10px rgba(11, 11, 16, 0.08);
 }
@@ -234,7 +234,7 @@
     inset 0 -3px 6px rgba(0, 0, 0, 0.28),
     inset -2px -2px 6px rgba(0, 0, 0, 0.18),
     0 6px 14px -6px rgba(80, 15, 15, 0.45),
-    0 1px 0 rgba(255, 255, 255, 0.8);
+    0 1px 0 rgba(247, 247, 244, 0.8);
   transform: scale(0.8) rotate(-6deg);
   opacity: 0;
   transition: transform 600ms var(--ease) 220ms, opacity 240ms ease 220ms;
@@ -584,7 +584,7 @@
   padding: 28px 32px 24px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
+  box-shadow: 0 1px 0 rgba(247, 247, 244, 0.6) inset,
               0 18px 44px -28px rgba(20, 19, 15, 0.12);
 }
 @media (max-width: 720px) { .chain { padding: 22px 22px 20px; } }
