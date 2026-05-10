@@ -21,6 +21,7 @@
  */
 
 import chalk from 'chalk';
+import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { runGit } from '../../utils/git-operations.js';
@@ -155,6 +156,7 @@ export async function validateInitPreconditions(
 
   // 7.4 — Git validation (4 states)
   const hasGit = await dirExists(path.join(cwd, '.git'));
+  const warnings: string[] = [];
 
   if (!hasGit) {
     // No git at all — strong warning, default NO
@@ -178,7 +180,10 @@ export async function validateInitPreconditions(
       const hasRemote = gitHasRemote(cwd);
 
       if (hasCommits && !hasRemote) {
-        console.log(chalk.blue('ℹ No remote detected. artifactBranch will use local branch names. ana pr create won\'t function until a remote is added.'));
+        console.log(chalk.blue('ℹ No remote detected. artifactBranch will use local branch names.'));
+        console.log(chalk.blue('  ana pr create won\'t function until a remote is added.'));
+        console.log(chalk.blue('  git remote add origin <url>'));
+        warnings.push('No remote detected — add one with: git remote add origin <url>');
       } else if (!hasCommits) {
         console.log(chalk.yellow('⚠ Empty git repository. Some scan data will be limited. Commit at least once before running the pipeline.'));
       }
@@ -187,6 +192,28 @@ export async function validateInitPreconditions(
       // Git check failed — proceed with warning
       console.log(chalk.yellow('⚠ Git validation failed. Proceeding with limited git detection.'));
     }
+
+    // Git user identity checks — missing user.name/email causes commit failures
+    const userName = runGit(['config', 'user.name'], { cwd });
+    if (userName.exitCode !== 0 || !userName.stdout.trim()) {
+      const msg = 'git user.name not configured — git config --global user.name "Your Name"';
+      console.log(chalk.yellow(`⚠ ${msg}`));
+      warnings.push(msg);
+    }
+    const userEmail = runGit(['config', 'user.email'], { cwd });
+    if (userEmail.exitCode !== 0 || !userEmail.stdout.trim()) {
+      const msg = 'git user.email not configured — git config --global user.email "you@example.com"';
+      console.log(chalk.yellow(`⚠ ${msg}`));
+      warnings.push(msg);
+    }
+  }
+
+  // 7.4b — GitHub CLI check (pipeline dependency, not a gate)
+  const ghCheck = spawnSync('gh', ['--version'], { stdio: 'pipe' });
+  if (ghCheck.status !== 0) {
+    const msg = 'gh CLI not installed — PR creation unavailable\n      Install from https://cli.github.com/\n      The pipeline works without it through Build/Verify';
+    console.log(chalk.yellow(`⚠ ${msg}`));
+    warnings.push(msg);
   }
 
   // 7.5 — Package manager check
@@ -214,6 +241,7 @@ export async function validateInitPreconditions(
     canProceed: true,
     initState,
     anaExisted: anaExists,
+    warnings,
   };
 }
 

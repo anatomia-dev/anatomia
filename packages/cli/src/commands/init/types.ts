@@ -30,4 +30,8 @@ export interface PreflightResult {
   /** Whether an existing `.ana/` directory was detected. Signals to the
    *  orchestrator whether to run preserveUserState and the swap rename. */
   anaExisted: boolean;
+  /** Pipeline readiness warnings collected during preflight.
+   *  Informational only — never prevents init from completing.
+   *  Flows through the orchestrator to displaySuccessMessage for recap. */
+  warnings: string[];
 }
