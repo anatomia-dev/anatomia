@@ -87,7 +87,7 @@
   color: var(--color-brand);
 }
 .cardHighlighted .cardFeatures {
-  border-top: 1px solid rgba(255,255,255,0.12);
+  border-top: 1px solid rgba(0,0,0,0.10);
   padding-top: 24px;
 }
 .cardHighlighted .cardCta a,

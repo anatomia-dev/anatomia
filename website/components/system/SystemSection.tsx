@@ -19,6 +19,7 @@ export function SystemSection() {
       data-component="system"
     >
       <Container>
+        <div className="mx-auto max-w-[1100px]">
         {/* Header: two-column intro */}
         <header className={styles.header}>
           <div>
@@ -59,6 +60,7 @@ export function SystemSection() {
             <Formatted text={copy.system.closer.text} />
           </p>
         </a>
+        </div>
       </Container>
     </section>
   );

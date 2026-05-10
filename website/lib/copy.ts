@@ -35,7 +35,8 @@ export const copy = {
   nav: {
     brand: "anatomia",
     links: [
-      { label: "Agents", href: "/#system" },
+      { label: "Pipeline", href: "/#system" },
+      { label: "Proof", href: "/#proof" },
       { label: "Pricing", href: "/#pricing" },
       { label: "Docs", href: "/docs" },
     ],
@@ -208,6 +209,110 @@ export const copy = {
     },
   },
 
+  proof: {
+    eyebrow: "The proof",
+    title: "Every run ships with *receipts*.",
+    lede: "Every pipeline run produces a sealed record \u2014 **what was asserted before code was written, what the verifier found independently, and what shipped.** PASS doesn\u2019t mean perfect. It means verified and honestly assessed.",
+    specPrompt: "$ ana proof add-stripe-webhooks",
+    specStrip: [
+      { label: "contract", value: "sealed" },
+      { label: "artifact", value: "hash-signed" },
+      { label: "chain", value: "append-only" },
+    ],
+    ledgerRubric: {
+      left: "Proof \u00b7 126 of 126",
+      right: "2026\u00b704\u00b729",
+    },
+    card: {
+      pile: [
+        { id: "120", date: "2026 \u00b7 04 \u00b7 11" },
+        { id: "121", date: "2026 \u00b7 04 \u00b7 17" },
+        { id: "122", date: "2026 \u00b7 04 \u00b7 19" },
+        { id: "123", date: "2026 \u00b7 04 \u00b7 22" },
+        { id: "124", date: "2026 \u00b7 04 \u00b7 24" },
+        { id: "125", date: "2026 \u00b7 04 \u00b7 26" },
+      ],
+      meta: {
+        entry: "Proof \u00b7 126",
+        of: "of 126",
+        date: "2026 \u00b7 04 \u00b7 29 \u00b7 11:07",
+      },
+      sealGlyph: "A",
+      title: "Add Stripe Webhooks",
+      subjectPrefix: "subject \u00b7",
+      subjectSlug: "add-stripe-webhooks",
+      subjectSuffix: "\u00b7 commit 7d3a91",
+      result: {
+        label: "Pass",
+        detail: "21 / 21 satisfied \u00b7 0 unsatisfied \u00b7 0 deviated",
+      },
+      assertionsShown: 6,
+      assertionsTotal: 21,
+      assertions: [
+        "Webhook endpoint verifies <code>Stripe-Signature</code> before any handler runs.",
+        "Duplicate event delivery does not create duplicate records.",
+        "Failed signature check returns <code>400</code>, not <code>500</code>.",
+        "Webhook secret is read from environment, not hardcoded.",
+        "Migration adds <code>idempotency_key</code> with a unique constraint.",
+        "Existing checkout and billing portal flows pass without modification.",
+      ],
+      moreSealed: 15,
+      findingsLabel: "noticed, not in scope \u00b7",
+      findingsCount: 3,
+      findings: [
+        {
+          level: "Risk \u00b7 scope",
+          body: "Signature verification uses direct string comparison \u2014 <em>timing-safe equality</em> is not enforced.",
+        },
+        {
+          level: "Debt \u00b7 scope",
+          body: "No retry mechanism for failed event processing \u2014 transient database errors will drop events silently.",
+        },
+        {
+          level: "Obs. \u00b7 monitor",
+          body: "Handler is 340 lines with a switch that will grow with every new event type.",
+        },
+      ],
+      timing: [
+        { label: "Total", value: "52m" },
+        { label: "Think", value: "4m" },
+        { label: "Plan", value: "15m" },
+        { label: "Build", value: "22m" },
+        { label: "Verify", value: "11m" },
+      ],
+      signatureLabel: "AnaVerify",
+      signatureHash: "7d3a \u00b7 e1f9",
+    },
+    chain: {
+      title: "Proof chain",
+      count: 126,
+      countLabel: "pipeline runs",
+      pattern: [
+        "G","R","Y","G","G","R","Y","G","G","Y",
+        "G","G","R","G","Y","G","G","Y","G","G",
+        "G","G","G","Y","G","G","G","G","Y","G",
+        "G","G","G","G","G","Y","G","G","G","G",
+        "G","G","R","R","G","G","G","G","Y","G",
+        "G","G","G","G","G",
+      ],
+      footLeft: "last 55 proofs",
+      footRight: "proof 126 \u2193",
+      stats: [
+        { label: "First-pass rate", value: "82", unit: "%", trend: "\u2191 4% last month" },
+        { label: "Assertions verified", value: "2,214" },
+        { label: "Findings surfaced", value: "683" },
+        { label: "Risks caught", value: "41" },
+        { label: "Promoted to rules", value: "6" },
+      ],
+      legend: [
+        { color: "pass", label: "Pass" },
+        { color: "warn", label: "Pass \u00b7 risk found" },
+        { color: "fail", label: "Fail \u00b7 sent back" },
+      ],
+    },
+    closer: "**126 sealed.** The chain is the moat.",
+  },
+
   systemThread: {
     before: "That's the system. Next:",
     cta: "the proof",
@@ -318,7 +423,7 @@ export const copy = {
     eyebrow: "Pricing",
     title: "Open source. Free forever.",
     blurb:
-      "Anatomia is MIT-licensed. Every line on GitHub. If you ship with it and want hosted proofs, the team edition handles the rest.",
+      "Anatomia is MIT-licensed. Every line on GitHub. The team edition adds a network \u2014 your agents get smarter from every team that ships with Anatomia.",
     plans: [
       {
         name: "Free",
@@ -326,11 +431,11 @@ export const copy = {
         price: "$0",
         sub: "forever · MIT License",
         features: [
-          "Full pipeline · think · plan · build · verify",
-          "Local proof chain · git-tracked",
-          "Context drift detection",
-          "Configurable agents · pick your model",
-          "Works with any AI tool",
+          "Full pipeline · think · plan · build · verify · learn",
+          "Local proof chain · sealed and git-tracked",
+          "Findings on every run · risks · debt · observations",
+          "Skills matched to your stack · not generic advice",
+          "Works with any AI tool · no lock-in",
         ],
         cta: { label: "Install", command: "npx anatomia-cli init", href: "https://www.npmjs.com/package/anatomia-cli" },
       },
@@ -343,10 +448,10 @@ export const copy = {
         highlighted: true,
         features: [
           "Everything in Free",
-          "Hosted proof chain · shareable URLs",
-          "Team dashboard · drift alerts",
-          "Parallel pipelines · shared context",
-          "SSO · priority support",
+          "Proof cards · a URL for every verified change",
+          "Team visibility · Slack · GitHub PRs",
+          "Hosted backlog · queue, build, verify",
+          "Collective intelligence · the network learns",
         ],
         // TODO: Replace with waitlist form URL when available
         cta: { label: "Join the waitlist", href: "/contact" },
@@ -356,9 +461,8 @@ export const copy = {
 
   proofFeed: {
     kicker: "Ship log",
-    headTitle: "Every change has *receipts*.",
-    headSub:
-      "This isn\u2019t a changelog. Each row is the verification record \u2014 the contract Plan wrote before the work began, with Verify\u2019s independent account stapled to it. The claims, the matchers, the pass/fail \u2014 all there.",
+    headTitle: "Our *proofs*.",
+    headSub: "",
   },
 
   docs: {

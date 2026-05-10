@@ -30,7 +30,7 @@
 
   /* Brand (oxblood) */
   --color-brand: #7A1B1B;
-  --color-brand-ink: #ffffff;
+  --color-brand-ink: #F7F7F4;
 
   /* Radius scale — "medium" from the HTML tweaks */
   --radius-sm: 6px;
@@ -79,9 +79,9 @@
   --fg: #0b0b10;
   --fg-strong: #000000;
   --bg: #F7F7F4;
-  --bg-elev: #ffffff;
+  --bg-elev: #F7F7F4;
   --bg-deep: #F0EFE9;
-  --bg-card: #ffffff;
+  --bg-card: #F7F7F4;
   --nav-bg: rgba(247, 247, 244, 0.85);
   --footer-bg: #F0EFE9;
   --border: rgba(11, 11, 16, 0.12);
@@ -180,7 +180,7 @@ button {
 }
 ::selection { background: var(--color-brand); color: var(--color-brand-ink); }
 
-section[id] { scroll-margin-top: 72px; }
+section[id] { scroll-margin-top: 96px; }
 
 /* ===================================================================
    HERO NOISE PATTERN — full-bleed SVG grain (data-pattern="noise")
@@ -207,10 +207,13 @@ section[id] { scroll-margin-top: 72px; }
     transparent 85%
   );
 }
+.hero-noise-dark { display: none; }
 [data-theme="dark"] .hero-noise {
-  opacity: 0.4;
+  opacity: 0.35;
   mix-blend-mode: screen;
 }
+[data-theme="dark"] .hero-noise-light { display: none; }
+[data-theme="dark"] .hero-noise-dark { display: block; }
 
 /* ===================================================================
    UTILITIES — small, widely shared. Component-level styles live in
@@ -236,12 +239,12 @@ section[data-component="proof-feed"]:has([data-open="false"]) + footer {
 
 /* Nav CTA — dark mode inversion (warm off-paper key against dark plate) */
 [data-theme="dark"] .nav-cta {
-  background: #FBFAF6 !important;
+  background: #F7F7F4 !important;
   color: #0A0A0D !important;
   box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
 }
 [data-theme="dark"] .nav-cta:hover {
-  background: #FFFFFF !important;
+  background: #F7F7F4 !important;
 }
 
 /* skip link for accessibility — hidden until focused */
