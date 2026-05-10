@@ -423,7 +423,7 @@ export const copy = {
     eyebrow: "Pricing",
     title: "Open source. Free forever.",
     blurb:
-      "Anatomia is MIT-licensed. Every line on GitHub. If you ship with it and want hosted proofs, the team edition handles the rest.",
+      "Anatomia is MIT-licensed. Every line on GitHub. The team edition adds a network \u2014 your agents get smarter from every team that ships with Anatomia.",
     plans: [
       {
         name: "Free",
@@ -448,10 +448,11 @@ export const copy = {
         highlighted: true,
         features: [
           "Everything in Free",
-          "Hosted proof chain · shareable URLs",
-          "Team dashboard · drift alerts",
-          "Parallel pipelines · shared context",
-          "SSO · priority support",
+          "Proof cards · a URL for every verified change",
+          "Team visibility · Slack · GitHub PRs",
+          "Hosted backlog · queue, build, verify",
+          "Collective intelligence · the network learns",
+          "Risk forecasting · warnings before decline",
         ],
         // TODO: Replace with waitlist form URL when available
         cta: { label: "Join the waitlist", href: "/contact" },
