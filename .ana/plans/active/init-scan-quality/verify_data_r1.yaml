@@ -1,0 +1,95 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A001/A002 spinner test is a sentinel — asserts on mock data, never calls runAnalyzer or captures spinner method"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 507
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001", "A002"]
+
+  - category: test
+    summary: "A003 spinner test is a sentinel — checks empty array length, never calls runAnalyzer or captures spinner.succeed"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 518
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003"]
+
+  - category: test
+    summary: "A021 test is expect(true).toBe(true) — proves nothing about the catch block behavior"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 525
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A021"]
+
+  - category: test
+    summary: "A009 test constructs a string literal and asserts on it — never calls validateInitPreconditions"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 611
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A009"]
+
+  - category: test
+    summary: "A010 test constructs a string literal and asserts on it — never calls validateInitPreconditions"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 618
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A010"]
+
+  - category: test
+    summary: "A011 test creates an empty array and checks it doesn't contain user.name — proves nothing about hasGit guard"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 624
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A011"]
+
+  - category: test
+    summary: "A012 test constructs a string literal and asserts on it — never calls validateInitPreconditions or spawnSync"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 635
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A012"]
+
+  - category: test
+    summary: "A013 test constructs a string literal and asserts on it — never exercises the enhanced remote warning code path"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 641
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A013"]
+
+  - category: test
+    summary: "A014/A015 test constructs a literal object — proves the type compiles but not that validateInitPreconditions returns warnings or preserves canProceed"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 598
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A014", "A015"]
+
+  - category: test
+    summary: "A022 reads scan-engine.ts source code and asserts on string content — testing standards skill says 'never assert on source code content in a test'"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 664
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A022"]
+
+  - category: code
+    summary: "Out-of-scope changes: artifact.ts, proof.ts, work.ts refactored (removed --path separators from git commit), work.test.ts scoped-commits test deleted"
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: monitor
+
+  - category: test
+    summary: "A018/A019/A020 reads template source and asserts toContain — acceptable for static template content but violates 'never assert on source code content' rule"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 651
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A018", "A019", "A020"]
