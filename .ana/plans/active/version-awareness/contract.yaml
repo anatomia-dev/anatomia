@@ -1,0 +1,204 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Version Awareness Notifications"
+
+assertions:
+  # AC1: npm update notification
+  - id: A001
+    says: "Users see when a newer CLI version is available on npm"
+    block: "shows update available notification when newer version exists"
+    target: "output"
+    matcher: "contains"
+    value: "available"
+
+  - id: A002
+    says: "The update notification tells users the exact command to upgrade"
+    block: "shows update available notification when newer version exists"
+    target: "output"
+    matcher: "contains"
+    value: "npm update -g anatomia-cli"
+
+  # AC2: project mismatch notification
+  - id: A003
+    says: "Users see when their project was initialized with a different CLI version"
+    block: "shows project mismatch notification when versions differ"
+    target: "output"
+    matcher: "contains"
+    value: "Project initialized with"
+
+  - id: A004
+    says: "The mismatch notification tells users to re-initialize"
+    block: "shows project mismatch notification when versions differ"
+    target: "output"
+    matcher: "contains"
+    value: "ana init"
+
+  # AC3: suppressed when current
+  - id: A005
+    says: "No notifications appear when all versions are current"
+    block: "suppresses notifications when versions are current"
+    target: "output"
+    matcher: "not_contains"
+    value: "available"
+
+  - id: A006
+    says: "No mismatch notification appears when project version matches CLI"
+    block: "suppresses notifications when versions are current"
+    target: "output"
+    matcher: "not_contains"
+    value: "initialized with"
+
+  # AC4: network failure is silent
+  - id: A007
+    says: "Network failures never show errors to the user"
+    block: "network failure produces no error output"
+    target: "output"
+    matcher: "not_contains"
+    value: "Error"
+
+  # AC5: cache TTL
+  - id: A008
+    says: "A fresh cache is not re-fetched within 24 hours"
+    block: "does not spawn background check when cache is fresh"
+    target: "spawnCalled"
+    matcher: "equals"
+    value: false
+
+  - id: A009
+    says: "An expired cache triggers a new background fetch"
+    block: "spawns background check when cache is expired"
+    target: "spawnCalled"
+    matcher: "equals"
+    value: true
+
+  # AC6: CI skip
+  - id: A010
+    says: "CI environments skip the npm update check entirely"
+    block: "skips update check when CI=true"
+    target: "updateAvailable"
+    matcher: "equals"
+    value: null
+
+  # AC7: JSON output
+  - id: A011
+    says: "JSON output includes update availability when a newer version exists"
+    block: "JSON output includes updateAvailable field"
+    target: "json.updateAvailable.latest"
+    matcher: "exists"
+
+  - id: A012
+    says: "JSON output includes project version mismatch details"
+    block: "JSON output includes projectMismatch field"
+    target: "json.projectMismatch.projectVersion"
+    matcher: "exists"
+
+  - id: A013
+    says: "JSON output shows null for update fields when versions are current"
+    block: "JSON output shows null when versions match"
+    target: "json.updateAvailable"
+    matcher: "equals"
+    value: null
+
+  # AC8: first run
+  - id: A014
+    says: "First run after install shows no update notification"
+    block: "returns null updateAvailable when no cache exists"
+    target: "updateAvailable"
+    matcher: "equals"
+    value: null
+
+  # AC9: command text (covered by A002 and A004)
+
+  # AC10: anaVersion missing or 0.0.0
+  - id: A015
+    says: "Old projects with missing anaVersion show mismatch with unknown version"
+    block: "returns unknown for missing anaVersion"
+    target: "projectVersion"
+    matcher: "equals"
+    value: "unknown"
+
+  - id: A016
+    says: "Old projects with anaVersion 0.0.0 show mismatch with unknown version"
+    block: "returns unknown for anaVersion 0.0.0"
+    target: "projectVersion"
+    matcher: "equals"
+    value: "unknown"
+
+  # AC11: semver comparison
+  - id: A017
+    says: "Multi-digit version numbers compare correctly"
+    block: "isNewerVersion handles multi-digit segments"
+    target: "result"
+    matcher: "equals"
+    value: true
+
+  - id: A018
+    says: "Equal versions are not flagged as newer"
+    block: "isNewerVersion returns false for equal versions"
+    target: "result"
+    matcher: "equals"
+    value: false
+
+  - id: A019
+    says: "Older npm versions are not flagged as newer"
+    block: "isNewerVersion returns false when npm is older"
+    target: "result"
+    matcher: "equals"
+    value: false
+
+  # AC12: background process independence
+  - id: A020
+    says: "Background check process is detached from the parent"
+    block: "spawns detached background process"
+    target: "spawnOptions.detached"
+    matcher: "equals"
+    value: true
+
+  - id: A021
+    says: "Background check process is unreferenced so parent can exit"
+    block: "spawns detached background process"
+    target: "unrefCalled"
+    matcher: "equals"
+    value: true
+
+  # Additional: Windows safety
+  - id: A022
+    says: "Background process hides console window on Windows"
+    block: "spawns detached background process"
+    target: "spawnOptions.windowsHide"
+    matcher: "equals"
+    value: true
+
+  # Additional: security - safe path interpolation
+  - id: A023
+    says: "Cache file path is safely escaped in the spawned script"
+    block: "uses JSON.stringify for cache path in spawn script"
+    target: "spawnScript"
+    matcher: "contains"
+    value: "JSON.parse"
+
+  # Additional: no active work still shows notifications
+  - id: A024
+    says: "Users with no active work still see version notifications"
+    block: "shows notifications when no work items exist"
+    target: "output"
+    matcher: "contains"
+    value: "available"
+
+  # Regression: async conversion
+  - id: A025
+    says: "Existing work status tests pass after async conversion"
+    block: "existing stage detection tests pass"
+    target: "testResult"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/utils/update-check.ts"
+    action: create
+  - path: "packages/cli/tests/utils/update-check.test.ts"
+    action: create
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
