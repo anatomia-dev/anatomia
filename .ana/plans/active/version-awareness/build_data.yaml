@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "captureWithVersionMock uses dynamic vi.spyOn on imported ESM module — fragile if Vitest changes interop"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "toThrow changed to rejects.toThrow for async getWorkStatus — functionally equivalent but assertion method differs"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts:169 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
