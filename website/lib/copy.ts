@@ -35,7 +35,8 @@ export const copy = {
   nav: {
     brand: "anatomia",
     links: [
-      { label: "Agents", href: "/#system" },
+      { label: "Pipeline", href: "/#system" },
+      { label: "Proof", href: "/#proof" },
       { label: "Pricing", href: "/#pricing" },
       { label: "Docs", href: "/docs" },
     ],

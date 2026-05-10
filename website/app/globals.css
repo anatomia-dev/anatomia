@@ -180,7 +180,7 @@ button {
 }
 ::selection { background: var(--color-brand); color: var(--color-brand-ink); }
 
-section[id] { scroll-margin-top: 72px; }
+section[id] { scroll-margin-top: 96px; }
 
 /* ===================================================================
    HERO NOISE PATTERN — full-bleed SVG grain (data-pattern="noise")
