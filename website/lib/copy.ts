@@ -452,7 +452,6 @@ export const copy = {
           "Team visibility · Slack · GitHub PRs",
           "Hosted backlog · queue, build, verify",
           "Collective intelligence · the network learns",
-          "Risk forecasting · warnings before decline",
         ],
         // TODO: Replace with waitlist form URL when available
         cta: { label: "Join the waitlist", href: "/contact" },
