@@ -585,6 +585,164 @@ describe('ana work status', () => {
     });
   });
 
+  describe('version notifications', () => {
+    const mockCheckForUpdates = vi.fn();
+
+    beforeEach(() => {
+      mockCheckForUpdates.mockReset();
+    });
+
+    /**
+     * Helper to mock checkForUpdates and capture output.
+     * Sets up the update-check mock before calling getWorkStatus.
+     */
+    async function captureWithVersionMock(
+      versionResult: { updateAvailable: { current: string; latest: string } | null; projectMismatch: { cliVersion: string; projectVersion: string } | null },
+      options: { json?: boolean } = {},
+    ): Promise<string> {
+      // We need to use vi.mock at the module level to properly mock ESM.
+      // Instead, we'll use a different approach: write a cache file and ana.json
+      // in the test project to trigger real version checks.
+      // But the real checkForUpdates calls getCliVersion which uses import.meta.url...
+      // So we mock the module.
+      const updateCheckModule = await import('../../src/utils/update-check.js');
+      vi.spyOn(updateCheckModule, 'checkForUpdates').mockResolvedValue(versionResult);
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: options.json ?? false }));
+
+      vi.mocked(updateCheckModule.checkForUpdates).mockRestore();
+      return output;
+    }
+
+    // @ana A001, A002
+    it('shows update available notification when newer version exists', async () => {
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: { current: '1.0.0', latest: '1.2.0' },
+        projectMismatch: null,
+      });
+
+      expect(output).toContain('available');
+      expect(output).toContain('npm update -g anatomia-cli');
+      expect(output).toContain('v1.2.0');
+      expect(output).toContain('v1.0.0');
+    });
+
+    // @ana A003, A004
+    it('shows project mismatch notification when versions differ', async () => {
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: null,
+        projectMismatch: { cliVersion: '1.1.0', projectVersion: '1.0.0' },
+      });
+
+      expect(output).toContain('Project initialized with');
+      expect(output).toContain('ana init');
+      expect(output).toContain('v1.0.0');
+    });
+
+    // @ana A005, A006
+    it('suppresses notifications when versions are current', async () => {
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: null,
+        projectMismatch: null,
+      });
+
+      expect(output).not.toContain('available');
+      expect(output).not.toContain('initialized with');
+    });
+
+    // @ana A024
+    it('shows notifications when no work items exist', async () => {
+      await createWorkTestProject({ slugs: [] });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: { current: '1.0.0', latest: '1.2.0' },
+        projectMismatch: null,
+      });
+
+      expect(output).toContain('available');
+      expect(output).toContain('v1.2.0');
+    });
+
+    // @ana A011, A012
+    it('JSON output includes updateAvailable and projectMismatch fields', async () => {
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: { current: '1.0.0', latest: '1.2.0' },
+        projectMismatch: { cliVersion: '1.1.0', projectVersion: '1.0.0' },
+      }, { json: true });
+
+      const parsed = JSON.parse(output);
+      expect(parsed.updateAvailable).toEqual({ current: '1.0.0', latest: '1.2.0' });
+      expect(parsed.projectMismatch).toEqual({ cliVersion: '1.1.0', projectVersion: '1.0.0' });
+    });
+
+    // @ana A013
+    it('JSON output shows null when versions match', async () => {
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: null,
+        projectMismatch: null,
+      }, { json: true });
+
+      const parsed = JSON.parse(output);
+      expect(parsed.updateAvailable).toBeNull();
+      expect(parsed.projectMismatch).toBeNull();
+    });
+
+    // @ana A025
+    it('existing stage detection tests pass after async conversion', async () => {
+      // This test verifies that the async conversion didn't break existing tests.
+      // The fact that all other tests in this file pass is the actual assertion.
+      // We explicitly verify one representative case here.
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md'],
+        }],
+      });
+
+      const output = await captureWithVersionMock({
+        updateAvailable: null,
+        projectMismatch: null,
+      });
+
+      expect(output).toContain('ready-for-plan');
+    });
+  });
+
   describe('ana work complete', () => {
     /**
      * Helper to create a merged project scenario
