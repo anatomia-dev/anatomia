@@ -2,7 +2,7 @@
  * Landing page — composition root.
  * Each section is its own component; this file only orders them.
  * Section order:
- *   Hero → CompatMarquee → ScanSlab → SystemSection → DeepDive → Pricing
+ *   Hero → CompatMarquee → ScanSlab → SystemSection → ProofSection → Pricing
  *   → ProofFeed (between main and footer) → Footer (in layout)
  */
 import type { Metadata } from "next";
@@ -10,7 +10,7 @@ import { Hero } from "@/components/hero/Hero";
 import { CompatMarquee } from "@/components/marquee/CompatMarquee";
 import { ScanSlab } from "@/components/scan/ScanSlab";
 import { SystemSection } from "@/components/system/SystemSection";
-import { DeepDive } from "@/components/deep/DeepDive";
+import { ProofSection } from "@/components/proof/ProofSection";
 import { Pricing } from "@/components/pricing/Pricing";
 import { ProofFeed } from "@/components/proof-feed/ProofFeed";
 
@@ -28,7 +28,7 @@ export default function LandingPage() {
         <CompatMarquee />
         <ScanSlab />
         <SystemSection />
-        <DeepDive />
+        <ProofSection />
         <Pricing />
       </main>
       {/* ProofFeed sits between </main> and <Footer /> — bonded to footer when collapsed */}
