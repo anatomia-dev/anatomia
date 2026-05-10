@@ -132,7 +132,7 @@ export function registerInitCommand(program: Command): void {
       // Display success
       const scanTime = ((Date.now() - scanStart) / 1000).toFixed(1);
       const projectName = await getProjectName(cwd);
-      displaySuccessMessage(engineResult, projectName, scanTime, newAnaConfig);
+      displaySuccessMessage(engineResult, projectName, scanTime, newAnaConfig, preflight.warnings);
     } catch (error) {
       // FAILURE: clean up tmp build. If the swap had started, roll back.
       await fs.rm(tmpDir, { recursive: true, force: true });

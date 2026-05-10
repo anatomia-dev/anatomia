@@ -64,8 +64,18 @@ export async function runAnalyzer(
     const { scanProject } = await import('../../engine/scan-engine.js');
     const engineResult = await scanProject(rootPath, { depth: 'deep' });
 
-    spinner.succeed('Analysis complete');
+    // Spinner message depends on blind spot severity
+    const hasAnalyzerBlindSpot = engineResult.blindSpots.some(bs => bs.area === 'Analyzer');
+    if (hasAnalyzerBlindSpot) {
+      spinner.warn('Deep scan incomplete');
+    } else if (engineResult.blindSpots.length === 0) {
+      spinner.succeed('Deep scan complete — no gaps detected');
+    } else {
+      spinner.succeed('Analysis complete');
+    }
+
     displayDetectionSummary(engineResult);
+    displayBlindSpots(engineResult.blindSpots);
 
     return engineResult;
   } catch (error) {
@@ -131,6 +141,32 @@ export function displayDetectionSummary(result: EngineResult): void {
     }
   }
 
+  console.log();
+}
+
+/**
+ * Display blind spots detected during scan.
+ *
+ * Translates the Analyzer blind spot's technical message (tree-sitter
+ * details) to human-readable terms at display time. Other blind spot
+ * types render their fields directly — they're already human-readable.
+ *
+ * @param blindSpots - Blind spots array from EngineResult
+ */
+export function displayBlindSpots(blindSpots: Array<{ area: string; issue: string; resolution: string }>): void {
+  if (blindSpots.length === 0) return;
+
+  console.log(chalk.yellow('  ⚠ Blind spots:'));
+  for (const bs of blindSpots) {
+    if (bs.area === 'Analyzer') {
+      // Translate technical tree-sitter message to human terms
+      console.log(chalk.yellow(`    ${bs.area}`) + ' — code patterns, conventions, and structure analysis skipped');
+      console.log(chalk.gray('      Surface-tier detection (dependencies, config files) continues normally.'));
+    } else {
+      console.log(chalk.yellow(`    ${bs.area}`) + ` — ${bs.issue}`);
+      console.log(chalk.gray(`      ${bs.resolution}`));
+    }
+  }
   console.log();
 }
 
@@ -567,8 +603,9 @@ export async function atomicRename(tmpAnaPath: string, anaPath: string): Promise
  * @param projectName - Project name
  * @param scanTime - Scan duration in seconds
  * @param anaConfig - Written ana.json config (for scoped test command display)
+ * @param warnings - Pipeline readiness warnings from preflight (optional)
  */
-export function displaySuccessMessage(engineResult: EngineResult | null, projectName: string, scanTime: string, anaConfig?: Record<string, unknown>): void {
+export function displaySuccessMessage(engineResult: EngineResult | null, projectName: string, scanTime: string, anaConfig?: Record<string, unknown>, warnings?: string[]): void {
   console.log('');
 
   if (engineResult) {
@@ -643,6 +680,19 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     }
     if (engineResult.commands.build) {
       console.log(`  ${chalk.bold('Build:')}    ${engineResult.commands.build}`);
+    }
+    console.log('');
+  }
+
+  // Pipeline readiness — recap warnings from preflight (only when present)
+  if (warnings && warnings.length > 0) {
+    console.log('  Pipeline readiness:');
+    for (const warning of warnings) {
+      const lines = warning.split('\n');
+      console.log(chalk.yellow(`    ⚠ ${lines[0]}`));
+      for (const line of lines.slice(1)) {
+        console.log(chalk.gray(`      ${line}`));
+      }
     }
     console.log('');
   }
