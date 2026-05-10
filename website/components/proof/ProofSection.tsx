@@ -19,7 +19,7 @@ export function ProofSection() {
       data-component="proof"
     >
       <Container>
-        <div className="mx-auto max-w-[1100px] pt-[var(--spacing-section,116px)]">
+        <div className="mx-auto max-w-[1210px] pt-[var(--spacing-section,116px)]">
         <span id="proof" className="scroll-anchor" />
         {/* Header: two-column intro */}
         <header className={styles.header}>

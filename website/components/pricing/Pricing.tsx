@@ -12,7 +12,7 @@ export function Pricing() {
   return (
     <section data-component="pricing" className={styles.section}>
       <Container>
-        <div className="mx-auto max-w-[1100px]">
+        <div className="mx-auto max-w-[1210px]">
         <div className={styles.top}>
           <div className={styles.frame}>
             <TetrisSnake />
