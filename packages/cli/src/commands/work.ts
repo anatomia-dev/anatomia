@@ -1277,9 +1277,10 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
           if (!options?.json) {
             console.log(chalk.yellow('Recovering incomplete completion — retrying commit...'));
           }
-          runGit(['add', `.ana/plans/completed/${slug}/`, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: projectRoot });
+          const recoveryPaths = [`.ana/plans/completed/${slug}/`, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'];
+          runGit(['add', ...recoveryPaths], { cwd: projectRoot });
           const commitMessage = `[${slug}] Complete — archived to plans/completed\n\nCo-authored-by: ${coAuthor}`;
-          const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
+          const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', ...recoveryPaths], { stdio: 'pipe', cwd: projectRoot });
           if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
           const pushResult = runGit(['push'], { cwd: projectRoot });
           if (pushResult.exitCode !== 0) {
@@ -1503,9 +1504,10 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
 
   // 10. Stage and commit
   try {
-    runGit(['add', `.ana/plans/active/${slug}/`, `.ana/plans/completed/${slug}/`, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'], { cwd: projectRoot });
+    const completePaths = [`.ana/plans/active/${slug}/`, `.ana/plans/completed/${slug}/`, '.ana/proof_chain.json', '.ana/PROOF_CHAIN.md'];
+    runGit(['add', ...completePaths], { cwd: projectRoot });
     const commitMessage = `[${slug}] Complete — archived to plans/completed\n\nCo-authored-by: ${coAuthor}`;
-    const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', ...completePaths], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch {
     console.error(chalk.red(`Error: Failed to commit. Run \`ana work complete ${slug}\` to retry.`));
@@ -2037,7 +2039,7 @@ function commitSaves(projectRoot: string, slug: string, message: string): void {
   }
 
   // Check if there are staged changes — status 0 means no differences
-  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet'], { cwd: projectRoot });
+  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', savesRelPath], { cwd: projectRoot });
   if (diffResult.status === 0) {
     return;
   }
@@ -2045,7 +2047,7 @@ function commitSaves(projectRoot: string, slug: string, message: string): void {
   const coAuthor = readCoAuthor(projectRoot);
   const commitMessage = `${message}\n\nCo-authored-by: ${coAuthor}`;
   try {
-    const commitResult = spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', savesRelPath], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch {
     // Silent failure — don't block the user's workflow for a convenience commit
