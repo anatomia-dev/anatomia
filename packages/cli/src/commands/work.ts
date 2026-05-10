@@ -641,7 +641,7 @@ function printHumanReadable(output: StatusOutput): void {
  * @param options - Command options
  * @param options.json - Output JSON format instead of human-readable
  */
-export function getWorkStatus(options: { json?: boolean }): void {
+export async function getWorkStatus(options: { json?: boolean }): Promise<void> {
   const projectRoot = findProjectRoot();
   const artifactBranch = readArtifactBranch(projectRoot);
   const branchPrefix = readBranchPrefix(projectRoot);
@@ -2066,8 +2066,8 @@ export function registerWorkCommand(program: Command): void {
   const statusCommand = new Command('status')
     .description('Show pipeline state for all active work items')
     .option('--json', 'Output JSON format for programmatic consumption')
-    .action((options: { json?: boolean }) => {
-      getWorkStatus(options);
+    .action(async (options: { json?: boolean }) => {
+      await getWorkStatus(options);
     });
 
   const startCommand = new Command('start')

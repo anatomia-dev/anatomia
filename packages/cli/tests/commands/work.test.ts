@@ -101,13 +101,13 @@ describe('ana work status', () => {
   /**
    * Helper to capture console output
    */
-  function captureOutput(fn: () => void): string {
+  async function captureOutput(fn: () => void | Promise<void>): Promise<string> {
     const originalLog = console.log;
     const logs: string[] = [];
     console.log = (...args: unknown[]) => {
       logs.push(args.join(' '));
     };
-    fn();
+    await fn();
     console.log = originalLog;
     return logs.join('\n');
   }
@@ -121,7 +121,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-plan');
       expect(output).toContain('claude --agent ana-plan');
     });
@@ -134,7 +134,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-plan');
     });
 
@@ -148,7 +148,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-build');
       expect(output).toContain('claude --agent ana-build');
     });
@@ -164,7 +164,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('build-in-progress');
       expect(output).toContain('claude --agent ana-build');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
@@ -182,7 +182,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-verify');
       expect(output).toContain('claude --agent ana-verify');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
@@ -204,7 +204,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-to-merge');
       expect(output).toContain('ana work complete test-slug');
     });
@@ -225,7 +225,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('needs-fixes');
       expect(output).toContain('claude --agent ana-build');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
@@ -247,7 +247,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('verify-status-unknown');
     });
   });
@@ -270,7 +270,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('phase-1-ready-for-build');
     });
 
@@ -291,7 +291,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('phase-1-ready-for-verify');
     });
 
@@ -316,7 +316,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('phase-2-ready-for-build');
     });
 
@@ -343,7 +343,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-to-merge');
     });
   });
@@ -359,7 +359,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: true }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
       const json = JSON.parse(output);
 
       expect(json).toHaveProperty('artifactBranch');
@@ -396,7 +396,7 @@ describe('ana work status', () => {
         ],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('item-1');
       expect(output).toContain('item-2');
       expect(output).toContain('ready-for-plan');
@@ -408,7 +408,7 @@ describe('ana work status', () => {
     it('handles empty plans/active directory', async () => {
       await createWorkTestProject({ slugs: [] });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('No active work');
     });
 
@@ -418,7 +418,7 @@ describe('ana work status', () => {
       execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
       execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
 
-      expect(() => getWorkStatus({ json: false })).toThrow();
+      await expect(async () => await getWorkStatus({ json: false })).rejects.toThrow();
     });
   });
 
@@ -436,7 +436,7 @@ describe('ana work status', () => {
         branchPrefix: 'dev/',
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       // Next action should NOT contain git checkout anymore
       expect(output).toContain('claude --agent ana-build');
       expect(output).not.toContain('git checkout dev/');
@@ -455,7 +455,7 @@ describe('ana work status', () => {
         branchPrefix: 'dev/',
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: true }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
       const json = JSON.parse(output);
       expect(json.items[0].workBranch).toContain('dev/');
     });
@@ -471,7 +471,7 @@ describe('ana work status', () => {
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: true }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
       const json = JSON.parse(output);
       expect(json.items[0]).toHaveProperty('workBranch');
       expect(json.items[0]).not.toHaveProperty('featureBranch');
@@ -490,7 +490,7 @@ describe('ana work status', () => {
         branchPrefix: '',
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: true }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
       const json = JSON.parse(output);
       // Work branch should be bare slug (no prefix)
       expect(json.items[0].workBranch).toBe('test-slug');
@@ -2786,7 +2786,7 @@ file_changes:
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-plan');
       expect(output).toContain('develop');
     });
@@ -2804,7 +2804,7 @@ file_changes:
         }],
       });
 
-      const output = captureOutput(() => getWorkStatus({ json: false }));
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('build-in-progress');
     });
 
