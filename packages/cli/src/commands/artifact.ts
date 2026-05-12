@@ -248,6 +248,7 @@ interface ArtifactTypeInfo {
   fileName: string;
   displayName: string;
   baseType: string;
+  artifactType: string;
 }
 
 /**
@@ -305,7 +306,7 @@ function parseArtifactType(type: string): ArtifactTypeInfo | null {
     displayName = type;
   }
 
-  return { category, fileName, displayName, baseType };
+  return { category, fileName, displayName, baseType, artifactType: type };
 }
 
 
@@ -891,15 +892,19 @@ function deriveCompanionFileName(reportFileName: string): string | null {
 }
 
 /**
- * Derive the companion artifact key for .saves.json from the report baseType.
+ * Derive the companion artifact key for .saves.json from the full artifact type string.
  *
- * @param baseType - "verify-report" or "build-report"
- * @returns "verify-data" or "build-data", or null
+ * Phase-aware: "build-report-1" → "build-data-1", "verify-report" → "verify-data".
+ *
+ * @param artifactType - Full artifact type string (e.g., "build-report-1", "verify-report")
+ * @returns Phase-aware companion key, or null if not a report type
  */
-function deriveCompanionKey(baseType: string): string | null {
-  if (baseType === 'verify-report') return 'verify-data';
-  if (baseType === 'build-report') return 'build-data';
-  return null;
+function deriveCompanionKey(artifactType: string): string | null {
+  const match = artifactType.match(/^(verify-report|build-report)(-\d+)?$/);
+  if (!match) return null;
+  const base = match[1] === 'verify-report' ? 'verify-data' : 'build-data';
+  const suffix = match[2] ?? '';
+  return `${base}${suffix}`;
 }
 
 /**
@@ -997,15 +1002,31 @@ export function saveArtifact(type: string, slug: string): void {
   // 6a. Auto-rename fallback for multi-spec: if build_report_1.md doesn't exist
   // but build_report.md does, rename it. Same for verify_report. Build agents
   // commonly write the default filename instead of the phase-numbered one.
+  // Also handles fix cycles: when BOTH numbered and unnumbered exist, the
+  // unnumbered file (from the fix build) overwrites the numbered file.
   const isNumbered = typeInfo.fileName.match(/_\d+\.md$/);
-  if (!fs.existsSync(filePath) && isNumbered) {
+  if (isNumbered) {
     const defaultName = typeInfo.baseType === 'build-report' ? 'build_report.md'
       : typeInfo.baseType === 'verify-report' ? 'verify_report.md' : null;
     if (defaultName) {
-      const defaultPath = path.join(projectRoot, '.ana', 'plans', 'active', slug, defaultName);
+      const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+      const defaultPath = path.join(slugDir, defaultName);
       if (fs.existsSync(defaultPath)) {
+        // Rename unnumbered → numbered (overwrites if numbered exists)
         fs.renameSync(defaultPath, filePath);
         console.log(chalk.gray(`Renamed ${defaultName} → ${typeInfo.fileName}`));
+
+        // Rename companion alongside report
+        const defaultCompanion = deriveCompanionFileName(defaultName);
+        const numberedCompanion = deriveCompanionFileName(typeInfo.fileName);
+        if (defaultCompanion && numberedCompanion) {
+          const defaultCompPath = path.join(slugDir, defaultCompanion);
+          const numberedCompPath = path.join(slugDir, numberedCompanion);
+          if (fs.existsSync(defaultCompPath)) {
+            fs.renameSync(defaultCompPath, numberedCompPath);
+            console.log(chalk.gray(`Renamed ${defaultCompanion} → ${numberedCompanion}`));
+          }
+        }
       }
     }
   }
@@ -1124,7 +1145,7 @@ export function saveArtifact(type: string, slug: string): void {
 
   // 6b. Companion YAML discovery and validation (verify-report / build-report)
   const companionFileName = deriveCompanionFileName(typeInfo.fileName);
-  const companionKey = deriveCompanionKey(typeInfo.baseType);
+  const companionKey = deriveCompanionKey(typeInfo.artifactType);
   let companionPath: string | null = null;
   let relCompanionPath: string | null = null;
 
@@ -1248,7 +1269,7 @@ export function saveArtifact(type: string, slug: string): void {
   // produce no .saves.json diff, so the check still works correctly.
   const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
   const artifactContent = fs.readFileSync(filePath, 'utf-8');
-  writeSaveMetadata(slugDir, typeInfo.baseType, artifactContent);
+  writeSaveMetadata(slugDir, typeInfo.artifactType, artifactContent);
 
   // Write companion hash alongside report hash
   if (companionPath && companionKey && fs.existsSync(companionPath)) {
@@ -1514,7 +1535,7 @@ export function saveAllArtifacts(slug: string): void {
   const companions: Array<{ fileName: string; key: string; absPath: string; relPath: string }> = [];
   for (const artifact of artifacts) {
     const companionName = deriveCompanionFileName(artifact.typeInfo.fileName);
-    const cKey = deriveCompanionKey(artifact.typeInfo.baseType);
+    const cKey = deriveCompanionKey(artifact.typeInfo.artifactType);
     if (!companionName || !cKey) continue;
 
     const cAbsPath = path.join(planDir, companionName);
@@ -1652,7 +1673,7 @@ export function saveAllArtifacts(slug: string): void {
   // With idempotent writeSaveMetadata, unchanged artifacts produce no .saves.json diff.
   for (const artifact of artifacts) {
     const content = fs.readFileSync(artifact.path, 'utf-8');
-    writeSaveMetadata(planDir, artifact.typeInfo.baseType, content);
+    writeSaveMetadata(planDir, artifact.typeInfo.artifactType, content);
   }
 
   // Write companion hashes alongside report hashes
