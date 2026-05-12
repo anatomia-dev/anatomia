@@ -1,0 +1,157 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Add milestone kind"
+
+assertions:
+  - id: A001
+    says: "Scopes with milestone kind are accepted by the validator"
+    block: "accepts milestone as valid kind"
+    target: "validation.result"
+    matcher: "equals"
+    value: null
+
+  - id: A002
+    says: "Invalid kinds are rejected with an error listing all four valid values"
+    block: "rejects invalid kind with updated message"
+    target: "validation.error"
+    matcher: "contains"
+    value: "feature, fix, chore, milestone"
+
+  - id: A003
+    says: "The scope parser recognizes milestone and returns it"
+    block: "parses milestone from Kind line"
+    target: "extractScopeKind.result"
+    matcher: "equals"
+    value: "milestone"
+
+  - id: A004
+    says: "The scope parser handles milestone case-insensitively"
+    block: "handles case-insensitive milestone"
+    target: "extractScopeKind.result"
+    matcher: "equals"
+    value: "milestone"
+
+  - id: A005
+    says: "The ProofChainEntry type accepts milestone as a kind value"
+    block: "ProofChainEntry type includes milestone"
+    target: "proof.ts.kind.union"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A006
+    says: "The ProofSummary type accepts milestone as a kind value"
+    block: "ProofSummary type includes milestone"
+    target: "proofSummary.ts.kind.union"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A007
+    says: "The Ana agent template lists milestone with classification guidance"
+    block: "agent template includes milestone guidance"
+    target: "ana.md.kind.line"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A008
+    says: "The dogfood agent is byte-identical to the template"
+    block: "dogfood sync check"
+    target: "dogfood.sync"
+    matcher: "equals"
+    value: true
+
+  - id: A009
+    says: "The website type system recognizes milestone entries"
+    block: "ProofKind type includes milestone"
+    target: "proof-feed.ts.ProofKind"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A010
+    says: "Milestone entries pass through the resolver without falling back to heuristic"
+    block: "resolveKind passes through milestone"
+    target: "resolveKind.milestone"
+    matcher: "equals"
+    value: "milestone"
+
+  - id: A011
+    says: "Milestone entries get a distinct CSS class for their badge"
+    block: "kindClass returns milestone style"
+    target: "kindClass.milestone"
+    matcher: "equals"
+    value: "kindMilestone"
+
+  - id: A012
+    says: "Milestone entries display with the label milestone"
+    block: "kindLabel returns milestone"
+    target: "kindLabel.milestone"
+    matcher: "equals"
+    value: "milestone"
+
+  - id: A013
+    says: "The milestone badge has a gold visual treatment distinct from feature"
+    block: "milestone CSS class exists"
+    target: "proof-feed.module.css.kindMilestone"
+    matcher: "exists"
+
+  - id: A014
+    says: "The maintenance manual documents milestone in the ProofKind type"
+    block: "MAINTENANCE_MANUAL includes milestone"
+    target: "MAINTENANCE_MANUAL.md.ProofKind"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A015
+    says: "The supermock scope template lists all four kinds"
+    block: "supermock data includes milestone"
+    target: "data.js.kind.line"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A016
+    says: "The supermock configurability guide references all four kinds"
+    block: "supermock pages includes milestone"
+    target: "pages.js.kind.reference"
+    matcher: "contains"
+    value: "milestone"
+
+  - id: A017
+    says: "No existing tests break after adding milestone"
+    block: "existing test suite passes"
+    target: "test.existing.pass"
+    matcher: "equals"
+    value: true
+
+  - id: A018
+    says: "New tests were added for milestone functionality"
+    block: "test count increases"
+    target: "test.count"
+    matcher: "greater"
+    value: 2139
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: ".claude/agents/ana.md"
+    action: modify
+  - path: "website/lib/proof-feed.ts"
+    action: modify
+  - path: "website/components/proof-feed/ProofFeed.tsx"
+    action: modify
+  - path: "website/components/proof-feed/proof-feed.module.css"
+    action: modify
+  - path: "website/MAINTENANCE_MANUAL.md"
+    action: modify
+  - path: "docs-research/supermock/pages.js"
+    action: modify
+  - path: "docs-research/supermock/data.js"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
