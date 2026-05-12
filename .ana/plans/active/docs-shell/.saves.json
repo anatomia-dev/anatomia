@@ -50,5 +50,20 @@
     "website/content/docs/index.mdx",
     "website/lib/source.ts",
     "website/source.config.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-12T23:18:14.995Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:333126cead720e319c746d5e72b157c869ebf0f7b7422b974d8db2c465f7be6a",
+    "run_at": "2026-05-12T23:26:46.536Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T23:26:46.577Z",
+    "hash": "sha256:2358c06f8a66957df30e0d533fd22f5c286ef49f37eb72152a08f5259442ddc7"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T23:26:46.577Z",
+    "hash": "sha256:c42b05ffadf4aee67df42c5aa6ff1fcd7d8f874d3143d6ad5a7e7bf49cf7949d"
+  }
 }

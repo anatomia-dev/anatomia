@@ -1,0 +1,66 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px"
+    file: "website/components/docs/layout/RightRail.tsx"
+    line: 26
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A002"]
+
+  - category: code
+    summary: "Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation"
+    file: "website/components/docs/layout/DocsErrorBoundary.tsx"
+    line: 53
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule"
+    file: "website/components/docs/providers/PlatformProvider.tsx"
+    line: 42
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "PlatformSwitcher labelMap duplicates data already in platforms array — two sources of truth for platform labels"
+    file: "website/components/docs/layout/PlatformSwitcher.tsx"
+    line: 23
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "data-hide-rail attribute from spec not implemented — prep mechanism for future proof-explorer route"
+    file: "website/app/docs/layout.tsx"
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "Sidebar md:block (768px) is redundant — overridden by docs.css @media (max-width: 880px) with !important"
+    file: "website/components/docs/layout/Sidebar.tsx"
+    line: 21
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "CopyButton uses inline event handlers for hover styles instead of CSS — fragile pattern, state survives re-renders differently than CSS hover"
+    file: "website/components/docs/content/CopyButton.tsx"
+    line: 27
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "A007 says 5 sidebar groups but only 3 exist — 1 from MDX (index page) + 2 from transformer (Reference, Proof Chain). Get Started, Concepts, Guides require MDX folders that don't exist yet"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007"]
+
+  - category: test
+    summary: "No tests exist for website package — all 31 assertions verified by source inspection only. No regression safety net for component behavior."
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Stale finding 'Empty components/docs directory' — resolved by this build, which created 10 component files in that directory"
+    severity: observation
+    suggested_action: accept
