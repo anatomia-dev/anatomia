@@ -401,17 +401,17 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
       if (result === 'PASS') {
         return 'ready-to-merge';
       } else if (result === 'FAIL') {
-        // Check if build report was updated AFTER verify report (fixes applied)
+        // Check if build report was saved AFTER verify report via .saves.json timestamps
         try {
-          const basePath = `.ana/plans/active/${slug}`;
-          const buildTime = runGit(
-            ['log', '--format=%ct', '-1', workBranch, '--', `${basePath}/build_report.md`]
-          ).stdout;
-          const verifyTime = runGit(
-            ['log', '--format=%ct', '-1', workBranch, '--', `${basePath}/verify_report.md`]
-          ).stdout;
-          if (buildTime && verifyTime && parseInt(buildTime) > parseInt(verifyTime)) {
-            return 'ready-for-re-verify';
+          const savesPath = `.ana/plans/active/${slug}/.saves.json`;
+          const savesContent = readFileOnBranch(workBranch, savesPath);
+          if (savesContent) {
+            const saves = JSON.parse(savesContent) as Record<string, { saved_at?: string }>;
+            const buildSavedAt = saves['build-report']?.saved_at;
+            const verifySavedAt = saves['verify-report']?.saved_at;
+            if (buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt)) {
+              return 'ready-for-re-verify';
+            }
           }
         } catch { /* fall through to needs-fixes */ }
         return 'needs-fixes';
@@ -458,19 +458,20 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
       if (phaseVerifyReport) {
         const result = phaseVerifyReport.result;
         if (result === 'FAIL') {
-          // Check if build report was updated after verify (fixes applied)
+          // Check if build report was saved after verify via .saves.json timestamps
           try {
-            const basePath = `.ana/plans/active/${slug}`;
-            const expectedBuild = phaseBuildReport.file;
-            const expectedVerify = phaseVerifyReport.file;
-            const bTime = runGit(
-              ['log', '--format=%ct', '-1', workBranch, '--', `${basePath}/${expectedBuild}`]
-            ).stdout;
-            const vTime = runGit(
-              ['log', '--format=%ct', '-1', workBranch, '--', `${basePath}/${expectedVerify}`]
-            ).stdout;
-            if (bTime && vTime && parseInt(bTime) > parseInt(vTime)) {
-              return `phase-${phaseNum}-ready-for-re-verify`;
+            const savesPath = `.ana/plans/active/${slug}/.saves.json`;
+            const savesContent = readFileOnBranch(workBranch, savesPath);
+            if (savesContent) {
+              const saves = JSON.parse(savesContent) as Record<string, { saved_at?: string }>;
+              // Try phase-numbered keys first, fall back to unnumbered for backward compat
+              const buildKey = `build-report-${phaseNum}`;
+              const verifyKey = `verify-report-${phaseNum}`;
+              const buildSavedAt = (saves[buildKey] ?? saves['build-report'])?.saved_at;
+              const verifySavedAt = (saves[verifyKey] ?? saves['verify-report'])?.saved_at;
+              if (buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt)) {
+                return `phase-${phaseNum}-ready-for-re-verify`;
+              }
             }
           } catch { /* fall through */ }
           return `phase-${phaseNum}-needs-fixes`;
@@ -1472,6 +1473,8 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   }
 
   // 8b. Completeness check — verify both reports were saved through the pipeline
+  // Phase-aware: for multi-phase work, check phase-numbered keys with fallback
+  // to unnumbered keys for backward compatibility.
   const savesJsonPath = path.join(activePath, '.saves.json');
   let savesData: Record<string, { saved_at?: string; hash?: string }> = {};
   if (fs.existsSync(savesJsonPath)) {
@@ -1480,24 +1483,38 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     } catch { /* treat as empty */ }
   }
 
-  const buildSave = savesData['build-report'];
-  const verifySave = savesData['verify-report'];
-  const buildMissing = !buildSave || !buildSave.saved_at || !buildSave.hash;
-  const verifyMissing = !verifySave || !verifySave.saved_at || !verifySave.hash;
+  // Check each phase for saved build-report and verify-report
+  for (let i = 0; i < specs.length; i++) {
+    const phaseNum = i + 1;
+    const specFile = specs[i];
+    if (!specFile) continue;
 
-  if (buildMissing && verifyMissing) {
-    console.error(chalk.red('Error: Artifacts not saved through the pipeline:'));
-    console.error(chalk.red(`  - build-report: run \`ana artifact save build-report ${slug}\``));
-    console.error(chalk.red(`  - verify-report: run \`ana artifact save verify-report ${slug}\``));
-    process.exit(1);
-  } else if (buildMissing) {
-    console.error(chalk.red(`Error: build-report was not saved through the pipeline.`));
-    console.error(chalk.red(`Run: ana artifact save build-report ${slug}`));
-    process.exit(1);
-  } else if (verifyMissing) {
-    console.error(chalk.red(`Error: verify-report was not saved through the pipeline.`));
-    console.error(chalk.red(`Run: ana artifact save verify-report ${slug}`));
-    process.exit(1);
+    // For single-spec (spec.md) use unnumbered keys; for numbered specs use phase-numbered keys with fallback
+    const isUnnumbered = specFile === 'spec.md';
+    const buildKey = isUnnumbered ? 'build-report' : `build-report-${phaseNum}`;
+    const verifyKey = isUnnumbered ? 'verify-report' : `verify-report-${phaseNum}`;
+
+    // Phase-aware lookup with fallback to unnumbered keys for backward compat
+    const buildSave = savesData[buildKey] ?? (!isUnnumbered ? savesData['build-report'] : undefined);
+    const verifySave = savesData[verifyKey] ?? (!isUnnumbered ? savesData['verify-report'] : undefined);
+    const buildMissing = !buildSave || !buildSave.saved_at || !buildSave.hash;
+    const verifyMissing = !verifySave || !verifySave.saved_at || !verifySave.hash;
+
+    const phaseLabel = specs.length > 1 ? ` (phase ${phaseNum})` : '';
+    if (buildMissing && verifyMissing) {
+      console.error(chalk.red(`Error: Artifacts not saved through the pipeline${phaseLabel}:`));
+      console.error(chalk.red(`  - build-report: run \`ana artifact save build-report${isUnnumbered ? '' : `-${phaseNum}`} ${slug}\``));
+      console.error(chalk.red(`  - verify-report: run \`ana artifact save verify-report${isUnnumbered ? '' : `-${phaseNum}`} ${slug}\``));
+      process.exit(1);
+    } else if (buildMissing) {
+      console.error(chalk.red(`Error: build-report${phaseLabel} was not saved through the pipeline.`));
+      console.error(chalk.red(`Run: ana artifact save build-report${isUnnumbered ? '' : `-${phaseNum}`} ${slug}`));
+      process.exit(1);
+    } else if (verifyMissing) {
+      console.error(chalk.red(`Error: verify-report${phaseLabel} was not saved through the pipeline.`));
+      console.error(chalk.red(`Run: ana artifact save verify-report${isUnnumbered ? '' : `-${phaseNum}`} ${slug}`));
+      process.exit(1);
+    }
   }
 
   // 8c. Capture worktree metadata BEFORE removal (needed for proof chain)
