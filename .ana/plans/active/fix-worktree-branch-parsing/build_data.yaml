@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning: unused eslint-disable directive in git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing proof chain test errors (F004 promoted, F999 not found) produce stderr noise but don't fail tests"
+    severity: observation
+    suggested_action: monitor

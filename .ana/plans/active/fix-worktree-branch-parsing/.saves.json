@@ -18,5 +18,20 @@
   "spec": {
     "saved_at": "2026-05-12T19:58:21.743Z",
     "hash": "sha256:1457803502095c01bd859b8e4c99e13c7ad07d0546a35cde1a9b9bb408b920be"
-  }
+  },
+  "build_started_at": "2026-05-12T20:02:16.566Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T20:08:48.702Z",
+    "hash": "sha256:7515ff2e5fb122d2742866783531aee190820adc3958b553c33bdc2632d31f1e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T20:08:48.703Z",
+    "hash": "sha256:e66b2a3c54a8c2a4690ac98320b26dfe6bda99bb108a51e2321fef24f0f47481"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/engine/detectors/git.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ]
 }
