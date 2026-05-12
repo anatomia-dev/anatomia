@@ -20101,6 +20101,349 @@
         "completed_at": "2026-05-10T22:58:56.415Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "configurability-improvements",
+      "feature": "Configurability Improvements",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 23,
+        "unsatisfied": 0,
+        "deviated": 1
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Unknown fields in ana.json survive re-initialization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Legacy fossil fields are preserved instead of stripped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Invalid known fields still get safe defaults even with passthrough",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Custom namespace defaults still work with passthrough",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Unknown keys coexist with catch defaults in a single parse",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Verify agent template declares testing and coding skills",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Verify agent template declares coding-standards skill",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Dogfood verify agent matches the template exactly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Verify template tells the agent that skills are auto-loaded",
+          "status": "DEVIATED",
+          "deviation": "Step 7 uses explicit invocation instructions (\"Invoke after reading contracts\") rather than claiming auto-loading. The word \"auto-loaded\" does not appear."
+        },
+        {
+          "id": "A010",
+          "says": "Running config with no arguments shows all settings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Config JSON mode outputs valid parseable JSON",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Getting a field returns its value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Getting a nested field traverses into objects",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Getting a missing field shows undefined indicator",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Getting a nested custom field works with dot notation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Setting a field writes the value and preserves other fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Setting a machine-managed field is rejected with a helpful error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Numeric values are parsed as numbers, not strings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Boolean values are parsed as booleans, not strings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Setting a nested custom path creates intermediate objects",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Setting an unknown top-level field warns about collision risk",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Config command fails gracefully when no project is initialized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Config get with JSON flag outputs valid JSON",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "All seven machine-managed fields are rejected by config set",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 163,
+        "think": 1,
+        "plan": 7,
+        "build": 136,
+        "verify": 82
+      },
+      "hashes": {
+        "scope": "sha256:be5cae7b4e8a93d184f671c2a7be83347fea9ba125ad7c369ec873b44876cd73",
+        "contract": "sha256:2c415feaed690dc785360be55e1a7b98b6dce5e95bf55904939c8d23b2732a84",
+        "plan": "sha256:6f47eac8d4134487e5582b824fd0acf80480e2fa6482756e603f66c69d847672",
+        "spec": "sha256:16bae64ba462dd501a657e116550e7a79499bfbc85082580c876936431a4b815",
+        "build-report": "sha256:afca43a9a0d46f161c581163bece252159523f949f44d3c41417d54d0a45ea6f",
+        "build-data": "sha256:2b2bd7db605dc8b7cac78657aa0042e4d1ef357a49ffb9c261aee8286f17e118",
+        "verify-report": "sha256:7b687a415a8018841ceb075ad24371e7f5288067de0c446bd90b61e22a8b2e6e",
+        "verify-data": "sha256:6d8917c4d84a870165d39940ea042506a8d196e30a847fd77cec71b486cf5a14"
+      },
+      "completed_at": "2026-05-12T08:10:49.379Z",
+      "modules_touched": [
+        ".claude/agents/ana-verify.md",
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/tests/commands/config.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/utils/git-operations.test.ts"
+      ],
+      "scope_summary": "The configurability story is incomplete. Users can't safely store custom config (re-init silently strips unknown keys), the verify agent's skill loading is inconsistent with every other pipeline agent, and there's no CLI command for reading or writing ana.json. These three changes give Anatomia a real configurability surface — user data is preserved, the agent system is internally consistent, and configuration has a proper CLI interface. This also unblocks the docs site configurability guide, which currently has to describe \"edit JSON by hand.\"",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract A009 encodes false premise — requires 'auto-loaded' but Claude Code doesn't auto-load skills from frontmatter",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "configurability-improvements-C1",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "Type widening from .passthrough() adds [k: string]: unknown to AnaJson — safe now but fragile if consumers enumerate keys",
+          "file": "packages/cli/src/commands/init/anaJsonSchema.ts",
+          "anchor": null,
+          "line": 55,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "configurability-improvements-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A006-A009 have no @ana tags in this build's test files — verified by source inspection and dogfood sync test",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Unspecified file change in git-operations.test.ts — flipped strip assertion to preservation assertion, necessary and correct",
+          "file": "packages/cli/tests/utils/git-operations.test.ts",
+          "anchor": null,
+          "line": 292,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "No passthrough size guard — corrupted ana.json could grow unbounded across re-init cycles",
+          "file": null,
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "configurability-improvements-C5",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "Step 7 body condensed from 3-line bulleted list to single line — functionally correct but less scannable for agents",
+          "file": "packages/cli/templates/.claude/agents/ana-verify.md",
+          "anchor": null,
+          "line": 139,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C6",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A011 assertion uses toBeDefined() — JSON.parse would throw before reaching it, so the assertion is tautological",
+          "file": "packages/cli/tests/commands/config.test.ts",
+          "anchor": null,
+          "line": 135,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "configurability-improvements-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "displayAll shows empty object as JSON.stringify output (e.g., '{}') — inconsistent with nested object display pattern which uses indentation",
+          "file": "packages/cli/src/commands/config.ts",
+          "anchor": null,
+          "line": 203,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C8",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Synchronous fs operations (readFileSync/writeFileSync) — works for a CLI tool but blocks the event loop during file I/O",
+          "file": "packages/cli/src/commands/config.ts",
+          "anchor": null,
+          "line": 68,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C9",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Plan.md phase 1 checkbox still unchecked despite phase 1 being fully verified — stale artifact from earlier verify cycles",
+          "file": ".ana/plans/active/configurability-improvements/plan.md",
+          "anchor": null,
+          "line": 7,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C10",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "Machine-managed check blocks dot-paths into managed fields (e.g., 'setupPhase.sub') — defensive and correct, but not spec-required. Minimal over-building.",
+          "file": "packages/cli/src/commands/config.ts",
+          "anchor": null,
+          "line": 308,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "configurability-improvements-C11",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 1,
+      "previous_failures": [
+        {
+          "id": "A009",
+          "summary": "Template claimed skills are \"auto-loaded\" but Claude Code doesn't auto-load from frontmatter"
+        }
+      ],
+      "build_concerns": [
+        {
+          "summary": "A009 contract matcher says contains 'auto-loaded' but fix intentionally removes that word — literal matcher will fail despite correct fix",
+          "file": "packages/cli/templates/.claude/agents/ana-verify.md",
+          "severity": "risk",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "AnaJson type widened by passthrough — future consumers could enumerate unknown fields without type error",
+          "file": "packages/cli/src/commands/init/anaJsonSchema.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts:169",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Hidden 'show' subcommand visible in --help output alongside get/set",
+          "file": "packages/cli/src/commands/config.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable in git-operations.ts:169",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T07:57:13.120Z",
+        "completed_at": "2026-05-12T08:10:49.375Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
