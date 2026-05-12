@@ -21939,6 +21939,258 @@
         "commit_count": 8,
         "base_commit": "5564e528295c8a539e4a34b6e3a823373e6e3a03"
       }
+    },
+    {
+      "slug": "docs-infrastructure",
+      "feature": "Docs Infrastructure — Fumadocs MDX Pipeline",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 18,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The website builds successfully with fumadocs dependencies installed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The docs catch-all route exists in the build output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The test MDX page has required title frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The test MDX page has required description frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The docs page resolves MDX content from the content directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Missing docs pages return a 404 instead of crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The Next.js config preserves the view transition experimental flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The Next.js config preserves security headers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The old quickstart docs page is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The four quickstart docs components are removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The fumadocs generated types directory is gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The future docs data directory is gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "TypeScript resolves fumadocs collection imports",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The docs layout does not include the marketing Nav or Footer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Static params are generated for all docs pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Page metadata is generated from MDX frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The smoke test passes with all expected routes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Marketing pages are unaffected by the docs infrastructure change",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 46,
+        "think": 1,
+        "plan": 6,
+        "build": 14,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:a4a983caccd745f867b03f5db00125d5064b91da1e3cca906561ac2ba48feec5",
+        "contract": "sha256:ff1cd775dbc742aab856c1fefa808bf5a913161e14a43effd93c236c08a53ce6",
+        "plan": "sha256:b3e68a086226823c4514f76a37e7f67da0345ad66311bc9530960887f0485599",
+        "spec": "sha256:894a6081fa3935ca7b196a90d86ae4fb1c724b2902090269d7ace5061ac5d0c6",
+        "build-report": "sha256:8484b0557f853e87041e8da22df353d1c5c387ee038646e0897153dd3356ba2c",
+        "build-data": "sha256:c3545977225ff1226d4ee04ed674a1489c7052731da8524f554e6c685cf6b236",
+        "verify-report": "sha256:9827d129ac0e3b9ff972975272b264ed88fe1500e3dfd07e20a43a9fcca5bdce",
+        "verify-data": "sha256:4c3558657797e60588b2d2776fd5c64fe011263980310cbca607b6512ae83ed6"
+      },
+      "completed_at": "2026-05-12T21:25:20.067Z",
+      "modules_touched": [
+        "pnpm-lock.yaml",
+        "website/.gitignore",
+        "website/app/(marketing)/docs/page.tsx",
+        "website/app/docs/[[...slug]]/page.tsx",
+        "website/app/docs/layout.tsx",
+        "website/components/docs/DocsHero.tsx",
+        "website/components/docs/DocsNext.tsx",
+        "website/components/docs/DocsRecap.tsx",
+        "website/components/docs/DocsSteps.tsx",
+        "website/content/docs/index.mdx",
+        "website/eslint.config.mjs",
+        "website/lib/source.ts",
+        "website/next.config.ts",
+        "website/package.json",
+        "website/scripts/smoke-test.sh",
+        "website/source.config.ts",
+        "website/tsconfig.json"
+      ],
+      "scope_summary": "Stand up the Fumadocs MDX pipeline inside the existing Next.js 16 website so that one test page renders at `/docs`. This is the foundation for the entire anaDocs production site — 37 routes, 78+ proof pages, 6 guides, 7 concept pages. Nothing renders until this infrastructure works. The old quickstart-style `/docs` page is replaced.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Prose classes used without @tailwindcss/typography installed",
+          "file": "website/app/docs/[[...slug]]/page.tsx",
+          "anchor": null,
+          "line": 18,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [],
+          "id": "docs-infrastructure-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Page tree injections for Reference and Proof Chain omitted from source loader",
+          "file": "website/lib/source.ts",
+          "anchor": null,
+          "line": 4,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-infrastructure-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Empty components/docs directory left after deleting 4 component files",
+          "file": "website/components/docs/",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "docs-infrastructure-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "eslint.config.mjs modified to ignore .source — not in spec file_changes",
+          "file": "website/eslint.config.mjs",
+          "anchor": null,
+          "line": 15,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-infrastructure-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Frontmatter schema allows empty strings — z.string() without .min(1)",
+          "file": "website/source.config.ts",
+          "anchor": null,
+          "line": 8,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-infrastructure-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No error boundary in docs layout — broken MDX crashes entire docs section",
+          "file": "website/app/docs/layout.tsx",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "docs-infrastructure-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "source.config.ts schema uses frontmatterSchema.extend() — Zod 4 .extend() API may differ from Zod 3",
+          "file": "website/source.config.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Vite peer dependency warning from fumadocs-mdx (wants 7.x/8.x, got 6.4.2)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Page tree injections (Reference, Proof Chain sections) omitted — attachFolder API does not exist in fumadocs-core 16.x loader()",
+          "file": "website/lib/source.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "eslint.config.mjs modified to ignore .source/ — not in original spec file list",
+          "file": "website/eslint.config.mjs",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T20:58:34.531Z",
+        "completed_at": "2026-05-12T21:25:20.063Z",
+        "commit_count": 0,
+        "base_commit": "dcee329940126c349f66d965c41300e12c62a48d"
+      }
     }
   ],
   "schema": 1

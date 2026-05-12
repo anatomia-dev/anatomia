@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-85 runs · 226 active · 104 lessons · 0 promoted · 161 closed
+86 runs · 232 active · 104 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -16,11 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 226 total)
-
-### packages/cli/src/commands/artifact.ts
-
-- **code:** Auto-rename overwrites numbered file unconditionally — if the unnumbered file is stale or corrupt, the good numbered version is destroyed — *Fix cycle stage detection breaks on multi-phase builds*
+## Active Findings (30 shown of 232 total)
 
 ### packages/cli/src/commands/pr.ts
 
@@ -33,8 +29,6 @@
 - **code:** getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix') — *Kind-aware branch prefixes*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
-- **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
-- **code:** completeWork fallback lets two multi-phase specs share one unnumbered saves.json entry — phase 2 passes if phase 1's unnumbered key exists — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -61,7 +55,6 @@
 - **test:** No dedicated @ana tag for A003 — existing test satisfies the assertion but is tagged @ana A010 from a prior contract — *Fix worktree branch parsing*
 - **code:** No mutual exclusion between featureBranch and worktree options in createWorkTestProject — setting both creates branch via checkout then fails on worktree add — *Fix worktree branch parsing*
 - **test:** A008 JSON test asserts typeof === 'number' not a specific value — passes even if commitsBehind computation is broken — *Worktree freshness detection*
-- **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/tests/utils/git-operations.test.ts
 
@@ -71,6 +64,18 @@
 
 - **test:** A005 git failure test relies on absent origin/main ref rather than injecting a failure — indirect coverage of the catch path — *Worktree freshness detection*
 
+### website/app/docs/[[...slug]]/page.tsx
+
+- **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/app/docs/layout.tsx
+
+- **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/components/docs/
+
+- **code:** Empty components/docs directory left after deleting 4 component files — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
 ### website/components/proof-feed/proof-feed.module.css
 
 - **code:** Dark mode milestone badge has no background override — inherits light-mode color-mix background. Works because transparent mix renders identically in dark mode, but inconsistent with feature badge which doesn't set explicit dark background either — *Add milestone kind*
@@ -78,12 +83,22 @@
 ### website/components/proof-feed/ProofFeed.tsx
 
 - **test:** No test verifies milestone badge CSS class or label output — website has no test suite, so ProofFeed rendering is unverified beyond type checking and build compilation — *Add milestone kind*
-- **code:** kindClass and kindLabel use string parameter type instead of ProofKind — the functions accept any string and fall through to chore/improve defaults for unrecognized values — *Add milestone kind*
+
+### website/eslint.config.mjs
+
+- **code:** eslint.config.mjs modified to ignore .source — not in spec file_changes — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/lib/source.ts
+
+- **code:** Page tree injections for Reference and Proof Chain omitted from source loader — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/source.config.ts
+
+- **code:** Frontmatter schema allows empty strings — z.string() without .min(1) — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### General
 
 - **code:** Audit reduced from 20 to 12, not 0 — remaining 12 are postcss dev-only transitives awaiting upstream fix — *Hygiene debt cleanup*
 - **test:** No tagged tests for A009, A010, A011, A012, A013, A014 — verified by source inspection only — *Worktree freshness detection*
 - **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
-- **test:** A015/A016/A017 template content assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
 
