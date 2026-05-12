@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-80 runs · 201 active · 98 lessons · 0 promoted · 161 closed
+81 runs · 206 active · 99 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -10,19 +10,17 @@
 | packages/cli/tests/commands/work.test.ts | 16 | 12 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
 | website/lib/proof-feed.ts | 10 | 3 |
-| packages/cli/src/commands/artifact.ts | 8 | 5 |
+| packages/cli/tests/commands/artifact.test.ts | 9 | 5 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 201 total)
+## Active Findings (30 shown of 206 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** Auto-rename overwrites numbered file unconditionally — if the unnumbered file is stale or corrupt, the good numbered version is destroyed — *Fix cycle stage detection breaks on multi-phase builds*
-- **code:** git commit -- uses --only semantics (working tree, not index) — safe because git add and commit are adjacent synchronous calls, but undocumented assumption — *CLI commits scoped to intended paths*
-- **code:** Site 2 stages plan.md with absolute path via runGit but tracks relative path in stagedPaths — works correctly but mixed path convention — *CLI commits scoped to intended paths*
 
 ### packages/cli/src/commands/config.ts
 
@@ -39,6 +37,10 @@
 - **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
 - **code:** completeWork fallback lets two multi-phase specs share one unnumbered saves.json entry — phase 2 passes if phase 1's unnumbered key exists — *Fix cycle stage detection breaks on multi-phase builds*
 
+### packages/cli/src/utils/proofSummary.ts
+
+- **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — pre-existing issue, milestone addition doesn't change the risk profile — *Add milestone kind*
+
 ### packages/cli/src/utils/update-check.ts
 
 - **code:** packageName interpolated via template literal without JSON.stringify in spawn script URL — *Version Awareness Notifications*
@@ -49,6 +51,10 @@
 
 - **code:** Step 7 body condensed from 3-line bulleted list to single line — functionally correct but less scannable for agents — *Configurability Improvements*
 - **code:** ana-verify.md wording tweaked — out of scope, harmless formatting change — *Init must surface scan quality and pipeline readiness*
+
+### packages/cli/tests/commands/artifact.test.ts
+
+- **test:** A002 test asserts on echoed invalid input ('fix + chore'), not on the four-value error string — source inspection confirms correct text but test would pass even if milestone were missing from the error message — *Add milestone kind*
 
 ### packages/cli/tests/commands/config.test.ts
 
@@ -72,7 +78,6 @@
 
 - **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
 - **test:** No integration tests for artifact.ts or proof.ts scoped commit sites — 9 of 14 assertions verified by source inspection only — *CLI commits scoped to intended paths*
-- **test:** Test uses toContain('completed/') for path matching — works in controlled test but would false-positive if any other path contained 'completed/' — *CLI commits scoped to intended paths*
 
 ### packages/cli/tests/utils/git-operations.test.ts
 
@@ -83,13 +88,14 @@
 - **test:** A007 tagged test checks return values not output — contract target is 'output' with not_contains 'Error' — *Version Awareness Notifications*
 - **test:** A010 tagged test checks spawn not called — contract target is updateAvailable equals null, which is tested in untagged CI test — *Version Awareness Notifications*
 
-### website/components/system/Drawer.tsx
+### website/components/proof-feed/proof-feed.module.css
 
-- **code:** Drawer sectionRef prop is dead code — defined but never passed by SystemSection — *Section 4 — The System (replace Bento)*
+- **code:** Dark mode milestone badge has no background override — inherits light-mode color-mix background. Works because transparent mix renders identically in dark mode, but inconsistent with feature badge which doesn't set explicit dark background either — *Add milestone kind*
 
-### website/components/ui/SectionThread.tsx
+### website/components/proof-feed/ProofFeed.tsx
 
-- **code:** SectionThread breathe prop applies undefined animate-breathe CSS class — no-op if invoked — *Section 4 — The System (replace Bento)*
+- **test:** No test verifies milestone badge CSS class or label output — website has no test suite, so ProofFeed rendering is unverified beyond type checking and build compilation — *Add milestone kind*
+- **code:** kindClass and kindLabel use string parameter type instead of ProofKind — the functions accept any string and fall through to chore/improve defaults for unrecognized values — *Add milestone kind*
 
 ### General
 

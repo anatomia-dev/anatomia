@@ -20696,6 +20696,252 @@
         "completed_at": "2026-05-12T09:05:28.325Z",
         "commit_count": 8
       }
+    },
+    {
+      "slug": "add-milestone-kind",
+      "feature": "Add milestone kind",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 18,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Scopes with milestone kind are accepted by the validator",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Invalid kinds are rejected with an error listing all four valid values",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The scope parser recognizes milestone and returns it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The scope parser handles milestone case-insensitively",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The ProofChainEntry type accepts milestone as a kind value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The ProofSummary type accepts milestone as a kind value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The Ana agent template lists milestone with classification guidance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The dogfood agent is byte-identical to the template",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The website type system recognizes milestone entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Milestone entries pass through the resolver without falling back to heuristic",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Milestone entries get a distinct CSS class for their badge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Milestone entries display with the label milestone",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The milestone badge has a gold visual treatment distinct from feature",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The maintenance manual documents milestone in the ProofKind type",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The supermock scope template lists all four kinds",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The supermock configurability guide references all four kinds",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "No existing tests break after adding milestone",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "New tests were added for milestone functionality",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 17,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 128,
+        "think": 2,
+        "plan": 5,
+        "build": 10,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:b1370566ce3dea36eceff9bc07073ab281da7bedd64a2fc4cc9ee3084a004016",
+        "contract": "sha256:fb4204aa9ee80d53ff68c569170e176719449847307c7fbc135a036b150ca44e",
+        "plan": "sha256:1a60de7db709a99479207b1d99c2a1e2932535cad577022399a6d15dfe07d53a",
+        "spec": "sha256:00fbe860ff5d224b3ecb751671e543fd582efccd6baeddb2bc998c1071e17e15",
+        "build-report": "sha256:620fc2712c02127ba5a3d812bffc39e325133cd26106d8170b0dc4b728688d5e",
+        "build-data": "sha256:01ce6cabd49a51c51c46c63788fe5b5ae948d6ca4465e4665d6ac9a2a8f787ad",
+        "verify-report": "sha256:47869c336dbab3a28494d28df83937ccc4a81992bcd08cd987faa46ce4fb7c2b",
+        "verify-data": "sha256:28e232bd5b8cf80d34378ef4a2b31120759265ef3b759e4a854528d5800c35d0"
+      },
+      "completed_at": "2026-05-12T09:35:34.992Z",
+      "modules_touched": [
+        ".claude/agents/ana.md",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts",
+        "website/MAINTENANCE_MANUAL.md",
+        "website/components/proof-feed/ProofFeed.tsx",
+        "website/components/proof-feed/proof-feed.module.css",
+        "website/lib/proof-feed.ts"
+      ],
+      "scope_summary": "The kind system classifies work as `feature`, `fix`, or `chore`. These three values are accurate but incomplete — there's no way to distinguish routine feature work from significant new capabilities. A filter button added to an existing page and an entirely new authentication system are both \"feature.\" This matters because kind flows into the proof chain, the website ship log, and will soon drive branch prefix selection (Scope 2: kind-aware branch prefixes). A fourth kind, `milestone`, gives Ana and developers a way to signal \"this is announcement-worthy\" — enabling downstream consumers to surface significant work differently from routine work.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract assertions A015/A016 reference docs-research/supermock/ files that are not tracked in git — untracked directory, cannot be modified in a branch",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A015",
+            "A016"
+          ],
+          "id": "add-milestone-kind-C1",
+          "status": "lesson"
+        },
+        {
+          "category": "test",
+          "summary": "A002 test asserts on echoed invalid input ('fix + chore'), not on the four-value error string — source inspection confirms correct text but test would pass even if milestone were missing from the error message",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 878,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "add-milestone-kind-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — pre-existing issue, milestone addition doesn't change the risk profile",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 436,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "add-milestone-kind-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Dark mode milestone badge has no background override — inherits light-mode color-mix background. Works because transparent mix renders identically in dark mode, but inconsistent with feature badge which doesn't set explicit dark background either",
+          "file": "website/components/proof-feed/proof-feed.module.css",
+          "anchor": null,
+          "line": 291,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "add-milestone-kind-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test verifies milestone badge CSS class or label output — website has no test suite, so ProofFeed rendering is unverified beyond type checking and build compilation",
+          "file": "website/components/proof-feed/ProofFeed.tsx",
+          "anchor": null,
+          "line": 20,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "add-milestone-kind-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "kindClass and kindLabel use string parameter type instead of ProofKind — the functions accept any string and fall through to chore/improve defaults for unrecognized values",
+          "file": "website/components/proof-feed/ProofFeed.tsx",
+          "anchor": null,
+          "line": 19,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "add-milestone-kind-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A002 contract assertion not directly tested — existing test asserts on raw input, not valid-values listing",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Website proof feed changes have no runtime tests (no test suite exists for website)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Initial worktree baseline showed MODULE_NOT_FOUND failures in 7 test files — resolved on subsequent runs",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T09:00:16.261Z",
+        "completed_at": "2026-05-12T09:35:34.988Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
