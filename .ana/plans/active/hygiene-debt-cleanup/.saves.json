@@ -38,5 +38,20 @@
     "packages/cli/tests/engine/fixtures/python/requirements.txt/simple.txt",
     "packages/cli/tests/engine/fixtures/python/requirements.txt/with-extras.txt",
     "pnpm-lock.yaml"
-  ]
+  ],
+  "verify_started_at": "2026-05-12T20:26:41.037Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:192d6140207767b7f761c6e506eb31d9e4b02e4c7c0ab27a9ad4d27d3b920c72",
+    "run_at": "2026-05-12T20:39:14.348Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T20:39:14.386Z",
+    "hash": "sha256:c2b6bdf09237d24611d56abdab16bca7b2b146568963af45f06c46a7cffe7df9"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T20:39:14.386Z",
+    "hash": "sha256:fad6a92e81010c0d42d3b8ef23e225b248e4b14c788c97e1460a0d8011fb0a0d"
+  }
 }

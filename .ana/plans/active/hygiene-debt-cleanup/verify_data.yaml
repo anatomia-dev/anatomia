@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: code
+    summary: "--autostash bypasses content-match guard for tracked dirty planning artifacts"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1206
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A007"]
+  - category: test
+    summary: "content-match guard test regressed — completeWork resolves instead of rejecting with --autostash"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 4366
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A007"]
+  - category: upstream
+    summary: "Contract A008 test count value stale — says 2177 but baseline is 2178 on main (2177 at merge base)"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A008"]
+  - category: code
+    summary: "Audit reduced from 20 to 12, not 0 — remaining 12 are postcss/vite/rollup dev-only transitives"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A010"]
+  - category: upstream
+    summary: "A011/A012 target file changed from template to project-level — human override, not spec deviation"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A011", "A012"]
