@@ -186,7 +186,7 @@ Write `.ana/plans/active/{slug}/scope.md` with ALL sections:
 What the user wants and why. In their words where possible.
 
 ## Complexity Assessment
-- **Kind:** feature / fix / chore *(validated by `ana artifact save scope` — exact match required)*
+- **Kind:** feature / fix / chore / milestone *(validated by `ana artifact save scope` — exact match required). Use milestone for significant new capabilities that are announcement-worthy — a new product surface, a major integration, a system that changes what's possible. Most work is feature; milestone is the exception.*
 - **Size:** small / medium / large *(validated by `ana artifact save scope` — first token must match)*
 - **Files affected:** {list}
 - **Blast radius:** what else might be impacted
