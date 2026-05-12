@@ -1,0 +1,154 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Docs Infrastructure — Fumadocs MDX Pipeline"
+
+assertions:
+  - id: A001
+    says: "The website builds successfully with fumadocs dependencies installed"
+    block: "website build succeeds"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A002
+    says: "The docs catch-all route exists in the build output"
+    block: "docs route exists in manifest"
+    target: "manifest.routes.docs"
+    matcher: "exists"
+
+  - id: A003
+    says: "The test MDX page has required title frontmatter"
+    block: "frontmatter schema enforces title"
+    target: "content.docs.index.frontmatter.title"
+    matcher: "exists"
+
+  - id: A004
+    says: "The test MDX page has required description frontmatter"
+    block: "frontmatter schema enforces description"
+    target: "content.docs.index.frontmatter.description"
+    matcher: "exists"
+
+  - id: A005
+    says: "The docs page resolves MDX content from the content directory"
+    block: "catch-all resolves content"
+    target: "source.getPage.result"
+    matcher: "exists"
+
+  - id: A006
+    says: "Missing docs pages return a 404 instead of crashing"
+    block: "missing page returns notFound"
+    target: "source.getPage.missing"
+    matcher: "truthy"
+
+  - id: A007
+    says: "The Next.js config preserves the view transition experimental flag"
+    block: "config preserves viewTransition"
+    target: "nextConfig.experimental.viewTransition"
+    matcher: "equals"
+    value: true
+
+  - id: A008
+    says: "The Next.js config preserves security headers"
+    block: "config preserves security headers"
+    target: "nextConfig.headers.xFrameOptions"
+    matcher: "equals"
+    value: "DENY"
+
+  - id: A009
+    says: "The old quickstart docs page is removed"
+    block: "old docs page deleted"
+    target: "filesystem.marketing.docs.page"
+    matcher: "not_equals"
+    value: "exists"
+
+  - id: A010
+    says: "The four quickstart docs components are removed"
+    block: "old docs components deleted"
+    target: "filesystem.components.docs.count"
+    matcher: "equals"
+    value: 0
+
+  - id: A011
+    says: "The fumadocs generated types directory is gitignored"
+    block: "source directory gitignored"
+    target: "gitignore.contains.source"
+    matcher: "contains"
+    value: ".source"
+
+  - id: A012
+    says: "The future docs data directory is gitignored"
+    block: "data docs directory gitignored"
+    target: "gitignore.contains.dataDocs"
+    matcher: "contains"
+    value: "data/docs"
+
+  - id: A013
+    says: "TypeScript resolves fumadocs collection imports"
+    block: "collections path alias configured"
+    target: "tsconfig.paths.collections"
+    matcher: "exists"
+
+  - id: A014
+    says: "The docs layout does not include the marketing Nav or Footer"
+    block: "docs layout is independent"
+    target: "docsLayout.imports.nav"
+    matcher: "not_contains"
+    value: "Nav"
+
+  - id: A015
+    says: "Static params are generated for all docs pages"
+    block: "generateStaticParams exported"
+    target: "docsPage.exports.generateStaticParams"
+    matcher: "exists"
+
+  - id: A016
+    says: "Page metadata is generated from MDX frontmatter"
+    block: "generateMetadata exported"
+    target: "docsPage.exports.generateMetadata"
+    matcher: "exists"
+
+  - id: A017
+    says: "The smoke test passes with all expected routes"
+    block: "smoke test passes"
+    target: "smokeTest.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A018
+    says: "Marketing pages are unaffected by the docs infrastructure change"
+    block: "marketing routes unchanged"
+    target: "manifest.routes.marketing.count"
+    matcher: "greater"
+    value: 5
+
+file_changes:
+  - path: "website/package.json"
+    action: modify
+  - path: "website/source.config.ts"
+    action: create
+  - path: "website/lib/source.ts"
+    action: create
+  - path: "website/next.config.ts"
+    action: modify
+  - path: "website/tsconfig.json"
+    action: modify
+  - path: "website/.gitignore"
+    action: modify
+  - path: "website/app/docs/layout.tsx"
+    action: create
+  - path: "website/app/docs/[[...slug]]/page.tsx"
+    action: create
+  - path: "website/content/docs/index.mdx"
+    action: create
+  - path: "website/app/(marketing)/docs/page.tsx"
+    action: delete
+  - path: "website/components/docs/DocsHero.tsx"
+    action: delete
+  - path: "website/components/docs/DocsNext.tsx"
+    action: delete
+  - path: "website/components/docs/DocsRecap.tsx"
+    action: delete
+  - path: "website/components/docs/DocsSteps.tsx"
+    action: delete
+  - path: "website/scripts/smoke-test.sh"
+    action: modify
