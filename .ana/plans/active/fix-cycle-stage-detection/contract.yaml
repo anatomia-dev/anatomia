@@ -1,0 +1,158 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix cycle stage detection breaks on multi-phase builds"
+
+assertions:
+  # AC1: Multi-phase fix cycle end-to-end
+  - id: A001
+    says: "A fix build on phase 2 transitions the stage to ready-for-re-verify"
+    block: "multi-phase fix cycle transitions to phase-N-ready-for-re-verify"
+    target: "output"
+    matcher: "contains"
+    value: "phase-2-ready-for-re-verify"
+
+  - id: A002
+    says: "A fix build on a single-spec item transitions the stage to ready-for-re-verify"
+    block: "single-spec fix cycle transitions to ready-for-re-verify"
+    target: "output"
+    matcher: "contains"
+    value: "ready-for-re-verify"
+
+  - id: A003
+    says: "Stage stays needs-fixes when no fix build has been saved"
+    block: "single-spec FAIL without fix stays needs-fixes"
+    target: "output"
+    matcher: "contains"
+    value: "needs-fixes"
+
+  # AC2: Auto-rename self-healing
+  - id: A004
+    says: "When both numbered and unnumbered report files exist, save renames the unnumbered to numbered"
+    block: "auto-rename overwrites numbered with unnumbered content during fix cycle"
+    target: "numberedFileContent"
+    matcher: "contains"
+    value: "fix cycle content"
+
+  - id: A005
+    says: "Companion data files are renamed alongside their report files"
+    block: "auto-rename renames companion file alongside report"
+    target: "companionRenamed"
+    matcher: "truthy"
+
+  - id: A006
+    says: "Auto-rename works for verify reports the same way as build reports"
+    block: "auto-rename works for verify reports during fix cycle"
+    target: "numberedFileContent"
+    matcher: "contains"
+    value: "fix cycle verify"
+
+  # AC3: .saves.json timestamp-based stage detection
+  - id: A007
+    says: "Stage detection reads timestamps from saves.json instead of git log"
+    block: "stage detection uses saves.json timestamps not git timestamps"
+    target: "output"
+    matcher: "contains"
+    value: "ready-for-re-verify"
+
+  - id: A008
+    says: "Multi-phase stage detection reads phase-numbered saves.json keys"
+    block: "multi-phase stage detection reads phase-aware saves.json keys"
+    target: "output"
+    matcher: "contains"
+    value: "phase-2-ready-for-re-verify"
+
+  - id: A009
+    says: "Stage detection falls back to unnumbered keys for backward compatibility"
+    block: "multi-phase stage detection falls back to unnumbered saves.json keys"
+    target: "output"
+    matcher: "contains"
+    value: "phase-1-ready-for-re-verify"
+
+  # AC4: Phase-aware .saves.json keys
+  - id: A010
+    says: "Saving a numbered build report writes a phase-numbered key to saves.json"
+    block: "saves.json uses phase-aware key for numbered artifact"
+    target: "savesJsonKey"
+    matcher: "equals"
+    value: "build-report-1"
+
+  - id: A011
+    says: "Saving an unnumbered build report keeps the unnumbered key"
+    block: "saves.json uses unnumbered key for unnumbered artifact"
+    target: "savesJsonKey"
+    matcher: "equals"
+    value: "build-report"
+
+  - id: A012
+    says: "Companion data files get phase-numbered keys in saves.json"
+    block: "saves.json uses phase-aware key for numbered companion"
+    target: "companionKey"
+    matcher: "equals"
+    value: "build-data-1"
+
+  # AC5: completeWork backward compatibility
+  - id: A013
+    says: "Work completion succeeds with phase-aware saves.json keys"
+    block: "completeWork accepts phase-aware saves.json keys for multi-phase"
+    target: "completionResult"
+    matcher: "not_equals"
+    value: "missing-artifact-error"
+
+  - id: A014
+    says: "Work completion succeeds with old unnumbered saves.json keys"
+    block: "completeWork falls back to unnumbered saves.json keys"
+    target: "completionResult"
+    matcher: "not_equals"
+    value: "missing-artifact-error"
+
+  # AC6: Template build resume protocol
+  - id: A015
+    says: "Build template resume section references phase-numbered filenames from the start"
+    block: "ana-build.md resume protocol uses phase-numbered filenames"
+    target: "templateContent"
+    matcher: "contains"
+    value: "build_report_{N}.md"
+
+  # AC7: Template verify Find Work stages
+  - id: A016
+    says: "Verify template lists re-verify as a valid stage"
+    block: "ana-verify.md Find Work lists ready-for-re-verify"
+    target: "templateContent"
+    matcher: "contains"
+    value: "ready-for-re-verify"
+
+  - id: A017
+    says: "Verify template lists phase-specific re-verify as a valid stage"
+    block: "ana-verify.md Find Work lists phase-N-ready-for-re-verify"
+    target: "templateContent"
+    matcher: "contains"
+    value: "phase-N-ready-for-re-verify"
+
+  # AC8: Full FAIL-fix-re-verify progression
+  - id: A018
+    says: "The full rejection cycle progresses correctly from FAIL through fix to re-verify"
+    block: "full FAIL-fix-re-verify stage progression single-spec"
+    target: "stageProgression"
+    matcher: "equals"
+    value: "needs-fixes → ready-for-re-verify"
+
+  - id: A019
+    says: "The full rejection cycle progresses correctly for multi-phase builds"
+    block: "full FAIL-fix-re-verify stage progression multi-phase"
+    target: "stageProgression"
+    matcher: "equals"
+    value: "phase-2-needs-fixes → phase-2-ready-for-re-verify"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
