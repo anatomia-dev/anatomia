@@ -18,5 +18,25 @@
   "spec": {
     "saved_at": "2026-05-12T08:16:40.495Z",
     "hash": "sha256:8df906375b9c85125a12547efdd4ddcb1d44ef6f27213381569b5df46a0b8ff2"
-  }
+  },
+  "build_started_at": "2026-05-12T08:21:40.477Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T08:34:12.255Z",
+    "hash": "sha256:8898fab066ef2c13376c8da8d0f78dcf8a65b38b56dfe3f875d6c71491f03e31"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T08:34:12.256Z",
+    "hash": "sha256:f29ea33658b3c619742aa5fea2c05ef836f84999810c1311e9160e33ed95d18a"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ]
 }
