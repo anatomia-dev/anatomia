@@ -1,0 +1,192 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Kind-aware branch prefixes"
+
+assertions:
+  # Config expansion — readBranchPrefix
+  - id: A001
+    says: "String-form branch prefix works exactly as before"
+    block: "returns configured value when branchPrefix is a string"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "dev/"
+
+  - id: A002
+    says: "Map-form config returns the correct prefix for a given kind"
+    block: "returns kind-specific prefix from map config"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "fix/"
+
+  - id: A003
+    says: "Map-form config falls back to feature prefix when no kind is specified"
+    block: "returns feature prefix as default from map config"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A004
+    says: "String-form config ignores the kind parameter entirely"
+    block: "returns string prefix regardless of kind argument"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A005
+    says: "Unknown kind falls back to the feature key in the map"
+    block: "falls back to feature key for unknown kind"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A006
+    says: "Partial map without a feature key falls back to the hardcoded default"
+    block: "falls back to hardcoded default when feature key is missing"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A007
+    says: "Empty map falls back to the hardcoded default"
+    block: "returns default for empty map"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A008
+    says: "Malformed map values fall back to the hardcoded default"
+    block: "returns default when map contains non-string values"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A009
+    says: "Each map value is validated independently for branch name safety"
+    block: "validates individual map values with validateBranchName"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  # Config expansion — Zod schema
+  - id: A010
+    says: "Map-form branch prefix is accepted by the Zod schema"
+    block: "AnaJsonSchema accepts map-form branchPrefix"
+    target: "parsed.branchPrefix"
+    matcher: "exists"
+
+  - id: A011
+    says: "Map-form config survives re-init without being destroyed"
+    block: "map-form branchPrefix survives AnaJsonSchema round-trip"
+    target: "parsed.branchPrefix.feature"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A012
+    says: "Invalid branchPrefix type still falls back to the safe default"
+    block: "AnaJsonSchema catches invalid branchPrefix type"
+    target: "parsed.branchPrefix"
+    matcher: "equals"
+    value: "feature/"
+
+  # Branch lookup — slug-based matching
+  - id: A013
+    says: "Existing branches are found by slug regardless of what prefix created them"
+    block: "getWorkBranch finds branch by slug match"
+    target: "getWorkBranch.result"
+    matcher: "contains"
+    value: "my-slug"
+
+  - id: A014
+    says: "Substring slugs do not cause false matches with other branches"
+    block: "getWorkBranch does not false-match substring slugs"
+    target: "getWorkBranch.result"
+    matcher: "not_equals"
+    value: "feature/add-auth-system"
+
+  - id: A015
+    says: "Branch lookup works after config changes between creation and lookup"
+    block: "getWorkBranch finds branch after config change"
+    target: "getWorkBranch.result"
+    matcher: "exists"
+
+  - id: A016
+    says: "Full branch name is returned so consumers use the real name"
+    block: "getWorkBranch returns full branch name"
+    target: "getWorkBranch.result"
+    matcher: "contains"
+    value: "/"
+
+  # Branch display — git HEAD reads
+  - id: A017
+    says: "Worktree status shows the actual branch from git, not a config-based guess"
+    block: "getWorktreeInfo reads branch from git HEAD"
+    target: "worktreeInfo.branch"
+    matcher: "exists"
+
+  - id: A018
+    says: "Commit count uses the actual branch name from git"
+    block: "getWorktreeInfo counts commits using HEAD branch"
+    target: "worktreeInfo.commitCount"
+    matcher: "exists"
+
+  - id: A019
+    says: "Work status displays correct branch info with map-form config"
+    block: "work status shows branch info with map config"
+    target: "statusOutput"
+    matcher: "exists"
+
+  # Consumer updates — pr.ts
+  - id: A020
+    says: "PR branch validation works with map-form config"
+    block: "pr.ts validates branch by slug not prefix"
+    target: "output"
+    matcher: "exists"
+
+  # Branch creation — kind resolution
+  - id: A021
+    says: "Undefined kind with map config returns the feature prefix as default"
+    block: "readBranchPrefix with undefined kind returns feature default"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "feature/"
+
+  - id: A022
+    says: "Partial map resolves present keys correctly"
+    block: "partial map returns correct value for present key"
+    target: "readBranchPrefix.result"
+    matcher: "equals"
+    value: "bugfix/"
+
+  # Safety
+  - id: A023
+    says: "All existing tests continue to pass"
+    block: "existing test suite passes"
+    target: "testResult.passed"
+    matcher: "truthy"
+
+  - id: A024
+    says: "New tests are added for map-form config and slug-based matching"
+    block: "test count increases"
+    target: "testResult.totalTests"
+    matcher: "greater"
+    value: 2156
+
+file_changes:
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/utils/git-operations.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/pr.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/utils/worktree.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/git-operations.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/pr.test.ts"
+    action: modify
