@@ -22,8 +22,8 @@
   "build_started_at": "2026-05-12T08:21:40.477Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-05-12T08:34:12.255Z",
-    "hash": "sha256:8898fab066ef2c13376c8da8d0f78dcf8a65b38b56dfe3f875d6c71491f03e31"
+    "saved_at": "2026-05-12T08:52:49.345Z",
+    "hash": "sha256:716856600a75a645c576a9d4fea359a0316f3ccdef4c5d4188ccadb610adbb29"
   },
   "build-data": {
     "saved_at": "2026-05-12T08:34:12.256Z",

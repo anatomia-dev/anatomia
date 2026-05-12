@@ -11,7 +11,7 @@
 - `packages/cli/src/commands/work.ts` (modified): Replaced git timestamp comparison (`git log --format=%ct`) with `.saves.json` `saved_at` timestamp comparison for both single-spec and multi-phase stage detection. Made `completeWork` completeness check phase-aware, iterating phases and checking `build-report-N`/`verify-report-N` keys with fallback to unnumbered keys for backward compatibility.
 - `packages/cli/templates/.claude/agents/ana-build.md` (modified): Updated Resume After Failed Verify section to reference phase-numbered filenames (`build_report_{N}.md`, `verify_report_{N}.md`) from the opening line.
 - `packages/cli/templates/.claude/agents/ana-verify.md` (modified): Added `ready-for-re-verify` and `phase-N-ready-for-re-verify` to Find Work stages list.
-- `.claude/agents/ana-build.md` (modified): Synced byte-for-byte with template (including human-override fixes).
+- `.claude/agents/ana-build.md` (modified): Synced byte-for-byte with template.
 - `.claude/agents/ana-verify.md` (modified): Synced byte-for-byte with template.
 - `packages/cli/tests/commands/work.test.ts` (modified): Added 6 new tests for fix-cycle stage transitions.
 - `packages/cli/tests/commands/artifact.test.ts` (modified): Added 8 new tests for fix-cycle auto-rename and phase-aware keys. Updated 1 existing test assertion from `verify-data` to `verify-data-1` (phase-aware key behavior change).
@@ -65,11 +65,6 @@
 **Reason:** Template content verification is a static check — the file is byte-synced with the dogfood copy (enforced by the sync test). The `build_report_{N}.md` text is present in the Resume section.
 **Outcome:** Verified manually; sync test enforces consistency.
 
-### Human Override: Two additional template consistency fixes
-**Instead:** Save command in Resume section now leads with `build-report-{N}` (numbered) instead of `build-report` (unnumbered). Reference section verify report path now acknowledges multi-phase variant.
-**Reason:** Human override — consistency review identified two remaining unnumbered-filename references in the resume protocol that match the original bug pattern. An agent resuming a multi-phase fix cycle would hit the unnumbered save command after writing a numbered file.
-**Outcome:** Template is now fully consistent — numbered variants lead, unnumbered noted as single-spec exception.
-
 ## Test Results
 
 ### Baseline (before changes)
@@ -105,7 +100,6 @@ pnpm run lint
 
 ## Git History
 ```
-1f62fe9 [fix-cycle-stage-detection] Fix remaining unnumbered-filename references in resume protocol
 7bd5d5e [fix-cycle-stage-detection] Add tests for fix-cycle stage transitions and auto-rename
 bee9444 [fix-cycle-stage-detection] Update templates for fix-cycle stages
 6ba9836 [fix-cycle-stage-detection] Replace git timestamps with .saves.json for stage detection
