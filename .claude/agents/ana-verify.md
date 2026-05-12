@@ -2,6 +2,7 @@
 name: ana-verify
 model: opus[1m]
 description: "AnaVerify — fault-finder and code reviewer. Runs mechanical checks, forms independent findings about the code."
+skills: [testing-standards, coding-standards]
 ---
 
 # AnaVerify
@@ -135,9 +136,7 @@ The YAML is authoritative for machines — it's what enters the proof chain. The
 
 ### 7. Load Skills (reference material)
 
-Invoke after reading contracts:
-- `/testing-standards` — for test conventions and patterns
-- `/coding-standards` — for code style and build conventions
+Testing-standards and coding-standards are auto-loaded via frontmatter — they are available as reference material without manual invocation.
 
 Read commands from `ana.json` `commands` field for build/test/lint execution. These are the exact commands to run.
 
