@@ -250,6 +250,95 @@ describe('ana work status', () => {
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('verify-status-unknown');
     });
+
+    // @ana A002, A007
+    it('with FAIL verify + build saved after verify via .saves.json → ready-for-re-verify', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const verifyContent = `# Verify Report\n\n**Result:** FAIL`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: verifyContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('ready-for-re-verify');
+    });
+
+    // @ana A003
+    it('with FAIL verify + build saved BEFORE verify via .saves.json → needs-fixes', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const verifyContent = `# Verify Report\n\n**Result:** FAIL`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T08:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: verifyContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('needs-fixes');
+    });
+
+    // @ana A018
+    it('full FAIL-fix-re-verify stage progression single-spec', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const verifyContent = `# Verify Report\n\n**Result:** FAIL`;
+
+      // First: FAIL without fix → needs-fixes
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: verifyContent },
+          ],
+        }],
+      });
+
+      let output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('needs-fixes');
+
+      // Then: add .saves.json with build after verify → ready-for-re-verify
+      const slugPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+      execSync('git checkout feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc2' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await fs.writeFile(path.join(slugPath, '.saves.json'), savesJson, 'utf-8');
+      execSync('git add -A && git commit -m "fix build"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+
+      output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('ready-for-re-verify');
+    });
   });
 
   describe('stage detection - multi-spec', () => {
@@ -345,6 +434,120 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-to-merge');
+    });
+
+    // @ana A001, A008
+    it('multi-phase FAIL on phase 2 + fix build saved after verify → phase-2-ready-for-re-verify', async () => {
+      const planContent = `# Plan
+## Phases
+- [ ] Phase 1
+  Spec: spec-1.md
+- [ ] Phase 2
+  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+      const savesJson = JSON.stringify({
+        'build-report-2': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report-2': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: failContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('phase-2-ready-for-re-verify');
+    });
+
+    // @ana A019
+    it('full FAIL-fix-re-verify stage progression multi-phase', async () => {
+      const planContent = `# Plan
+## Phases
+- [ ] Phase 1
+  Spec: spec-1.md
+- [ ] Phase 2
+  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+
+      // Phase 2 FAIL without fix → phase-2-needs-fixes
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: failContent },
+          ],
+        }],
+      });
+
+      let output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('phase-2-needs-fixes');
+
+      // Add .saves.json with build-report-2 after verify-report-2 → phase-2-ready-for-re-verify
+      const slugPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+      execSync('git checkout feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+      const savesJson = JSON.stringify({
+        'build-report-2': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc2' },
+        'verify-report-2': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await fs.writeFile(path.join(slugPath, '.saves.json'), savesJson, 'utf-8');
+      execSync('git add -A && git commit -m "fix build phase 2"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+
+      output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('phase-2-ready-for-re-verify');
+    });
+
+    // @ana A009
+    it('multi-phase stage detection falls back to unnumbered saves.json keys', async () => {
+      const planContent = `# Plan
+## Phases
+- [ ] Phase 1
+  Spec: spec-1.md
+- [ ] Phase 2
+  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+      // Unnumbered keys — backward compat for pre-fix items on phase 2
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: failContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('phase-2-ready-for-re-verify');
     });
   });
 

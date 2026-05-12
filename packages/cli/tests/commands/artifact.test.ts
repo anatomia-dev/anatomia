@@ -3068,7 +3068,7 @@ findings:
 
     const savesPath = path.join(slugDir, '.saves.json');
     const saves = JSON.parse(await fs.readFile(savesPath, 'utf-8'));
-    expect(saves['verify-data']).toBeDefined();
+    expect(saves['verify-data-1']).toBeDefined();
   });
 
   it('save with companion file warnings succeeds', async () => {
@@ -3717,5 +3717,191 @@ describe('worktree auto-move and sweep', () => {
       process.chdir(originalCwd);
       await fs.rm(normalDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }
+  });
+});
+
+describe('fix-cycle auto-rename and phase-aware keys', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'artifact-fixcycle-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  function getValidBuildReportContent(): string {
+    return `# Build Report
+
+## Deviations
+None.
+
+## Open Issues
+None.
+
+## Acceptance Criteria
+All met.
+
+## PR Summary
+Ready to review.`;
+  }
+
+  function getValidBuildDataContent(): string {
+    return `schema: 1
+concerns:
+  - summary: "Test concern"
+    severity: debt
+    suggested_action: monitor`;
+  }
+
+  function getValidVerifyDataContent(): string {
+    return `schema: 1
+findings:
+  - category: code
+    summary: "Test finding"
+    file: "src/test.ts"
+    severity: risk
+    suggested_action: scope`;
+  }
+
+  async function setupFeatureBranch(): Promise<string> {
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main', coAuthor: 'Ana <build@anatomia.dev>' }),
+      'utf-8'
+    );
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+
+    const slugDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+    await fs.mkdir(slugDir, { recursive: true });
+    return slugDir;
+  }
+
+  // @ana A004
+  it('auto-rename overwrites numbered with unnumbered content during fix cycle', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    // Both numbered and unnumbered exist — unnumbered is the fix build
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), `# Build Report\n\nfix cycle content\n\n## Deviations\nNone.\n\n## Open Issues\nNone.\n\n## Acceptance Criteria\nAll met.\n\n## PR Summary\nReady.`, 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_1.yaml'), getValidBuildDataContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    saveArtifact('build-report-1', 'test-slug');
+
+    // Unnumbered should have been renamed to numbered
+    const numberedContent = await fs.readFile(path.join(slugDir, 'build_report_1.md'), 'utf-8');
+    expect(numberedContent).toContain('fix cycle content');
+  });
+
+  // @ana A005
+  it('auto-rename renames companion file alongside report', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    // Both numbered and unnumbered report + companion exist
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_1.yaml'), getValidBuildDataContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), `schema: 1
+concerns:
+  - summary: "Fix cycle companion"
+    severity: debt
+    suggested_action: monitor`, 'utf-8');
+
+    saveArtifact('build-report-1', 'test-slug');
+
+    // Companion should have been renamed too
+    const companionContent = await fs.readFile(path.join(slugDir, 'build_data_1.yaml'), 'utf-8');
+    expect(companionContent).toContain('Fix cycle companion');
+  });
+
+  // @ana A006
+  it('auto-rename works for verify reports during fix cycle', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), '# Verify Report\n\n**Result:** PASS\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), '# Verify Report\n\nfix cycle verify\n\n**Result:** PASS\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data_1.yaml'), getValidVerifyDataContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent(), 'utf-8');
+
+    saveArtifact('verify-report-1', 'test-slug');
+
+    const numberedContent = await fs.readFile(path.join(slugDir, 'verify_report_1.md'), 'utf-8');
+    expect(numberedContent).toContain('fix cycle verify');
+  });
+
+  // @ana A010
+  it('saves.json uses phase-aware key for numbered artifact', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_1.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    saveArtifact('build-report-1', 'test-slug');
+
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['build-report-1']).toBeDefined();
+    expect(saves['build-report-1'].saved_at).toBeDefined();
+  });
+
+  // @ana A011
+  it('saves.json uses unnumbered key for unnumbered artifact', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    saveArtifact('build-report', 'test-slug');
+
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['build-report']).toBeDefined();
+    expect(saves['build-report'].saved_at).toBeDefined();
+    // Should NOT have numbered key
+    expect(saves['build-report-1']).toBeUndefined();
+  });
+
+  // @ana A012
+  it('saves.json uses phase-aware key for numbered companion', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_1.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    saveArtifact('build-report-1', 'test-slug');
+
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['build-data-1']).toBeDefined();
+    expect(saves['build-data-1'].saved_at).toBeDefined();
+  });
+
+  it('only unnumbered exists — existing behavior still works', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
+  });
+
+  it('only numbered exists — no rename needed', async () => {
+    const slugDir = await setupFeatureBranch();
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_1.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    expect(() => saveArtifact('build-report-1', 'test-slug')).not.toThrow();
   });
 });

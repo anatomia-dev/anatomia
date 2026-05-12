@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "completeWork phase-aware .saves.json check not directly tested — relies on code inspection and existing unnumbered-key tests"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Modified existing test assertion artifact.test.ts:3071 from verify-data to verify-data-1 — intentional behavior change, not weakening"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: observation
+    suggested_action: accept
