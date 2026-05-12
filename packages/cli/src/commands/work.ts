@@ -84,6 +84,7 @@ interface WorkItem {
     path: string;
     branch: string;
     commitCount: number;
+    commitsBehind: number;
     lastActivityDays: number;
     isStale: boolean;
   } | null;
@@ -649,7 +650,8 @@ function printHumanReadable(output: StatusOutput): void {
       const wt = item.worktreeInfo;
       const activityLabel = wt.lastActivityDays === 0 ? 'today' : `${wt.lastActivityDays}d ago`;
       const staleFlag = wt.isStale ? chalk.yellow(' ⚠ stale') : '';
-      console.log(`    Worktree: ${path.relative(process.cwd(), wt.path) || wt.path} (${wt.commitCount} commit${wt.commitCount !== 1 ? 's' : ''}, last activity ${activityLabel})${staleFlag}`);
+      const behindFlag = wt.commitsBehind > 0 ? chalk.yellow(` ⚠ ${wt.commitsBehind} behind ${output.artifactBranch}`) : '';
+      console.log(`    Worktree: ${path.relative(process.cwd(), wt.path) || wt.path} (${wt.commitCount} commit${wt.commitCount !== 1 ? 's' : ''}, last activity ${activityLabel})${staleFlag}${behindFlag}`);
     }
 
     // Show stage and next action
@@ -1521,9 +1523,20 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   const wtPath = getWorktreePath(projectRoot, slug);
   const worktreeUsed = fs.existsSync(wtPath);
   let worktreeCommitCount = 0;
+  let baseCommit: string | undefined;
   if (worktreeUsed) {
     const wtInfo = getWorktreeInfo(projectRoot, slug);
     worktreeCommitCount = wtInfo?.commitCount ?? 0;
+
+    // Compute merge-base for proof chain (before worktree removal)
+    try {
+      const mbResult = runGit(['merge-base', artifactBranch, 'HEAD'], { cwd: wtPath });
+      if (mbResult.exitCode === 0 && mbResult.stdout.length >= 40) {
+        baseCommit = mbResult.stdout.slice(0, 40);
+      }
+    } catch {
+      // Silently omit on failure
+    }
   }
 
   // Read build_started_at from .saves.json as worktree created_at proxy
@@ -1555,6 +1568,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     created_at: worktreeCreatedAt,
     completed_at: new Date().toISOString(),
     commit_count: worktreeCommitCount,
+    ...(baseCommit ? { base_commit: baseCommit } : {}),
   };
   const stats = await writeProofChain(slug, proof, projectRoot, worktreeMeta);
 
@@ -2047,10 +2061,22 @@ function printExistingWorktree(
     if (result.exitCode === 0) commitCount = parseInt(result.stdout) || 0;
   } catch { /* ignore */ }
 
+  let commitsBehind = 0;
+  try {
+    const result = runGit(
+      ['rev-list', '--count', `${branchName}..origin/${artifactBranch}`],
+      { cwd: wtPath }
+    );
+    if (result.exitCode === 0) commitsBehind = parseInt(result.stdout) || 0;
+  } catch { /* ignore */ }
+
   console.log(`Worktree exists for \`${slug}\`.`);
   console.log(`  Path: ${path.relative(process.cwd(), wtPath) || wtPath}`);
   console.log(`  Branch: ${branchName}`);
   console.log(`  Commits: ${commitCount} since branch point`);
+  if (commitsBehind > 0) {
+    console.log(chalk.yellow(`  ⚠ ${commitsBehind} commits behind ${artifactBranch}. Consider rebasing before building.`));
+  }
   console.log(`\ncd ${path.relative(process.cwd(), wtPath) || wtPath}`);
 }
 

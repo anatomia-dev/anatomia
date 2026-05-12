@@ -1,0 +1,54 @@
+schema: 1
+findings:
+  - category: code
+    summary: "commitsBehind uses origin/artifactBranch but commitCount uses bare artifactBranch — asymmetric ref comparison"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 327
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001", "A003"]
+
+  - category: code
+    summary: "printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one"
+    file: "packages/cli/src/commands/work.ts"
+    line: 2064
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A009"]
+
+  - category: test
+    summary: "A008 JSON test asserts typeof === 'number' not a specific value — passes even if commitsBehind computation is broken"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 618
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A008"]
+
+  - category: test
+    summary: "A005 git failure test relies on absent origin/main ref rather than injecting a failure — indirect coverage of the catch path"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 421
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A005"]
+
+  - category: test
+    summary: "No tagged tests for A009, A010, A011, A012, A013, A014 — verified by source inspection only"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A009", "A010", "A011", "A012", "A013", "A014"]
+
+  - category: upstream
+    summary: "Still present — printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo (from kind-aware-branch-prefixes finding)"
+    file: "packages/cli/src/commands/work.ts"
+    line: 2045
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "pr.ts fetch adds network latency to every PR creation — no timeout or skip mechanism"
+    file: "packages/cli/src/commands/pr.ts"
+    line: 179
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A011"]

@@ -366,6 +366,71 @@ describe('worktree utilities', () => {
       expect(typeof info!.lastActivityDays).toBe('number');
     });
 
+    // @ana A001, A002
+    it('returns commitsBehind field — 0 for fresh worktree', async () => {
+      await createTestProject();
+      process.chdir(tempDir);
+      await createWorktree(tempDir, 'behind-fresh', 'feature/');
+
+      const info = getWorktreeInfo(tempDir, 'behind-fresh');
+      expect(info).not.toBeNull();
+      expect(info!.commitsBehind).toBeDefined();
+      expect(info!.commitsBehind).toBe(0);
+    });
+
+    // @ana A003
+    it('commitsBehind reflects main advancing', async () => {
+      await createTestProject();
+      process.chdir(tempDir);
+      await createWorktree(tempDir, 'behind-test', 'feature/');
+
+      // Add commits to main (origin ref updates since local repo IS origin)
+      execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+      execSync('echo "change1" > file1.txt && git add file1.txt && git commit -m "advance1"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('echo "change2" > file2.txt && git add file2.txt && git commit -m "advance2"', { cwd: tempDir, stdio: 'ignore' });
+      // Update the remote-tracking ref so origin/main is ahead
+      execSync('git update-ref refs/remotes/origin/main HEAD', { cwd: tempDir, stdio: 'ignore' });
+
+      const info = getWorktreeInfo(tempDir, 'behind-test');
+      expect(info).not.toBeNull();
+      expect(info!.commitsBehind).toBe(2);
+    });
+
+    // @ana A004
+    it('worktree can be both ahead and behind at the same time', async () => {
+      await createTestProject();
+      process.chdir(tempDir);
+      await createWorktree(tempDir, 'diverged', 'feature/');
+
+      // Add commit to worktree branch
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'diverged');
+      execSync('echo "wt-change" > wt-file.txt && git add wt-file.txt && git commit -m "wt-commit"', { cwd: wtPath, stdio: 'ignore' });
+
+      // Add commit to main
+      execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+      execSync('echo "main-change" > main-file.txt && git add main-file.txt && git commit -m "main-commit"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git update-ref refs/remotes/origin/main HEAD', { cwd: tempDir, stdio: 'ignore' });
+
+      const info = getWorktreeInfo(tempDir, 'diverged');
+      expect(info).not.toBeNull();
+      expect(info!.commitCount).toBeGreaterThan(0);
+      expect(info!.commitsBehind).toBeGreaterThan(0);
+    });
+
+    // @ana A005
+    it('commitsBehind defaults to 0 on git failure', async () => {
+      await createTestProject();
+      process.chdir(tempDir);
+      await createWorktree(tempDir, 'fail-test', 'feature/');
+
+      // getWorktreeInfo on a valid worktree should always return a number
+      // The default-to-0 is exercised when rev-list fails (e.g., no origin ref)
+      // In test env without origin/main, it should still default to 0
+      const info = getWorktreeInfo(tempDir, 'fail-test');
+      expect(info).not.toBeNull();
+      expect(info!.commitsBehind).toBe(0);
+    });
+
     // @ana A025
     it('flags stale worktrees with 0 commits and 14+ days', async () => {
       await createTestProject();

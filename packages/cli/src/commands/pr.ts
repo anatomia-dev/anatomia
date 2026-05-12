@@ -14,7 +14,7 @@ import chalk from 'chalk';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { readArtifactBranch, getCurrentBranch, readCoAuthor } from '../utils/git-operations.js';
+import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { generateProofSummary, type ProofSummary } from '../utils/proofSummary.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 
@@ -172,6 +172,22 @@ export function createPr(slug: string): void {
   // Warn if not on a work branch (slug-based check — prefix-independent)
   if (!(currentBranch.endsWith('/' + slug) || currentBranch === slug)) {
     console.log(chalk.yellow(`Warning: Current branch is '${currentBranch}' (expected a branch ending with '${slug}').`));
+  }
+
+  // 2b. Best-effort fetch + behind-count check
+  try {
+    runGit(['fetch', 'origin', artifactBranch, '--quiet']);
+  } catch {
+    // Silently continue if offline
+  }
+  try {
+    const behindResult = runGit(['rev-list', '--count', `${currentBranch}..origin/${artifactBranch}`]);
+    const behind = behindResult.exitCode === 0 ? parseInt(behindResult.stdout) || 0 : 0;
+    if (behind > 0) {
+      console.log(chalk.yellow(`⚠ Branch is ${behind} commit${behind !== 1 ? 's' : ''} behind ${artifactBranch}. Consider rebasing before merging.`));
+    }
+  } catch {
+    // Silently continue on failure
   }
 
   // 3. Check gh CLI availability

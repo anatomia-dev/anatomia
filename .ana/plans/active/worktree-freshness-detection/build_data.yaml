@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "printExistingWorktree and pr create behind-warnings lack direct integration tests"
+    severity: debt
+    suggested_action: monitor
+  - summary: "printExistingWorktree duplicates rev-list logic from getWorktreeInfo (known finding from kind-aware-branch-prefixes)"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: scope

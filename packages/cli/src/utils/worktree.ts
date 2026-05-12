@@ -38,6 +38,7 @@ export interface WorktreeInfo {
   path: string;
   branch: string;
   commitCount: number;
+  commitsBehind: number;
   lastActivityDays: number;
   isStale: boolean;
 }
@@ -319,6 +320,20 @@ export function getWorktreeInfo(
     // Ignore — default 0
   }
 
+  // Count commits on artifact branch not on worktree branch (how far behind)
+  let commitsBehind = 0;
+  try {
+    const result = runGit(
+      ['rev-list', '--count', `${branchName}..origin/${artifactBranch}`],
+      { cwd: wtPath }
+    );
+    if (result.exitCode === 0) {
+      commitsBehind = parseInt(result.stdout) || 0;
+    }
+  } catch {
+    // Ignore — default 0
+  }
+
   // Last activity: most recent commit time
   let lastActivityDays = 0;
   try {
@@ -340,6 +355,7 @@ export function getWorktreeInfo(
     path: wtPath,
     branch: branchName,
     commitCount,
+    commitsBehind,
     lastActivityDays,
     isStale,
   };

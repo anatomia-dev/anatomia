@@ -18,5 +18,38 @@
   "spec": {
     "saved_at": "2026-05-12T17:10:52.740Z",
     "hash": "sha256:0f392981c43a2dddfcf47129190eb4588f78be9e59cc6aa6228dec30251cac67"
+  },
+  "build_started_at": "2026-05-12T17:16:50.472Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T17:24:43.055Z",
+    "hash": "sha256:c7091088607a53f8dadb45a9fafc1c28e92161678dd9692b36ab3d6949ac47a0"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T17:24:43.056Z",
+    "hash": "sha256:2dc058ffb32e5c458af600ee27c78f4b308884e8df387b01cccab199ab174edd"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/worktree.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/worktree.test.ts"
+  ],
+  "verify_started_at": "2026-05-12T17:26:32.901Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:16753070a4ce245e8922daaa810df0b901592c29783bed28971e03502923d309",
+    "run_at": "2026-05-12T17:32:15.023Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T17:32:15.062Z",
+    "hash": "sha256:29b33bedf71ebd93b648d59eecd54d08cf7d97e4e74f48d7b5f87625a74befde"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T17:32:15.063Z",
+    "hash": "sha256:af4351dca4760635e2a430bf8558477c2b99b855eae884bb1761a927d031b442"
   }
 }

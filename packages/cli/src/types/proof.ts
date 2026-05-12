@@ -93,6 +93,7 @@ export interface ProofChainEntry {
     created_at: string | null;
     completed_at: string;
     commit_count: number;
+    base_commit?: string;
   };
 }
 
