@@ -1,0 +1,217 @@
+/*
+  docs.css
+  =======================================================================
+  Docs-specific styles for patterns awkward in Tailwind:
+  - TOC timeline (vertical line + dots via pseudo-elements)
+  - Sidebar scrollbar hiding
+  - Prose styling for MDX content area
+  - Code block chrome for rehypeCode output
+  - Responsive collapse breakpoints
+  =======================================================================
+*/
+
+/* -------------------------------------------------------------------
+   DOCS LAYOUT — scroll padding for 58px DocsNav
+   ------------------------------------------------------------------- */
+.docs-layout {
+  scroll-padding-top: 66px;
+}
+
+/* -------------------------------------------------------------------
+   SIDEBAR — scrollbar hiding + active state
+   ------------------------------------------------------------------- */
+.docs-sidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.docs-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar-link:hover {
+  color: var(--fg) !important;
+  background: var(--border-soft) !important;
+}
+
+/* -------------------------------------------------------------------
+   RIGHT RAIL — TOC timeline
+   ------------------------------------------------------------------- */
+.toc-list {
+  position: relative;
+  padding-left: 0;
+}
+
+.toc-list::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--hairline);
+}
+
+.toc-link {
+  position: relative;
+}
+
+.toc-link::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-15);
+  transition: background 0.15s ease;
+}
+
+.toc-link[data-active]::before {
+  background: var(--color-brand);
+}
+
+/* -------------------------------------------------------------------
+   PROSE — MDX content area typography
+   ------------------------------------------------------------------- */
+.docs-prose {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink-75);
+}
+
+.docs-prose h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--fg-strong);
+}
+
+.docs-prose h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--fg-strong);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 0.5rem;
+}
+
+.docs-prose h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--fg-strong);
+}
+
+.docs-prose h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--fg-strong);
+}
+
+.docs-prose p {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+
+.docs-prose a {
+  color: var(--color-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.docs-prose strong {
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+.docs-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  background: var(--border-soft);
+  color: var(--fg);
+}
+
+.docs-prose pre code {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.docs-prose ul,
+.docs-prose ol {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.docs-prose li {
+  margin-bottom: 0.35rem;
+}
+
+.docs-prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--ink-15);
+  color: var(--ink-60);
+}
+
+.docs-prose hr {
+  margin: 2.5rem 0;
+  border: none;
+  border-top: 1px solid var(--hairline);
+}
+
+.docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9em;
+}
+
+.docs-prose th,
+.docs-prose td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-soft);
+  text-align: left;
+}
+
+.docs-prose th {
+  background: var(--bg-deep);
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+/* -------------------------------------------------------------------
+   CODE BLOCK — header + body chrome
+   ------------------------------------------------------------------- */
+.code-block {
+  position: relative;
+  border: 1px solid var(--border-soft);
+}
+
+/* -------------------------------------------------------------------
+   RESPONSIVE COLLAPSE
+   ------------------------------------------------------------------- */
+
+/* ≤1180px: hide right rail */
+@media (max-width: 1180px) {
+  .docs-right-rail {
+    display: none !important;
+  }
+}
+
+/* ≤880px: hide sidebar */
+@media (max-width: 880px) {
+  .docs-sidebar {
+    display: none !important;
+  }
+}

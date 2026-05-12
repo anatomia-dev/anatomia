@@ -1,4 +1,5 @@
 import { defineDocs, defineConfig, frontmatterSchema } from "fumadocs-mdx/config";
+import { rehypeCode } from "fumadocs-core/mdx-plugins/rehype-code";
 import { z } from "zod";
 
 export const docs = defineDocs({
@@ -6,12 +7,14 @@ export const docs = defineDocs({
   docs: {
     schema: frontmatterSchema.extend({
       description: z.string(),
+      lastReviewed: z.string().optional(),
+      readingTime: z.number().optional(),
     }),
   },
 });
 
 export default defineConfig({
   mdxOptions: {
-    // Use defaults — no custom remark/rehype plugins for now
+    rehypePlugins: [rehypeCode],
   },
 });

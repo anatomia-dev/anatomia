@@ -18,5 +18,52 @@
   "spec": {
     "saved_at": "2026-05-12T22:58:19.696Z",
     "hash": "sha256:337339306d4da516d8ff2450e5cb1b6d448188d91b885696d0f3d5fea376acd0"
+  },
+  "build_started_at": "2026-05-12T23:00:08.733Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T23:13:55.025Z",
+    "hash": "sha256:f5c322578624dbd8b4327e901d19f240c8d6a72ef22fb125ebc648b113fc8a88"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T23:13:55.026Z",
+    "hash": "sha256:283d4b8366c63da5f6d99683befb9c3c43f0f779cebf0414c438d8c5036d3d06"
+  },
+  "modules_touched": [
+    "website/app/docs/[[...slug]]/page.tsx",
+    "website/app/docs/docs.css",
+    "website/app/docs/layout.tsx",
+    "website/components/docs/content/Callout.tsx",
+    "website/components/docs/content/CodeBlock.tsx",
+    "website/components/docs/content/CopyButton.tsx",
+    "website/components/docs/content/ForPlatform.tsx",
+    "website/components/docs/content/MetaRow.tsx",
+    "website/components/docs/content/NextCards.tsx",
+    "website/components/docs/content/StatsStrip.tsx",
+    "website/components/docs/layout/Breadcrumb.tsx",
+    "website/components/docs/layout/DocsErrorBoundary.tsx",
+    "website/components/docs/layout/DocsNav.tsx",
+    "website/components/docs/layout/PlatformSwitcher.tsx",
+    "website/components/docs/layout/RightRail.tsx",
+    "website/components/docs/layout/Sidebar.tsx",
+    "website/components/docs/providers/PlatformProvider.tsx",
+    "website/content/docs/index.mdx",
+    "website/lib/source.ts",
+    "website/source.config.ts"
+  ],
+  "verify_started_at": "2026-05-12T23:18:14.995Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:333126cead720e319c746d5e72b157c869ebf0f7b7422b974d8db2c465f7be6a",
+    "run_at": "2026-05-12T23:26:46.536Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T23:26:46.577Z",
+    "hash": "sha256:2358c06f8a66957df30e0d533fd22f5c286ef49f37eb72152a08f5259442ddc7"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T23:26:46.577Z",
+    "hash": "sha256:c42b05ffadf4aee67df42c5aa6ff1fcd7d8f874d3143d6ad5a7e7bf49cf7949d"
   }
 }
