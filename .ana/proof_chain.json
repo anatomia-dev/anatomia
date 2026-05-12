@@ -22516,6 +22516,379 @@
         "commit_count": 10,
         "base_commit": "5c948786763a65f39f37b4cc2821bee8f9db87b0"
       }
+    },
+    {
+      "slug": "docs-shell",
+      "feature": "Docs Shell (Layout + Shared Components)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 31,
+        "satisfied": 31,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The docs page renders a three-column layout with sidebar, content, and right rail",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The right rail disappears on narrower screens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The sidebar disappears on mobile screens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The docs navbar shows the anaDocs wordmark with an oxblood mark",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The docs navbar displays the current version number",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The docs navbar sticks to the top of the page when scrolling",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The sidebar shows all five documentation groups",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The current page is visually highlighted in the sidebar",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Featured proofs can be collapsed and expanded",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The page tree includes Reference and Proof Chain sections injected by the transformer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The transformer injects the correct Reference entries into the sidebar",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The Proof Chain section appears in the sidebar navigation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The right rail shows a table of contents for the current page",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The table of contents highlights the heading currently visible on screen",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The right rail footer shows the build commit SHA",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Claude Code is the active platform selection in the dropdown",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Unavailable platforms show a 'soon' label and cannot be selected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The platform dropdown closes when clicking outside of it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The selected platform is saved and remembered across page visits",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Content blocks can be shown or hidden based on the active platform",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Code blocks show a header with the programming language label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Code blocks have a copy button that copies content to clipboard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Callouts render in both rule and note visual styles",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Navigation cards appear in a two-column grid at the bottom of pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Reading time and review date appear below the page title",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The breadcrumb shows the reader's position in the documentation tree",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The stats strip shows a row of labeled metrics",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The full documentation site builds successfully with all new components",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The marketing website is completely unaffected by docs changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Dark and light themes work correctly across all new docs components",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Broken MDX content shows an error message instead of crashing the entire docs section",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 17,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 39,
+        "think": 2,
+        "plan": 8,
+        "build": 14,
+        "verify": 9
+      },
+      "hashes": {
+        "scope": "sha256:ec637ed7df0452012b10aa16e1bca261ae5d6aa1068bf0eee4a6815c01899c73",
+        "contract": "sha256:333126cead720e319c746d5e72b157c869ebf0f7b7422b974d8db2c465f7be6a",
+        "plan": "sha256:00f213c34c257a98378d5ce382b7f87768b9d32a3ab2ca8de99c2b2f57dc091b",
+        "spec": "sha256:337339306d4da516d8ff2450e5cb1b6d448188d91b885696d0f3d5fea376acd0",
+        "build-report": "sha256:f5c322578624dbd8b4327e901d19f240c8d6a72ef22fb125ebc648b113fc8a88",
+        "build-data": "sha256:283d4b8366c63da5f6d99683befb9c3c43f0f779cebf0414c438d8c5036d3d06",
+        "verify-report": "sha256:2358c06f8a66957df30e0d533fd22f5c286ef49f37eb72152a08f5259442ddc7",
+        "verify-data": "sha256:c42b05ffadf4aee67df42c5aa6ff1fcd7d8f874d3143d6ad5a7e7bf49cf7949d"
+      },
+      "completed_at": "2026-05-12T23:29:33.473Z",
+      "modules_touched": [
+        "website/app/docs/[[...slug]]/page.tsx",
+        "website/app/docs/docs.css",
+        "website/app/docs/layout.tsx",
+        "website/components/docs/content/Callout.tsx",
+        "website/components/docs/content/CodeBlock.tsx",
+        "website/components/docs/content/CopyButton.tsx",
+        "website/components/docs/content/ForPlatform.tsx",
+        "website/components/docs/content/MetaRow.tsx",
+        "website/components/docs/content/NextCards.tsx",
+        "website/components/docs/content/StatsStrip.tsx",
+        "website/components/docs/layout/Breadcrumb.tsx",
+        "website/components/docs/layout/DocsErrorBoundary.tsx",
+        "website/components/docs/layout/DocsNav.tsx",
+        "website/components/docs/layout/PlatformSwitcher.tsx",
+        "website/components/docs/layout/RightRail.tsx",
+        "website/components/docs/layout/Sidebar.tsx",
+        "website/components/docs/providers/PlatformProvider.tsx",
+        "website/content/docs/index.mdx",
+        "website/lib/source.ts",
+        "website/source.config.ts"
+      ],
+      "scope_summary": "Build the complete docs UI shell — navbar, sidebar, right rail, layout grid, and all shared content components. Replace the Scope 1 placeholder layout with the production docs interface matching the supermock pixel-for-pixel. After this scope, every subsequent scope (content pages, dynamic pages, search) just fills in content. The shell IS the visual foundation.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px",
+          "file": "website/components/docs/layout/RightRail.tsx",
+          "anchor": null,
+          "line": 26,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "docs-shell-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation",
+          "file": "website/components/docs/layout/DocsErrorBoundary.tsx",
+          "anchor": null,
+          "line": 53,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "docs-shell-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule",
+          "file": "website/components/docs/providers/PlatformProvider.tsx",
+          "anchor": null,
+          "line": 42,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "docs-shell-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "PlatformSwitcher labelMap duplicates data already in platforms array — two sources of truth for platform labels",
+          "file": "website/components/docs/layout/PlatformSwitcher.tsx",
+          "anchor": null,
+          "line": 23,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "docs-shell-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "data-hide-rail attribute from spec not implemented — prep mechanism for future proof-explorer route",
+          "file": "website/app/docs/layout.tsx",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-shell-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Sidebar md:block (768px) is redundant — overridden by docs.css @media (max-width: 880px) with !important",
+          "file": "website/components/docs/layout/Sidebar.tsx",
+          "anchor": null,
+          "line": 21,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "docs-shell-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "CopyButton uses inline event handlers for hover styles instead of CSS — fragile pattern, state survives re-renders differently than CSS hover",
+          "file": "website/components/docs/content/CopyButton.tsx",
+          "anchor": null,
+          "line": 27,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-shell-C7",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A007 says 5 sidebar groups but only 3 exist — 1 from MDX (index page) + 2 from transformer (Reference, Proof Chain). Get Started, Concepts, Guides require MDX folders that don't exist yet",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "docs-shell-C8",
+          "status": "lesson"
+        },
+        {
+          "category": "test",
+          "summary": "No tests exist for website package — all 31 assertions verified by source inspection only. No regression safety net for component behavior.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-shell-C9",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Stale finding 'Empty components/docs directory' — resolved by this build, which created 10 component files in that directory",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-shell-C10",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "RightRail renders in page.tsx instead of layout.tsx due to TOC data access",
+          "file": "website/app/docs/[[...slug]]/page.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "data-hide-rail mechanism for proof-explorer route not implemented (dead code)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "TOC item title type cast from ReactNode to string may lose non-string titles",
+          "file": "website/app/docs/[[...slug]]/page.tsx",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "No visual verification — structural correctness only, needs PR review with supermock",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "build-meta.json must be generated before build — not part of build pipeline",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T23:00:08.733Z",
+        "completed_at": "2026-05-12T23:29:33.469Z",
+        "commit_count": 6,
+        "base_commit": "fa2c803128c752aa7d2875a59b8467876e3c7455"
+      }
     }
   ],
   "schema": 1

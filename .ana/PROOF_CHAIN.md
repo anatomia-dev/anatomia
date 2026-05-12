@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-87 runs · 237 active · 105 lessons · 0 promoted · 161 closed
+88 runs · 245 active · 107 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -16,19 +16,12 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 237 total)
-
-### packages/cli/src/commands/pr.ts
-
-- **code:** pr.ts fetch adds network latency to every PR creation — no timeout or skip mechanism — *Worktree freshness detection*
+## Active Findings (30 shown of 245 total)
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** --autostash bypasses content-match guard for tracked dirty planning artifacts — theoretical gap remains — *Hygiene debt cleanup*
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
-- **code:** getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix') — *Kind-aware branch prefixes*
-- **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
-- **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -38,7 +31,6 @@
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** commitsBehind uses origin/artifactBranch but commitCount uses bare artifactBranch — asymmetric ref comparison — *Worktree freshness detection*
-- **code:** Detached HEAD produces branchName '(unknown)' — rev-list and log commands will fail silently, showing 0 commits and 0 days — *Kind-aware branch prefixes*
 
 ### packages/cli/tests/commands/work.test.ts
 
@@ -46,10 +38,6 @@
 - **test:** No dedicated @ana tag for A003 — existing test satisfies the assertion but is tagged @ana A010 from a prior contract — *Fix worktree branch parsing*
 - **code:** No mutual exclusion between featureBranch and worktree options in createWorkTestProject — setting both creates branch via checkout then fails on worktree add — *Fix worktree branch parsing*
 - **test:** A008 JSON test asserts typeof === 'number' not a specific value — passes even if commitsBehind computation is broken — *Worktree freshness detection*
-
-### packages/cli/tests/utils/git-operations.test.ts
-
-- **test:** Contract A001 has no tagged test for this contract — relies on pre-existing test from previous build — *Kind-aware branch prefixes*
 
 ### packages/cli/tests/utils/worktree.test.ts
 
@@ -61,11 +49,36 @@
 
 ### website/app/docs/layout.tsx
 
+- **code:** data-hide-rail attribute from spec not implemented — prep mechanism for future proof-explorer route — *Docs Shell (Layout + Shared Components)*
 - **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### website/components/docs/
 
 - **code:** Empty components/docs directory left after deleting 4 component files — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/components/docs/content/CopyButton.tsx
+
+- **code:** CopyButton uses inline event handlers for hover styles instead of CSS — fragile pattern, state survives re-renders differently than CSS hover — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/layout/DocsErrorBoundary.tsx
+
+- **code:** Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/layout/PlatformSwitcher.tsx
+
+- **code:** PlatformSwitcher labelMap duplicates data already in platforms array — two sources of truth for platform labels — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/layout/RightRail.tsx
+
+- **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/layout/Sidebar.tsx
+
+- **code:** Sidebar md:block (768px) is redundant — overridden by docs.css @media (max-width: 880px) with !important — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/providers/PlatformProvider.tsx
+
+- **code:** Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule — *Docs Shell (Layout + Shared Components)*
 
 ### website/eslint.config.mjs
 
@@ -95,7 +108,6 @@
 
 ### General
 
+- **test:** No tests exist for website package — all 31 assertions verified by source inspection only. No regression safety net for component behavior. — *Docs Shell (Layout + Shared Components)*
 - **code:** Audit reduced from 20 to 12, not 0 — remaining 12 are postcss dev-only transitives awaiting upstream fix — *Hygiene debt cleanup*
-- **test:** No tagged tests for A009, A010, A011, A012, A013, A014 — verified by source inspection only — *Worktree freshness detection*
-- **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 
