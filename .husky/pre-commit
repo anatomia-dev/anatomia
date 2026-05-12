@@ -18,6 +18,12 @@ if [ -n "$STAGED_FILES" ]; then
   fi
 fi
 
+# Verify lockfile is in sync with package.json (catches desync before push)
+pnpm install --frozen-lockfile --silent 2>/dev/null || {
+  echo "❌ pnpm-lock.yaml is out of sync with package.json. Run 'pnpm install' first."
+  exit 1
+}
+
 cd packages/cli
 pnpm run build
 pnpm typecheck
