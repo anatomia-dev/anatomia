@@ -20942,6 +20942,332 @@
         "completed_at": "2026-05-12T09:35:34.988Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "kind-aware-branch-prefixes",
+      "feature": "Kind-aware branch prefixes",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 23,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "String-form branch prefix works exactly as before",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Map-form config returns the correct prefix for a given kind",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Map-form config falls back to feature prefix when no kind is specified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "String-form config ignores the kind parameter entirely",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Unknown kind falls back to the feature key in the map",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Partial map without a feature key falls back to the hardcoded default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Empty map falls back to the hardcoded default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Malformed map values fall back to the hardcoded default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Each map value is validated independently for branch name safety",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Map-form branch prefix is accepted by the Zod schema",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Map-form config survives re-init without being destroyed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Invalid branchPrefix type still falls back to the safe default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Existing branches are found by slug regardless of what prefix created them",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Substring slugs do not cause false matches with other branches",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Branch lookup works after config changes between creation and lookup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Full branch name is returned so consumers use the real name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Worktree status shows the actual branch from git, not a config-based guess",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Commit count uses the actual branch name from git",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Work status displays correct branch info with map-form config",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A020",
+          "says": "PR branch validation works with map-form config",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Undefined kind with map config returns the feature prefix as default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Partial map resolves present keys correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "All existing tests continue to pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "New tests are added for map-form config and slug-based matching",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 26,
+        "met": 25
+      },
+      "timing": {
+        "total_minutes": 566,
+        "think": 44,
+        "plan": 16,
+        "build": 399,
+        "verify": 12
+      },
+      "hashes": {
+        "scope": "sha256:cb2de95e02a1eee788e1bb6a911d539a55c82ba5a926a3f9e1f5fc9a02f0bac4",
+        "contract": "sha256:0339b9da5318ce95b214f7bffd323cf187b6cda0c14ed7c8290885463743b194",
+        "plan": "sha256:5660d6157d9b5ff40e72e2083c60cf0d532f8c8f230b9fed829865cf11a406d9",
+        "spec": "sha256:cdd2087218aa481dfb1b6b6620b476bb4f546568fe50d5b125c39976309e2c20",
+        "build-report": "sha256:83e993a5567ea83b1f28f53a0c166fa91cb745977cd02ea2f3a8e56a6ffafb07",
+        "build-data": "sha256:87aef607de4fce02bdd5cc0930ade50a585db55feaa4480dad0f533f5aedea94",
+        "verify-report": "sha256:99d547dfbee2df69cf88835a77260c9af6fe4bc114938f332db9bd357586bcb3",
+        "verify-data": "sha256:09db2f87fe288ab60f4a751f2e3a6059650f10de05d8b1fa9997139c93c0de38"
+      },
+      "completed_at": "2026-05-12T16:55:20.674Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/utils/git-operations.ts",
+        "packages/cli/src/utils/worktree.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/pr.test.ts",
+        "packages/cli/tests/utils/git-operations.test.ts",
+        "packages/cli/tests/utils/worktree.test.ts"
+      ],
+      "scope_summary": "Branch prefixes are static — one string for all work items. But the system already knows the work type: Ana classifies every scope as `feature`, `fix`, `chore`, or `milestone` (after Scope 1 ships). Teams with git conventions like `fix/`, `feature/`, `chore/` can't express those conventions through Anatomia. The branch always gets whatever single prefix is configured, regardless of what the work actually is. This scope makes `branchPrefix` kind-aware: a map from kind to prefix, so `fix/auth-timeout` and `feature/add-export` happen automatically based on what Ana already knows.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Contract assertions A013-A019 have no tagged tests — verified by source inspection only",
+          "file": null,
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A013",
+            "A014",
+            "A015",
+            "A016",
+            "A017",
+            "A018",
+            "A019"
+          ],
+          "id": "kind-aware-branch-prefixes-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Contract A001 has no tagged test for this contract — relies on pre-existing test from previous build",
+          "file": "packages/cli/tests/utils/git-operations.test.ts",
+          "anchor": null,
+          "line": 38,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "kind-aware-branch-prefixes-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix')",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 139,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "kind-aware-branch-prefixes-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Detached HEAD produces branchName '(unknown)' — rev-list and log commands will fail silently, showing 0 commits and 0 days",
+          "file": "packages/cli/src/utils/worktree.ts",
+          "anchor": null,
+          "line": 304,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A017",
+            "A018"
+          ],
+          "id": "kind-aware-branch-prefixes-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": "printExistingWorktree",
+          "line": 2038,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "kind-aware-branch-prefixes-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1685,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "kind-aware-branch-prefixes-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes lists work.test.ts as modified but no changes were made — contract is slightly inaccurate",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A013",
+            "A014",
+            "A015",
+            "A016"
+          ],
+          "id": "kind-aware-branch-prefixes-C7",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "rev-parse --abbrev-ref HEAD returns literal 'HEAD' on detached HEAD, not '(unknown)' — ternary fallback never triggers for detached state",
+          "file": "packages/cli/src/utils/worktree.ts",
+          "anchor": null,
+          "line": 304,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "kind-aware-branch-prefixes-C8",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "AC13-AC15, AC17 lack dedicated integration tests for slug matching and kind resolution",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "getWorkBranch glob pre-filter uses *slug which could over-match before endsWith filter",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "completeWork --merge fallback reads scope.md for kind — degrades gracefully if missing",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Modified assertions in pr.test.ts and artifact.test.ts to match new slug-based behavior",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive at git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T09:59:02.774Z",
+        "completed_at": "2026-05-12T16:55:20.670Z",
+        "commit_count": 5
+      }
     }
   ],
   "schema": 1
