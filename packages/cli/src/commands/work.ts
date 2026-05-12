@@ -1203,7 +1203,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   {
     const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
     if (remotes) {
-      let pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
+      let pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: projectRoot });
 
       // Handle "untracked working tree files would be overwritten" — caused by
       // Build/Verify agents writing artifacts to the artifact branch instead of the worktree.
@@ -1284,7 +1284,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
 
           // Retry pull if any files were removed
           if (buildVerifyFiles.length > 0 || planningFiles.length > 0) {
-            pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
+            pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: projectRoot });
           }
         }
       }
@@ -1793,7 +1793,7 @@ export async function startWork(slug: string): Promise<void> {
     // Pull latest
     const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
     if (remotes) {
-      const pullResult = runGit(['pull', '--rebase'], { cwd: projectRoot });
+      const pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: projectRoot });
       if (pullResult.exitCode !== 0) {
         const errorMessage = pullResult.stderr;
         if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
