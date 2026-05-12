@@ -551,6 +551,74 @@ describe('ana work status', () => {
     });
   });
 
+  // @ana A006, A007, A008
+  describe('behind-warning display', () => {
+    it('work status shows behind warning when worktree is behind origin/main', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [{ file: 'build_report.md' }],
+        }],
+      });
+
+      // Create a worktree so worktreeInfo is populated
+      execSync('git worktree add .ana/worktrees/test-slug feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+
+      // Advance main and update origin/main ref so the worktree is behind
+      execSync('echo "new" > new-file.txt && git add new-file.txt && git commit -m "advance"', { cwd: tempDir, stdio: 'ignore' });
+      execSync('git update-ref refs/remotes/origin/main HEAD', { cwd: tempDir, stdio: 'ignore' });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('behind');
+      expect(output).toContain('main');
+    });
+
+    it('work status does NOT show behind warning when worktree is fresh', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [{ file: 'build_report.md' }],
+        }],
+      });
+
+      // Create worktree at current main — not behind
+      execSync('git worktree add .ana/worktrees/test-slug feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).not.toContain('behind main');
+    });
+
+    it('work status --json includes commitsBehind in worktree info', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [{ file: 'build_report.md' }],
+        }],
+      });
+
+      // Create worktree so worktreeInfo is populated
+      execSync('git worktree add .ana/worktrees/test-slug feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const json = JSON.parse(output);
+      expect(json.items[0].worktreeInfo).toBeDefined();
+      expect(json.items[0].worktreeInfo.commitsBehind).toBeDefined();
+      expect(typeof json.items[0].worktreeInfo.commitsBehind).toBe('number');
+    });
+  });
+
   describe('JSON output', () => {
     it('produces valid JSON with correct structure', async () => {
       const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
