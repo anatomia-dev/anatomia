@@ -1,0 +1,42 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1498
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A013", "A014"]
+
+  - category: test
+    summary: "A015/A016/A017 template content assertions have no tagged tests — verified by source inspection only"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A015", "A016", "A017"]
+
+  - category: code
+    summary: "completeWork fallback lets two multi-phase specs share one unnumbered saves.json entry — phase 2 passes if phase 1's unnumbered key exists"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1498
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A014"]
+
+  - category: test
+    summary: "Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 259
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "Auto-rename overwrites numbered file unconditionally — if the unnumbered file is stale or corrupt, the good numbered version is destroyed"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1016
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Race condition in writeTimestamp read-modify-write on .saves.json is still present — known and accepted per proof chain"
+    severity: observation
+    suggested_action: accept
