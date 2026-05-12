@@ -18,5 +18,25 @@
   "spec": {
     "saved_at": "2026-05-12T17:43:07.011Z",
     "hash": "sha256:4e993ffbcdb80e4f1e5f8e00d150e9031aa27c2476206a467cb79b965129cbd5"
-  }
+  },
+  "build_started_at": "2026-05-12T18:34:06.035Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T18:52:39.062Z",
+    "hash": "sha256:5f1c5878fa1d4e8abb1dcade0256c84dc5e64306c377bd2f2693c5408a3f0bac"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T18:52:39.063Z",
+    "hash": "sha256:1ec1c161df7de5b32a03069115ad66154d9c3e412fe691cf3325bb9579e05602"
+  },
+  "modules_touched": [
+    ".claude/skills/testing-standards/SKILL.md",
+    ".gitignore",
+    "package.json",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/engine/fixtures/node/package.json/simple.txt",
+    "packages/cli/tests/engine/fixtures/python/requirements.txt/simple.txt",
+    "packages/cli/tests/engine/fixtures/python/requirements.txt/with-extras.txt",
+    "pnpm-lock.yaml"
+  ]
 }
