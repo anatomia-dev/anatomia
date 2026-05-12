@@ -1,0 +1,294 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering"
+
+assertions:
+  # AC1: Overview page
+  - id: A001
+    says: "The overview page loads at /docs with dynamic proof statistics"
+    block: "overview page renders with stats strip"
+    target: "build.routes"
+    matcher: "contains"
+    value: "/docs"
+
+  - id: A002
+    says: "Overview stats strip shows real proof count from data loader"
+    block: "overview stats strip uses dynamic values"
+    target: "overview.statsStrip.proofCount"
+    matcher: "equals"
+    value: 87
+
+  - id: A003
+    says: "Overview pipeline diagram shows all 5 stages"
+    block: "overview renders pipeline diagram"
+    target: "overview.pipelineDiagram.stageCount"
+    matcher: "equals"
+    value: 5
+
+  - id: A004
+    says: "Overview curated proof table shows 6 real proof entries"
+    block: "overview renders curated proofs table"
+    target: "overview.curatedProofs.rowCount"
+    matcher: "equals"
+    value: 6
+
+  - id: A005
+    says: "Curated proofs display real assertion counts from the data loader"
+    block: "curated proofs use dynamic assertion data"
+    target: "overview.curatedProofs.dynamicData"
+    matcher: "truthy"
+
+  - id: A006
+    says: "Overview audience cards link to correct destinations"
+    block: "overview renders audience cards with links"
+    target: "overview.audienceCards.count"
+    matcher: "equals"
+    value: 3
+
+  - id: A007
+    says: "Overview has no RightRail component"
+    block: "overview page does not render RightRail"
+    target: "overview.rightRail"
+    matcher: "not_equals"
+    value: "rendered"
+
+  # AC2: Quickstart page
+  - id: A008
+    says: "The quickstart page loads at /docs/start"
+    block: "quickstart page renders at correct route"
+    target: "build.routes"
+    matcher: "contains"
+    value: "/docs/start"
+
+  - id: A009
+    says: "Quickstart page includes install, init, pipeline run, and complete sections"
+    block: "quickstart has all required sections"
+    target: "quickstart.sections"
+    matcher: "contains"
+    value: "install"
+
+  # AC3: Concept pages
+  - id: A010
+    says: "All 7 concept pages compile and render at their routes"
+    block: "concept pages render at correct routes"
+    target: "build.conceptPages"
+    matcher: "equals"
+    value: 7
+
+  - id: A011
+    says: "Each concept page includes MetaRow with reading time and last reviewed date"
+    block: "concept pages have MetaRow frontmatter"
+    target: "conceptPages.metaRow"
+    matcher: "truthy"
+
+  - id: A012
+    says: "Each concept page has NextCards linking to the next page in sequence"
+    block: "concept pages have navigation NextCards"
+    target: "conceptPages.nextCards"
+    matcher: "truthy"
+
+  # AC4: Guide pages
+  - id: A013
+    says: "All 6 guide pages compile and render at their routes"
+    block: "guide pages render at correct routes"
+    target: "build.guidePages"
+    matcher: "equals"
+    value: 6
+
+  - id: A014
+    says: "Troubleshooting page uses TroubleCard component for card-based layout"
+    block: "troubleshooting uses TroubleCard component"
+    target: "troubleshooting.troubleCardUsage"
+    matcher: "truthy"
+
+  - id: A015
+    says: "Each guide page has NextCards linking to related content"
+    block: "guide pages have navigation NextCards"
+    target: "guidePages.nextCards"
+    matcher: "truthy"
+
+  # AC5: Sidebar ordering
+  - id: A016
+    says: "Root meta.json establishes correct top-level sidebar order"
+    block: "root meta.json controls sidebar ordering"
+    target: "sidebar.rootMeta"
+    matcher: "exists"
+
+  - id: A017
+    says: "Concepts meta.json orders pages as pipeline, skills, context, toolbelt, artifacts, contract, findings"
+    block: "concepts meta.json has correct page order"
+    target: "sidebar.conceptsOrder"
+    matcher: "equals"
+    value: "pipeline,skills,context,toolbelt,artifacts,contract,findings"
+
+  - id: A018
+    says: "Guides meta.json orders pages as using-ana-setup, verifying-changes, reading-a-proof, using-ana-learn, configurability, troubleshooting"
+    block: "guides meta.json has correct page order"
+    target: "sidebar.guidesOrder"
+    matcher: "equals"
+    value: "using-ana-setup,verifying-changes,reading-a-proof,using-ana-learn,configurability,troubleshooting"
+
+  # AC6: Callout fix
+  - id: A019
+    says: "Callout component displays a label before content"
+    block: "callout renders label text"
+    target: "callout.labelElement"
+    matcher: "exists"
+
+  - id: A020
+    says: "Rule callout shows RULE label and note callout shows NOTE label"
+    block: "callout label matches variant name"
+    target: "callout.ruleLabel"
+    matcher: "equals"
+    value: "RULE"
+
+  # AC7: RightRail fix
+  - id: A021
+    says: "RightRail no longer uses Tailwind hidden/xl:block classes"
+    block: "RightRail visibility controlled by CSS only"
+    target: "rightRail.className"
+    matcher: "not_contains"
+    value: "hidden"
+
+  - id: A022
+    says: "RightRail retains the docs-right-rail CSS class for media query visibility"
+    block: "RightRail keeps docs-right-rail class"
+    target: "rightRail.className"
+    matcher: "contains"
+    value: "docs-right-rail"
+
+  # AC8: GitHub URL fix
+  - id: A023
+    says: "DocsNav GitHub link points to TettoLabs organization"
+    block: "DocsNav GitHub URL uses correct org"
+    target: "docsNav.githubUrl"
+    matcher: "contains"
+    value: "TettoLabs/anatomia"
+
+  - id: A024
+    says: "Catch-all page editUrl points to TettoLabs organization"
+    block: "editUrl uses correct org"
+    target: "catchAllPage.editUrl"
+    matcher: "contains"
+    value: "TettoLabs/anatomia"
+
+  # AC9: Dynamic values
+  - id: A025
+    says: "Overview imports data loader functions instead of hardcoding values"
+    block: "overview uses data loader imports"
+    target: "overview.dataLoaderImports"
+    matcher: "truthy"
+
+  # AC10: No agents concept page
+  - id: A026
+    says: "No agents concept page exists at concepts/agents"
+    block: "agents concept page does not exist"
+    target: "files.conceptsAgents"
+    matcher: "not_equals"
+    value: "exists"
+
+  # AC11: Test page deleted
+  - id: A027
+    says: "The Scope 1 test index.mdx file is deleted"
+    block: "test index.mdx is removed"
+    target: "files.contentDocsIndexMdx"
+    matcher: "not_equals"
+    value: "exists"
+
+  # AC12: Build succeeds
+  - id: A028
+    says: "Next.js build completes without errors for all 16 pages"
+    block: "pnpm build succeeds"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+  # AC13: TOC works
+  - id: A029
+    says: "MDX pages produce heading structure that populates the right rail TOC"
+    block: "pages have heading structure for TOC"
+    target: "pages.tocHeadings"
+    matcher: "truthy"
+
+  # AC14: NextCards navigation flow
+  - id: A030
+    says: "Pipeline concept links to skills concept and verifying changes guide"
+    block: "pipeline NextCards link correctly"
+    target: "pipeline.nextCards.hrefs"
+    matcher: "contains"
+    value: "/docs/concepts/skills"
+
+  - id: A031
+    says: "Quickstart links to pipeline concept and reading a proof guide"
+    block: "quickstart NextCards link correctly"
+    target: "quickstart.nextCards.hrefs"
+    matcher: "contains"
+    value: "/docs/concepts/pipeline"
+
+  # New component registration
+  - id: A032
+    says: "TroubleCard is available as an MDX component"
+    block: "TroubleCard registered in mdxComponents"
+    target: "mdxComponents.TroubleCard"
+    matcher: "exists"
+
+file_changes:
+  # Phase 1
+  - path: "website/app/docs/page.tsx"
+    action: create
+  - path: "website/content/docs/index.mdx"
+    action: delete
+  - path: "website/content/docs/start.mdx"
+    action: create
+  - path: "website/content/docs/meta.json"
+    action: create
+  - path: "website/content/docs/concepts/meta.json"
+    action: create
+  - path: "website/content/docs/guides/meta.json"
+    action: create
+  - path: "website/components/docs/content/PipelineDiagram.tsx"
+    action: create
+  - path: "website/components/docs/content/AudienceCards.tsx"
+    action: create
+  - path: "website/components/docs/content/CuratedProofs.tsx"
+    action: create
+  - path: "website/components/docs/content/ResourceStrip.tsx"
+    action: create
+  - path: "website/components/docs/content/Callout.tsx"
+    action: modify
+  - path: "website/components/docs/layout/RightRail.tsx"
+    action: modify
+  - path: "website/components/docs/layout/DocsNav.tsx"
+    action: modify
+  - path: "website/app/docs/[[...slug]]/page.tsx"
+    action: modify
+  # Phase 2
+  - path: "website/content/docs/concepts/pipeline.mdx"
+    action: create
+  - path: "website/content/docs/concepts/skills.mdx"
+    action: create
+  - path: "website/content/docs/concepts/context.mdx"
+    action: create
+  - path: "website/content/docs/concepts/toolbelt.mdx"
+    action: create
+  - path: "website/content/docs/concepts/artifacts.mdx"
+    action: create
+  - path: "website/content/docs/concepts/contract.mdx"
+    action: create
+  - path: "website/content/docs/concepts/findings.mdx"
+    action: create
+  # Phase 3
+  - path: "website/components/docs/content/TroubleCard.tsx"
+    action: create
+  - path: "website/content/docs/guides/using-ana-setup.mdx"
+    action: create
+  - path: "website/content/docs/guides/verifying-changes.mdx"
+    action: create
+  - path: "website/content/docs/guides/reading-a-proof.mdx"
+    action: create
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: create
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: create
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: create
