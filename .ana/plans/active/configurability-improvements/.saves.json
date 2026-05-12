@@ -35,5 +35,20 @@
     "packages/cli/templates/.claude/agents/ana-verify.md",
     "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
     "packages/cli/tests/utils/git-operations.test.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-12T06:39:37.423Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2c415feaed690dc785360be55e1a7b98b6dce5e95bf55904939c8d23b2732a84",
+    "run_at": "2026-05-12T06:43:34.596Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T06:43:34.631Z",
+    "hash": "sha256:239b93ac5739605e5aebb76c1429ff63449a8541bbb806cd35e271c9a8c3803d"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T06:43:34.632Z",
+    "hash": "sha256:aa4f2708cc0474d49d9599167bbd44a7cd3fff78763bd00c4e6af23e2c65edaa"
+  }
 }
