@@ -496,9 +496,10 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
  * @param stage - Pipeline stage
  * @param slug - Work item slug
  * @param _branchPrefix - Configured branch prefix (unused, kept for API compat)
+ * @param artifactBranch - Artifact branch name for --merge guidance
  * @returns Copy-pasteable command
  */
-function getNextAction(stage: string, slug: string, _branchPrefix: string): string {
+function getNextAction(stage: string, slug: string, _branchPrefix: string, artifactBranch?: string): string {
   if (stage === 'ready-for-plan') {
     return 'claude --agent ana-plan';
   }
@@ -524,7 +525,7 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string): stri
   }
 
   if (stage === 'ready-to-merge') {
-    return `Review PR, then: ana work complete ${slug}\nOr to merge and complete: ana work complete --merge ${slug}`;
+    return `Review PR, then: ana work complete ${slug}\nOr to merge and complete (from ${artifactBranch ?? 'the artifact branch'}): ana work complete --merge ${slug}`;
   }
 
   // Multi-phase stages
@@ -741,7 +742,7 @@ export async function getWorkStatus(options: { json?: boolean }): Promise<void> 
 
     const workBranch = getWorkBranch(slug, branchPrefix);
     const stage = determineStage(slug, artifacts, workBranch, projectRoot);
-    const nextAction = getNextAction(stage, slug, branchPrefix);
+    const nextAction = getNextAction(stage, slug, branchPrefix, artifactBranch);
 
     // Check for worktree info
     const wtInfo = getWorktreeInfo(projectRoot, slug, branchPrefix);
@@ -1096,7 +1097,17 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
       process.exit(1);
     }
 
-    const prData = JSON.parse(prView.stdout.trim());
+    let prData: { state: string; baseRefName: string };
+    try {
+      prData = JSON.parse(prView.stdout.trim());
+    } catch {
+      console.error(chalk.red('Error: Failed to parse PR data from GitHub CLI.'));
+      console.error(chalk.gray(prView.stdout?.trim() || '(empty response)'));
+      if (options?.json) {
+        console.log(JSON.stringify(wrapJsonError('work complete', 'PR_PARSE_ERROR', 'Failed to parse PR data from GitHub CLI.', {}, null), null, 2));
+      }
+      process.exit(1);
+    }
 
     // Already merged — skip merge step
     if (prData.state === 'MERGED') {
@@ -1119,40 +1130,26 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
       });
 
       if (mergeResult.status !== 0) {
-        const stderr = mergeResult.stderr || '';
+        const mergeOutput = (mergeResult.stderr || '') + (mergeResult.stdout || '');
 
-        // Checks pending
-        if (stderr.includes('required status check') || (stderr.includes('check') && stderr.includes('pending'))) {
-          console.log('Checks are still pending. Enabling auto-merge...');
-          const autoResult = spawnSync('gh', ['pr', 'merge', workBranchName, '--auto'], {
-            cwd: projectRoot, encoding: 'utf-8', stdio: 'pipe',
-          });
-
-          if (autoResult.status === 0) {
-            // Get PR number for the message
-            const prNumResult = spawnSync('gh', ['pr', 'view', workBranchName, '--json', 'number', '-q', '.number'], {
-              cwd: projectRoot, encoding: 'utf-8', stdio: 'pipe',
-            });
-            const prNum = prNumResult.stdout?.trim() || workBranchName;
-            console.log(`Auto-merge enabled for PR #${prNum}. It will merge when checks pass.`);
-            console.log(`Run \`ana work complete ${slug}\` after the PR merges.`);
-            if (options?.json) {
-              console.log(JSON.stringify(wrapJsonError('work complete', 'AUTO_MERGE_ENABLED', `Auto-merge enabled. Run \`ana work complete ${slug}\` after the PR merges.`, { pr: Number(prNum) || prNum }, null), null, 2));
-            }
-            process.exit(1);
-          } else {
-            console.error('Auto-merge is not available for this repository.');
-            console.error(chalk.gray('Merge manually after checks pass, or enable auto-merge in repository settings.'));
-            console.error(chalk.gray(`Then run: ana work complete ${slug}`));
-            if (options?.json) {
-              console.log(JSON.stringify(wrapJsonError('work complete', 'AUTO_MERGE_UNAVAILABLE', 'Auto-merge is not available. Merge the PR manually after checks pass, or enable auto-merge in repository settings.', {}, null), null, 2));
-            }
-            process.exit(1);
+        // Branch protection / checks blocking
+        if (mergeOutput.includes('required status check') || (mergeOutput.includes('check') && mergeOutput.includes('pending')) || mergeOutput.includes('prohibits the merge')) {
+          console.error(chalk.red('Error: Merge blocked by branch protection.'));
+          console.error('');
+          console.error(chalk.gray('Options:'));
+          console.error(chalk.gray(`  Wait for checks, then retry:  ana work complete --merge ${slug}`));
+          console.error(chalk.gray(`  Enable auto-merge:            gh pr merge --auto ${workBranchName}`));
+          console.error(chalk.gray(`  Bypass (admin):               gh pr merge --admin ${workBranchName}`));
+          console.error('');
+          console.error(chalk.gray(`After merging manually: ana work complete ${slug}`));
+          if (options?.json) {
+            console.log(JSON.stringify(wrapJsonError('work complete', 'BRANCH_PROTECTION', 'Merge blocked by branch protection. Merge the PR manually, then run ana work complete.', {}, null), null, 2));
           }
+          process.exit(1);
         }
 
         // Branch behind
-        if (stderr.includes('behind') || stderr.includes('not up to date')) {
+        if (mergeOutput.includes('behind') || mergeOutput.includes('not up to date')) {
           const worktreePath = `.ana/worktrees/${slug}`;
           console.error(chalk.red('Error: Branch is behind the base branch. Rebase before merging:'));
           console.error('');
@@ -1169,23 +1166,27 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
         }
 
         // Multiple merge strategies
-        if (stderr.includes('merge strategy') || stderr.includes('multiple merge methods')) {
+        if (mergeOutput.includes('merge strategy') || mergeOutput.includes('multiple merge methods')) {
           console.error(chalk.red('Error: Multiple merge strategies are enabled with no default.'));
           console.error(chalk.gray('Merge manually via GitHub or specify a strategy:'));
           console.error(chalk.gray('  gh pr merge --merge    (merge commit)'));
           console.error(chalk.gray('  gh pr merge --squash   (squash)'));
           console.error(chalk.gray('  gh pr merge --rebase   (rebase)'));
+          console.error('');
+          console.error(chalk.gray(`After merging: ana work complete ${slug}`));
           if (options?.json) {
             console.log(JSON.stringify(wrapJsonError('work complete', 'MULTIPLE_STRATEGIES', 'Multiple merge strategies are enabled with no default. Merge the PR manually or specify a strategy.', {}, null), null, 2));
           }
           process.exit(1);
         }
 
-        // Unknown error — show raw stderr
+        // Unknown error — show raw output with guidance
         console.error(chalk.red('Error: Failed to merge PR.'));
-        console.error(stderr);
+        console.error(mergeOutput);
+        console.error('');
+        console.error(chalk.gray(`Merge the PR manually, then: ana work complete ${slug}`));
         if (options?.json) {
-          console.log(JSON.stringify(wrapJsonError('work complete', 'MERGE_FAILED', stderr.trim(), {}, null), null, 2));
+          console.log(JSON.stringify(wrapJsonError('work complete', 'MERGE_FAILED', mergeOutput.trim(), {}, null), null, 2));
         }
         process.exit(1);
       }
@@ -1868,7 +1869,7 @@ export async function startWork(slug: string): Promise<void> {
 
     // PASS — nothing to do
     console.log(`\`${slug}\` has passed verification. Run \`ana work complete ${slug}\` to archive.`);
-    console.log(`Or to merge and complete in one step: ana work complete --merge ${slug}`);
+    console.log(`Or to merge and complete in one step (from ${artifactBranch}): ana work complete --merge ${slug}`);
     return;
   }
 
