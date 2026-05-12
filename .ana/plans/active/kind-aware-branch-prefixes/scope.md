@@ -32,9 +32,9 @@ Two changes working together:
 
 **1. Config expansion.** Expand `branchPrefix` in ana.json from a string to a union of string or record. When the value is a string, behavior is identical to today. When the value is a record mapping kind names to prefixes, the system resolves the prefix at branch creation time. `readBranchPrefix()` gains an optional `kind` parameter — when kind is provided and the config is a map, it looks up the kind; otherwise it returns the string or the `feature` key as default.
 
-**2. Store the branch name at creation time.** When `startBuildPhase()` creates a worktree, write the actual branch name to `.saves.json` alongside the existing `build_started_at` timestamp. Every downstream consumer (`getWorkBranch`, `work complete`, `getWorktreeInfo`, `printExistingWorktree`) reads the stored branch name first, falling back to config-based reconstruction only when the field is absent (older work items pre-dating this change).
+**2. Make branch lookup slug-based instead of prefix-based.** Today, every function that finds an existing branch reconstructs the name from config: `${branchPrefix}${slug}`. This breaks when config changes. But slugs are unique per project (enforced by `work start`), so the slug alone identifies the branch. The fix: `getWorkBranch` matches branches by slug (ending with `/{slug}` or equaling `{slug}` for empty prefix) instead of reconstructing from config. `printExistingWorktree` and `getWorktreeInfo` read the actual branch from git HEAD instead of reconstructing.
 
-This is the key architectural choice: **store truth once at creation, don't reconstruct from config at consumption.** Config can change between creation and consumption (user switches from string to map, or changes map values). A stored branch name is immune to config drift. The reconstruction fallback for older work items is the existing behavior — not a new fallback chain, just the code that already works today.
+This is the key architectural choice: **use config only for creation, use git for lookup.** `readBranchPrefix(root, kind)` is called exactly once — when `startBuildPhase` creates the branch. Every subsequent operation finds the branch by slug (via git search) or by reading git HEAD (in worktrees). This makes branch operations immune to config changes. No stored state, no fallback chains, no reconstruction from config at consumption time.
 
 ## Acceptance Criteria
 
@@ -56,21 +56,23 @@ This is the key architectural choice: **store truth once at creation, don't reco
 - AC16: Each map value is independently validated by `validateBranchName()` — an invalid value in one key doesn't corrupt the entire map
 - AC17: Empty map `{}` falls back to `'feature/'`
 - AC18: Map with only partial keys (e.g., `{ "fix": "bugfix/" }`) resolves missing keys to `'feature/'` default
-- AC19: `startBuildPhase` writes `branch_name` to `.saves.json` alongside `build_started_at` when creating a worktree
-- AC20: `getWorkBranch` reads `branch_name` from `.saves.json` when available, falls back to config-based reconstruction when absent
-- AC21: `work complete` reads `branch_name` from `.saves.json` for branch cleanup — immune to config changes since branch creation
-- AC22: In-flight work items created before this change (no `branch_name` in `.saves.json`) remain discoverable via existing config-based reconstruction
-- AC23: No existing tests break. Test count increases.
+- AC19: `getWorkBranch` finds branches by slug match (ending with `/{slug}` or equaling `{slug}`) regardless of what prefix was used at creation time
+- AC20: `getWorkBranch` returns the full branch name (e.g., `fix/auth-timeout`) not just `true` — consumers use the actual name, not a reconstruction
+- AC21: `printExistingWorktree` reads the branch name from the worktree's git HEAD, not from config reconstruction
+- AC22: `work complete` uses the branch name returned by `getWorkBranch` for cleanup, not a config-reconstructed name
+- AC23: A branch created with `feature/my-slug` is found by `getWorkBranch` after config changes to `{ "feature": "feat/" }` — slug match is prefix-independent
+- AC24: `getWorkBranch` does not false-match branches from other systems that coincidentally contain the slug as a substring (e.g., `some-other-add-auth-thing` should not match slug `add-auth`)
+- AC25: No existing tests break. Test count increases.
 
 ## Edge Cases & Risks
 
 ### Critical: In-flight branch resolution
 
-The most dangerous scenario: a user has `feature/add-auth` in progress (created when `branchPrefix` was `"feature/"`). They change their config to the map form: `{ "feature": "feat/", "fix": "fix/" }`. Now config-based reconstruction would look for `feat/add-auth` — can't find it.
+The most dangerous scenario: a user has `feature/add-auth` in progress (created when `branchPrefix` was `"feature/"`). They change their config to the map form: `{ "feature": "feat/", "fix": "fix/" }`. Config-based reconstruction would look for `feat/add-auth` — can't find it.
 
-**Mitigation:** Store the branch name in `.saves.json` at worktree creation time. `startBuildPhase()` already writes `build_started_at` to `.saves.json` at line 1977. Writing `branch_name: result.branch` alongside it is one additional line, same file, same write. Consumers read `.saves.json` first — if `branch_name` exists, use it directly; if not, fall back to config-based reconstruction (existing behavior for older work items).
+**Mitigation:** `getWorkBranch` matches by slug, not by prefix. It already runs `git branch -a --list *{slug}*` to find candidates (line 136). Today it then exact-matches against `${branchPrefix}${slug}`. Change the filter to match any branch that ends with `/{slug}` or equals `{slug}`. Since slugs are unique per project (enforced by `work start`), this finds exactly one branch regardless of what prefix was used at creation.
 
-This eliminates the in-flight problem entirely. The stored branch name is the truth — it doesn't care what the config says now, only what the config said when the branch was created. No heuristic matching, no fallback chains, no false positive risk.
+This eliminates the in-flight problem without stored state or fallback chains. The slug is the stable identifier. The prefix was a construction-time decision that shouldn't affect lookup.
 
 ### Critical: Re-init schema preservation
 
@@ -82,15 +84,15 @@ This eliminates the in-flight problem entirely. The stored branch name is the tr
 
 ### Medium: scope.md reading for kind resolution
 
-Only one call site needs to read the scope's kind to resolve the prefix: `startBuildPhase()`, where the branch is created. This is a single `extractScopeKind()` call at the moment of branch creation — acceptable cost, and scope.md is guaranteed to exist at this point (validated by `artifact save scope`).
+Only one call site needs to read the scope's kind: `startBuildPhase()`, where the branch is created. This is a single `extractScopeKind()` call at the moment of branch creation — acceptable cost, and scope.md is guaranteed to exist at this point (validated by `artifact save scope`).
 
-All other call sites (`work status`, `work complete`, `pr`, `artifact`) read the stored branch name from `.saves.json` instead of resolving from config + kind. This eliminates the performance concern for `work status` iterating multiple slugs — `.saves.json` is already read for timestamp display, so the branch name comes free.
+All other call sites find the branch by slug match via git (no config read, no scope read). `work status` iterating multiple slugs incurs one `git branch -a --list` call per slug — the same cost as today.
 
 ### Medium: `printExistingWorktree` display
 
 At `work.ts:2004`, `printExistingWorktree` constructs `const branchName = \`${branchPrefix}${slug}\`` for display and commit counting. With map-form config, this would need the kind for reconstruction.
 
-**Mitigation:** Two options, both foundational: (a) read from `.saves.json` (consistent with the approach), or (b) read from the worktree's git HEAD via `runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: wtPath })`. Option (b) is slightly more robust — it shows what the branch actually is, not what any file claims it is — and the worktree is guaranteed to exist at this call site. AnaPlan should choose, but both are correct.
+**Mitigation:** Read from the worktree's git HEAD via `runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: wtPath })`. This shows what the branch actually is, not what config claims it should be. The worktree is guaranteed to exist at this call site (the function checks at line 2006). This is the most robust option — it can't be wrong, because it reads the truth from git.
 
 ### Low: Partial map keys
 
@@ -112,16 +114,16 @@ However, `ana config set branchPrefix "feature/"` after a map was configured wou
 
 ## Rejected Approaches
 
-- **Fallback chain in `getWorkBranch` instead of storing the branch name.** Try kind-based prefix, then `feature` key, then heuristic slug matching. Rejected because: each fallback step is less reliable than the last, heuristic slug matching risks false positives (`other-project/add-auth` matching on slug alone), and the entire chain exists to compensate for not storing the truth at creation time. A three-step guess cascade is scaffolding, not foundation. Storing the branch name in `.saves.json` eliminates the problem that the chain was built to manage.
-- **Making `readBranchPrefix()` always return a resolved string by requiring kind at every call site.** Would require all 6 callers to either know the kind or pass `undefined`. Rejected because: most callers don't need to resolve from config at all — they should read the stored branch name. Only `startBuildPhase` (branch creation) needs to resolve from config + kind. Making every caller resolve defeats the "store truth once" approach.
-- **Reading the actual branch name from git in all cases (never reconstructing from config).** Would work for existing worktrees but not for `startBuildPhase` (creating a new branch) or `getWorkBranch` (finding a remote-only branch). Branch creation inherently requires knowing the desired name. Reconstruction from config is unavoidable for write operations. `.saves.json` bridges this gap — write operations resolve from config, read operations use the stored result.
+- **Fallback chain in `getWorkBranch`.** Try kind-based prefix, then `feature` key, then heuristic slug matching. Rejected because: each step is less reliable than the last, the chain exists to compensate for a flawed assumption (that config is stable between creation and lookup), and it's scaffolding. Slug-based matching eliminates the problem that the chain was built to manage.
+- **Storing the branch name in `.saves.json` at creation time.** Would work for post-merge scenarios but fails for the `--merge` path and pre-merge operations. `.saves.json` is written to the worktree (not the artifact branch, to avoid dirty-file git pull blocking — see comment at `work.ts:1975`). So the branch name is only available on the artifact branch after PR merge. But `--merge`, `work status`, `pr create`, and `printExistingWorktree` all run pre-merge. The worktree's `.saves.json` is accessible during these paths, but the worktree might not exist (manually deleted, or non-worktree flow). Slug-based git matching is simpler and works universally — no stored state, no timing assumptions about when data reaches which branch.
+- **Making `readBranchPrefix()` always return a resolved string by requiring kind at every call site.** Would require all 6 callers to either know the kind or pass `undefined`. Rejected because: most callers don't need to resolve from config at all. Only `startBuildPhase` creates a branch. Every other caller finds or displays a branch that already exists — slug-based lookup is sufficient.
 - **Using `kind` in the slug itself (e.g., `fix-auth-timeout` auto-detects kind from the `fix-` prefix).** Fragile — `fix-header-layout` is a feature, not a fix. Slug naming is the developer's creative domain. Don't parse meaning from it.
 - **Separate `branchPrefixes` field instead of overloading `branchPrefix`.** Would be cleaner (no union type) but creates two fields that mean the same thing. Which one wins? What happens when both are set? The union on a single field is simpler — one field, two shapes, clear priority.
 
 ## Open Questions
 
 - **Should partial maps warn during `readBranchPrefix`?** If the map has `fix` and `chore` but not `feature`, that's probably a mistake. Should `readBranchPrefix` log a warning? Or is silent fallback sufficient?
-- **Should `.saves.json` `branch_name` be written by `writeTimestamp` or as a separate write?** It's not a timestamp, so using `writeTimestamp` would be semantically wrong. But it's one field in the same file, at the same moment. AnaPlan should decide: extend `writeTimestamp` to accept arbitrary key-value pairs, or write `branch_name` directly alongside the `writeTimestamp` call in `startBuildPhase`.
+- **Should `getWorkBranch` return the matched branch name directly?** Today it returns `string | null` where the string is the branch name. With slug-based matching, it would return the actual branch (e.g., `fix/auth-timeout` or `feature/auth-timeout`) — callers use this directly instead of reconstructing. AnaPlan should verify that all callers of `getWorkBranch` use only the returned value and don't separately reconstruct the name.
 
 ## Exploration Findings
 
@@ -136,7 +138,8 @@ However, `ana config set branchPrefix "feature/"` after a map was configured wou
 - [TYPE-VERIFIED] `readBranchPrefix()` is called in 4 files: `work.ts` (3 call sites), `pr.ts` (1), `artifact.ts` (1), `git-operations.ts` (definition). Every call site has access to `projectRoot`.
 - [TYPE-VERIFIED] `getWorkBranch()` searches git branches with a glob pattern — it ALREADY finds branches regardless of prefix. The exact-match filter is the only thing that breaks.
 - [TYPE-VERIFIED] `getNextAction()` at `work.ts:502` takes `_branchPrefix` but doesn't use it (parameter is unused, kept for API compat). No change needed.
-- [OBSERVED] `work complete` removes the worktree (line 1522) BEFORE branch cleanup (line 1386). This means the worktree's HEAD is unavailable during branch cleanup. The branch name must be resolved from config or stored elsewhere.
+- [OBSERVED] `work complete` removes the worktree (line 1522) BEFORE branch cleanup (line 1386). The worktree's HEAD is unavailable at cleanup time. With slug-based `getWorkBranch`, this is not a problem — branch lookup uses git, not the worktree. But `getWorkBranch` must be called BEFORE the branch is deleted (line 1386 runs after prune at 1383).
+- [TYPE-VERIFIED] `getWorkBranch` already returns the full branch name as a string. Callers at `work.ts:743` and `work.ts:1387` use the returned value. But `work complete` at line 1386 also constructs `workBranchName` separately — this parallel construction must be eliminated.
 - [OBSERVED] `preserveUserState()` uses `AnaJsonSchema.safeParse()` — the schema MUST accept map-form before anyone writes map-form config. Otherwise re-init destroys it.
 - [OBSERVED] Agent templates use `{branchPrefix}` as literal placeholder text — agents read ana.json themselves at runtime. The templates don't need updating, but agent behavior with map-form config should be verified.
 - [INFERRED] The `ana config set` command (configurability-improvements Phase 2) would allow `JSON.parse` to write map-form values. No special handling needed, but the display for `ana config` (show all) should render maps readably, not as `[object Object]`.
@@ -172,13 +175,14 @@ However, `ana config set branchPrefix "feature/"` after a map was configured wou
 - `work.test.ts:425+` test structure for branchPrefix behavior
 
 ### Known Gotchas
-- **Worktree removal ordering in `work complete`.** `work complete` removes the worktree (line 1522) before branch cleanup (line 1386). With `.saves.json` storage, this is no longer a problem — `.saves.json` lives in `.ana/plans/active/{slug}/` on the artifact branch, not in the worktree. After PR merge, the `branch_name` field is available on the artifact branch regardless of worktree state. But AnaPlan should verify that `work complete` reads `.saves.json` before moving the plan directory to `completed/` (line 1529).
+- **`getWorkBranch` callers that reconstruct separately.** Today, several callers call `getWorkBranch` to check existence and then SEPARATELY construct `${branchPrefix}${slug}` for use. For example, `work complete` at line 1386-1387 calls `getWorkBranch` but also constructs `workBranchName` independently. After this change, callers must use the branch name returned by `getWorkBranch` instead of reconstructing. AnaPlan should audit every call site to ensure the returned name is used, not a parallel reconstruction.
+- **`work complete --merge` branch name.** The `--merge` path at line 1072 constructs `workBranchName` before checking whether a branch exists. It uses this name for `gh pr view` and `gh pr merge`. With slug-based lookup, it could call `getWorkBranch` first to get the actual name. But `getWorkBranch` might return null (branch already deleted after merge). The `--merge` path needs the name BEFORE merge to issue the merge command. AnaPlan must design this carefully: use `getWorkBranch` if branch exists, fall back to `readBranchPrefix(root, kind)` reconstruction only for `--merge`.
 - **`readBranchPrefix` is not schema-aware.** It reads raw JSON with `JSON.parse()` and checks `typeof prefix`. It does NOT import or use `AnaJsonSchema`. The map-form handling must be added to the raw-JSON reader, not to the Zod schema. The schema governs re-init; the reader governs runtime. They must both handle the map form, but they're independent code paths.
-- **`.saves.json` merge conflicts.** `.saves.json` is modified in both the worktree (build/verify timestamps) and the artifact branch (work/plan timestamps). After PR merge, git must resolve both versions. This is an existing concern — adding `branch_name` doesn't make it worse, but the field must be written to the worktree copy (where `build_started_at` is also written) to travel with the merge.
+- **Slug substring matching.** `git branch -a --list *{slug}*` is a substring glob. A slug `add-auth` would match branch `add-auth-system` belonging to a different work item. The filter `b.endsWith(\`/${slug}\`) || b === slug` avoids this — it requires the slug to be the final path segment or the entire name. But AnaPlan should verify this handles all branch naming patterns including `remotes/origin/` prefixes (which are stripped at line 140).
 - **The `_branchPrefix` parameter in `getNextAction`.** This unused parameter exists for API compatibility. Don't remove it — it would break the call signature at line 745. Leave it unused.
 - **`ana config` display.** When configurability-improvements Phase 2 ships, `ana config` shows all fields. A map-form `branchPrefix` would need readable display — not `[object Object]`. This isn't this scope's problem, but AnaPlan should note that `config.ts` (Phase 2) should handle object values in its display logic. If Phase 2 ships before this scope, the display code already exists and may need updating.
 
 ### Things to Investigate
 - Whether any agent template (Build, Plan, Verify) programmatically calls `readBranchPrefix()` or equivalent at runtime, vs. treating `{branchPrefix}` as instructional text. If agents resolve this placeholder themselves, they need kind awareness.
-- Whether `getWorkBranch` should change its signature to accept an optional `knownBranchName` parameter (from `.saves.json`) and skip the git lookup entirely when provided, or whether it should internally read `.saves.json` given a slug path. The caller-provides pattern is more explicit; the internal-read pattern is more encapsulated.
-- Whether `work complete`'s `--merge` path (line 1072: `const workBranchName = \`${branchPrefix}${slug}\``) should also read from `.saves.json`. This path runs from the artifact branch before the PR is merged, so `.saves.json` may only have the artifact-branch version (which has `work_started_at` and `plan_started_at` but not `branch_name`, since that was written to the worktree copy). AnaPlan must verify when the worktree's `.saves.json` content becomes available on the artifact branch.
+- Whether `getWorkBranch` should still accept `branchPrefix` as a parameter at all after this change. Today its signature is `(slug, branchPrefix)` — if lookup is slug-based, the second parameter is unused. Removing it would break callers. Keeping it unused (like `_branchPrefix` in `getNextAction`) maintains API compat but adds confusion. AnaPlan should decide: remove and update callers, or deprecate-in-place.
+- How the `--merge` path should resolve the branch name when the branch might not exist yet (pre-merge) or might already be deleted (post-merge-pre-complete). The safest approach may be: try `getWorkBranch` → fall back to `readBranchPrefix(root, extractScopeKind(...))` → fall back to `readBranchPrefix(root)`. But this is a 3-step fallback for one specific path. AnaPlan should evaluate whether `--merge` is common enough to warrant special handling or whether `getWorkBranch` + config fallback is sufficient.
