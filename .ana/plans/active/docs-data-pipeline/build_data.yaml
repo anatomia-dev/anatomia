@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "Command count is 32 vs spec's expected 27 — spec miscounted by excluding setup/verify/pr subcommands"
+    severity: observation
+    suggested_action: accept
+  - summary: "Contract A006 expects rejections=19 but proof chain has only 1 unsatisfied assertion and 1 non-PASS result — contract value appears incorrect"
+    severity: observation
+    suggested_action: accept
+  - summary: "Spec says 2 entries missing modules_touched but actual count is 11 — categorization handles this correctly via keyword fallback"
+    severity: observation
+    suggested_action: accept
+  - summary: "Extraction script uses eslint-disable for no-explicit-any on proof chain entry mapping — proof chain JSON has dynamic shape"
+    severity: debt
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in CLI package (unused eslint-disable directive in scan engine) — not introduced by this build"
+    severity: observation
+    suggested_action: monitor

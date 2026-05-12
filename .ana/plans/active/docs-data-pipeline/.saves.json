@@ -18,5 +18,29 @@
   "spec": {
     "saved_at": "2026-05-12T21:51:11.572Z",
     "hash": "sha256:51604bc358fac3b4b471489109ecd4c334379aabe440df821951ab52d32e05b4"
-  }
+  },
+  "build_started_at": "2026-05-12T21:59:17.945Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T22:12:12.887Z",
+    "hash": "sha256:1be47067f986ce2dc270b0b2845ca6e9bbca900e8e983c1d47331690650ba884"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T22:12:12.888Z",
+    "hash": "sha256:03c10a92dbc36feec89bf181b0d8a930ed10568499c1bddfb1d4dd4b163cfc3e"
+  },
+  "modules_touched": [
+    "pnpm-lock.yaml",
+    "website/lib/docs-data/agents.ts",
+    "website/lib/docs-data/commands.ts",
+    "website/lib/docs-data/context.ts",
+    "website/lib/docs-data/gotchas.ts",
+    "website/lib/docs-data/index.ts",
+    "website/lib/docs-data/meta.ts",
+    "website/lib/docs-data/proofs.ts",
+    "website/lib/docs-data/skills.ts",
+    "website/lib/docs-data/types.ts",
+    "website/package.json",
+    "website/scripts/extract-docs-data.ts"
+  ]
 }
