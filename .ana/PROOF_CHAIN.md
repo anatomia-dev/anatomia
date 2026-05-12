@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-86 runs · 232 active · 104 lessons · 0 promoted · 161 closed
+87 runs · 237 active · 105 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 232 total)
+## Active Findings (30 shown of 237 total)
 
 ### packages/cli/src/commands/pr.ts
 
@@ -35,19 +35,10 @@
 - **test:** A004 and A005 are source-inspection-only assertions — no behavioral test verifies the regex actually strips + markers in git.ts (only work.ts path is integration-tested) — *Fix worktree branch parsing*
 - **test:** Integration test covers work.ts parsing path end-to-end but git.ts detectBranches is not exercised by any new test — the fix is verified only by source inspection — *Fix worktree branch parsing*
 
-### packages/cli/src/utils/proofSummary.ts
-
-- **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — pre-existing issue, milestone addition doesn't change the risk profile — *Add milestone kind*
-
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** commitsBehind uses origin/artifactBranch but commitCount uses bare artifactBranch — asymmetric ref comparison — *Worktree freshness detection*
 - **code:** Detached HEAD produces branchName '(unknown)' — rev-list and log commands will fail silently, showing 0 commits and 0 days — *Kind-aware branch prefixes*
-- **code:** rev-parse --abbrev-ref HEAD returns literal 'HEAD' on detached HEAD, not '(unknown)' — ternary fallback never triggers for detached state — *Kind-aware branch prefixes*
-
-### packages/cli/tests/commands/artifact.test.ts
-
-- **test:** A002 test asserts on echoed invalid input ('fix + chore'), not on the four-value error string — source inspection confirms correct text but test would pass even if milestone were missing from the error message — *Add milestone kind*
 
 ### packages/cli/tests/commands/work.test.ts
 
@@ -76,21 +67,27 @@
 
 - **code:** Empty components/docs directory left after deleting 4 component files — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
-### website/components/proof-feed/proof-feed.module.css
-
-- **code:** Dark mode milestone badge has no background override — inherits light-mode color-mix background. Works because transparent mix renders identically in dark mode, but inconsistent with feature badge which doesn't set explicit dark background either — *Add milestone kind*
-
-### website/components/proof-feed/ProofFeed.tsx
-
-- **test:** No test verifies milestone badge CSS class or label output — website has no test suite, so ProofFeed rendering is unverified beyond type checking and build compilation — *Add milestone kind*
-
 ### website/eslint.config.mjs
 
 - **code:** eslint.config.mjs modified to ignore .source — not in spec file_changes — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
+### website/lib/docs-data/index.ts
+
+- **code:** All 13 exported loader functions and 14 types are unused — no page components import from docs-data yet — *Docs Data Pipeline*
+
+### website/lib/docs-data/proofs.ts
+
+- **code:** No JSDoc on exported loader functions — inconsistent with CLI package coding standards, though website eslint doesn't enforce it — *Docs Data Pipeline*
+- **code:** process.cwd() in loader DATA_PATH assumes Next.js runs from website/ root — correct for Next.js build, fragile if loaders are ever called from tests or scripts — *Docs Data Pipeline*
+
 ### website/lib/source.ts
 
 - **code:** Page tree injections for Reference and Proof Chain omitted from source loader — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/scripts/extract-docs-data.ts
+
+- **code:** Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine — *Docs Data Pipeline*
+- **code:** Variable shadowing in extractSkillTemplates — inner 'content' shadows outer 'content' in same function — *Docs Data Pipeline*
 
 ### website/source.config.ts
 

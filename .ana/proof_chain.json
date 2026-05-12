@@ -22191,6 +22191,331 @@
         "commit_count": 0,
         "base_commit": "dcee329940126c349f66d965c41300e12c62a48d"
       }
+    },
+    {
+      "slug": "docs-data-pipeline",
+      "feature": "Docs Data Pipeline",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 32,
+        "satisfied": 32,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The extraction script runs without errors and produces all output files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Proof entries are extracted from the proof chain",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each proof entry has a computed stage category",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Proof stats compute total assertions across all entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Proof stats compute total findings across all entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Proof stats track rejection count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "All registered CLI commands are extracted with descriptions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Commands are organized into the four display groups",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Proof subcommands are all captured",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Work subcommands are all captured",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "All six agent templates are extracted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Agent templates include the model field from frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Agent templates include reads and writes arrays",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Agent templates include forbidden items parsed from the body",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Agents without a forbidden section get an empty array",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "All eight skill templates are extracted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Skill templates include parsed section structure",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Gotchas are extracted from the CLI data file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Each gotcha has trigger conditions and skill assignment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Both context files are extracted with their content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Build metadata includes the CLI version number",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Build metadata includes a commit SHA",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Build metadata includes a build timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The extraction script validates completeness before exiting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "A failed extraction prevents the build from continuing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The proof loader returns typed entries from the JSON file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The command loader returns the total command count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The agent loader can find an agent by name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The prebuild script is wired into the website build lifecycle",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The website builds successfully with data flowing through",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Seven JSON files are created in the data output directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "The output directory is cleaned before each extraction run",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 64,
+        "think": 1,
+        "plan": 20,
+        "build": 27,
+        "verify": 10
+      },
+      "hashes": {
+        "scope": "sha256:1321e0508a0119880a3db597399f10e791e032bb614c2c2eca6cbb31803d17cd",
+        "contract": "sha256:f1a37bd3d80e81b06219b8b3fd1eaae30368444a36824b66b2e53026ad3dcef6",
+        "plan": "sha256:874a5af0ebcdd8fa4e33fce1c98fccd7f599dc8f1e8166d5407a2a225693ad80",
+        "spec": "sha256:51604bc358fac3b4b471489109ecd4c334379aabe440df821951ab52d32e05b4",
+        "build-report": "sha256:9c47fa522960ad2325230bc5487fa39363440ac2d9436a4c69ff774be5549a43",
+        "build-data": "sha256:3df8d08dcf34433e7cff52a2a9231c0e85d4f2a001d231959c6a11f769ef8a60",
+        "verify-report": "sha256:7eedf95ee9cf5e036c3ffb7ee6c7752b48703fdaa3c169726bf190a78c644cb3",
+        "verify-data": "sha256:3ffc0e2ab9d1bb4d3a21cee1d5041671cbf8de6d319dcc56c064cfa33bbb23ad"
+      },
+      "completed_at": "2026-05-12T22:39:42.969Z",
+      "modules_touched": [
+        ".husky/pre-commit",
+        "pnpm-lock.yaml",
+        "website/lib/docs-data/agents.ts",
+        "website/lib/docs-data/commands.ts",
+        "website/lib/docs-data/context.ts",
+        "website/lib/docs-data/gotchas.ts",
+        "website/lib/docs-data/index.ts",
+        "website/lib/docs-data/meta.ts",
+        "website/lib/docs-data/proofs.ts",
+        "website/lib/docs-data/skills.ts",
+        "website/lib/docs-data/types.ts",
+        "website/package.json",
+        "website/scripts/extract-docs-data.ts"
+      ],
+      "scope_summary": "Every dynamic value on the docs site needs a source, an extraction path, and a typed loader. The docs site currently has no data — proof counts, agent names, command lists, version numbers are all absent. This scope builds the pre-build extraction pipeline that reads source files from the monorepo, writes typed JSON to `website/data/docs/`, and exposes typed loader functions that page components import. Without this, Scopes 3-6 are blocked.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 115,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "docs-data-pipeline-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Variable shadowing in extractSkillTemplates — inner 'content' shadows outer 'content' in same function",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 512,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "docs-data-pipeline-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "All 13 exported loader functions and 14 types are unused — no page components import from docs-data yet",
+          "file": "website/lib/docs-data/index.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-data-pipeline-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No JSDoc on exported loader functions — inconsistent with CLI package coding standards, though website eslint doesn't enforce it",
+          "file": "website/lib/docs-data/proofs.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-data-pipeline-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "process.cwd() in loader DATA_PATH assumes Next.js runs from website/ root — correct for Next.js build, fragile if loaders are ever called from tests or scripts",
+          "file": "website/lib/docs-data/proofs.ts",
+          "anchor": null,
+          "line": 6,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "docs-data-pipeline-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec mockup shows rejections: 0 but contract A006 correctly says 19 — stale mockup in spec",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-data-pipeline-C6",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Command count is 32 vs spec's expected 27 — spec miscounted by excluding setup/verify/pr subcommands",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Spec says 2 entries missing modules_touched but actual count is 11 — categorization handles this correctly via keyword fallback",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Extraction script uses eslint-disable for no-explicit-any on proof chain entry mapping — proof chain JSON has dynamic shape",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in CLI package (unused eslint-disable directive in scan engine) — not introduced by this build",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-commit hook lockfile check was below website/ skip block — reordered as bonus fix beyond spec",
+          "file": ".husky/pre-commit",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T21:59:17.945Z",
+        "completed_at": "2026-05-12T22:39:42.965Z",
+        "commit_count": 10,
+        "base_commit": "5c948786763a65f39f37b4cc2821bee8f9db87b0"
+      }
     }
   ],
   "schema": 1
