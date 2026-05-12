@@ -18,7 +18,7 @@ echo "Checking routes in $MANIFEST..."
 
 ROUTES=(
   "/"
-  "/docs"
+  "/docs/[[...slug]]"
   "/manifesto"
   "/contact"
   "/changelog"
@@ -30,7 +30,7 @@ ROUTES=(
 
 FAILED=0
 for route in "${ROUTES[@]}"; do
-  if grep -q "\"page\": *\"$route\"" "$MANIFEST"; then
+  if grep -Fq "\"page\": \"$route\"" "$MANIFEST"; then
     echo "  ✓ $route"
   else
     echo "  ✗ $route MISSING"
