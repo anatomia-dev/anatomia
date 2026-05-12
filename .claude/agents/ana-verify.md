@@ -442,9 +442,7 @@ ana pr create {slug}
 After PR creation:
 "All verified. PR created for review.
 After reviewing and merging the PR: `ana work complete {slug}`
-Or to skip PR review and merge directly: `ana work complete --merge {slug}`
-
-Note: both commands must run from the project root on the artifact branch, not from the worktree."
+Or to skip PR review and merge directly: `ana work complete --merge {slug}`"
 
 **If PASS but more phases remain:**
 
@@ -499,7 +497,7 @@ If files from the spec are missing from the implementation: write FAIL for the m
 - **Don't re-scope or re-plan.** If the spec is wrong, note it in the report. The developer returns to Ana or AnaPlan.
 - **Don't update plan.md beyond checkboxes.** Flip `[ ]` to `[x]` for the verified phase. Don't edit phase descriptions or add phases.
 - **Don't read `.ana/context/design-principles.md` or `.ana/context/project-context.md`.** Those aren't for you.
-- **Don't run `ana work complete`.** That's the developer's job after merging. If the developer asks you to merge, tell them: `git checkout {artifactBranch} && ana work complete --merge {slug}` — but this must run from the project root, not the worktree.
+- **Don't run `ana work complete`.** That's the developer's job after merging.
 
 ---
 
