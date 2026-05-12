@@ -395,7 +395,7 @@ Content...`;
 
   describe('configurable branchPrefix', () => {
     // @ana A014
-    it('artifact save error uses configured prefix in checkout hint', async () => {
+    it('artifact save error uses slug-based hint instead of prefix reconstruction', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main', branchPrefix: 'dev/' });
       await createArtifact('test-slug', 'build_report.md');
 
@@ -407,8 +407,9 @@ Content...`;
 
       console.error = originalError;
       const errorOutput = errors.join('\n');
-      expect(errorOutput).toContain('dev/test-slug');
-      expect(errorOutput).not.toContain('feature/test-slug');
+      // Guidance now references the slug, not a config-reconstructed branch name
+      expect(errorOutput).toContain('test-slug');
+      expect(errorOutput).toContain('feature branch');
     });
   });
 

@@ -1039,10 +1039,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     process.exit(1);
   }
 
-  // 1. Read artifactBranch, branchPrefix, and coAuthor from ana.json
+  // 1. Read artifactBranch and coAuthor from ana.json
   const projectRoot = findProjectRoot();
   const artifactBranch = readArtifactBranch(projectRoot);
-  const branchPrefix = readBranchPrefix(projectRoot);
 
   // Hoist coAuthor read — shared by recovery path (step 5) and main commit path (step 10)
   const coAuthor = readCoAuthor(projectRoot);
@@ -1070,7 +1069,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
 
   // 3b. Merge PR if --merge flag is set
   if (options?.merge) {
-    const workBranchName = `${branchPrefix}${slug}`;
+    // Look up by slug first; fall back to config reconstruction if branch is already deleted
+    const lookedUpBranch = getWorkBranch(slug);
+    const workBranchName = lookedUpBranch ?? `${readBranchPrefix(projectRoot, extractScopeKind(path.join(projectRoot, '.ana', 'plans', 'active', slug, 'scope.md')))}${slug}`;
 
     // Check gh CLI availability
     const ghCheck = spawnSync('gh', ['--version'], { stdio: 'pipe' });
@@ -1384,9 +1385,8 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   runGit(['fetch', '--prune', 'origin'], { cwd: projectRoot });
   // Silently continue with local state on failure
 
-  const workBranchName = `${branchPrefix}${slug}`;
-  const workBranchExists = getWorkBranch(slug);
-  if (workBranchExists) {
+  const workBranchName = getWorkBranch(slug);
+  if (workBranchName) {
     // Check if remote branch still exists after prune
     const remoteBranchResult = runGit(['branch', '-r', '--list', `origin/${workBranchName}`], { cwd: projectRoot });
     const hasRemote = remoteBranchResult.exitCode === 0 && remoteBranchResult.stdout.length > 0;
@@ -1580,11 +1580,13 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   // 12. Delete work branch (cleanup — force delete because squash/rebase merges
   //     create new commits, so the feature branch is never an ancestor of the artifact branch.
   //     Safe: step 6 already verified the branch was merged.)
-  runGit(['branch', '-D', workBranchName], { cwd: projectRoot });
-  // Silently continue if branch doesn't exist or was already deleted
+  if (workBranchName) {
+    runGit(['branch', '-D', workBranchName], { cwd: projectRoot });
+    // Silently continue if branch doesn't exist or was already deleted
 
-  runGit(['push', 'origin', '--delete', workBranchName], { cwd: projectRoot });
-  // Silently continue if remote branch doesn't exist or was already deleted
+    runGit(['push', 'origin', '--delete', workBranchName], { cwd: projectRoot });
+    // Silently continue if remote branch doesn't exist or was already deleted
+  }
 
   // 13. Read chain once for both meta and health change detection
   const chainPath = path.join(projectRoot, '.ana', 'proof_chain.json');
