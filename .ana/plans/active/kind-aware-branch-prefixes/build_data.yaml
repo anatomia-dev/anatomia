@@ -1,0 +1,20 @@
+schema: 1
+concerns:
+  - summary: "AC13-AC15, AC17 lack dedicated integration tests for slug matching and kind resolution"
+    severity: debt
+    suggested_action: monitor
+  - summary: "getWorkBranch glob pre-filter uses *slug which could over-match before endsWith filter"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "completeWork --merge fallback reads scope.md for kind — degrades gracefully if missing"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Modified assertions in pr.test.ts and artifact.test.ts to match new slug-based behavior"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing unused eslint-disable directive at git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept

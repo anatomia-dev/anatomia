@@ -18,5 +18,27 @@
   "spec": {
     "saved_at": "2026-05-12T09:54:22.373Z",
     "hash": "sha256:cdd2087218aa481dfb1b6b6620b476bb4f546568fe50d5b125c39976309e2c20"
-  }
+  },
+  "build_started_at": "2026-05-12T09:59:02.774Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T16:38:31.403Z",
+    "hash": "sha256:83e993a5567ea83b1f28f53a0c166fa91cb745977cd02ea2f3a8e56a6ffafb07"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T16:38:31.404Z",
+    "hash": "sha256:87aef607de4fce02bdd5cc0930ade50a585db55feaa4480dad0f533f5aedea94"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/utils/git-operations.ts",
+    "packages/cli/src/utils/worktree.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/pr.test.ts",
+    "packages/cli/tests/utils/git-operations.test.ts",
+    "packages/cli/tests/utils/worktree.test.ts"
+  ]
 }
