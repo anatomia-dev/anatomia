@@ -1,0 +1,253 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Docs Data Pipeline"
+
+assertions:
+  # --- Extraction script runs successfully ---
+  - id: A001
+    says: "The extraction script runs without errors and produces all output files"
+    block: "extraction script completes successfully"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  # --- Proof entries ---
+  - id: A002
+    says: "Proof entries are extracted from the proof chain"
+    block: "extracts proof entries"
+    target: "proofEntries.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A003
+    says: "Each proof entry has a computed stage category"
+    block: "extracts proof entries"
+    target: "proofEntries.every.stage"
+    matcher: "exists"
+
+  - id: A004
+    says: "Proof stats compute total assertions across all entries"
+    block: "computes proof stats"
+    target: "proofStats.assertions"
+    matcher: "greater"
+    value: 0
+
+  - id: A005
+    says: "Proof stats compute total findings across all entries"
+    block: "computes proof stats"
+    target: "proofStats.findings"
+    matcher: "greater"
+    value: 0
+
+  - id: A006
+    says: "Proof stats track rejection count"
+    block: "computes proof stats"
+    target: "proofStats.rejections"
+    matcher: "equals"
+    value: 0
+
+  # --- CLI commands ---
+  - id: A007
+    says: "All registered CLI commands are extracted with descriptions"
+    block: "extracts CLI commands"
+    target: "commands.totalCommands"
+    matcher: "greater"
+    value: 20
+
+  - id: A008
+    says: "Commands are organized into the four display groups"
+    block: "extracts CLI commands"
+    target: "commands.groups.length"
+    matcher: "equals"
+    value: 4
+
+  - id: A009
+    says: "Proof subcommands are all captured"
+    block: "extracts CLI commands"
+    target: "proofCommand.subcommands.length"
+    matcher: "equals"
+    value: 8
+
+  - id: A010
+    says: "Work subcommands are all captured"
+    block: "extracts CLI commands"
+    target: "workCommand.subcommands.length"
+    matcher: "equals"
+    value: 3
+
+  # --- Agent templates ---
+  - id: A011
+    says: "All six agent templates are extracted"
+    block: "extracts agent templates"
+    target: "agentTemplates.length"
+    matcher: "equals"
+    value: 6
+
+  - id: A012
+    says: "Agent templates include the model field from frontmatter"
+    block: "extracts agent templates"
+    target: "agentTemplates.every.model"
+    matcher: "exists"
+
+  - id: A013
+    says: "Agent templates include reads and writes arrays"
+    block: "extracts agent templates"
+    target: "agentTemplates.every.reads"
+    matcher: "exists"
+
+  - id: A014
+    says: "Agent templates include forbidden items parsed from the body"
+    block: "extracts agent templates with forbidden"
+    target: "buildAgent.forbidden.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A015
+    says: "Agents without a forbidden section get an empty array"
+    block: "extracts agent templates with forbidden"
+    target: "setupAgent.forbidden.length"
+    matcher: "equals"
+    value: 0
+
+  # --- Skill templates ---
+  - id: A016
+    says: "All eight skill templates are extracted"
+    block: "extracts skill templates"
+    target: "skillTemplates.length"
+    matcher: "equals"
+    value: 8
+
+  - id: A017
+    says: "Skill templates include parsed section structure"
+    block: "extracts skill templates"
+    target: "skillTemplates.every.sections.length"
+    matcher: "greater"
+    value: 0
+
+  # --- Gotchas ---
+  - id: A018
+    says: "Gotchas are extracted from the CLI data file"
+    block: "extracts gotchas"
+    target: "gotchas.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A019
+    says: "Each gotcha has trigger conditions and skill assignment"
+    block: "extracts gotchas"
+    target: "gotchas.every.skill"
+    matcher: "exists"
+
+  # --- Context files ---
+  - id: A020
+    says: "Both context files are extracted with their content"
+    block: "extracts context files"
+    target: "contextFiles.length"
+    matcher: "equals"
+    value: 2
+
+  # --- Build meta ---
+  - id: A021
+    says: "Build metadata includes the CLI version number"
+    block: "extracts build meta"
+    target: "buildMeta.version"
+    matcher: "exists"
+
+  - id: A022
+    says: "Build metadata includes a commit SHA"
+    block: "extracts build meta"
+    target: "buildMeta.commitSha"
+    matcher: "exists"
+
+  - id: A023
+    says: "Build metadata includes a build timestamp"
+    block: "extracts build meta"
+    target: "buildMeta.buildTimestamp"
+    matcher: "exists"
+
+  # --- Completeness validation ---
+  - id: A024
+    says: "The extraction script validates completeness before exiting"
+    block: "validates extraction completeness"
+    target: "validation.allChecks"
+    matcher: "truthy"
+
+  - id: A025
+    says: "A failed extraction prevents the build from continuing"
+    block: "fails on extraction error"
+    target: "exitCode"
+    matcher: "not_equals"
+    value: 0
+
+  # --- Typed loaders ---
+  - id: A026
+    says: "The proof loader returns typed entries from the JSON file"
+    block: "typed loaders return correct data"
+    target: "getProofEntries.returnType"
+    matcher: "equals"
+    value: "ProofEntry[]"
+
+  - id: A027
+    says: "The command loader returns the total command count"
+    block: "typed loaders return correct data"
+    target: "getCommandCount.result"
+    matcher: "greater"
+    value: 20
+
+  - id: A028
+    says: "The agent loader can find an agent by name"
+    block: "typed loaders return correct data"
+    target: "getAgentByName.ana-build"
+    matcher: "exists"
+
+  # --- Build integration ---
+  - id: A029
+    says: "The prebuild script is wired into the website build lifecycle"
+    block: "prebuild lifecycle integration"
+    target: "packageJson.scripts.prebuild"
+    matcher: "exists"
+
+  - id: A030
+    says: "The website builds successfully with data flowing through"
+    block: "full build succeeds"
+    target: "buildExitCode"
+    matcher: "equals"
+    value: 0
+
+  # --- Output file creation ---
+  - id: A031
+    says: "Seven JSON files are created in the data output directory"
+    block: "creates all output files"
+    target: "outputFiles.length"
+    matcher: "equals"
+    value: 7
+
+  - id: A032
+    says: "The output directory is cleaned before each extraction run"
+    block: "cleans output directory before extraction"
+    target: "dataDirDeletedBeforeWrite"
+    matcher: "truthy"
+
+file_changes:
+  - path: "website/scripts/extract-docs-data.ts"
+    action: create
+  - path: "website/lib/docs-data/types.ts"
+    action: create
+  - path: "website/lib/docs-data/proofs.ts"
+    action: create
+  - path: "website/lib/docs-data/agents.ts"
+    action: create
+  - path: "website/lib/docs-data/skills.ts"
+    action: create
+  - path: "website/lib/docs-data/commands.ts"
+    action: create
+  - path: "website/lib/docs-data/context.ts"
+    action: create
+  - path: "website/lib/docs-data/gotchas.ts"
+    action: create
+  - path: "website/lib/docs-data/meta.ts"
+    action: create
+  - path: "website/lib/docs-data/index.ts"
+    action: create
+  - path: "website/package.json"
+    action: modify
