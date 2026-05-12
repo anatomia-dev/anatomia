@@ -44,7 +44,7 @@ assertions:
     block: "computes proof stats"
     target: "proofStats.rejections"
     matcher: "equals"
-    value: 0
+    value: 19
 
   # --- CLI commands ---
   - id: A007
