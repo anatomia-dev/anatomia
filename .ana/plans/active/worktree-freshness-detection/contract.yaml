@@ -1,0 +1,141 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Worktree freshness detection"
+
+assertions:
+  # commitsBehind computation
+  - id: A001
+    says: "Worktree info includes how many commits behind the main branch it is"
+    block: "returns commitsBehind field"
+    target: "worktreeInfo.commitsBehind"
+    matcher: "exists"
+
+  - id: A002
+    says: "A freshly-created worktree shows zero commits behind"
+    block: "commitsBehind is 0 for fresh worktree"
+    target: "worktreeInfo.commitsBehind"
+    matcher: "equals"
+    value: 0
+
+  - id: A003
+    says: "When main advances, the worktree correctly reports how far behind it is"
+    block: "commitsBehind reflects main advancing"
+    target: "worktreeInfo.commitsBehind"
+    matcher: "greater"
+    value: 0
+
+  - id: A004
+    says: "A worktree can be both ahead and behind at the same time"
+    block: "commitCount and commitsBehind both non-zero"
+    target: "worktreeInfo.commitCount"
+    matcher: "greater"
+    value: 0
+
+  - id: A005
+    says: "Git failures during behind-count don't crash the system"
+    block: "commitsBehind defaults to 0 on git failure"
+    target: "worktreeInfo.commitsBehind"
+    matcher: "equals"
+    value: 0
+
+  # work status display
+  - id: A006
+    says: "Status shows a behind-count warning when the worktree is stale"
+    block: "work status shows behind warning"
+    target: "statusOutput"
+    matcher: "contains"
+    value: "behind"
+
+  - id: A007
+    says: "Status output is clean when the worktree is up to date"
+    block: "work status hides behind warning when fresh"
+    target: "statusOutput"
+    matcher: "not_contains"
+    value: "behind"
+
+  - id: A008
+    says: "JSON status output includes the behind-count for machine consumption"
+    block: "work status JSON includes commitsBehind"
+    target: "jsonOutput.items[0].worktreeInfo.commitsBehind"
+    matcher: "exists"
+
+  # startBuildPhase / printExistingWorktree warning
+  - id: A009
+    says: "Resuming a build on a stale worktree shows a rebase suggestion"
+    block: "printExistingWorktree shows behind warning"
+    target: "existingWorktreeOutput"
+    matcher: "contains"
+    value: "behind"
+
+  - id: A010
+    says: "Resuming a build on a fresh worktree shows no extra warnings"
+    block: "printExistingWorktree hides behind warning when fresh"
+    target: "existingWorktreeOutput"
+    matcher: "not_contains"
+    value: "behind"
+
+  # pr create warning
+  - id: A011
+    says: "Creating a PR when behind main shows a warning before the PR is made"
+    block: "pr create warns when behind"
+    target: "prOutput"
+    matcher: "contains"
+    value: "behind"
+
+  # base_commit tracking
+  - id: A012
+    says: "Completed work records which commit the code was verified against"
+    block: "base_commit stored in proof chain"
+    target: "proofEntry.worktree.base_commit"
+    matcher: "exists"
+
+  - id: A013
+    says: "The recorded base commit is a full 40-character git SHA"
+    block: "base_commit is full SHA"
+    target: "proofEntry.worktree.base_commit.length"
+    matcher: "equals"
+    value: 40
+
+  - id: A014
+    says: "Old proof chain entries without base_commit continue to work"
+    block: "backward compat without base_commit"
+    target: "oldEntryProcessed"
+    matcher: "truthy"
+
+  # Type safety
+  - id: A015
+    says: "The proof chain type definition includes the base_commit field"
+    block: "ProofChainEntry.worktree type has base_commit"
+    target: "typeDefinition"
+    matcher: "contains"
+    value: "base_commit"
+
+  # Safety
+  - id: A016
+    says: "All existing tests continue to pass after the changes"
+    block: "no test regressions"
+    target: "testResult"
+    matcher: "equals"
+    value: "pass"
+
+  # Warnings are yellow, not blocking
+  - id: A017
+    says: "Behind warnings use yellow color to signal informational status"
+    block: "warnings use chalk.yellow"
+    target: "warningColor"
+    matcher: "equals"
+    value: "yellow"
+
+file_changes:
+  - path: "packages/cli/src/utils/worktree.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/pr.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/worktree.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
