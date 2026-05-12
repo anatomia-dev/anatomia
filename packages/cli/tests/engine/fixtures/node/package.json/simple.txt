@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "express": "^4.18.0",
-    "next": "15.0.0"
-  },
-  "devDependencies": {
-    "vitest": "^2.0.0"
-  }
-}

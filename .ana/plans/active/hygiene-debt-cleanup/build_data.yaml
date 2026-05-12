@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "11 audit findings remain — all dev-only transitives requiring major bumps to resolve"
+    severity: observation
+    suggested_action: monitor
+  - summary: "pnpm update requires --recursive flag to resolve transitive lockfile pins"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Contract A008 test count stale due to branch being behind main"
+    severity: observation
+    suggested_action: accept
+  - summary: "Spec directed template modification but rule placed in dogfood skill instead (developer decision)"
+    severity: observation
+    suggested_action: accept

@@ -18,5 +18,41 @@
   "spec": {
     "saved_at": "2026-05-12T17:43:07.011Z",
     "hash": "sha256:4e993ffbcdb80e4f1e5f8e00d150e9031aa27c2476206a467cb79b965129cbd5"
+  },
+  "build_started_at": "2026-05-12T20:48:51.824Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T20:48:22.640Z",
+    "hash": "sha256:7229d12a205a160a64ee9f9f7fa1492e23f999e7fa4c689c4acecd66104a79a2"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T20:48:22.641Z",
+    "hash": "sha256:f17029ef01f499a6274f1cdd451f11e9b42c8302d33d38178126e998a4fb732f"
+  },
+  "modules_touched": [
+    ".claude/skills/testing-standards/SKILL.md",
+    ".gitignore",
+    "package.json",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/engine/fixtures/node/package.json/simple.txt",
+    "packages/cli/tests/engine/fixtures/python/requirements.txt/simple.txt",
+    "packages/cli/tests/engine/fixtures/python/requirements.txt/with-extras.txt",
+    "pnpm-lock.yaml"
+  ],
+  "verify_started_at": "2026-05-12T20:26:41.037Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:192d6140207767b7f761c6e506eb31d9e4b02e4c7c0ab27a9ad4d27d3b920c72",
+    "run_at": "2026-05-12T20:52:54.436Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T20:52:54.486Z",
+    "hash": "sha256:690fe3baa6febe264284a5d7ddc42097883d04c9b220dd2231ec3365f7d24b88"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T20:52:54.486Z",
+    "hash": "sha256:f121b036afdbfc7644224c4c5ce1cb624260d5f884e5f490b52ddc65a8e5497c"
   }
 }

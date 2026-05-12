@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: code
+    summary: "--autostash bypasses content-match guard for tracked dirty planning artifacts — theoretical gap remains"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1206
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007"]
+  - category: upstream
+    summary: "Contract A008 test count value stale — says 2177 but main has 2178 due to merge gap"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A008"]
+  - category: code
+    summary: "Audit reduced from 20 to 12, not 0 — remaining 12 are postcss dev-only transitives awaiting upstream fix"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A010"]
+  - category: upstream
+    summary: "A011/A012 target file changed from template to project-level by human override — not a spec deviation"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A011", "A012"]
+  - category: test
+    summary: "planningOnlyInMerge flag improves test fidelity — now models real production scenario of untracked artifacts"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 4255
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]

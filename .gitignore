@@ -3,6 +3,9 @@ node_modules/
 .pnpm-store/
 .npm/
 
+# MCP server config (contains local paths)
+.mcp.json
+
 # Build outputs
 .next/
 dist/

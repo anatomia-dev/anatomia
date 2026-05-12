@@ -1,3 +1,0 @@
-requests[security]>=2.0
-uvicorn[standard]==0.20.0
-sqlalchemy[postgresql]>=1.4

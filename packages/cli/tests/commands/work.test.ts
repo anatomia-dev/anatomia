@@ -4317,6 +4317,9 @@ describe('work complete auto-clean split strategy', () => {
   async function createProjectWithUntrackedConflict(options: {
     slug: string;
     untrackedFiles: Array<{ name: string; content: string; matchesRemote: boolean }>;
+    /** When true, planning artifacts are only added in the feature branch (not init),
+     *  so they arrive via merge and are genuinely untracked after reset. */
+    planningOnlyInMerge?: boolean;
   }): Promise<void> {
     const slug = options.slug;
     const remoteDir = path.join(tempDir, 'remote');
@@ -4340,17 +4343,24 @@ describe('work complete auto-clean split strategy', () => {
       'utf-8'
     );
 
-    // Create slug with planning artifacts on main
+    // Create slug directory — planning artifacts go in init unless planningOnlyInMerge
     const slugPath = path.join(localDir, '.ana', 'plans', 'active', slug);
     await fs.mkdir(slugPath, { recursive: true });
-    await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
-    await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
-    await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec 1', 'utf-8');
+    if (!options.planningOnlyInMerge) {
+      await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+      await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
+      await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec 1', 'utf-8');
+    }
 
     execSync('git add -A && git commit -m "init" && git push', { cwd: localDir, stdio: 'ignore' });
 
-    // Create feature branch with build/verify artifacts
+    // Create feature branch with build/verify artifacts (+ planning if deferred from init)
     execSync(`git checkout -b feature/${slug}`, { cwd: localDir, stdio: 'ignore' });
+    if (options.planningOnlyInMerge) {
+      await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+      await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
+      await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec 1', 'utf-8');
+    }
     await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build Report', 'utf-8');
     await fs.writeFile(path.join(slugPath, 'build_data.yaml'), 'schema: 1\nconcerns: []', 'utf-8');
     await fs.writeFile(path.join(slugPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
@@ -4373,6 +4383,7 @@ describe('work complete auto-clean split strategy', () => {
     execSync('git reset --hard HEAD~1', { cwd: localDir, stdio: 'ignore' });
 
     // Create untracked files that would block pull
+    await fs.mkdir(slugPath, { recursive: true });
     for (const file of options.untrackedFiles) {
       const filePath = path.join(slugPath, file.name);
       // If matchesRemote, write the same content that the remote has
@@ -4422,6 +4433,7 @@ describe('work complete auto-clean split strategy', () => {
   it('keeps content-match guard for planning artifacts during work complete', async () => {
     await createProjectWithUntrackedConflict({
       slug: 'test-slug',
+      planningOnlyInMerge: true,
       untrackedFiles: [
         { name: 'scope.md', content: 'COMPLETELY DIFFERENT from remote', matchesRemote: false },
       ],
@@ -4435,6 +4447,7 @@ describe('work complete auto-clean split strategy', () => {
   it('handles mixed untracked files with split cleanup strategy', async () => {
     await createProjectWithUntrackedConflict({
       slug: 'test-slug',
+      planningOnlyInMerge: true,
       untrackedFiles: [
         // Build artifact — removed unconditionally (even with different content)
         { name: 'build_report.md', content: 'DIFFERENT', matchesRemote: false },

@@ -1,0 +1,15 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing test failure: work.test.ts content-match guard test rejects→resolves mismatch"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "pnpm update requires --recursive flag to resolve transitive lockfile pins"
+    severity: observation
+    suggested_action: monitor
+  - summary: "11 audit findings remain — all dev-only transitives requiring major bumps to resolve"
+    severity: observation
+    suggested_action: accept
+  - summary: "Spec directed template modification but rule placed in dogfood skill instead (developer decision)"
+    severity: observation
+    suggested_action: accept

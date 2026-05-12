@@ -26,6 +26,7 @@ description: "Invoke when writing tests, reviewing test quality, or setting up t
 - Run the relevant test file after each change for fast feedback: `pnpm vitest run tests/{file}`. Run the full suite before the build report to catch cross-file regressions.
 - Scan integration tests run against the compiled `dist/index.js`, not source. The pre-commit hook runs `pnpm run build` to keep the artifact fresh. If running tests manually outside the hook, run `pnpm run build` first — stale dist will give false passes on terminal output tests.
 - Tests that create git repositories must force the branch name with `git init -b main` or `git branch -M main` after first commit. CI runners have different `init.defaultBranch` settings — never assume the default. This has caused CI failures 3 times.
+- Use inline fixture data for scanner and parser tests — write files to temp directories at test time. Standalone manifest files with real package names (requirements.txt, package.json) trigger GitHub security advisory false positives.
 
 ## Gotchas
 *Not yet captured. Add as you discover them during development.*
