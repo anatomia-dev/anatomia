@@ -1,0 +1,59 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Contract assertions A013-A019 have no tagged tests — verified by source inspection only"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A013", "A014", "A015", "A016", "A017", "A018", "A019"]
+
+  - category: test
+    summary: "Contract A001 has no tagged test for this contract — relies on pre-existing test from previous build"
+    file: "packages/cli/tests/utils/git-operations.test.ts"
+    line: 38
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A001"]
+
+  - category: code
+    summary: "getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix')"
+    file: "packages/cli/src/commands/work.ts"
+    line: 139
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A013"]
+
+  - category: code
+    summary: "Detached HEAD produces branchName '(unknown)' — rev-list and log commands will fail silently, showing 0 commits and 0 days"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 304
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A017", "A018"]
+
+  - category: code
+    summary: "printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places"
+    file: "packages/cli/src/commands/work.ts"
+    line: 2038
+    severity: debt
+    suggested_action: scope
+    anchor: "printExistingWorktree"
+
+  - category: code
+    summary: "startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1685
+    severity: debt
+    suggested_action: scope
+
+  - category: upstream
+    summary: "Contract file_changes lists work.test.ts as modified but no changes were made — contract is slightly inaccurate"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A013", "A014", "A015", "A016"]
+
+  - category: code
+    summary: "rev-parse --abbrev-ref HEAD returns literal 'HEAD' on detached HEAD, not '(unknown)' — ternary fallback never triggers for detached state"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 304
+    severity: observation
+    suggested_action: monitor

@@ -40,5 +40,20 @@
     "packages/cli/tests/commands/pr.test.ts",
     "packages/cli/tests/utils/git-operations.test.ts",
     "packages/cli/tests/utils/worktree.test.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-12T16:40:54.269Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:0339b9da5318ce95b214f7bffd323cf187b6cda0c14ed7c8290885463743b194",
+    "run_at": "2026-05-12T16:52:49.381Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T16:52:49.422Z",
+    "hash": "sha256:99d547dfbee2df69cf88835a77260c9af6fe4bc114938f332db9bd357586bcb3"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T16:52:49.423Z",
+    "hash": "sha256:09db2f87fe288ab60f4a751f2e3a6059650f10de05d8b1fa9997139c93c0de38"
+  }
 }
