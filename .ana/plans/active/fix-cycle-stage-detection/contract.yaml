@@ -152,6 +152,10 @@ file_changes:
     action: modify
   - path: "packages/cli/templates/.claude/agents/ana-verify.md"
     action: modify
+  - path: ".claude/agents/ana-build.md"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
   - path: "packages/cli/tests/commands/work.test.ts"
     action: modify
   - path: "packages/cli/tests/commands/artifact.test.ts"

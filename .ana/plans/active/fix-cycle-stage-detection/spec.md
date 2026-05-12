@@ -84,6 +84,16 @@ Renamed build_data.yaml → build_data_2.yaml
 **Pattern to follow:** Existing bullet format at lines 40-41.
 **Why:** Without these stages listed, AnaVerify reports "nothing to verify" when a fix cycle completes.
 
+### `.claude/agents/ana-build.md` (modify)
+**What changes:** Copy the updated template from `packages/cli/templates/.claude/agents/ana-build.md` byte-for-byte. This is the dogfood copy that Anatomia uses for its own pipeline. The sync test at `packages/cli/tests/templates/agent-proof-context.test.ts` line 67 enforces byte-identity between dogfood copies and templates.
+**Pattern to follow:** Exact copy — no differences allowed.
+**Why:** Without this, the dogfood copy has stale resume instructions and the sync test fails.
+
+### `.claude/agents/ana-verify.md` (modify)
+**What changes:** Copy the updated template from `packages/cli/templates/.claude/agents/ana-verify.md` byte-for-byte. Same dogfood sync requirement as ana-build.md.
+**Pattern to follow:** Exact copy — no differences allowed.
+**Why:** Without this, the dogfood copy is missing re-verify stages and the sync test fails.
+
 ### `packages/cli/tests/commands/work.test.ts` (modify)
 **What changes:** Add tests for fix-cycle stage transitions. See Testing Strategy.
 **Pattern to follow:** Existing test at line 212 (`with verify_report FAIL → needs-fixes`) — same `createWorkTestProject` helper, same `captureOutput` + `expect` pattern.
