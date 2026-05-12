@@ -1,0 +1,12 @@
+schema: 1
+concerns:
+  - summary: "A002 contract assertion not directly tested — existing test asserts on raw input, not valid-values listing"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Website proof feed changes have no runtime tests (no test suite exists for website)"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Initial worktree baseline showed MODULE_NOT_FOUND failures in 7 test files — resolved on subsequent runs"
+    severity: observation
+    suggested_action: monitor
