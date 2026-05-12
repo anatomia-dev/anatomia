@@ -1,6 +1,6 @@
 # Verify Report: Schema Passthrough and Verify Agent Skills
 
-**Result:** FAIL
+**Result:** PASS
 **Created by:** AnaVerify
 **Date:** 2026-05-12
 **Spec:** .ana/plans/active/configurability-improvements/spec-1.md
@@ -15,7 +15,7 @@
 
 Seal status: **INTACT**
 
-Tests: 2109 passed, 2 skipped (2111 total). Build: success. Lint: 0 errors, 1 pre-existing warning (unused eslint-disable directive in unrelated file).
+Tests: 2109 passed, 2 skipped (2111 total). Build: success. Lint: 0 errors, 1 pre-existing warning (unused eslint-disable directive in `git-operations.ts:169`).
 
 Baseline was 2107 passed + 2 skipped = 2109 total. Net +2 tests added, 0 failures, 0 regressions.
 
@@ -29,71 +29,77 @@ Baseline was 2107 passed + 2 skipped = 2109 total. Net +2 tests added, 0 failure
 | A005 | Unknown keys coexist with catch defaults in a single parse | ✅ SATISFIED | `packages/cli/tests/commands/init/anaJsonSchema.test.ts:122-132`, asserts `unknownKey` equals `"preserved"` while `setupPhase` defaults and `language` catches |
 | A006 | Verify agent template declares testing and coding skills | ✅ SATISFIED | Source inspection: `packages/cli/templates/.claude/agents/ana-verify.md:5` — `skills: [testing-standards, coding-standards]` contains `testing-standards` |
 | A007 | Verify agent template declares coding-standards skill | ✅ SATISFIED | Source inspection: `packages/cli/templates/.claude/agents/ana-verify.md:5` — `skills: [testing-standards, coding-standards]` contains `coding-standards` |
-| A008 | Dogfood verify agent matches the template exactly | ✅ SATISFIED | `diff` of both files returned empty (byte-identical). Pre-existing dogfood sync test at `packages/cli/tests/templates/agent-proof-context.test.ts:67-76` passes |
-| A009 | Verify template tells the agent that skills are auto-loaded | UNSATISFIED | The text at `packages/cli/templates/.claude/agents/ana-verify.md:139` does contain "auto-loaded" — but this is factually incorrect. Claude Code does not auto-load skills from frontmatter. Both `ana-build.md:42` and `ana-plan.md:59` declare skills in frontmatter AND explicitly invoke them in body text. The builder followed the spec faithfully, but the spec's premise was wrong. Step 7 must retain explicit `/testing-standards` and `/coding-standards` invocation alongside the frontmatter declaration. |
+| A008 | Dogfood verify agent matches the template exactly | ✅ SATISFIED | `diff` of both files returned empty (byte-identical). Dogfood sync test at `packages/cli/tests/templates/agent-proof-context.test.ts:67-76` passes |
+| A009 | Verify template tells the agent that skills are auto-loaded | DEVIATED | The text "auto-loaded" is no longer present in Step 7. The builder correctly removed the false claim per the previous verify report's blocker — Claude Code does not auto-load skills from frontmatter. Step 7 now says `Invoke after reading contracts: /testing-standards, /coding-standards` which is the correct pattern (matching ana-build and ana-plan). The contract assertion encodes a false premise identified in the previous verify cycle. |
 
-8/9 assertions SATISFIED. 1 UNSATISFIED (A009).
+8/9 SATISFIED. 1 DEVIATED (A009 — contract premise was false; builder correctly fixed the behavior per previous verify report's blocker).
 
 ## Independent Findings
 
 **Prediction resolution:**
-- **P1 (doc comment incomplete):** Not confirmed. Builder rewrote lines 6-23 thoroughly — describes passthrough, explains why, mentions data-loss footgun. Clean.
-- **P2 (template sync missed):** Not confirmed. Both files byte-identical per `diff`.
-- **P3 (step 7 remnants):** Ironically inverted — the problem is that step 7 has NO remnant invocation language when it SHOULD have kept it. I predicted remnants as a bug; turns out removing them IS the bug.
-- **P4 (shallow tests):** Partially confirmed — see test finding below.
-- **P5 (type widening consumers):** Not investigated in depth — no consumer code was changed. Noted as risk finding.
+- **P1 (minimal fix):** Confirmed. Builder condensed Step 7 from a 3-line bulleted list to a single-line explicit invocation. Clean and functional.
+- **P2 (dogfood mismatch):** Not found. Both files byte-identical per `diff`.
+- **P3 (no tagged test for A009):** Confirmed. No `@ana` tags for this build's A006-A009 in the build's test files — same as previous round. Verified by source inspection.
+- **P4 (passthrough unchanged):** Confirmed. Schema code at `anaJsonSchema.ts:37-55` identical to previous round.
+- **P5 (contract/text contradiction):** Confirmed. "auto-loaded" removed, explicit invocation restored. The contract A009 is now stale — it requires text that was correctly removed. This is an upstream contract issue.
 
-**Production risk confirmed:**
-- On fresh projects where the verify agent loads this template without cached skill state from main, skills will never load. The agent will proceed without testing-standards or coding-standards reference material, degrading verification quality silently — no error, just missing context.
+**Production risk resolved:** The previous report's blocker — that fresh projects would silently skip skill loading — is fixed. Step 7 now explicitly invokes both skills.
 
-**Surprise finding:** Builder also modified `packages/cli/tests/utils/git-operations.test.ts:289-300` — flipped a strip assertion to a preservation assertion. This file isn't listed in the contract's `file_changes` but the fix is correct and necessary (the test would have failed otherwise). Good initiative.
+## Previous Findings Resolution
+
+### Previously UNSATISFIED Assertions
+| ID | Previous Issue | Current Status | Resolution |
+|----|----------------|----------------|------------|
+| A009 | Template claimed skills are "auto-loaded" but Claude Code doesn't auto-load from frontmatter | DEVIATED | Builder removed false "auto-loaded" claim, restored explicit invocation. Correct behavior. Contract assertion is stale — encodes the false premise the previous report identified. |
+
+### Previous Findings
+| Finding | Status | Notes |
+|---------|--------|-------|
+| Code — Step 7 removes explicit skill invocation | Fixed | Step 7 now explicitly invokes `/testing-standards` and `/coding-standards` |
+| Upstream — Contract A009 and spec AC4 encode false premise | Still present | Contract still says `contains "auto-loaded"` — the builder correctly chose not to satisfy a false assertion |
+| Code — Type widening not guarded | Still present | No consumer changes, no property enumeration added. Monitor. |
+| Test — A006-A009 have no @ana tags | Still present | Assertions about static file content, verified by source inspection. Not a blocker. |
+| Code — Unspecified file change in git-operations.test.ts | Still present | Correct and necessary change — flipped strip to preservation assertion |
+| Upstream — No passthrough size guard | Still present | Low risk for local CLI config file. Monitor if `config set` introduces automated writes. |
 
 ## AC Walkthrough
 
 - **AC1:** Unknown top-level keys survive `ana init` re-init. ✅ PASS — Test at `anaJsonSchema.test.ts:57-78` verifies `scanStaleDays: 7` survives parse. Schema uses `.passthrough()` at line 55.
 - **AC2:** `.catch()` defaults still fire for invalid known fields with passthrough active. ✅ PASS — Test at `anaJsonSchema.test.ts:111-119` verifies `setupPhase: 'invalid-value'` defaults to undefined while unknown keys survive.
 - **AC3:** `ana-verify` agent template declares `skills: [testing-standards, coding-standards]` in frontmatter. ✅ PASS — Read `packages/cli/templates/.claude/agents/ana-verify.md:5`.
-- **AC4:** Verify template body text reflects that skills are auto-loaded, not manually invoked. ❌ FAIL — The text does say "auto-loaded" but this is a false claim. Claude Code does not auto-load skills from frontmatter. The correct pattern (used by ana-build and ana-plan) is: frontmatter declares, body explicitly invokes. Step 7 must keep explicit `/testing-standards` and `/coding-standards` invocation instructions.
+- **AC4:** Verify template body text reflects that skills are auto-loaded, not manually invoked. ⚠️ PARTIAL — The previous verify report identified this AC as encoding a false premise (Claude Code doesn't auto-load from frontmatter). The builder correctly restored explicit invocation instead. Step 7 now uses the same pattern as ana-build and ana-plan: frontmatter declares, body invokes. The AC's stated goal (auto-loading) was wrong; the actual goal (consistent skill loading) is met.
 - **AC5:** Dogfood verify agent is byte-identical to template. ✅ PASS — `diff` returned empty.
-- **AC6:** `ana agents` dashboard shows 2 skills for verify. ✅ PASS — Live invocation: `ana-verify  38,199 chars  2 skills`.
+- **AC6:** `ana agents` dashboard shows 2 skills for verify. ✅ PASS — Live invocation: `ana-verify  38,255 chars  2 skills`.
 - **AC16:** No existing tests break. Test count increases. ✅ PASS — 2109 passed (was 2107), 0 failures.
 - **Tests pass:** ✅ PASS — `(cd packages/cli && pnpm vitest run)`: 2109 passed, 2 skipped.
 - **No build errors:** ✅ PASS — `pnpm run build`: 2 tasks successful.
 
-8/9 ACs pass. 1 FAIL (AC4).
+7/9 ACs pass. 1 PARTIAL (AC4 — false premise corrected). 0 FAIL.
 
 ## Blockers
 
-**1. Step 7 removes explicit skill invocation based on false auto-loading premise.**
+No blockers. The previous round's blocker (Step 7 removing explicit skill invocation based on false auto-loading premise) is resolved. Step 7 now explicitly invokes both skills.
 
-`packages/cli/templates/.claude/agents/ana-verify.md:139` now reads:
-> "Testing-standards and coding-standards are auto-loaded via frontmatter — they are available as reference material without manual invocation."
-
-Claude Code does not auto-load skills from frontmatter. Evidence:
-- `ana-build.md` has `skills: [git-workflow]` in frontmatter (line 5) AND `Invoke before any work: /git-workflow` in body (line 42).
-- `ana-plan.md` has `skills: [coding-standards, testing-standards]` in frontmatter (line 5) AND `Invoke /coding-standards — always` in body (line 59).
-- Both pipeline agents maintain explicit invocation alongside frontmatter.
-
-**Fix required:** Step 7 body must retain explicit invocation instructions — e.g., "Invoke after reading contracts: `/testing-standards`, `/coding-standards`" — while keeping the new frontmatter declaration. Match the pattern used by ana-build and ana-plan: declare in frontmatter, invoke in body. Both the template and dogfood copy must be updated identically.
-
-This is a spec-level error (the spec told the builder to make this change), not a builder error. The builder followed the spec faithfully.
+Checked for: unused exports in new code (none — no new exports added), unused parameters in modified functions (none — schema is declarative, no function signatures changed), error paths without test coverage (N/A — schema `.catch()` paths all tested), external state assumptions (none — schema is pure input→output).
 
 ## Findings
 
-- **Code — Step 7 removes explicit skill invocation:** `packages/cli/templates/.claude/agents/ana-verify.md:139` — Replaces working explicit invocation with a false claim about auto-loading. On fresh projects, verify agents will silently skip loading testing-standards and coding-standards. This is the FAIL blocker.
-- **Upstream — Contract A009 and spec AC4 encode false premise:** The contract assertion says "tells the agent that skills are auto-loaded" and the spec says "inform the agent that skills are auto-loaded via frontmatter rather than instructing manual invocation." Both assume Claude Code auto-loads from frontmatter, which it doesn't. The builder executed the spec correctly — the spec was wrong. Future re-planning should correct the assertion to match the actual pattern: frontmatter declares + body invokes.
-- **Code — Type widening not guarded:** `packages/cli/src/commands/init/anaJsonSchema.ts:57` — `AnaJson` type now includes `& { [k: string]: unknown }` from `.passthrough()`. No consumer currently enumerates keys, but future consumers could iterate unknown fields without a type error. Monitor for property enumeration in future consumers.
-- **Test — A006-A009 have no `@ana` tags:** The builder did not create tagged tests for the verify template assertions (A006-A009). These were verified by source inspection and the pre-existing dogfood sync test. Not a blocker — the assertions are about static file content, and the dogfood sync test covers A008 mechanically. But untagged assertions weaken the proof chain's automated traceability.
-- **Code — Unspecified file change was correct:** `packages/cli/tests/utils/git-operations.test.ts:292` — Builder modified a test not listed in the contract's `file_changes`. The change was necessary (flipped a strip assertion to match passthrough behavior) and correct. Scope creep in the positive direction.
+- **Upstream — Contract A009 encodes false premise:** Contract says `step7Content contains "auto-loaded"` but Claude Code doesn't auto-load skills from frontmatter. The builder correctly removed the false claim per the previous verify report's blocker. The assertion is stale — update on next re-plan. Not a blocker because the underlying behavior is correct.
+- **Code — Type widening from `.passthrough()`:** `packages/cli/src/commands/init/anaJsonSchema.ts:55` — `AnaJson` type now includes `& { [k: string]: unknown }`. No consumer currently enumerates keys, but future consumers could iterate unknown fields without a type error. Monitor for property enumeration in future consumers.
+- **Test — A006-A009 have no `@ana` tags in this build's test files:** The verify template assertions were verified by source inspection and the pre-existing dogfood sync test. Not a blocker — the assertions are about static file content — but untagged assertions weaken automated traceability.
+- **Code — Unspecified file change was correct:** `packages/cli/tests/utils/git-operations.test.ts:292` — Builder modified a test not listed in the contract's `file_changes`. The change was necessary (flipped strip assertion to match passthrough behavior) and correct. Scope creep in the positive direction.
 - **Upstream — No passthrough size guard:** Passthrough has no limit on the number or size of unknown keys. A corrupted ana.json could grow across re-init cycles. Low risk for a local CLI config file, but worth scoping if `config set` (Phase 2) introduces automated writes to unknown keys.
+- **Code — Step 7 body condensed to single line:** `packages/cli/templates/.claude/agents/ana-verify.md:139` — The original 3-line bulleted list (each skill on its own line with a description) was condensed to a single inline sentence. Functionally identical, but the bulleted format was more scannable for agents parsing instructions. Minor style observation.
 
 ## Deployer Handoff
 
-Do not merge. Step 7 of the verify agent template removes working explicit skill invocation and replaces it with a false auto-loading claim. The schema passthrough change (Change 1) is clean and ready, but the template change (Change 2) needs a fix before shipping.
+Phase 1 is ready to merge. The schema passthrough change (A001-A005) is clean — good tests, correct doc comment, no consumer regressions. The verify agent skills change (A006-A008) is correct — frontmatter declared, dogfood synced, agents dashboard shows 2 skills.
 
-The fix is small: restore explicit invocation in step 7 body text (both template and dogfood copy) while keeping the new frontmatter `skills:` declaration. Match the pattern from ana-build and ana-plan.
+A009/AC4: The contract assertion requires "auto-loaded" text that the builder correctly removed (per the previous verify report's blocker about false auto-loading claims). The underlying behavior is right — Step 7 now explicitly invokes both skills, matching the pattern used by ana-build and ana-plan. The contract assertion should be updated on next re-plan to reflect the actual pattern (frontmatter declares + body invokes).
+
+Phase 2 (`config set` command) has not been built yet.
 
 ## Verdict
-**Shippable:** NO
+**Shippable:** YES
 
-Schema passthrough (A001-A005) is solid — clean implementation, good tests, correct doc comment update. The verify template's frontmatter declaration (A006-A008) is also correct. But A009/AC4 fails: step 7 removes explicit skill invocation based on the false premise that Claude Code auto-loads skills from frontmatter. This would silently degrade verification quality on fresh projects. The fix is a 3-line change to step 7 body text in both template and dogfood copy.
+Schema passthrough is solid. Verify agent skills are correctly declared in frontmatter with explicit invocation in body text. The previous round's blocker (false auto-loading claim) is resolved. The only contract deviation (A009) exists because the assertion encoded a false premise that the previous verify report identified — the builder correctly fixed the behavior rather than satisfying a wrong assertion. All tests pass, no regressions, no blockers.
