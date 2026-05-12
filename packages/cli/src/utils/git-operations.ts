@@ -101,14 +101,21 @@ export function readArtifactBranch(projectRoot?: string): string {
  * `branchPrefix`, so the common upgrade path must return the historical
  * default without forcing the user to re-init.
  *
+ * Supports two config forms:
+ * - String: `"feature/"` → returned directly (kind is ignored)
+ * - Map: `{ "feature": "feature/", "fix": "fix/" }` → resolved by kind
+ *   Fallback chain: requested kind → `'feature'` key → `'feature/'`
+ *
  * @param projectRoot - Project root path (defaults to cwd)
+ * @param kind - Optional scope kind for map-form resolution
  * @returns The configured branch prefix, or `'feature/'` as default
  */
-export function readBranchPrefix(projectRoot?: string): string {
+export function readBranchPrefix(projectRoot?: string, kind?: string): string {
+  const DEFAULT = 'feature/';
   const anaJsonPath = path.join(projectRoot ?? process.cwd(), '.ana', 'ana.json');
 
   if (!fs.existsSync(anaJsonPath)) {
-    return 'feature/';
+    return DEFAULT;
   }
 
   let config: Record<string, unknown>;
@@ -116,21 +123,43 @@ export function readBranchPrefix(projectRoot?: string): string {
     const content = fs.readFileSync(anaJsonPath, 'utf-8');
     config = JSON.parse(content);
   } catch {
-    return 'feature/';
+    return DEFAULT;
   }
 
   const prefix = config['branchPrefix'];
-  if (typeof prefix !== 'string') {
-    return 'feature/';
+
+  // String form — kind is ignored
+  if (typeof prefix === 'string') {
+    try {
+      validateBranchName(prefix);
+    } catch {
+      return DEFAULT;
+    }
+    return prefix;
   }
 
-  try {
-    validateBranchName(prefix);
-  } catch {
-    return 'feature/';
+  // Map form — resolve by kind with fallback chain
+  if (typeof prefix === 'object' && prefix !== null && !Array.isArray(prefix)) {
+    const map = prefix as Record<string, unknown>;
+
+    // Resolve: requested kind → 'feature' key → hardcoded default
+    const candidates = kind ? [kind, 'feature'] : ['feature'];
+    for (const key of candidates) {
+      const value = map[key];
+      if (typeof value === 'string') {
+        try {
+          validateBranchName(value);
+          return value;
+        } catch {
+          // Invalid value for this key — continue to next candidate
+        }
+      }
+    }
+
+    return DEFAULT;
   }
 
-  return prefix;
+  return DEFAULT;
 }
 
 /**

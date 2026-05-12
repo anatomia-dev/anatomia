@@ -139,7 +139,8 @@ describe('ana pr create', () => {
 
   describe('configurable branchPrefix', () => {
     // @ana A015
-    it('pr create warning uses configured prefix', async () => {
+    it('pr create warning uses slug-based check', async () => {
+      // Branch is feature/test-feature — slug is test-feature. Branch matches slug, so no warning.
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-feature', branchPrefix: 'dev/' });
       await createPipelineArtifacts('test-feature', {
         includeBuild: true,
@@ -159,9 +160,34 @@ describe('ana pr create', () => {
 
       console.log = originalLog;
       const output = logs.join('\n');
-      // Branch is feature/test-feature but branchPrefix is dev/ — should warn with dev/
-      expect(output).toContain('dev/');
-      expect(output).toContain("Warning: Current branch is 'feature/test-feature'");
+      // Branch ends with /test-feature so slug matches — no warning emitted
+      expect(output).not.toContain('Warning: Current branch');
+    });
+
+    // @ana A020
+    it('pr create warns when branch does not match slug', async () => {
+      // Branch is dev/other-branch — does not end with /test-feature
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'dev/other-branch', branchPrefix: 'dev/' });
+      await createPipelineArtifacts('test-feature', {
+        includeBuild: true,
+        includeVerify: true,
+        verifyResult: 'PASS',
+      });
+
+      const originalLog = console.log;
+      const logs: string[] = [];
+      console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+
+      try {
+        createPr('test-feature');
+      } catch {
+        // Expected — gh CLI may not be available, but warning is emitted before that
+      }
+
+      console.log = originalLog;
+      const output = logs.join('\n');
+      expect(output).toContain("Warning: Current branch is 'dev/other-branch'");
+      expect(output).toContain("ending with 'test-feature'");
     });
   });
 

@@ -20,7 +20,7 @@ import * as path from 'node:path';
 import { globSync } from 'glob';
 import * as yaml from 'yaml';
 import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
-import { generateProofSummary, resolveFindingPaths, generateDashboard, computeChainHealth, wrapJsonResponse, wrapJsonError, detectHealthChange, getProofContext, type ProofSummary } from '../utils/proofSummary.js';
+import { generateProofSummary, resolveFindingPaths, generateDashboard, computeChainHealth, wrapJsonResponse, wrapJsonError, detectHealthChange, getProofContext, extractScopeKind, type ProofSummary } from '../utils/proofSummary.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { isWorktreeDirectory, detectWorktreeSlug, worktreeExists, getWorktreeInfo, createWorktree, removeWorktree, getWorktreePath } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
@@ -126,20 +126,23 @@ function readFileOnBranch(branch: string, filePath: string): string | null {
 }
 
 /**
- * Get work branch for a slug using the configured prefix
+ * Get work branch for a slug using slug-based matching.
+ *
+ * Matches branches by `b.endsWith('/' + slug) || b === slug` — the slug
+ * is the stable identifier. This decouples branch lookup from config,
+ * so branches are found even after branchPrefix config changes.
  *
  * @param slug - Work item slug
- * @param branchPrefix - Configured branch prefix (e.g., 'feature/', 'dev/', '')
  * @returns Branch name or null if doesn't exist
  */
-function getWorkBranch(slug: string, branchPrefix: string): string | null {
-  const result = runGit(['branch', '-a', '--list', `*${slug}*`]);
+function getWorkBranch(slug: string): string | null {
+  const result = runGit(['branch', '-a', '--list', `*${slug}`]);
   if (result.exitCode !== 0 || !result.stdout) return null;
 
   // Parse branches — prefer local over remote
   const branches = result.stdout.split('\n').map(b => b.trim().replace(/^\* /, '').replace(/^remotes\//, ''));
-  const local = branches.find(b => b === `${branchPrefix}${slug}`);
-  const remote = branches.find(b => b === `origin/${branchPrefix}${slug}`);
+  const local = branches.find(b => b.endsWith('/' + slug) || b === slug);
+  const remote = branches.find(b => (b.startsWith('origin/') && (b.endsWith('/' + slug) || b === `origin/${slug}`)));
 
   return local || remote || null;
 }
@@ -228,15 +231,13 @@ function discoverSlugs(artifactBranch: string, onArtifactBranch: boolean, projec
  * @param artifactBranch - Artifact branch name
  * @param onArtifactBranch - Whether currently on artifact branch
  * @param projectRoot - Project root path
- * @param branchPrefix - Configured branch prefix
  * @returns Complete artifact state
  */
 function gatherArtifactState(
   slug: string,
   artifactBranch: string,
   onArtifactBranch: boolean,
-  projectRoot: string,
-  branchPrefix: string
+  projectRoot: string
 ): ArtifactState {
   const basePath = `.ana/plans/active/${slug}`;
   const branch = onArtifactBranch ? artifactBranch : `origin/${artifactBranch}`;
@@ -292,7 +293,7 @@ function gatherArtifactState(
   }
 
   // Check for build/verify reports on work branch
-  const workBranch = getWorkBranch(slug, branchPrefix);
+  const workBranch = getWorkBranch(slug);
   const buildReports: ReportInfo[] = [];
   const verifyReports: VerifyReportInfo[] = [];
 
@@ -669,7 +670,6 @@ function printHumanReadable(output: StatusOutput): void {
 export async function getWorkStatus(options: { json?: boolean }): Promise<void> {
   const projectRoot = findProjectRoot();
   const artifactBranch = readArtifactBranch(projectRoot);
-  const branchPrefix = readBranchPrefix(projectRoot);
   const currentBranch = getCurrentBranch();
 
   if (!currentBranch) {
@@ -734,19 +734,19 @@ export async function getWorkStatus(options: { json?: boolean }): Promise<void> 
   // Gather state for each slug
   const items: WorkItem[] = [];
   for (const slug of slugs) {
-    const artifacts = gatherArtifactState(slug, artifactBranch, onArtifactBranch, projectRoot, branchPrefix);
+    const artifacts = gatherArtifactState(slug, artifactBranch, onArtifactBranch, projectRoot);
 
     // Skip empty directories (no scope = not real work)
     if (!artifacts.scope.exists) {
       continue;
     }
 
-    const workBranch = getWorkBranch(slug, branchPrefix);
+    const workBranch = getWorkBranch(slug);
     const stage = determineStage(slug, artifacts, workBranch, projectRoot);
-    const nextAction = getNextAction(stage, slug, branchPrefix, artifactBranch);
+    const nextAction = getNextAction(stage, slug, '', artifactBranch);
 
     // Check for worktree info
-    const wtInfo = getWorktreeInfo(projectRoot, slug, branchPrefix);
+    const wtInfo = getWorktreeInfo(projectRoot, slug);
 
     items.push({
       slug,
@@ -1039,10 +1039,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     process.exit(1);
   }
 
-  // 1. Read artifactBranch, branchPrefix, and coAuthor from ana.json
+  // 1. Read artifactBranch and coAuthor from ana.json
   const projectRoot = findProjectRoot();
   const artifactBranch = readArtifactBranch(projectRoot);
-  const branchPrefix = readBranchPrefix(projectRoot);
 
   // Hoist coAuthor read — shared by recovery path (step 5) and main commit path (step 10)
   const coAuthor = readCoAuthor(projectRoot);
@@ -1070,7 +1069,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
 
   // 3b. Merge PR if --merge flag is set
   if (options?.merge) {
-    const workBranchName = `${branchPrefix}${slug}`;
+    // Look up by slug first; fall back to config reconstruction if branch is already deleted
+    const lookedUpBranch = getWorkBranch(slug);
+    const workBranchName = lookedUpBranch ?? `${readBranchPrefix(projectRoot, extractScopeKind(path.join(projectRoot, '.ana', 'plans', 'active', slug, 'scope.md')))}${slug}`;
 
     // Check gh CLI availability
     const ghCheck = spawnSync('gh', ['--version'], { stdio: 'pipe' });
@@ -1384,9 +1385,8 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   runGit(['fetch', '--prune', 'origin'], { cwd: projectRoot });
   // Silently continue with local state on failure
 
-  const workBranchName = `${branchPrefix}${slug}`;
-  const workBranchExists = getWorkBranch(slug, branchPrefix);
-  if (workBranchExists) {
+  const workBranchName = getWorkBranch(slug);
+  if (workBranchName) {
     // Check if remote branch still exists after prune
     const remoteBranchResult = runGit(['branch', '-r', '--list', `origin/${workBranchName}`], { cwd: projectRoot });
     const hasRemote = remoteBranchResult.exitCode === 0 && remoteBranchResult.stdout.length > 0;
@@ -1522,7 +1522,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   const worktreeUsed = fs.existsSync(wtPath);
   let worktreeCommitCount = 0;
   if (worktreeUsed) {
-    const wtInfo = getWorktreeInfo(projectRoot, slug, branchPrefix);
+    const wtInfo = getWorktreeInfo(projectRoot, slug);
     worktreeCommitCount = wtInfo?.commitCount ?? 0;
   }
 
@@ -1580,11 +1580,13 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   // 12. Delete work branch (cleanup — force delete because squash/rebase merges
   //     create new commits, so the feature branch is never an ancestor of the artifact branch.
   //     Safe: step 6 already verified the branch was merged.)
-  runGit(['branch', '-D', workBranchName], { cwd: projectRoot });
-  // Silently continue if branch doesn't exist or was already deleted
+  if (workBranchName) {
+    runGit(['branch', '-D', workBranchName], { cwd: projectRoot });
+    // Silently continue if branch doesn't exist or was already deleted
 
-  runGit(['push', 'origin', '--delete', workBranchName], { cwd: projectRoot });
-  // Silently continue if remote branch doesn't exist or was already deleted
+    runGit(['push', 'origin', '--delete', workBranchName], { cwd: projectRoot });
+    // Silently continue if remote branch doesn't exist or was already deleted
+  }
 
   // 13. Read chain once for both meta and health change detection
   const chainPath = path.join(projectRoot, '.ana', 'proof_chain.json');
@@ -1670,7 +1672,6 @@ export async function startWork(slug: string): Promise<void> {
   // 2. Read project config
   const projectRoot = findProjectRoot();
   const artifactBranch = readArtifactBranch(projectRoot);
-  const branchPrefix = readBranchPrefix(projectRoot);
 
   // 3. Check if we're inside a worktree
   const currentWorktreeSlug = detectWorktreeSlug();
@@ -1680,7 +1681,9 @@ export async function startWork(slug: string): Promise<void> {
     if (currentWorktreeSlug === slug) {
       // Resume: print path
       const wtPath = process.cwd();
-      const branchName = `${branchPrefix}${slug}`;
+      // Read branch name from git HEAD — prefix-independent
+      const headResult = runGit(['rev-parse', '--abbrev-ref', 'HEAD']);
+      const branchName = headResult.exitCode === 0 ? headResult.stdout : `(unknown)`;
       let commitCount = 0;
       try {
         const result = runGit(['rev-list', '--count', `${artifactBranch}..HEAD`]);
@@ -1836,7 +1839,7 @@ export async function startWork(slug: string): Promise<void> {
 
   // Phase: spec+contract exists, no build report → Build (create worktree)
   if ((specExists || hasContract) && !buildReportExists) {
-    return await startBuildPhase(projectRoot, activePath, slug, branchPrefix, artifactBranch);
+    return await startBuildPhase(projectRoot, activePath, slug, artifactBranch);
   }
 
   // Phase: build report exists, no verify report → Verify (print worktree)
@@ -1848,7 +1851,7 @@ export async function startWork(slug: string): Promise<void> {
     } else {
       console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
     }
-    return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Verify');
+    return printExistingWorktree(projectRoot, slug, artifactBranch, 'Verify');
   }
 
   // Phase: verify report exists with FAIL → Fix (print worktree)
@@ -1881,7 +1884,7 @@ export async function startWork(slug: string): Promise<void> {
       } else {
         console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
       }
-      return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Fix');
+      return printExistingWorktree(projectRoot, slug, artifactBranch, 'Fix');
     }
 
     // PASS — nothing to do
@@ -1897,10 +1900,13 @@ export async function startWork(slug: string): Promise<void> {
 /**
  * Start the Build phase: create or enter the worktree.
  *
+ * Uses kind-resolved prefix for branch creation. Reads the scope's kind
+ * via extractScopeKind() and passes it to readBranchPrefix() for map-form
+ * config resolution.
+ *
  * @param projectRoot - Project root directory
  * @param activePath - Path to the active plan directory
  * @param slug - Work item slug
- * @param branchPrefix - Branch prefix
  * @param artifactBranch - Artifact branch name
  * @returns Promise that resolves when the build phase is started
  */
@@ -1908,7 +1914,6 @@ async function startBuildPhase(
   projectRoot: string,
   activePath: string,
   slug: string,
-  branchPrefix: string,
   artifactBranch: string
 ): Promise<void> {
   // Check if worktree already exists (resume case)
@@ -1916,8 +1921,12 @@ async function startBuildPhase(
     // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
     const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
     await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
-    return printExistingWorktree(projectRoot, slug, branchPrefix, artifactBranch, 'Build');
+    return printExistingWorktree(projectRoot, slug, artifactBranch, 'Build');
   }
+
+  // Resolve kind-aware branch prefix for new worktree creation
+  const scopeKind = extractScopeKind(path.join(activePath, 'scope.md'));
+  const branchPrefix = readBranchPrefix(projectRoot, scopeKind);
 
   // Build context data from contract
   let contextData: { contractAssertions?: string; proofFindings?: string; summary?: string } | undefined;
@@ -2004,26 +2013,30 @@ async function startBuildPhase(
 /**
  * Print info about an existing worktree.
  *
+ * Reads the branch name from the worktree's git HEAD instead of
+ * reconstructing from config — prefix-independent.
+ *
  * @param projectRoot - Project root directory
  * @param slug - Work item slug
- * @param branchPrefix - Branch prefix
  * @param artifactBranch - Artifact branch name
  * @param phase - Current phase label (e.g., 'Build', 'Verify', 'Fix')
  */
 function printExistingWorktree(
   projectRoot: string,
   slug: string,
-  branchPrefix: string,
   artifactBranch: string,
   phase: string
 ): void {
   const wtPath = getWorktreePath(projectRoot, slug);
-  const branchName = `${branchPrefix}${slug}`;
 
   if (!fs.existsSync(wtPath)) {
     console.log(`No worktree for \`${slug}\`. ${phase} phase — worktree may need to be recreated.`);
     return;
   }
+
+  // Read branch name from git HEAD — the worktree knows its own branch
+  const headResult = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: wtPath });
+  const branchName = headResult.exitCode === 0 ? headResult.stdout : `(unknown)`;
 
   let commitCount = 0;
   try {
