@@ -22,6 +22,7 @@ import { registerProofCommand } from './commands/proof.js';
 import { registerPrCommand } from './commands/pr.js';
 import { registerAgentsCommand } from './commands/agents.js';
 import { registerVerifyCommand } from './commands/verify.js';
+import { registerConfigCommand } from './commands/config.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8'));
 
@@ -47,6 +48,9 @@ registerWorkCommand(program);
 registerArtifactCommand(program);
 registerVerifyCommand(program);
 registerPrCommand(program);
+
+program.commandsGroup('CONFIGURATION');
+registerConfigCommand(program);
 
 program.commandsGroup('INTELLIGENCE');
 registerProofCommand(program);
