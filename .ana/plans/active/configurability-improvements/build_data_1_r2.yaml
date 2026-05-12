@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "git-operations.test.ts strip assertion was not listed in spec's File Changes but required updating for passthrough consistency"
+    file: "packages/cli/tests/utils/git-operations.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "AnaJson type now includes index signature from passthrough — consumers accessing only named fields are safe, but any future Object.keys() or property enumeration would expose unknown keys"
+    severity: observation
+    suggested_action: monitor

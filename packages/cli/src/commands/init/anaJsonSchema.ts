@@ -3,10 +3,11 @@
  *
  * Single source of truth for the on-disk ana.json shape. Consumed by:
  *
- * 1. `init` re-init merge — strips orphaned fields (e.g., `scanStaleDays`
- *    from older installs), catches invalid enum values (e.g.,
- *    `setupPhase: "guided"` from older installs) and defaults them to
- *    sensible initial values, preserving user fields verbatim.
+ * 1. `init` re-init merge — uses `.passthrough()` to preserve unknown
+ *    top-level keys (e.g., user-added settings, legacy fields like
+ *    `scanStaleDays` from older installs). Catches invalid enum values
+ *    (e.g., `setupPhase: "guided"` from older installs) and defaults
+ *    them to sensible initial values, preserving user fields verbatim.
  * 2. `setup check` dashboard — reads the file through the schema so that
  *    the ✓/○/✗ display and the completion validator both see the same
  *    validated shape.
@@ -16,9 +17,14 @@
  * setupPhase resets to undefined. coAuthor, artifactBranch, and user
  * customizations survive.
  *
+ * `.passthrough()` is deliberate: unknown top-level keys flow through
+ * the parse unchanged. This prevents `ana init` re-runs from silently
+ * deleting user-added or legacy fields — a data-loss footgun that
+ * blocks `config set` on custom keys.
+ *
  * Field enumeration is cross-checked against `createAnaJson` in
  * `init/state.ts` (the write-side source of truth). If a field exists in
- * createAnaJson but not here, re-init will strip it on every run — bug.
+ * createAnaJson but not here, re-init will lose it on every run — bug.
  * If a field exists here but not in createAnaJson, fresh inits are
  * missing it — bug.
  *
@@ -46,6 +52,6 @@ export const AnaJsonSchema = z
     lastScanAt: z.string().nullable().optional().default(null).catch(null),
     custom: z.record(z.string(), z.unknown()).optional().default({}).catch({}),
   })
-  .strip();
+  .passthrough();
 
 export type AnaJson = z.infer<typeof AnaJsonSchema>;

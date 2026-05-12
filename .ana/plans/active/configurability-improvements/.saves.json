@@ -18,5 +18,40 @@
   "spec": {
     "saved_at": "2026-05-12T05:31:02.922Z",
     "hash": "sha256:16bae64ba462dd501a657e116550e7a79499bfbc85082580c876936431a4b815"
+  },
+  "build_started_at": "2026-05-12T07:57:13.120Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-12T07:47:13.816Z",
+    "hash": "sha256:afca43a9a0d46f161c581163bece252159523f949f44d3c41417d54d0a45ea6f"
+  },
+  "build-data": {
+    "saved_at": "2026-05-12T07:47:13.817Z",
+    "hash": "sha256:2b2bd7db605dc8b7cac78657aa0042e4d1ef357a49ffb9c261aee8286f17e118"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-verify.md",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/utils/git-operations.test.ts"
+  ],
+  "verify_started_at": "2026-05-12T06:39:37.423Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2c415feaed690dc785360be55e1a7b98b6dce5e95bf55904939c8d23b2732a84",
+    "run_at": "2026-05-12T08:02:07.329Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T08:02:07.368Z",
+    "hash": "sha256:7b687a415a8018841ceb075ad24371e7f5288067de0c446bd90b61e22a8b2e6e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T08:02:07.368Z",
+    "hash": "sha256:6d8917c4d84a870165d39940ea042506a8d196e30a847fd77cec71b486cf5a14"
   }
 }

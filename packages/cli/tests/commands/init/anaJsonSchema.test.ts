@@ -6,8 +6,8 @@
  *   1. Known fields with valid values → passed through.
  *   2. Known fields with invalid values → per-field .catch() fires;
  *      ONLY that field resets to its default. Other fields survive.
- *   3. Unknown fields → stripped via .strip() (prevents older install fossils
- *      like scanStaleDays from surviving forever in user installs).
+ *   3. Unknown fields → preserved via .passthrough() (user-added settings
+ *      and legacy fields survive re-init).
  *   4. Missing fields → .default() supplies a sensible initial value so
  *      the re-init merge never has to backfill from newJson.
  */
@@ -52,8 +52,9 @@ describe('AnaJsonSchema', () => {
     });
   });
 
-  describe('drift from legacy installs', () => {
-    it('strips scanStaleDays fossil without touching other fields', () => {
+  describe('passthrough preserves unknown fields', () => {
+    // @ana A001
+    it('preserves unknown top-level keys through parse', () => {
       const input = {
         anaVersion: '0.1.0',
         name: 'anatomia',
@@ -68,7 +69,8 @@ describe('AnaJsonSchema', () => {
         lastScanAt: '2026-04-07T17:58:30.491Z',
       };
       const parsed = AnaJsonSchema.parse(input);
-      expect('scanStaleDays' in parsed).toBe(false);
+      expect('scanStaleDays' in parsed).toBe(true);
+      expect((parsed as Record<string, unknown>)['scanStaleDays']).toBe(7);
       expect(parsed.name).toBe('anatomia');
       expect(parsed.coAuthor).toBe('Ana <build@anatomia.dev>');
       expect(parsed.artifactBranch).toBe('main');
@@ -92,20 +94,46 @@ describe('AnaJsonSchema', () => {
       expect(parsed.artifactBranch).toBe('main');
     });
 
-    it('strips old setupMode field', () => {
+    // @ana A002
+    it('preserves setupMode and setupCompletedAt fossils', () => {
       const input = {
         name: 'anatomia',
         setupMode: 'complete',
         setupCompletedAt: '2026-04-06T01:04:09.194Z',
       };
       const parsed = AnaJsonSchema.parse(input);
-      expect('setupMode' in parsed).toBe(false);
-      expect('setupCompletedAt' in parsed).toBe(false);
+      expect('setupMode' in parsed).toBe(true);
+      expect('setupCompletedAt' in parsed).toBe(true);
+      expect((parsed as Record<string, unknown>)['setupMode']).toBe('complete');
+    });
+
+    // @ana A003
+    it('catches invalid setupPhase with passthrough active', () => {
+      const parsed = AnaJsonSchema.parse({
+        name: 'test',
+        setupPhase: 'invalid-value',
+        unknownKey: 'should-survive',
+      });
+      expect(parsed.setupPhase).toBeUndefined();
+      expect((parsed as Record<string, unknown>)['unknownKey']).toBe('should-survive');
+    });
+
+    // @ana A005
+    it('passthrough and catch coexistence', () => {
+      const parsed = AnaJsonSchema.parse({
+        name: 'test',
+        setupPhase: 'bad-value',
+        language: 42,
+        unknownKey: 'preserved',
+      });
+      expect(parsed.setupPhase).toBeUndefined();
+      expect(parsed.language).toBeNull();
+      expect((parsed as Record<string, unknown>)['unknownKey']).toBe('preserved');
     });
   });
 
   describe('custom namespace', () => {
-    // @ana A017, A018, A019
+    // @ana A004
     it('round-trips custom data through parse and defaults to empty', () => {
       const withCustom = AnaJsonSchema.parse({
         name: 'test',

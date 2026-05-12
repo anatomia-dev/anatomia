@@ -289,15 +289,15 @@ describe('AnaJsonSchema branchPrefix', () => {
     expect(parsed.branchPrefix).toBe('');
   });
 
-  it('strips unknown fields but keeps branchPrefix', () => {
+  it('preserves unknown fields and keeps branchPrefix', () => {
     const input = {
       name: 'test',
       branchPrefix: 'release/',
-      unknownField: 'should-be-stripped',
+      unknownField: 'should-be-preserved',
     };
     const parsed = AnaJsonSchema.parse(input);
     expect(parsed.branchPrefix).toBe('release/');
-    expect((parsed as Record<string, unknown>)['unknownField']).toBeUndefined();
+    expect((parsed as Record<string, unknown>)['unknownField']).toBe('should-be-preserved');
   });
 });
 

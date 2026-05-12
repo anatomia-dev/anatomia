@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A009 encodes false premise — requires 'auto-loaded' but Claude Code doesn't auto-load skills from frontmatter"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A009"]
+  - category: code
+    summary: "Type widening from .passthrough() adds [k: string]: unknown to AnaJson — safe now but fragile if consumers enumerate keys"
+    file: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    line: 55
+    severity: debt
+    suggested_action: monitor
+  - category: test
+    summary: "A006-A009 have no @ana tags in this build's test files — verified by source inspection and dogfood sync test"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Unspecified file change in git-operations.test.ts — flipped strip assertion to preservation assertion, necessary and correct"
+    file: "packages/cli/tests/utils/git-operations.test.ts"
+    line: 292
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "No passthrough size guard — corrupted ana.json could grow unbounded across re-init cycles"
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "Step 7 body condensed from 3-line bulleted list to single line — functionally correct but less scannable for agents"
+    file: "packages/cli/templates/.claude/agents/ana-verify.md"
+    line: 139
+    severity: observation
+    suggested_action: accept

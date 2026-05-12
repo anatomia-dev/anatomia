@@ -1,0 +1,23 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Type widening from passthrough not reflected in AnaJson export — consumers using Object.keys() would silently iterate unknown fields"
+    file: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    line: 57
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A001"]
+  - category: test
+    summary: "A006-A009 have no @ana tags — rely on pre-existing dogfood sync test and source inspection rather than tagged contract tests"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "git-operations.test.ts modified but not listed in contract file_changes — correct fix but unspecified scope"
+    file: "packages/cli/tests/utils/git-operations.test.ts"
+    line: 292
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Passthrough has no size or key-count guard — malicious or bloated ana.json could grow unboundedly through re-inits"
+    severity: observation
+    suggested_action: scope

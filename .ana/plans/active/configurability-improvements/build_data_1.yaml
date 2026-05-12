@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "A009 contract matcher says contains 'auto-loaded' but fix intentionally removes that word — literal matcher will fail despite correct fix"
+    file: "packages/cli/templates/.claude/agents/ana-verify.md"
+    severity: risk
+    suggested_action: accept
+  - summary: "AnaJson type widened by passthrough — future consumers could enumerate unknown fields without type error"
+    file: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts:169"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
