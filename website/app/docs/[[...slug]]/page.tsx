@@ -6,6 +6,18 @@ import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
 import { MetaRow } from "@/components/docs/content/MetaRow";
 import { CodeBlock } from "@/components/docs/content/CodeBlock";
+import { Callout } from "@/components/docs/content/Callout";
+import { NextCards } from "@/components/docs/content/NextCards";
+import { StatsStrip } from "@/components/docs/content/StatsStrip";
+import { ForPlatform } from "@/components/docs/content/ForPlatform";
+
+const mdxComponents = {
+  pre: CodeBlock,
+  Callout,
+  NextCards,
+  StatsStrip,
+  ForPlatform,
+};
 
 interface DocsPageProps {
   params: Promise<{ slug?: string[] }>;
@@ -40,7 +52,7 @@ export default async function DocsPage({ params }: DocsPageProps) {
           readingTime={page.data.readingTime}
           lastReviewed={page.data.lastReviewed}
         />
-        <MDXContent components={{ pre: CodeBlock }} />
+        <MDXContent components={mdxComponents} />
       </article>
       <RightRail
         toc={tocItems}

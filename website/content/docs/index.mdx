@@ -1,6 +1,8 @@
 ---
 title: Anatomia Documentation
 description: Learn how to use Anatomia for verified AI development.
+readingTime: 5
+lastReviewed: May 2026
 ---
 
 # Anatomia Documentation
@@ -20,3 +22,54 @@ ana scan
 
 Anatomia scans your codebase, detects your stack, and generates context
 files that make AI coding agents reliable.
+
+## How It Works
+
+Anatomia's pipeline runs through five stages:
+
+```typescript
+// The verified development pipeline
+type Stage = "scope" | "plan" | "build" | "verify" | "merge";
+
+interface PipelineRun {
+  feature: string;
+  stages: Stage[];
+  assertions: ContractAssertion[];
+}
+```
+
+<Callout variant="rule">
+  Every change must be verified. The proof chain records what was built,
+  what was tested, and what was confirmed.
+</Callout>
+
+<Callout variant="note">
+  This requires Node.js 18+ and a package manager (npm, pnpm, or yarn).
+</Callout>
+
+## Next Steps
+
+<NextCards cards={[
+  {
+    eyebrow: "Guide",
+    title: "Your First Pipeline Run",
+    href: "/docs/guides/first-pipeline",
+    description: "Walk through scoping, planning, building, and verifying a feature end to end."
+  },
+  {
+    eyebrow: "Concept",
+    title: "The Proof Chain",
+    href: "/docs/concepts/proof-chain",
+    description: "Understand how Anatomia records verified evidence for every AI-generated change."
+  }
+]} />
+
+<ForPlatform platform="claude-code">
+  Claude Code users: run `claude --agent ana` to start the pipeline interactively.
+</ForPlatform>
+
+<StatsStrip items={[
+  { value: "5", label: "Pipeline Stages" },
+  { value: "31", label: "Contract Assertions" },
+  { value: "100%", label: "Verified" }
+]} />
