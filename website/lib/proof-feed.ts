@@ -18,7 +18,7 @@
  * ==================================================================
  */
 
-export type ProofKind = "feature" | "fix" | "chore";
+export type ProofKind = "feature" | "fix" | "chore" | "milestone";
 
 export interface ProofEntry {
   version: string;
@@ -152,7 +152,7 @@ function extractFeatureEm(feature: string): string {
 }
 
 function resolveKind(entry: ProofChainEntry): ProofKind {
-  if (entry.kind === "feature" || entry.kind === "fix" || entry.kind === "chore") {
+  if (entry.kind === "feature" || entry.kind === "fix" || entry.kind === "chore" || entry.kind === "milestone") {
     return entry.kind;
   }
   // Fallback: slug heuristic for old entries without explicit kind

@@ -17,12 +17,14 @@ export async function ProofFeed() {
   const passedCount = entries.filter((e) => e.passed === e.assertions).length;
 
   const kindClass = (kind: string) => {
+    if (kind === "milestone") return styles.kindMilestone;
     if (kind === "feature") return styles.kindFeature;
     if (kind === "fix") return styles.kindFix;
     return styles.kindChore;
   };
 
   const kindLabel = (kind: string) => {
+    if (kind === "milestone") return "milestone";
     if (kind === "feature") return "feature";
     if (kind === "fix") return "fix";
     return "improve";

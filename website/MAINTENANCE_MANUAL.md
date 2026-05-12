@@ -72,7 +72,7 @@ interface ProofEntry {
   version: string;     // "v1.0.2"
   hash: string;        // "93a4cac"
   ts: string;          // ISO timestamp
-  kind: ProofKind;     // "feature" | "fix" | "chore"
+  kind: ProofKind;     // "feature" | "fix" | "chore" | "milestone"
   feat: string;        // Plain English description
   feature_em: string;  // Substring to emphasize
   assertions: number;  // Total contract assertions

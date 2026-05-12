@@ -287,6 +287,8 @@
   border-radius: 3px;
   text-align: center;
 }
+.kindMilestone { background: color-mix(in oklch, oklch(0.75 0.15 85) 18%, transparent); color: oklch(0.45 0.12 85); }
+:global([data-theme="dark"]) .kindMilestone { color: oklch(0.75 0.15 85); }
 .kindFeature { background: var(--brand-soft); color: var(--brand-deep); }
 :global([data-theme="dark"]) .kindFeature { color: var(--color-brand); }
 .kindFix { background: color-mix(in oklch, var(--fg) 8%, transparent); color: var(--ink-75); }
