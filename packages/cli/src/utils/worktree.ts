@@ -285,20 +285,24 @@ export async function removeWorktree(projectRoot: string, slug: string): Promise
 /**
  * Get worktree info for status display.
  *
+ * Reads the branch name from the worktree's git HEAD instead of
+ * reconstructing from config — prefix-independent.
+ *
  * @param projectRoot - Project root directory
  * @param slug - Work item slug
- * @param branchPrefix - Branch prefix
  * @returns WorktreeInfo or null if no worktree exists
  */
 export function getWorktreeInfo(
   projectRoot: string,
-  slug: string,
-  branchPrefix: string
+  slug: string
 ): WorktreeInfo | null {
   const wtPath = getWorktreePath(projectRoot, slug);
   if (!fs.existsSync(wtPath)) return null;
 
-  const branchName = `${branchPrefix}${slug}`;
+  // Read branch name from git HEAD — the worktree knows its own branch
+  const headResult = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: wtPath });
+  const branchName = headResult.exitCode === 0 ? headResult.stdout : `(unknown)`;
+
   const artifactBranch = readArtifactBranch(projectRoot);
 
   // Count commits since branch point

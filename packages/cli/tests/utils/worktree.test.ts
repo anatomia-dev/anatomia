@@ -350,7 +350,7 @@ describe('worktree utilities', () => {
   describe('getWorktreeInfo', () => {
     it('returns null when no worktree exists', async () => {
       await createTestProject();
-      expect(getWorktreeInfo(tempDir, 'nonexistent', 'feature/')).toBeNull();
+      expect(getWorktreeInfo(tempDir, 'nonexistent')).toBeNull();
     });
 
     it('returns worktree info with commit count', async () => {
@@ -358,7 +358,7 @@ describe('worktree utilities', () => {
       process.chdir(tempDir);
       await createWorktree(tempDir, 'info-slug', 'feature/');
 
-      const info = getWorktreeInfo(tempDir, 'info-slug', 'feature/');
+      const info = getWorktreeInfo(tempDir, 'info-slug');
       expect(info).not.toBeNull();
       expect(info!.path).toContain('info-slug');
       expect(info!.branch).toBe('feature/info-slug');
@@ -373,7 +373,7 @@ describe('worktree utilities', () => {
       await createWorktree(tempDir, 'stale-slug', 'feature/');
 
       // A just-created worktree won't be stale
-      const info = getWorktreeInfo(tempDir, 'stale-slug', 'feature/');
+      const info = getWorktreeInfo(tempDir, 'stale-slug');
       expect(info).not.toBeNull();
       // commitCount will be 0 (no commits on branch beyond main)
       // lastActivityDays should be 0 (just created)
