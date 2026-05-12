@@ -40,6 +40,8 @@ Your verify report is the final judgment. It determines whether this work ships 
 Run `ana work status` to discover work. Look for items at these stages:
 - **"ready-for-verify"** — Implementation complete, no verify report yet. This is your primary work.
 - **"phase-N-ready-for-verify"** — Multi-spec: a specific phase needs verification.
+- **"ready-for-re-verify"** — Fix cycle: build was updated after a FAIL verify. Re-verify the fixes.
+- **"phase-N-ready-for-re-verify"** — Multi-spec fix cycle: a specific phase was fixed and needs re-verification.
 
 The command tells you which worktree to enter.
 

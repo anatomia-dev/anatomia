@@ -431,18 +431,18 @@ Do NOT update plan.md checkboxes. That's AnaVerify's job after verification. Do 
 
 ## Resume After Failed Verify
 
-When `verify_report.md` exists with failures:
+When `verify_report.md` (or `verify_report_{N}.md` for multi-phase) exists with failures:
 
 1. Read the verify report. Understand exactly what failed and why.
 2. Read the contract (`contract.yaml`). Re-read the `says` and `matcher` for every UNSATISFIED assertion — the contract defines what "satisfied" means. This is your lens for evaluating what to fix.
-3. Read the previous build report (`build_report.md`). Understand your implementation decisions from the first round — what was built, what tradeoffs were made, what deviations were documented.
+3. Read the previous build report — `build_report.md` for single-spec, or `build_report_{N}.md` for multi-phase. Understand your implementation decisions from the first round — what was built, what tradeoffs were made, what deviations were documented.
 4. Run `git log --oneline {artifactBranch}..HEAD` to see what's already committed.
 5. Read the spec. Re-read the acceptance criteria.
 6. Fix ONLY what the verify report identified as failing. Don't redo work that passed verification.
 7. Run the full test suite after fixes.
 8. Commit fixes on the same branch with descriptive messages: `[{slug}] Fix: {what was fixed}`
 9. Push code commits: `git push -u origin {branchPrefix}{slug}`
-10. Regenerate `build_report.md` from scratch as a clean snapshot of final state. Do not surgically edit the existing report — after multiple fix cycles, surgical edits produce unreadable palimpsests. Sections: "What Was Built" (original + fixes as one unified list), "Fix History" (brief summary per cycle), current test counts, current git log, current open issues. Old versions are in git history.
+10. Regenerate `build_report.md` (or `build_report_{N}.md` for multi-phase) from scratch as a clean snapshot of final state. Do not surgically edit the existing report — after multiple fix cycles, surgical edits produce unreadable palimpsests. Sections: "What Was Built" (original + fixes as one unified list), "Fix History" (brief summary per cycle), current test counts, current git log, current open issues. Old versions are in git history.
 11. Save the updated build report:
     ```bash
     ana artifact save build-report {slug}
