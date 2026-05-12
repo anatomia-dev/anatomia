@@ -4,8 +4,8 @@
 
 ## Phases
 
-- [ ] Schema passthrough and verify agent skills
+- [x] Schema passthrough and verify agent skills
   - Spec: spec-1.md
-- [ ] CLI config command
+- [x] CLI config command
   - Spec: spec-2.md
   - Depends on: Phase 1

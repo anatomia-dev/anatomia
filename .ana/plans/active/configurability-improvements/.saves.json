@@ -19,7 +19,7 @@
     "saved_at": "2026-05-12T05:31:02.922Z",
     "hash": "sha256:16bae64ba462dd501a657e116550e7a79499bfbc85082580c876936431a4b815"
   },
-  "build_started_at": "2026-05-12T07:27:17.789Z",
+  "build_started_at": "2026-05-12T07:57:13.120Z",
   "build_agent": "ana-build",
   "build-report": {
     "saved_at": "2026-05-12T07:47:13.816Z",
@@ -44,14 +44,14 @@
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:2c415feaed690dc785360be55e1a7b98b6dce5e95bf55904939c8d23b2732a84",
-    "run_at": "2026-05-12T07:31:27.813Z"
+    "run_at": "2026-05-12T08:02:07.329Z"
   },
   "verify-report": {
-    "saved_at": "2026-05-12T07:31:27.864Z",
-    "hash": "sha256:6579b48a7f37cbc05d1549197448a1c2ec972954dd49cc12b249ee9bd1c252cf"
+    "saved_at": "2026-05-12T08:02:07.368Z",
+    "hash": "sha256:7b687a415a8018841ceb075ad24371e7f5288067de0c446bd90b61e22a8b2e6e"
   },
   "verify-data": {
-    "saved_at": "2026-05-12T07:31:27.864Z",
-    "hash": "sha256:3abbbe20aebfe9590922369ca76d2fc3c495439ef9525b0b975856a9b5913ddf"
+    "saved_at": "2026-05-12T08:02:07.368Z",
+    "hash": "sha256:6d8917c4d84a870165d39940ea042506a8d196e30a847fd77cec71b486cf5a14"
   }
 }

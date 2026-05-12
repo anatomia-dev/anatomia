@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A011 assertion uses toBeDefined() — JSON.parse would throw before reaching it, so the assertion is tautological"
+    file: "packages/cli/tests/commands/config.test.ts"
+    line: 135
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A011"]
+  - category: code
+    summary: "displayAll shows empty object as JSON.stringify output (e.g., '{}') — inconsistent with nested object display pattern which uses indentation"
+    file: "packages/cli/src/commands/config.ts"
+    line: 203
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Synchronous fs operations (readFileSync/writeFileSync) — works for a CLI tool but blocks the event loop during file I/O"
+    file: "packages/cli/src/commands/config.ts"
+    line: 68
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Plan.md phase 1 checkbox still unchecked despite phase 1 being fully verified — stale artifact from earlier verify cycles"
+    file: ".ana/plans/active/configurability-improvements/plan.md"
+    line: 7
+    severity: debt
+    suggested_action: accept
+  - category: code
+    summary: "Machine-managed check blocks dot-paths into managed fields (e.g., 'setupPhase.sub') — defensive and correct, but not spec-required. Minimal over-building."
+    file: "packages/cli/src/commands/config.ts"
+    line: 308
+    severity: observation
+    suggested_action: accept
