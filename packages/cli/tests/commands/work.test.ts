@@ -24,6 +24,29 @@ describe('ana work status', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
+    // Clean up any worktrees before removing tempDir
+    try {
+      const result = execSync('git worktree list --porcelain', {
+        cwd: tempDir,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
+      const worktrees = result
+        .split('\n')
+        .filter(l => l.startsWith('worktree '))
+        .map(l => l.replace('worktree ', ''));
+      for (const wt of worktrees) {
+        if (wt !== tempDir) {
+          try {
+            execSync(`git worktree remove "${wt}" --force`, { cwd: tempDir, stdio: 'ignore' });
+          } catch {
+            // Force-remove directory if worktree remove fails
+          }
+        }
+      }
+    } catch {
+      // Not a git repo or no worktrees — nothing to clean
+    }
     await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
@@ -38,6 +61,7 @@ describe('ana work status', () => {
       artifacts: string[];  // e.g., ['scope.md', 'plan.md', 'spec.md']
       planContent?: string; // custom plan.md content
       featureBranch?: boolean;
+      worktree?: boolean;
       featureArtifacts?: Array<{ file: string; content?: string }>;
     }>;
   }): Promise<void> {
@@ -93,6 +117,28 @@ describe('ana work status', () => {
           }
 
           execSync(`git checkout ${artifactBranch}`, { cwd: tempDir, stdio: 'ignore' });
+        }
+
+        // Create work branch via worktree if requested
+        if (slug.worktree) {
+          const prefix = branchPrefix !== undefined ? branchPrefix : 'feature/';
+          const branchName = `${prefix}${slug.slug}`;
+          const wtPath = path.join(tempDir, 'worktrees', slug.slug);
+          await fs.mkdir(path.join(tempDir, 'worktrees'), { recursive: true });
+          execSync(`git worktree add "${wtPath}" -b ${branchName}`, { cwd: tempDir, stdio: 'ignore' });
+
+          if (slug.featureArtifacts) {
+            const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', slug.slug);
+            await fs.mkdir(wtSlugPath, { recursive: true });
+            for (const artifact of slug.featureArtifacts) {
+              const content = artifact.content || `# ${artifact.file}`;
+              await fs.writeFile(path.join(wtSlugPath, artifact.file), content, 'utf-8');
+            }
+            execSync('git add -A && git commit -m "add feature artifacts"', { cwd: wtPath, stdio: 'ignore' });
+          }
+
+          // Return to main tree (cwd stays at tempDir)
+          process.chdir(tempDir);
         }
       }
     }
@@ -681,6 +727,25 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('No active work');
+    });
+
+    // @ana A001, A002
+    it('getWorkStatus returns clean workBranch for worktree-checked-out branch', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [{ file: 'build_report.md', content: '# Build Report' }],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const json = JSON.parse(output);
+      expect(json.items[0].workBranch).toBe('feature/test-slug');
+      expect(json.items[0].stage).toBe('ready-for-verify');
     });
 
     it('errors when no ana.json exists', async () => {
