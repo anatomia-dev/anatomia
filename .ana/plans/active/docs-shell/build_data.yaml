@@ -1,0 +1,19 @@
+schema: 1
+concerns:
+  - summary: "RightRail renders in page.tsx instead of layout.tsx due to TOC data access"
+    file: "website/app/docs/[[...slug]]/page.tsx"
+    severity: observation
+    suggested_action: accept
+  - summary: "data-hide-rail mechanism for proof-explorer route not implemented (dead code)"
+    severity: observation
+    suggested_action: monitor
+  - summary: "TOC item title type cast from ReactNode to string may lose non-string titles"
+    file: "website/app/docs/[[...slug]]/page.tsx"
+    severity: debt
+    suggested_action: monitor
+  - summary: "No visual verification — structural correctness only, needs PR review with supermock"
+    severity: observation
+    suggested_action: accept
+  - summary: "build-meta.json must be generated before build — not part of build pipeline"
+    severity: debt
+    suggested_action: scope
