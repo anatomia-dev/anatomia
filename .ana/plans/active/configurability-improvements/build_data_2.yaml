@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "Hidden 'show' subcommand visible in --help output alongside get/set"
+    file: "packages/cli/src/commands/config.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable in git-operations.ts:169"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
