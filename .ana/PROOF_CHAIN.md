@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-82 runs · 213 active · 100 lessons · 0 promoted · 161 closed
+83 runs · 219 active · 101 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 20 | 10 |
-| packages/cli/tests/commands/work.test.ts | 16 | 12 |
+| packages/cli/src/commands/work.ts | 21 | 11 |
+| packages/cli/tests/commands/work.test.ts | 17 | 13 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
 | website/lib/proof-feed.ts | 10 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 9 | 5 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 213 total)
+## Active Findings (30 shown of 219 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -26,14 +26,18 @@
 
 - **code:** displayAll shows empty object as JSON.stringify output (e.g., '{}') — inconsistent with nested object display pattern which uses indentation — *Configurability Improvements*
 - **code:** Synchronous fs operations (readFileSync/writeFileSync) — works for a CLI tool but blocks the event loop during file I/O — *Configurability Improvements*
-- **code:** Machine-managed check blocks dot-paths into managed fields (e.g., 'setupPhase.sub') — defensive and correct, but not spec-required. Minimal over-building. — *Configurability Improvements*
 
 ### packages/cli/src/commands/init/anaJsonSchema.ts
 
 - **code:** Type widening from .passthrough() adds [k: string]: unknown to AnaJson — safe now but fragile if consumers enumerate keys — *Configurability Improvements*
 
+### packages/cli/src/commands/pr.ts
+
+- **code:** pr.ts fetch adds network latency to every PR creation — no timeout or skip mechanism — *Worktree freshness detection*
+
 ### packages/cli/src/commands/work.ts
 
+- **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix') — *Kind-aware branch prefixes*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
@@ -44,14 +48,9 @@
 
 - **code:** extractScopeKind regex matches **Kind:** anywhere in file, not section-scoped — pre-existing issue, milestone addition doesn't change the risk profile — *Add milestone kind*
 
-### packages/cli/src/utils/update-check.ts
-
-- **code:** packageName interpolated via template literal without JSON.stringify in spawn script URL — *Version Awareness Notifications*
-- **code:** Four of five exports from update-check.ts are unused in production code — only checkForUpdates is imported — *Version Awareness Notifications*
-- **code:** Spawn script uses require() (CommonJS) inside node -e — works but inconsistent with ESM codebase — *Version Awareness Notifications*
-
 ### packages/cli/src/utils/worktree.ts
 
+- **code:** commitsBehind uses origin/artifactBranch but commitCount uses bare artifactBranch — asymmetric ref comparison — *Worktree freshness detection*
 - **code:** Detached HEAD produces branchName '(unknown)' — rev-list and log commands will fail silently, showing 0 commits and 0 days — *Kind-aware branch prefixes*
 - **code:** rev-parse --abbrev-ref HEAD returns literal 'HEAD' on detached HEAD, not '(unknown)' — ternary fallback never triggers for detached state — *Kind-aware branch prefixes*
 
@@ -69,6 +68,7 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
+- **test:** A008 JSON test asserts typeof === 'number' not a specific value — passes even if commitsBehind computation is broken — *Worktree freshness detection*
 - **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/tests/utils/git-operations.test.ts
@@ -76,10 +76,9 @@
 - **test:** Contract A001 has no tagged test for this contract — relies on pre-existing test from previous build — *Kind-aware branch prefixes*
 - **code:** Unspecified file change in git-operations.test.ts — flipped strip assertion to preservation assertion, necessary and correct — *Configurability Improvements*
 
-### packages/cli/tests/utils/update-check.test.ts
+### packages/cli/tests/utils/worktree.test.ts
 
-- **test:** A007 tagged test checks return values not output — contract target is 'output' with not_contains 'Error' — *Version Awareness Notifications*
-- **test:** A010 tagged test checks spawn not called — contract target is updateAvailable equals null, which is tested in untagged CI test — *Version Awareness Notifications*
+- **test:** A005 git failure test relies on absent origin/main ref rather than injecting a failure — indirect coverage of the catch path — *Worktree freshness detection*
 
 ### website/components/proof-feed/proof-feed.module.css
 
@@ -92,6 +91,7 @@
 
 ### General
 
+- **test:** No tagged tests for A009, A010, A011, A012, A013, A014 — verified by source inspection only — *Worktree freshness detection*
 - **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 - **test:** A015/A016/A017 template content assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
 - **test:** A006-A009 have no @ana tags in this build's test files — verified by source inspection and dogfood sync test — *Configurability Improvements*
