@@ -81,6 +81,79 @@ describe('readBranchPrefix', () => {
     const result = readBranchPrefix(tempDir);
     expect(result).toBe('feature/');
   });
+
+  // --- Map-form config tests ---
+
+  // @ana A002
+  it('returns kind-specific prefix from map config', async () => {
+    await writeAnaJson({ branchPrefix: { feature: 'feature/', fix: 'fix/', chore: 'chore/' } });
+    const result = readBranchPrefix(tempDir, 'fix');
+    expect(result).toBe('fix/');
+  });
+
+  // @ana A003
+  it('returns feature prefix as default from map config', async () => {
+    await writeAnaJson({ branchPrefix: { feature: 'feature/', fix: 'fix/' } });
+    const result = readBranchPrefix(tempDir);
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A004
+  it('returns string prefix regardless of kind argument', async () => {
+    await writeAnaJson({ branchPrefix: 'feature/' });
+    const result = readBranchPrefix(tempDir, 'fix');
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A005
+  it('falls back to feature key for unknown kind', async () => {
+    await writeAnaJson({ branchPrefix: { feature: 'feature/', fix: 'fix/' } });
+    const result = readBranchPrefix(tempDir, 'unknown');
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A006
+  it('falls back to hardcoded default when feature key is missing', async () => {
+    await writeAnaJson({ branchPrefix: { fix: 'fix/' } });
+    const result = readBranchPrefix(tempDir, 'unknown');
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A007
+  it('returns default for empty map', async () => {
+    await writeAnaJson({ branchPrefix: {} });
+    const result = readBranchPrefix(tempDir);
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A008
+  it('returns default when map contains non-string values', async () => {
+    await writeAnaJson({ branchPrefix: { fix: 42 } });
+    const result = readBranchPrefix(tempDir, 'fix');
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A009
+  it('validates individual map values with validateBranchName', async () => {
+    await writeAnaJson({ branchPrefix: { fix: 'x; echo pwned/', feature: 'feature/' } });
+    const result = readBranchPrefix(tempDir, 'fix');
+    // fix value is invalid → falls back to feature key
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A021
+  it('readBranchPrefix with undefined kind returns feature default', async () => {
+    await writeAnaJson({ branchPrefix: { feature: 'feature/', fix: 'fix/' } });
+    const result = readBranchPrefix(tempDir, undefined);
+    expect(result).toBe('feature/');
+  });
+
+  // @ana A022
+  it('partial map returns correct value for present key', async () => {
+    await writeAnaJson({ branchPrefix: { fix: 'bugfix/' } });
+    const result = readBranchPrefix(tempDir, 'fix');
+    expect(result).toBe('bugfix/');
+  });
 });
 
 describe('readCoAuthor', () => {
@@ -298,6 +371,40 @@ describe('AnaJsonSchema branchPrefix', () => {
     const parsed = AnaJsonSchema.parse(input);
     expect(parsed.branchPrefix).toBe('release/');
     expect((parsed as Record<string, unknown>)['unknownField']).toBe('should-be-preserved');
+  });
+
+  // @ana A010
+  it('AnaJsonSchema accepts map-form branchPrefix', () => {
+    const input = {
+      name: 'test',
+      branchPrefix: { feature: 'feature/', fix: 'fix/', chore: 'chore/' },
+    };
+    const parsed = AnaJsonSchema.parse(input);
+    expect(parsed.branchPrefix).toBeDefined();
+    expect(typeof parsed.branchPrefix).toBe('object');
+  });
+
+  // @ana A011
+  it('map-form branchPrefix survives AnaJsonSchema round-trip', () => {
+    const input = {
+      name: 'test',
+      branchPrefix: { feature: 'feature/', fix: 'fix/' },
+      artifactBranch: 'main',
+    };
+    const parsed = AnaJsonSchema.parse(input);
+    const bp = parsed.branchPrefix as Record<string, string>;
+    expect(bp['feature']).toBe('feature/');
+    expect(bp['fix']).toBe('fix/');
+  });
+
+  // @ana A012
+  it('AnaJsonSchema catches invalid branchPrefix type', () => {
+    const input = {
+      name: 'test',
+      branchPrefix: [1, 2, 3],
+    };
+    const parsed = AnaJsonSchema.parse(input);
+    expect(parsed.branchPrefix).toBe('feature/');
   });
 });
 
