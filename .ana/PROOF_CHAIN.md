@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-84 runs · 223 active · 102 lessons · 0 promoted · 161 closed
+85 runs · 226 active · 104 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 21 | 11 |
-| packages/cli/tests/commands/work.test.ts | 19 | 14 |
+| packages/cli/src/commands/work.ts | 22 | 12 |
+| packages/cli/tests/commands/work.test.ts | 20 | 15 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
 | website/lib/proof-feed.ts | 10 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 9 | 5 |
@@ -16,15 +16,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 223 total)
+## Active Findings (30 shown of 226 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** Auto-rename overwrites numbered file unconditionally — if the unnumbered file is stale or corrupt, the good numbered version is destroyed — *Fix cycle stage detection breaks on multi-phase builds*
-
-### packages/cli/src/commands/init/anaJsonSchema.ts
-
-- **code:** Type widening from .passthrough() adds [k: string]: unknown to AnaJson — safe now but fragile if consumers enumerate keys — *Configurability Improvements*
 
 ### packages/cli/src/commands/pr.ts
 
@@ -32,6 +28,7 @@
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** --autostash bypasses content-match guard for tracked dirty planning artifacts — theoretical gap remains — *Hygiene debt cleanup*
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix') — *Kind-aware branch prefixes*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
@@ -60,6 +57,7 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
+- **test:** planningOnlyInMerge flag improves test fidelity — now models real production scenario of untracked artifacts — *Hygiene debt cleanup*
 - **test:** No dedicated @ana tag for A003 — existing test satisfies the assertion but is tagged @ana A010 from a prior contract — *Fix worktree branch parsing*
 - **code:** No mutual exclusion between featureBranch and worktree options in createWorkTestProject — setting both creates branch via checkout then fails on worktree add — *Fix worktree branch parsing*
 - **test:** A008 JSON test asserts typeof === 'number' not a specific value — passes even if commitsBehind computation is broken — *Worktree freshness detection*
@@ -68,7 +66,6 @@
 ### packages/cli/tests/utils/git-operations.test.ts
 
 - **test:** Contract A001 has no tagged test for this contract — relies on pre-existing test from previous build — *Kind-aware branch prefixes*
-- **code:** Unspecified file change in git-operations.test.ts — flipped strip assertion to preservation assertion, necessary and correct — *Configurability Improvements*
 
 ### packages/cli/tests/utils/worktree.test.ts
 
@@ -85,8 +82,8 @@
 
 ### General
 
+- **code:** Audit reduced from 20 to 12, not 0 — remaining 12 are postcss dev-only transitives awaiting upstream fix — *Hygiene debt cleanup*
 - **test:** No tagged tests for A009, A010, A011, A012, A013, A014 — verified by source inspection only — *Worktree freshness detection*
 - **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 - **test:** A015/A016/A017 template content assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
-- **test:** A006-A009 have no @ana tags in this build's test files — verified by source inspection and dogfood sync test — *Configurability Improvements*
 

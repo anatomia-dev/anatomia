@@ -21707,6 +21707,238 @@
         "commit_count": 4,
         "base_commit": "b2e65b6b141b1d53a7a9b4e20cd8da7c817dcc18"
       }
+    },
+    {
+      "slug": "hygiene-debt-cleanup",
+      "feature": "Hygiene debt cleanup",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 14,
+        "satisfied": 14,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Git pull in work-complete uses autostash to handle dirty working trees",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Git pull retry in work-complete also uses autostash",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Git pull in work-start uses autostash to handle dirty working trees",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Dead Python fixture files no longer exist in the repository",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Dead Node fixture files no longer exist in the repository",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The empty fixtures directory itself is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Deleting fixture files causes zero test failures",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Test count remains stable — no tests lost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Dependency patches are applied within semver ranges",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Security audit findings are reduced from the original 20",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Testing standards now warn against standalone manifest fixture files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The new rule explains why standalone manifests are problematic",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "MCP config file is gitignored to prevent committing local paths",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "No type or compilation regressions from dependency updates",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 739,
+        "think": 36,
+        "plan": 4,
+        "build": 185,
+        "verify": 26
+      },
+      "hashes": {
+        "scope": "sha256:bf4fab71b4d5238c02e5e7a309655307705ffd226eeb31c8573b1fd5a9ddc9df",
+        "contract": "sha256:192d6140207767b7f761c6e506eb31d9e4b02e4c7c0ab27a9ad4d27d3b920c72",
+        "plan": "sha256:7672dc6337634efe37ce632f112d6975022ae091502029da2d4a8f4bc9d46791",
+        "spec": "sha256:4e993ffbcdb80e4f1e5f8e00d150e9031aa27c2476206a467cb79b965129cbd5",
+        "build-report": "sha256:7229d12a205a160a64ee9f9f7fa1492e23f999e7fa4c689c4acecd66104a79a2",
+        "build-data": "sha256:f17029ef01f499a6274f1cdd451f11e9b42c8302d33d38178126e998a4fb732f",
+        "verify-report": "sha256:690fe3baa6febe264284a5d7ddc42097883d04c9b220dd2231ec3365f7d24b88",
+        "verify-data": "sha256:f121b036afdbfc7644224c4c5ce1cb624260d5f884e5f490b52ddc65a8e5497c"
+      },
+      "completed_at": "2026-05-12T20:57:58.026Z",
+      "modules_touched": [
+        ".claude/skills/testing-standards/SKILL.md",
+        ".gitignore",
+        "package.json",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/engine/fixtures/node/package.json/simple.txt",
+        "packages/cli/tests/engine/fixtures/python/requirements.txt/simple.txt",
+        "packages/cli/tests/engine/fixtures/python/requirements.txt/with-extras.txt",
+        "pnpm-lock.yaml"
+      ],
+      "scope_summary": "Three independent sources of recurring development noise — git pull warnings during `work complete`, Dependabot false positives on test fixtures, and transitive dependency vulnerability alerts. All share the same root cause: incremental maintenance that wasn't done, accumulating into confusing signals. The user wants to clean house — eliminate the noise permanently with minimal regression risk.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "--autostash bypasses content-match guard for tracked dirty planning artifacts — theoretical gap remains",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1206,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "hygiene-debt-cleanup-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A008 test count value stale — says 2177 but main has 2178 due to merge gap",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "hygiene-debt-cleanup-C2",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "Audit reduced from 20 to 12, not 0 — remaining 12 are postcss dev-only transitives awaiting upstream fix",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "hygiene-debt-cleanup-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A011/A012 target file changed from template to project-level by human override — not a spec deviation",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A011",
+            "A012"
+          ],
+          "id": "hygiene-debt-cleanup-C4",
+          "status": "lesson"
+        },
+        {
+          "category": "test",
+          "summary": "planningOnlyInMerge flag improves test fidelity — now models real production scenario of untracked artifacts",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 4255,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "hygiene-debt-cleanup-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 1,
+      "previous_failures": [
+        {
+          "id": "A007",
+          "summary": "1 test fails: content-match guard test (work.test.ts:4366) regressed due to --autostash causing pull to succeed silently for tracked dirty files"
+        }
+      ],
+      "build_concerns": [
+        {
+          "summary": "11 audit findings remain — all dev-only transitives requiring major bumps to resolve",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "pnpm update requires --recursive flag to resolve transitive lockfile pins",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Contract A008 test count stale due to branch being behind main",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Spec directed template modification but rule placed in dogfood skill instead (developer decision)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-12T20:48:51.824Z",
+        "completed_at": "2026-05-12T20:57:58.022Z",
+        "commit_count": 8,
+        "base_commit": "5564e528295c8a539e4a34b6e3a823373e6e3a03"
+      }
     }
   ],
   "schema": 1
