@@ -1129,7 +1129,8 @@ describe('ana work status', () => {
         const workSrc = path.join(__dirname, '../../src/commands/work.ts');
         const content = fsSync.readFileSync(workSrc, 'utf-8');
         // Verify the getNextAction for ready-to-merge contains --merge
-        expect(content).toContain("Or to merge and complete: ana work complete --merge");
+        expect(content).toContain("Or to merge and complete (from");
+        expect(content).toContain("ana work complete --merge");
       });
 
       // @ana A021

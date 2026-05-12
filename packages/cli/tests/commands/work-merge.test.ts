@@ -161,7 +161,7 @@ describe('ana work complete --merge', () => {
   });
 
   // @ana A005, A006
-  it('enables auto-merge when checks are pending', async () => {
+  it('shows branch protection guidance when checks are pending', async () => {
     await createMergedProject('test-slug');
 
     mockGh((args) => {
@@ -169,40 +169,8 @@ describe('ana work complete --merge', () => {
       if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
         return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
       }
-      if (args[0] === 'pr' && args[1] === 'merge' && !(args as string[]).includes('--auto')) {
+      if (args[0] === 'pr' && args[1] === 'merge') {
         return { status: 1, stdout: '', stderr: 'required status check "ci" is expected' };
-      }
-      if (args[0] === 'pr' && args[1] === 'merge' && (args as string[]).includes('--auto')) {
-        return { status: 0, stdout: '', stderr: '' };
-      }
-      if (args[0] === 'pr' && args[1] === 'view' && args.includes('number')) {
-        return { status: 0, stdout: '97', stderr: '' };
-      }
-      return { status: 1, stdout: '', stderr: '' };
-    });
-
-    await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
-
-    const output = logs.join('\n');
-    expect(output).toContain('auto-merge');
-    expect(output).toContain('work complete');
-    expect(output).toContain('#97');
-  });
-
-  // @ana A007
-  it('reports auto-merge unavailable', async () => {
-    await createMergedProject('test-slug');
-
-    mockGh((args) => {
-      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
-      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
-        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
-      }
-      if (args[0] === 'pr' && args[1] === 'merge' && !(args as string[]).includes('--auto')) {
-        return { status: 1, stdout: '', stderr: 'required status check "ci" is expected' };
-      }
-      if (args[0] === 'pr' && args[1] === 'merge' && (args as string[]).includes('--auto')) {
-        return { status: 1, stdout: '', stderr: 'auto-merge is not enabled' };
       }
       return { status: 1, stdout: '', stderr: '' };
     });
@@ -210,7 +178,50 @@ describe('ana work complete --merge', () => {
     await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
 
     const output = errors.join('\n');
-    expect(output).toContain('Merge manually');
+    expect(output).toContain('branch protection');
+    expect(output).toContain('--auto');
+    expect(output).toContain('--admin');
+    expect(output).toContain('ana work complete test-slug');
+  });
+
+  // @ana A007
+  it('shows branch protection guidance when policy prohibits merge', async () => {
+    await createMergedProject('test-slug');
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 1, stdout: '', stderr: 'Pull request is not mergeable: the base branch policy prohibits the merge.' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
+
+    const output = errors.join('\n');
+    expect(output).toContain('branch protection');
+    expect(output).toContain('--auto');
+    expect(output).toContain('--admin');
+  });
+
+  it('handles malformed gh pr view response', async () => {
+    await createMergedProject('test-slug');
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view') {
+        return { status: 0, stdout: 'not valid json', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
+
+    const output = errors.join('\n');
+    expect(output).toContain('Failed to parse');
   });
 
   // @ana A008, A009, A010
