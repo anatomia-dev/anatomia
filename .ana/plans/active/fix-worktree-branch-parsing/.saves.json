@@ -33,5 +33,20 @@
     "packages/cli/src/commands/work.ts",
     "packages/cli/src/engine/detectors/git.ts",
     "packages/cli/tests/commands/work.test.ts"
-  ]
+  ],
+  "verify_started_at": "2026-05-12T20:15:46.696Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2427e481ab399bf9af26425019d672f642f62d01032310a15074e850e6c8aa96",
+    "run_at": "2026-05-12T20:20:11.315Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-12T20:20:11.353Z",
+    "hash": "sha256:9a5725646e996015a7515584bdb43ce0b961fb9c9801727452f3c45505cf7158"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-12T20:20:11.353Z",
+    "hash": "sha256:c51fd662c5b8afea000473419d58fda156ddcecd5fa40f4ae3568a5c1108f50d"
+  }
 }

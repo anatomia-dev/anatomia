@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: test
+    summary: "No dedicated @ana tag for A003 — existing test satisfies the assertion but is tagged @ana A010 from a prior contract"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 781
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A003"]
+  - category: test
+    summary: "A004 and A005 are source-inspection-only assertions — no behavioral test verifies the regex actually strips + markers in git.ts (only work.ts path is integration-tested)"
+    file: "packages/cli/src/engine/detectors/git.ts"
+    line: 109
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A004", "A005"]
+  - category: code
+    summary: "No mutual exclusion between featureBranch and worktree options in createWorkTestProject — setting both creates branch via checkout then fails on worktree add"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 107
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "Integration test covers work.ts parsing path end-to-end but git.ts detectBranches is not exercised by any new test — the fix is verified only by source inspection"
+    file: "packages/cli/src/engine/detectors/git.ts"
+    line: 109
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A005"]
+  - category: upstream
+    summary: "Proof chain shows 'Phase detection logic (A001-A003, A006-A011) has no dedicated tagged tests' from prior cycle — still present, not addressed by this build"
+    severity: observation
+    suggested_action: monitor
