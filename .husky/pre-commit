@@ -8,6 +8,13 @@
 
 set -e
 
+# Verify lockfile is in sync with package.json (catches desync before push)
+# Runs before the skip block so website-only commits still check lockfile sync.
+pnpm install --frozen-lockfile --silent 2>/dev/null || {
+  echo "❌ pnpm-lock.yaml is out of sync with package.json. Run 'pnpm install' first."
+  exit 1
+}
+
 # Skip build/typecheck/lint for commits that only touch .ana/ or .claude/ files
 # (proof chain updates, skill edits, agent definitions — no TypeScript to check)
 STAGED_FILES=$(git diff --cached --name-only)
@@ -17,12 +24,6 @@ if [ -n "$STAGED_FILES" ]; then
     exit 0
   fi
 fi
-
-# Verify lockfile is in sync with package.json (catches desync before push)
-pnpm install --frozen-lockfile --silent 2>/dev/null || {
-  echo "❌ pnpm-lock.yaml is out of sync with package.json. Run 'pnpm install' first."
-  exit 1
-}
 
 cd packages/cli
 pnpm run build
