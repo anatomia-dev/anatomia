@@ -1,0 +1,123 @@
+---
+title: Verifying changes
+description: "Build finished. You're about to run claude --agent ana-verify. This guide covers what Verify does, what the report means, and what to do when it comes back FAIL."
+readingTime: 8
+lastReviewed: May 2026
+---
+
+# Verifying changes
+
+Build finished. You're about to run `claude --agent ana-verify`. This guide covers what Verify does, what the report means, and what to do when it comes back FAIL.
+
+## What Verify does
+
+Verify reads the spec and the code — never the build report. Eight steps:
+
+1. **Seal check** — confirms the contract wasn't modified after sealing
+2. **Run tests, build, lint** — establishes the baseline
+3. **Predict** — writes predictions before reading code, to resist confirmation bias
+4. **Read code and evaluate assertions** — finds each `@ana` tag, verifies the test actually satisfies the contract
+5. **Check for over-building** — flags code not in the spec
+6. **Resolve predictions** — confirmed, not found, or surprised
+7. **Walk acceptance criteria** — each one gets PASS, FAIL, PARTIAL, or UNVERIFIABLE
+8. **Write findings and verdict** — PASS or FAIL, one word
+
+## The asymmetry
+
+Both agents read the same planning artifacts and project config. The difference is one file: `build_report.md`. Only the developer sees both reports.
+
+```yaml
+# ana-build reads:
+- spec.md           # how to build it
+- contract.yaml     # what done means (sealed)
+- plan.md           # sequencing and phasing
+- ana.json          # build/test/lint commands
+- scan.json         # stack awareness
+- the codebase      # current state
+
+# ana-verify reads:
+- spec.md           # same
+- contract.yaml     # same
+- plan.md           # same
+- ana.json          # same
+- scan.json         # same
+- the codebase      # the diff at HEAD
+- ❌ build_report.md  # forbidden
+```
+
+## The verify report
+
+Verify produces two files: a markdown report for the developer and a YAML companion (`verify_data.yaml`) for the proof chain. The report's key section is **Contract Compliance** — a per-assertion ledger:
+
+```markdown
+## Contract Compliance
+
+| ID   | Says                                        | Status        | Evidence                          |
+|------|---------------------------------------------|---------------|-----------------------------------|
+| A001 | Slugs with shell injection are rejected     | ✅ SATISFIED | test line 42, rejects "; rm -rf"  |
+| A003 | Valid kebab-case slugs pass validation      | ✅ SATISFIED | test line 58, passes "my-feature" |
+| A023 | No direct execSync calls remain in commands | ✅ SATISFIED | grep confirms zero matches        |
+```
+
+After the ledger: **Findings** (categorized observations with severity and suggested actions — these enter the proof chain), **AC Walkthrough** (each acceptance criterion: PASS, FAIL, PARTIAL, or UNVERIFIABLE), **Blockers**, **Deployer Handoff**, and the **Verdict**. On re-verification, a **Previous Findings Resolution** section shows how each prior issue was addressed.
+
+## PASS and FAIL
+
+**PASS:** Every assertion SATISFIED. Every AC passing. Tests green. Findings are informational — a PASS with 10 findings is normal.
+
+**FAIL:** Any assertion UNSATISFIED. Any AC failed. Test failures or regressions. One unsatisfied assertion is enough.
+
+Findings measure depth of review. The verdict measures contract compliance. They're independent.
+
+## When Verify fails
+
+FAIL sends the work back to Build. 17 of Anatomia's own 78 proofs had rejection cycles. {/* Dynamic: update on data change */}
+
+1. Read the verify report. It lists every UNSATISFIED assertion and every finding.
+2. Run `claude --agent ana-build`. Build reads the verify report and fixes exactly what failed.
+3. Run `claude --agent ana-verify` again. On re-verification, Verify reads its own previous report and addresses each prior issue explicitly in a **Previous Findings Resolution** section.
+
+Re-verification is a full pass. Every assertion is re-evaluated. The previous report provides a checklist, not a shortcut.
+
+If the failure isn't obvious from the report, see [Troubleshooting](/docs/guides/troubleshooting).
+
+## Running verify
+
+Verify runs in the worktree Build created — no branch switching or setup needed.
+
+```bash
+# After Build finishes, open a new session:
+$ claude --agent ana-verify
+
+# Verify finds the work item, enters the worktree,
+# runs the 8-step process, writes the report.
+# On PASS, it creates a PR for review.
+```
+
+Under the hood: `ana work status` → `ana work start` → `ana verify pre-check` → verification → `ana artifact save verify-report` → `ana pr create`. The save runs the seal check again — tampered contracts are blocked.
+
+After the PR is created: read both reports, merge, then `ana work complete` to archive and record the proof chain entry.
+
+## Comparing the two reports
+
+After PASS, you have `build_report.md` and `verify_report.md`. Read both before merging. Where to look:
+
+- **Assertion status.** Build claims 27/27 SATISFIED. Verify also says 27/27. If they disagree — Build says SATISFIED but Verify says UNSATISFIED — that's the highest-value signal. Read both evidence columns.
+- **Test quality.** Build reports test counts. Verify reports whether those tests actually prove anything. A test tagged `@ana A003` that uses `toBeDefined()` passes on both correct and incorrect implementations — Verify catches that.
+- **Open issues vs findings.** Build's "Open Issues" are honest admissions. Verify's "Findings" are independent observations. Overlap means the issue is real. A finding that Build didn't mention means Build missed something.
+- **Over-building.** Verify flags code that exists but wasn't in the spec. Build's report won't mention it because Build wrote it intentionally. The gap itself is the signal.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next guide",
+    title: "Reading a proof",
+    href: "/docs/guides/reading-a-proof",
+    description: "What the proof page shows after Verify passes."
+  },
+  {
+    eyebrow: "Real example",
+    title: "security-hardening",
+    href: "/docs/proof/security-hardening",
+    description: "See the verify report that produced a PASS."
+  }
+]} />

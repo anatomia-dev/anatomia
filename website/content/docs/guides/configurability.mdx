@@ -1,0 +1,199 @@
+---
+title: Configurability
+description: "Everything ships as files in your repo — markdown agents, markdown skills, JSON config. Change what you need, from CLI commands to source-level edits."
+readingTime: 8
+lastReviewed: May 2026
+---
+
+# Configurability
+
+Everything ships as files in your repo — markdown agents, markdown skills, JSON config. Change what you need, from CLI commands to source-level edits. The parts that make verification work are fixed by design.
+
+## CLI-supported settings
+
+Settings the CLI manages for you. Change them with commands or `ana.json` edits — both survive `ana init`.
+
+**Agent models**
+Each agent can run a different model.
+`ana agents model ana-build sonnet`
+
+**Any ana.json field**
+Read or write config values. Validates field types.
+`ana config set branchPrefix "ana/"`
+
+**Build / test / lint commands**
+Every agent reads these. Init detects them; you override.
+`ana config set commands.test "pnpm vitest run"`
+
+**Custom data**
+The `custom` namespace stores arbitrary team data. Collision-safe.
+`ana config set custom.teamId "anatomia"`
+
+### What ana.json looks like
+
+```json
+{
+  "branchPrefix": "feature/",
+  "coAuthor": "Ana <build@anatomia.dev>",
+  "artifactBranch": "main",
+  "commands": {
+    "build": "pnpm run build",
+    "test": "pnpm vitest run",
+    "lint": "pnpm run lint"
+  },
+  "custom": { "teamId": "anatomia" }
+}
+```
+
+User fields (`branchPrefix`, `coAuthor`, `artifactBranch`, `commands`, `custom`) are yours. Machine fields (`anaVersion`, `lastScanAt`, `language`, `framework`) refresh on `ana init`. Unknown top-level keys you add are preserved across re-init.
+
+## Edit the files
+
+The system is markdown in your repo. You own it.
+
+### Skill rules
+
+Every skill has four sections. **Detected** refreshes on init. **Rules, Gotchas, Examples** are yours — preserved across re-init. The next pipeline run picks up changes through Plan's Build Brief.
+
+### Create a custom skill
+
+```bash
+# Create a domain-specific skill
+mkdir -p .claude/skills/billing
+cat > .claude/skills/billing/SKILL.md << 'EOF'
+---
+name: billing
+description: "Stripe integration, subscription lifecycle, webhook handling."
+---
+# Billing
+
+## Rules
+- Always verify webhook signatures before processing
+- Use idempotency keys on all payment mutations
+
+## Gotchas
+## Examples
+EOF
+```
+
+### Wire a skill to an agent
+
+Each agent declares which skills it loads in frontmatter. Plan loads `[coding-standards, testing-standards]`. Build loads `[git-workflow]`. Verify loads `[testing-standards, coding-standards]`. Add your skill to the agent that should know about it:
+
+```yaml
+# .claude/agents/ana-plan.md
+---
+name: ana-plan
+model: opus[1m]
+skills: [coding-standards, testing-standards, billing]
+---
+```
+
+<Callout variant="rule">Plan curates relevant skill rules into the Build Brief. A rule in a skill that Plan doesn't load won't appear in the Brief — Build can invoke skills manually, but won't see rules by default. If you add a custom skill, add it to Plan's frontmatter.</Callout>
+
+### Context files
+
+`project-context.md` (architecture, domain vocabulary) and `design-principles.md` (how your team defines "good") in `.ana/context/`. Edit freely. Think, Plan, and Learn read them on every startup. Copied wholesale on re-init — your edits are always safe.
+
+### Agent templates
+
+The six agent files in `.claude/agents/` are yours to edit. Adjust Verify's disposition, add constraints to Build, modify Think's scoping process. Copied on `ana init`, not symlinked — edits persist across re-init.
+
+<Callout variant="note">The pipeline assumes certain agent behaviors: Verify writes a report with a PASS/FAIL verdict, Build tags tests with `@ana`, Plan seals a contract. Removing these expectations breaks mechanical verification. Add behavior; be careful removing it.</Callout>
+
+## Going further
+
+It's open source. Everything below works but isn't governed by the CLI — no validation, no re-init behavior. You're editing the engine directly.
+
+### Add a custom agent
+
+Drop a markdown file in `.claude/agents/`. Claude Code picks it up. A security reviewer, a migration planner, a domain expert — any role that doesn't need pipeline integration.
+
+```bash
+# A reviewer that focuses on your API surface
+$ claude --agent api-reviewer
+
+# A migration helper for your specific ORM
+$ claude --agent drizzle-migrator
+```
+
+Custom agents run outside the pipeline. They can read `ana.json`, load skills via frontmatter, and use any Claude Code tool — but they don't produce pipeline artifacts or proof chain entries. To gate work between stages, invoke your custom agent manually between Plan and Build (or any two stages). It can read `.ana/plans/active/{slug}/` to inspect the spec and contract.
+
+### Store team config in ana.json
+
+The `custom` namespace accepts arbitrary data and survives re-init. Nothing reads it automatically — the namespace is a convention for your own integrations. A custom agent that reads `custom.slackChannel` to post notifications, or `custom.reviewers` to tag PR reviewers — the config is there, the integration is yours to build.
+
+```json
+{
+  "custom": {
+    "teamId": "anatomia",
+    "slackChannel": "#eng-proofs",
+    "reviewers": ["@rsmith"],
+    "maxBuildMinutes": 120
+  }
+}
+```
+
+### CI/CD scripting
+
+`ana config` is scriptable. Set up a repo without interactive prompts:
+
+```bash
+# CI setup script
+ana init --yes
+ana config set branchPrefix "ci/"
+ana config set coAuthor "Ana <build@anatomia.dev>"
+ana config set custom.environment "staging"
+ana agents model --all sonnet
+```
+
+### Fork the CLI
+
+The nuclear option. Anatomia is MIT-licensed. Fork to change artifact formats, contract schemas, the proof chain entry structure, or the agent independence rules. If you're doing this, you're building your own verification system on top of the engine.
+
+## What survives re-init
+
+Updating the CLI (`npm update anatomia-cli`) changes the binary only. Your installed agents, skills, and config don't change until you choose to run `ana init` again. When you do:
+
+**Preserved:**
+
+- context/ directory (copied wholesale)
+- ana.json user fields + unknown keys
+- Skill Rules, Gotchas, Examples
+- proof\_chain.json + PROOF\_CHAIN.md
+- plans/completed/ (all archives)
+- Agent files in .claude/agents/
+- CLAUDE.md + AGENTS.md
+
+**Refreshed:**
+
+- ana.json anaVersion + lastScanAt
+- scan.json (full regeneration)
+- Skill Detected sections
+
+## What's fixed
+
+Load-bearing opinions. Fixed because changing them breaks the verification guarantee.
+
+- **Five pipeline stages** — Think, Plan, Build, Verify, Learn.
+- **Agent independence** — session isolation. Verify can't read the build report.
+- **Contract format** — YAML with typed assertions and matchers.
+- **Proof seal** — SHA-256 hashes of every artifact.
+- **Artifact structure** — the save commands validate format.
+
+These constraints are what make the proof chain trustworthy. Every customization above works because these five things don't change.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next guide",
+    title: "Troubleshooting",
+    href: "/docs/guides/troubleshooting",
+    description: "Common problems and how to fix them."
+  },
+  {
+    eyebrow: "Concept",
+    title: "The toolbelt",
+    href: "/docs/concepts/toolbelt",
+    description: "Every CLI command agents use under the hood."
+  }
+]} />

@@ -1,0 +1,114 @@
+---
+title: Reading a proof
+description: Every pipeline run produces a proof — a JSON record committed to your repo that captures what was built, how it was verified, and whether it can be trusted.
+readingTime: 5
+lastReviewed: May 2026
+---
+
+# Reading a proof
+
+Every pipeline run produces a proof — a JSON record committed to your repo that captures what was built, how it was verified, and whether it can be trusted. This guide walks through [security-hardening](/docs/proof/security-hardening) so you know what each part means.
+
+## What you see in the terminal
+
+After `ana work complete`, run `ana proof <slug>` to see the summary:
+
+```bash
+$ ana proof security-hardening
+
+  Result: PASS
+  27/27 satisfied · 0 unsatisfied · 0 deviated
+
+  ✓ Slugs with shell injection characters are rejected before any operation
+  ✓ Valid kebab-case slugs pass validation
+  ✓ No direct shell execution calls remain in command or utility files
+    ...24 more
+
+  Timing: 74m (Think 2m · Plan 15m · Build 53m · Verify 5m)
+
+  [debt · scope] No dedicated integration tests for...
+  [obs · monitor] getCurrentBranch still uses execSync
+    ...and 8 more findings
+```
+
+The proof page on the docs site shows the same data with more detail. Each section below maps to a part of that page.
+
+## The hero
+
+Six numbers at the top of every proof page:
+
+**Verdict:** PASS
+
+**Score:** 27 / 27
+
+**Findings:** 10 (3 debt · 7 obs)
+
+**Duration:** 74m
+
+**Rejections:** 0
+
+**Shipped:** may 4
+
+Score is contract assertions satisfied. Findings are independent observations from Verify — they don't block shipping. Rejections count how many times Build had to fix and re-verify. A proof with rejection cycles shows a longer build and a **Previous Findings Resolution** section — see [proof-promote](/docs/proof/proof-promote) for that story.
+
+## The timeline
+
+Four bars showing Think, Plan, Build, and Verify. The shape tells you what kind of work this was. Security-hardening: Think 2m, Plan 15m, Build 53m, Verify 5m — a heavy build, light verification. Compare with [worktree-isolation](/docs/proof/worktree-isolation): Think 3m, Plan 22m, Build 63m, Verify 11m — similar build but double the verification time because the contract had 45 assertions.
+
+The median across all 78 proofs: 8m think, 10m plan, 31m build, 7m verify. {/* Dynamic: update on data change */}
+
+## The assertion ledger
+
+Every contract assertion, independently evaluated. The `says` field is human-readable; the status is mechanical.
+
+```
+✓ A001  Slugs with shell injection characters are rejected before any operation
+✓ A003  Valid kebab-case slugs pass validation
+✓ A023  No direct shell execution calls remain in command or utility files
+  ...24 more, all satisfied
+```
+
+The ledger shows 27/27 SATISFIED. If any assertion were UNSATISFIED, the verdict would be FAIL and the work would go back to Build. The assertions are the mechanical definition of "done" — what the contract said, what Verify found.
+
+## The findings
+
+Each finding has a severity and a suggested action, rendered as a two-part tag:
+
+**\[debt · scope\]** No dedicated integration tests for command entry point injection rejection
+
+**\[obs · monitor\]** getCurrentBranch still uses execSync — not hardened by this phase
+
+**debt · scope** means: the codebase is getting worse (debt) and this needs engineering work (scope). **obs · monitor** means: worth knowing (observation) but watch it, don't act now (monitor). Findings enter the proof chain and are triaged by [Learn](/docs/guides/using-ana-learn) between cycles.
+
+Security-hardening's findings focus on test coverage gaps. Other proofs surface different catches: `process.exit(1)` on a rebase conflict without running `git rebase --abort`, leaving dirty state. `JSON.parse` on CLI stdout with no try/catch — malformed response crashes. Path normalization that breaks on Windows backslashes. A race condition where a file deleted between filter and `readFileSync` crashes `completeWork`.
+
+To triage findings after shipping, run `claude --agent ana-learn`. See [Using ana-learn](/docs/guides/using-ana-learn).
+
+## The integrity seal
+
+SHA-256 hashes of every artifact — scope, spec, contract, both reports, both data files. If any artifact changes after shipping, the hashes won't match.
+
+```
+scope      sha256:13f7bad7930a...
+contract   sha256:b9e52761c704...
+build-report  sha256:67bc172dade8...
+verify-report sha256:9f0dd78e9f3a...
+...4 more artifacts
+```
+
+These are the real hashes from the security-hardening proof.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next guide",
+    title: "Using ana-learn",
+    href: "/docs/guides/using-ana-learn",
+    description: "What to do with the findings your proofs accumulate."
+  },
+  {
+    eyebrow: "Real proof",
+    title: "security-hardening",
+    href: "/docs/proof/security-hardening",
+    description: "27 assertions, 10 findings. Read the real thing."
+  }
+]} />

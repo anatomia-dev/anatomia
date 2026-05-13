@@ -1,0 +1,117 @@
+---
+title: Using ana-learn
+description: Findings accumulate. Learn tends them — closing what's resolved, promoting recurring patterns into skill rules, and routing what needs engineering work back to Think.
+readingTime: 7
+lastReviewed: May 2026
+---
+
+# Using ana-learn
+
+Findings accumulate. Learn tends them — closing what's resolved, promoting recurring patterns into skill rules, and routing what needs engineering work back to Think. Run it between pipeline cycles.
+
+## Starting a session
+
+```bash
+$ claude --agent ana-learn
+
+Proof chain: 78 runs, 188 active findings
+  9 risk · 63 debt · 116 observation
+  45 scope · 73 monitor · 70 accept (closeable)
+
+Before we start — anything you've noticed since the last session?
+```
+
+Learn reads the proof chain, checks health, detects staleness, and presents the shape. Then it offers options:
+
+- Review risks (9 risk findings)
+- Review debt (63 debt findings)
+- Focus on a hot module (work.ts: 15 findings across 8 runs)
+- Promote patterns
+
+You pick the focus. Learn does the homework — reads the code, checks git history, verifies each finding's claim against the current state. Nothing executes without your sign-off.
+
+The "anything you've noticed?" prompt isn't rhetorical. If you say "auth calls are slow" or "why does this pattern keep appearing," Learn traces it: missing skill rule? Curation gap where Plan doesn't load the skill? A bug that needs its own scope? Observations can surface at any point, not just at session start.
+
+## Triage: close and keep
+
+For each finding, Learn extracts the claim, verifies it against current code, and recommends an action. A real example from the chain:
+
+**\[risk · scope\]** `find-project-root-C1`
+
+`findProjectRoot` checks for `.ana/` directory existence, not `.ana/ana.json`. A stale directory causes false root detection.
+
+*Closed — Stale: code at validators.ts:105 now checks .ana/ana.json not .ana/ directory*
+
+Learn verified the code changed, confirmed the finding no longer applies, and recommended closure with a specific reason. Every close reason describes what was checked — not "resolved" but exactly what changed and where.
+
+Findings that are still real get a **keep** with an exit condition: "Keep until test coverage for `work.ts` exceeds threshold" or "Keep for 3 more pipeline runs, then re-evaluate." When Learn can't determine resolution — code changed but the effect is ambiguous — it says so and asks you to verify manually.
+
+## Staleness detection
+
+The fastest part of triage. `ana proof stale` pre-identifies findings whose referenced files were modified by later pipeline runs — likely resolved without anyone explicitly closing them.
+
+```bash
+$ ana proof stale
+
+Stale Findings: 79 findings with staleness signals
+
+High confidence (3+ subsequent entries modified the file):
+  security-hardening-C1 [debt] A016-A019 @ana tags point to
+    pre-existing tests, not command entry point validation
+    Modified by: worktree-isolation, phase-timing-fix, ... (10 entries)
+    Created in: security-hardening (2026-05-04)
+```
+
+Staleness is a signal, not proof. Learn reads the code before recommending closure — a file being modified doesn't mean the specific issue was fixed.
+
+## Promote and strengthen
+
+When a pattern recurs across multiple proofs, it belongs in a skill rule. Three conditions:
+
+1. The finding describes a **pattern**, not a one-off bug
+2. The pattern would have been caught earlier if the skill had the right rule
+3. The rule can be stated in one sentence
+
+Two operations:
+
+**Promote**
+No rule exists. Create a new one from the finding's pattern.
+`ana proof promote C1 --skill coding-standards --text "..."`
+
+**Strengthen**
+Rule exists but lacks specificity. Edit the skill file, then commit atomically.
+`ana proof strengthen C1 --skill testing-standards --reason "..."`
+
+Both commands handle the full workflow: stage the skill file and proof chain, commit, push. The finding transitions from `active` to `promoted`. The rule reaches Build through Plan's Build Brief on the next pipeline run.
+
+On the next pipeline run touching the same code, Plan includes the promoted rule in the Build Brief. Build follows it. Verify doesn't re-find the same issue. That's the loop.
+
+Two other terminal states: `ana proof close` for resolved findings, and `ana proof lesson` for observations worth remembering but not worth encoding as rules.
+
+## The session delta
+
+After executing approved actions, Learn re-reads the chain and reports the impact:
+
+```
+Session complete.
+  Active findings: 188 → 171 (14 closed, 3 promoted)
+  Risk: 9 → 7
+  Promoted this session: testing-standards, coding-standards
+```
+
+If actionable work remains — scope-action findings, real debt, recurring patterns that need code fixes before they can become rules — Learn drafts a prompt for Think that synthesizes the remaining work.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next guide",
+    title: "Configurability",
+    href: "/docs/guides/configurability",
+    description: "What you can change, what you edit directly, what\u2019s fixed."
+  },
+  {
+    eyebrow: "Browse",
+    title: "Proof chain",
+    href: "/docs/proof",
+    description: "78 proofs, 443 findings to triage."
+  }
+]} />

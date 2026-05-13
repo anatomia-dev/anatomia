@@ -1,0 +1,139 @@
+---
+title: Troubleshooting
+description: Common problems grouped by when you hit them.
+lastReviewed: May 2026
+---
+
+# Troubleshooting
+
+Common problems grouped by when you hit them. If none of these match, email [help@anatomia.dev](mailto:help@anatomia.dev) with your CLI version (`ana --version`) and the proof slug if applicable.
+
+## Getting through the gate
+
+Scan → init → setup → first pipeline run. Once you complete one end-to-end cycle, most of these go away.
+
+<TroubleCard title="ana init failed">
+
+1. Run from your project root, not a subdirectory or a worktree
+2. Git must be configured: `git status` must succeed, `git config user.name` and `user.email` must be set
+3. Node 20+ required (`node --version`) — declared in `package.json` but not checked at runtime, so older versions produce cryptic errors
+4. If a prior init was interrupted, you'll see "Found incomplete init from a previous run" — follow the recovery steps it prints
+5. If re-initializing: `ana init --force` skips confirmation prompts but still preserves your data
+
+</TroubleCard>
+
+<TroubleCard title="Scan missed my stack">
+
+Install dependencies first (`npm install` / `pnpm install`). Without `node_modules/`, convention detection (formatting, import patterns) is limited — init warns you. Framework and database detection reads `package.json` dependencies directly. An empty repo with no commits limits detection — commit at least once. If tree-sitter analysis failed, init shows a warning with what was missed.
+
+</TroubleCard>
+
+<TroubleCard title="Setup produced thin context">
+
+Setup's quality depends on your answers. Don't describe your stack — describe your product, your users, the problem you solve. Take your time on design principles. You can always re-run: delete `setupPhase` from `ana.json` and run `claude --agent ana-setup` again. See [Using ana-setup](/docs/guides/using-ana-setup) for how to give great answers.
+
+</TroubleCard>
+
+<TroubleCard title="Monorepo: scan covers the whole repo">
+
+Anatomia scans the full repository, not individual packages. Init detects your primary package (largest `apps/` package with framework hints) and focuses convention detection there. Per-package scanning is planned. To scope pipeline work to a specific package, set `commands.test` and `commands.build` in `ana.json` to target it (e.g., `pnpm --filter web test`).
+
+</TroubleCard>
+
+## Pipeline problems
+
+<TroubleCard title="My verify failed">
+
+FAIL means Verify found issues — this is the pipeline working as designed. 17 of our 78 proofs had rejection cycles. {/* Dynamic: update on data change */}
+
+1. Read `verify_report.md`. It lists every UNSATISFIED assertion with evidence.
+2. Common causes: test tagged `@ana A003` but doesn't actually test what the contract says, missing test tags, tests that pass on both correct and incorrect implementations.
+3. Run `claude --agent ana-build` to fix. Build reads the verify report and addresses each failure.
+4. Re-run `claude --agent ana-verify`.
+
+</TroubleCard>
+
+<TroubleCard title="My build never finishes">
+
+1. Large specs can exceed the model's context window. Try multi-phase specs for big changes.
+2. `ana work status` shows pipeline state. If build is "in-progress," the previous session may have crashed — re-open `claude --agent ana-build` and it resumes.
+3. Check if tests are hanging. Vitest defaults to watch mode — the test command must include `--run`.
+4. If Claude Code itself stops responding, check your subscription status and API rate limits — these aren't Anatomia failures but they surface during pipeline runs.
+
+</TroubleCard>
+
+<TroubleCard title="My finding count is huge">
+
+Usually means the spec was too vague. Vague specs produce vague implementations, and Verify finds more to fault. Tighten the scope, write more specific acceptance criteria, and re-plan. A good contract has 15–30 assertions. Over 40 suggests the scope should be split.
+
+</TroubleCard>
+
+<TroubleCard title="ana work complete failed">
+
+Must run from the main project directory on the artifact branch (usually `main`), not from inside a worktree. If using `--merge`: requires `gh` CLI, requires a PR to exist, and branch protection rules on GitHub can block the merge. Without `--merge`: merge the PR on GitHub first, then run `ana work complete <slug>`.
+
+</TroubleCard>
+
+<TroubleCard title="An artifact says PASS but the code is wrong">
+
+The contract was satisfied but the behavior is wrong — the contract didn't cover what matters. An assertion that checks `toBeDefined()` passes on garbage output. This isn't a system failure — the verification proved the contract was met. The contract was underspecified. Next cycle: write assertions with specific values and matchers. Check: does every assertion test the behavior users would notice if broken?
+
+</TroubleCard>
+
+## Configuration and state
+
+<TroubleCard title="Wrong branch errors">
+
+Commands that modify the proof chain (`close`, `lesson`, `promote`, `strengthen`) require the artifact branch (usually `main`). Read-only commands (`proof`, `audit`, `health`, `stale`, `context`) work from any branch. If you see "Wrong branch," check: are you in a worktree? Run proof-modifying commands from the main project directory.
+
+</TroubleCard>
+
+<TroubleCard title="I deleted .ana/ or .claude/">
+
+**Deleted `.ana/`?** Proof chain history and archived artifacts are gone permanently. `ana init` regenerates scan data and scaffolds but cannot recover proofs, context, or design principles. **Deleted `.claude/`?** Enriched skill rules are gone. `ana init` regenerates templates but enrichments need re-running setup. **Prevention:** run `ana init` instead of deleting — it refreshes everything and preserves your data.
+
+</TroubleCard>
+
+<TroubleCard title="Where did my proof go?">
+
+Active work: `.ana/plans/active/`. Completed: `.ana/plans/completed/` and `proof_chain.json`. Run `ana proof` to see all entries. Run `ana proof <slug>` for details on a specific one.
+
+</TroubleCard>
+
+<TroubleCard title="GitHub CLI (gh) not working">
+
+The pipeline creates PRs via `ana pr create`, which uses `gh` under the hood. If `gh` isn't installed or authenticated, PR creation fails but everything else works — Build, Verify, and the proof chain are independent of GitHub. Install from [cli.github.com](https://cli.github.com/), then `gh auth login`.
+
+</TroubleCard>
+
+<TroubleCard title="Version mismatch warning">
+
+If `ana work status` shows a version mismatch between your CLI and the project's `anaVersion`, run `ana init` to update the project to your CLI version. This refreshes scan data and templates while preserving your context and proof chain.
+
+</TroubleCard>
+
+## Best practices
+
+- **Start every agent with "hey" or "hi ana."** Claude Code agents may not fully load context files before acting on a complex first message. A simple greeting ensures the agent reads `project-context.md`, `design-principles.md`, and `scan.json` before doing anything. This applies to all pipeline agents (`ana-setup` starts automatically via its `initialPrompt`).
+- **One agent per terminal.** Each pipeline stage runs in its own Claude Code session. Running a second agent in the same session may inherit state from the previous run, breaking the independence guarantee. Open a new terminal for each stage.
+- **Let `ana work status` be the first check.** Before scoping, building, or verifying — run `ana work status`. It tells you what's in progress, what stage it's at, and what to do next. Every agent does this on startup; you should too.
+- **Don't edit `proof_chain.json` by hand.** Use `ana proof close`, `ana proof promote`, `ana proof lesson`. Manual edits can corrupt the chain — `ana proof health` reports incorrect trajectories, `ana proof audit` may skip entries. If the chain is corrupted, restore from git: `git checkout -- .ana/proof_chain.json`
+- **Re-init instead of deleting.** `ana init` refreshes scan data and templates while preserving your context, skills, proof chain, and config. Deleting `.ana/` loses proof history permanently.
+- **Pipeline runs can't break your code.** Build works in a git worktree — the main branch is untouched until you merge a PR. The worst a bad pipeline run produces is a PR you reject.
+
+Still stuck? [help@anatomia.dev](mailto:help@anatomia.dev) — include your CLI version (`ana --version`) and the proof slug if applicable.
+
+<NextCards cards={[
+  {
+    eyebrow: "Reference",
+    title: "CLI commands",
+    href: "/docs/reference/cli",
+    description: "Every command, every flag, every option."
+  },
+  {
+    eyebrow: "Browse",
+    title: "Proof chain",
+    href: "/docs/proof",
+    description: "78 verified pipeline runs."
+  }
+]} />

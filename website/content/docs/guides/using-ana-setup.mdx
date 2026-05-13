@@ -1,0 +1,150 @@
+---
+title: Using ana-setup
+description: Setup reads your codebase, forms an opinion about your project, and asks you to correct it. Your corrections become the context every agent reads.
+readingTime: 8
+lastReviewed: May 2026
+---
+
+# Using ana-setup
+
+Setup reads your codebase, forms an opinion about your project, and asks you to correct it. Your corrections become the context every agent reads — what separates generic AI that happens to know your stack from an engineer who's been on your team for six months.
+
+## How it works
+
+Setup uses a **guess-and-confirm** pattern. It reads your scan data, README, documentation, landing pages, and source code — then presents what it thinks it knows and asks you to correct it. The correction is the content.
+
+```bash
+$ claude --agent ana-setup
+
+Here's my understanding of your project:
+
+  Anatomia is an open-source pipeline that turns AI-generated code
+  into verified code. It runs locally, installs as sealed agents,
+  and produces a proof chain you can audit.
+
+Is this accurate? Anything you'd change or add?
+```
+
+This is the moment that matters. If setup says "a CLI tool that scans codebases" and you say "yes" — your agents think in technology terms. If you correct it to "a verification system for teams that need quality guarantees from AI coding tools" — your agents think in product terms. **The correction is the content.**
+
+## What setup writes
+
+Three artifacts. Each one changes how agents work on your project:
+
+**project-context.md**
+What your product does, who it serves, how the code is organized, what decisions were made and why. Think and Plan read this on every startup.
+
+**design-principles.md**
+How your team defines "good." Each principle changes how Think evaluates tradeoffs and how Plan makes design decisions.
+
+**Enriched skill files**
+Template rules refined with your project's actual patterns. Anatomia's own `coding-standards` went from 7 template rules to 11 enriched rules.
+
+## The session
+
+Setup runs through five phases. The first is a config check, then two rounds of questions, then a draft review, then skill enrichment.
+
+### 1. Config confirmation
+
+Setup presents your detected configuration — application shape, stack, test and build commands, artifact branch — and asks "does this look right?" Correct anything that's wrong. These settings control how agents compile, test, and commit your code.
+
+### 2. Product identity
+
+> "Who is your target user, and what's the gap this fills for them — what couldn't they do before, or what were they stuck with?"
+
+Don't describe your stack. Describe your user's problem. Compare:
+
+**Weak:** "We use Next.js with Prisma and deploy to Vercel. We have about 50 API routes."
+
+**Strong:** "Document sharing for investors. A founder uploads a pitch deck, sets access controls, gets analytics on who viewed which page and for how long. Competing with DocSend."
+
+Setup already knows your stack from the scan. It doesn't know why your product exists, who it hurts when it's down, or what your team chose to build and what they chose not to. AI reads code fluently. It doesn't experience the problem your users have. That context comes from you.
+
+### 3. Draft review
+
+Setup investigates your codebase silently — directory structure, entry points, import patterns, high-churn files, domain types — then presents a full draft of project-context.md. Seven sections, each with a confidence level. Sections marked ⚠ are thin and benefit from your input: key decisions the code doesn't explain, active constraints only you know, architectural choices that look wrong but are intentional.
+
+### 4. Design principles
+
+The highest-leverage part of setup. Three principles ship by default — we find them useful for most teams. You can reject any of them, but most people keep all three and add more:
+
+- **Name the disease, not the symptom** — state the root cause before fixing
+- **Surface tradeoffs explicitly** — show the paths, not just the fastest one
+- **Every change should be foundation** — would a senior approve this for craft, not just correctness?
+
+Setup then suggests 1–2 more based on patterns in your codebase. But the best principles come from you — from three places:
+
+- **AI behavior you keep correcting.** "Stop suggesting ORMs, we use raw SQL." That's a principle.
+- **Things that are non-negotiable when you design something new.** "Tests prove behavior, not implementation." That's a principle.
+- **What you'd tell a strong engineer before they open your codebase.** "Prefer explicit over clever." That's a principle.
+
+The test: if a principle wouldn't change how Think scopes or Plan designs, it doesn't belong here. Anatomia's own repo has 13 principles. Three of them:
+
+```markdown
+## Name the disease, not the symptom
+Before fixing something, state the root cause in one sentence.
+"This field is missing" leads to adding the field. "This field
+is missing because the same concept lives in three places with
+manual mapping" leads to deleting two of the three.
+
+## Every character earns its place
+No slop. Not in code, not in context files, not in prompts.
+If three words do what five did, use three.
+
+## Think more, build less
+The cost of building is near zero — the cost of building the
+WRONG thing is enormous. Spend time on diagnosis and design.
+```
+
+"Name the disease" means Think pushes back on symptom-level requests. "Every character earns its place" means Plan writes tighter specs. "Think more, build less" means Think spends longer on tradeoff analysis before recommending an approach. Each one shapes agent behavior on every pipeline run.
+
+### 5. Skill enrichment
+
+Setup asks two more questions: how code reaches production (writes your deployment skill) and what regularly trips people up (writes troubleshooting entries). Be specific — "push to main goes live via Vercel, cold starts on serverless functions" is better than "we deploy to Vercel."
+
+Then it reads your error handling, import patterns, test structure, and CI configuration, and drafts enrichments for every remaining skill. You can review each file individually (`"show me coding-standards"`) or accept all at once. Every enrichment includes rationale — what setup found in your code and why Build would write different code with the rule.
+
+If a template rule contradicts your codebase (e.g., "prefer named exports" but you use default exports), setup adjusts the rule and flags it with ⚠ for review.
+
+## Re-running setup
+
+Setup preserves what you wrote — sections with content aren't overwritten. To re-run after a previous setup, delete the `setupPhase` field from `.ana/ana.json` (or set it to `"not-started"`), then run `claude --agent ana-setup` again. Re-run when:
+
+- Your project has grown and the architecture section is stale
+- You want to add design principles after using the pipeline
+- New skill files were added (e.g., `ai-patterns` after integrating an AI SDK)
+
+```bash
+# Check current setup state
+$ ana setup check
+
+Setup Status
+────────────
+  ✓ Setup complete
+
+File Health
+───────────
+Context:
+  ✓ design-principles     populated
+  ✗ project-context       missing sections: Key Files, Active Constraints
+Skills:
+  ✓ coding-standards      Detected: 9 facts, Rules: 11 entries
+  ✓ testing-standards     Detected: 5 facts, Rules: 10 entries
+```
+
+The ✗ marks are opportunities, not failures. Thin sections can be filled by re-running setup or editing the files directly.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next guide",
+    title: "Verifying changes",
+    href: "/docs/guides/verifying-changes",
+    description: "What happens when Build finishes and Verify takes over."
+  },
+  {
+    eyebrow: "Reference",
+    title: "ana-setup template",
+    href: "/docs/reference/agents/ana-setup",
+    description: "The actual instructions the setup agent follows."
+  }
+]} />
