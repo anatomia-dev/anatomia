@@ -9,7 +9,7 @@ function formatDuration(minutes: number): string {
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }).toLowerCase();
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
 }
 
 interface ProofHeroProps {
