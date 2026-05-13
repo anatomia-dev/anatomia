@@ -65,29 +65,54 @@ export function MobileSidebarToggle() {
             overflow: "hidden",
           }}
         >
-          {/* Header */}
+          {/* Header — X on left, logo center, theme toggle on right */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 24px",
+              padding: "14px 20px",
               borderBottom: "1px solid var(--hairline)",
               flexShrink: 0,
+              gap: "12px",
             }}
           >
+            {/* X close — far left */}
+            <button
+              onClick={close}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "34px",
+                height: "34px",
+                borderRadius: "var(--radius-sm)",
+                border: "none",
+                background: "none",
+                color: "var(--ink-60)",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              aria-label="Close menu"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Logo */}
             <Link
               href="/docs"
               onClick={close}
               style={{
                 fontFamily: "var(--font-serif)",
                 fontWeight: 500,
-                fontSize: "24px",
+                fontSize: "22px",
                 letterSpacing: "-0.02em",
                 color: "var(--fg)",
                 textDecoration: "none",
                 display: "flex",
                 alignItems: "baseline",
+                flex: 1,
               }}
             >
               anaDocs
@@ -103,29 +128,9 @@ export function MobileSidebarToggle() {
                 }}
               />
             </Link>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <ThemeToggle />
-              <button
-                onClick={close}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "var(--radius-sm)",
-                  border: "none",
-                  background: "none",
-                  color: "var(--ink-60)",
-                  cursor: "pointer",
-                }}
-                aria-label="Close menu"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+
+            {/* Right: theme toggle */}
+            <ThemeToggle />
           </div>
 
           {/* Navigation — vertical scroll */}

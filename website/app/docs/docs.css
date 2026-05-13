@@ -470,19 +470,28 @@
   }
 }
 
-/* ≤880px: reduce content padding (right rail hidden, no gap needed) */
+/* ≤880px: additional mobile fixes (second 880px block for content) */
 @media (max-width: 880px) {
   .docs-content-area {
     padding: 24px 20px !important;
   }
 
-  /* Prevent horizontal overflow */
   .docs-layout {
     overflow-x: hidden;
     max-width: 100vw;
   }
 
-  /* Navbar: switch to simple flexbox on mobile */
+  /* Hide pipeline arrows on mobile */
+  .docs-pipeline-grid span[style*="right: -13px"] {
+    display: none !important;
+  }
+
+  /* Prose tables: allow horizontal scroll */
+  .docs-prose table {
+    display: block;
+    overflow-x: auto;
+  }
+
   nav[aria-label="Documentation"] {
     display: flex !important;
     flex-wrap: nowrap !important;
@@ -491,7 +500,7 @@
   }
 }
 
-/* ≤640px: further compress navbar */
+/* ≤640px: compress navbar + table adjustments */
 @media (max-width: 640px) {
   /* Tighten navbar padding */
   nav[aria-label="Documentation"] {

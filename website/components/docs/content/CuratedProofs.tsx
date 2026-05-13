@@ -98,6 +98,7 @@ export function CuratedProofs({ entries, totalCount }: CuratedProofsProps) {
         background: "var(--bg-card)",
         overflow: "hidden",
         marginBottom: 0,
+        overflowX: "auto",
       }}
     >
       <table
