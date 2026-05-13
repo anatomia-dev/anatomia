@@ -34,7 +34,6 @@ export function ResourceStrip() {
   return (
     <div className="my-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
       {RESOURCES.map((resource) => {
-        const Tag = resource.external ? "a" : "a";
         const linkProps = resource.external
           ? { target: "_blank" as const, rel: "noopener noreferrer" }
           : {};
