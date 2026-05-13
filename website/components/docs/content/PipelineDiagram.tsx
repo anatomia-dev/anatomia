@@ -4,7 +4,7 @@ interface Stage {
   number: string;
   name: string;
   description: string;
-  artifact: string;
+  artifacts: string[];
   agent: string;
   href: string;
 }
@@ -14,41 +14,41 @@ const STAGES: Stage[] = [
     number: "01",
     name: "Think",
     description: "Investigate. Push back. Scope.",
-    artifact: "scope.md",
+    artifacts: ["scope.md"],
     agent: "ana",
-    href: "/docs/reference/agent-templates",
+    href: "/docs/reference/agents/ana",
   },
   {
     number: "02",
     name: "Plan",
     description: "Spec the solution. Seal the contract.",
-    artifact: "spec.md contract.yaml",
+    artifacts: ["spec.md", "contract.yaml"],
     agent: "ana-plan",
-    href: "/docs/reference/agent-templates",
+    href: "/docs/reference/agents/ana-plan",
   },
   {
     number: "03",
     name: "Build",
     description: "Implement. Tag tests to contract.",
-    artifact: "build_report.md",
+    artifacts: ["build_report.md"],
     agent: "ana-build",
-    href: "/docs/reference/agent-templates",
+    href: "/docs/reference/agents/ana-build",
   },
   {
     number: "04",
     name: "Verify",
     description: "Independent fault-finding.",
-    artifact: "verify_report.md",
+    artifacts: ["verify_report.md"],
     agent: "ana-verify",
-    href: "/docs/reference/agent-templates",
+    href: "/docs/reference/agents/ana-verify",
   },
   {
     number: "05",
     name: "Learn",
     description: "Promote findings to rules.",
-    artifact: "skill files",
+    artifacts: ["skill files"],
     agent: "ana-learn",
-    href: "/docs/reference/agent-templates",
+    href: "/docs/reference/agents/ana-learn",
   },
 ];
 
@@ -88,7 +88,12 @@ export function PipelineDiagram() {
               className="block font-mono text-[11px]"
               style={{ color: "var(--ink-30)" }}
             >
-              <code>{stage.artifact}</code>
+              {stage.artifacts.map((art, i) => (
+                <span key={art}>
+                  {i > 0 && " "}
+                  <code>{art}</code>
+                </span>
+              ))}
             </span>
             <span
               className="block font-mono text-[11px]"

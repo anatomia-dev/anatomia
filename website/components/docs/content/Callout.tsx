@@ -18,11 +18,11 @@ const variantStyles: Record<
 > = {
   rule: {
     borderColor: "var(--color-brand)",
-    labelColor: "var(--brand-light, var(--color-brand))",
+    labelColor: "var(--brand-light)",
   },
   note: {
-    borderColor: "var(--info, var(--ink-30))",
-    labelColor: "var(--info, var(--ink-30))",
+    borderColor: "var(--info)",
+    labelColor: "var(--info)",
   },
 };
 
