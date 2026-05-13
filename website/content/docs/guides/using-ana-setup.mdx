@@ -9,17 +9,14 @@ lastReviewed: May 2026
 
 Setup uses a **guess-and-confirm** pattern. It reads your scan data, README, documentation, landing pages, and source code — then presents what it thinks it knows and asks you to correct it. The correction is the content.
 
-```bash
-$ claude --agent ana-setup
-
-Here's my understanding of your project:
-
-  Anatomia is an open-source pipeline that turns AI-generated code
-  into verified code. It runs locally, installs as sealed agents,
-  and produces a proof chain you can audit.
-
-Is this accurate? Anything you'd change or add?
-```
+<div style={{background:"var(--bg-card)",border:"1px solid var(--border)",borderRadius:"var(--radius-md)",margin:"8px 0 18px",fontFamily:"var(--font-mono)",fontSize:"12.5px",lineHeight:1.65,overflow:"hidden"}}>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 14px",borderBottom:"1px solid var(--hairline)",background:"var(--bg-elev)",fontSize:"11px",color:"var(--ink-60)"}}>
+<span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>bash</span>
+</div>
+<pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
+{"$ "}<span style={{color:"var(--pass)"}}>claude --agent ana-setup</span>{"\n\nHere's my understanding of your project:\n\n  Anatomia is an open-source pipeline that turns AI-generated code\n  into verified code. It runs locally, installs as sealed agents,\n  and produces a proof chain you can audit.\n\nIs this accurate? Anything you'd change or add?"}
+</pre>
+</div>
 
 This is the moment that matters. If setup says "a CLI tool that scans codebases" and you say "yes" — your agents think in technology terms. If you correct it to "a verification system for teams that need quality guarantees from AI coding tools" — your agents think in product terms. **The correction is the content.**
 
@@ -27,14 +24,20 @@ This is the moment that matters. If setup says "a CLI tool that scans codebases"
 
 Three artifacts. Each one changes how agents work on your project:
 
-**project-context.md**
-What your product does, who it serves, how the code is organized, what decisions were made and why. Think and Plan read this on every startup.
-
-**design-principles.md**
-How your team defines "good." Each principle changes how Think evaluates tradeoffs and how Plan makes design decisions.
-
-**Enriched skill files**
-Template rules refined with your project's actual patterns. Anatomia's own `coding-standards` went from 7 template rules to 11 enriched rules.
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"12px",margin:"14px 0 18px"}}>
+<div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
+<div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>project-context.md</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>What your product does, who it serves, how the code is organized, what decisions were made and why. Think and Plan read this on every startup.</div>
+</div>
+<div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
+<div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>design-principles.md</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>How your team defines "good." Each principle changes how Think evaluates tradeoffs and how Plan makes design decisions.</div>
+</div>
+<div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
+<div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Enriched skill files</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>Template rules refined with your project's actual patterns. Anatomia's own <code>coding-standards</code> went from 7 template rules to 11 enriched rules.</div>
+</div>
+</div>
 
 ## The session
 
@@ -46,15 +49,24 @@ Setup presents your detected configuration — application shape, stack, test an
 
 ### 2. Product identity
 
-> "Who is your target user, and what's the gap this fills for them — what couldn't they do before, or what were they stuck with?"
+<div style={{padding:"10px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)",fontSize:"13px",color:"var(--ink-75)",fontStyle:"italic",margin:"10px 0 14px"}}>"Who is your target user, and what's the gap this fills for them — what couldn't they do before, or what were they stuck with?"</div>
 
 Don't describe your stack. Describe your user's problem. Compare:
 
-**Weak:** "We use Next.js with Prisma and deploy to Vercel. We have about 50 API routes."
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",margin:"12px 0 16px"}}>
+<div style={{padding:"10px 12px",borderRadius:"var(--radius-sm)",border:"1px solid rgba(248,113,113,0.25)",background:"var(--fail-bg)"}}>
+<div style={{fontSize:"12px",color:"var(--fail)",fontWeight:600,marginBottom:"4px"}}>Weak</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-75)",lineHeight:1.5}}>"We use Next.js with Prisma and deploy to Vercel. We have about 50 API routes."</div>
+</div>
+<div style={{padding:"10px 12px",borderRadius:"var(--radius-sm)",border:"1px solid var(--pass-border)",background:"var(--pass-bg)"}}>
+<div style={{fontSize:"12px",color:"var(--pass)",fontWeight:600,marginBottom:"4px"}}>Strong</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-75)",lineHeight:1.5}}>"Document sharing for investors. A founder uploads a pitch deck, sets access controls, gets analytics on who viewed which page and for how long. Competing with DocSend."</div>
+</div>
+</div>
 
-**Strong:** "Document sharing for investors. A founder uploads a pitch deck, sets access controls, gets analytics on who viewed which page and for how long. Competing with DocSend."
-
-Setup already knows your stack from the scan. It doesn't know why your product exists, who it hurts when it's down, or what your team chose to build and what they chose not to. AI reads code fluently. It doesn't experience the problem your users have. That context comes from you.
+<div style={{margin:"14px 0 18px",padding:"14px 18px",borderRadius:"var(--radius-sm)",borderLeft:"3px solid var(--color-brand)",background:"var(--bg-card)"}}>
+<p style={{fontSize:"13.5px",color:"var(--ink-75)",lineHeight:1.6,margin:0}}>Setup already knows your stack from the scan. It doesn't know why your product exists, who it hurts when it's down, or what your team chose to build and what they chose not to. AI reads code fluently. It doesn't experience the problem your users have. That context comes from you.</p>
+</div>
 
 ### 3. Draft review
 
@@ -92,7 +104,7 @@ The cost of building is near zero — the cost of building the
 WRONG thing is enormous. Spend time on diagnosis and design.
 ```
 
-"Name the disease" means Think pushes back on symptom-level requests. "Every character earns its place" means Plan writes tighter specs. "Think more, build less" means Think spends longer on tradeoff analysis before recommending an approach. Each one shapes agent behavior on every pipeline run.
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>"Name the disease" means Think pushes back on symptom-level requests. "Every character earns its place" means Plan writes tighter specs. "Think more, build less" means Think spends longer on tradeoff analysis before recommending an approach. Each one shapes agent behavior on every pipeline run.</p>
 
 ### 5. Skill enrichment
 
@@ -100,7 +112,7 @@ Setup asks two more questions: how code reaches production (writes your deployme
 
 Then it reads your error handling, import patterns, test structure, and CI configuration, and drafts enrichments for every remaining skill. You can review each file individually (`"show me coding-standards"`) or accept all at once. Every enrichment includes rationale — what setup found in your code and why Build would write different code with the rule.
 
-If a template rule contradicts your codebase (e.g., "prefer named exports" but you use default exports), setup adjusts the rule and flags it with ⚠ for review.
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>If a template rule contradicts your codebase (e.g., "prefer named exports" but you use default exports), setup adjusts the rule and flags it with ⚠ for review.</p>
 
 ## Re-running setup
 
@@ -110,25 +122,16 @@ Setup preserves what you wrote — sections with content aren't overwritten. To 
 - You want to add design principles after using the pipeline
 - New skill files were added (e.g., `ai-patterns` after integrating an AI SDK)
 
-```bash
-# Check current setup state
-$ ana setup check
+<div style={{background:"var(--bg-card)",border:"1px solid var(--border)",borderRadius:"var(--radius-md)",margin:"8px 0 18px",fontFamily:"var(--font-mono)",fontSize:"12.5px",lineHeight:1.65,overflow:"hidden"}}>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 14px",borderBottom:"1px solid var(--hairline)",background:"var(--bg-elev)",fontSize:"11px",color:"var(--ink-60)"}}>
+<span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>bash</span>
+</div>
+<pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
+<span style={{color:"var(--ink-45)"}}>{"# Check current setup state"}</span>{"\n$ "}<span style={{color:"var(--pass)"}}>ana setup check</span>{"\n\nSetup Status\n────────────\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" Setup complete\n\nFile Health\n───────────\nContext:\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" design-principles     populated\n  "}<span style={{color:"var(--fail)"}}>✗</span>{" project-context       missing sections: Key Files, Active Constraints\nSkills:\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" coding-standards      Detected: 9 facts, Rules: 11 entries\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" testing-standards     Detected: 5 facts, Rules: 10 entries"}
+</pre>
+</div>
 
-Setup Status
-────────────
-  ✓ Setup complete
-
-File Health
-───────────
-Context:
-  ✓ design-principles     populated
-  ✗ project-context       missing sections: Key Files, Active Constraints
-Skills:
-  ✓ coding-standards      Detected: 9 facts, Rules: 11 entries
-  ✓ testing-standards     Detected: 5 facts, Rules: 10 entries
-```
-
-The ✗ marks are opportunities, not failures. Thin sections can be filled by re-running setup or editing the files directly.
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The ✗ marks are opportunities, not failures. Thin sections can be filled by re-running setup or editing the files directly.</p>
 
 <NextCards cards={[
   {
