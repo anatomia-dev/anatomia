@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
+import { CodeBlock } from "@/components/docs/content/CodeBlock";
 import { Callout } from "@/components/docs/content/Callout";
 import { getContextFiles } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
@@ -76,9 +77,9 @@ export default function ContextReferencePage() {
             </h2>
             <p><strong>Path:</strong> <code>{f.path}</code></p>
             <p>{f.description}</p>
-            <pre data-language={f.filename.endsWith(".json") ? "json" : "markdown"}>
+            <CodeBlock data-language={f.filename.endsWith(".json") ? "json" : "markdown"}>
               <code>{f.content}</code>
-            </pre>
+            </CodeBlock>
           </div>
         ))}
 

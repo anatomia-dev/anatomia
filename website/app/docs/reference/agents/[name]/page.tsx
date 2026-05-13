@@ -126,9 +126,9 @@ export default async function AgentDetailPage({ params }: AgentDetailProps) {
           This is the real <code>{agent.name}.md</code> that ships into your
           repo. Not a summary — the actual instructions the agent reads.
         </p>
-        <pre data-language="markdown">
+        <CodeBlock data-language="markdown">
           <code>{agent.bodyMarkdown}</code>
-        </pre>
+        </CodeBlock>
         <p style={{ fontSize: "12px", color: "var(--ink-40)" }}>
           <a
             href={githubUrl}

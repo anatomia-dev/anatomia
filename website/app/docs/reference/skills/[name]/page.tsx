@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
+import { CodeBlock } from "@/components/docs/content/CodeBlock";
 import { Callout } from "@/components/docs/content/Callout";
 import { getSkillTemplates, getSkillByName } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
@@ -104,9 +105,9 @@ export default async function SkillDetailPage({ params }: SkillDetailProps) {
             ? "Conditional skill — installs when the scan detects its trigger. Your edits to Rules, Gotchas, and Examples are preserved across re-initialization."
             : "Core skill — installs for every project. Your edits to Rules, Gotchas, and Examples are preserved across re-initialization."}
         </p>
-        <pre data-language="markdown">
+        <CodeBlock data-language="markdown">
           <code>{skill.content}</code>
-        </pre>
+        </CodeBlock>
         <p style={{ fontSize: "12px", color: "var(--ink-40)" }}>
           <a
             href={githubUrl}
