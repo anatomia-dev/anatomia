@@ -22889,6 +22889,522 @@
         "commit_count": 6,
         "base_commit": "fa2c803128c752aa7d2875a59b8467876e3c7455"
       }
+    },
+    {
+      "slug": "content-pages",
+      "feature": "Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 32,
+        "satisfied": 32,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The overview page loads at /docs with dynamic proof statistics",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Overview stats strip shows proof count from data loader, not a hardcoded string",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Overview pipeline diagram shows all 5 stages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Overview curated proof table shows 6 real proof entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Curated proofs display real assertion counts from the data loader",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Overview audience cards link to correct destinations",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Overview has no RightRail component",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The quickstart page loads at /docs/start",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Quickstart page includes install, init, pipeline run, and complete sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "All 7 concept pages compile and render at their routes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Each concept page includes MetaRow with reading time and last reviewed date",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Each concept page has NextCards linking to the next page in sequence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "All 6 guide pages compile and render at their routes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Troubleshooting page uses TroubleCard component for card-based layout",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Each guide page has NextCards linking to related content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Root meta.json establishes correct top-level sidebar order",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Concepts meta.json orders pages as pipeline, skills, context, toolbelt, artifacts, contract, findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Guides meta.json orders pages as using-ana-setup, verifying-changes, reading-a-proof, using-ana-learn, configurability, troubleshooting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Callout component displays a label before content",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Rule callout shows RULE label and note callout shows NOTE label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "RightRail no longer uses Tailwind hidden/xl:block classes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "RightRail retains the docs-right-rail CSS class for media query visibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "DocsNav GitHub link points to TettoLabs organization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Catch-all page editUrl points to TettoLabs organization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Overview imports data loader functions instead of hardcoding values",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "No agents concept page exists at concepts/agents",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The Scope 1 test index.mdx file is deleted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Next.js build completes without errors for all 16 pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "MDX pages produce heading structure that populates the right rail TOC",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Pipeline concept links to skills concept and verifying changes guide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Quickstart links to pipeline concept and reading a proof guide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "TroubleCard is available as an MDX component",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 0,
+        "think": 2,
+        "plan": 16
+      },
+      "hashes": {
+        "scope": "sha256:116fbb648fb02f8903cde65c8088c9073a76ade5e0bd2515f7702a784db2fbb1",
+        "contract": "sha256:896416df802a4fce8b0542d20c16951270dd5e1d97df0ee616209bcfbeac1613",
+        "plan": "sha256:11cc0f64a3472e4ab796a1ed56b3b6f084fcca00e7df7a9cc6d2b7ae929d8366",
+        "spec-1": "sha256:95e54ba517fcbdd6d721101ed1037e406f386e39670f2e3da84c5a36ebf7e236",
+        "spec-2": "sha256:4dbd7a69424e60e85f618c2acf7328fb0c4a8494af4316b5746070abec34d6cb",
+        "spec-3": "sha256:bf7d4fd9007f438fc8af0d668e5f486407a7060eea0ccecde077977eb4c522a2",
+        "build-report-1": "sha256:666093b08f626f2ac679b06b821481d8d0aa9f56c26aea42b583657358cbf0ff",
+        "build-data-1": "sha256:b9c9b9681d9bcd9387f8721d687b2c839b99a6c54a64d4b0253324185cab831c",
+        "verify-report-1": "sha256:2cb18c8df7da974bd694d9d5803c64dea17920bbcf722d127f0ce196fcb6a094",
+        "verify-data-1": "sha256:3d2f74646d20d0f8a1d2e76e2495e9203d4c48b53d52e3064ff2afe8950f79ea",
+        "build-report-2": "sha256:ea4dcfd0b8fe580fdfffbf9200fddbbc3535bdebbeef6e8756005ffcb9bd2125",
+        "build-data-2": "sha256:7be8b14ae95bc775fcc432715b0730de24213f74369bab1330fc1c17ed74a385",
+        "verify-report-2": "sha256:13953bfe2745af6c60c67cddd246e2b2dc90046e2b3f6ecd67bc5ec9d43736b0",
+        "verify-data-2": "sha256:93397510c11eb52f5cbcb99ac69455687e59b742590959286f1545234ba00ac2",
+        "build-report-3": "sha256:ab8ae99ff00b2cf24be25eb121abc619db1f71e21dd04124ff75889dcdfba137",
+        "build-data-3": "sha256:f211d57b1f8a518ce08a2b740e7648e7d52dc69cdd6d39434f2672d860c37297",
+        "verify-report-3": "sha256:1570d0bfe48fedf821378fc3b35f921c6756ab7ae59c4ca8155fee4825df0664",
+        "verify-data-3": "sha256:61d48acff67e3832da3042e04585253e508ea9da4f74ece6e99f777defc36caa"
+      },
+      "completed_at": "2026-05-13T20:44:00.961Z",
+      "modules_touched": [
+        "website/app/docs/[...slug]/page.tsx",
+        "website/app/docs/page.tsx",
+        "website/app/globals.css",
+        "website/components/docs/content/AudienceCards.tsx",
+        "website/components/docs/content/Callout.tsx",
+        "website/components/docs/content/CuratedProofs.tsx",
+        "website/components/docs/content/DocsGrid.tsx",
+        "website/components/docs/content/PipelineDiagram.tsx",
+        "website/components/docs/content/ResourceStrip.tsx",
+        "website/components/docs/content/TroubleCard.tsx",
+        "website/components/docs/layout/DocsNav.tsx",
+        "website/components/docs/layout/RightRail.tsx",
+        "website/content/docs/concepts/artifacts.mdx",
+        "website/content/docs/concepts/context.mdx",
+        "website/content/docs/concepts/contract.mdx",
+        "website/content/docs/concepts/findings.mdx",
+        "website/content/docs/concepts/meta.json",
+        "website/content/docs/concepts/pipeline.mdx",
+        "website/content/docs/concepts/skills.mdx",
+        "website/content/docs/concepts/toolbelt.mdx",
+        "website/content/docs/guides/configurability.mdx",
+        "website/content/docs/guides/meta.json",
+        "website/content/docs/guides/reading-a-proof.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx",
+        "website/content/docs/guides/using-ana-setup.mdx",
+        "website/content/docs/guides/verifying-changes.mdx",
+        "website/content/docs/index.mdx",
+        "website/content/docs/meta.json",
+        "website/content/docs/start.mdx"
+      ],
+      "scope_summary": "Ship all 16 editorial content pages for anaDocs: the overview (custom page.tsx), quickstart (MDX), 7 concept pages (MDX with locked copy from the supermock), and 6 guide pages (MDX with rewritten copy from the supermock session). Fix three Scope 3 bugs that affect every page render: responsive breakpoint dead zone (D15), GitHub URL wrong org (D20), and Callout missing label text (D19). After this scope, every editorial page on the docs site is live with correct sidebar navigation, TOC, and dynamic values from data loaders.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "DocsGrid component created but not in spec file_changes",
+          "file": "website/components/docs/content/DocsGrid.tsx",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "content-pages-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Stats strip has 5 items (added MIT/free forever) vs spec mockup showing 4",
+          "file": "website/app/docs/page.tsx",
+          "anchor": null,
+          "line": 34,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Callout label stores titlecase (Rule/Note), relies on CSS text-transform for uppercase display",
+          "file": "website/components/docs/content/Callout.tsx",
+          "anchor": null,
+          "line": 13,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "content-pages-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Catch-all route renamed from [[...slug]] to [...slug] — not specified in spec but necessary",
+          "file": "website/app/docs/[...slug]/page.tsx",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "ResourceStrip uses <a> for Manifesto link (internal anatomia.dev URL) instead of Next.js Link",
+          "file": "website/components/docs/content/ResourceStrip.tsx",
+          "anchor": null,
+          "line": 29,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "content-pages-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "globals.css modified to add --brand-light and --info CSS variables — not in spec file_changes",
+          "file": "website/app/globals.css",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "RightRail breakpoint mismatch finding from prior proof cycle resolved by this build",
+          "file": null,
+          "anchor": "website/components/docs/layout/RightRail.tsx",
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C7",
+          "status": "lesson"
+        },
+        {
+          "category": "test",
+          "summary": "No unit tests for any new components — build verification is pnpm build only",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "content-pages-C8",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "NextCards link to 6 pages that don't exist yet (guides, reference, proof)",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "content-pages-C9",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Skills page inline-links 8 individual skill reference pages that don't exist and aren't scoped in any phase",
+          "file": "website/content/docs/concepts/skills.mdx",
+          "anchor": null,
+          "line": 51,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "content-pages-C10",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Context page links to /docs/reference/context twice — page doesn't exist and isn't scoped",
+          "file": "website/content/docs/concepts/context.mdx",
+          "anchor": null,
+          "line": 41,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "content-pages-C11",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Dynamic value comments use {/* Dynamic: update on data change */} but there's no grep-friendly tag to find them at update time",
+          "file": "website/content/docs/concepts/pipeline.mdx",
+          "anchor": null,
+          "line": 28,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C12",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Pre-existing lint failures in DocsErrorBoundary.tsx and PlatformProvider.tsx — not introduced by this build but block clean lint runs",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "content-pages-C13",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "NextCards link to unbuilt reference/proof pages — will 404 until Scope 5",
+          "file": "website/content/docs/guides/using-ana-setup.mdx",
+          "anchor": null,
+          "line": 148,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [],
+          "id": "content-pages-C14",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Stale dynamic-value comment in verifying-changes and troubleshooting — says 17 of 78 proofs but real count may differ",
+          "file": "website/content/docs/guides/verifying-changes.mdx",
+          "anchor": null,
+          "line": 74,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "content-pages-C15",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "TroubleCard has no aria/role attribute for accessibility — Callout uses role=note",
+          "file": "website/components/docs/content/TroubleCard.tsx",
+          "anchor": null,
+          "line": 10,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "content-pages-C16",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Callout label renders 'Rule' with CSS uppercase — contract A020 expects literal 'RULE'. Visually correct but DOM text differs from contract value.",
+          "file": "website/components/docs/content/Callout.tsx",
+          "anchor": null,
+          "line": 56,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C17",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No unit tests for TroubleCard component — only verified via build compilation",
+          "file": "website/components/docs/content/TroubleCard.tsx",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "content-pages-C18",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec allows links to reference pages that 404 — acknowledged in constraints but creates a broken-link experience for users until Scope 5 ships",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "content-pages-C19",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Next.js 16 route conflict required [[...slug]] → [...slug] conversion",
+          "file": "website/app/docs/[...slug]/page.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "DocsGrid component created but not in spec File Changes — required for supermock fidelity",
+          "file": "website/components/docs/content/DocsGrid.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "globals.css modified to add --brand-light and --info tokens — not in spec but required for Callout colors",
+          "file": "website/app/globals.css",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint errors in DocsErrorBoundary.tsx and PlatformProvider.tsx block website lint",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "PipelineDiagram uses overview descriptions, not the detailed concept-page variant from supermock",
+          "file": "website/content/docs/concepts/pipeline.mdx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Toolbelt, context, and skills pages link to reference pages that don't exist yet",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "NextCards link to non-existent routes (reference, proof pages) — will 404 until Scope 5",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Inline-styled CSS grids converted to markdown structure — visual fidelity differs from supermock",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "MDX markdown rendering inside TroubleCard component tags needs visual verification in preview",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-13T00:01:44.440Z",
+        "completed_at": "2026-05-13T20:44:00.957Z",
+        "commit_count": 68,
+        "base_commit": "1e49f6d8d74320c130026bbb98fd674e4d62bc6d"
+      }
     }
   ],
   "schema": 1

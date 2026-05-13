@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-88 runs · 245 active · 107 lessons · 0 promoted · 161 closed
+89 runs · 261 active · 110 lessons · 0 promoted · 161 closed
 
 ## Hot Modules
 
@@ -16,32 +16,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 245 total)
+## Active Findings (30 shown of 261 total)
 
-### packages/cli/src/commands/work.ts
+### website/app/docs/[...slug]/page.tsx
 
-- **code:** --autostash bypasses content-match guard for tracked dirty planning artifacts — theoretical gap remains — *Hygiene debt cleanup*
-- **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
-
-### packages/cli/src/engine/detectors/git.ts
-
-- **test:** A004 and A005 are source-inspection-only assertions — no behavioral test verifies the regex actually strips + markers in git.ts (only work.ts path is integration-tested) — *Fix worktree branch parsing*
-- **test:** Integration test covers work.ts parsing path end-to-end but git.ts detectBranches is not exercised by any new test — the fix is verified only by source inspection — *Fix worktree branch parsing*
-
-### packages/cli/src/utils/worktree.ts
-
-- **code:** commitsBehind uses origin/artifactBranch but commitCount uses bare artifactBranch — asymmetric ref comparison — *Worktree freshness detection*
-
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** planningOnlyInMerge flag improves test fidelity — now models real production scenario of untracked artifacts — *Hygiene debt cleanup*
-- **test:** No dedicated @ana tag for A003 — existing test satisfies the assertion but is tagged @ana A010 from a prior contract — *Fix worktree branch parsing*
-- **code:** No mutual exclusion between featureBranch and worktree options in createWorkTestProject — setting both creates branch via checkout then fails on worktree add — *Fix worktree branch parsing*
-- **test:** A008 JSON test asserts typeof === 'number' not a specific value — passes even if commitsBehind computation is broken — *Worktree freshness detection*
-
-### packages/cli/tests/utils/worktree.test.ts
-
-- **test:** A005 git failure test relies on absent origin/main ref rather than injecting a failure — indirect coverage of the catch path — *Worktree freshness detection*
+- **code:** Catch-all route renamed from [[...slug]] to [...slug] — not specified in spec but necessary — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/app/docs/[[...slug]]/page.tsx
 
@@ -50,15 +29,36 @@
 ### website/app/docs/layout.tsx
 
 - **code:** data-hide-rail attribute from spec not implemented — prep mechanism for future proof-explorer route — *Docs Shell (Layout + Shared Components)*
-- **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
-### website/components/docs/
+### website/app/docs/page.tsx
 
-- **code:** Empty components/docs directory left after deleting 4 component files — *Docs Infrastructure — Fumadocs MDX Pipeline*
+- **code:** Stats strip has 5 items (added MIT/free forever) vs spec mockup showing 4 — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/app/globals.css
+
+- **code:** globals.css modified to add --brand-light and --info CSS variables — not in spec file_changes — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/components/docs/content/Callout.tsx
+
+- **code:** Callout label stores titlecase (Rule/Note), relies on CSS text-transform for uppercase display — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+- **code:** Callout label renders 'Rule' with CSS uppercase — contract A020 expects literal 'RULE'. Visually correct but DOM text differs from contract value. — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/components/docs/content/CopyButton.tsx
 
 - **code:** CopyButton uses inline event handlers for hover styles instead of CSS — fragile pattern, state survives re-renders differently than CSS hover — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/content/DocsGrid.tsx
+
+- **code:** DocsGrid component created but not in spec file_changes — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/components/docs/content/ResourceStrip.tsx
+
+- **code:** ResourceStrip uses <a> for Manifesto link (internal anatomia.dev URL) instead of Next.js Link — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/components/docs/content/TroubleCard.tsx
+
+- **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+- **test:** No unit tests for TroubleCard component — only verified via build compilation — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/components/docs/layout/DocsErrorBoundary.tsx
 
@@ -80,9 +80,25 @@
 
 - **code:** Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule — *Docs Shell (Layout + Shared Components)*
 
-### website/eslint.config.mjs
+### website/content/docs/concepts/context.mdx
 
-- **code:** eslint.config.mjs modified to ignore .source — not in spec file_changes — *Docs Infrastructure — Fumadocs MDX Pipeline*
+- **code:** Context page links to /docs/reference/context twice — page doesn't exist and isn't scoped — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/content/docs/concepts/pipeline.mdx
+
+- **code:** Dynamic value comments use {/* Dynamic: update on data change */} but there's no grep-friendly tag to find them at update time — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/content/docs/concepts/skills.mdx
+
+- **code:** Skills page inline-links 8 individual skill reference pages that don't exist and aren't scoped in any phase — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/content/docs/guides/using-ana-setup.mdx
+
+- **code:** NextCards link to unbuilt reference/proof pages — will 404 until Scope 5 — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/content/docs/guides/verifying-changes.mdx
+
+- **code:** Stale dynamic-value comment in verifying-changes and troubleshooting — says 17 of 78 proofs but real count may differ — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/lib/docs-data/index.ts
 
@@ -93,21 +109,14 @@
 - **code:** No JSDoc on exported loader functions — inconsistent with CLI package coding standards, though website eslint doesn't enforce it — *Docs Data Pipeline*
 - **code:** process.cwd() in loader DATA_PATH assumes Next.js runs from website/ root — correct for Next.js build, fragile if loaders are ever called from tests or scripts — *Docs Data Pipeline*
 
-### website/lib/source.ts
-
-- **code:** Page tree injections for Reference and Proof Chain omitted from source loader — *Docs Infrastructure — Fumadocs MDX Pipeline*
-
 ### website/scripts/extract-docs-data.ts
 
 - **code:** Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine — *Docs Data Pipeline*
 - **code:** Variable shadowing in extractSkillTemplates — inner 'content' shadows outer 'content' in same function — *Docs Data Pipeline*
 
-### website/source.config.ts
-
-- **code:** Frontmatter schema allows empty strings — z.string() without .min(1) — *Docs Infrastructure — Fumadocs MDX Pipeline*
-
 ### General
 
+- **test:** No unit tests for any new components — build verification is pnpm build only — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+- **code:** NextCards link to 6 pages that don't exist yet (guides, reference, proof) — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 - **test:** No tests exist for website package — all 31 assertions verified by source inspection only. No regression safety net for component behavior. — *Docs Shell (Layout + Shared Components)*
-- **code:** Audit reduced from 20 to 12, not 0 — remaining 12 are postcss dev-only transitives awaiting upstream fix — *Hygiene debt cleanup*
 
