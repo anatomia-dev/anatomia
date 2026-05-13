@@ -26,14 +26,6 @@ export function ProofHero({ entry, className }: ProofHeroProps) {
       paddingBottom: "24px",
       borderBottom: "1px solid var(--hairline)",
     }}>
-      <div style={{
-        fontFamily: "var(--font-mono)",
-        fontSize: "11.5px",
-        color: "var(--ink-60)",
-        marginBottom: "8px",
-      }}>
-        proof / {entry.slug}
-      </div>
       <h1 style={{
         fontFamily: "var(--font-serif)",
         fontWeight: 500,

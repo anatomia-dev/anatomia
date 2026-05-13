@@ -79,7 +79,7 @@ export function PipelineGantt({ timing, className }: PipelineGanttProps) {
                 bottom: 0,
                 left: `${left}%`,
                 width: `${widthPct}%`,
-                background: "var(--brand)",
+                background: "var(--color-brand)",
                 borderRadius: "4px",
                 opacity: stage.opacity,
               }} />

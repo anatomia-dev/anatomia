@@ -103,7 +103,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
         className={`docs-fchip${active ? " on" : ""}`}
         style={{
           padding: "4px 9px",
-          border: active ? "1px solid var(--brand)" : "1px solid var(--border)",
+          border: active ? "1px solid var(--color-brand)" : "1px solid var(--border)",
           borderRadius: "3px",
           color: active ? "var(--brand-light)" : "var(--ink-60)",
           background: active ? "var(--brand-soft)" : "transparent",
