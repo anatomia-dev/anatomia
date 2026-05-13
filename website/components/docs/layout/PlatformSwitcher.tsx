@@ -20,19 +20,11 @@ const platforms: PlatformOption[] = [
   { id: "cline", label: "Cline", disabled: true },
 ];
 
-const labelMap: Record<Platform, string> = {
-  "claude-code": "Claude Code",
-  "cursor": "Cursor",
-  "codex": "Codex",
-  "windsurf": "Windsurf",
-  "copilot": "Copilot",
-  "cline": "Cline",
-};
-
 export function PlatformSwitcher() {
   const { platform, setPlatform } = usePlatform();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const activePlatform = platforms.find((p) => p.id === platform);
 
   useEffect(() => {
     if (!open) return;
@@ -46,78 +38,114 @@ export function PlatformSwitcher() {
   }, [open]);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} style={{ position: "relative" }}>
+      {/* Trigger */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150"
         style={{
-          color: "var(--fg)",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "5px 10px",
+          borderRadius: "var(--radius-sm)",
+          fontSize: "12px",
+          fontWeight: 500,
+          color: "var(--ink-75)",
           border: "1px solid var(--border-soft)",
+          background: "var(--bg-card)",
+          cursor: "pointer",
+          fontFamily: "inherit",
         }}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <BrandIcon name={labelMap[platform]} size={14} />
-        <span>{labelMap[platform]}</span>
+        <BrandIcon name={activePlatform?.label ?? "Claude Code"} size={14} />
+        <span>{activePlatform?.label}</span>
         <svg
           width="10"
           height="10"
-          viewBox="0 0 10 10"
+          viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
-          className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
-          style={{ color: "var(--ink-45)" }}
+          strokeWidth="2.5"
         >
-          <path d="M2.5 3.75L5 6.25L7.5 3.75" />
+          <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
 
+      {/* Dropdown */}
       {open && (
         <div
-          className="absolute top-full left-0 z-[200] mt-1.5 min-w-[180px] rounded-[var(--radius-md)] py-1.5 shadow-lg"
           style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            minWidth: "180px",
+            padding: "4px",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow, 0 8px 24px -8px rgba(0,0,0,0.4))",
+            zIndex: 30,
           }}
           role="listbox"
           aria-label="Select platform"
         >
-          {platforms.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => {
-                if (!p.disabled) {
-                  setPlatform(p.id);
-                  setOpen(false);
-                }
-              }}
-              disabled={p.disabled}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] transition-colors duration-100"
-              style={{
-                color: p.disabled ? "var(--ink-30)" : "var(--fg)",
-                cursor: p.disabled ? "default" : "pointer",
-              }}
-              role="option"
-              aria-selected={p.id === platform}
-              aria-disabled={p.disabled}
-            >
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{
-                  background: p.id === platform ? "var(--color-brand)" : "transparent",
-                  border: p.id === platform ? "none" : "1px solid var(--ink-30)",
+          {platforms.map((p) => {
+            const isActive = p.id === platform;
+            return (
+              <button
+                key={p.id}
+                onClick={() => {
+                  if (!p.disabled) {
+                    setPlatform(p.id);
+                    setOpen(false);
+                  }
                 }}
-              />
-              <BrandIcon name={p.label} size={14} />
-              <span className="flex-1">{p.label}</span>
-              {p.disabled && (
-                <span className="font-mono text-[10px]" style={{ color: "var(--ink-30)" }}>
-                  soon
-                </span>
-              )}
-            </button>
-          ))}
+                disabled={p.disabled}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  width: "100%",
+                  padding: "7px 10px",
+                  borderRadius: "var(--radius-sm)",
+                  fontSize: "12.5px",
+                  color: "var(--ink-75)",
+                  cursor: "default",
+                  background: isActive ? "var(--brand-soft)" : "transparent",
+                  border: "none",
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  opacity: p.disabled ? 0.4 : 1,
+                }}
+                role="option"
+                aria-selected={isActive}
+                aria-disabled={p.disabled}
+              >
+                <BrandIcon name={p.label} size={14} />
+                <span style={{ flex: 1 }}>{p.label}</span>
+                {isActive && (
+                  <span style={{ marginLeft: "auto", color: "var(--brand-light)", fontSize: "13px" }}>
+                    ✓
+                  </span>
+                )}
+                {p.disabled && (
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: "10px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--ink-45)",
+                    }}
+                  >
+                    soon
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

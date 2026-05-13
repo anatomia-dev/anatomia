@@ -5,16 +5,22 @@ import { PlatformSwitcher } from "./PlatformSwitcher";
 
 /**
  * DocsNav — docs-specific navbar, completely separate from marketing Nav.
- * Server component. 58px height, sticky, backdrop-blur.
+ * Server component. Sticky, backdrop-blur. Matches supermock .navbar exactly.
  */
 export function DocsNav() {
   const meta = getBuildMeta();
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-[150] flex items-center justify-between px-5"
       style={{
-        height: "58px",
+        position: "sticky",
+        top: 0,
+        zIndex: 20,
+        display: "grid",
+        gridTemplateColumns: "auto auto 1fr auto",
+        alignItems: "center",
+        padding: "14px 24px",
+        gap: "24px",
         background: "var(--nav-bg)",
         backdropFilter: "blur(14px) saturate(1.2)",
         WebkitBackdropFilter: "blur(14px) saturate(1.2)",
@@ -22,73 +28,132 @@ export function DocsNav() {
       }}
       aria-label="Documentation"
     >
-      {/* Left: wordmark + version pill */}
-      <div className="flex items-center gap-3">
+      {/* Column 1: Logo + version */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: "14px", justifySelf: "start" }}>
         <Link
           href="/docs"
-          className="flex items-baseline font-serif text-[20px] font-medium"
-          style={{ color: "var(--fg)", letterSpacing: "-0.02em" }}
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            fontFamily: "var(--font-serif)",
+            fontWeight: 500,
+            fontSize: "24px",
+            letterSpacing: "-0.02em",
+            color: "var(--fg)",
+            textDecoration: "none",
+          }}
         >
-          <span>anaDocs</span>
-          <span
-            className="ml-[0.18em] inline-block"
-            style={{
-              width: "0.28em",
-              height: "0.34em",
-              background: "var(--brand-mark)",
-              position: "relative",
-              top: "0.03em",
-            }}
-          />
+          <span style={{ display: "inline-flex", alignItems: "baseline" }}>
+            anaDocs
+            <span
+              style={{
+                display: "inline-block",
+                width: "0.32em",
+                height: "0.39em",
+                background: "var(--color-brand)",
+                marginLeft: "0.22em",
+                position: "relative",
+                top: "0.03em",
+              }}
+            />
+          </span>
         </Link>
-
         <span
-          className="font-mono text-[11px]"
-          style={{ color: "var(--ink-30)" }}
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "11px",
+            color: "var(--ink-45)",
+            fontWeight: 400,
+          }}
         >
           v{meta.version}
         </span>
       </div>
 
-      {/* Center: platform switcher + search placeholder */}
-      <div className="flex items-center gap-3">
-        <PlatformSwitcher />
+      {/* Column 2: Platform switcher */}
+      <PlatformSwitcher />
+
+      {/* Column 3: Search bar (centered in 1fr column) */}
+      <div style={{ justifySelf: "center", gridColumn: 3 }}>
         <button
-          className="hidden items-center gap-2 rounded-[var(--radius-sm)] px-3 py-1.5 font-mono text-[12px] sm:flex"
           style={{
-            border: "1px solid var(--border-soft)",
+            display: "flex",
+            alignItems: "center",
+            gap: "9px",
+            padding: "6px 11px",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
+            width: "420px",
+            maxWidth: "50vw",
+            fontSize: "13px",
             color: "var(--ink-45)",
+            cursor: "pointer",
+            fontFamily: "inherit",
           }}
           aria-label="Search docs"
           disabled
         >
-          Search docs...
-          <kbd className="ml-1 text-[10px]" style={{ color: "var(--ink-30)" }}>⌘K</kbd>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <span>Search docs, commands, proofs...</span>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              border: "1px solid var(--border)",
+              padding: "1px 5px",
+              borderRadius: "3px",
+              color: "var(--ink-60)",
+            }}
+          >
+            ⌘K
+          </span>
         </button>
       </div>
 
-      {/* Right: theme toggle + GitHub + anatomia link */}
-      <div className="flex items-center gap-2">
+      {/* Column 4: Theme toggle + GitHub + anatomia */}
+      <div style={{ justifySelf: "end", display: "flex", alignItems: "center", gap: "4px" }}>
         <ThemeToggle />
         <a
           href="https://github.com/TettoLabs/anatomia"
           target="_blank"
           rel="noopener noreferrer"
-          className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-150"
-          style={{ color: "var(--ink-60)" }}
+          style={{
+            padding: "6px 8px",
+            color: "var(--ink-60)",
+            borderRadius: "var(--radius-sm)",
+            display: "flex",
+            alignItems: "center",
+          }}
           aria-label="GitHub"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57v-2c-3.34.72-4.04-1.42-4.04-1.42-.55-1.4-1.34-1.78-1.34-1.78-1.1-.75.08-.73.08-.73 1.2.08 1.84 1.23 1.84 1.23 1.07 1.84 2.82 1.3 3.5 1 .1-.78.42-1.3.77-1.6-2.67-.3-5.48-1.33-5.48-5.92 0-1.3.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.76.84 1.23 1.92 1.23 3.22 0 4.6-2.81 5.61-5.49 5.91.43.37.81 1.1.81 2.22v3.29c0 .31.23.69.84.57A12 12 0 0 0 12 .3" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
           </svg>
         </a>
-        <Link
-          href="/"
-          className="hidden text-[12.5px] font-medium sm:inline"
-          style={{ color: "var(--ink-45)" }}
+        <a
+          href="https://anatomia.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "13px",
+            fontWeight: 500,
+            color: "var(--ink-60)",
+            padding: "4px 10px",
+            borderRadius: "var(--radius-sm)",
+            display: "flex",
+            alignItems: "center",
+            gap: "3px",
+            textDecoration: "none",
+          }}
         >
-          anatomia
-        </Link>
+          anatomia<span style={{ fontSize: "11px" }}>↗</span>
+        </a>
       </div>
     </nav>
   );
