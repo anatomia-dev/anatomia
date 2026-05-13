@@ -1,0 +1,29 @@
+schema: 1
+findings:
+  - category: code
+    summary: "NextCards link to 6 pages that don't exist yet (guides, reference, proof)"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A030"]
+  - category: code
+    summary: "Skills page inline-links 8 individual skill reference pages that don't exist and aren't scoped in any phase"
+    file: "website/content/docs/concepts/skills.mdx"
+    line: 51
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "Context page links to /docs/reference/context twice — page doesn't exist and isn't scoped"
+    file: "website/content/docs/concepts/context.mdx"
+    line: 41
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Dynamic value comments use {/* Dynamic: update on data change */} but there's no grep-friendly tag to find them at update time"
+    file: "website/content/docs/concepts/pipeline.mdx"
+    line: 28
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Pre-existing lint failures in DocsErrorBoundary.tsx and PlatformProvider.tsx — not introduced by this build but block clean lint runs"
+    severity: observation
+    suggested_action: scope
