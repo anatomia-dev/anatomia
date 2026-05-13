@@ -71,7 +71,7 @@ export function DocsNav() {
       <div className="flex items-center gap-2">
         <ThemeToggle />
         <a
-          href="https://github.com/anatomia-dev/anatomia"
+          href="https://github.com/TettoLabs/anatomia"
           target="_blank"
           rel="noopener noreferrer"
           className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-150"

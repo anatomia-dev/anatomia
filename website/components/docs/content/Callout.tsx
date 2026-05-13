@@ -31,6 +31,12 @@ export function Callout({ variant = "note", children }: CalloutProps) {
         color: "var(--fg)",
       }}
     >
+      <span
+        className="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-wider"
+        style={{ color: styles.borderColor }}
+      >
+        {variant.toUpperCase()}
+      </span>
       {children}
     </div>
   );

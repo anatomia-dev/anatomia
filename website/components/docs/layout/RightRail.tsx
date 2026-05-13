@@ -23,7 +23,7 @@ export function RightRail({ toc, commitSha, buildTimestamp, editUrl }: RightRail
   const activeId = useScrollSpy(toc);
 
   return (
-    <aside className="docs-right-rail sticky top-[58px] hidden h-[calc(100vh-58px)] w-[220px] shrink-0 overflow-y-auto xl:block">
+    <aside className="docs-right-rail sticky top-[58px] h-[calc(100vh-58px)] w-[220px] shrink-0 overflow-y-auto">
       <div className="px-4 py-6">
         {/* TOC */}
         {toc.length > 0 && (
