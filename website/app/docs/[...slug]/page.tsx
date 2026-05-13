@@ -11,6 +11,7 @@ import { NextCards } from "@/components/docs/content/NextCards";
 import { StatsStrip } from "@/components/docs/content/StatsStrip";
 import { ForPlatform } from "@/components/docs/content/ForPlatform";
 import { PipelineDiagram } from "@/components/docs/content/PipelineDiagram";
+import { TroubleCard } from "@/components/docs/content/TroubleCard";
 
 const mdxComponents = {
   pre: CodeBlock,
@@ -19,6 +20,7 @@ const mdxComponents = {
   StatsStrip,
   ForPlatform,
   PipelineDiagram,
+  TroubleCard,
 };
 
 interface DocsPageProps {
