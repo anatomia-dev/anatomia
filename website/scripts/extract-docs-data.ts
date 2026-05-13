@@ -417,7 +417,9 @@ function extractCommands(): CommandsData {
   const groupPositions: { name: string; pos: number }[] = [];
 
   while ((groupMatch = groupRegex.exec(indexContent)) !== null) {
-    groupPositions.push({ name: groupMatch[1], pos: groupMatch.index });
+    // Commander uses UPPERCASE for help display; convert to title case for docs
+    const titleCase = groupMatch[1].toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    groupPositions.push({ name: titleCase, pos: groupMatch.index });
   }
 
   // Find register calls and their positions
