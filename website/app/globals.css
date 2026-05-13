@@ -66,7 +66,7 @@
    :root — mode-agnostic derived tokens
    ------------------------------------------------------------------- */
 :root {
-  --brand-soft: rgba(122, 27, 27, 0.10);
+  --brand-soft: color-mix(in oklch, var(--color-brand) 14%, transparent);
   --brand-deep: color-mix(in oklch, var(--color-brand) 65%, #000 35%);
 
   --page-max: 1320px;
@@ -81,10 +81,10 @@
   --fg: #0b0b10;
   --fg-strong: #000000;
   --bg: #F7F7F4;
-  --bg-elev: #FFFFFF;
+  --bg-elev: #F7F7F4;
   --bg-deep: #F0EFE9;
-  --bg-card: #FFFFFF;
-  --nav-bg: rgba(247, 247, 244, 0.88);
+  --bg-card: #F7F7F4;
+  --nav-bg: rgba(247, 247, 244, 0.85);
   --footer-bg: #F0EFE9;
   --border: rgba(11, 11, 16, 0.12);
   --border-soft: rgba(11, 11, 16, 0.08);

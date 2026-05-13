@@ -18,6 +18,21 @@
 }
 
 /* -------------------------------------------------------------------
+   DOCS TOKEN OVERRIDES — scoped to docs pages only.
+   These differ from the marketing site's globals.css values.
+   ------------------------------------------------------------------- */
+[data-theme="light"] .docs-layout {
+  --bg-card: #FFFFFF;
+  --bg-elev: #FFFFFF;
+  --nav-bg: rgba(247, 247, 244, 0.88);
+  --brand-soft: rgba(122, 27, 27, 0.10);
+}
+
+[data-theme="dark"] .docs-layout {
+  --brand-soft: rgba(122, 27, 27, 0.10);
+}
+
+/* -------------------------------------------------------------------
    SIDEBAR — show-on-hover scrollbar + active/hover states
    ------------------------------------------------------------------- */
 .docs-sidebar {
