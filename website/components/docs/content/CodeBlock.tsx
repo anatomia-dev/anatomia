@@ -4,51 +4,78 @@ import { CopyButton } from "./CopyButton";
 type PreProps = ComponentPropsWithoutRef<"pre">;
 
 /**
- * CodeBlock — maps to the `pre` element in MDX component overrides.
- * rehypeCode annotates `<pre>` with data-language and data-title.
- * The highlighted `<code>` is passed as children.
+ * CodeBlock — matches supermock .code exactly.
+ * Container: bg-card, border, border-radius, mono 12.5px.
+ * Header: bg-elev, language uppercase 10px, "Copy" always visible.
+ * Body: padding 14px 16px, ink-80 color.
  */
 export function CodeBlock(props: PreProps) {
   const { children, ...rest } = props;
-  const language = (rest as Record<string, unknown>)["data-language"] as string | undefined;
-  const title = (rest as Record<string, unknown>)["data-title"] as string | undefined;
+  const language = (rest as Record<string, unknown>)["data-language"] as
+    | string
+    | undefined;
+  const title = (rest as Record<string, unknown>)["data-title"] as
+    | string
+    | undefined;
 
-  // Extract text content for the copy button
   const textContent = extractText(children);
-
   const showHeader = language || title;
 
   return (
-    <div className="code-block group my-6 overflow-hidden rounded-[var(--radius-md)]">
+    <div
+      style={{
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        margin: "8px 0 18px",
+        fontFamily: "var(--font-mono)",
+        fontSize: "12.5px",
+        lineHeight: 1.65,
+        overflow: "hidden",
+      }}
+    >
       {showHeader && (
         <div
-          className="flex items-center justify-between px-4 py-2 font-mono text-[12px]"
           style={{
-            background: "var(--bg-deep)",
-            borderBottom: "1px solid var(--border-soft)",
-            color: "var(--ink-45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "8px 14px",
+            borderBottom: "1px solid var(--hairline)",
+            background: "var(--bg-elev)",
+            fontSize: "11px",
+            color: "var(--ink-60)",
           }}
         >
-          <span>{title ?? language}</span>
+          <span
+            style={{
+              color: "var(--ink-45)",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              fontSize: "10px",
+            }}
+          >
+            {title ?? language}
+          </span>
           <CopyButton text={textContent} />
         </div>
       )}
       <pre
         {...rest}
-        className="overflow-x-auto p-4 text-[13.5px] leading-relaxed"
         style={{
-          background: "var(--bg-deep)",
-          color: "var(--fg)",
+          padding: "14px 16px",
+          color: "var(--ink-75)",
+          overflowX: "auto",
+          whiteSpace: "pre",
           margin: 0,
+          background: "transparent",
+          fontSize: "inherit",
+          lineHeight: "inherit",
+          fontFamily: "inherit",
         }}
       >
         {children}
       </pre>
-      {!showHeader && (
-        <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
-          <CopyButton text={textContent} />
-        </div>
-      )}
     </div>
   );
 }

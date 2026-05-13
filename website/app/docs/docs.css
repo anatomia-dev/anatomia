@@ -91,6 +91,11 @@
   background: var(--code-bg);
 }
 
+/* Copy button hover — matches supermock .code-head .copy:hover */
+.copy-btn:hover {
+  color: var(--fg) !important;
+}
+
 /* CuratedProofs browse link hover — matches supermock .exp-foot a:hover */
 .curated-browse:hover {
   color: var(--brand-light) !important;
@@ -99,8 +104,12 @@
 /* -------------------------------------------------------------------
    PROSE — matches supermock .prose exactly
    ------------------------------------------------------------------- */
+/* No max-width on the container — individual elements (p, li) have
+   their own max-width: 62ch. The container fills the flex column.
+   Supermock's .prose { max-width } works in CSS grid; in our flex
+   layout it would shrink the article and create a gap before the
+   right rail. */
 .docs-prose {
-  max-width: var(--content-max, 780px);
 }
 
 /* Page title — supermock h1.page-title */
@@ -198,6 +207,7 @@
 .docs-prose ul {
   margin: 0 0 16px 18px;
   padding: 0;
+  list-style: disc;
 }
 
 .docs-prose ul li {
