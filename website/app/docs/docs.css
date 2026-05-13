@@ -442,30 +442,27 @@
   }
 
   /* Reorder nav items for mobile: hamburger+logo, search, platform */
-  nav[aria-label="Documentation"] > div:nth-child(1) { order: 1; } /* logo group */
+  nav[aria-label="Documentation"] > div:nth-child(1) { order: 1; flex: 1; } /* logo group — takes remaining space */
   nav[aria-label="Documentation"] > div:nth-child(2) { order: 3; } /* platform → far right */
-  nav[aria-label="Documentation"] > div:nth-child(3) { order: 2; flex: 1; } /* search → middle, flex */
+  nav[aria-label="Documentation"] > div:nth-child(3) { order: 2; } /* search icon → left of platform */
   nav[aria-label="Documentation"] > div:nth-child(4) { order: 4; } /* right icons (hidden) */
 
-  /* Search: takes available space between logo and platform icon */
+  /* Search: icon-only button next to platform dropdown */
   .docs-nav-search {
-    width: auto !important;
-    max-width: none !important;
-    min-width: 80px !important;
-    flex: 1 !important;
-    padding: 6px 10px !important;
-    justify-content: flex-start !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    padding: 6px !important;
+    justify-content: center !important;
+    border: none !important;
+    background: none !important;
   }
-  .docs-nav-search-text {
-    display: block !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px !important;
-  }
+  .docs-nav-search-text,
   .docs-nav-search-kbd {
     display: none !important;
   }
+
+  /* Reorder: search (order 2) sits left of platform (order 3) */
 
   /* "anatomia ↗": hide completely on mobile */
   .docs-nav-back {
