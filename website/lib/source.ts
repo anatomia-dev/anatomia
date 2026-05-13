@@ -2,8 +2,9 @@ import { loader } from "fumadocs-core/source";
 import { docs } from "collections/server";
 
 /**
- * Page tree transformer — injects Overview at the top, plus Reference
- * and Proof Chain sections at the bottom.
+ * Page tree transformer — restructures the sidebar:
+ * 1. Wraps Overview + Quickstart in a "Get Started" folder
+ * 2. Appends Reference and Proof Chain sections
  */
 export const source = loader({
   baseUrl: "/docs",
@@ -12,11 +13,30 @@ export const source = loader({
     transformers: [
       {
         root(node) {
-          // Inject Overview at the very top (before MDX-generated entries)
-          node.children.unshift(
-            { type: "page", name: "Overview", url: "/docs" },
+          // Find and remove the Quickstart page from top-level children
+          const startIndex = node.children.findIndex(
+            (c) => c.type === "page" && c.url === "/docs/start",
           );
+          const startNode =
+            startIndex >= 0 ? node.children.splice(startIndex, 1)[0] : null;
 
+          // Build the "Get Started" folder with Overview + Quickstart
+          const getStartedChildren = [
+            { type: "page" as const, name: "Overview", url: "/docs" },
+          ];
+          if (startNode) {
+            getStartedChildren.push(startNode as typeof getStartedChildren[number]);
+          }
+
+          // Insert "Get Started" at the very top
+          node.children.unshift({
+            type: "folder",
+            name: "Get Started",
+            defaultOpen: true,
+            children: getStartedChildren,
+          });
+
+          // Append Reference and Proof Chain at the bottom
           node.children.push(
             // ── Reference ──
             { type: "separator", name: "Reference" },
