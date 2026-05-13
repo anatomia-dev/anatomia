@@ -219,13 +219,22 @@
   line-height: 1.6;
 }
 
+/* Blockquote — matches supermock inline styled blockquote */
 .docs-prose blockquote {
   margin: 16px 0;
-  padding: 10px 14px;
+  padding: 0 0 0 16px;
   border-left: 2px solid var(--ink-25);
   color: var(--ink-60);
   font-size: 13.5px;
   line-height: 1.55;
+}
+
+.docs-prose blockquote p {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  max-width: none;
+  margin-bottom: 0;
 }
 
 .docs-prose hr {
