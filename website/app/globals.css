@@ -104,6 +104,9 @@
   --paper-texture: radial-gradient(rgba(11, 11, 16, 0.045) 1px, transparent 1px);
   --brand-light: #9B2E2E;
   --info: #1d4ed8;
+  --pass: #15803d;
+  --pass-bg: rgba(21, 128, 61, 0.07);
+  --pass-border: rgba(21, 128, 61, 0.22);
   --brand-mark: var(--color-brand);
   --shadow: 0 1px 2px rgba(11, 11, 16, 0.04), 0 8px 24px -8px rgba(11, 11, 16, 0.10);
 }
@@ -138,6 +141,9 @@
   --paper-texture: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   --brand-light: #9B2E2E;
   --info: #93bbfd;
+  --pass: #4ade80;
+  --pass-bg: rgba(74, 222, 128, 0.10);
+  --pass-border: rgba(74, 222, 128, 0.25);
   --brand-mark: var(--color-brand);
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
 }

@@ -1,3 +1,9 @@
+/**
+ * ResourceStrip — matches supermock .res-grid exactly.
+ * 3 resource cards (GitHub, npm, Manifesto).
+ * Each: type label (mono uppercase), name, description.
+ */
+
 interface Resource {
   type: string;
   name: string;
@@ -9,15 +15,15 @@ interface Resource {
 const RESOURCES: Resource[] = [
   {
     type: "Repo",
-    name: "GitHub ↗",
+    name: "GitHub \u2197",
     description: "Source, issues, releases",
     href: "https://github.com/TettoLabs/anatomia",
     external: true,
   },
   {
     type: "Pkg",
-    name: "npm: anatomia-cli ↗",
-    description: "v1.0.2 · MIT",
+    name: "npm: anatomia-cli \u2197",
+    description: "v1.0.2 \u00B7 MIT",
     href: "https://www.npmjs.com/package/anatomia-cli",
     external: true,
   },
@@ -32,44 +38,62 @@ const RESOURCES: Resource[] = [
 
 export function ResourceStrip() {
   return (
-    <div className="my-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {RESOURCES.map((resource) => {
-        const linkProps = resource.external
-          ? { target: "_blank" as const, rel: "noopener noreferrer" }
-          : {};
-
-        return (
-          <a
-            key={resource.name}
-            href={resource.href}
-            className="rounded-[var(--radius-md)] p-4 transition-colors duration-150"
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gap: "10px",
+        marginBottom: "40px",
+      }}
+    >
+      {RESOURCES.map((resource) => (
+        <a
+          key={resource.name}
+          href={resource.href}
+          target={resource.external ? "_blank" : undefined}
+          rel={resource.external ? "noopener noreferrer" : undefined}
+          style={{
+            padding: "14px 16px",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+            background: "var(--bg-card)",
+            transition: "border-color 0.12s",
+            textDecoration: "none",
+          }}
+        >
+          <div
             style={{
-              background: "var(--bg-card)",
-              border: "1px solid var(--border-soft)",
+              fontSize: "10px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--ink-45)",
+              marginBottom: "6px",
+              fontFamily: "var(--font-mono)",
             }}
-            {...linkProps}
           >
-            <span
-              className="mb-1 block font-mono text-[11px] font-medium uppercase tracking-wider"
-              style={{ color: "var(--ink-30)" }}
-            >
-              {resource.type}
-            </span>
-            <span
-              className="mb-1 block text-[14px] font-semibold"
-              style={{ color: "var(--fg-strong)" }}
-            >
-              {resource.name}
-            </span>
-            <span
-              className="block text-[12.5px]"
-              style={{ color: "var(--ink-45)" }}
-            >
-              {resource.description}
-            </span>
-          </a>
-        );
-      })}
+            {resource.type}
+          </div>
+          <div
+            style={{
+              fontSize: "13.5px",
+              fontWeight: 500,
+              color: "var(--fg)",
+              marginBottom: "3px",
+            }}
+          >
+            {resource.name}
+          </div>
+          <div
+            style={{
+              fontSize: "11.5px",
+              color: "var(--ink-60)",
+            }}
+          >
+            {resource.description}
+          </div>
+        </a>
+      ))}
     </div>
   );
 }

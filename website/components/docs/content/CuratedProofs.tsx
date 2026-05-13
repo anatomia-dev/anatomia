@@ -1,6 +1,12 @@
 import Link from "next/link";
 import type { ProofEntry } from "@/lib/docs-data/types";
 
+/**
+ * CuratedProofs — matches supermock .explorer + .exp-tbl exactly.
+ * Wrapped in a bordered card. Proper thead with bg-elev.
+ * Pass pill with green dot. Footer with bg-elev background.
+ */
+
 interface CuratedEntry {
   slug: string;
   name: string;
@@ -29,7 +35,7 @@ const CURATED: CuratedEntry[] = [
   {
     slug: "proof-promote",
     name: "Promote a finding into a skill rule",
-    description: "The learning loop: finding → rule → better builds.",
+    description: "The learning loop: finding \u2192 rule \u2192 better builds.",
     href: "/docs/proof/proof-promote",
   },
   {
@@ -60,111 +66,213 @@ export function CuratedProofs({ entries, totalCount }: CuratedProofsProps) {
   }).filter(Boolean) as (CuratedEntry & { entry: ProofEntry })[];
 
   return (
-    <div className="my-10">
-      <div className="overflow-x-auto">
-        <table className="w-full text-[13px]" style={{ color: "var(--fg)" }}>
-          <thead>
-            <tr
-              className="border-b text-left font-mono text-[11px] uppercase tracking-wider"
-              style={{ borderColor: "var(--hairline)", color: "var(--ink-30)" }}
-            >
-              <th className="pb-2 pr-4 font-semibold">Proof</th>
-              <th className="pb-2 pr-4 font-semibold">Stage</th>
-              <th className="pb-2 pr-4 font-semibold">Assertions</th>
-              <th className="pb-2 pr-4 font-semibold">Findings</th>
-              <th className="pb-2 font-semibold"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.slug}
-                className="border-b"
-                style={{ borderColor: "var(--hairline)" }}
+    <section
+      style={{
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        background: "var(--bg-card)",
+        overflow: "hidden",
+        marginBottom: 0,
+      }}
+    >
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          fontSize: "13px",
+        }}
+      >
+        <thead>
+          <tr>
+            {["Proof", "Stage", "Assertions", "Findings", ""].map((h, i) => (
+              <th
+                key={h || i}
+                style={{
+                  fontSize: "10.5px",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: "var(--ink-45)",
+                  textAlign: i >= 2 ? "right" : "left",
+                  padding: "11px 16px",
+                  background: "var(--bg-elev)",
+                  borderBottom: "1px solid var(--border)",
+                  userSelect: "none",
+                }}
               >
-                <td className="py-2.5 pr-4">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.slug}
+              style={{
+                borderBottom: "1px solid var(--hairline)",
+                transition: "background 0.12s",
+                cursor: "pointer",
+              }}
+            >
+              <td style={{ padding: "13px 16px", verticalAlign: "middle" }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11.5px",
+                    color: "var(--ink-60)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {row.slug}
+                </div>
+                <div
+                  style={{
+                    color: "var(--fg)",
+                    fontWeight: 500,
+                    fontSize: "13.5px",
+                  }}
+                >
+                  {row.name}
                   <span
-                    className="block font-mono text-[12px]"
-                    style={{ color: "var(--fg-strong)" }}
-                  >
-                    {row.slug}
-                  </span>
-                  <span
-                    className="block text-[12px]"
-                    style={{ color: "var(--ink-60)" }}
-                  >
-                    {row.name}
-                  </span>
-                  <span
-                    className="block text-[12px]"
-                    style={{ color: "var(--ink-45)" }}
+                    style={{
+                      display: "block",
+                      color: "var(--ink-60)",
+                      fontSize: "12px",
+                      marginTop: "2px",
+                      fontWeight: 400,
+                    }}
                   >
                     {row.description}{" "}
                     <span
-                      className="inline-block font-mono text-[10px]"
-                      style={{ color: "var(--ink-30)" }}
+                      style={{
+                        display: "inline-block",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        padding: "2px 6px",
+                        borderRadius: "3px",
+                        border: "1px solid var(--hairline)",
+                        color: "var(--ink-60)",
+                        letterSpacing: "0.02em",
+                        marginRight: "4px",
+                      }}
                     >
                       {row.entry.stage.toLowerCase()}
                     </span>
                   </span>
-                </td>
-                <td className="py-2.5 pr-4">
-                  <span
-                    className="inline-block rounded-sm px-1.5 py-0.5 font-mono text-[10px]"
-                    style={{
-                      background: "var(--border-soft)",
-                      color: "var(--ink-60)",
-                    }}
-                  >
-                    {row.entry.stage}
-                  </span>
-                </td>
-                <td
-                  className="py-2.5 pr-4 font-mono text-[12px]"
-                  style={{ color: "var(--ink-60)" }}
+                </div>
+              </td>
+              <td style={{ padding: "13px 16px", verticalAlign: "middle" }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    padding: "2px 6px",
+                    borderRadius: "3px",
+                    border: "1px solid var(--hairline)",
+                    color: "var(--ink-60)",
+                    letterSpacing: "0.02em",
+                  }}
                 >
-                  {row.entry.contract.satisfied}
-                  <span style={{ color: "var(--ink-30)" }}>
-                    /{row.entry.contract.total}
-                  </span>
-                </td>
-                <td
-                  className="py-2.5 pr-4 font-mono text-[12px]"
-                  style={{ color: "var(--ink-60)" }}
+                  {row.entry.stage}
+                </span>
+              </td>
+              <td
+                style={{
+                  padding: "13px 16px",
+                  verticalAlign: "middle",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11.5px",
+                  color: "var(--ink-75)",
+                  textAlign: "right",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {row.entry.contract.satisfied}
+                <span style={{ color: "var(--ink-45)" }}>
+                  /{row.entry.contract.total}
+                </span>
+              </td>
+              <td
+                style={{
+                  padding: "13px 16px",
+                  verticalAlign: "middle",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11.5px",
+                  color: "var(--ink-75)",
+                  textAlign: "right",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {row.entry.findingCount}
+              </td>
+              <td
+                style={{
+                  padding: "13px 16px",
+                  verticalAlign: "middle",
+                  textAlign: "right",
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    color: "var(--pass, #4ade80)",
+                    background: "var(--pass-bg, rgba(74,222,128,0.10))",
+                    border: "1px solid var(--pass-border, rgba(74,222,128,0.25))",
+                    padding: "2px 7px",
+                    borderRadius: "3px",
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  {row.entry.findingCount}
-                </td>
-                <td className="py-2.5">
                   <span
-                    className="inline-block rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold uppercase"
                     style={{
-                      background: "var(--brand-soft)",
-                      color: "var(--color-brand)",
+                      width: "5px",
+                      height: "5px",
+                      borderRadius: "50%",
+                      background: "var(--pass, #4ade80)",
                     }}
-                  >
-                    {row.entry.result.toLowerCase()}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  />
+                  pass
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* Footer — .exp-foot */}
       <div
-        className="mt-3 flex items-center justify-between font-mono text-[12px]"
-        style={{ color: "var(--ink-30)" }}
+        style={{
+          padding: "14px 18px",
+          borderTop: "1px solid var(--hairline)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontFamily: "var(--font-mono)",
+          fontSize: "11px",
+          color: "var(--ink-60)",
+          background: "var(--bg-elev)",
+        }}
       >
         <span>
           {rows.length} of {totalCount} proofs · curated
         </span>
         <Link
           href="/docs/proof"
-          className="font-medium transition-colors duration-100"
-          style={{ color: "var(--color-brand)" }}
+          style={{
+            color: "var(--ink-75)",
+            fontWeight: 500,
+            textDecoration: "none",
+          }}
         >
           Browse all {totalCount} →
         </Link>
       </div>
-    </div>
+    </section>
   );
 }
