@@ -180,8 +180,8 @@ export function PipelineDiagram({ variant = "overview" }: { variant?: "overview"
           </Link>
         ))}
       </div>
-      {/* Footer — .pf-meta */}
-      <div
+      {/* Footer — .pf-meta (overview only) */}
+      {variant !== "concept" && <div
         style={{
           display: "flex",
           alignItems: "center",
@@ -213,7 +213,7 @@ export function PipelineDiagram({ variant = "overview" }: { variant?: "overview"
         >
           How it works in depth →
         </Link>
-      </div>
+      </div>}
     </div>
   );
 }
