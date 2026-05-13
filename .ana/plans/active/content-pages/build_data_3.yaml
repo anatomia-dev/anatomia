@@ -1,0 +1,11 @@
+schema: 1
+concerns:
+  - summary: "NextCards link to non-existent routes (reference, proof pages) — will 404 until Scope 5"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Inline-styled CSS grids converted to markdown structure — visual fidelity differs from supermock"
+    severity: observation
+    suggested_action: accept
+  - summary: "MDX markdown rendering inside TroubleCard component tags needs visual verification in preview"
+    severity: debt
+    suggested_action: monitor

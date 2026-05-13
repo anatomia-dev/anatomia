@@ -47,6 +47,7 @@
     "website/components/docs/content/DocsGrid.tsx",
     "website/components/docs/content/PipelineDiagram.tsx",
     "website/components/docs/content/ResourceStrip.tsx",
+    "website/components/docs/content/TroubleCard.tsx",
     "website/components/docs/layout/DocsNav.tsx",
     "website/components/docs/layout/RightRail.tsx",
     "website/content/docs/concepts/artifacts.mdx",
@@ -57,7 +58,13 @@
     "website/content/docs/concepts/pipeline.mdx",
     "website/content/docs/concepts/skills.mdx",
     "website/content/docs/concepts/toolbelt.mdx",
+    "website/content/docs/guides/configurability.mdx",
     "website/content/docs/guides/meta.json",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/guides/using-ana-setup.mdx",
+    "website/content/docs/guides/verifying-changes.mdx",
     "website/content/docs/index.mdx",
     "website/content/docs/meta.json",
     "website/content/docs/start.mdx"
@@ -92,5 +99,13 @@
   "verify-data-2": {
     "saved_at": "2026-05-13T01:07:42.679Z",
     "hash": "sha256:93397510c11eb52f5cbcb99ac69455687e59b742590959286f1545234ba00ac2"
+  },
+  "build-report-3": {
+    "saved_at": "2026-05-13T01:18:51.518Z",
+    "hash": "sha256:ab8ae99ff00b2cf24be25eb121abc619db1f71e21dd04124ff75889dcdfba137"
+  },
+  "build-data-3": {
+    "saved_at": "2026-05-13T01:18:51.518Z",
+    "hash": "sha256:f211d57b1f8a518ce08a2b740e7648e7d52dc69cdd6d39434f2672d860c37297"
   }
 }
