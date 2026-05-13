@@ -40,10 +40,10 @@ export default async function DocsPage({ params }: DocsPageProps) {
   // Build breadcrumb segments from the page tree path
   const segments = buildBreadcrumb(slug);
 
-  // Map TOC items to the format RightRail expects
+  // Pass TOC items directly — RightRail accepts ReactNode titles
   const tocItems = toc.map((item) => ({
-    title: typeof item.title === "string" ? item.title : "",
-    url: `#${item.url}`,
+    title: item.title,
+    url: item.url,
     depth: item.depth,
   }));
 

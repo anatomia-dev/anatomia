@@ -45,42 +45,29 @@
 }
 
 /* -------------------------------------------------------------------
-   RIGHT RAIL — TOC timeline
+   RIGHT RAIL — scrollbar + hover states
    ------------------------------------------------------------------- */
-.toc-list {
-  position: relative;
-  padding-left: 0;
+.docs-right-rail {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.docs-right-rail:hover {
+  scrollbar-color: var(--ink-25) transparent;
+}
+.docs-right-rail::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+.docs-right-rail::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+.docs-right-rail:hover::-webkit-scrollbar-thumb {
+  background: var(--ink-25);
 }
 
-.toc-list::before {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 4px;
-  bottom: 4px;
-  width: 1px;
-  background: var(--hairline);
-}
-
-.toc-link {
-  position: relative;
-}
-
-.toc-link::before {
-  content: "";
-  position: absolute;
-  left: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--ink-15);
-  transition: background 0.15s ease;
-}
-
-.toc-link[data-active]::before {
-  background: var(--color-brand);
+.toc-link:hover {
+  color: var(--fg) !important;
 }
 
 /* -------------------------------------------------------------------
