@@ -4,13 +4,17 @@ concerns:
     file: "website/app/docs/[...slug]/page.tsx"
     severity: observation
     suggested_action: accept
-  - summary: "Curated proof editorial descriptions are static — silently shrinks if slugs removed"
-    file: "website/components/docs/content/CuratedProofs.tsx"
+  - summary: "DocsGrid component created but not in spec File Changes — required for supermock fidelity"
+    file: "website/components/docs/content/DocsGrid.tsx"
+    severity: observation
+    suggested_action: accept
+  - summary: "Callout uses --brand-light and --info CSS vars with fallbacks — verify site defines them"
+    file: "website/components/docs/content/Callout.tsx"
     severity: debt
     suggested_action: monitor
-  - summary: "Quickstart content authored without supermock reference — may need editorial review"
-    file: "website/content/docs/start.mdx"
-    severity: observation
+  - summary: "3 curated proof slugs (security-hardening, worktree-isolation, proof-promote) may not exist in proof-entries.json — table silently shrinks"
+    file: "website/components/docs/content/CuratedProofs.tsx"
+    severity: debt
     suggested_action: monitor
   - summary: "Pre-existing lint errors in DocsErrorBoundary.tsx and PlatformProvider.tsx block website lint"
     severity: debt

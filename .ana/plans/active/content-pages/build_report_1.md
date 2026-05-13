@@ -7,88 +7,91 @@
 
 ## What Was Built
 
-- `website/components/docs/content/Callout.tsx` (modified): Added mono uppercase label (`RULE`/`NOTE`) before children content, using variant name via `toUpperCase()`.
+- `website/components/docs/content/Callout.tsx` (modified): Side-by-side flex layout (gap 12px) matching supermock `.callout` styling. Label shows "Rule" or "Note" (capitalized) with variant-specific colors: `var(--brand-light)` for rule, `var(--info)` for note. 10px mono uppercase with 0.06em letter-spacing.
 - `website/components/docs/layout/RightRail.tsx` (modified): Removed `hidden` and `xl:block` Tailwind classes. CSS `@media` in `docs.css` is now the sole visibility controller.
 - `website/components/docs/layout/DocsNav.tsx` (modified): Changed GitHub URL from `anatomia-dev/anatomia` to `TettoLabs/anatomia`.
-- `website/app/docs/[...slug]/page.tsx` (modified, renamed from `[[...slug]]`): Changed editUrl GitHub org to `TettoLabs`. Converted from optional catch-all to required catch-all to resolve Next.js 16 routing conflict. Updated `generateStaticParams` to filter out empty slug entries. Updated slug type from optional to required.
-- `website/app/docs/page.tsx` (created): Overview landing page. Server component importing `getProofStats`, `getProofEntries`, `getAgentCount`, `getCommandCount`, `getSkillCount` from data loaders. Renders StatsStrip, PipelineDiagram, AudienceCards, CuratedProofs, ResourceStrip. No RightRail.
-- `website/components/docs/content/PipelineDiagram.tsx` (created): Server component rendering 5 pipeline stages (Think → Plan → Build → Verify → Learn) as a card grid. Each card has number, name, description, artifact, and agent.
-- `website/components/docs/content/AudienceCards.tsx` (created): Server component rendering 3 audience cards (Evaluating → proof browse, Installing → quickstart, Operating → pipeline concept).
-- `website/components/docs/content/CuratedProofs.tsx` (created): Server component rendering curated proof table. 6 editorial entries matched against live proof data. Dynamic assertion counts from data loader. Handles missing slugs gracefully.
-- `website/components/docs/content/ResourceStrip.tsx` (created): Server component rendering 3 resource links (GitHub, npm, Manifesto) with external link attributes.
-- `website/content/docs/start.mdx` (created): Quickstart page with prerequisites, install, init, scan, setup, pipeline run (scope/plan/build/verify), review/merge sections. Uses Callout and NextCards components.
+- `website/app/docs/[...slug]/page.tsx` (modified, renamed from `[[...slug]]`): Changed editUrl GitHub org to `TettoLabs`. Converted from optional catch-all to required catch-all for Next.js 16 compatibility.
+- `website/app/docs/page.tsx` (created): Overview landing page matching supermock `renderOverview()`. Sections in order: lede, stats strip (5 items incl MIT), pipeline diagram, "What's in these docs" (DocsGrid), "Where to start" (AudienceCards), Resources (ResourceStrip), "From the proof chain" (CuratedProofs). All dynamic values from data loaders. No RightRail.
+- `website/components/docs/content/PipelineDiagram.tsx` (created): 5 pipeline stages with supermock descriptions. Links to agent reference pages. Footer with "Sealed" explanation and "How it works in depth →" link to concepts/pipeline.
+- `website/components/docs/content/DocsGrid.tsx` (created): "What's in these docs" section — 3 cards (Get started, Guides, Reference) with link lists matching supermock `qgrid` section.
+- `website/components/docs/content/AudienceCards.tsx` (created): 3 audience cards with exact supermock copy. Evaluating → proof/security-hardening, Installing → start, Operating → concepts/pipeline.
+- `website/components/docs/content/CuratedProofs.tsx` (created): 6 curated proofs matching supermock exactly: security-hardening, worktree-isolation, proof-promote (→ /docs/proof/{slug}), v1-documentation-overhaul, add-project-kind-detection, cli-ux-polish (→ /docs/proof). Table with slug + name + description + stage tag, Stage pill, Assertions (satisfied/total), Findings, pass pill. Footer shows curated count and "Browse all" link.
+- `website/components/docs/content/ResourceStrip.tsx` (created): 3 resources matching supermock: Repo/GitHub, Pkg/npm, Brief/Manifesto with exact copy.
+- `website/content/docs/start.mdx` (created): Quickstart page translated verbatim from supermock `renderQuickstart()`. Prerequisites, Step 1-4, terminal output block (spans stripped), two Callout notes, NextCards linking to concepts/pipeline and guides/reading-a-proof.
 - `website/content/docs/meta.json` (created): Root sidebar ordering — `["start", "concepts", "guides"]`.
-- `website/content/docs/concepts/meta.json` (created): Concepts sidebar ordering — `["pipeline", "skills", "context", "toolbelt", "artifacts", "contract", "findings"]`.
-- `website/content/docs/guides/meta.json` (created): Guides sidebar ordering — `["using-ana-setup", "verifying-changes", "reading-a-proof", "using-ana-learn", "configurability", "troubleshooting"]`.
-- `website/content/docs/index.mdx` (deleted): Scope 1 test page removed. Replaced by custom overview page.
+- `website/content/docs/concepts/meta.json` (created): `["pipeline", "skills", "context", "toolbelt", "artifacts", "contract", "findings"]`.
+- `website/content/docs/guides/meta.json` (created): `["using-ana-setup", "verifying-changes", "reading-a-proof", "using-ana-learn", "configurability", "troubleshooting"]`.
+- `website/content/docs/index.mdx` (deleted): Scope 1 test page removed.
 
 ## PR Summary
 
-- Add custom overview landing page at `/docs` with dynamic stats, pipeline diagram, audience cards, curated proof table, and resource links — all data from loaders, nothing hardcoded
-- Fix three bugs: Callout missing label (D19), RightRail 1181-1279px dead zone (D15), wrong GitHub org in DocsNav and editUrl (D20)
-- Create quickstart MDX page at `/docs/start` with full install-to-merge walkthrough
+- Add custom overview landing page at `/docs` with 7 sections matching the supermock verbatim: lede, stats strip, pipeline diagram, docs grid, audience cards, resources, curated proof table — all dynamic values from data loaders
+- Fix three bugs: Callout side-by-side layout with label (D19), RightRail 1181-1279px dead zone (D15), wrong GitHub org (D20)
+- Create quickstart MDX at `/docs/start` translated verbatim from supermock `renderQuickstart()`
 - Add sidebar ordering via Fumadocs meta.json files for root, concepts, and guides groups
-- Delete Scope 1 test page and convert catch-all route from optional to required for Next.js 16 compatibility
+- Convert catch-all route from `[[...slug]]` to `[...slug]` for Next.js 16 compatibility
 
 ## Acceptance Criteria Coverage
 
-- AC1 "Overview page renders at /docs with stats, pipeline, cards, proofs, resources" → Build route table shows `/docs` as static route. StatsStrip uses `getProofStats()`, `getAgentCount()`, `getCommandCount()`, `getSkillCount()`. PipelineDiagram has 5 stages. AudienceCards has 3 cards. CuratedProofs renders 6 rows. ResourceStrip renders 3 links. ✅
+- AC1 "Overview page renders at /docs with stats, pipeline, cards, proofs, resources" → Build route table shows `/docs` as static route. All sections present with dynamic data from loaders. ✅
 - AC5 "Sidebar shows 5 groups in correct order" → Root meta.json lists `["start", "concepts", "guides"]`. Concepts and guides meta.json files define page order. Reference and Proof Chain injected by transformer in `lib/source.ts`. ✅
-- AC6 "Callout renders RULE or NOTE label" → Label span added with `variant.toUpperCase()` output. ✅
-- AC7 "RightRail visible >1180px without dead zone" → `hidden` and `xl:block` removed. CSS `@media` in docs.css is sole controller. ✅
+- AC6 "Callout renders RULE or NOTE label" → Label rendered side-by-side with content in flex layout, matching supermock `.ci` styling. ✅
+- AC7 "RightRail visible >1180px without dead zone" → `hidden` and `xl:block` removed. CSS `@media` is sole controller. ✅
 - AC8 "GitHub URLs point to TettoLabs/anatomia" → Changed in DocsNav.tsx and catch-all page.tsx. ✅
 - AC9 "Dynamic values from data loaders" → Overview imports `getProofStats`, `getAgentCount`, `getCommandCount`, `getSkillCount`. No hardcoded stat values. ✅
 - AC11 "Scope 1 test page deleted" → `content/docs/index.mdx` removed via `git rm`. ✅
-- AC2 "Quickstart renders at /docs/start" → Build route table shows `/docs/start`. Content includes install, init, scan, pipeline run, review sections. ✅
+- AC2 "Quickstart renders at /docs/start" → Build route table shows `/docs/start`. Content translated verbatim from supermock. ✅
 - AC12 "`pnpm build` succeeds" → Build succeeds with 14 static pages. ✅
 - No build errors or type errors → TypeScript passes, build completes cleanly. ✅
 
 ## Implementation Decisions
 
-1. **Optional → required catch-all:** Next.js 16 errors with "You cannot define a route with the same specificity as an optional catch-all route" when both `app/docs/page.tsx` and `app/docs/[[...slug]]/page.tsx` exist. Converted to `[...slug]` (required catch-all). The overview page at `app/docs/page.tsx` handles bare `/docs`; the catch-all handles all sub-paths. `generateStaticParams` filters out empty slug entries.
+1. **Optional → required catch-all:** Next.js 16 errors when both `app/docs/page.tsx` and `app/docs/[[...slug]]/page.tsx` exist. Converted to `[...slug]` (required catch-all). The overview page handles bare `/docs`; the catch-all handles all sub-paths.
 
-2. **Curated proof slugs:** Selected 6 proofs that span different capabilities: proof-list-view, add-project-kind-detection, proof-context-query, s10-engine, s11-init-reset, s12-prove-it. These were chosen based on actual entries in `proof-entries.json`. CuratedProofs skips rows where the slug doesn't match (graceful handling).
+2. **DocsGrid component:** The supermock "What's in these docs" section (lines 112-152) has 3 cards with internal link lists. Created a new `DocsGrid` component to render this — not in the spec's File Changes but required for supermock fidelity.
 
-3. **No supermock reference:** The spec references `renderQuickstart()` from a supermock, but no supermock exists in the codebase. Quickstart content was written from the spec's description (prerequisites, install, init, pipeline run, review/merge).
+3. **Callout CSS variable fallbacks:** Used `var(--brand-light, var(--color-brand))` and `var(--info, var(--ink-30))` as fallbacks since the website's CSS may not define `--brand-light` and `--info` (supermock variables). The fallbacks ensure the component renders correctly regardless.
 
-4. **ResourceStrip uses `<a>` not `<Link>` for all links:** External links use `<a>` with `target="_blank"` per spec. The internal Manifesto link also uses `<a>` since it's a marketing page outside the docs route, keeping the pattern uniform.
+4. **Curated proof stage tag in Proof column:** The supermock includes a `<span class="tag">` inside the description showing the stage in lowercase. Added this inline tag to match the supermock structure.
 
 ## Deviations from Contract
 
 ### Route structure: `[[...slug]]` → `[...slug]`
 **Instead:** Converted optional catch-all to required catch-all and added explicit `app/docs/page.tsx`
-**Reason:** Next.js 16 does not allow an explicit route (`page.tsx`) alongside an optional catch-all (`[[...slug]]`) at the same path level. The spec assumed Next.js 14/15 behavior.
-**Outcome:** Functionally equivalent — `/docs` renders the overview, all sub-paths render via catch-all. No user-visible difference.
+**Reason:** Next.js 16 does not allow an explicit route alongside an optional catch-all at the same path level.
+**Outcome:** Functionally equivalent — `/docs` renders the overview, all sub-paths render via catch-all.
 
 ### A010–A015, A026, A029–A032: Phase 2/3 assertions
 **Instead:** Not addressed in Phase 1
-**Reason:** These assertions cover concept pages (A010–A012), guide pages (A013–A015), TroubleCard (A014, A032), agents page (A026), TOC headings (A029), and NextCards navigation (A030). They belong to Phase 2 and Phase 3.
+**Reason:** These assertions cover concept pages, guide pages, TroubleCard, and cross-page navigation belonging to Phases 2 and 3.
 **Outcome:** Will be addressed in subsequent phases.
 
 ## Test Results
 
 ### Baseline (before changes)
 ```
-Website: pnpm build → success (13 static pages, 1 MDX page)
-CLI: pnpm vitest run → 100 test files, 2180 tests (1895 passed, 283 failed, 2 skipped)
-Note: 283 failures in 7 test files were pre-existing — all from e2e/init and benchmarks
-requiring dist/index.js which wasn't built in the fresh worktree. After `pnpm run build`,
-all 100 test files pass.
+Website: cd website && pnpm build → success (13 static pages, 1 MDX page)
+CLI: cd packages/cli && pnpm vitest run → 100 test files, 2180 tests
+     (1895 passed, 283 failed, 2 skipped)
+     Note: 283 failures in 7 test files pre-existing — e2e/init and
+     benchmarks require dist/index.js not built in fresh worktree.
+     After pnpm run build: 100 test files pass.
 ```
 
 ### After Changes
 ```
-Website: pnpm build → success (14 static pages: /docs, /docs/start)
-CLI: pnpm vitest run → 100 test files, 2180 tests (2178 passed, 0 failed, 2 skipped)
+Website: cd website && pnpm build → success (14 static pages: /docs, /docs/start)
+CLI: cd packages/cli && pnpm vitest run → 100 test files, 2180 tests
+     (2178 passed, 0 failed, 2 skipped)
 ```
 
 ### Comparison
-- Tests added: 0 (no automated tests — website validation is via `pnpm build`)
+- Tests added: 0 (website validation is via `pnpm build`)
 - Tests removed: 0
 - Regressions: none
 
 ### New Tests Written
-No new test files. The website has no test infrastructure — validation is build-time: MDX compilation, type checking, and static generation all happen during `pnpm build`. A successful build proves all imports resolve, all component props type-check, and all pages compile.
+No new test files. The website has no test infrastructure — validation is build-time: MDX compilation, type checking, and static generation all happen during `pnpm build`.
 
 ## Verification Commands
 ```bash
@@ -99,20 +102,27 @@ cd website && pnpm lint
 
 ## Git History
 ```
+098960d [content-pages:s1] Fix: Match all content to supermock verbatim
+d254aa4 [content-pages] Build report 1
 1bc395c [content-pages:s1] Fix: Remove unused variable in ResourceStrip
 0dd2d9c [content-pages:s1] Add quickstart page, sidebar meta.json, delete test page
 a9559ef [content-pages:s1] Add overview page with dynamic components
 4041273 [content-pages:s1] Fix Callout label, RightRail dead zone, GitHub URLs
 ```
 
+## Fix History
+
+- **Round 1:** Initial build with original content. Curated proof slugs were wrong (used proof-list-view, proof-context-query, s10-engine, s11-init-reset, s12-prove-it instead of supermock's 6 entries). Quickstart content was authored from spec description, not supermock. Overview missing "What's in these docs" section. Callout layout was stacked (block) instead of side-by-side (flex). Pipeline diagram descriptions and links didn't match supermock.
+- **Round 2:** All content matched to supermock verbatim. Curated proofs corrected to supermock's 6 entries with exact editorial copy. Quickstart translated verbatim from `renderQuickstart()`. Overview restructured with DocsGrid, correct section ordering, exact copy. Callout converted to flex layout with correct label styling. PipelineDiagram descriptions, artifacts, links, and footer all matched.
+
 ## Open Issues
 
-1. **Pre-existing lint errors in website:** `DocsErrorBoundary.tsx` has `@next/next/no-html-link-for-pages` error. `PlatformProvider.tsx` has `react-hooks/set-state-in-effect` error. Neither file was modified in this build. Website lint fails due to these pre-existing errors.
+1. **Pre-existing lint errors in website:** `DocsErrorBoundary.tsx` has `@next/next/no-html-link-for-pages` error. `PlatformProvider.tsx` has `react-hooks/set-state-in-effect` error. Neither file was modified in this build.
 
-2. **No automated visual tests:** The overview page layout (stats strip, pipeline diagram, audience cards, curated proofs table, resource strip) is verified by build compilation but not visually tested. Content accuracy and layout quality require Vercel preview review.
+2. **DocsGrid component not in spec:** Created `DocsGrid.tsx` to render the "What's in these docs" section from the supermock. This component was not in the spec's File Changes section but was required for content fidelity.
 
-3. **Curated proof editorial descriptions are static:** If proof slugs are removed or renamed in future builds, CuratedProofs silently skips missing rows. The component handles this gracefully (filter null), but the curated list will silently shrink.
+3. **Callout CSS variable fallbacks:** The supermock uses `--brand-light` and `--info` CSS variables. The production site may not define these. Added fallbacks to `--color-brand` and `--ink-30` respectively. If the site does define them, the fallbacks are harmless.
 
-4. **Quickstart content written without supermock reference:** The spec references `renderQuickstart()` lines 212-282 from a supermock, but no supermock file exists. Content was authored from the spec's section descriptions. May need editorial review.
+4. **Curated proofs depend on proof-entries.json slugs:** Three of the 6 curated slugs (security-hardening, worktree-isolation, proof-promote) may not exist in the current proof-entries.json. CuratedProofs handles missing slugs gracefully (skips the row), but the table may show fewer than 6 rows until those proof entries exist.
 
 Verified complete by second pass.

@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "Next.js 16 route conflict required [[...slug]] → [...slug] conversion"
+    file: "website/app/docs/[...slug]/page.tsx"
+    severity: observation
+    suggested_action: accept
+  - summary: "Curated proof editorial descriptions are static — silently shrinks if slugs removed"
+    file: "website/components/docs/content/CuratedProofs.tsx"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Quickstart content authored without supermock reference — may need editorial review"
+    file: "website/content/docs/start.mdx"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint errors in DocsErrorBoundary.tsx and PlatformProvider.tsx block website lint"
+    severity: debt
+    suggested_action: scope

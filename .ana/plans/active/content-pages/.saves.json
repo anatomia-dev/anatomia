@@ -30,12 +30,12 @@
   "build_started_at": "2026-05-13T00:01:44.440Z",
   "build_agent": "ana-build",
   "build-report-1": {
-    "saved_at": "2026-05-13T00:13:55.028Z",
-    "hash": "sha256:072fb69483d0833bf0ddb6225872413a6ae3a75ce81ed2596cecf19ae1b26742"
+    "saved_at": "2026-05-13T00:25:47.686Z",
+    "hash": "sha256:69c8e2ce4d31e06dc8d496bb54be48d8799e1e21dda9075e2ca2fe6afbaccb43"
   },
   "build-data-1": {
-    "saved_at": "2026-05-13T00:13:55.030Z",
-    "hash": "sha256:48ab39e3c1c88632f497c6830185be84c064b214f0dd40adcb720b3f1c4bd679"
+    "saved_at": "2026-05-13T00:25:47.687Z",
+    "hash": "sha256:889522562636a1a368a02a6c4bb07051dfecf104a946dd95595bfce8e8f743ab"
   },
   "modules_touched": [
     "website/app/docs/[...slug]/page.tsx",
@@ -43,6 +43,7 @@
     "website/components/docs/content/AudienceCards.tsx",
     "website/components/docs/content/Callout.tsx",
     "website/components/docs/content/CuratedProofs.tsx",
+    "website/components/docs/content/DocsGrid.tsx",
     "website/components/docs/content/PipelineDiagram.tsx",
     "website/components/docs/content/ResourceStrip.tsx",
     "website/components/docs/layout/DocsNav.tsx",
