@@ -20,7 +20,7 @@ const mdxComponents = {
 };
 
 interface DocsPageProps {
-  params: Promise<{ slug?: string[] }>;
+  params: Promise<{ slug: string[] }>;
 }
 
 export default async function DocsPage({ params }: DocsPageProps) {
@@ -58,7 +58,7 @@ export default async function DocsPage({ params }: DocsPageProps) {
         toc={tocItems}
         commitSha={meta.commitSha}
         buildTimestamp={meta.buildTimestamp}
-        editUrl={`https://github.com/TettoLabs/anatomia/edit/main/website/content/docs/${slug?.join("/") ?? "index"}.mdx`}
+        editUrl={`https://github.com/TettoLabs/anatomia/edit/main/website/content/docs/${slug.join("/")}.mdx`}
       />
     </div>
   );
@@ -76,8 +76,10 @@ function buildBreadcrumb(slug?: string[]): { name: string; url?: string }[] {
   }));
 }
 
-export function generateStaticParams(): { slug?: string[] }[] {
-  return source.generateParams();
+export function generateStaticParams(): { slug: string[] }[] {
+  return source.generateParams().filter(
+    (p) => Array.isArray(p.slug) && p.slug.length > 0,
+  ) as { slug: string[] }[];
 }
 
 export async function generateMetadata({ params }: DocsPageProps): Promise<Metadata> {
