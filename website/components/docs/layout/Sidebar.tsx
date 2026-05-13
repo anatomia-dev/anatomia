@@ -85,6 +85,7 @@ function SidebarNode({
           fontWeight: active ? 500 : 400,
           textDecoration: "none",
           transition: "background 0.12s, color 0.12s",
+          marginLeft: depth === 0 ? "12px" : undefined,
         }}
         aria-current={active ? "page" : undefined}
       >

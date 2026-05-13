@@ -21,21 +21,16 @@ export const source = loader({
           const startNode =
             startIndex >= 0 ? node.children.splice(startIndex, 1)[0] : null;
 
-          // Build the "Get Started" folder with Overview + Quickstart
-          const getStartedChildren = [
-            { type: "page" as const, name: "Overview", url: "/docs" },
+          // Insert "Get Started" as a static group at the very top:
+          // separator label + Overview + Quickstart (no folder, no collapse)
+          const getStartedItems: typeof node.children = [
+            { type: "separator", name: "Get Started" },
+            { type: "page", name: "Overview", url: "/docs" },
           ];
           if (startNode) {
-            getStartedChildren.push(startNode as typeof getStartedChildren[number]);
+            getStartedItems.push(startNode as (typeof node.children)[number]);
           }
-
-          // Insert "Get Started" at the very top
-          node.children.unshift({
-            type: "folder",
-            name: "Get Started",
-            defaultOpen: true,
-            children: getStartedChildren,
-          });
+          node.children.unshift(...getStartedItems);
 
           // Append Reference and Proof Chain as folders
           node.children.push(
