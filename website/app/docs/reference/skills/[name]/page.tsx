@@ -4,6 +4,7 @@ import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
 import { CodeBlock } from "@/components/docs/content/CodeBlock";
 import { Callout } from "@/components/docs/content/Callout";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 import { getSkillTemplates, getSkillByName } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
 
@@ -99,7 +100,7 @@ export default async function SkillDetailPage({ params }: SkillDetailProps) {
           </span>
         </div>
 
-        <h2 id="template">The SKILL.md template</h2>
+        <HeadingWithAnchor id="template">The SKILL.md template</HeadingWithAnchor>
         <p>
           {skill.conditional
             ? "Conditional skill — installs when the scan detects its trigger. Your edits to Rules, Gotchas, and Examples are preserved across re-initialization."

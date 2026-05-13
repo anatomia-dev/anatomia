@@ -5,6 +5,7 @@ import { ReferenceGrid } from "@/components/docs/reference/ReferenceGrid";
 import { SkillCard } from "@/components/docs/reference/SkillCard";
 import { getSkillTemplates } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 
 export const metadata: Metadata = {
   title: "Skill Files",
@@ -74,7 +75,7 @@ export default function SkillIndexPage() {
           <span><b>Template path</b> · .claude/skills/&#123;name&#125;/SKILL.md</span>
         </div>
 
-        <h2 id="core-skills">Core skills</h2>
+        <HeadingWithAnchor id="core-skills">Core skills</HeadingWithAnchor>
         <p>Installed for every project regardless of stack.</p>
         <ReferenceGrid>
           {coreSkills.map((s) => (
@@ -88,7 +89,7 @@ export default function SkillIndexPage() {
           ))}
         </ReferenceGrid>
 
-        <h2 id="conditional-skills">Conditional skills</h2>
+        <HeadingWithAnchor id="conditional-skills">Conditional skills</HeadingWithAnchor>
         <p>
           Installed only when the scan detects their trigger — an AI SDK, a
           database ORM, or an API framework.

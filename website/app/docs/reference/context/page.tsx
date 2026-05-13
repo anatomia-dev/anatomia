@@ -3,6 +3,7 @@ import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
 import { CodeBlock } from "@/components/docs/content/CodeBlock";
 import { Callout } from "@/components/docs/content/Callout";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 import { getContextFiles } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
 
@@ -72,9 +73,9 @@ export default function ContextReferencePage() {
 
         {files.map((f) => (
           <div key={f.name}>
-            <h2 id={f.name.replace(/\./g, "-")} style={{ scrollMarginTop: "120px" }}>
+            <HeadingWithAnchor id={f.name.replace(/\./g, "-")} style={{ scrollMarginTop: "120px" }}>
               {f.filename}
-            </h2>
+            </HeadingWithAnchor>
             <p><strong>Path:</strong> <code>{f.path}</code></p>
             <p>{f.description}</p>
             <CodeBlock data-language={f.filename.endsWith(".json") ? "json" : "markdown"}>

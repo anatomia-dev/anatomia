@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
 import { CodeBlock } from "@/components/docs/content/CodeBlock";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 import { getAgentTemplates, getAgentByName } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
 
@@ -99,7 +100,7 @@ export default async function AgentDetailPage({ params }: AgentDetailProps) {
           </span>
         </div>
 
-        <h2 id="reads-writes">What it reads, writes, and cannot touch</h2>
+        <HeadingWithAnchor id="reads-writes">What it reads, writes, and cannot touch</HeadingWithAnchor>
         <table>
           <thead>
             <tr>
@@ -121,7 +122,7 @@ export default async function AgentDetailPage({ params }: AgentDetailProps) {
           </tbody>
         </table>
 
-        <h2 id="template">The actual template</h2>
+        <HeadingWithAnchor id="template">The actual template</HeadingWithAnchor>
         <p>
           This is the real <code>{agent.name}.md</code> that ships into your
           repo. Not a summary — the actual instructions the agent reads.

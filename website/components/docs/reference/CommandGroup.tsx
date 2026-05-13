@@ -1,4 +1,5 @@
 import type { Command } from "@/lib/docs-data/types";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 
 interface CommandGroupProps {
   name: string;
@@ -15,12 +16,9 @@ export function CommandGroup({ name, commands, className }: CommandGroupProps) {
 
   return (
     <div className={className}>
-      <h2
-        id={id}
-        style={{ scrollMarginTop: "120px" }}
-      >
+      <HeadingWithAnchor id={id} style={{ scrollMarginTop: "120px" }}>
         {name}
-      </h2>
+      </HeadingWithAnchor>
       {commands.map((cmd) => (
         <CommandItem key={cmd.name} command={cmd} prefix="ana" />
       ))}

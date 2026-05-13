@@ -4,6 +4,7 @@ import { RightRail } from "@/components/docs/layout/RightRail";
 import { ReferenceGrid } from "@/components/docs/reference/ReferenceGrid";
 import { AgentCard } from "@/components/docs/reference/AgentCard";
 import { Callout } from "@/components/docs/content/Callout";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 import { getAgentTemplates } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
 
@@ -86,7 +87,7 @@ export default function AgentIndexPage() {
           </p>
         </Callout>
 
-        <h2 id="pipeline-agents">Pipeline agents</h2>
+        <HeadingWithAnchor id="pipeline-agents">Pipeline agents</HeadingWithAnchor>
         <p>The four agents that run in sequence during every pipeline cycle.</p>
         <ReferenceGrid>
           {pipelineAgents.map((a) => (
@@ -100,7 +101,7 @@ export default function AgentIndexPage() {
           ))}
         </ReferenceGrid>
 
-        <h2 id="system-agents">System agents</h2>
+        <HeadingWithAnchor id="system-agents">System agents</HeadingWithAnchor>
         <p>Agents that run outside the pipeline — between cycles or during setup.</p>
         <ReferenceGrid>
           {systemAgents.map((a) => (

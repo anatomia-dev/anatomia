@@ -5,13 +5,6 @@ interface PipelineGanttProps {
   className?: string;
 }
 
-function formatDuration(minutes: number): string {
-  if (minutes >= 60) {
-    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-  }
-  return `${minutes}m`;
-}
-
 const STAGES: { key: keyof Omit<ProofTiming, "totalMinutes">; label: string; opacity: number }[] = [
   { key: "think", label: "Think", opacity: 0.85 },
   { key: "plan", label: "Plan", opacity: 0.65 },

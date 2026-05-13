@@ -9,6 +9,7 @@ import { FindingsList } from "@/components/docs/proof/FindingsList";
 import { IntegritySeal } from "@/components/docs/proof/IntegritySeal";
 import { getProofEntries, getProofBySlug } from "@/lib/docs-data";
 import { getBuildMeta } from "@/lib/docs-data/meta";
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 
 const GITHUB_BASE = "https://github.com/TettoLabs/anatomia/tree/main/.ana/plans/completed/";
 
@@ -62,27 +63,27 @@ export default async function ProofDetailPage({ params }: ProofDetailProps) {
 
         <ProofHero entry={entry} />
 
-        <h2 id="timeline" style={{ scrollMarginTop: "120px" }}>Pipeline timeline</h2>
+        <HeadingWithAnchor id="timeline" style={{ scrollMarginTop: "120px" }}>Pipeline timeline</HeadingWithAnchor>
         <p style={{ fontSize: "13.5px", color: "var(--ink-60)", maxWidth: "none" }}>
           Intent to proven code in {formatDuration(entry.duration)} across Think, Plan, Build, and Verify.
         </p>
         <PipelineGantt timing={entry.timing} />
 
-        <h2 id="assertions" style={{ scrollMarginTop: "120px" }}>Assertion ledger</h2>
+        <HeadingWithAnchor id="assertions" style={{ scrollMarginTop: "120px" }}>Assertion ledger</HeadingWithAnchor>
         <AssertionLedger
           assertions={entry.assertions}
           total={entry.contract.total}
         />
 
-        <h2 id="findings" style={{ scrollMarginTop: "120px" }}>
+        <HeadingWithAnchor id="findings" style={{ scrollMarginTop: "120px" }}>
           Findings{" "}
           <span style={{ fontSize: "13px", color: "var(--ink-40)", fontWeight: 400 }}>
             {entry.findingCount} total
           </span>
-        </h2>
+        </HeadingWithAnchor>
         <FindingsList findings={entry.findings} />
 
-        <h2 id="integrity" style={{ scrollMarginTop: "120px" }}>Integrity seal</h2>
+        <HeadingWithAnchor id="integrity" style={{ scrollMarginTop: "120px" }}>Integrity seal</HeadingWithAnchor>
         <IntegritySeal hashes={entry.hashes} slug={entry.slug} />
 
         {/* Adjacent proof navigation */}

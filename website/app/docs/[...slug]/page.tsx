@@ -13,47 +13,7 @@ import { ForPlatform } from "@/components/docs/content/ForPlatform";
 import { PipelineDiagram } from "@/components/docs/content/PipelineDiagram";
 import { TroubleCard } from "@/components/docs/content/TroubleCard";
 
-/**
- * Heading with hover anchor — matches supermock .prose h2 .anchor.
- * The # appears on hover, linking to the heading ID.
- */
-function HeadingWithAnchor({
-  level,
-  children,
-  id,
-  ...props
-}: {
-  level: 2 | 3;
-  children: React.ReactNode;
-  id?: string;
-} & Record<string, unknown>) {
-  const Tag = `h${level}` as "h2" | "h3";
-  return (
-    <Tag id={id} {...props}>
-      {id && (
-        <a
-          href={`#${id}`}
-          className="heading-anchor"
-          aria-hidden="true"
-          style={{
-            color: "var(--ink-25)",
-            marginRight: "8px",
-            fontFamily: "var(--font-mono)",
-            fontSize: "14px",
-            opacity: 0,
-            transition: "opacity 0.12s",
-            textDecoration: "none",
-            border: "none",
-            borderBottom: "none",
-          }}
-        >
-          #
-        </a>
-      )}
-      {children}
-    </Tag>
-  );
-}
+import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 
 const mdxComponents = {
   pre: CodeBlock,

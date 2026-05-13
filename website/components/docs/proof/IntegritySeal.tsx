@@ -15,13 +15,13 @@ export function IntegritySeal({ hashes, slug, className }: IntegritySealProps) {
       fontSize: "11.5px",
       marginTop: "14px",
     }}>
-      {Object.entries(hashes).map(([key, value]) => (
+      {Object.entries(hashes).map(([key, value], i, arr) => (
         <div key={key} style={{
           display: "grid",
           gridTemplateColumns: "140px 1fr",
           gap: "14px",
           padding: "6px 0",
-          borderBottom: "1px solid var(--hairline)",
+          borderBottom: i < arr.length - 1 ? "1px solid var(--hairline)" : undefined,
         }}>
           <span style={{ color: "var(--ink-60)" }}>{key}</span>
           <span style={{ color: "var(--ink)", overflowX: "auto", whiteSpace: "nowrap" }}>
