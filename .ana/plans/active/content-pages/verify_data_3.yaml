@@ -1,0 +1,36 @@
+schema: 1
+findings:
+  - category: code
+    summary: "NextCards link to unbuilt reference/proof pages — will 404 until Scope 5"
+    file: "website/content/docs/guides/using-ana-setup.mdx"
+    line: 148
+    severity: observation
+    suggested_action: monitor
+    related_assertions: []
+  - category: code
+    summary: "Stale dynamic-value comment in verifying-changes and troubleshooting — says 17 of 78 proofs but real count may differ"
+    file: "website/content/docs/guides/verifying-changes.mdx"
+    line: 74
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "TroubleCard has no aria/role attribute for accessibility — Callout uses role=note"
+    file: "website/components/docs/content/TroubleCard.tsx"
+    line: 10
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "Callout label renders 'Rule' with CSS uppercase — contract A020 expects literal 'RULE'. Visually correct but DOM text differs from contract value."
+    file: "website/components/docs/content/Callout.tsx"
+    line: 56
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "No unit tests for TroubleCard component — only verified via build compilation"
+    file: "website/components/docs/content/TroubleCard.tsx"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Spec allows links to reference pages that 404 — acknowledged in constraints but creates a broken-link experience for users until Scope 5 ships"
+    severity: observation
+    suggested_action: monitor
