@@ -3,6 +3,10 @@ concerns:
   - summary: "Pre-existing CLI test failures (283 tests) on Node.js v25.9.0 — MODULE_NOT_FOUND"
     severity: observation
     suggested_action: monitor
+  - summary: "Agent/skill detail pages use raw pre tags instead of CodeBlock component — no copy button chrome"
+    file: "website/app/docs/reference/agents/[name]/page.tsx"
+    severity: debt
+    suggested_action: scope
   - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
     file: "packages/cli/src/utils/git-operations.ts"
     severity: observation
