@@ -52,7 +52,7 @@ export default function DocsOverview() {
 
   return (
     <div style={{ display: "flex" }}>
-      <div className="min-w-0 flex-1" style={{ padding: "32px 120px 96px 40px" }}>
+      <div className="docs-content-area min-w-0 flex-1" style={{ padding: "32px 120px 96px 40px" }}>
         {/* Breadcrumb */}
         <nav
           style={{

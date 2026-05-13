@@ -429,6 +429,13 @@
   }
 }
 
+/* ≤880px: reduce content padding (right rail hidden, no gap needed) */
+@media (max-width: 880px) {
+  .docs-content-area {
+    padding: 24px !important;
+  }
+}
+
 /* ≤640px: further compress navbar */
 @media (max-width: 640px) {
   /* Tighten navbar padding */

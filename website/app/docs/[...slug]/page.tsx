@@ -94,7 +94,7 @@ export default async function DocsPage({ params }: DocsPageProps) {
 
   return (
     <div style={{ display: "flex" }}>
-      <article className="docs-prose min-w-0 flex-1" style={{ padding: "32px 120px 96px 40px" }}>
+      <article className="docs-prose docs-content-area min-w-0 flex-1" style={{ padding: "32px 120px 96px 40px" }}>
         <Breadcrumb segments={segments} />
         {/* Title — matches supermock h1.page-title */}
         <h1
