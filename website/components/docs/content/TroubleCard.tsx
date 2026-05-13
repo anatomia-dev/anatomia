@@ -5,22 +5,43 @@ interface TroubleCardProps {
   children: ReactNode;
 }
 
+/**
+ * TroubleCard — matches supermock .trouble-card.
+ * padding: 18px 20px, title as bold h4, fix body at 13px.
+ */
 export function TroubleCard({ title, children }: TroubleCardProps) {
   return (
     <div
-      className="my-4 rounded-[var(--radius-sm)] px-5 py-4 text-[14px] leading-relaxed"
+      className="docs-trouble-card"
       style={{
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        padding: "18px 20px",
         background: "var(--bg-card)",
-        border: "1px solid var(--border-soft)",
+        marginBottom: "14px",
       }}
     >
       <h4
-        className="mt-0 mb-3 text-[15px] font-semibold"
-        style={{ color: "var(--fg)" }}
+        style={{
+          fontSize: "15px",
+          fontWeight: 600,
+          color: "var(--fg)",
+          marginTop: 0,
+          marginBottom: "8px",
+          fontFamily: "var(--font-sans)",
+        }}
       >
         {title}
       </h4>
-      <div style={{ color: "var(--ink-80)" }}>{children}</div>
+      <div
+        style={{
+          fontSize: "13px",
+          lineHeight: 1.55,
+          color: "var(--ink-75)",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

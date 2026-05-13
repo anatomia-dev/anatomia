@@ -79,11 +79,13 @@ The ledger shows 27/27 SATISFIED. If any assertion were UNSATISFIED, the verdict
 Each finding has a severity and a suggested action, rendered as a two-part tag:
 
 <div style={{margin:"12px 0 16px",display:"flex",flexDirection:"column",gap:"8px"}}>
-<div style={{fontSize:"13px",padding:"8px 12px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)",color:"var(--ink-75)"}}>
-<span style={{display:"inline-block",padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--warn-bg)",color:"var(--warn)",marginRight:"8px"}}>debt · scope</span> No dedicated integration tests for command entry point injection rejection
+<div style={{fontSize:"13px",padding:"8px 12px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)",color:"var(--ink-75)",display:"flex",alignItems:"center",gap:"8px"}}>
+<span style={{padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--warn-bg)",color:"var(--warn)",whiteSpace:"nowrap",flexShrink:0}}>debt · scope</span>
+<span>No dedicated integration tests for command entry point injection rejection</span>
 </div>
-<div style={{fontSize:"13px",padding:"8px 12px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)",color:"var(--ink-75)"}}>
-<span style={{display:"inline-block",padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--info-bg)",color:"var(--info)",marginRight:"8px"}}>obs · monitor</span> getCurrentBranch still uses execSync — not hardened by this phase
+<div style={{fontSize:"13px",padding:"8px 12px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)",color:"var(--ink-75)",display:"flex",alignItems:"center",gap:"8px"}}>
+<span style={{padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--info-bg)",color:"var(--info)",whiteSpace:"nowrap",flexShrink:0}}>obs · monitor</span>
+<span>getCurrentBranch still uses execSync — not hardened by this phase</span>
 </div>
 </div>
 
