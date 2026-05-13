@@ -86,6 +86,16 @@
   color: var(--brand-light) !important;
 }
 
+/* CuratedProofs row hover — matches supermock .exp-tbl tbody tr:hover */
+.curated-row:hover {
+  background: var(--code-bg);
+}
+
+/* CuratedProofs browse link hover — matches supermock .exp-foot a:hover */
+.curated-browse:hover {
+  color: var(--brand-light) !important;
+}
+
 /* -------------------------------------------------------------------
    PROSE — matches supermock .prose exactly
    ------------------------------------------------------------------- */
