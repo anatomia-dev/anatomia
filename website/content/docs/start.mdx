@@ -1,0 +1,122 @@
+---
+title: Quickstart
+description: Install Anatomia, run your first scan, and complete a full pipeline run in 8 minutes.
+readingTime: 8
+lastReviewed: May 2026
+---
+
+# Quickstart
+
+Get from zero to a verified pipeline run in 8 minutes. You'll install Anatomia, scan your project, and run a full scope → plan → build → verify cycle.
+
+## Prerequisites
+
+- Node.js 20 or later
+- A package manager: npm, pnpm, or yarn
+- An existing project with a git repository
+- Claude Code installed and configured
+
+## Install
+
+Install Anatomia globally:
+
+```bash
+npm install -g anatomia-cli
+```
+
+Verify the installation:
+
+```bash
+ana --version
+```
+
+## Initialize your project
+
+Navigate to your project root and run:
+
+```bash
+ana init
+```
+
+This creates the `.ana/` directory with your project configuration. Anatomia detects your stack, package manager, and testing framework automatically.
+
+Next, run a deep scan:
+
+```bash
+ana scan --deep
+```
+
+The scan produces `scan.json` — a snapshot of your codebase's conventions, patterns, and structure. This is what gives the AI agents context about your project.
+
+## Set up your team's knowledge
+
+```bash
+claude --agent ana-setup
+```
+
+Setup calibrates Anatomia with your team's conventions — commit format, naming patterns, testing expectations, and design principles. The agent reads your codebase and writes skill files that shape every future build.
+
+## Run your first pipeline
+
+Start with a small, well-defined change. Open the pipeline:
+
+```bash
+claude --agent ana
+```
+
+Ana will ask you to describe the change. Keep it focused — one feature, one bug fix, or one refactor.
+
+### Scope
+
+Ana writes a `scope.md` that captures what you want to build, why it matters, and what "done" looks like. Review the acceptance criteria carefully — they become the contract.
+
+### Plan
+
+```bash
+claude --agent ana-plan
+```
+
+AnaPlan reads the scope and produces a spec with file changes, testing strategy, and a sealed contract. The contract contains typed assertions that the verifier will check mechanically.
+
+<Callout variant="rule">
+The contract is sealed before code is written. Build cannot modify it. Verify checks against it independently. This is what makes the proof real.
+</Callout>
+
+### Build
+
+```bash
+claude --agent ana-build
+```
+
+AnaBuild reads the spec, implements the changes, writes tests, and commits. Every commit leaves the test suite green. The build report documents what was built, what was tested, and any deviations from the contract.
+
+### Verify
+
+```bash
+claude --agent ana-verify
+```
+
+AnaVerify reads the contract and the code — not the build report. It forms an independent assessment: did the code satisfy the contract assertions? The developer compares both reports and decides whether to merge.
+
+## Review, merge, and complete
+
+After verification passes, review the PR that AnaVerify creates. The proof chain entry records the full pipeline run — scope, contract, build report, verification result.
+
+Merge the PR. The proof is now part of your project's verified history.
+
+## What's next
+
+<NextCards cards={[
+  {
+    eyebrow: "Concept",
+    title: "The Pipeline",
+    href: "/docs/concepts/pipeline",
+    description: "Understand how the five stages work together and why each one matters."
+  },
+  {
+    eyebrow: "Guide",
+    title: "Reading a Proof",
+    href: "/docs/guides/reading-a-proof",
+    description: "Learn to read proof chain entries — what each section means and what to look for."
+  }
+]} />
