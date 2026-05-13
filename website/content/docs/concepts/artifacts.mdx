@@ -1,0 +1,79 @@
+---
+title: Artifacts
+description: Eight artifact types define a pipeline run. Each is written by one agent, read by specific others, and sealed with a SHA-256 hash at save time.
+readingTime: 6
+lastReviewed: May 2026
+---
+
+# Artifacts
+
+Eight artifact types define a pipeline run. Each is written by one agent, read by specific others, and sealed with a SHA-256 hash at save time. Together they form a complete, auditable record of intent to implementation.
+
+## Where artifacts live
+
+All artifacts for a work item live in a single directory. During work: `.ana/plans/active/{slug}/`. After `ana work complete`: archived to `.ana/plans/completed/{slug}/`. Artifacts are committed to the artifact branch configured in `ana.json`. Everything is plain text — markdown and YAML, human-readable, version-controlled.
+
+Build and Verify each produce a pair: a markdown report for the developer and a YAML companion for the CLI. Think and Plan produce markdown and YAML separately.
+
+## scope.md
+
+**Written by:** ana (Think). **Read by:** ana-plan.
+
+Bounds the change. Contains the intent, the acceptance criteria, rejected approaches, and edge cases. A good scope is an agreement between the developer and the pipeline — it says what "done" means in human terms before the machines translate it into assertions.
+
+## plan.md
+
+**Written by:** ana-plan. **Read by:** developer, ana-build, ana-verify (checkbox updates in multi-phase).
+
+Sequencing, phasing decisions, and the rationale behind the spec. For multi-phase work, plan.md explains why the work was split and what order the specs should be built in. For single-phase work, it's a brief summary of the approach.
+
+## spec.md
+
+**Written by:** ana-plan. **Read by:** ana-build, ana-verify.
+
+The implementation specification. File changes, testing strategy, pattern references, gotchas, and a Build Brief with curated skill rules. The spec is guidance — it tells Build *how* to implement. The contract tells Build *what done means*. In multi-phase work, specs are numbered: `spec-1.md`, `spec-2.md`.
+
+## contract.yaml
+
+**Written by:** ana-plan. **Read by:** ana-build, ana-verify. **Sealed after Plan signs off.**
+
+The mechanical definition of "done." Contains assertions with IDs, human-readable descriptions, and matchers. Once sealed, neither Build nor Verify can modify it. This is how you get independent verification — both agents work against the same frozen contract.
+
+## build_report.md
+
+**Written by:** ana-build. **Read by:** developer, ana-build (on rejection). **Forbidden from:** ana-verify.
+
+What Build claims to have done. Test results, acceptance criteria coverage, deviations from the contract, implementation decisions, open issues. The developer reads this alongside Verify's report — discrepancies are the signal.
+
+## build_data.yaml
+
+**Written by:** ana-build. **Read by:** CLI (for proof chain entry).
+
+Structured companion to the build report. Machine-readable: acceptance criteria status, test counts, timing, concerns. The CLI reads this to populate the proof chain entry.
+
+## verify_report.md
+
+**Written by:** ana-verify. **Read by:** developer, ana-build (on rejection).
+
+What Verify found independently. Contract assertion evaluation, code findings with severity and location, concerns. This is the second opinion — written without reading Build's claims.
+
+## verify_data.yaml
+
+**Written by:** ana-verify. **Read by:** CLI (for proof chain entry).
+
+Structured companion to the verify report. Machine-readable assertion results, findings with severity and lifecycle, timing. The CLI reads this alongside build_data.yaml to compose the proof chain entry.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "The contract",
+    href: "/docs/concepts/contract",
+    description: "Assertion format, matchers, sealing."
+  },
+  {
+    eyebrow: "Guide",
+    title: "Reading a proof",
+    href: "/docs/guides/reading-a-proof",
+    description: "What each section means."
+  }
+]} />

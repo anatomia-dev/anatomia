@@ -1,0 +1,69 @@
+---
+title: The pipeline
+description: Five stages. Five agents. Each runs in its own session with restricted access — it reads what it needs, produces typed artifacts, and never sees the full picture.
+readingTime: 6
+lastReviewed: May 2026
+---
+
+# The pipeline
+
+Five stages. Five agents. Each runs in its own session with restricted access — it reads what it needs, produces typed artifacts, and never sees the full picture. No agent grades its own work.
+
+## Five stages
+
+<PipelineDiagram />
+
+Think understands what should change and why. Plan designs the solution and defines what "done" means. Build implements it. Verify makes sure everyone else did their job. Learn tends the record and makes the next cycle better.
+
+## Why independence matters
+
+If one agent scopes, plans, builds, and verifies, it's grading its own homework. The pipeline splits work across agents that never share a session. The value isn't in the separation — it's in what the separation catches.
+
+Each agent runs in a separate Claude Code session with no shared memory. The contract seal (SHA-256 hash) prevents artifact tampering after Plan signs off.
+
+> Build's report said all 14 assertions satisfied. Verify found independently: A003's test uses `toBeDefined()` — a matcher that passes on both correct and incorrect implementations. The discrepancy is what caught the bug. Independence prevents anchoring to Build's framing.
+
+## When Verify fails
+
+Verify can return FAIL. When it does, the work goes back to Build: fix the issues, re-run Verify. This is normal — 17 of Anatomia's own 78 proofs had rejection cycles. The pipeline is designed for iteration, not perfection on the first pass. {/* Dynamic: update on data change */}
+
+## What each stage produces
+
+| Stage | Agent | Produces | Consumes |
+|-------|-------|----------|----------|
+| Think | `ana` | `scope.md` | Codebase, context, scan, proof chain |
+| Plan | `ana-plan` | `plan.md`, `spec.md`, `contract.yaml` | `scope.md`, codebase, context |
+| Build | `ana-build` | Code, tests, `build_report.md`, `build_data.yaml` | `spec.md`, `contract.yaml`, `plan.md`, scan |
+| Verify | `ana-verify` | `verify_report.md`, `verify_data.yaml` | `spec.md`, `contract.yaml`, `plan.md`, code |
+| Learn | `ana-learn` | Skill rules, closed findings | `proof_chain.json`, skill files, context |
+
+## The Learn stage
+
+Learn runs between cycles, not during them. It triages the proof chain — closing resolved findings, retiring stale ones, and surfacing what needs attention next. Its most common output is a suggested scope: "these three findings share a root cause, here's a Think prompt to fix it."
+
+Findings are useful immediately. Every pipeline run, Think and Plan query the proof chain mechanically (`ana proof context`) for any modules the current work touches. A finding about a weak test matcher in `auth.ts` reaches the next agent that scopes work on `auth.ts` — automatically, without anyone routing it.
+
+When a pattern recurs across multiple cycles, Learn can promote it to a permanent skill rule — a finding becomes a constraint that shapes every future build.
+
+[Guide: Using ana-learn →](/docs/guides/using-ana-learn)
+
+## The proof chain
+
+Every completed pipeline run produces a proof chain entry: contract assertions with pass/fail, independent findings with severity, timing per stage, and SHA-256 hashes of every artifact. The chain is the mechanical record of what was built, how it was verified, and what was found. [Browse our proofs](/docs/proof).
+
+The chain powers `ana proof health` (quality trajectory), `ana proof audit` (finding clustering), and `ana proof context` (relevant findings for the files you're working on).
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "Skills",
+    href: "/docs/concepts/skills",
+    description: "How project-specific rules shape what agents build."
+  },
+  {
+    eyebrow: "Guide",
+    title: "Verifying changes",
+    href: "/docs/guides/verifying-changes",
+    description: "How the independence guarantee works in practice."
+  }
+]} />

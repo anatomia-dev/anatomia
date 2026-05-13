@@ -1,0 +1,84 @@
+---
+title: Context
+description: Context files are how agents know your project. Not chat memory — file-based knowledge that persists across sessions, enriched by setup, and kept honest by the proof chain.
+readingTime: 6
+lastReviewed: May 2026
+---
+
+# Context
+
+Context files are how agents know your project. Not chat memory — file-based knowledge that persists across sessions, enriched by setup, and kept honest by the proof chain.
+
+## What context files are
+
+Two curated files in `.ana/context/` give Think, Plan, and Learn project-specific knowledge:
+
+- `project-context.md` — product purpose, architecture, domain vocabulary, where to make changes, what looks wrong but is intentional. The file that transforms a generic agent into THIS project's engineer.
+- `design-principles.md` — how your team defines "good." Each principle shapes scoping and design decisions. If a principle wouldn't change a decision, it doesn't belong here.
+
+Two more files in `.ana/` complete the picture:
+
+- `scan.json` — machine-detected project data. Stack, file counts, patterns, conventions. Regenerated on every `ana scan`. Don't edit manually.
+- `ana.json` — CLI configuration. Build, test, and lint commands, co-author trailer, artifact branch. Some fields are yours to edit (`commands`, `coAuthor`, `artifactBranch`); others are managed by the CLI (`anaVersion`, `lastScanAt`).
+
+## Context vs skills
+
+Context describes the project — what it does, who it serves, how it's organized. Skills describe how to work in it — coding patterns, testing conventions, deployment rules. Context is read on startup by Think, Plan, and Learn to inform decisions. Skills are loaded by specific agents and curated into the Build Brief. The test: if it would change *what* you build, it's context. If it would change *how* you build it, it's a skill.
+
+## How context is created
+
+1. **Scan** — `ana init` scans your project and writes `scan.json`. Machine-detected: language, framework, testing tools, patterns, file counts.
+2. **Init** — scaffolds `project-context.md` and `design-principles.md` with thin, accurate starting content seeded from the scan.
+3. **Setup** — `claude --agent ana-setup` investigates the codebase, asks 2–3 questions, and writes rich context. Guess-and-confirm: the agent presents its understanding, you correct, the correction becomes content.
+4. **Manual editing** — edit the files directly at any time. Setup is a starting point, not a lock. Your edits are always preserved.
+
+<Callout variant="note">
+**Thin is better than wrong.** Init scaffolds are intentionally sparse. Two accurate sentences beat ten with three fabrications. Setup enriches when you're ready.
+</Callout>
+
+## What each file does
+
+### [project-context.md](/docs/reference/context)
+
+Read by: `ana` (Think), `ana-plan`, `ana-learn`. The most important context file — it tells agents why the product exists, who it serves, what decisions the team has made and why, and what looks wrong but is intentional. Without this, agents understand your stack but not your product.
+
+### [design-principles.md](/docs/reference/context)
+
+Read by: `ana` (Think), `ana-plan`, `ana-learn`. When building costs zero, knowing *what* to build is the only differentiation. Design principles are how Ana evaluates tradeoffs, how Plan makes design decisions, and how Learn judges whether a finding is worth promoting. They encode your team's taste — the thing that makes your product yours and not a generic implementation.
+
+<Callout variant="note">
+The gatekeeping rule: if a principle wouldn't change how you scope or design, it doesn't belong here. Principles that don't change decisions are decoration.
+</Callout>
+
+### [scan.json](/docs/reference/context)
+
+Read by: all agents. The machine-detected truth about your project. Stack, file counts, patterns, conventions, dependencies. Regenerated from scratch on each `ana scan`. Don't edit this file — run `ana scan` to refresh it.
+
+### [ana.json](/docs/reference/context)
+
+Read by: all agents, the CLI. The configuration file for the [toolbelt](/docs/concepts/toolbelt) — build, test, and lint commands that agents run mechanically, co-author trailer for commits, artifact branch. On re-init, user fields (`commands`, `coAuthor`, `artifactBranch`) are preserved; machine fields (`anaVersion`, `lastScanAt`) are refreshed.
+
+## Who reads context — and who doesn't
+
+Think, Plan, and Learn read context files on every startup. Build and Verify do not — they're explicitly forbidden. This is intentional: Build and Verify get project knowledge through the spec that Plan wrote, not directly from context. Plan distills what's relevant for the current task. This prevents agents from being influenced by context that Plan didn't consider relevant.
+
+## How context stays fresh
+
+Re-running `ana init` preserves context files completely — the entire `context/` directory is copied wholesale. Your edits are never overwritten. `scan.json` is regenerated from scratch. `ana.json` is merged: your configuration survives, version and timestamps refresh.
+
+The proof chain provides a second freshness signal: when Learn surfaces a finding that suggests context may be outdated — a shifted architecture, a changed test pattern — it flags the observation for you to update. Context evolves through your judgment, not through automation.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "The toolbelt",
+    href: "/docs/concepts/toolbelt",
+    description: "The CLI commands that enforce the pipeline mechanically."
+  },
+  {
+    eyebrow: "Reference",
+    title: "Context files",
+    href: "/docs/reference/context",
+    description: "Read the real files from Anatomia's own repo."
+  }
+]} />

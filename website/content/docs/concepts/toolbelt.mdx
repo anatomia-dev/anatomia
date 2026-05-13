@@ -1,0 +1,74 @@
+---
+title: The toolbelt
+description: Each agent invokes a specific set of ana CLI commands — the toolbelt. These commands validate artifact structure, compute integrity hashes, and reject malformed output before it enters the pipeline.
+readingTime: 6
+lastReviewed: May 2026
+---
+
+# The toolbelt
+
+Each agent invokes a specific set of `ana` CLI commands — the toolbelt. These commands validate artifact structure, compute integrity hashes, and reject malformed output before it enters the pipeline. The CLI is the enforcement layer that makes "verified over trusted" mechanical.
+
+## What the toolbelt is
+
+Claude Code gives every agent baseline tools — file read, file write, bash, web fetch. The toolbelt is the Anatomia layer on top: the `ana` CLI commands agents invoke to manage work, save artifacts, verify seals, and create PRs. Agents still use git directly for code commits during Build — but pipeline operations go through the CLI, which validates structure and records integrity hashes.
+
+The most common example: every agent runs `ana work status` on startup. One command tells the agent its pipeline stage, which worktree to enter, and what to do next. Without it, the agent would need to list directories, parse filenames, check git timestamps, and handle multi-phase numbering — every session, from scratch.
+
+## What it enforces
+
+Take `ana artifact save scope`. Without the CLI, you'd need a prompt instruction saying: "Before committing scope.md, check that it has at least 3 acceptance criteria, an Intent section, a Complexity Assessment with Kind matching feature/fix/chore/milestone..." — and then trust the agent to follow it every time. With the CLI command, it validates mechanically and exits non-zero if anything's wrong. The agent can't skip a check. The agent can't miscount.
+
+What `ana artifact save scope` does:
+
+1. Validates the scope has at least 3 acceptance criteria
+2. Validates an Intent section exists with content
+3. Validates Complexity Assessment fields (Kind, Size, Multi-phase)
+4. Validates Approach and Edge Cases sections exist
+5. Computes SHA-256 hash of the content
+6. Records the hash in `.saves.json`
+7. Commits with a standardized message format
+8. Pushes to the artifact branch
+
+One command. Eight checks. Correct every time. Similar validation exists for every artifact type — contracts validate YAML schema and assertion format, verify reports require a PASS/FAIL verdict, plans require phase checklists with spec references.
+
+## What each agent runs
+
+Every agent runs `ana work status` on startup to discover pipeline state. Beyond that:
+
+| Agent | Toolbelt commands |
+|-------|-------------------|
+| `ana` | [`ana work start`](/docs/reference/cli), [`ana artifact save scope`](/docs/reference/cli), [`ana proof context`](/docs/reference/cli) |
+| `ana-plan` | [`ana work start`](/docs/reference/cli), [`ana artifact save-all`](/docs/reference/cli), [`ana proof context`](/docs/reference/cli) |
+| `ana-build` | [`ana work start`](/docs/reference/cli), [`ana artifact save build-report`](/docs/reference/cli), build/test/lint from `ana.json` |
+| `ana-verify` | [`ana verify pre-check`](/docs/reference/cli), [`ana artifact save verify-report`](/docs/reference/cli), [`ana pr create`](/docs/reference/cli) |
+| `ana-learn` | [`ana proof audit`](/docs/reference/cli), [`ana proof promote`](/docs/reference/cli), [`ana proof close`](/docs/reference/cli), [`ana proof stale`](/docs/reference/cli) |
+
+## Why this matters
+
+**Mechanical enforcement.** The CLI rejects malformed artifacts before they enter the pipeline. An agent can't ship a scope without acceptance criteria or a verify report without a verdict.
+
+**Less context needed.** `ana work status` tells the agent its pipeline stage, worktree path, and what to do next — in one command. Without it, the agent would need to parse git branches, check directory contents, and reason about state.
+
+**Deterministic state.** `ana work start` creates the worktree, sets up the branch, and records timestamps. One command instead of five git operations.
+
+**Audit trail.** Every `ana artifact save` computes a SHA-256 hash and records it. The proof chain entry includes these hashes. `ana verify pre-check` compares the current contract hash against the sealed version — tamper-evident by design.
+
+## How access is enforced
+
+Two layers. **File access** — which artifacts each agent can read and write — is enforced by template instructions and session isolation. File access is enforced by session isolation — each agent starts fresh with no inherited context. **Artifact integrity** — format validation, hash computation, contract sealing — is enforced mechanically by the CLI. The CLI will reject a malformed save regardless of what the template says.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "Artifacts",
+    href: "/docs/concepts/artifacts",
+    description: "The eight files that define a pipeline run."
+  },
+  {
+    eyebrow: "Reference",
+    title: "CLI commands",
+    href: "/docs/reference/cli",
+    description: "Every command, every flag."
+  }
+]} />

@@ -1,0 +1,93 @@
+---
+title: The contract
+description: A contract is the seal between Plan and Build. It defines "done" as a list of assertions with matchers — mechanical, testable, unambiguous. Once sealed, it can't be changed.
+readingTime: 7
+lastReviewed: May 2026
+---
+
+# The contract
+
+A contract is the seal between Plan and Build. It defines "done" as a list of assertions with matchers — mechanical, testable, unambiguous. Once sealed, it can't be changed. Both Build and Verify work against the frozen version.
+
+## What a contract is
+
+A YAML file with three parts: header fields (`version`, `sealed_by`, `feature`), an `assertions` array, and a `file_changes` list declaring which files will be created, modified, or deleted. Plan writes it. The CLI validates the structure and seals it with a content hash.
+
+Each assertion has required fields: `id` (A001, A002...), `says` (human-readable description), `block` (test block name), `target` (what's checked), and `matcher` (how it's checked). `value` is required for most matchers.
+
+```yaml
+# contract.yaml (from security-hardening — real data)
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Security Hardening — Command Injection Elimination"
+
+assertions:
+  - id: A001
+    says: "Slugs with shell injection characters are rejected before any operation"
+    block: "rejects slug with shell metacharacters"
+    target: "error.message"
+    matcher: "contains"
+    value: "Invalid slug"
+
+  - id: A003
+    says: "Valid kebab-case slugs pass validation"
+    block: "accepts valid kebab-case slugs"
+    target: "result"
+    matcher: "truthy"
+
+  - id: A005
+    says: "Branch names with shell injection characters are rejected"
+    block: "rejects branch name with shell metacharacters"
+    target: "error.message"
+    matcher: "contains"
+    value: "invalid"
+
+file_changes:
+  - path: "packages/cli/src/utils/validators.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/validators.test.ts"
+    action: create
+```
+
+## Matcher types
+
+| Matcher | Checks | Example |
+|---------|--------|---------|
+| `equals` | Exact match | Regex pattern is exactly `/^[a-z0-9]...$/` |
+| `contains` | Substring present | Error message contains "Invalid slug" |
+| `not_contains` | Substring absent | Test output does not contain "pwned" |
+| `not_equals` | Not equal | Exit code is not 0 |
+| `exists` | Exists or is present | Test for early-validation exists |
+| `greater` | Numeric comparison | Test count is greater than 10 |
+| `truthy` | Value is truthy | Validation result is truthy |
+
+## The sealing moment
+
+When `ana artifact save contract` runs, the CLI validates the YAML structure, checks that every assertion has the required fields, and computes a SHA-256 hash. This hash is stored in `.saves.json`. From that point forward, any modification is detectable — `ana verify pre-check` compares the current hash against the sealed version before verification begins.
+
+<Callout variant="rule">
+A contract is what makes a verifier possible. Without it, "done" is opinion.
+</Callout>
+
+## How assertions become tests
+
+Plan writes assertion A001. Build writes a test tagged `// @ana A001` whose describe/it text matches the assertion's `block` field. Verify checks that each assertion ID has a matching test tag and that the test passes independently. The `block` field is the bridge — it tells Build what the test should be named, and Verify uses it to locate the test.
+
+## Writing good assertions
+
+Good assertions are specific, testable, and mechanical. "The code is well-structured" is not an assertion. "Slugs with shell injection characters are rejected before any operation" is. The `says` field is for humans; the `matcher`, `target`, and `value` are for machines. The `block` names the test.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "Findings",
+    href: "/docs/concepts/findings",
+    description: "What happens after verification."
+  },
+  {
+    eyebrow: "Real example",
+    title: "security-hardening",
+    href: "/docs/proof/security-hardening",
+    description: "27 assertions, all satisfied."
+  }
+]} />

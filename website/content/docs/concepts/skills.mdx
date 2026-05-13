@@ -1,0 +1,92 @@
+---
+title: Skills
+description: Skills are project-specific rules that shape what agents build. They start as templates with universal defaults, get enriched with your project's conventions during setup, and grow as you add rules or promote verification findings.
+readingTime: 7
+lastReviewed: May 2026
+---
+
+# Skills
+
+Skills are project-specific rules that shape what agents build. They start as templates with universal defaults, get enriched with your project's conventions during setup, and grow as you add rules or promote verification findings.
+
+## What Anatomia adds to skills
+
+You've used [Claude Code skills](https://code.claude.com/docs/en/skills). Anatomia generates them from your scan — matched to your stack, pre-populated with rules and gotchas, and structured so agents load them automatically. Five core skills install for every project. Up to three conditional skills install when the scan detects their triggers.
+
+## Four-section structure
+
+Every skill file has the same four sections:
+
+1. **Detected** — machine-populated during `ana init` from scan data. Framework versions, patterns found, config paths.
+2. **Rules** — the actionable constraints. Each rule is a concise directive. Agents follow these during build and verify.
+3. **Gotchas** — stack-specific traps. Populated from the gotcha library when triggers match on fresh init.
+4. **Examples** — short code snippets showing the right way. Added from development and debugging sessions.
+
+## What you own, what the machine owns
+
+**Detected** is machine-owned — refreshed on every `ana init` with current scan data. **Rules, Gotchas, and Examples** are yours — preserved across re-initialization. Your edits are safe. `ana init` will never overwrite a rule you added or a gotcha you customized.
+
+You can also create entirely new skills. Add a directory to `.claude/skills/` with a `SKILL.md` — any skill without an `ENRICHMENT.md` is treated as user-created. Learn won't auto-enrich it, but agents can load it via frontmatter.
+
+## How skills grow
+
+**Init scaffolding.** Template rules ship on `ana init`. Universal, correct for any project, but not specific to yours. `coding-standards` starts with 7 rules. `testing-standards` starts with 5.
+
+**Setup enrichment.** Running `claude --agent ana-setup` investigates your actual codebase and adds project-specific rules. Each skill ships with an `ENRICHMENT.md` — the setup agent's investigation playbook for that skill. In Anatomia's own repo, setup took `coding-standards` from 7 template rules to 11 enriched rules.
+
+**Manual editing.** Skills are your files. Add rules, add gotchas, add examples. The files are markdown — edit them directly or let an agent help. Custom skills work the same way.
+
+**Finding promotion.** When a verification finding describes a pattern worth encoding permanently, `ana proof promote` turns it into a skill rule. The finding becomes a constraint that shapes every future build.
+
+## How agents use skills
+
+Plan and Verify always load `coding-standards` and `testing-standards`. Build always loads `git-workflow`. Other skills are loaded on demand when the work requires them — Ana loads any skill when the conversation calls for it, and Build can invoke skills manually if the spec doesn't cover a situation.
+
+The key mechanism: Plan curates the relevant rules from your skill files into a **Build Brief** at the end of the spec, filtered to what matters for this specific change. Build reads the Brief first. A rule you add to `coding-standards` reaches the next build automatically — Plan picks it up and passes it through.
+
+## All 8 skills {/* Dynamic: update on data change */}
+
+| Skill | Description | Template rules | Type |
+|-------|-------------|---------------|------|
+| [`coding-standards`](/docs/reference/skills/coding-standards) | Naming conventions, error handling, type safety, import style. | 7 | Core |
+| [`testing-standards`](/docs/reference/skills/testing-standards) | Behavior over implementation, real over mocks, never weaken tests. | 5 | Core |
+| [`git-workflow`](/docs/reference/skills/git-workflow) | Commit discipline, staging practices, descriptive messages. | 3 | Core |
+| [`api-patterns`](/docs/reference/skills/api-patterns) | Validate at boundary, consistent errors, thin handlers. | 4 | Conditional |
+| [`data-access`](/docs/reference/skills/data-access) | Singleton client, transactions, no N+1, IDOR prevention. | 5 | Conditional |
+| [`ai-patterns`](/docs/reference/skills/ai-patterns) | Centralized client, no prompt injection, structured output, observability. | 7 | Conditional |
+| [`deployment`](/docs/reference/skills/deployment) | Platform-specific. Populated by setup based on detected platform. | 0 | Core |
+| [`troubleshooting`](/docs/reference/skills/troubleshooting) | Grows from real debugging sessions. Empty scaffold at init. | 0 | Core |
+
+## Conditional matching
+
+Core skills install for every project. Conditional skills only install when the scan detects their triggers: `ai-patterns` installs when an AI SDK is detected, `data-access` when a database ORM is found, and `api-patterns` when a web framework (not a CLI framework) is detected.
+
+## The gotcha library
+
+15 pre-curated gotchas ship with Anatomia. Each matches when all trigger conditions are satisfied — compound triggers prevent irrelevant advice. {/* Dynamic: update on data change */}
+
+```typescript
+{
+  id: 'prisma-serverless-singleton',
+  triggers: { database: 'Prisma', platform: 'Vercel' },
+  skill: 'data-access',
+  text: 'Prisma in serverless (Vercel, Lambda) exhausts connection
+         pools fast. Export a singleton from lib/prisma.ts with
+         global caching: globalThis.prisma ??= new PrismaClient().'
+}
+```
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "Context",
+    href: "/docs/concepts/context",
+    description: "How agents know your project."
+  },
+  {
+    eyebrow: "Guide",
+    title: "Configurability",
+    href: "/docs/guides/configurability",
+    description: "Add your own skills, rules, and custom agents."
+  }
+]} />
