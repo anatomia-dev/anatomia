@@ -35,12 +35,21 @@
   },
   "modules_touched": [
     "website/app/docs/docs.css",
+    "website/app/docs/proof/[slug]/page.tsx",
+    "website/app/docs/proof/page.tsx",
     "website/app/docs/reference/agents/[name]/page.tsx",
     "website/app/docs/reference/agents/page.tsx",
     "website/app/docs/reference/cli/page.tsx",
     "website/app/docs/reference/context/page.tsx",
     "website/app/docs/reference/skills/[name]/page.tsx",
     "website/app/docs/reference/skills/page.tsx",
+    "website/components/docs/layout/RightRail.tsx",
+    "website/components/docs/proof/AssertionLedger.tsx",
+    "website/components/docs/proof/FindingsList.tsx",
+    "website/components/docs/proof/IntegritySeal.tsx",
+    "website/components/docs/proof/PipelineGantt.tsx",
+    "website/components/docs/proof/ProofExplorer.tsx",
+    "website/components/docs/proof/ProofHero.tsx",
     "website/components/docs/reference/AgentCard.tsx",
     "website/components/docs/reference/CommandGroup.tsx",
     "website/components/docs/reference/ReferenceGrid.tsx",
@@ -65,5 +74,13 @@
   "verify-data-1": {
     "saved_at": "2026-05-13T22:38:15.917Z",
     "hash": "sha256:4a4eb5c0cd25e00d909000b08a7e620634679c891b02bbf388db7f1efe6c461b"
+  },
+  "build-report-2": {
+    "saved_at": "2026-05-13T22:50:53.719Z",
+    "hash": "sha256:3043fd904c4424078e29d8ea43c0aead175916812cb8a533f29aec081221459f"
+  },
+  "build-data-2": {
+    "saved_at": "2026-05-13T22:50:53.720Z",
+    "hash": "sha256:a84886eff6bd57f7f838d8686a6048bf2ad4e7c65bef6222637f5edfde60300a"
   }
 }

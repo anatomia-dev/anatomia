@@ -1,0 +1,11 @@
+schema: 1
+concerns:
+  - summary: "formatDuration/formatDate duplicated across 4 files instead of shared utility"
+    severity: debt
+    suggested_action: scope
+  - summary: "Lint not run during build — should be verified by AnaVerify"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Default sort column not visually highlighted beyond arrow character"
+    severity: observation
+    suggested_action: accept
