@@ -78,9 +78,11 @@ export default function ContextReferencePage() {
             </HeadingWithAnchor>
             <p><strong>Path:</strong> <code>{f.path}</code></p>
             <p>{f.description}</p>
-            <CodeBlock data-language={f.filename.endsWith(".json") ? "json" : "markdown"}>
-              <code>{f.content}</code>
-            </CodeBlock>
+            <div className="docs-context-code">
+              <CodeBlock data-language={f.filename.endsWith(".json") ? "json" : "markdown"}>
+                <code>{f.content}</code>
+              </CodeBlock>
+            </div>
           </div>
         ))}
 
