@@ -62,7 +62,7 @@ Ana investigates the codebase, surfaces tradeoffs, and writes a scope. You can s
 Each agent runs CLI commands like `ana work start` and `ana artifact save` under the hood — managing worktrees, validating artifact structure, and computing integrity hashes. You don't run these manually.
 </Callout>
 
-If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — 17 of Anatomia's own 78 proofs had rejection cycles. {/* Dynamic: update on data change */}
+If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — 19 of Anatomia's own 90 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}
 
 ## Step 4: Review, merge, and complete
 

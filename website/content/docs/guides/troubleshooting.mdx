@@ -40,7 +40,7 @@ Anatomia scans the full repository, not individual packages. Init detects your p
 
 <TroubleCard title="My verify failed">
 
-FAIL means Verify found issues — this is the pipeline working as designed. 17 of our 78 proofs had rejection cycles. {/* Dynamic: update on data change */}
+FAIL means Verify found issues — this is the pipeline working as designed. 19 of our 90 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}
 
 1. Read `verify_report.md`. It lists every UNSATISFIED assertion with evidence.
 2. Common causes: test tagged `@ana A003` but doesn't actually test what the contract says, missing test tags, tests that pass on both correct and incorrect implementations.
@@ -130,6 +130,6 @@ Still stuck? [help@anatomia.dev](mailto:help@anatomia.dev) — include your CLI 
     eyebrow: "Browse",
     title: "Proof chain",
     href: "/docs/proof",
-    description: "78 verified pipeline runs." /* Dynamic: update on data change */
+    description: "90 verified pipeline runs." /* ana:dynamic proofSummary */
   }
 ]} />

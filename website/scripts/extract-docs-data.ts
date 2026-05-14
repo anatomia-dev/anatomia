@@ -702,6 +702,437 @@ function extractBuildMeta(): BuildMeta {
 }
 
 // ---------------------------------------------------------------------------
+// 8. Search index generation
+// ---------------------------------------------------------------------------
+
+interface SearchIndexEntry {
+  type: string;
+  title: string;
+  description: string;
+  route: string;
+}
+
+function generateSearchIndex(
+  proofEntries: ProofEntry[],
+  commandsData: CommandsData,
+  agentTemplates: AgentTemplate[],
+  skillTemplates: SkillTemplate[],
+): SearchIndexEntry[] {
+  const entries: SearchIndexEntry[] = [];
+
+  // MDX pages — read frontmatter from content/docs/
+  const contentDir = path.join(WEBSITE_DIR, 'content', 'docs');
+  function scanMdxDir(dir: string, routePrefix: string): void {
+    if (!fs.existsSync(dir)) return;
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        scanMdxDir(fullPath, `${routePrefix}${item}/`);
+      } else if (item.endsWith('.mdx') && item !== 'meta.json') {
+        const mdxContent = fs.readFileSync(fullPath, 'utf-8');
+        const { frontmatter } = parseFrontmatter(mdxContent);
+        const slug = item.replace('.mdx', '');
+        const route = `/docs/${routePrefix}${slug}`;
+        entries.push({
+          type: 'page',
+          title: (frontmatter.title as string) || slug,
+          description: (frontmatter.description as string) || '',
+          route,
+        });
+      }
+    }
+  }
+  scanMdxDir(contentDir, '');
+
+  // Commands — flatten all groups
+  for (const group of commandsData.groups) {
+    function addCommands(cmds: Command[], prefix: string): void {
+      for (const cmd of cmds) {
+        entries.push({
+          type: 'command',
+          title: `ana ${prefix}${cmd.name}`,
+          description: cmd.description,
+          route: `/docs/reference/cli#${group.name.toLowerCase().replace(/\s+/g, '-')}`,
+        });
+        addCommands(cmd.subcommands, `${prefix}${cmd.name} `);
+      }
+    }
+    addCommands(group.commands, '');
+  }
+
+  // Proof entries
+  for (const entry of proofEntries) {
+    entries.push({
+      type: 'proof',
+      title: `${entry.slug} — ${entry.feature}`,
+      description: entry.scopeSummary || `${entry.assertionCount} assertions · ${entry.findingCount} findings`,
+      route: `/docs/proof/${entry.slug}`,
+    });
+  }
+
+  // Agent templates
+  for (const agent of agentTemplates) {
+    entries.push({
+      type: 'agent',
+      title: agent.name,
+      description: agent.displayDescription || agent.description,
+      route: `/docs/reference/agents/${agent.name}`,
+    });
+  }
+
+  // Skill templates
+  for (const skill of skillTemplates) {
+    entries.push({
+      type: 'skill',
+      title: skill.name,
+      description: skill.description,
+      route: `/docs/reference/skills/${skill.name}`,
+    });
+  }
+
+  return entries;
+}
+
+// ---------------------------------------------------------------------------
+// 9. llms.txt generation
+// ---------------------------------------------------------------------------
+
+function stripJsx(mdxSource: string): string {
+  let result = mdxSource;
+  // Remove import/export lines
+  result = result.replace(/^(?:import|export)\s+.*$/gm, '');
+  // Remove JSX expression comments
+  result = result.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+  // Remove self-closing JSX components
+  result = result.replace(/<[A-Z]\w*\s*(?:[^>]*?)?\s*\/>/g, '');
+  // Block components with children — preserve content
+  for (const comp of ['Callout', 'ForPlatform', 'TroubleCard']) {
+    const regex = new RegExp(`<${comp}[^>]*>([\\s\\S]*?)<\\/${comp}>`, 'g');
+    result = result.replace(regex, '$1');
+  }
+  // Fully strip these components
+  for (const comp of ['PipelineDiagram', 'NextCards', 'StatsStrip', 'CodeBlock']) {
+    result = result.replace(new RegExp(`<${comp}\\s*(?:[^>]*?)?\\s*/>`, 'g'), '');
+    result = result.replace(new RegExp(`<${comp}[^>]*>[\\s\\S]*?<\\/${comp}>`, 'g'), '');
+  }
+  // Strip div/span/p/pre wrappers
+  for (let i = 0; i < 5; i++) {
+    const before = result;
+    result = result.replace(/<(?:div|span|p|pre)\s+style=\{\{[^}]*\}\}[^>]*>([\s\S]*?)<\/(?:div|span|p|pre)>/g, '$1');
+    if (result === before) break;
+  }
+  // Strip remaining HTML-like tags
+  result = result.replace(/<\/?(?:div|span|p|pre|a|code|b|strong|em|br)\b[^>]*>/g, '');
+  // Clean up excessive blank lines
+  result = result.replace(/\n{3,}/g, '\n\n');
+  return result.trim();
+}
+
+// Navigation order for llms.txt sections
+const LLMS_SECTIONS: { heading: string; prefix: string }[] = [
+  { heading: 'Concepts', prefix: 'concepts/' },
+  { heading: 'Guides', prefix: 'guides/' },
+  { heading: 'Reference', prefix: '' }, // Static reference pages
+];
+
+function generateLlmsTxt(
+  searchIndex: SearchIndexEntry[],
+): { llmsTxt: string; llmsFullTxt: string } {
+  // Read project description from project-context.md
+  const contextPath = path.join(MONOREPO_ROOT, '.ana', 'context', 'project-context.md');
+  let projectDescription = '';
+  if (fs.existsSync(contextPath)) {
+    const contextContent = fs.readFileSync(contextPath, 'utf-8');
+    // First meaningful paragraph after the frontmatter
+    const lines = contextContent.split('\n');
+    for (const line of lines) {
+      if (line.startsWith('Anatomia is')) {
+        projectDescription = line.trim();
+        break;
+      }
+    }
+  }
+
+  const baseUrl = 'https://anatomia.dev';
+  const pages = searchIndex.filter(e => e.type === 'page');
+
+  // Group pages by section
+  const concepts = pages.filter(p => p.route.includes('/concepts/'));
+  const guides = pages.filter(p => p.route.includes('/guides/'));
+  const startPage = pages.filter(p => p.route === '/docs/start');
+  const other = pages.filter(p =>
+    !p.route.includes('/concepts/') &&
+    !p.route.includes('/guides/') &&
+    p.route !== '/docs/start',
+  );
+
+  // Build llms.txt
+  const llmsLines: string[] = [
+    '# Anatomia',
+    '',
+    `> ${projectDescription}`,
+    '',
+  ];
+
+  if (startPage.length > 0) {
+    llmsLines.push('## Get Started', '');
+    for (const p of startPage) {
+      llmsLines.push(`- [${p.title}](${baseUrl}${p.route}): ${p.description}`);
+    }
+    llmsLines.push('');
+  }
+
+  if (concepts.length > 0) {
+    llmsLines.push('## Concepts', '');
+    for (const p of concepts) {
+      llmsLines.push(`- [${p.title}](${baseUrl}${p.route}): ${p.description}`);
+    }
+    llmsLines.push('');
+  }
+
+  if (guides.length > 0) {
+    llmsLines.push('## Guides', '');
+    for (const p of guides) {
+      llmsLines.push(`- [${p.title}](${baseUrl}${p.route}): ${p.description}`);
+    }
+    llmsLines.push('');
+  }
+
+  llmsLines.push('## Reference', '');
+  llmsLines.push(`- [CLI Commands](${baseUrl}/docs/reference/cli): Every command grouped by category`);
+  llmsLines.push(`- [Agent Templates](${baseUrl}/docs/reference/agents): The 6 agent definitions`);
+  llmsLines.push(`- [Skill Files](${baseUrl}/docs/reference/skills): Core and conditional skill templates`);
+  llmsLines.push(`- [Context Files](${baseUrl}/docs/reference/context): .ana/ project knowledge files`);
+  llmsLines.push('');
+
+  llmsLines.push('## Proof Chain', '');
+  llmsLines.push(`- [Browse All Proofs](${baseUrl}/docs/proof): Verified pipeline runs`);
+  llmsLines.push('');
+
+  const llmsTxt = llmsLines.join('\n');
+
+  // Build llms-full.txt — concatenate all MDX content with JSX stripped
+  const contentDir = path.join(WEBSITE_DIR, 'content', 'docs');
+  const fullLines: string[] = [
+    '# Anatomia — Full Documentation',
+    '',
+    `> ${projectDescription}`,
+    '',
+  ];
+
+  function concatMdx(dir: string): void {
+    if (!fs.existsSync(dir)) return;
+    const items = fs.readdirSync(dir).sort();
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        concatMdx(fullPath);
+      } else if (item.endsWith('.mdx')) {
+        const mdxContent = fs.readFileSync(fullPath, 'utf-8');
+        const { frontmatter, body } = parseFrontmatter(mdxContent);
+        const title = (frontmatter.title as string) || item.replace('.mdx', '');
+        fullLines.push('---', '', `## ${title}`, '');
+        if (frontmatter.description) {
+          fullLines.push(`> ${frontmatter.description}`, '');
+        }
+        fullLines.push(stripJsx(body), '');
+      }
+    }
+  }
+  concatMdx(contentDir);
+
+  const llmsFullTxt = fullLines.join('\n');
+
+  return { llmsTxt, llmsFullTxt };
+}
+
+// ---------------------------------------------------------------------------
+// 10. Dynamic MDX value updates
+// ---------------------------------------------------------------------------
+
+function updateDynamicMdxValues(proofEntries: ProofEntry[], skillCount: number, gotchaCount: number): void {
+  const contentDir = path.join(WEBSITE_DIR, 'content', 'docs');
+
+  // Compute values
+  const proofCount = proofEntries.length;
+  let rejections = 0;
+  let totalFindings = 0;
+  const stages: Record<string, number[]> = { think: [], plan: [], build: [], verify: [] };
+
+  for (const entry of proofEntries) {
+    if (entry.rejectionCycles > 0) rejections++;
+    totalFindings += entry.findingCount;
+    if (entry.timing.think > 0) stages.think.push(entry.timing.think);
+    if (entry.timing.plan > 0) stages.plan.push(entry.timing.plan);
+    if (entry.timing.build > 0) stages.build.push(entry.timing.build);
+    if (entry.timing.verify > 0) stages.verify.push(entry.timing.verify);
+  }
+
+  function median(arr: number[]): number {
+    if (arr.length === 0) return 0;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? Math.round((sorted[mid - 1] + sorted[mid]) / 2) : sorted[mid];
+  }
+
+  const medians = {
+    think: median(stages.think),
+    plan: median(stages.plan),
+    build: median(stages.build),
+    verify: median(stages.verify),
+  };
+
+  // Define replacement patterns: tag → regex + replacement
+  const replacements: { tag: string; pattern: RegExp; replacement: string }[] = [
+    {
+      tag: 'rejectionProofCount',
+      // Matches: "N of ... N proofs had rejection cycles" with the marker
+      // Preserves the original phrasing ("Anatomia's own" vs "our")
+      pattern: /\d+ of (Anatomia's own |our )\d+ proofs had rejection cycles\.\s*\{\/\* ana:dynamic rejectionProofCount \*\/\}/g,
+      replacement: `${rejections} of $1${proofCount} proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}`,
+    },
+    {
+      tag: 'skillCount',
+      // Matches: "All N skills" heading marker
+      pattern: /All \d+ skills \{\/\* ana:dynamic skillCount \*\/\}/g,
+      replacement: `All ${skillCount} skills {/* ana:dynamic skillCount */}`,
+    },
+    {
+      tag: 'gotchaCount',
+      // Matches: "N pre-curated gotchas"
+      pattern: /\d+ pre-curated gotchas ship with Anatomia.*?\{\/\* ana:dynamic gotchaCount \*\/\}/g,
+      replacement: `${gotchaCount} pre-curated gotchas ship with Anatomia. Each matches when all trigger conditions are satisfied — compound triggers prevent irrelevant advice. {/* ana:dynamic gotchaCount */}`,
+    },
+    {
+      tag: 'medianTimings',
+      // Matches: the median timings paragraph
+      pattern: /The median across all \d+ proofs: \d+m think, \d+m plan, \d+m build, \d+m verify\.<\/p>\{\/\* ana:dynamic medianTimings \*\/\}/g,
+      replacement: `The median across all ${proofCount} proofs: ${medians.think}m think, ${medians.plan}m plan, ${medians.build}m build, ${medians.verify}m verify.</p>{/* ana:dynamic medianTimings */}`,
+    },
+    {
+      tag: 'proofSummary',
+      // Matches: "N verified pipeline runs." inside a JSX prop
+      pattern: /"\d+ verified pipeline runs\." \/\* ana:dynamic proofSummary \*\//g,
+      replacement: `"${proofCount} verified pipeline runs." /* ana:dynamic proofSummary */`,
+    },
+    {
+      tag: 'proofFindings',
+      // Matches: "N proofs, N findings to triage."
+      pattern: /"\d+ proofs, \d+ findings to triage\." \/\* ana:dynamic proofFindings \*\//g,
+      replacement: `"${proofCount} proofs, ${totalFindings} findings to triage." /* ana:dynamic proofFindings */`,
+    },
+  ];
+
+  // Scan all MDX files and apply replacements
+  let updatedCount = 0;
+  function scanAndUpdate(dir: string): void {
+    if (!fs.existsSync(dir)) return;
+    for (const item of fs.readdirSync(dir)) {
+      const fullPath = path.join(dir, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        scanAndUpdate(fullPath);
+      } else if (item.endsWith('.mdx')) {
+        let mdxContent = fs.readFileSync(fullPath, 'utf-8');
+        let changed = false;
+        for (const rep of replacements) {
+          const before = mdxContent;
+          mdxContent = mdxContent.replace(rep.pattern, rep.replacement);
+          if (mdxContent !== before) changed = true;
+        }
+        if (changed) {
+          fs.writeFileSync(fullPath, mdxContent, 'utf-8');
+          updatedCount++;
+        }
+      }
+    }
+  }
+  scanAndUpdate(contentDir);
+  console.log(`  ✓ Dynamic MDX values updated (${updatedCount} files)`);
+}
+
+// ---------------------------------------------------------------------------
+// 11. Internal link validation
+// ---------------------------------------------------------------------------
+
+function validateInternalLinks(
+  proofEntries: ProofEntry[],
+  commandsData: CommandsData,
+  agentTemplates: AgentTemplate[],
+  skillTemplates: SkillTemplate[],
+): string[] {
+  // Build set of known routes
+  const knownRoutes = new Set<string>();
+
+  // Static routes
+  knownRoutes.add('/docs');
+  knownRoutes.add('/docs/proof');
+  knownRoutes.add('/docs/reference/cli');
+  knownRoutes.add('/docs/reference/agents');
+  knownRoutes.add('/docs/reference/skills');
+  knownRoutes.add('/docs/reference/context');
+
+  // MDX page routes
+  const contentDir = path.join(WEBSITE_DIR, 'content', 'docs');
+  function addMdxRoutes(dir: string, prefix: string): void {
+    if (!fs.existsSync(dir)) return;
+    for (const item of fs.readdirSync(dir)) {
+      const fullPath = path.join(dir, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        addMdxRoutes(fullPath, `${prefix}${item}/`);
+      } else if (item.endsWith('.mdx')) {
+        knownRoutes.add(`/docs/${prefix}${item.replace('.mdx', '')}`);
+      }
+    }
+  }
+  addMdxRoutes(contentDir, '');
+
+  // Proof slugs
+  for (const entry of proofEntries) {
+    knownRoutes.add(`/docs/proof/${entry.slug}`);
+  }
+
+  // Agent names
+  for (const agent of agentTemplates) {
+    knownRoutes.add(`/docs/reference/agents/${agent.name}`);
+  }
+
+  // Skill names
+  for (const skill of skillTemplates) {
+    knownRoutes.add(`/docs/reference/skills/${skill.name}`);
+  }
+
+  // Scan all MDX files for internal links
+  const brokenLinks: string[] = [];
+  const hrefRegex = /href="(\/docs\/[^"#]*)/g;
+
+  function scanDir(dir: string): void {
+    if (!fs.existsSync(dir)) return;
+    for (const item of fs.readdirSync(dir)) {
+      const fullPath = path.join(dir, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        scanDir(fullPath);
+      } else if (item.endsWith('.mdx')) {
+        const mdxContent = fs.readFileSync(fullPath, 'utf-8');
+        let match;
+        while ((match = hrefRegex.exec(mdxContent)) !== null) {
+          const href = match[1];
+          if (!knownRoutes.has(href)) {
+            const relPath = path.relative(contentDir, fullPath);
+            brokenLinks.push(`${relPath}: href="${href}" not found`);
+          }
+        }
+      }
+    }
+  }
+  scanDir(contentDir);
+
+  return brokenLinks;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -736,15 +1167,43 @@ async function main(): Promise<void> {
   const buildMeta = extractBuildMeta();
   writeJSON('build-meta.json', buildMeta);
 
+  // Update dynamic values in MDX files
+  updateDynamicMdxValues(proofEntries, skillTemplates.length, gotchas.length);
+
+  // Generate search index
+  const searchIndex = generateSearchIndex(proofEntries, commands, agentTemplates, skillTemplates);
+  writeJSON('search-index.json', searchIndex);
+
+  // Generate llms.txt files
+  const { llmsTxt, llmsFullTxt } = generateLlmsTxt(searchIndex);
+  const publicDir = path.join(WEBSITE_DIR, 'public');
+  fs.writeFileSync(path.join(publicDir, 'llms.txt'), llmsTxt, 'utf-8');
+  console.log('  ✓ public/llms.txt');
+  fs.writeFileSync(path.join(publicDir, 'llms-full.txt'), llmsFullTxt, 'utf-8');
+  console.log('  ✓ public/llms-full.txt');
+
+  // Validate internal links
+  const brokenLinks = validateInternalLinks(proofEntries, commands, agentTemplates, skillTemplates);
+  if (brokenLinks.length > 0) {
+    console.error('\n✗ Broken internal links:');
+    for (const link of brokenLinks) {
+      console.error(`  - ${link}`);
+    }
+    process.exit(1);
+  }
+  console.log('  ✓ Internal links validated');
+
   // Validate completeness
   const errors: string[] = [];
   if (proofEntries.length === 0) errors.push('No proof entries extracted');
   if (commands.groups.length === 0) errors.push('No command groups extracted');
+  if (commands.totalCommands === 0) errors.push('No commands extracted (totalCommands is 0)');
   if (agentTemplates.length !== 6) errors.push(`Expected 6 agent templates, got ${agentTemplates.length}`);
   if (skillTemplates.length !== 8) errors.push(`Expected 8 skill templates, got ${skillTemplates.length}`);
   if (gotchas.length === 0) errors.push('No gotchas extracted');
   if (contextFiles.length !== 4) errors.push(`Expected 4 context files, got ${contextFiles.length}`);
   if (!buildMeta.version) errors.push('Build meta missing version');
+  if (searchIndex.length <= 100) errors.push(`Search index has ${searchIndex.length} entries, expected > 100`);
 
   if (errors.length > 0) {
     console.error('\n✗ Validation failed:');
@@ -754,13 +1213,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  console.log(`\n✓ All 7 files extracted successfully`);
+  console.log(`\n✓ All data extracted successfully`);
   console.log(`  Proof entries: ${proofEntries.length}`);
   console.log(`  Commands: ${commands.totalCommands} (${commands.groups.length} groups)`);
   console.log(`  Agents: ${agentTemplates.length}`);
   console.log(`  Skills: ${skillTemplates.length}`);
   console.log(`  Gotchas: ${gotchas.length}`);
   console.log(`  Context files: ${contextFiles.length}`);
+  console.log(`  Search index: ${searchIndex.length} entries`);
   console.log(`  Version: ${buildMeta.version}`);
 }
 
