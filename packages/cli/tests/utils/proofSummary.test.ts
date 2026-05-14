@@ -4005,6 +4005,173 @@ describe('computeTiming segment-based computation', () => {
     expect(declarations).toHaveLength(1);
   });
 
+  // @ana A001, A002, A003, A007, A012
+  it('produces segments for 2-phase pipeline', async () => {
+    // Phase 1 build: contract(10:30) → build-report-1(11:00) = 30min
+    // Phase 1 verify: build-report-1(11:00) → verify-report-1(11:08) = 8min
+    // Phase 2 build: verify-report-1(11:08) → build-report-2(11:23) = 15min
+    // Phase 2 verify: build-report-2(11:23) → verify-report-2(11:37) = 14min
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T11:08:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:23:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:37:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // A001: segments exist
+    expect(summary.timing.segments).toBeDefined();
+    const segments = summary.timing.segments!;
+
+    // 2-phase: think, plan, build-1, verify-1, build-2, verify-2 = 6 segments
+    expect(segments).toHaveLength(6);
+
+    // A002: first segment is think
+    expect(segments[0]!.stage).toBe('think');
+
+    // A012: think and plan have no phase number
+    expect(segments[0]!.phase).toBeUndefined();
+    expect(segments[1]!.phase).toBeUndefined();
+    expect(segments[1]!.stage).toBe('plan');
+
+    // A003: build segments include phase number
+    expect(segments[2]!.stage).toBe('build');
+    expect(segments[2]!.phase).toBe(1);
+    expect(segments[3]!.stage).toBe('verify');
+    expect(segments[3]!.phase).toBe(1);
+    expect(segments[4]!.stage).toBe('build');
+    expect(segments[4]!.phase).toBe(2);
+    expect(segments[5]!.stage).toBe('verify');
+    expect(segments[5]!.phase).toBe(2);
+
+    // A007: segment minutes match per-phase durations
+    expect(segments[2]!.minutes).toBe(30); // build 1
+    expect(segments[3]!.minutes).toBe(8);  // verify 1
+    expect(segments[4]!.minutes).toBe(15); // build 2
+    expect(segments[5]!.minutes).toBe(14); // verify 2
+  });
+
+  // @ana A004, A005, A006, A010, A011
+  it('produces segments for 3-phase pipeline', async () => {
+    // Phase 1: build 20min, verify 5min
+    // Phase 2: build 15min, verify 8min
+    // Phase 3: build 10min, verify 7min
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T10:50:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T10:55:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:10:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:18:00Z' },
+      'build-report-3': { saved_at: '2026-04-01T11:28:00Z' },
+      'verify-report-3': { saved_at: '2026-04-01T11:35:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // A004: 3-phase = think, plan, b1, v1, b2, v2, b3, v3 = 8 segments
+    expect(summary.timing.segments).toBeDefined();
+    const segments = summary.timing.segments!;
+    expect(segments).toHaveLength(8);
+
+    // A005: segments[6] is build
+    expect(segments[6]!.stage).toBe('build');
+
+    // A006: segments[6] has phase 3
+    expect(segments[6]!.phase).toBe(3);
+
+    // A010: aggregate build = sum of build segments
+    expect(summary.timing.build).toBe(45); // 20 + 15 + 10
+
+    // A011: aggregate verify = sum of verify segments
+    expect(summary.timing.verify).toBe(20); // 5 + 8 + 7
+  });
+
+  // @ana A008
+  it('omits segments for single-phase pipeline', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report': { saved_at: '2026-04-01T12:00:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.timing.segments).toBeUndefined();
+  });
+
+  // @ana A009
+  it('omits segments for rejection-cycle pipeline', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': {
+        saved_at: '2026-04-01T11:40:00Z',
+        hash: 'sha256:v2',
+        history: [{ saved_at: '2026-04-01T11:00:00Z', hash: 'sha256:v1' }],
+      },
+      'verify-report': {
+        saved_at: '2026-04-01T11:50:00Z',
+        hash: 'sha256:vr2',
+        history: [{ saved_at: '2026-04-01T11:10:00Z', hash: 'sha256:vr1' }],
+      },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.timing.segments).toBeUndefined();
+  });
+
+  it('handles missing verify for last build phase in segments', async () => {
+    // 2-phase but verify-report-2 missing (incomplete pipeline)
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T11:08:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:23:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.timing.segments).toBeDefined();
+    const segments = summary.timing.segments!;
+
+    // Should have: think, plan, build-1, verify-1, build-2 = 5 segments (no verify-2)
+    expect(segments).toHaveLength(5);
+    expect(segments[4]!.stage).toBe('build');
+    expect(segments[4]!.phase).toBe(2);
+  });
+
+  it('handles zero-minute segment', async () => {
+    // Build and verify timestamps identical → 0 minute segment
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T10:30:00Z' }, // same as contract
+      'verify-report-1': { saved_at: '2026-04-01T10:30:00Z' }, // same as build
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.timing.segments).toBeDefined();
+    const segments = summary.timing.segments!;
+    const buildSeg = segments.find(s => s.stage === 'build');
+    const verifySeg = segments.find(s => s.stage === 'verify');
+    expect(buildSeg?.minutes).toBe(0);
+    expect(verifySeg?.minutes).toBe(0);
+  });
+
   it('multi-phase with _started_at values prefers segment computation', async () => {
     // When numbered keys are detected, segment computation should take precedence
     // over _started_at-based computation for build/verify

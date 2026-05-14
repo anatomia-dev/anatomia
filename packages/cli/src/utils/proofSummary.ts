@@ -59,6 +59,7 @@ export interface ProofSummary {
     plan?: number;
     build?: number;
     verify?: number;
+    segments?: Array<{ stage: string; minutes: number; phase?: number }>;
   };
   deviations: ProofDeviation[];
   hashes: Record<string, string>;
@@ -1613,13 +1614,24 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
 
   // --- Segment-based build/verify computation ---
   if (isMultiPhase && contractTime) {
-    // Multi-phase: sum per-phase segments
+    // Multi-phase: sum per-phase segments and capture individual segment data
     let buildMs = 0;
     let verifyMs = 0;
+    const segments: Array<{ stage: string; minutes: number; phase?: number }> = [];
+
+    // Add think segment
+    if (timing.think != null) {
+      segments.push({ stage: 'think', minutes: timing.think });
+    }
+    // Add plan segment
+    if (timing.plan != null) {
+      segments.push({ stage: 'plan', minutes: timing.plan });
+    }
 
     for (let i = 0; i < buildPhases.length; i++) {
       const buildPhase = buildPhases[i]!;
       const verifyPhase = verifyPhases[i];
+      const phaseNum = buildPhase.phase;
 
       // Build segment: previous verify (or contract for phase 1) → this build
       const segStart = i === 0
@@ -1631,6 +1643,7 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
         const durationMs = segEnd - segStart;
         if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
           buildMs += durationMs;
+          segments.push({ stage: 'build', minutes: Math.round(durationMs / 60000), phase: phaseNum });
         }
       }
 
@@ -1642,6 +1655,7 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
           const durationMs = vEnd - vStart;
           if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
             verifyMs += durationMs;
+            segments.push({ stage: 'verify', minutes: Math.round(durationMs / 60000), phase: verifyPhase.phase });
           }
         }
       }
@@ -1649,6 +1663,9 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
 
     timing.build = Math.round(buildMs / 60000);
     timing.verify = Math.round(verifyMs / 60000);
+    if (segments.length > 0) {
+      timing.segments = segments;
+    }
   } else if (hasRejectionHistory && contractTime) {
     // Rejection cycles: reconstruct timeline from history entries
     let buildMs = 0;
