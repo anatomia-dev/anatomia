@@ -11193,7 +11193,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "v1-documentation-overhaul-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: packages/cli/README.md doesn't exist in git — it's copied from root by prepublishOnly (package.json:53). The test correctly doesn't assert its existence. Comment at documentation.test.ts:276 explains: 'README.md is a prepublishOnly artifact, not tracked in git.'",
+          "closed_at": "2026-05-14T16:41:17.758Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
