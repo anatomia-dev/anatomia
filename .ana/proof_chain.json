@@ -25085,7 +25085,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "docs-search-polish-C9",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding's premise is incorrect: search index is NOT fetched on every overlay open. SearchOverlay.tsx:34 guards with 'if (open && !loaded)' — fetched once, then loaded=true prevents re-fetch. 69KB is loaded once into React state and cached. 'No cache invalidation awareness' is standard SPA behavior — client state doesn't auto-refresh on deploy, page reload gets the new index.",
+          "closed_at": "2026-05-14T21:41:10.214Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

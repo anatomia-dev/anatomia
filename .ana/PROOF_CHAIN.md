@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 141 active · 117 lessons · 0 promoted · 331 closed
+96 runs · 140 active · 117 lessons · 0 promoted · 332 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 141 total)
+## Active Findings (30 shown of 140 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -66,15 +66,15 @@
 
 - **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
+### website/components/docs/layout/DocsErrorBoundary.tsx
+
+- **code:** Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation — *Docs Shell (Layout + Shared Components)*
+
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 - **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
 - **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
-
-### website/components/docs/layout/SearchOverlay.tsx
-
-- **code:** Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side — *Docs Search + Polish*
 
 ### website/components/docs/proof/FindingsList.tsx
 
