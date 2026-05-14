@@ -20618,7 +20618,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "configurability-improvements-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: .passthrough() at anaJsonSchema.ts:62 preserves unknown fields in ana.json — prevents silent data loss of custom user fields on write. The type widening is the tradeoff for preservation. Comments at lines 25-28 document the cross-check with createAnaJson. Object.keys enumeration in config displayAll (line 192) SHOULD include unknown fields — that's the desired behavior for 'show all config.' Consumers access known fields by name, not dynamically.",
+          "closed_at": "2026-05-14T22:16:37.114Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
