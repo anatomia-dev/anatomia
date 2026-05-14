@@ -14631,7 +14631,10 @@
             "A020"
           ],
           "id": "worktrees-v2-timing-danger-prune-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Tests exist: build_agent is asserted at work.test.ts:3859 (toBe('ana-build')) and verify_agent at line 3881 (toBe('ana-verify')). The tests verify exact values — they just lack @ana A017/A020 tags from this specific contract. Coverage exists; tagging gap only. Same missing-tags pattern; systemic note captured.",
+          "closed_at": "2026-05-14T19:05:35.536Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
