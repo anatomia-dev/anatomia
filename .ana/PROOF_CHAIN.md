@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 191 active · 117 lessons · 0 promoted · 281 closed
+96 runs · 190 active · 117 lessons · 0 promoted · 282 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 191 total)
+## Active Findings (30 shown of 190 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -59,6 +59,10 @@
 
 - **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
 
+### website/components/docs/content/ResourceStrip.tsx
+
+- **code:** ResourceStrip uses <a> for Manifesto link (internal anatomia.dev URL) instead of Next.js Link — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
@@ -94,8 +98,4 @@
 - **code:** LLMS_SECTIONS constant declared but never used in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
 - **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
-
-### General
-
-- **test:** A013 (phases population) and A021 (extraction passthrough) have no tagged tests — verified by source inspection only — *Multi-phase Gantt visualization for proof timeline*
 

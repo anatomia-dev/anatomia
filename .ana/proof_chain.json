@@ -25560,7 +25560,10 @@
             "A021"
           ],
           "id": "gantt-multi-phase-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Completed scope: A013 (phases in proof chain entry) and A021 (website extraction passthrough) from gantt-multi-phase contract verified by source inspection. A013 involves CLI proof chain writing (no website tests), A021 involves website extraction (no website tests). Contract archived. Same pattern closed 5+ times this session.",
+          "closed_at": "2026-05-14T18:10:02.636Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
