@@ -15661,7 +15661,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-visual-fidelity-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Self-limiting: placed array at TetrisSnake.tsx:77 is bounded by stochastic clearing at line 85 (40% removed every 2 laps). For a 1200×600 canvas (perimeter ~360 cells), ~120 blocks added per lap, 240 per 2-lap cycle. Equilibrium at ~600 blocks (where 0.4 × N = 240 additions). 600 entries × ~24 bytes = ~14KB — negligible for a canvas animation. The array can't grow unbounded because removals always catch up to additions.",
+          "closed_at": "2026-05-14T19:18:43.445Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
