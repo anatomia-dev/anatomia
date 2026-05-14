@@ -25781,7 +25781,10 @@
             "A024"
           ],
           "id": "commit-hygiene-checks-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: A024 at commit-hygiene.test.ts:308 calls runCommitHygieneChecks directly because the function is call-site independent — same behavior whether called from saveArtifact (line 1439) or saveAllArtifacts (line 1732). Comment at lines 309-310 explains: 'verifies the function works regardless of call site.' The wiring (both callers invoke it) is verified by source inspection.",
+          "closed_at": "2026-05-14T17:50:00.596Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
