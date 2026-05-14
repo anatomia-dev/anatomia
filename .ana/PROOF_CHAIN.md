@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 236 active · 117 lessons · 0 promoted · 236 closed
+96 runs · 235 active · 117 lessons · 0 promoted · 237 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 236 total)
+## Active Findings (30 shown of 235 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -26,6 +26,10 @@
 ### packages/cli/src/types/proof.ts
 
 - **code:** commit_hygiene type duplicated in three locations (proof.ts, proofSummary.ts, work.ts inline) rather than imported from a shared definition — *Commit hygiene checks at build-report save*
+
+### packages/cli/src/utils/proofSummary.ts
+
+- **code:** Non-null assertion on missing verify phase — verifyPhases[i-1]! crashes if verify-report-(N-1) missing when build-report-N exists — *Fix pipeline timing accuracy for multi-phase and rejection cycles*
 
 ### packages/cli/src/utils/worktree.ts
 
@@ -91,5 +95,4 @@
 ### General
 
 - **test:** A013 (phases population) and A021 (extraction passthrough) have no tagged tests — verified by source inspection only — *Multi-phase Gantt visualization for proof timeline*
-- **code:** Website content files updated with dynamic proof counts (90→93, 19→21) — not in spec but harmless build-time content refresh — *Multi-phase Gantt visualization for proof timeline*
 
