@@ -20564,7 +20564,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "configurability-improvements-C9",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: readFileSync/writeFileSync at config.ts:68/82 read a single small JSON file (~500 bytes) in a synchronous CLI command handler. ana config runs, does one operation, exits — no event loop to block, no concurrent work. Sync I/O is the standard and correct pattern for CLI tools. Finding's own text says 'works for a CLI tool.'",
+          "closed_at": "2026-05-14T17:19:01.217Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
