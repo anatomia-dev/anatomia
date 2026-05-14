@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 238 active · 117 lessons · 0 promoted · 234 closed
+96 runs · 237 active · 117 lessons · 0 promoted · 235 closed
 
 ## Hot Modules
 
@@ -8,15 +8,15 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 19 | 10 |
 | packages/cli/tests/commands/work.test.ts | 14 | 11 |
-| packages/cli/src/utils/worktree.ts | 11 | 6 |
 | packages/cli/src/commands/artifact.ts | 10 | 6 |
+| packages/cli/src/utils/worktree.ts | 10 | 6 |
 | packages/cli/src/utils/proofSummary.ts | 9 | 8 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 238 total)
+## Active Findings (30 shown of 237 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -32,7 +32,6 @@
 - **code:** No timeout on spawnSync — hanging build command blocks worktree creation indefinitely — *Run build command during worktree creation*
 - **code:** Empty string build command passes typeof guard and executes spawnSync('') — *Run build command during worktree creation*
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
-- **code:** getBuildCommandString fallback 'pnpm run build' is unreachable in practice — dead code path — *Run build command during worktree creation*
 
 ### packages/cli/tests/commands/commit-hygiene.test.ts
 
@@ -68,6 +67,10 @@
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 - **code:** Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context — *Docs Search + Polish*
+
+### website/components/docs/layout/SearchOverlay.tsx
+
+- **code:** Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side — *Docs Search + Polish*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
