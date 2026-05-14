@@ -1,0 +1,140 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix pipeline timing accuracy for multi-phase and rejection cycles"
+
+assertions:
+  # AC1: History preservation on overwrite
+  - id: A001
+    says: "Overwriting an artifact with new content preserves the previous timestamp and hash"
+    block: "preserves history when overwriting with different content"
+    target: "saves.build-report.history[0].saved_at"
+    matcher: "exists"
+
+  - id: A002
+    says: "History entries include both the timestamp and the content hash"
+    block: "preserves history when overwriting with different content"
+    target: "saves.build-report.history[0].hash"
+    matcher: "exists"
+
+  - id: A003
+    says: "Multiple overwrites accumulate history in chronological order"
+    block: "accumulates history entries across multiple overwrites"
+    target: "saves.build-report.history.length"
+    matcher: "equals"
+    value: 2
+
+  # AC9: Idempotent re-save does NOT create history
+  - id: A004
+    says: "Re-saving identical content does not create a history entry"
+    block: "does not create history on idempotent re-save"
+    target: "saves.build-report.history"
+    matcher: "equals"
+    value: undefined
+
+  # AC2: Type includes history field
+  - id: A005
+    says: "SaveMetadata type in artifact.ts accepts a history array"
+    block: "SaveMetadata type includes optional history field"
+    target: "typecheck"
+    matcher: "truthy"
+
+  - id: A006
+    says: "SaveEntry type in proofSummary.ts accepts a history array"
+    block: "SaveEntry type includes optional history field"
+    target: "typecheck"
+    matcher: "truthy"
+
+  # AC3: Multi-phase build/verify splits
+  - id: A007
+    says: "Two-phase builds report accurate build time by summing per-phase segments"
+    block: "computes accurate build time for 2-phase pipeline"
+    target: "summary.timing.build"
+    matcher: "equals"
+    value: 45
+
+  - id: A008
+    says: "Two-phase builds report accurate verify time by summing per-phase segments"
+    block: "computes accurate verify time for 2-phase pipeline"
+    target: "summary.timing.verify"
+    matcher: "equals"
+    value: 22
+
+  - id: A009
+    says: "Three-phase builds sum all phase segments correctly"
+    block: "computes accurate timing for 3-phase pipeline"
+    target: "summary.timing.build"
+    matcher: "exists"
+
+  - id: A010
+    says: "Three-phase verify time sums all phase segments correctly"
+    block: "computes accurate timing for 3-phase pipeline"
+    target: "summary.timing.verify"
+    matcher: "exists"
+
+  - id: A011
+    says: "Multi-phase total time still spans the full pipeline duration"
+    block: "computes accurate build time for 2-phase pipeline"
+    target: "summary.timing.total_minutes"
+    matcher: "exists"
+
+  # AC4: Rejection cycle timing with history
+  - id: A012
+    says: "Rejection cycles produce accurate build time when history is available"
+    block: "computes accurate timing for rejection cycle with history"
+    target: "summary.timing.build"
+    matcher: "exists"
+
+  - id: A013
+    says: "Rejection cycles produce accurate verify time when history is available"
+    block: "computes accurate timing for rejection cycle with history"
+    target: "summary.timing.verify"
+    matcher: "exists"
+
+  # AC5: Backward compatibility
+  - id: A014
+    says: "Old proofs without history or numbered keys compute identical timing"
+    block: "falls back to existing computation for old proofs"
+    target: "summary.timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A015
+    says: "Old proofs verify time unchanged by new computation path"
+    block: "falls back to existing computation for old proofs"
+    target: "summary.timing.verify"
+    matcher: "equals"
+    value: 30
+
+  # AC7: Schema unchanged
+  - id: A016
+    says: "Timing output shape has exactly the same fields as before"
+    block: "timing schema is unchanged"
+    target: "summary.timing"
+    matcher: "exists"
+
+  # Edge cases
+  - id: A017
+    says: "Companion data keys are not included in timing computation"
+    block: "ignores build-data-N and verify-data-N keys in timing"
+    target: "summary.timing.build"
+    matcher: "exists"
+
+  - id: A018
+    says: "A stale segment exceeding 24 hours is excluded from the phase total"
+    block: "excludes segments exceeding MAX_PHASE_MS"
+    target: "summary.timing.build"
+    matcher: "exists"
+
+  - id: A019
+    says: "MAX_PHASE_MS is declared once at the top of computeTiming"
+    block: "MAX_PHASE_MS consolidated to single declaration"
+    target: "source"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
