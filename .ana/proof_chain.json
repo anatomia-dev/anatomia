@@ -21198,7 +21198,10 @@
             "A002"
           ],
           "id": "add-milestone-kind-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Test proves the correct behavior: compound kind 'fix + chore' is rejected (line 877 throws) and the error references the invalid input (line 879 toContain). The valid values list in the error message is cosmetic — validation behavior is tested by A001 (valid kinds accepted) and extractScopeKind enum checks. Finding confirmed by source inspection that the error at artifact.ts:586 includes both valid values AND echoed input.",
+          "closed_at": "2026-05-14T21:51:02.419Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
