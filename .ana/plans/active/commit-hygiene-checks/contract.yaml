@@ -1,0 +1,186 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Commit hygiene checks at build-report save"
+
+assertions:
+  # AC1/AC11: Gating — only build-report saves trigger checks
+  - id: A001
+    says: "Hygiene checks run when saving a build report"
+    block: "runs at build-report save time"
+    target: "saves_json.commit_hygiene"
+    matcher: "exists"
+
+  - id: A002
+    says: "Hygiene checks do not run for non-build-report saves"
+    block: "skips for scope save"
+    target: "saves_json.commit_hygiene"
+    matcher: "not_equals"
+    value: "defined"
+
+  # AC2: Reuses modules_touched
+  - id: A003
+    says: "No additional git diff calls are made during hygiene checks"
+    block: "reuses modules_touched from saves.json"
+    target: "git_diff_calls"
+    matcher: "equals"
+    value: 0
+
+  # AC3: Lockfile desync detection
+  - id: A004
+    says: "A lockfile changed without its manifest is flagged"
+    block: "detects lockfile without manifest"
+    target: "findings[0].check"
+    matcher: "equals"
+    value: "lockfile-desync"
+
+  - id: A005
+    says: "A lockfile changed alongside its manifest is not flagged"
+    block: "passes when lockfile and manifest both changed"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A006
+    says: "Any package.json in a monorepo satisfies the lockfile requirement"
+    block: "monorepo lockfile with nested package.json"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  # AC4: Secret detection
+  - id: A007
+    says: "A committed file containing an API key is flagged"
+    block: "detects secret in source file"
+    target: "findings[0].check"
+    matcher: "equals"
+    value: "secret-detected"
+
+  - id: A008
+    says: "Secrets in test files are not flagged"
+    block: "excludes test files from secret scan"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A009
+    says: "Secret regex state resets between files so all matches are found"
+    block: "resets regex lastIndex between files"
+    target: "findings.length"
+    matcher: "equals"
+    value: 2
+
+  # AC5: Merge conflict markers
+  - id: A010
+    says: "A file with merge conflict markers is flagged"
+    block: "detects merge conflict markers"
+    target: "findings[0].check"
+    matcher: "equals"
+    value: "conflict-marker"
+
+  - id: A011
+    says: "A file without conflict markers is not flagged"
+    block: "passes clean file for conflict markers"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  # AC6: Environment file detection
+  - id: A012
+    says: "A .env file in the branch diff is flagged"
+    block: "detects .env file in diff"
+    target: "findings[0].check"
+    matcher: "equals"
+    value: "env-file"
+
+  - id: A013
+    says: "A .env.example file in the diff is not flagged"
+    block: "excludes .env.example from env file check"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A014
+    says: "A .env.test file in the diff is not flagged"
+    block: "excludes .env.test from env file check"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  # AC7/AC10: Warning behavior
+  - id: A015
+    says: "Findings print as yellow warnings to the terminal"
+    block: "prints warnings with chalk.yellow"
+    target: "warning_output"
+    matcher: "contains"
+    value: "Commit hygiene:"
+
+  - id: A016
+    says: "The save completes even when findings exist"
+    block: "does not block save on findings"
+    target: "save_completed"
+    matcher: "truthy"
+
+  # AC8: Structured data in .saves.json
+  - id: A017
+    says: "Each finding has check type, file, severity, and message"
+    block: "writes structured findings to saves.json"
+    target: "findings[0]"
+    matcher: "exists"
+
+  # AC9: Proof summary extraction
+  - id: A018
+    says: "Proof summary includes commit hygiene findings from saves.json"
+    block: "generateProofSummary extracts commit_hygiene"
+    target: "summary.commit_hygiene"
+    matcher: "exists"
+
+  # AC13: ProofChainEntry type
+  - id: A019
+    says: "The proof chain entry includes commit hygiene data"
+    block: "writeProofChain includes commit_hygiene"
+    target: "entry.commit_hygiene"
+    matcher: "exists"
+
+  # AC15: Display in proof show
+  - id: A020
+    says: "Proof card shows commit hygiene section when findings exist"
+    block: "formatHumanReadable displays commit hygiene"
+    target: "formatted_output"
+    matcher: "contains"
+    value: "Commit Hygiene"
+
+  - id: A021
+    says: "Proof card omits commit hygiene section when no findings exist"
+    block: "formatHumanReadable hides empty commit hygiene"
+    target: "formatted_output"
+    matcher: "not_contains"
+    value: "Commit Hygiene"
+
+  # Edge cases
+  - id: A022
+    says: "Empty modules_touched produces no findings and no errors"
+    block: "handles empty modules_touched gracefully"
+    target: "findings.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A023
+    says: "Missing saves.json is handled gracefully without errors"
+    block: "handles missing saves.json"
+    target: "error_thrown"
+    matcher: "equals"
+    value: false
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    action: create
