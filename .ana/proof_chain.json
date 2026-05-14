@@ -18634,7 +18634,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "scope-validation-integrity-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Correct as-is: 17-line post-merge hook at .husky/post-merge has set -e with all commands either guarded (grep || true at line 9, if ! build at line 14) or infallible (echo, cd, variable assignment). The script is complete and does one thing — rebuild CLI on source changes. Future edits are unlikely, and the if-guard pattern is standard for set -e scripts. Comment at line 3 documents non-blocking intent.",
+          "closed_at": "2026-05-14T19:21:19.586Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
