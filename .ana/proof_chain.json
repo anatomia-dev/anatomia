@@ -15067,7 +15067,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-lift-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Acceptable: VERSION_FALLBACK at proof-feed.ts:59 only shows when GitHub API fails — ISR caches the real version for 1 hour, so the fallback is almost never displayed. Currently accurate (v1.0.2). On future releases, update the one-liner as part of the release process. Automating (cross-package import at build time) adds complexity for a rare-path cosmetic. Simpler to update at release time.",
+          "closed_at": "2026-05-14T23:55:04.916Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
