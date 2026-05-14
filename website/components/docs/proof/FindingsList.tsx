@@ -53,6 +53,7 @@ export function FindingsList({ findings, className }: FindingsListProps) {
               fontSize: "10.5px",
               textTransform: "uppercase",
               letterSpacing: "0.06em",
+              flexWrap: "wrap",
             }}>
               <span className={`docs-fnd-sev ${severityClass(f.severity)}`} style={{
                 padding: "2px 7px",
