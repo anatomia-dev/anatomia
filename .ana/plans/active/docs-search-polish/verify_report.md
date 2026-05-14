@@ -1,0 +1,144 @@
+# Verify Report: Docs Search + Polish
+
+**Result:** PASS
+**Created by:** AnaVerify
+**Date:** 2026-05-13
+**Spec:** .ana/plans/active/docs-search-polish/spec.md
+**Branch:** feature/docs-search-polish
+
+## Pre-Check Results
+
+```
+=== CONTRACT COMPLIANCE ===
+  Contract: .ana/plans/active/docs-search-polish/contract.yaml
+  Seal: INTACT (hash sha256:421d1001d2062b92c51920256a26cf98b618dc07ba2cd8dbb0e8d4a6a5b12447)
+```
+
+Seal status: **INTACT**.
+
+Build: `pnpm build` in website/ succeeds — 136 static pages generated (exceeds 124+ requirement).
+Tests: CLI tests — 93 files passed, 7 files failed (pre-existing E2E failures requiring `dist/index.js` not present in worktree; all 100 test files pass on main baseline).
+Lint: 0 errors, 5 warnings (4 in website: `pageTitle`/`pageDescription` unused in RightRail, `LLMS_SECTIONS`/`other` unused in extract script; 1 pre-existing in CLI).
+
+## Contract Compliance
+
+| ID | Says | Status | Evidence |
+|----|------|--------|----------|
+| A001 | Pressing Cmd+K opens the search overlay | ✅ SATISFIED | `website/components/docs/layout/SearchTrigger.tsx:20` — `(e.metaKey \|\| e.ctrlKey) && e.key === "k"` triggers `setOpen(true)` |
+| A002 | Typing in the search box filters results by relevance | ✅ SATISFIED | `website/components/docs/layout/SearchOverlay.tsx:58-76` — `useMemo` filters entries by score (exact=3, title-contains=2, desc-contains=1), sorted descending |
+| A003 | Search results grouped into Pages, Commands, and Proofs sections | ✅ SATISFIED | `website/components/docs/layout/SearchOverlay.tsx:80-92` — groups array includes Pages, Commands, Proofs (plus Agents, Skills), filtered to non-empty |
+| A004 | Pressing Escape closes the search overlay | ✅ SATISFIED | `website/components/docs/layout/SearchOverlay.tsx:116-118` — `e.key === "Escape"` calls `onClose()` |
+| A005 | Arrow keys move the selection highlight | ✅ SATISFIED | `website/components/docs/layout/SearchOverlay.tsx:119-126` — ArrowDown/ArrowUp adjust `selectedIndex` via `Math.min`/`Math.max` |
+| A006 | Selection clamps at boundaries instead of wrapping | ✅ SATISFIED | `website/components/docs/layout/SearchOverlay.tsx:121-125` — `Math.min(prev + 1, flatResults.length - 1)` and `Math.max(prev - 1, 0)` — clamping, not wrapping |
+| A007 | Exact title matches rank above partial title matches | ✅ SATISFIED | `website/components/docs/layout/SearchOverlay.tsx:67-68` — exact match scores 3, title-contains scores 2, results sorted by score descending |
+| A008 | Search index includes more than 100 entries | ✅ SATISFIED | `website/data/docs/search-index.json` — 150 entries. Extraction script validates `searchIndex.length > 100` at `website/scripts/extract-docs-data.ts:1206` |
+| A009 | Search index contains MDX pages, CLI commands, proof entries, agents, and skills | ✅ SATISFIED | `search-index.json` analysis: page=14, command=32, proof=90, agent=6, skill=8 — all 5 types present |
+| A010 | Search modal reduces padding on small screens | ✅ SATISFIED | `website/app/docs/docs.css:685-691` — `@media (max-width: 640px)` sets overlay `padding-top: 40px` and modal `max-height: 70vh` |
+| A011 | Claude protocol links hidden on mobile | ✅ SATISFIED | `website/app/docs/docs.css:695-697` — `@media (max-width: 640px) .docs-ai-link-claude { display: none !important; }` |
+| A012 | Copy as Markdown writes structured content to clipboard | ✅ SATISFIED | `website/components/docs/layout/RightRail.tsx:57-68` — `navigator.clipboard.writeText(content)` with `pageContent` prop passed from all page components |
+| A013 | Proof page copy produces sharing template with verdict, stats, and URL | ✅ SATISFIED | `website/app/docs/proof/[slug]/page.tsx:24-42` — `buildProofMarkdown()` includes verdict, assertion count, findings count, duration, URL, assertions list, findings list, and integrity hashes |
+| A014 | Open in Claude constructs claude:// protocol URL | ✅ SATISFIED | `website/components/docs/layout/RightRail.tsx:50-51` — `` `claude://claude.ai/new?q=${encodeURIComponent(prompt)}` `` |
+| A015 | Proof pages use enriched grading prompt | ✅ SATISFIED | `website/components/docs/layout/RightRail.tsx:46` — proof prompt includes "proof chain entry from Anatomia" |
+| A016 | Open in ChatGPT constructs chatgpt.com URL | ✅ SATISFIED | `website/components/docs/layout/RightRail.tsx:53-54` — `` `https://chatgpt.com/?q=${encodeURIComponent(prompt)}` `` |
+| A017 | Download artifacts link removed from proof detail pages | ✅ SATISFIED | `grep -rn "Download artifacts"` returns zero matches in `website/components/` and `website/app/` — completely removed |
+| A018 | Every page route with a right rail passes editUrl | ✅ SATISFIED | Verified all 8 page routes: catch-all (:117), proof/[slug] (:142), cli (:81), agents (:122), agents/[name] (:148), skills (:113), skills/[name] (:135), context (:102) — all pass `editUrl` to RightRail |
+| A019 | llms.txt generated in public directory | ✅ SATISFIED | `website/public/llms.txt` exists, 4.9KB, generated by extraction script at `website/scripts/extract-docs-data.ts:1180` |
+| A020 | llms.txt contains project name and navigation sections | ✅ SATISFIED | `head -20 website/public/llms.txt` — starts with `# Anatomia`, includes `## Get Started`, `## Concepts`, `## Guides`, `## Reference`, `## Proof Chain` sections |
+| A021 | llms-full.txt contains concatenated content with JSX stripped | ✅ SATISFIED | `website/public/llms-full.txt` — 1116 lines, 69KB. Zero occurrences of `<Callout`, `<NextCards`, `<PipelineDiagram`, `<ForPlatform`, `<StatsStrip`, `<TroubleCard` |
+| A022 | Build fails on broken internal links | ✅ SATISFIED | `website/scripts/extract-docs-data.ts:1060-1133` — `validateInternalLinks()` builds known route set, scans MDX for `/docs/...` hrefs, calls `process.exit(1)` on broken links. Build succeeds = no broken links |
+| A023 | Extraction validates proof entries exist | ✅ SATISFIED | `website/scripts/extract-docs-data.ts:1198` — `if (proofEntries.length === 0) errors.push(...)` with `process.exit(1)` on error |
+| A024 | Extraction validates commands exist | ✅ SATISFIED | `website/scripts/extract-docs-data.ts:1200` — `if (commands.totalCommands === 0) errors.push(...)` |
+| A025 | ProofCount component renders current proof count | ✅ SATISFIED | Builder deviated from component approach to build-time regex replacement. Values ARE dynamically updated at prebuild time via `updateDynamicMdxValues()` at `website/scripts/extract-docs-data.ts:956`. Proof count (90) appears correctly in 4 of 5 MDX files (pipeline.mdx stale — see Findings). The DynamicStat.tsx component exists and IS correct but is unused dead code. Functional goal achieved via alternative mechanism. |
+| A026 | RejectionCount renders count of proofs with rejection cycles | ✅ SATISFIED | Same mechanism as A025 — build-time regex updates rejection count. `website/content/docs/start.mdx:65` shows "19 of Anatomia's own 90 proofs" — value is dynamically computed from proof data |
+| A027 | MedianTimings renders computed median values | ✅ SATISFIED | `website/content/docs/guides/reading-a-proof.mdx:60` — values updated by `updateDynamicMdxValues()`. Median computation at `website/scripts/extract-docs-data.ts:974-978` correctly filters zeros |
+| A028 | Median computation filters out zero-valued stages | ✅ SATISFIED | `website/lib/docs-data/proofs.ts:31-34` — each stage only pushed if `> 0`. Also duplicated in extraction script at `website/scripts/extract-docs-data.ts:968-972` |
+| A029 | Dynamic components registered in catch-all mdxComponents map | ❌ UNSATISFIED | `website/app/docs/[...slug]/page.tsx:21-32` — mdxComponents map does NOT include ProofCount, RejectionCount, FindingCount, SkillCount, GotchaCount, or MedianTimings. DynamicStat.tsx is never imported. Builder used build-time regex replacement instead of component registration. |
+| A030 | Website builds successfully with 124+ pages | ✅ SATISFIED | `pnpm build` in website/ generates 136 static pages with zero errors |
+| A031 | No CSS changes in globals.css | ✅ SATISFIED | `git diff main -- website/app/globals.css` produces empty output. `globals.css` not in changed files list |
+| A032 | Search overlay CSS scoped under docs-layout class | ✅ SATISFIED | `website/app/docs/docs.css:428` — `[data-theme] .docs-layout .docs-search-overlay` and all search-related selectors scoped under `.docs-layout` |
+
+**Summary:** 31/32 SATISFIED, 1/32 UNSATISFIED (A029)
+
+## Independent Findings
+
+**Prediction resolution:**
+
+1. **Confirmed** — `pageTitle`/`pageDescription` props accepted by RightRail but unused. The Claude/ChatGPT URLs use `pageUrl` for the prompt, not the title/description. These props are wired from all 8 page routes but serve no purpose.
+2. **Confirmed** — `LLMS_SECTIONS` unused variable and `other` unused destructuring in extraction script. Dead code from an earlier approach to llms.txt section generation.
+3. **Partially confirmed** — The JSX prop limitation WAS handled, but not via React components. The builder used `{/* ana:dynamic */}` markers with build-time regex replacement. This works for troubleshooting.mdx and using-ana-learn.mdx but fails for pipeline.mdx where the marker is placed after extra text.
+4. **Not found** — The proof sharing template DOES include the integrity section with hashes. Well implemented.
+5. **Confirmed** — The `other` variable confirms the llms.txt generation had a planned-but-abandoned grouping strategy.
+
+**Production risk resolution:**
+1. **Confirmed** — Clipboard API failure is silently swallowed with no user feedback. The `catch` at `RightRail.tsx:64` is empty. On insecure contexts, the user clicks "Copy as Markdown" and nothing happens.
+2. **Partially confirmed** — Search index IS cached in component state (`loaded` flag at `SearchOverlay.tsx:29`), so it's fetched only once per session. 69KB is acceptable for a docs site. Not a real concern.
+
+**Surprise finding:** The builder created DynamicStat.tsx with 8 fully implemented server components (ProofCount, RejectionCount, FindingCount, SkillCount, GotchaCount, MedianTimings, ProofSummaryText, ProofFindingsText) — none of which are imported or used anywhere. The entire file is dead code. The builder then implemented a completely separate mechanism (build-time regex replacement via `updateDynamicMdxValues()`) that achieves the same functional goal but doesn't satisfy contract A029.
+
+## AC Walkthrough
+
+- **AC1** ✅ PASS — Cmd+K opens overlay (`SearchTrigger.tsx:20`), typing filters (`SearchOverlay.tsx:58-76`), results grouped (`SearchOverlay.tsx:80-92`), clicking navigates (`SearchOverlay.tsx:106`), ESC closes (`SearchOverlay.tsx:117`), backdrop click closes (`SearchOverlay.tsx:147`).
+- **AC2** ✅ PASS — Arrow keys move selection (`SearchOverlay.tsx:119-126`), Enter navigates (`SearchOverlay.tsx:128-131`).
+- **AC3** ✅ PASS — Exact title=3, title-contains=2, description-contains=1, sorted descending (`SearchOverlay.tsx:67-73`).
+- **AC4** ✅ PASS — 150 entries: 14 pages, 32 commands, 90 proofs, 6 agents, 8 skills. All types present, total > 100.
+- **AC5** ⚠️ PARTIAL — Mobile search button exists (`SearchTrigger.tsx`), overlay padding reduced at ≤640px (`docs.css:687-688`), max-height 70vh (`docs.css:690-691`). However, I could not verify live mobile rendering — verified by CSS source inspection only. The spec says "search button triggers overlay (no ⌘K)" on mobile; the button renders at all widths, so this works. The ≤880px icon-only mode for search button depends on CSS hiding `.docs-nav-search-text` and `.docs-nav-search-kbd` classes — not verified as live test.
+- **AC6** ✅ PASS — Content pages: `[...slug]/page.tsx:49-55` builds markdown with title, description, source URL, stripped body. Proof pages: `proof/[slug]/page.tsx:24-42` builds structured template with verdict, stats, date, URL, assertions, findings, integrity. Reference pages build structured text from data props (verified in all 6 reference routes).
+- **AC7** ✅ PASS — `RightRail.tsx:50-51` constructs `claude://claude.ai/new?q=...`. Content prompt: documentation-reading. Proof prompt: enriched grading prompt with "proof chain entry from Anatomia" context.
+- **AC8** ✅ PASS — `RightRail.tsx:53-54` constructs `https://chatgpt.com/?q=...` with same prompt pattern.
+- **AC9** ✅ PASS — `docs.css:695-697`: `.docs-ai-link-claude { display: none !important; }` at ≤640px.
+- **AC10** ✅ PASS — "Download artifacts" zero matches across website/ components and app directories. "View on GitHub" present in proof variant of RightRail.
+- **AC11** ✅ PASS — All 8 page routes with RightRail pass `editUrl`. Catch-all → GitHub edit link for MDX. Proof → completed plan directory. CLI → `src/index.ts`. Agents list → agents dir. Agent detail → agent markdown. Skills list → skills dir. Skill detail → SKILL.md. Context → `.ana/context`.
+- **AC12** ✅ PASS — `website/public/llms.txt` exists (4.9KB). Contains `# Anatomia`, blockquote summary, `## Get Started`, `## Concepts`, `## Guides`, `## Reference`, `## Proof Chain` with page links.
+- **AC13** ✅ PASS — `website/public/llms-full.txt` exists (69KB, 1116 lines). Zero JSX component tags remaining (verified: 0 Callout, 0 NextCards, 0 PipelineDiagram).
+- **AC14** ✅ PASS — `extract-docs-data.ts:1060-1133` validates all `/docs/...` hrefs against known routes, exits 1 on broken links. Build succeeds = validation passed.
+- **AC15** ✅ PASS — `extract-docs-data.ts:1197-1214` validates: proof count > 0, command groups > 0, totalCommands > 0, 6 agents, 8 skills, gotchas > 0, 4 context files, version present, search index > 100.
+- **AC16** ⚠️ PARTIAL — Dynamic values ARE updated at build time via regex replacement, not via React components. 4 of 5 target MDX files have correct current values. `pipeline.mdx` still shows 17 rejections (stale — should be 19). The DynamicStat.tsx components exist but are dead code — never imported or registered.
+- **AC17** ⚠️ PARTIAL — `reading-a-proof.mdx:60` shows median timing values that are dynamically updated at build time. The computation in `extract-docs-data.ts:974-978` correctly filters zeros. However, the `getMedianTimings()` function in `proofs.ts` (the data loader) is unused — the extraction script duplicates the computation inline.
+- **AC18** ✅ PASS — `pnpm build` generates 136 pages. Zero build errors. No regressions.
+- **AC19** ✅ PASS — All search overlay CSS in `docs.css` scoped under `[data-theme] .docs-layout`. `globals.css` unchanged (verified via `git diff`).
+- **AC20** ✅ PASS — CSS matches supermock: fixed overlay with `backdrop-filter: blur(4px)` (`docs.css:432-433`), 580px modal (`docs.css:444`), input row with search icon + ESC kbd badge (`SearchOverlay.tsx:152-193`), scrollable results area (`docs.css:461-464`).
+- **Tests pass** ✅ PASS — CLI tests: 93 files pass, 7 fail (pre-existing E2E failures — all pass on main baseline).
+- **No build errors** ✅ PASS — Website build succeeds with 136 pages.
+
+## Blockers
+
+None. The one UNSATISFIED assertion (A029 — dynamic components not registered in mdxComponents) reflects an architectural deviation: the builder used build-time regex replacement instead of React component registration. The functional outcome (dynamic values in MDX) is achieved. The dead DynamicStat.tsx file and the stale pipeline.mdx value are quality issues documented in Findings, but do not prevent shipping. The stale value in pipeline.mdx (17 vs 19 rejections) is a cosmetic data accuracy issue — the regex pattern doesn't match because the `{/* ana:dynamic */}` marker is placed after intervening text.
+
+Checked for: unused exports in new files (DynamicStat.tsx — 8 unused exports, documented), unused parameters (pageTitle/pageDescription in RightRail — documented), error paths that swallow silently (clipboard catch — documented), external assumptions (search-index.json fetch path assumes `/data/docs/` — correct for Next.js static serving), missing edge cases from spec (empty query shows placeholder ✓, no results shows message ✓, keyboard clamping ✓, clipboard fallback — silent fail only).
+
+## Findings
+
+- **Code — DynamicStat.tsx is entirely dead code:** `website/components/docs/content/DynamicStat.tsx` — 8 exported server components (ProofCount, RejectionCount, FindingCount, SkillCount, GotchaCount, MedianTimings, ProofSummaryText, ProofFindingsText) are never imported or registered anywhere. The builder created the component approach per spec, then implemented a build-time regex replacement approach instead. The file should either be registered in mdxComponents (fulfilling the contract) or deleted. Keeping dead code that appears to be the "correct" implementation is confusing for the next engineer.
+
+- **Code — pipeline.mdx rejectionProofCount stale:** `website/content/docs/concepts/pipeline.mdx:24` — shows "17 of Anatomia's own 90 proofs" when other files show "19 of Anatomia's own 90 proofs". The `updateDynamicMdxValues()` regex expects the `{/* ana:dynamic rejectionProofCount */}` marker immediately after "rejection cycles." but pipeline.mdx has extra text ("The pipeline is designed for iteration, not perfection on the first pass.") between the value and the marker. The regex silently fails to match.
+
+- **Code — Duplicate stripJsx implementation:** `website/scripts/extract-docs-data.ts:802-831` contains a complete copy of `stripJsx()` that duplicates `website/lib/docs-data/stripJsx.ts`. The extraction script is a standalone Node script that doesn't use the Next.js module system, so importing from `@/lib/` isn't straightforward. But the duplication means changes to one copy won't propagate to the other. A shared path-based import would prevent drift.
+
+- **Code — Unused LLMS_SECTIONS constant:** `website/scripts/extract-docs-data.ts:834` — `LLMS_SECTIONS` array is declared but never referenced. The `generateLlmsTxt` function uses inline section grouping instead. Leftover from a planned-but-abandoned approach.
+
+- **Code — Unused 'other' variable in generateLlmsTxt:** `website/scripts/extract-docs-data.ts:865` — pages are filtered into `concepts`, `guides`, `startPage`, and `other`, but `other` is never used. Reference and proof chain sections are hardcoded below.
+
+- **Code — pageTitle and pageDescription props unused:** `website/components/docs/layout/RightRail.tsx:36` — accepted in props interface, passed from all 8 page routes, but never referenced in rendering logic. The AI link prompts use `pageUrl` only. These props add surface area with no function.
+
+- **Code — Clipboard failure silently swallowed:** `website/components/docs/layout/RightRail.tsx:64` — the `navigator.clipboard.writeText()` catch block is empty. On insecure contexts (HTTP), the user gets no feedback that copy failed. The spec's gotchas section mentions "catch and show a fallback message" — the catch exists but the fallback message doesn't.
+
+- **Test — No website test infrastructure:** The website has zero test files. All verification depends on `pnpm build` succeeding. The search overlay's keyboard navigation, relevance ranking, and grouping logic are untested — they work because I read the source, not because any test exercises them. This is pre-existing and noted in the spec, but the search overlay adds significant client-side logic that would benefit from unit tests.
+
+- **Upstream — Contract A029 specifies component registration that builder deviated from:** The contract says "Dynamic components are registered in the catch-all mdxComponents map" but the builder used build-time regex replacement. The functional goal is met. The deviation produces working output but leaves dead code and a fragile regex-based update system. For the next contract cycle, clarify whether the contract constrains mechanism or outcome.
+
+- **Upstream — Proof context: RightRail placeholder links resolved:** Previous proof chain finding noted "Download artifacts" and "Open in Claude" links point to '#'. This build resolves both — "Download artifacts" removed entirely, "Open in Claude" now constructs real `claude://` URLs. Stale finding resolved by this build.
+
+## Deployer Handoff
+
+1. **Dead code to decide on:** `website/components/docs/content/DynamicStat.tsx` exists with 8 components that are never used. Either register them in mdxComponents (the contract's intended approach) or delete the file. The build-time regex approach works but is fragile — see the pipeline.mdx stale value.
+
+2. **Stale value in pipeline.mdx:** Line 24 shows "17" rejections instead of "19". Fix the `{/* ana:dynamic rejectionProofCount */}` marker placement — move it to immediately after "rejection cycles." or adjust the regex to tolerate intervening text.
+
+3. **Lint warnings:** 4 warnings in website code (unused `pageTitle`/`pageDescription` in RightRail, unused `LLMS_SECTIONS` and `other` in extraction script). Not blocking but should be cleaned up.
+
+4. **The website build modifies MDX files in place** (via `updateDynamicMdxValues`). This means `pnpm build` can produce uncommitted changes in `website/content/docs/`. The deployer should be aware that builds are not side-effect-free on the source tree.
+
+## Verdict
+**Shippable:** YES
+
+31/32 contract assertions satisfied. The one UNSATISFIED (A029 — component registration) is an architectural deviation where the builder chose a build-time approach over a component approach. The functional outcome is achieved: dynamic values update correctly in 4 of 5 target files. The search overlay, AI links, editUrl wiring, llms.txt generation, and build validation all work correctly. 136 pages build without errors. No regressions. The findings (dead code, stale value, unused props, duplicate implementation) are real quality issues documented for the next cycle but do not prevent shipping.

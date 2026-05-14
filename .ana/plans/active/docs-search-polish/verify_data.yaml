@@ -1,0 +1,71 @@
+schema: 1
+findings:
+  - category: code
+    summary: "DynamicStat.tsx is dead code — 8 exported components never imported or registered anywhere"
+    file: "website/components/docs/content/DynamicStat.tsx"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A025", "A026", "A027", "A029"]
+
+  - category: code
+    summary: "Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead"
+    file: "website/app/docs/[...slug]/page.tsx"
+    line: 21
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A029"]
+
+  - category: code
+    summary: "pipeline.mdx rejectionProofCount stale (17 vs 19) — regex marker placement broken, extra text between value and ana:dynamic comment"
+    file: "website/content/docs/concepts/pipeline.mdx"
+    line: 24
+    severity: risk
+    suggested_action: scope
+
+  - category: code
+    summary: "LLMS_SECTIONS constant declared but never used in extract-docs-data.ts"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 834
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 865
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic"
+    file: "website/components/docs/layout/RightRail.tsx"
+    line: 36
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 802
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context"
+    file: "website/components/docs/layout/RightRail.tsx"
+    line: 64
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side"
+    file: "website/components/docs/layout/SearchOverlay.tsx"
+    line: 33
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Contract A025-A027 specify component-based rendering but builder used build-time regex replacement — functionally equivalent but architecturally different"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A025", "A026", "A027"]
