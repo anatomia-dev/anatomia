@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-95 runs · 304 active · 116 lessons · 0 promoted · 162 closed
+96 runs · 310 active · 117 lessons · 0 promoted · 162 closed
 
 ## Hot Modules
 
@@ -9,20 +9,19 @@
 | packages/cli/src/commands/work.ts | 24 | 13 |
 | packages/cli/tests/commands/work.test.ts | 23 | 16 |
 | packages/cli/src/commands/artifact.ts | 12 | 7 |
+| packages/cli/src/utils/worktree.ts | 12 | 6 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
-| packages/cli/src/utils/proofSummary.ts | 10 | 8 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 304 total)
+## Active Findings (30 shown of 310 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** CommitHygieneFinding and runCommitHygieneChecks exported for test access — widens module public API — *Commit hygiene checks at build-report save*
 - **code:** Secret scan reads full file content for every non-test file in modules_touched — large binary files or generated bundles would be read entirely into memory — *Commit hygiene checks at build-report save*
-- **code:** writeSaveMetadata export scope widened for tests — only consumed by test files, widens module public API — *Fix pipeline timing accuracy for multi-phase and rejection cycles*
 
 ### packages/cli/src/commands/proof.ts
 
@@ -37,9 +36,12 @@
 
 - **code:** commit_hygiene type duplicated in three locations (proof.ts, proofSummary.ts, work.ts inline) rather than imported from a shared definition — *Commit hygiene checks at build-report save*
 
-### packages/cli/src/utils/proofSummary.ts
+### packages/cli/src/utils/worktree.ts
 
-- **code:** Non-null assertion on missing verify phase — verifyPhases[i-1]! crashes if verify-report-(N-1) missing when build-report-N exists — *Fix pipeline timing accuracy for multi-phase and rejection cycles*
+- **code:** No timeout on spawnSync — hanging build command blocks worktree creation indefinitely — *Run build command during worktree creation*
+- **code:** Empty string build command passes typeof guard and executes spawnSync('') — *Run build command during worktree creation*
+- **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
+- **code:** getBuildCommandString fallback 'pnpm run build' is unreachable in practice — dead code path — *Run build command during worktree creation*
 
 ### packages/cli/tests/commands/commit-hygiene.test.ts
 
@@ -58,6 +60,11 @@
 
 - **test:** Gantt bar assertions (A014-A018, A022) test a re-implemented copy of buildGanttBars, not the production function in PipelineGantt.tsx — *Multi-phase Gantt visualization for proof timeline*
 
+### packages/cli/tests/utils/worktree.test.ts
+
+- **test:** A010 assertion uses toContain('## Build Status') — confirms heading exists but not that content follows the spec mockup format — *Run build command during worktree creation*
+- **test:** A008 uses toBeDefined() for depsInstalled — weaker than contract's 'exists' intent, passes even if value is false — *Run build command during worktree creation*
+
 ### website/app/docs/[...slug]/page.tsx
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
@@ -65,15 +72,6 @@
 ### website/app/docs/proof/[slug]/page.tsx
 
 - **code:** Multi-phase timeline text derives phase count via Math.max on filtered segments — works correctly but couples rendering to segment internals when entry.phases field exists for this purpose — *Multi-phase Gantt visualization for proof timeline*
-
-### website/components/docs/layout/RightRail.tsx
-
-- **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
-- **code:** Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context — *Docs Search + Polish*
-
-### website/components/docs/layout/SearchOverlay.tsx
-
-- **code:** Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side — *Docs Search + Polish*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
@@ -89,7 +87,6 @@
 
 - **code:** LLMS_SECTIONS constant declared but never used in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
-- **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
 
 ### General
 
