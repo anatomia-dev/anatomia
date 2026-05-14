@@ -34,11 +34,11 @@ Context describes the project — what it does, who it serves, how it's organize
 
 ## What each file does
 
-### [project-context.md](/docs/reference/context)
+### project-context.md
 
 Read by: `ana` (Think), `ana-plan`, `ana-learn`. The most important context file — it tells agents why the product exists, who it serves, what decisions the team has made and why, and what looks wrong but is intentional. Without this, agents understand your stack but not your product.
 
-### [design-principles.md](/docs/reference/context)
+### design-principles.md
 
 Read by: `ana` (Think), `ana-plan`, `ana-learn`. When building costs zero, knowing *what* to build is the only differentiation. Design principles are how Ana evaluates tradeoffs, how Plan makes design decisions, and how Learn judges whether a finding is worth promoting. They encode your team's taste — the thing that makes your product yours and not a generic implementation.
 
@@ -46,11 +46,11 @@ Read by: `ana` (Think), `ana-plan`, `ana-learn`. When building costs zero, knowi
 The gatekeeping rule: if a principle wouldn't change how you scope or design, it doesn't belong here. Principles that don't change decisions are decoration.
 </Callout>
 
-### [scan.json](/docs/reference/context)
+### scan.json
 
 Read by: all agents. The machine-detected truth about your project. Stack, file counts, patterns, conventions, dependencies. Regenerated from scratch on each `ana scan`. Don't edit this file — run `ana scan` to refresh it.
 
-### [ana.json](/docs/reference/context)
+### ana.json
 
 Read by: all agents, the CLI. The configuration file for the [toolbelt](/docs/concepts/toolbelt) — build, test, and lint commands that agents run mechanically, co-author trailer for commits, artifact branch. On re-init, user fields (`commands`, `coAuthor`, `artifactBranch`) are preserved; machine fields (`anaVersion`, `lastScanAt`) are refreshed.
 
