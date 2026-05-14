@@ -21696,7 +21696,10 @@
             "A014"
           ],
           "id": "worktree-freshness-detection-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Completed scope: A009-A014 from worktree-freshness-detection contract verified by source inspection. Assertions cover stale worktree warnings, PR warnings, and base commit recording — all implemented in work.ts. Contract is archived. Same pattern as configurability-improvements-C3, fix-cycle-stage-detection-C2 (closed this session).",
+          "closed_at": "2026-05-14T17:38:37.844Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
