@@ -1,0 +1,126 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Capture actual think time from Ana session start"
+
+assertions:
+  - id: A001
+    says: "The CLI can resolve the Claude Code process ID from the current process tree"
+    block: "resolves Claude PID from process tree"
+    target: "getClaudePid.result"
+    matcher: "exists"
+
+  - id: A002
+    says: "PID resolution returns null when the process lookup fails"
+    block: "returns null when ps command fails"
+    target: "getClaudePid.result"
+    matcher: "equals"
+    value: null
+
+  - id: A003
+    says: "PID resolution returns null when ps output is not a valid number"
+    block: "returns null when ps output is invalid"
+    target: "getClaudePid.result"
+    matcher: "equals"
+    value: null
+
+  - id: A004
+    says: "Running work status with --session creates a session file in .ana/state/"
+    block: "creates session file when --session flag is set"
+    target: "sessionFile.exists"
+    matcher: "truthy"
+
+  - id: A005
+    says: "The session file contains a valid UTC timestamp"
+    block: "creates session file when --session flag is set"
+    target: "sessionFile.content.timestamp"
+    matcher: "exists"
+
+  - id: A006
+    says: "Running work status without --session does not create a session file"
+    block: "does not create session file without --session flag"
+    target: "sessionFile.exists"
+    matcher: "equals"
+    value: false
+
+  - id: A007
+    says: "Starting a new work item with a session file uses the session timestamp instead of now"
+    block: "uses session timestamp for work_started_at"
+    target: "saves.work_started_at"
+    matcher: "equals"
+    value: "2026-01-15T10:00:00.000Z"
+
+  - id: A008
+    says: "The session file is deleted before the timestamp is written to saves"
+    block: "deletes session file before using timestamp"
+    target: "sessionFile.exists"
+    matcher: "equals"
+    value: false
+
+  - id: A009
+    says: "Starting a new work item without a session file uses the current time"
+    block: "falls back to now() without session file"
+    target: "saves.work_started_at"
+    matcher: "exists"
+
+  - id: A010
+    says: "The writeTimestamp function accepts an optional timestamp parameter"
+    block: "writeTimestamp uses provided timestamp"
+    target: "saves.work_started_at"
+    matcher: "equals"
+    value: "2026-01-15T10:00:00.000Z"
+
+  - id: A011
+    says: "The writeTimestamp function uses now() when no timestamp is provided"
+    block: "writeTimestamp defaults to now()"
+    target: "saves.work_started_at"
+    matcher: "exists"
+
+  - id: A012
+    says: "Session files with invalid JSON are ignored and work start falls back to now"
+    block: "handles corrupted session file gracefully"
+    target: "saves.work_started_at"
+    matcher: "exists"
+
+  - id: A013
+    says: "The session file is still deleted even when it contains invalid JSON"
+    block: "handles corrupted session file gracefully"
+    target: "sessionFile.exists"
+    matcher: "equals"
+    value: false
+
+  - id: A014
+    says: "Only the new-slug path in startWork reads session files"
+    block: "existing slug path does not consume session files"
+    target: "sessionFile.exists"
+    matcher: "truthy"
+
+  - id: A015
+    says: "The --session flag is registered on the status subcommand only"
+    block: "session flag on status subcommand"
+    target: "statusCommand.options"
+    matcher: "contains"
+    value: "--session"
+
+  - id: A016
+    says: "Ana's dogfood prompt tells it to run work status with the session flag"
+    block: "ana.md contains --session flag"
+    target: "ana.md.content"
+    matcher: "contains"
+    value: "ana work status --session"
+
+  - id: A017
+    says: "The template prompt for new installations includes the session flag"
+    block: "template ana.md contains --session flag"
+    target: "template.ana.md.content"
+    matcher: "contains"
+    value: "ana work status --session"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: ".claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
