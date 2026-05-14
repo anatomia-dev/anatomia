@@ -19475,7 +19475,10 @@
             "A013"
           ],
           "id": "scoped-cli-commits-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — 9 of 14 assertions verified by source inspection because the scope checks git commit call-site arguments. Source inspection is the appropriate method for verifying path-scoping in commit calls. Integration tests for each commit site would require full git repo setup per call site — high cost, low marginal confidence.",
+          "closed_at": "2026-05-14T08:29:29.981Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
