@@ -20818,7 +20818,10 @@
             "A017"
           ],
           "id": "fix-cycle-stage-detection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Completed scope: A015/A016/A017 from fix-cycle-stage-detection assert template content (build template phase filenames, verify template re-verify stage). Verified by source inspection — templates are static files that only change with intentional edits. Contract is archived. Same pattern as configurability-improvements-C3 (closed this session).",
+          "closed_at": "2026-05-14T17:26:01.169Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
