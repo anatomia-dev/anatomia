@@ -408,10 +408,11 @@
         "met": 0
       },
       "timing": {
-        "total_minutes": 0,
+        "total_minutes": 108,
         "think": 25,
         "plan": 25,
-        "build": 58
+        "build": 58,
+        "verify": 0
       },
       "hashes": {
         "scope": "sha256:b12c0eb2a2ac59a2bbf1e1f3cb399753926d9b5eadbd259689d0e004da9f4c9a",
@@ -547,10 +548,11 @@
         "met": 6
       },
       "timing": {
-        "total_minutes": 0,
+        "total_minutes": 81,
         "think": 16,
         "plan": 16,
-        "build": 49
+        "build": 49,
+        "verify": 0
       },
       "hashes": {
         "scope": "sha256:6a9535826961ebf33065a7f7e2c96257918f7e2cfb0d07ae00d90dc1555516b3",
@@ -978,10 +980,11 @@
         "met": 12
       },
       "timing": {
-        "total_minutes": 0,
+        "total_minutes": 46,
         "think": 7,
         "plan": 7,
-        "build": 32
+        "build": 32,
+        "verify": 0
       },
       "hashes": {
         "scope": "sha256:de77e0a97b049d34e1d1e2ad7f388fba1387391e4e29df06ea2ab19d38292da7",
@@ -1143,10 +1146,11 @@
         "met": 10
       },
       "timing": {
-        "total_minutes": 0,
+        "total_minutes": 61,
         "think": 8,
         "plan": 8,
-        "build": 45
+        "build": 45,
+        "verify": 0
       },
       "hashes": {
         "scope": "sha256:6b683abb0243810d9ba9354e733c18f5b28a38fc5420dc56d9fa2549806bd15e",
@@ -1397,10 +1401,11 @@
         "met": 12
       },
       "timing": {
-        "total_minutes": 0,
+        "total_minutes": 41,
         "think": 6,
         "plan": 6,
-        "build": 29
+        "build": 29,
+        "verify": 0
       },
       "hashes": {
         "scope": "sha256:13d8f317b70b9584289629119aaa514833cb4e846354491f317eccff197f24bd",
@@ -3703,7 +3708,9 @@
       "timing": {
         "total_minutes": 68,
         "think": 25,
-        "plan": 25
+        "plan": 25,
+        "build": 18,
+        "verify": 0
       },
       "hashes": {
         "scope": "sha256:8c307761a591ba1da0b6dadef52931a77091a5e618c32ff1fab15c88f84f5a39",
