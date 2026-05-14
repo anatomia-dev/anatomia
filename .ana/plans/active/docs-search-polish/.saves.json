@@ -18,5 +18,46 @@
   "spec": {
     "saved_at": "2026-05-14T01:12:41.378Z",
     "hash": "sha256:39232e851ba395b06b8a372bc3996309f4280fca1d0c669aa7e83e89c849068c"
-  }
+  },
+  "build_started_at": "2026-05-14T01:26:53.730Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-14T01:46:54.012Z",
+    "hash": "sha256:ad8f593a2daae74ec1b623c58f67aef5ae05b0870542235d96c49945a32ef7a0"
+  },
+  "build-data": {
+    "saved_at": "2026-05-14T01:46:54.012Z",
+    "hash": "sha256:7f35c1a196bdcd7928a6396557d0d8300bd41246394de9fa158b0d933f153a8a"
+  },
+  "modules_touched": [
+    "pnpm-lock.yaml",
+    "website/app/docs/[...slug]/page.tsx",
+    "website/app/docs/docs.css",
+    "website/app/docs/proof/[slug]/page.tsx",
+    "website/app/docs/reference/agents/[name]/page.tsx",
+    "website/app/docs/reference/agents/page.tsx",
+    "website/app/docs/reference/cli/page.tsx",
+    "website/app/docs/reference/context/page.tsx",
+    "website/app/docs/reference/skills/[name]/page.tsx",
+    "website/app/docs/reference/skills/page.tsx",
+    "website/components/docs/content/DynamicStat.tsx",
+    "website/components/docs/content/NextCards.tsx",
+    "website/components/docs/layout/DocsNav.tsx",
+    "website/components/docs/layout/RightRail.tsx",
+    "website/components/docs/layout/SearchOverlay.tsx",
+    "website/components/docs/layout/SearchTrigger.tsx",
+    "website/content/docs/concepts/pipeline.mdx",
+    "website/content/docs/concepts/skills.mdx",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/guides/verifying-changes.mdx",
+    "website/content/docs/start.mdx",
+    "website/lib/docs-data/index.ts",
+    "website/lib/docs-data/proofs.ts",
+    "website/lib/docs-data/stripJsx.ts",
+    "website/public/llms-full.txt",
+    "website/public/llms.txt",
+    "website/scripts/extract-docs-data.ts"
+  ]
 }

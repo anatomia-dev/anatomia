@@ -1,0 +1,21 @@
+schema: 1
+concerns:
+  - summary: "stripJsx logic duplicated between extraction script and website/lib"
+    file: "website/scripts/extract-docs-data.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "DynamicStat components exist but unused in MDX due to fumadocs-mdx limitation"
+    file: "website/components/docs/content/DynamicStat.tsx"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Search overlay lacks unit tests — keyboard nav, ranking, grouping untested"
+    file: "website/components/docs/layout/SearchOverlay.tsx"
+    severity: debt
+    suggested_action: scope
+  - summary: "Prebuild MDX text replacement relies on fragile regex patterns around ana:dynamic markers"
+    file: "website/scripts/extract-docs-data.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing CLI test failures (7 files, 283 tests) on Node v25.9.0"
+    severity: observation
+    suggested_action: monitor
