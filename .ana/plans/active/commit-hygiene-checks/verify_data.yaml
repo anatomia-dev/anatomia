@@ -1,0 +1,53 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A002 test is tautological — verifies key absence without calling the function, not the gating conditional"
+    file: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    line: 257
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A002"]
+  - category: test
+    summary: "A017 uses toHaveProperty (existence) instead of asserting specific values — passes on any object shape"
+    file: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    line: 240
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A017"]
+  - category: test
+    summary: "A019 is type-level only — verifies ProofChainEntry accepts commit_hygiene, not that writeProofChain actually reads and writes it"
+    file: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    line: 416
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A019"]
+  - category: test
+    summary: "A024 tests the same function call as A001 — doesn't exercise saveAllArtifacts code path, just calls runCommitHygieneChecks directly"
+    file: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    line: 308
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A024"]
+  - category: code
+    summary: "CommitHygieneFinding and runCommitHygieneChecks exported for test access — widens module public API"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 183
+    severity: debt
+    suggested_action: accept
+    anchor: "CommitHygieneFinding"
+  - category: code
+    summary: "commit_hygiene type duplicated in three locations (proof.ts, proofSummary.ts, work.ts inline) rather than imported from a shared definition"
+    file: "packages/cli/src/types/proof.ts"
+    line: 93
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Proof context finding 'writeSaveMetadata export scope widened for tests' now also applies to CommitHygieneFinding + runCommitHygieneChecks — same pattern growing"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Secret scan reads full file content for every non-test file in modules_touched — large binary files or generated bundles would be read entirely into memory"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 268
+    severity: observation
+    suggested_action: monitor

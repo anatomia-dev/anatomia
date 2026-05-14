@@ -24,6 +24,7 @@ import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import type { ContractSchema } from '../types/contract.js';
+import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
 
 /**
  * Save metadata entry for .saves.json
@@ -177,6 +178,150 @@ function captureModulesTouched(projectRoot: string, slugDir: string): void {
     // @ana A008
     const errMsg = err instanceof Error ? err.message : String(err);
     console.error(chalk.yellow(`⚠ Warning: Could not capture modules_touched — saving without it. ${errMsg}`));
+  }
+}
+
+/** Commit hygiene finding — structured warning for the proof chain. */
+export interface CommitHygieneFinding {
+  check: string;
+  file: string;
+  severity: string;
+  message: string;
+}
+
+/** Lockfile-to-manifest mapping. */
+const LOCKFILE_MANIFEST_MAP: Array<{ lockfile: string; manifest: string }> = [
+  { lockfile: 'pnpm-lock.yaml', manifest: 'package.json' },
+  { lockfile: 'package-lock.json', manifest: 'package.json' },
+  { lockfile: 'yarn.lock', manifest: 'package.json' },
+  { lockfile: 'Gemfile.lock', manifest: 'Gemfile' },
+  { lockfile: 'Pipfile.lock', manifest: 'Pipfile' },
+  { lockfile: 'poetry.lock', manifest: 'pyproject.toml' },
+  { lockfile: 'Cargo.lock', manifest: 'Cargo.toml' },
+  { lockfile: 'composer.lock', manifest: 'composer.json' },
+  { lockfile: 'go.sum', manifest: 'go.mod' },
+];
+
+/** Test file patterns — files matching these are excluded from secret scanning. */
+const TEST_FILE_PATTERNS = [
+  /\.test\./,
+  /\.spec\./,
+  /\.e2e\./,
+  /__tests__\//,
+  /\/test\//,
+  /\/tests\//,
+  /fixture/i,
+  /mock/i,
+];
+
+/**
+ * Run commit hygiene checks against the branch diff.
+ *
+ * Reads `modules_touched` from `.saves.json` (no additional git operations),
+ * scans for lockfile desync, secrets, merge conflict markers, and env files.
+ * Writes findings to `.saves.json` under `commit_hygiene` and prints warnings.
+ *
+ * Follows the `captureModulesTouched()` shape: standalone helper, catches
+ * errors internally, warns instead of throwing.
+ *
+ * @param projectRoot - Project root directory
+ * @param slugDir - Path to the slug plan directory
+ */
+export function runCommitHygieneChecks(projectRoot: string, slugDir: string): void {
+  try {
+    const savesPath = path.join(slugDir, '.saves.json');
+    let savesData: Record<string, unknown> = {};
+    if (fs.existsSync(savesPath)) {
+      try { savesData = JSON.parse(fs.readFileSync(savesPath, 'utf-8')); } catch { /* */ }
+    }
+
+    const modulesTouched = Array.isArray(savesData['modules_touched'])
+      ? savesData['modules_touched'] as string[]
+      : [];
+
+    const findings: CommitHygieneFinding[] = [];
+
+    // Check 1: Lockfile desync
+    for (const { lockfile, manifest } of LOCKFILE_MANIFEST_MAP) {
+      const hasLockfile = modulesTouched.some(f => f.endsWith(lockfile));
+      if (!hasLockfile) continue;
+      const hasManifest = modulesTouched.some(f => f.endsWith(manifest));
+      if (!hasManifest) {
+        findings.push({
+          check: 'lockfile-desync',
+          file: modulesTouched.find(f => f.endsWith(lockfile))!,
+          severity: 'warn',
+          message: `lockfile ${lockfile} changed without ${manifest}`,
+        });
+      }
+    }
+
+    // Check 2: Secret detection
+    for (const file of modulesTouched) {
+      // Skip test files
+      if (TEST_FILE_PATTERNS.some(p => p.test(file))) continue;
+
+      const absPath = path.join(projectRoot, file);
+      let content: string;
+      try { content = fs.readFileSync(absPath, 'utf-8'); } catch { continue; }
+
+      for (const pattern of SECRET_PATTERNS) {
+        pattern.regex.lastIndex = 0;
+        let match: RegExpExecArray | null;
+        while ((match = pattern.regex.exec(content)) !== null) {
+          if (pattern.validate && !pattern.validate(match[0])) continue;
+          findings.push({
+            check: 'secret-detected',
+            file,
+            severity: 'warn',
+            message: `possible secret in ${file} (${pattern.type})`,
+          });
+        }
+      }
+    }
+
+    // Check 3: Merge conflict markers
+    for (const file of modulesTouched) {
+      const absPath = path.join(projectRoot, file);
+      let content: string;
+      try { content = fs.readFileSync(absPath, 'utf-8'); } catch { continue; }
+
+      if (/^<{7}\s/m.test(content) || /^={7}$/m.test(content) || /^>{7}\s/m.test(content)) {
+        findings.push({
+          check: 'conflict-marker',
+          file,
+          severity: 'warn',
+          message: `merge conflict marker in ${file}`,
+        });
+      }
+    }
+
+    // Check 4: Environment files
+    for (const file of modulesTouched) {
+      const basename = path.basename(file);
+      if (/^\.env(\..*)?$/.test(basename)) {
+        // Exclude .env.example and .env.test
+        if (basename === '.env.example' || basename === '.env.test') continue;
+        findings.push({
+          check: 'env-file',
+          file,
+          severity: 'warn',
+          message: `environment file ${basename} in branch diff`,
+        });
+      }
+    }
+
+    // Print warnings
+    for (const finding of findings) {
+      console.error(chalk.yellow(`⚠ Commit hygiene: ${finding.message}`));
+    }
+
+    // Write to .saves.json
+    savesData['commit_hygiene'] = findings;
+    fs.writeFileSync(savesPath, JSON.stringify(savesData, null, 2));
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error(chalk.yellow(`⚠ Warning: Could not run commit hygiene checks. ${errMsg}`));
   }
 }
 
@@ -1291,6 +1436,7 @@ export function saveArtifact(type: string, slug: string): void {
   // definitely exists and all code is committed).
   if (typeInfo.baseType === 'build-report') {
     captureModulesTouched(projectRoot, slugDir);
+    runCommitHygieneChecks(projectRoot, slugDir);
   }
 
   const savesPath = path.join(slugDir, '.saves.json');
@@ -1580,9 +1726,10 @@ export function saveAllArtifacts(slug: string): void {
     runPreCheckAndStore(slug, planDir, projectRoot);
   }
 
-  // 3c. Capture modules_touched for build-report
+  // 3c. Capture modules_touched and run hygiene checks for build-report
   if (artifacts.some(a => a.typeInfo.baseType === 'build-report')) {
     captureModulesTouched(projectRoot, planDir);
+    runCommitHygieneChecks(projectRoot, planDir);
   }
 
   // 3d. Archive previous versions for archivable artifacts and companions

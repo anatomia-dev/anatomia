@@ -369,6 +369,24 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     }
   }
 
+  // Commit Hygiene section (only if there are findings)
+  const commitHygiene = entry.commit_hygiene || [];
+  if (commitHygiene.length > 0) {
+    lines.push('');
+    lines.push(chalk.bold('  Commit Hygiene'));
+    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(14)));
+
+    const MAX_DISPLAY = 5;
+    const displayed = commitHygiene.slice(0, MAX_DISPLAY);
+    for (const finding of displayed) {
+      lines.push(`  ⚠ ${finding.message}`);
+    }
+
+    if (commitHygiene.length > MAX_DISPLAY) {
+      lines.push(`  ... and ${commitHygiene.length - MAX_DISPLAY} more`);
+    }
+  }
+
   // Deviations section (only if there are deviations)
   const deviatedAssertions = entry.assertions.filter(a => a.status === 'DEVIATED' && a.deviation);
   if (deviatedAssertions.length > 0) {

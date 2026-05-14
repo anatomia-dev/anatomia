@@ -88,6 +88,12 @@ export interface ProofChainEntry {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
   }>;
+  commit_hygiene?: Array<{
+    check: string;
+    file: string;
+    severity: string;
+    message: string;
+  }>;
   phases?: number;
   worktree?: {
     used: boolean;

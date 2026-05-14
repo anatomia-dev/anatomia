@@ -24,5 +24,38 @@
   "spec": {
     "saved_at": "2026-05-14T06:47:37.426Z",
     "hash": "sha256:523d8c57222ba7906b4c14e3e7e1fb49a57724f9f1b0671d81d4c32cd4aa0d18"
+  },
+  "build_started_at": "2026-05-14T07:20:46.116Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-14T07:31:27.986Z",
+    "hash": "sha256:ae42d4b20413286c33199a79c7b4f736e14b346950d0c6aab12b62589a03764d"
+  },
+  "build-data": {
+    "saved_at": "2026-05-14T07:31:27.987Z",
+    "hash": "sha256:ac419b3e4fad3942d0d14c9b87081fd7a552e4e6eb15f758ac7e2dd7c8837557"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/tests/commands/commit-hygiene.test.ts"
+  ],
+  "verify_started_at": "2026-05-14T07:34:30.122Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2fe3f598a118f521a46a9c8679d48d3b331ead1d19421fb17a9b9b4fc4ee87dc",
+    "run_at": "2026-05-14T07:39:14.217Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-14T07:39:14.260Z",
+    "hash": "sha256:dc8be825f82b5ad28d39e97f82146f2c01fd48040cd600f8315b0d7ff7133188"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-14T07:39:14.260Z",
+    "hash": "sha256:67b3edd03b9186abc93301beae95a9e16052fc3480297d84fa20c608b97b8581"
   }
 }
