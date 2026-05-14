@@ -12101,7 +12101,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "security-hardening-C9",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: comment-filter at git-operations.test.ts:478-481 checks line prefix (starts with //, *, /*). Edge case — execSync in a multi-line comment body after * — would be a false positive (flagging a comment as usage), making the test MORE strict, not less. Sufficient for the security invariant.",
+          "closed_at": "2026-05-14T16:26:19.846Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
