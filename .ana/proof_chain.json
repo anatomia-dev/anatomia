@@ -13211,7 +13211,10 @@
             "A007"
           ],
           "id": "cli-ux-polish-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Scoped as future work: ana help <cmd> is disabled (addHelpCommand(false) at index.ts:36) to keep grouped --help output clean. ana --help and ana <cmd> --help both work. The help subcommand pattern is standard in CLIs (git, gh, docker) and should be re-enabled with proper UX research. Scope prompt prepared for Ana Think to research CLI help conventions, Commander API options, and implement cleanly.",
+          "closed_at": "2026-05-14T23:01:19.563Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
