@@ -23027,7 +23027,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "docs-shell-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: labelMap does not exist in PlatformSwitcher.tsx. grep confirms zero matches for 'labelMap', 'label.*Map', or 'Map.*label.' The platforms array at line 14 serves as the single source of truth with { id, label, disabled } per entry. The duplication described by the finding was eliminated.",
+          "closed_at": "2026-05-14T17:50:41.792Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
