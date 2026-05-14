@@ -3,8 +3,7 @@
  * ==================================================================
  * Data layer for the ship log + version pill + eyebrow + footer commit.
  *
- * Today: static mock data.
- * Production: GitHub API (commit history + proof chain files in repo).
+ * Live data via GitHub API (commit history + proof chain files in repo).
  * NOT a platform database — keeps the marketing site fully open source.
  *
  * The *shape* here is the contract — don't change field names without

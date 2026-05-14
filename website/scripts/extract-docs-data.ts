@@ -593,8 +593,8 @@ function extractSkillTemplates(): SkillTemplate[] {
       const end = i + 1 < sectionPositions.length
         ? body.lastIndexOf('\n## ', sectionPositions[i + 1].start)
         : body.length;
-      const content = body.substring(start, end).trim();
-      sections.push({ heading: sectionPositions[i].heading, content });
+      const sectionContent = body.substring(start, end).trim();
+      sections.push({ heading: sectionPositions[i].heading, content: sectionContent });
     }
 
     // Count rules: bullet items in the ## Rules section

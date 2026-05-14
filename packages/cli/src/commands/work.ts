@@ -798,8 +798,6 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
 // ProofChain, ProofChainStats imported from types/proof.ts
 
 /**
- * Write proof chain files (JSON and markdown)
- *
  * Guard against completing work with a FAIL verification result.
  * Prints error messages and exits the process if result is FAIL.
  *
