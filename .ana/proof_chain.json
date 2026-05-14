@@ -13451,7 +13451,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "code-comment-cleanup-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: 'active sprints' at check.test.ts:76 is mock project-context fixture text. Test fixtures use representative content to simulate real project context files. The phrasing is realistic and serves its purpose — the test parses structure, not semantics.",
+          "closed_at": "2026-05-14T16:46:51.113Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
