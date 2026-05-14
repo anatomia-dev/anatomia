@@ -33,7 +33,9 @@ program
   .description('Verified AI development. Ship with proof.')
   .version(`ana/${pkg.version}`, '-v, --version', 'Display version number');
 
-program.addHelpCommand(false);
+program.helpCommand('help [command]', 'Display help for a command');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Commander has no public API for hiding the help command; _hidden is the standard internal mechanism (stable v12-14)
+(program as any)._helpCommand._hidden = true;
 
 // Register commands grouped for --help display.
 // Commander renders groups in registration order — commandsGroup() sets
