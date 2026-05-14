@@ -12048,7 +12048,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "security-hardening-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: SLUG_PATTERN exported at validators.ts:19, used internally at line 43 (validateSlug), imported by validators.test.ts for direct regex validation. Exporting constants for test access is standard — same pattern as branchExists and formatHumanReadable (closed this session).",
+          "closed_at": "2026-05-14T16:39:31.448Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
