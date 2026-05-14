@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 202 active · 117 lessons · 0 promoted · 270 closed
+96 runs · 201 active · 117 lessons · 0 promoted · 271 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 202 total)
+## Active Findings (30 shown of 201 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -55,10 +55,6 @@
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
 
-### website/app/docs/docs.css
-
-- **code:** docs-content-full CSS class added in Phase 1 but only used by Phase 2 explorer — harmless dead code until Phase 2 ships — *Dynamic Pages — Reference & Proof Chain*
-
 ### website/app/docs/proof/[slug]/page.tsx
 
 - **code:** Multi-phase timeline text derives phase count via Math.max on filtered segments — works correctly but couples rendering to segment internals when entry.phases field exists for this purpose — *Multi-phase Gantt visualization for proof timeline*
@@ -71,6 +67,7 @@
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 - **code:** Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context — *Docs Search + Polish*
+- **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/layout/SearchOverlay.tsx
 

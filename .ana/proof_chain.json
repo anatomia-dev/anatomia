@@ -24166,7 +24166,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "dynamic-pages-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: docs-content-full CSS class IS actively used at proof/page.tsx:14 by the ProofExplorer page. The finding said 'dead code until Phase 2 ships' — Phase 2 has shipped. The class is defined at docs.css:390 with a responsive override at :742, both consumed by the live proof explorer.",
+          "closed_at": "2026-05-14T17:59:37.987Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
