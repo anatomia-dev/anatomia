@@ -8947,7 +8947,10 @@
             "A007"
           ],
           "id": "clean-proofsummary-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: parseResult at proofSummary.ts:197-199 is a 3-line function where the regex, toUpperCase, and type cast are on the same line. The regex constrains the match to PASS|FAIL, toUpperCase normalizes, and the cast types the result. Modifying the regex to accept new values without updating the cast would require editing the same line — the proximity makes the coupling visible and safe.",
+          "closed_at": "2026-05-14T18:43:29.032Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
