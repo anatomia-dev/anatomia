@@ -20712,7 +20712,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "configurability-improvements-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in 99e2e862 — config.ts:203 now shows '(empty)' instead of '{}' for empty object fields in ana config display. Applies to custom:{} and empty branchPrefix maps. JSON output (--json) is unaffected.",
+          "closed_at": "2026-05-14T22:39:39.005Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
