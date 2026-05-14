@@ -1,0 +1,45 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A003 test is a tautology — asserts `pid === null || (typeof pid === 'number' && pid > 0)` which is always true for any return of getClaudePid()"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 4577
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A003"]
+
+  - category: test
+    summary: "8 session-consumption tests gate all assertions behind `if (claudePid === null) return;` — in CI or environments where PID resolution fails, tests pass as no-ops with zero assertions"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A004", "A005", "A007", "A008", "A010", "A012", "A013", "A014"]
+
+  - category: test
+    summary: "A015 asserts on source code content (reads work.ts and checks regex matches) instead of testing Commander runtime behavior — violates testing standard"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 4756
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A015"]
+
+  - category: code
+    summary: "getClaudePid uses spawnSync instead of execSync as spec recommended — reasonable deviation, spawnSync gives structured exit code checking"
+    file: "packages/cli/src/commands/work.ts"
+    line: 2128
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "A008 ordering test verifies end state (file deleted after startWork) but not temporal ordering (deleted BEFORE writeTimestamp) — ordering verified by source inspection only"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 4668
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A008"]
+
+  - category: code
+    summary: "Session file written with async fsPromises.writeFile in getWorkStatus but read with sync fs.readFileSync in startWork — inconsistent IO pattern, works correctly"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept

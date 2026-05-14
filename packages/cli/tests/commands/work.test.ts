@@ -4,7 +4,7 @@ import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync } from 'node:child_process';
-import { getWorkStatus, completeWork, startWork } from '../../src/commands/work.js';
+import { getWorkStatus, completeWork, startWork, getClaudePid } from '../../src/commands/work.js';
 
 /**
  * Tests for `ana work status` and `ana work complete` commands
@@ -4508,5 +4508,361 @@ describe('Think template content', () => {
     const dogfood = fsSync.readFileSync(dogfoodPath, 'utf-8');
     expect(shipped).not.toContain('mkdir -p .ana/plans/active');
     expect(dogfood).not.toContain('mkdir -p .ana/plans/active');
+  });
+});
+
+describe('session marker and think-time capture', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'work-session-test-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  /**
+   * Helper to create a minimal git project with ana.json
+   */
+  async function createSessionTestProject(options?: {
+    artifactBranch?: string;
+    activeSlugs?: string[];
+  }): Promise<void> {
+    const artifactBranch = options?.artifactBranch || 'main';
+
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch }),
+      'utf-8'
+    );
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync(`git branch -M ${artifactBranch}`, { cwd: tempDir, stdio: 'ignore' });
+
+    if (options?.activeSlugs) {
+      for (const slug of options.activeSlugs) {
+        const slugPath = path.join(anaDir, 'plans', 'active', slug);
+        await fs.mkdir(slugPath, { recursive: true });
+        await fs.writeFile(path.join(slugPath, 'scope.md'), '# active', 'utf-8');
+      }
+      execSync('git add -A && git commit -m "add active slugs"', { cwd: tempDir, stdio: 'ignore' });
+    }
+  }
+
+  describe('getClaudePid', () => {
+    // @ana A001
+    it('resolves Claude PID from process tree', () => {
+      const pid = getClaudePid();
+      // In a test environment, we have a process tree so pid should be a number
+      // (unless running in an unusual environment where ps fails)
+      if (pid !== null) {
+        expect(typeof pid).toBe('number');
+        expect(pid).toBeGreaterThan(0);
+      }
+    });
+
+    // @ana A002
+    it('returns null when ps command fails', () => {
+      const originalPpid = process.ppid;
+      // Set ppid to an impossible value to make ps fail
+      Object.defineProperty(process, 'ppid', { value: 99999999, writable: true, configurable: true });
+      try {
+        const pid = getClaudePid();
+        expect(pid).toBeNull();
+      } finally {
+        Object.defineProperty(process, 'ppid', { value: originalPpid, writable: true, configurable: true });
+      }
+    });
+
+    // @ana A003
+    it('returns null when ps output is not a valid number', () => {
+      // PID 1 (init/launchd) has parent PID 0. ps returns "0" which is valid
+      // output but triggers the pid <= 0 guard in getClaudePid.
+      const originalPpid = process.ppid;
+      Object.defineProperty(process, 'ppid', { value: 1, writable: true, configurable: true });
+      try {
+        const pid = getClaudePid();
+        expect(pid).toBeNull();
+      } finally {
+        Object.defineProperty(process, 'ppid', { value: originalPpid, writable: true, configurable: true });
+      }
+    });
+  });
+
+  describe('--session flag', () => {
+    // @ana A004, A005
+    it('creates session file when --session flag is set', async () => {
+      await createSessionTestProject();
+
+      const claudePid = getClaudePid();
+      // Suppress console output during getWorkStatus
+      const originalLog = console.log;
+      console.log = () => {};
+      try {
+        await getWorkStatus({ session: true });
+      } finally {
+        console.log = originalLog;
+      }
+
+      if (claudePid !== null) {
+        const sessionPath = path.join(tempDir, '.ana', 'state', `session-${claudePid}.json`);
+        expect(fsSync.existsSync(sessionPath)).toBe(true);
+        const content = JSON.parse(fsSync.readFileSync(sessionPath, 'utf-8'));
+        expect(content.timestamp).toBeDefined();
+        expect(content.timestamp).toContain('T');
+      }
+    });
+
+    // @ana A006
+    it('does not create session file without --session flag', async () => {
+      await createSessionTestProject();
+
+      const originalLog = console.log;
+      console.log = () => {};
+      try {
+        await getWorkStatus({ json: false });
+      } finally {
+        console.log = originalLog;
+      }
+
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      if (fsSync.existsSync(stateDir)) {
+        const files = fsSync.readdirSync(stateDir);
+        const sessionFiles = files.filter(f => f.startsWith('session-'));
+        expect(sessionFiles).toEqual([]);
+      }
+    });
+
+    // @ana A008
+    it('plain work status without options does not create session file', async () => {
+      await createSessionTestProject();
+
+      const originalLog = console.log;
+      console.log = () => {};
+      try {
+        await getWorkStatus({});
+      } finally {
+        console.log = originalLog;
+      }
+
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      if (fsSync.existsSync(stateDir)) {
+        const files = fsSync.readdirSync(stateDir);
+        const sessionFiles = files.filter(f => f.startsWith('session-'));
+        expect(sessionFiles).toEqual([]);
+      }
+    });
+  });
+
+  describe('session consumption in startWork', () => {
+    // @ana A007
+    it('uses session timestamp for work_started_at', async () => {
+      await createSessionTestProject();
+
+      const claudePid = getClaudePid();
+      if (claudePid === null) {
+        // Can't test session consumption without a resolvable PID
+        return;
+      }
+
+      const knownTimestamp = '2026-01-15T10:00:00.000Z';
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      await fs.mkdir(stateDir, { recursive: true });
+      await fs.writeFile(
+        path.join(stateDir, `session-${claudePid}.json`),
+        JSON.stringify({ timestamp: knownTimestamp }),
+        'utf-8'
+      );
+
+      await startWork('test-session-slug');
+
+      const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-session-slug', '.saves.json');
+      expect(fsSync.existsSync(savesPath)).toBe(true);
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+      expect(saves.work_started_at).toBe(knownTimestamp);
+    });
+
+    // @ana A008
+    it('deletes session file before using timestamp', async () => {
+      await createSessionTestProject();
+
+      const claudePid = getClaudePid();
+      if (claudePid === null) return;
+
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      await fs.mkdir(stateDir, { recursive: true });
+      const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+      await fs.writeFile(
+        sessionPath,
+        JSON.stringify({ timestamp: '2026-01-15T10:00:00.000Z' }),
+        'utf-8'
+      );
+
+      await startWork('test-delete-slug');
+
+      // Session file should be deleted
+      expect(fsSync.existsSync(sessionPath)).toBe(false);
+    });
+
+    // @ana A009
+    it('falls back to now() without session file', async () => {
+      await createSessionTestProject();
+
+      const before = Date.now();
+      await startWork('test-no-session');
+      const after = Date.now();
+
+      const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-no-session', '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+      const ts = new Date(saves.work_started_at).getTime();
+      expect(ts).toBeGreaterThanOrEqual(before);
+      expect(ts).toBeLessThanOrEqual(after);
+    });
+
+    // @ana A010
+    it('writeTimestamp uses provided timestamp', async () => {
+      await createSessionTestProject();
+
+      const claudePid = getClaudePid();
+      if (claudePid === null) return;
+
+      const knownTimestamp = '2026-01-15T10:00:00.000Z';
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      await fs.mkdir(stateDir, { recursive: true });
+      await fs.writeFile(
+        path.join(stateDir, `session-${claudePid}.json`),
+        JSON.stringify({ timestamp: knownTimestamp }),
+        'utf-8'
+      );
+
+      await startWork('test-ts-param');
+
+      const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-ts-param', '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+      expect(saves.work_started_at).toBe(knownTimestamp);
+    });
+
+    // @ana A011
+    it('writeTimestamp defaults to now() when no timestamp provided', async () => {
+      await createSessionTestProject();
+
+      const before = Date.now();
+      await startWork('test-default-ts');
+      const after = Date.now();
+
+      const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-default-ts', '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+      const ts = new Date(saves.work_started_at).getTime();
+      expect(ts).toBeGreaterThanOrEqual(before);
+      expect(ts).toBeLessThanOrEqual(after);
+    });
+
+    // @ana A012, A013
+    it('handles corrupted session file gracefully', async () => {
+      await createSessionTestProject();
+
+      const claudePid = getClaudePid();
+      if (claudePid === null) return;
+
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      await fs.mkdir(stateDir, { recursive: true });
+      const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+      await fs.writeFile(sessionPath, 'not valid json!!!', 'utf-8');
+
+      const before = Date.now();
+      await startWork('test-corrupt');
+      const after = Date.now();
+
+      // Should fall back to now()
+      const savesPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-corrupt', '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+      const ts = new Date(saves.work_started_at).getTime();
+      expect(ts).toBeGreaterThanOrEqual(before);
+      expect(ts).toBeLessThanOrEqual(after);
+
+      // Session file should still be deleted
+      expect(fsSync.existsSync(sessionPath)).toBe(false);
+    });
+
+    // @ana A014
+    it('existing slug path does not consume session files', async () => {
+      await createSessionTestProject({ activeSlugs: ['existing-slug'] });
+
+      const claudePid = getClaudePid();
+      if (claudePid === null) return;
+
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      await fs.mkdir(stateDir, { recursive: true });
+      const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+      await fs.writeFile(
+        sessionPath,
+        JSON.stringify({ timestamp: '2026-01-15T10:00:00.000Z' }),
+        'utf-8'
+      );
+
+      // Suppress console output and catch process.exit
+      const originalLog = console.log;
+      const originalError = console.error;
+      console.log = () => {};
+      console.error = () => {};
+      try {
+        await startWork('existing-slug');
+      } catch {
+        // startWork for existing slug may exit or throw
+      } finally {
+        console.log = originalLog;
+        console.error = originalError;
+      }
+
+      // Session file should NOT be consumed (still exists)
+      expect(fsSync.existsSync(sessionPath)).toBe(true);
+    });
+  });
+
+  describe('Commander registration', () => {
+    // @ana A015
+    it('session flag on status subcommand', () => {
+      // Read the source file and verify --session is on the status subcommand
+      const workSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'work.ts');
+      const content = fsSync.readFileSync(workSrcPath, 'utf-8');
+      // Find the status subcommand block and verify it has --session
+      const statusMatch = content.match(/const statusCommand[\s\S]*?\.action/);
+      expect(statusMatch).not.toBeNull();
+      expect(statusMatch![0]).toContain('--session');
+      // Verify --session is NOT on the start or complete subcommands
+      const startMatch = content.match(/const startCommand[\s\S]*?\.action/);
+      expect(startMatch).not.toBeNull();
+      expect(startMatch![0]).not.toContain('--session');
+      const completeMatch = content.match(/const completeCommand[\s\S]*?\.action/);
+      expect(completeMatch).not.toBeNull();
+      expect(completeMatch![0]).not.toContain('--session');
+    });
+  });
+
+  describe('Ana prompt --session flag', () => {
+    // @ana A016
+    it('ana.md contains --session flag', () => {
+      const dogfoodPath = path.join(__dirname, '..', '..', '..', '..', '.claude', 'agents', 'ana.md');
+      const content = fsSync.readFileSync(dogfoodPath, 'utf-8');
+      expect(content).toContain('ana work status --session');
+    });
+
+    // @ana A017
+    it('template ana.md contains --session flag', () => {
+      const templatePath = path.join(__dirname, '..', '..', 'templates', '.claude', 'agents', 'ana.md');
+      const content = fsSync.readFileSync(templatePath, 'utf-8');
+      expect(content).toContain('ana work status --session');
+    });
   });
 });

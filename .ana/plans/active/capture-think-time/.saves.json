@@ -18,5 +18,49 @@
   "spec": {
     "saved_at": "2026-05-14T02:18:41.360Z",
     "hash": "sha256:fd954256b5e73661f59e066441d33e517a5547e5d22b025b4f327233e2bfdd64"
+  },
+  "build_started_at": "2026-05-14T03:38:28.324Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-14T03:30:58.266Z",
+    "hash": "sha256:eee148c17579d86fff7bab83dbe74b0c3541ec739d047e47f20d419fb9d91752"
+  },
+  "build-data": {
+    "saved_at": "2026-05-14T03:30:58.267Z",
+    "hash": "sha256:70312df53233294a01c39ad9768a9c6686097d7cdc59f500ce90d09134d78c13"
+  },
+  "modules_touched": [
+    ".claude/agents/ana.md",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/tests/commands/work.test.ts",
+    "pnpm-lock.yaml"
+  ],
+  "verify_started_at": "2026-05-14T02:45:25.900Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:7339ff7c7b13a794ccbacb4944362e51a0e86732818f8989356f212f64b15b52",
+    "run_at": "2026-05-14T03:42:24.919Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-14T03:42:24.973Z",
+    "hash": "sha256:5b0997e763783299d1e470c8dd49e3e2e728bdb29918aac833347c635e0bdbd1",
+    "history": [
+      {
+        "saved_at": "2026-05-14T02:50:27.038Z",
+        "hash": "sha256:b40f01e2d85d36abfe59e4af6361487c520ca873a7f22ec14a5d1b9468c18917"
+      }
+    ]
+  },
+  "verify-data": {
+    "saved_at": "2026-05-14T03:42:24.973Z",
+    "hash": "sha256:0d469ba9d01f633487f6891523255d0709f7f7add439d204a3c87eb0056d6fe7",
+    "history": [
+      {
+        "saved_at": "2026-05-14T02:50:27.039Z",
+        "hash": "sha256:ef3e03022afbfaa6b5801bc51031b885df56bf23fe90e5e9a514ad81b1293538"
+      }
+    ]
   }
 }

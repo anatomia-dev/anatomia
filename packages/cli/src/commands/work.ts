@@ -668,9 +668,26 @@ function printHumanReadable(output: StatusOutput): void {
  *
  * @param options - Command options
  * @param options.json - Output JSON format instead of human-readable
+ * @param options.session - Write a session marker file for think-time capture
  */
-export async function getWorkStatus(options: { json?: boolean }): Promise<void> {
+export async function getWorkStatus(options: { json?: boolean; session?: boolean }): Promise<void> {
   const projectRoot = findProjectRoot();
+
+  // Write session marker for think-time capture (best-effort, silent on failure)
+  if (options.session) {
+    const claudePid = getClaudePid();
+    if (claudePid !== null) {
+      try {
+        const stateDir = path.join(projectRoot, '.ana', 'state');
+        await fsPromises.mkdir(stateDir, { recursive: true });
+        const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+        await fsPromises.writeFile(sessionPath, JSON.stringify({ timestamp: new Date().toISOString() }), 'utf-8');
+      } catch {
+        // Silent failure — session marker is best-effort
+      }
+    }
+  }
+
   const artifactBranch = readArtifactBranch(projectRoot);
   const currentBranch = getCurrentBranch();
 
@@ -1806,8 +1823,26 @@ export async function startWork(slug: string): Promise<void> {
     // Create directory
     await fsPromises.mkdir(activePath, { recursive: true });
 
+    // Read and consume session file for think-time capture (delete-then-use)
+    let sessionTimestamp: string | undefined;
+    const claudePid = getClaudePid();
+    if (claudePid !== null) {
+      const sessionPath = path.join(projectRoot, '.ana', 'state', `session-${claudePid}.json`);
+      try {
+        const raw = fs.readFileSync(sessionPath, 'utf-8');
+        // Delete immediately — consumed regardless of parse/downstream outcome
+        try { fs.unlinkSync(sessionPath); } catch { /* already gone */ }
+        const parsed = JSON.parse(raw);
+        if (parsed.timestamp && typeof parsed.timestamp === 'string') {
+          sessionTimestamp = parsed.timestamp;
+        }
+      } catch {
+        // No session file or read error — fall back to now()
+      }
+    }
+
     // Write work_started_at
-    await writeTimestamp(activePath, 'work_started_at', 'ana');
+    await writeTimestamp(activePath, 'work_started_at', 'ana', false, sessionTimestamp);
     commitSaves(projectRoot, slug, `[${slug}] Start work`);
 
     console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
@@ -2081,15 +2116,44 @@ function printExistingWorktree(
 }
 
 /**
+ * Resolve the Claude Code process PID from the current process tree.
+ *
+ * Process tree: claude → shell → node. `process.ppid` gives the shell PID.
+ * The Claude PID is the shell's parent: `ps -o ppid= -p ${process.ppid}`.
+ *
+ * @returns The Claude Code PID, or null if resolution fails
+ */
+export function getClaudePid(): number | null {
+  try {
+    const result = spawnSync('ps', ['-o', 'ppid=', '-p', String(process.ppid)], {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    });
+    if (result.status !== 0) {
+      return null;
+    }
+    const output = (result.stdout ?? '').trim();
+    const pid = parseInt(output, 10);
+    if (isNaN(pid) || pid <= 0) {
+      return null;
+    }
+    return pid;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Write a timestamp to .saves.json.
  *
  * @param activePath - Path to the active plan directory
  * @param key - Timestamp key (e.g., 'work_started_at', 'build_started_at')
  * @param agent - Optional agent identity string (e.g., 'ana-build')
  * @param force - When true, overwrite existing timestamp (used by FAIL→Fix path)
+ * @param timestamp - Optional pre-captured timestamp to use instead of now()
  * @returns Promise that resolves when the timestamp is written
  */
-async function writeTimestamp(activePath: string, key: string, agent?: string, force: boolean = false): Promise<void> {
+async function writeTimestamp(activePath: string, key: string, agent?: string, force: boolean = false, timestamp?: string): Promise<void> {
   const savesPath = path.join(activePath, '.saves.json');
   let saves: Record<string, unknown> = {};
   if (fs.existsSync(savesPath)) {
@@ -2103,7 +2167,7 @@ async function writeTimestamp(activePath: string, key: string, agent?: string, f
   if (!force && saves[key] !== undefined) {
     return;
   }
-  saves[key] = new Date().toISOString();
+  saves[key] = timestamp ?? new Date().toISOString();
   if (agent) {
     // Derive agent key: 'build_started_at' → 'build_agent', 'work_started_at' → 'work_agent'
     const agentKey = key.replace('_started_at', '_agent');
@@ -2161,7 +2225,8 @@ export function registerWorkCommand(program: Command): void {
   const statusCommand = new Command('status')
     .description('Show pipeline state for all active work items')
     .option('--json', 'Output JSON format for programmatic consumption')
-    .action(async (options: { json?: boolean }) => {
+    .option('--session', 'Write a session marker for think-time capture')
+    .action(async (options: { json?: boolean; session?: boolean }) => {
       await getWorkStatus(options);
     });
 

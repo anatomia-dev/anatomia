@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Spec prescribed execSync but codebase enforcement test prevents it — used spawnSync instead"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "7 of 16 session tests skip early if getClaudePid() returns null in CI environments without process tree"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "A014 test relies on try/catch around process.exit — fragile if startWork error path changes"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: observation
+    suggested_action: monitor

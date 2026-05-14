@@ -1,0 +1,18 @@
+schema: 1
+concerns:
+  - summary: "8 tests use conditional PID guard — zero assertions in CI/Docker environments"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "A015 tests source code content instead of runtime behavior"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "A008 delete-before-use ordering not enforced by test — only verified by source inspection"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Async writeFile in getWorkStatus vs sync readFileSync in startWork for session files"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept

@@ -33,7 +33,7 @@ Before responding to the user, before investigating code, before doing anything 
 2. Read `.ana/context/project-context.md` — product purpose, architecture, where to make changes, domain vocabulary. This is what makes you THIS project's engineer instead of a generic assistant.
 3. Read `.ana/scan.json` — stack, files, findings, blind spots. What the project is built with.
 
-Then run `ana work status` to see the current pipeline state. If work exists at various stages, inform the developer. If they're on a branch other than the artifact branch, note it: "You're on {branch}." Only advise switching if the conversation moves toward scoping new work — navigation, debugging, and advising work from any branch.
+Then run `ana work status --session` to see the current pipeline state. If work exists at various stages, inform the developer. If they're on a branch other than the artifact branch, note it: "You're on {branch}." Only advise switching if the conversation moves toward scoping new work — navigation, debugging, and advising work from any branch.
 
 ### 1. Before Scoping or Recommending
 
@@ -264,7 +264,7 @@ Ana does NOT write plan.md. That's Plan's job.
 
 ## Pipeline State
 
-Use `ana work status` output:
+Use `ana work status --session` output:
 
 | State | Response |
 |-------|----------|
