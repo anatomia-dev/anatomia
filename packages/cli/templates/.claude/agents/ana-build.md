@@ -108,7 +108,9 @@ Run the build command first (e.g., `pnpm run build`), then run the test commands
 
 Record the results: how many tests, how many passed, how many failed.
 
-**If baseline tests fail:** STOP. Report: "Baseline broken — {N} tests failing before any changes. Cannot distinguish regressions from existing failures." The developer decides how to proceed — wait for their call before writing any code.
+**If baseline tests fail:** Check whether failures are in modules the spec touches:
+- **Failures in modules the spec modifies:** STOP. Report: "Baseline broken — {N} tests failing in modules this spec modifies. Cannot distinguish regressions from existing failures." Wait for the developer.
+- **Failures only in unrelated modules** (different packages, environmental issues like MODULE_NOT_FOUND): Record the failures and their likely cause. Proceed with the build. Use the pre-existing failure count as your regression baseline — any NEW failures beyond this count are regressions from your changes.
 
 **If baseline passes:** Record the count. This is your proof that any future failures are from your changes, not pre-existing.
 
@@ -163,6 +165,8 @@ it('creates payment intent with valid amount', () => {
 Before tagging, compare your test's assertion method to the contract's `matcher`/`value`. If you used `not.toContain` but the contract says `not_equals`, document a deviation — the intent may match but the method differs.
 
 After writing all tests, verify coverage: every contract assertion ID should have a corresponding `@ana` tag somewhere in the test files. Report in the build report: "Contract coverage: {N}/{M} assertions tagged."
+
+If the spec's testing strategy is build-only (no unit tests), skip tagging — do not create empty test files to hold `@ana` tags.
 
 ---
 
@@ -373,7 +377,7 @@ Commands AnaVerify should run to independently verify:
 
 ## Open Issues
 
-Before writing this section, create `build_data.yaml` alongside the build report in `.ana/plans/active/{slug}/`. This is the structured companion — it captures open issues as machine-readable data for the proof chain.
+Before writing this section, create `build_data.yaml` (or `build_data_{N}.yaml` for multi-phase — the data companion mirrors the report name) alongside the build report in `.ana/plans/active/{slug}/`. This is the structured companion — it captures open issues as machine-readable data for the proof chain.
 
 ```yaml
 schema: 1
@@ -423,7 +427,8 @@ When `ana work status` reports a multi-phase stage (e.g., "phase-2-ready-for-bui
 3. The branch already has previous phases' work — build on top of it
 4. Commit with phase-numbered messages: `[{slug}:s{N}] {description}`
 5. Write `build_report_{N}.md` (matching the spec number)
-6. Save: `ana artifact save build-report-{N} {slug}` (pushes automatically)
+6. Write `build_data_{N}.yaml` alongside the build report (matching the spec number)
+7. Save: `ana artifact save build-report-{N} {slug}` (pushes automatically)
 
 Do NOT update plan.md checkboxes. That's AnaVerify's job after verification. Do NOT read other specs — each spec is self-contained.
 

@@ -219,6 +219,8 @@ Write the Contract Compliance table in your report:
 
 For assertions with no tagged test: check the build report for coverage claims, then verify by source inspection if applicable. Mark SATISFIED with evidence describing what you inspected. If you cannot verify by any means, mark UNSATISFIED.
 
+If the spec's testing strategy is build-only, no `@ana` tags are expected — verify assertions by source inspection.
+
 #### Check for Over-Building
 
 After reading the implementation, check:
