@@ -21739,7 +21739,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-worktree-branch-parsing-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "No test passes both featureBranch and worktree — only one test uses worktree:true (line 739) and it doesn't set featureBranch. The conflict is theoretical. If triggered, git worktree add would fail immediately with 'branch already exists' — obvious, not silent. Test helper API design concern, not a bug.",
+          "closed_at": "2026-05-14T16:31:16.420Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
