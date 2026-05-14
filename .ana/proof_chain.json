@@ -11468,7 +11468,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "v1-code-changes-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding's reasoning is incorrect. Pre-commit hook runs build+typecheck+lint, NOT the test suite (lines 42-46 of .husky/pre-commit). Test count growth (1807→2254) does not affect pre-commit timing.",
+          "closed_at": "2026-05-14T16:25:31.082Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 1,
