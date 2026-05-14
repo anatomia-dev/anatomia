@@ -21358,7 +21358,10 @@
             "A001"
           ],
           "id": "kind-aware-branch-prefixes-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Covered: kind-aware-branch-prefixes A001 asserts 'String-form branch prefix works exactly as before.' This backward-compat behavior IS tested by pre-existing tests at git-operations.test.ts:38 (@ana A003: returns configured value) and :46 (@ana A004: returns default feature/). Coverage exists; the tag is from a different contract but tests the same behavior.",
+          "closed_at": "2026-05-14T17:27:21.512Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
