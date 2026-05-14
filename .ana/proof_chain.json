@@ -21502,7 +21502,10 @@
             "A008"
           ],
           "id": "worktree-freshness-detection-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in 752da396 — replaced typeof === 'number' with toBe(0) at work.test.ts:663. Test fixture creates worktree with no commits ahead, so commitsBehind is deterministically 0.",
+          "closed_at": "2026-05-14T16:25:18.644Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
