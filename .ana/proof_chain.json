@@ -16133,7 +16133,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "website-production-infra-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in 752da396 — removed unused extras parameter from githubHeaders() at proof-feed.ts:66. Called twice (lines 89, 121) always with no arguments. Dead code removed per 'remove over add' principle.",
+          "closed_at": "2026-05-14T16:26:29.630Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
