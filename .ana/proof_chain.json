@@ -1831,9 +1831,12 @@
           "summary": "SQL-only edge case tests indirect path: `scanProject.test.ts:210` — The test creates `prisma/migrations/001_init.sql`. Census's `readdirSync('prisma/')` sees `['migrations']` — a directory name, not a `.sql` file. The test passes because no direct `.prisma` files exist in `prisma/`, not because it explicitly filters `.sql` files. A more direct test would place `.sql` files directly in `prisma/` (e.g., `prisma/seed.sql`). The current test still validates the contract (A010, A011) correctly, but tests the directory-name-filter path, not the extension-filter path.",
           "file": "packages/cli/tests/engine/scanProject.test.ts",
           "anchor": "prisma/migrations/001_init.sql",
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Test verifies correct behavior: scanProject.test.ts:205 creates prisma/migrations/001_init.sql (SQL only, no .prisma files) and asserts schemas['prisma'].found is false. The test name 'ignores prisma directory with only SQL files' matches the observable outcome. Whether the mechanism is non-recursive reading or extension filtering doesn't affect the behavioral correctness of the test.",
+          "closed_at": "2026-05-14T18:28:47.444Z",
+          "closed_by": "human"
         },
         {
           "id": "fix-prisma-schema-detection-C4",
