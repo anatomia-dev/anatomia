@@ -16257,7 +16257,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "website-production-infra-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Dead type: LatestCommit at proof-feed.ts:98 is the return type of getLatestCommit (closed above as dead code). Only referenced inside the dead function at lines 108 and 109. Same root cause — Footer uses proof feed entries, not the GitHub commits API. Companion to website-production-infra-C1.",
+          "closed_at": "2026-05-14T21:50:23.543Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
