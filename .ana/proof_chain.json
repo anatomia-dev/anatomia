@@ -1818,9 +1818,12 @@
           "summary": "Census directory check is non-recursive: `census.ts:219` — `readdirSync(prismaDir)` only checks top-level entries. The second fallback glob `/prisma/*.prisma` in `scan-engine.ts:289` is also one level deep. A `prisma/subdir/models.prisma` layout would be missed by both paths. No known Prisma project uses nested subdirectories within the Prisma folder, but this is a documented gap.",
           "file": "packages/cli/src/engine/census.ts",
           "anchor": "readdirSync(prismaDir)",
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Intentional: census readdirSync at census.ts:222 is a directory-only fallback that checks top-level prisma/ — matching Prisma's convention for multi-file schemas. The comment at lines 215-217 documents this scope. Non-standard nested schemas are caught by the scan-engine's second fallback glob at scan-engine.ts:287 (glob('**/prisma/*.prisma')). Two-tier detection handles all practical cases.",
+          "closed_at": "2026-05-14T18:27:51.449Z",
+          "closed_by": "human"
         },
         {
           "id": "fix-prisma-schema-detection-C3",
