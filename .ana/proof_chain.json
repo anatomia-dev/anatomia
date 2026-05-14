@@ -18593,7 +18593,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "commit-work-start-timestamps-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: silent catch at work.ts:2236 is by design — comment says 'don't block the user's workflow for a convenience commit.' commitSaves is best-effort.",
+          "closed_at": "2026-05-14T08:17:38.134Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
