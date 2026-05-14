@@ -2049,9 +2049,12 @@
           "summary": "Config regex can match comments: `census.ts:251` — `schema\\s*:\\s*[\"']([^\"']+)[\"']` would match a commented-out `// schema: \"old/path\"`. In practice, Drizzle config files are small and rarely have commented schema fields, and this is the same pattern used for Prisma extraction. Flagging for awareness, not action.",
           "file": "packages/cli/src/engine/census.ts",
           "anchor": "schema\\s*:\\s*[\"']([^\"']+)[\"']",
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Intentional limitation of regex-based config parsing: census.ts:254 uses content.match() which returns the first occurrence. A commented-out schema line before the real one would match incorrectly — but this requires a specific file layout (comment above config) in drizzle config files, which are typically 10-20 line configs. Consequence is cosmetic (wrong path in scan output). JS config importing would introduce execution/security risks.",
+          "closed_at": "2026-05-14T18:28:23.195Z",
+          "closed_by": "human"
         },
         {
           "id": "fix-drizzle-schema-detection-C4",
