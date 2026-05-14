@@ -2058,6 +2058,13 @@ async function startBuildPhase(
     console.log(`  Branch: ${result.branch} ${branchLabel}`);
     console.log(`  Path: ${path.relative(process.cwd(), result.worktreePath) || result.worktreePath}`);
     console.log(`  Dependencies: ${result.depsInstalled ? 'installed' : 'skipped'}`);
+    if (result.buildSucceeded === true) {
+      console.log('  Build: succeeded');
+    } else if (result.buildSucceeded === false) {
+      console.log('  Build: failed — run the build command in the worktree manually');
+    } else {
+      console.log('  Build: skipped (no build command)');
+    }
     if (result.envFilesLinked.length > 0) {
       console.log(`  Env files: ${result.envFilesLinked.join(', ')} → symlinked`);
     } else {

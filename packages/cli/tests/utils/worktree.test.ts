@@ -320,6 +320,77 @@ describe('worktree utilities', () => {
       await createWorktree(tempDir, 'test-slug', 'feature/');
       await expect(createWorktree(tempDir, 'test-slug', 'feature/')).rejects.toThrow('already exists');
     });
+
+    // @ana A001, A002, A003, A009, A010, A012
+    it('runs build command when commands.build is configured', async () => {
+      await createTestProject();
+      // Add commands.build to ana.json
+      const anaJsonPath = path.join(tempDir, '.ana', 'ana.json');
+      const config = JSON.parse(await fs.readFile(anaJsonPath, 'utf-8'));
+      config.commands = { build: 'mkdir -p dist && echo built > dist/marker.txt' };
+      await fs.writeFile(anaJsonPath, JSON.stringify(config), 'utf-8');
+      execSync('git add -A && git commit -m "add build cmd"', { cwd: tempDir, stdio: 'ignore' });
+      process.chdir(tempDir);
+
+      const result = await createWorktree(tempDir, 'build-slug', 'feature/');
+
+      expect(result.buildSucceeded).toBe(true);
+      // Marker file should exist in the worktree, not the main tree
+      const markerFileExists = fsSync.existsSync(path.join(result.worktreePath, 'dist', 'marker.txt'));
+      expect(markerFileExists).toBe(true);
+      const markerInMainTree = fsSync.existsSync(path.join(tempDir, 'dist', 'marker.txt'));
+      expect(markerInMainTree).toBe(false);
+      // Env files should have been linked (build runs after linkEnvFiles)
+      expect(result.envFilesLinked).toBeDefined();
+      // Context file should contain build status
+      const contextContent = await fs.readFile(
+        path.join(result.worktreePath, '.ana', 'worktree-context.md'),
+        'utf-8'
+      );
+      expect(contextContent).toContain('## Build Status');
+    });
+
+    // @ana A004, A005, A006, A011
+    it('completes worktree creation when build fails', async () => {
+      await createTestProject();
+      // Add a build command that exits non-zero
+      const anaJsonPath = path.join(tempDir, '.ana', 'ana.json');
+      const config = JSON.parse(await fs.readFile(anaJsonPath, 'utf-8'));
+      config.commands = { build: 'exit 1' };
+      await fs.writeFile(anaJsonPath, JSON.stringify(config), 'utf-8');
+      execSync('git add -A && git commit -m "add failing build"', { cwd: tempDir, stdio: 'ignore' });
+      process.chdir(tempDir);
+
+      // Should NOT throw
+      let createWorktreeThrows = false;
+      let result;
+      try {
+        result = await createWorktree(tempDir, 'fail-build', 'feature/');
+      } catch {
+        createWorktreeThrows = true;
+      }
+
+      expect(createWorktreeThrows).toBe(false);
+      expect(result!.buildSucceeded).toBe(false);
+      expect(result!.contextFileWritten).toBe(true);
+      // Context file should mention failure
+      const contextContent = await fs.readFile(
+        path.join(result!.worktreePath, '.ana', 'worktree-context.md'),
+        'utf-8'
+      );
+      expect(contextContent).toContain('failed');
+    });
+
+    // @ana A007, A008
+    it('skips build when no build command is configured', async () => {
+      await createTestProject();
+      process.chdir(tempDir);
+
+      const result = await createWorktree(tempDir, 'no-build', 'feature/');
+
+      expect(result.buildSucceeded).toBeNull();
+      expect(result.depsInstalled).toBeDefined();
+    });
   });
 
   // --- removeWorktree ---

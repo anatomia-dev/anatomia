@@ -26,6 +26,7 @@ export interface WorktreeCreateResult {
   branch: string;
   branchIsNew: boolean;
   depsInstalled: boolean;
+  buildSucceeded: boolean | null;
   envFilesLinked: string[];
   submodulesInitialized: boolean;
   contextFileWritten: boolean;
@@ -233,17 +234,21 @@ export async function createWorktree(
     // Step 3: Symlink .env files
     const envFilesLinked = await linkEnvFiles(projectRoot, wtPath);
 
-    // Step 4: Initialize submodules
+    // Step 4: Run build command
+    const buildSucceeded = runBuildCommand(wtPath);
+
+    // Step 5: Initialize submodules
     const submodulesInitialized = initSubmodules(projectRoot, wtPath);
 
-    // Step 5: Write worktree-context.md
-    const contextFileWritten = await writeWorktreeContext(wtPath, slug, contextData);
+    // Step 6: Write worktree-context.md
+    const contextFileWritten = await writeWorktreeContext(wtPath, slug, contextData, buildSucceeded);
 
     return {
       worktreePath: wtPath,
       branch: branchName,
       branchIsNew,
       depsInstalled,
+      buildSucceeded,
       envFilesLinked,
       submodulesInitialized,
       contextFileWritten,
@@ -412,6 +417,59 @@ function installDependencies(wtPath: string): boolean {
 }
 
 /**
+ * Read the build command string from the worktree's ana.json.
+ *
+ * @param wtPath - Worktree path
+ * @returns The build command string, or a fallback
+ */
+function getBuildCommandString(wtPath: string): string {
+  try {
+    const raw = fs.readFileSync(path.join(wtPath, '.ana', 'ana.json'), 'utf-8');
+    const config = JSON.parse(raw);
+    const cmd = config?.commands?.build;
+    return typeof cmd === 'string' ? cmd : 'pnpm run build';
+  } catch {
+    return 'pnpm run build';
+  }
+}
+
+/**
+ * Run the project's build command inside the worktree.
+ *
+ * Reads `commands.build` from the worktree's `.ana/ana.json` and executes it
+ * via `spawnSync` with `shell: true` (build commands need shell interpretation
+ * for pipes, `&&`, subshells).
+ *
+ * @param wtPath - Worktree path (used as cwd)
+ * @returns true if build succeeded, false if it failed, null if no build command configured
+ */
+function runBuildCommand(wtPath: string): boolean | null {
+  const anaJsonPath = path.join(wtPath, '.ana', 'ana.json');
+
+  try {
+    const raw = fs.readFileSync(anaJsonPath, 'utf-8');
+    const config = JSON.parse(raw);
+    const buildCmd = config?.commands?.build;
+
+    if (typeof buildCmd !== 'string') {
+      return null;
+    }
+
+    const result = spawnSync(buildCmd, {
+      cwd: wtPath,
+      stdio: 'pipe',
+      encoding: 'utf-8',
+      shell: true,
+    });
+
+    return result.status === 0;
+  } catch {
+    // ana.json doesn't exist or isn't valid JSON — no build command
+    return null;
+  }
+}
+
+/**
  * Symlink `.env*` files from the main tree into the worktree.
  * Falls back to copy if symlink fails (Windows without developer mode).
  *
@@ -490,12 +548,14 @@ function initSubmodules(projectRoot: string, wtPath: string): boolean {
  * @param data.contractAssertions - Contract assertions text
  * @param data.proofFindings - Proof findings text
  * @param data.summary - One-paragraph summary
+ * @param buildSucceeded - Build result: true (succeeded), false (failed), null (skipped)
  * @returns true if file was written
  */
 async function writeWorktreeContext(
   wtPath: string,
   slug: string,
-  data?: { contractAssertions?: string; proofFindings?: string; summary?: string }
+  data?: { contractAssertions?: string; proofFindings?: string; summary?: string },
+  buildSucceeded?: boolean | null
 ): Promise<boolean> {
   const anaDir = path.join(wtPath, '.ana');
 
@@ -520,6 +580,20 @@ async function writeWorktreeContext(
   if (data?.summary) {
     sections.push('## Summary', '', data.summary, '');
   }
+
+  // Build status section
+  sections.push('## Build Status', '');
+  if (buildSucceeded === true) {
+    const buildCmd = getBuildCommandString(wtPath);
+    sections.push(`Build command \`${buildCmd}\` succeeded. Artifacts should be present.`);
+  } else if (buildSucceeded === false) {
+    const buildCmd = getBuildCommandString(wtPath);
+    sections.push(`Build command \`${buildCmd}\` failed. Run the build manually before testing:`);
+    sections.push(`\`${buildCmd}\``);
+  } else {
+    sections.push('No build command configured in `.ana/ana.json`. If tests fail with MODULE_NOT_FOUND, add a `commands.build` entry.');
+  }
+  sections.push('');
 
   sections.push('## Contract Assertions', '');
   if (data?.contractAssertions) {

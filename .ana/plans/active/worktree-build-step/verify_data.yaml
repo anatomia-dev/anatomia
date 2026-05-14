@@ -1,0 +1,54 @@
+schema: 1
+findings:
+  - category: code
+    summary: "No timeout on spawnSync — hanging build command blocks worktree creation indefinitely"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 458
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A001"]
+
+  - category: code
+    summary: "Empty string build command passes typeof guard and executes spawnSync('')"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 454
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A007"]
+
+  - category: code
+    summary: "getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 425
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "getBuildCommandString fallback 'pnpm run build' is unreachable in practice — dead code path"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 430
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "A010 assertion uses toContain('## Build Status') — confirms heading exists but not that content follows the spec mockup format"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 350
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010"]
+
+  - category: test
+    summary: "A008 uses toBeDefined() for depsInstalled — weaker than contract's 'exists' intent, passes even if value is false"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 392
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A008"]
+
+  - category: upstream
+    summary: "Spec AC4 says warning includes 'the failed command' but work.ts outputs generic message without the actual command string"
+    file: "packages/cli/src/commands/work.ts"
+    line: 2064
+    severity: observation
+    suggested_action: monitor

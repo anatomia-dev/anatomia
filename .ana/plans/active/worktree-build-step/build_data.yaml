@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "getBuildCommandString reads ana.json a second time during worktree creation"
+    file: "packages/cli/src/utils/worktree.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "createWorktree docstring step numbering not updated for new build step"
+    file: "packages/cli/src/utils/worktree.ts"
+    severity: debt
+    suggested_action: accept
