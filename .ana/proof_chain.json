@@ -10280,7 +10280,10 @@
             "A002"
           ],
           "id": "audit-json-severity-summary-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Structurally prevented: validateVerifyDataFormat at artifact.ts:881-890 rejects invalid severity/action values with errors — the save is blocked. Only valid values (risk/debt/observation + promote/scope/monitor/accept) enter the proof chain. The fixed-key audit output at proof.ts:2019-2030 covers all valid values plus unclassified for legacy data. Unknown values can only enter via manual JSON editing, which bypasses all validation by design.",
+          "closed_at": "2026-05-14T18:54:51.214Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
