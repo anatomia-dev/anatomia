@@ -16243,7 +16243,10 @@
             "A007"
           ],
           "id": "website-production-infra-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Dead code: getLatestCommit at proof-feed.ts:108 was built for the footer commit pill, but Footer.tsx:12-13 uses getProofFeed() instead (gets latest entry from proof feed, not GitHub commits API). Zero imports outside proof-feed.ts confirmed. The function makes a GitHub API call that never executes — 30 lines of inert code. The Footer chose a different data source.",
+          "closed_at": "2026-05-14T21:49:59.012Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
