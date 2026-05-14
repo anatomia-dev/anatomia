@@ -21710,7 +21710,10 @@
             "A003"
           ],
           "id": "fix-worktree-branch-parsing-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "A003 has dedicated @ana A003 tags at 5 other test locations (lines 326, 972, 2161, 3288, 4587). Coverage is complete. This test at line 781 also exercises A003 behavior but is tagged A010 — cosmetic tagging gap, not a coverage gap.",
+          "closed_at": "2026-05-14T16:30:35.084Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
