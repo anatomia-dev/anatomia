@@ -108,7 +108,9 @@ Run the build command first (e.g., `pnpm run build`), then run the test commands
 
 Record the results: how many tests, how many passed, how many failed.
 
-**If baseline tests fail:** STOP. Report: "Baseline broken — {N} tests failing before any changes. Cannot distinguish regressions from existing failures." The developer decides how to proceed — wait for their call before writing any code.
+**If baseline tests fail:** Check whether failures are in modules the spec touches:
+- **Failures in modules the spec modifies:** STOP. Report: "Baseline broken — {N} tests failing in modules this spec modifies. Cannot distinguish regressions from existing failures." Wait for the developer.
+- **Failures only in unrelated modules** (different packages, environmental issues like MODULE_NOT_FOUND): Record the failures and their likely cause. Proceed with the build. Use the pre-existing failure count as your regression baseline — any NEW failures beyond this count are regressions from your changes.
 
 **If baseline passes:** Record the count. This is your proof that any future failures are from your changes, not pre-existing.
 
