@@ -6,7 +6,7 @@ export const docs = defineDocs({
   dir: "content/docs",
   docs: {
     schema: frontmatterSchema.extend({
-      description: z.string(),
+      description: z.string().min(1),
       lastReviewed: z.string().optional(),
       readingTime: z.number().optional(),
     }),
