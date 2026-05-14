@@ -9395,7 +9395,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "fix-type-lies-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Acceptable: loop at agent-proof-context.test.ts:71-75 short-circuits on first mismatch, but the custom message at line 74 identifies WHICH file failed. When dogfood files go out of sync, it's typically a bulk template update — all files are fixed at once, not iteratively. The masking concern (not seeing later failures) doesn't match the actual fix workflow. test.each() would be marginally better for diagnostics but doesn't change the fix action.",
+          "closed_at": "2026-05-14T22:05:29.778Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
