@@ -13,9 +13,15 @@ assertions:
   - id: A002
     says: "Hygiene checks do not run for non-build-report saves"
     block: "skips for scope save"
+    target: "has_commit_hygiene_key"
+    matcher: "equals"
+    value: false
+
+  - id: A024
+    says: "Batch save via saveAllArtifacts also triggers hygiene checks"
+    block: "runs at batch build-report save time"
     target: "saves_json.commit_hygiene"
-    matcher: "not_equals"
-    value: "defined"
+    matcher: "exists"
 
   # AC2: Reuses modules_touched
   - id: A003
