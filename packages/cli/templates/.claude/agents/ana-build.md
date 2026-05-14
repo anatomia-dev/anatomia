@@ -373,7 +373,7 @@ Commands AnaVerify should run to independently verify:
 
 ## Open Issues
 
-Before writing this section, create `build_data.yaml` alongside the build report in `.ana/plans/active/{slug}/`. This is the structured companion — it captures open issues as machine-readable data for the proof chain.
+Before writing this section, create `build_data.yaml` (or `build_data_{N}.yaml` for multi-phase — the data companion mirrors the report name) alongside the build report in `.ana/plans/active/{slug}/`. This is the structured companion — it captures open issues as machine-readable data for the proof chain.
 
 ```yaml
 schema: 1
@@ -423,7 +423,8 @@ When `ana work status` reports a multi-phase stage (e.g., "phase-2-ready-for-bui
 3. The branch already has previous phases' work — build on top of it
 4. Commit with phase-numbered messages: `[{slug}:s{N}] {description}`
 5. Write `build_report_{N}.md` (matching the spec number)
-6. Save: `ana artifact save build-report-{N} {slug}` (pushes automatically)
+6. Write `build_data_{N}.yaml` alongside the build report (matching the spec number)
+7. Save: `ana artifact save build-report-{N} {slug}` (pushes automatically)
 
 Do NOT update plan.md checkboxes. That's AnaVerify's job after verification. Do NOT read other specs — each spec is self-contained.
 
