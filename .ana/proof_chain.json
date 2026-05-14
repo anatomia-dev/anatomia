@@ -24944,7 +24944,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "capture-think-time-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: fsPromises.writeFile at work.ts:684 (async getWorkStatus) and fs.readFileSync at work.ts:1848 (sync delete-then-use in getNextAction). Different functions, different contexts — async write is correct for async function, sync read is correct for immediate-delete pattern.",
+          "closed_at": "2026-05-14T16:24:59.916Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

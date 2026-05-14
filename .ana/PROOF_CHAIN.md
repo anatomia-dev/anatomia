@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-96 runs · 292 active · 117 lessons · 0 promoted · 180 closed
+96 runs · 291 active · 117 lessons · 0 promoted · 181 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 21 | 11 |
+| packages/cli/src/commands/work.ts | 20 | 11 |
 | packages/cli/tests/commands/work.test.ts | 17 | 13 |
 | packages/cli/tests/commands/proof.test.ts | 11 | 5 |
 | packages/cli/src/utils/worktree.ts | 11 | 6 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 292 total)
+## Active Findings (30 shown of 291 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -29,7 +29,6 @@
 
 ### packages/cli/src/commands/work.ts
 
-- **code:** Async/sync IO inconsistency — session file written with fsPromises.writeFile but read with fs.readFileSync — *Capture actual think time from Ana session start*
 - **code:** spawnSync used instead of spec-recommended execSync — better choice, structured exit code handling — *Capture actual think time from Ana session start*
 
 ### packages/cli/src/types/proof.ts
@@ -72,6 +71,10 @@
 ### website/app/docs/proof/[slug]/page.tsx
 
 - **code:** Multi-phase timeline text derives phase count via Math.max on filtered segments — works correctly but couples rendering to segment internals when entry.phases field exists for this purpose — *Multi-phase Gantt visualization for proof timeline*
+
+### website/components/docs/layout/RightRail.tsx
+
+- **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
