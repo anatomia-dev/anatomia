@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 200 active · 117 lessons · 0 promoted · 272 closed
+96 runs · 199 active · 117 lessons · 0 promoted · 273 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 200 total)
+## Active Findings (30 shown of 199 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -55,10 +55,6 @@
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
 
-### website/app/docs/proof/[slug]/page.tsx
-
-- **code:** Multi-phase timeline text derives phase count via Math.max on filtered segments — works correctly but couples rendering to segment internals when entry.phases field exists for this purpose — *Multi-phase Gantt visualization for proof timeline*
-
 ### website/app/docs/reference/cli/page.tsx
 
 - **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
@@ -72,6 +68,10 @@
 ### website/components/docs/layout/SearchOverlay.tsx
 
 - **code:** Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side — *Docs Search + Polish*
+
+### website/components/docs/proof/FindingsList.tsx
+
+- **code:** FindingsList shows max 5 findings with no toggle to expand — AssertionLedger has expand/collapse but FindingsList truncates permanently — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 

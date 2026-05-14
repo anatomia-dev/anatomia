@@ -25497,7 +25497,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "gantt-multi-phase-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: segment derivation at proof/[slug]/page.tsx:92 is MORE robust than entry.phases — entry.phases only exists on 3/96 entries while segment data exists for all multi-phase entries. The conditional at line 91 (some(s => s.phase != null)) guards against empty segment sets. Coupling to segments is coupling to the actual source of truth, not an internal detail.",
+          "closed_at": "2026-05-14T18:00:32.522Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
