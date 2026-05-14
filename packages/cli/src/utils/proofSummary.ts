@@ -85,6 +85,12 @@ export interface ProofSummary {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
   }>;
+  commit_hygiene?: Array<{
+    check: string;
+    file: string;
+    severity: string;
+    message: string;
+  }>;
 }
 
 /**
@@ -1805,6 +1811,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     rejection_cycles: 0,
     previous_failures: [],
     build_concerns: [],
+    commit_hygiene: [],
   };
 
   // Source 1: .saves.json
@@ -1826,6 +1833,12 @@ export function generateProofSummary(slugDir: string): ProofSummary {
 
       // Extract timing
       summary.timing = computeTiming(saves);
+
+      // Extract commit hygiene findings
+      const hygieneData = saves['commit_hygiene' as keyof typeof saves];
+      if (Array.isArray(hygieneData)) {
+        summary.commit_hygiene = hygieneData as NonNullable<ProofSummary['commit_hygiene']>;
+      }
 
       // Pre-check data in .saves.json is vestigial — assertions now come from contract.yaml
     } catch {

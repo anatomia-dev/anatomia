@@ -846,15 +846,20 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     }
   }
 
-  // Read modules_touched from .saves.json (captured at build-report save time
-  // when the feature branch definitely exists and all code is committed).
+  // Read modules_touched and commit_hygiene from .saves.json (captured at
+  // build-report save time when the feature branch definitely exists and
+  // all code is committed).
   let modulesTouched: string[] = [];
+  let commitHygiene: Array<{ check: string; file: string; severity: string; message: string }> = [];
   try {
     const slugSaves = path.join(anaDir, 'plans', 'completed', slug, '.saves.json');
     if (fs.existsSync(slugSaves)) {
       const savesContent = JSON.parse(fs.readFileSync(slugSaves, 'utf-8'));
       if (Array.isArray(savesContent['modules_touched'])) {
         modulesTouched = savesContent['modules_touched'];
+      }
+      if (Array.isArray(savesContent['commit_hygiene'])) {
+        commitHygiene = savesContent['commit_hygiene'];
       }
     }
   } catch { /* fall back to empty */ }
@@ -904,6 +909,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     rejection_cycles: proof.rejection_cycles,
     previous_failures: proof.previous_failures,
     build_concerns: proof.build_concerns ?? [],
+    ...(commitHygiene.length > 0 ? { commit_hygiene: commitHygiene } : {}),
     ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 
