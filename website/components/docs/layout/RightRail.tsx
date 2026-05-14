@@ -144,7 +144,7 @@ export function RightRail({ toc, commitSha, buildTimestamp, editUrl, variant, pr
             marginBottom: "6px",
           }}
         >
-          {variant === "proof" ? "This proof, elsewhere" : "Ask AI about this page"}
+          {variant === "proof" ? "Grade this proof" : "Ask AI about this page"}
         </div>
         {(variant === "proof"
           ? [
