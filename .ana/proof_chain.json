@@ -12076,7 +12076,10 @@
             "A023"
           ],
           "id": "security-hardening-C7",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: A023 enforcement test at git-operations.test.ts:463-485 greps source for execSync usage. Source-code assertion is the only way to enforce a security invariant ('no execSync in production code'). There is no behavioral alternative — the test ensures nobody adds execSync, which can only be verified by inspection.",
+          "closed_at": "2026-05-14T16:26:09.439Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
