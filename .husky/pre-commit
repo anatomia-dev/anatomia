@@ -10,6 +10,20 @@ set -e
 
 # Verify lockfile is in sync with package.json (catches desync before push)
 # Runs before the skip block so website-only commits still check lockfile sync.
+#
+# Two checks:
+# 1. If lockfile is staged, block if any package.json has unstaged changes.
+#    Catches: pnpm install bumps both files, only lockfile gets staged.
+# 2. frozen-lockfile checks disk consistency (lockfile vs package.json on disk).
+if git diff --cached --name-only | grep -q "^pnpm-lock.yaml$"; then
+  UNSTAGED_PKGS=$(git diff --name-only | grep "package\.json$" || true)
+  if [ -n "$UNSTAGED_PKGS" ]; then
+    echo "❌ pnpm-lock.yaml is staged but package.json has unstaged changes:"
+    echo "$UNSTAGED_PKGS"
+    echo "   Stage both: git add package.json pnpm-lock.yaml"
+    exit 1
+  fi
+fi
 pnpm install --frozen-lockfile --silent 2>/dev/null || {
   echo "❌ pnpm-lock.yaml is out of sync with package.json. Run 'pnpm install' first."
   exit 1
