@@ -31,6 +31,7 @@ import {
   TRAJECTORY_WINDOW,
   MIN_ENTRIES_FOR_TREND,
 } from '../../src/utils/proofSummary.js';
+import { formatHumanReadable } from '../../src/commands/proof.js';
 
 describe('generateProofSummary', () => {
   let tempDir: string;
@@ -4192,5 +4193,63 @@ describe('computeTiming segment-based computation', () => {
     expect(summary.timing.verify).toBe(10);
     // Think/plan still use work_started_at
     expect(summary.timing.think).toBe(20);
+  });
+});
+
+describe('formatHumanReadable phase breakdown', () => {
+  function makeEntry(timingOverrides: Record<string, unknown> = {}): import('../../src/types/proof.js').ProofChainEntry {
+    return {
+      slug: 'test-slug',
+      feature: 'Test Feature',
+      result: 'PASS',
+      author: { name: 'Test', email: 'test@test.com' },
+      contract: { total: 1, satisfied: 1, unsatisfied: 0, deviated: 0 },
+      assertions: [{ id: 'A001', says: 'test', status: 'SATISFIED' }],
+      acceptance_criteria: { total: 1, met: 1 },
+      timing: {
+        total_minutes: 97,
+        think: 30,
+        plan: 0,
+        build: 45,
+        verify: 22,
+        ...timingOverrides,
+      },
+      hashes: {},
+      completed_at: '2026-04-01T12:00:00Z',
+      modules_touched: [],
+      findings: [],
+      rejection_cycles: 0,
+      previous_failures: [],
+      build_concerns: [],
+    };
+  }
+
+  // @ana A019
+  it('formatHumanReadable shows phase breakdown', () => {
+    const entry = makeEntry({
+      segments: [
+        { stage: 'think', minutes: 30 },
+        { stage: 'plan', minutes: 0 },
+        { stage: 'build', minutes: 30, phase: 1 },
+        { stage: 'verify', minutes: 8, phase: 1 },
+        { stage: 'build', minutes: 15, phase: 2 },
+        { stage: 'verify', minutes: 14, phase: 2 },
+      ],
+    });
+    const output = formatHumanReadable(entry);
+
+    expect(output).toContain('Build 1');
+    expect(output).toContain('Verify 1');
+    expect(output).toContain('Build 2');
+    expect(output).toContain('Verify 2');
+    expect(output).toContain('Phase breakdown');
+  });
+
+  // @ana A020
+  it('formatHumanReadable omits breakdown for single-phase', () => {
+    const entry = makeEntry(); // no segments
+    const output = formatHumanReadable(entry);
+
+    expect(output).not.toContain('Phase breakdown');
   });
 });

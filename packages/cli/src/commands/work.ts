@@ -907,6 +907,18 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 
+  // Populate phases from plan.md if available
+  try {
+    const planPath = path.join(completedPlanDir, 'plan.md');
+    if (fs.existsSync(planPath)) {
+      const planContent = fs.readFileSync(planPath, 'utf-8');
+      const { total } = countPhases(planContent);
+      if (total > 1) {
+        entry.phases = total;
+      }
+    }
+  } catch { /* plan.md unavailable — omit phases field */ }
+
   // Assign status to new findings (AC5)
   for (const finding of entry.findings) {
     if (finding.category === 'upstream') {

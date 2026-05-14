@@ -231,7 +231,7 @@ function getStatusIcon(status: string): string {
  * @param entry - Proof chain entry to display
  * @returns Formatted terminal output string
  */
-function formatHumanReadable(entry: ProofChainEntry): string {
+export function formatHumanReadable(entry: ProofChainEntry): string {
   const lines: string[] = [];
 
   // Parse completed_at for timestamp
@@ -298,6 +298,19 @@ function formatHumanReadable(entry: ProofChainEntry): string {
   }
   if (entry.timing.verify != null) {
     lines.push(`  ${'Verify'.padEnd(12)} ${entry.timing.verify} min`);
+  }
+
+  // Phase breakdown for multi-phase proofs
+  if (entry.timing.segments) {
+    const phaseSegments = entry.timing.segments.filter(s => s.phase != null);
+    if (phaseSegments.length > 0) {
+      lines.push('');
+      lines.push(chalk.bold('  Phase breakdown'));
+      for (const seg of phaseSegments) {
+        const label = `${seg.stage === 'build' ? 'Build' : 'Verify'} ${seg.phase}`;
+        lines.push(`  ${chalk.gray('  ')}${label.padEnd(12)} ${seg.minutes} min`);
+      }
+    }
   }
 
   // Findings section (only if there are findings)
