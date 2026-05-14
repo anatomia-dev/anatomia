@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "buildGanttBars duplicated between PipelineGantt.tsx and test file — stale risk if website function changes"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "formatHumanReadable exported from proof.ts — was private, increases API surface"
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "A013 phases field and A021 extraction passthrough lack dedicated tests — verified by source inspection"
+    severity: observation
+    suggested_action: accept
