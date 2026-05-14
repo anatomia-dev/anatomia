@@ -586,9 +586,12 @@
           "summary": "Windows path separators in pkg.path — assets.ts:575 splits on `/` only. If `pkg.path` somehow contained backslashes (e.g., from a Windows monorepo tool), the depth calculation would be wrong. Again unlikely in practice since the engine normalizes paths, but worth noting for cross-platform awareness.",
           "file": "packages/cli/src/commands/init/assets.ts",
           "anchor": "pkg.path",
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Unreachable: pkg.path is computed via toPosix(path.relative(...)) at census.ts:379 — backslashes are converted to forward slashes at the source. The split('/') at assets.ts:591 always receives forward-slash paths regardless of OS. The finding speculates about backslashes reaching this code, but toPosix prevents it structurally.",
+          "closed_at": "2026-05-14T18:26:22.669Z",
+          "closed_by": "human"
         },
         {
           "id": "monorepo-primary-agents-md-C3",
