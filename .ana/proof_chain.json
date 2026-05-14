@@ -19003,7 +19003,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "work-complete-merge-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: work-merge.test.ts was separated from work.test.ts because vi.mock(node:child_process) at module level would affect all tests in the file (explained in header lines 4-6). Creating a separate test file for module-level mock isolation is standard Vitest practice. Reasonable deviation from contract file_changes.",
+          "closed_at": "2026-05-14T16:47:44.521Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
