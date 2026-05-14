@@ -19350,7 +19350,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "section4-system-bento-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: color-mix() at system.module.css:198 is one of many usages site-wide — globals.css:67-68 uses it for core design tokens (--brand-soft, --brand-deep), bento.module.css uses it, and Tailwind 4 itself depends on it. This is a site-wide CSS feature commitment, not an isolated risk. Browsers without color-mix() would have broader visual issues than this one toggle hover.",
+          "closed_at": "2026-05-14T16:58:04.213Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
