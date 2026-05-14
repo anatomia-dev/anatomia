@@ -17766,7 +17766,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "worktree-artifact-cleanup-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: getMainTreeRoot called at artifact.ts:1201 (Layer 1 auto-move) and :1493 (Layer 2 post-save sweep) — 290 lines apart in different conditional phases. Single git rev-parse call, microseconds. Threading a variable through unrelated code blocks adds coupling for no gain.",
+          "closed_at": "2026-05-14T08:18:08.165Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
