@@ -22206,7 +22206,10 @@
             "A007"
           ],
           "id": "hygiene-debt-cleanup-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Theoretical gap with safety net: --autostash at work.ts:1239 bypasses the content-match guard (lines 1290-1301) for tracked dirty files. But git's own conflict handling covers the gap — stash pop shows merge conflicts if remote differs from stashed local. No silent data loss. The scenario requires manually editing committed planning artifacts on the artifact branch, which is outside normal pipeline workflow.",
+          "closed_at": "2026-05-14T19:42:27.170Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
