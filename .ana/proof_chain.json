@@ -25062,7 +25062,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "docs-search-polish-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Production non-issue: clipboard API at RightRail.tsx:57 works on HTTPS (anatomia.dev). Silent failure at line 62-64 only affects HTTP contexts (local dev) or Safari permission denial — both non-production. Showing error feedback would require additional UI state beyond a one-liner. Same silent-clipboard pattern as CopyButton.tsx (copy-btn, no production impact). Comment at line 63 documents the intent.",
+          "closed_at": "2026-05-14T19:45:53.917Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

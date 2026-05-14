@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 146 active · 117 lessons · 0 promoted · 326 closed
+96 runs · 145 active · 117 lessons · 0 promoted · 327 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 146 total)
+## Active Findings (30 shown of 145 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -65,7 +65,6 @@
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
-- **code:** Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context — *Docs Search + Polish*
 - **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/layout/SearchOverlay.tsx
@@ -87,6 +86,10 @@
 
 - **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
 - **code:** ProofExplorer inline styles heavily duplicated across 7 column headers — same 9-property object repeated per th element — *Dynamic Pages — Reference & Proof Chain*
+
+### website/content/docs/concepts/context.mdx
+
+- **code:** Context page links to /docs/reference/context twice — page doesn't exist and isn't scoped — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/content/docs/concepts/pipeline.mdx
 
