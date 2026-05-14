@@ -14032,7 +14032,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "non-main-artifact-branch-tests-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — recovery-JSON test at work.test.ts:2730-2778 writes directly to plans/completed/ with uncommitted state to trigger recovery path. createMergedProject commits everything and writes to plans/active/ — wrong fixture shape for this test.",
+          "closed_at": "2026-05-14T08:28:59.380Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
