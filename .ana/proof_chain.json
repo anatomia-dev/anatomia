@@ -1034,9 +1034,12 @@
           "summary": "- **No @ana tags for 8 assertions:** A001-A003 (schema), A025-A028 (skills display), A029 (empty analysis) have no @ana tags. The functionality exists and is tested — but pre-check can't track coverage. Future cycles should add tags to: patterns.ts schema tests, skills.test.ts display tests. - **Dominance boundary tests use round numbers:** Tests use 40%, 20%, 5% which are safely inside boundaries. No tests at exact boundary (30%, 10%). The boundary behavior is correct per code inspection, but boundary tests would strengthen confidence.",
           "file": "packages/cli/src/engine/types/patterns.ts",
           "anchor": null,
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Completed scope: 8 assertions from add-hook-detection without @ana tags — functional coverage exists through prior builds. Same missing-tags pattern closed 5+ times. Secondary observation (dominance boundary tests at round numbers, not at exact thresholds) noted in Learn session deferred file under scan engine quality.",
+          "closed_at": "2026-05-14T18:27:15.067Z",
+          "closed_by": "human"
         },
         {
           "id": "add-hook-detection-C3",
