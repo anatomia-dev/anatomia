@@ -14952,7 +14952,10 @@
             "A020"
           ],
           "id": "website-lift-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is incorrect: resolveKind at proof-feed.ts:150 explicitly handles kind === 'chore' and returns it. mapEntry calls resolveKind at line 162. 5 proof chain entries have kind:'chore' (verified via proof_chain.json). These entries DO produce kind 'chore' through mapEntry.",
+          "closed_at": "2026-05-14T18:06:45.144Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
