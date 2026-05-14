@@ -8982,7 +8982,10 @@
             "A009"
           ],
           "id": "clean-proofsummary-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Real but unreachable in practice: fileMatches at proofSummary.ts:2090 does produce a false negative for './census.ts' queries — both paths include '/' so the suffix check runs and fails. However, no system-produced path uses './' prefix — contract file_changes, scan engine, and proof context all use normalized paths without './' . The edge case requires manual 'ana proof context ./foo.ts' input, where the user would retry without './'.",
+          "closed_at": "2026-05-14T18:44:10.500Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
