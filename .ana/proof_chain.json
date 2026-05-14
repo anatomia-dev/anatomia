@@ -24255,7 +24255,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "dynamic-pages-C10",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale/incorrect: IntegritySeal.tsx line 24 explicitly removes the last row's border via conditional: borderBottom: i < arr.length - 1 ? '1px solid var(--hairline)' : undefined. React omits undefined style properties from the DOM — the last hash row has NO bottom border. The supermock's :last-child rule is implemented as an inline style conditional, achieving the same result.",
+          "closed_at": "2026-05-14T18:00:02.693Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
