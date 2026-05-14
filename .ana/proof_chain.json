@@ -13806,7 +13806,10 @@
             "A037"
           ],
           "id": "worktree-isolation-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — typeof assertions at worktree.test.ts:186 and :548 are correct for environment-dependent returns. Comments explain: 'depsInstalled may be true or false depending on pnpm availability' and 'submodulesInitialized may be true or false depending on actual submodule config.' Value assertions would create flaky tests across CI vs local.",
+          "closed_at": "2026-05-14T08:30:00.106Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
