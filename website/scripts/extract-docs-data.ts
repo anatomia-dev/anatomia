@@ -830,13 +830,6 @@ function stripJsx(mdxSource: string): string {
   return result.trim();
 }
 
-// Navigation order for llms.txt sections
-const LLMS_SECTIONS: { heading: string; prefix: string }[] = [
-  { heading: 'Concepts', prefix: 'concepts/' },
-  { heading: 'Guides', prefix: 'guides/' },
-  { heading: 'Reference', prefix: '' }, // Static reference pages
-];
-
 function generateLlmsTxt(
   searchIndex: SearchIndexEntry[],
 ): { llmsTxt: string; llmsFullTxt: string } {
@@ -862,11 +855,6 @@ function generateLlmsTxt(
   const concepts = pages.filter(p => p.route.includes('/concepts/'));
   const guides = pages.filter(p => p.route.includes('/guides/'));
   const startPage = pages.filter(p => p.route === '/docs/start');
-  const other = pages.filter(p =>
-    !p.route.includes('/concepts/') &&
-    !p.route.includes('/guides/') &&
-    p.route !== '/docs/start',
-  );
 
   // Build llms.txt
   const llmsLines: string[] = [

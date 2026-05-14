@@ -80,8 +80,6 @@ export default function CLIReferencePage() {
         buildTimestamp={meta.buildTimestamp}
         editUrl="https://github.com/TettoLabs/anatomia/blob/main/packages/cli/src/index.ts"
         pageUrl="https://anatomia.dev/docs/reference/cli"
-        pageTitle="CLI Commands"
-        pageDescription="Every command in the ana CLI, grouped by category."
         pageContent={`# CLI Commands\n\n${groups.map(g => `## ${g.name}\n${g.commands.map(c => `- **${c.name}**: ${c.description}`).join("\n")}`).join("\n\n")}`}
       />
     </div>

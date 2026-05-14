@@ -121,8 +121,6 @@ export default function AgentIndexPage() {
         buildTimestamp={meta.buildTimestamp}
         editUrl="https://github.com/TettoLabs/anatomia/tree/main/packages/cli/templates/.claude/agents"
         pageUrl="https://anatomia.dev/docs/reference/agents"
-        pageTitle="Agent Templates"
-        pageDescription="The actual agent definitions that ship into your repo on ana init."
         pageContent={`# Agent Templates\n\n${agents.map(a => `## ${a.name}\n**${a.role}** · ${a.model}\n${a.displayDescription}`).join("\n\n")}`}
       />
     </div>

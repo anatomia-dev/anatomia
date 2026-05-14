@@ -22,8 +22,6 @@ interface RightRailProps {
   proofLinks?: ProofLinks;
   pageUrl?: string;
   pageContent?: string;
-  pageTitle?: string;
-  pageDescription?: string;
 }
 
 /**
@@ -33,7 +31,7 @@ interface RightRailProps {
  * Ask AI: 3 bordered link rows.
  * Footer: mono 10.5px, dotted underlines, short SHA link.
  */
-export function RightRail({ toc, commitSha, buildTimestamp, editUrl, variant, proofLinks, pageUrl, pageContent, pageTitle, pageDescription }: RightRailProps) {
+export function RightRail({ toc, commitSha, buildTimestamp, editUrl, variant, proofLinks, pageUrl, pageContent }: RightRailProps) {
   const activeId = useScrollSpy(toc);
   const shortSha = commitSha?.slice(0, 7);
   const [copyFeedback, setCopyFeedback] = useState(false);

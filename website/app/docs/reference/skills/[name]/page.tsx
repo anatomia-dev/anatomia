@@ -134,8 +134,6 @@ export default async function SkillDetailPage({ params }: SkillDetailProps) {
         buildTimestamp={meta.buildTimestamp}
         editUrl={`${GITHUB_BASE}${skill.name}/SKILL.md`}
         pageUrl={`https://anatomia.dev/docs/reference/skills/${skill.name}`}
-        pageTitle={skill.name}
-        pageDescription={skill.description}
         pageContent={skill.content}
       />
     </div>

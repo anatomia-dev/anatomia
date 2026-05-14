@@ -143,7 +143,6 @@ export default async function ProofDetailPage({ params }: ProofDetailProps) {
         variant="proof"
         proofLinks={{ githubUrl }}
         pageUrl={`https://anatomia.dev/docs/proof/${entry.slug}`}
-        pageTitle={`${entry.feature} — Proof`}
         pageContent={buildProofMarkdown(entry)}
       />
     </div>
