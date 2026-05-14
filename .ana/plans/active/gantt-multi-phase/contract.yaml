@@ -1,0 +1,175 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Multi-phase Gantt visualization for proof timeline"
+
+assertions:
+  - id: A001
+    says: "Multi-phase proofs include per-phase timing segments in the proof chain"
+    block: "produces segments for 2-phase pipeline"
+    target: "summary.timing.segments"
+    matcher: "exists"
+
+  - id: A002
+    says: "Each segment records which pipeline stage it represents"
+    block: "produces segments for 2-phase pipeline"
+    target: "summary.timing.segments[0].stage"
+    matcher: "equals"
+    value: "think"
+
+  - id: A003
+    says: "Build and verify segments include their phase number"
+    block: "produces segments for 2-phase pipeline"
+    target: "summary.timing.segments[2].phase"
+    matcher: "equals"
+    value: 1
+
+  - id: A004
+    says: "Segments are ordered temporally from think through final verify"
+    block: "produces segments for 3-phase pipeline"
+    target: "summary.timing.segments.length"
+    matcher: "equals"
+    value: 8
+
+  - id: A005
+    says: "Three-phase segments follow think, plan, build-1, verify-1, build-2, verify-2, build-3, verify-3 order"
+    block: "produces segments for 3-phase pipeline"
+    target: "summary.timing.segments[6].stage"
+    matcher: "equals"
+    value: "build"
+
+  - id: A006
+    says: "Three-phase build segment 3 has phase number 3"
+    block: "produces segments for 3-phase pipeline"
+    target: "summary.timing.segments[6].phase"
+    matcher: "equals"
+    value: 3
+
+  - id: A007
+    says: "Segment minutes match the per-phase duration from save timestamps"
+    block: "produces segments for 2-phase pipeline"
+    target: "summary.timing.segments[2].minutes"
+    matcher: "equals"
+    value: 30
+
+  - id: A008
+    says: "Single-phase proofs do not include timing segments"
+    block: "omits segments for single-phase pipeline"
+    target: "summary.timing.segments"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A009
+    says: "Rejection-cycle proofs do not include timing segments"
+    block: "omits segments for rejection-cycle pipeline"
+    target: "summary.timing.segments"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A010
+    says: "Aggregate build time equals the sum of all build phase segments"
+    block: "produces segments for 3-phase pipeline"
+    target: "summary.timing.build"
+    matcher: "equals"
+    value: 45
+
+  - id: A011
+    says: "Aggregate verify time equals the sum of all verify phase segments"
+    block: "produces segments for 3-phase pipeline"
+    target: "summary.timing.verify"
+    matcher: "equals"
+    value: 20
+
+  - id: A012
+    says: "Think and plan segments have no phase number"
+    block: "produces segments for 2-phase pipeline"
+    target: "summary.timing.segments[0].phase"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A013
+    says: "The proof chain entry records how many build phases the work item had"
+    block: "populates phases from countPhases"
+    target: "entry.phases"
+    matcher: "exists"
+
+  - id: A014
+    says: "The Gantt chart shows per-phase bars when timing segments exist"
+    block: "renders multi-phase bars"
+    target: "ganttBars.length"
+    matcher: "equals"
+    value: 8
+
+  - id: A015
+    says: "Multi-phase Gantt bars include phase-numbered labels like Build 1"
+    block: "renders multi-phase bars"
+    target: "ganttBars[2].label"
+    matcher: "contains"
+    value: "Build 1"
+
+  - id: A016
+    says: "The Gantt chart falls back to 4 bars when no segments exist"
+    block: "renders 4-bar fallback"
+    target: "ganttBars.length"
+    matcher: "equals"
+    value: 4
+
+  - id: A017
+    says: "Build phase bars use 0.85 opacity across all phases"
+    block: "renders multi-phase bars"
+    target: "ganttBars[2].opacity"
+    matcher: "equals"
+    value: 0.85
+
+  - id: A018
+    says: "Verify phase bars use 1.0 opacity across all phases"
+    block: "renders multi-phase bars"
+    target: "ganttBars[3].opacity"
+    matcher: "equals"
+    value: 1.0
+
+  - id: A019
+    says: "The CLI shows per-phase timing breakdown for multi-phase proofs"
+    block: "formatHumanReadable shows phase breakdown"
+    target: "output"
+    matcher: "contains"
+    value: "Build 1"
+
+  - id: A020
+    says: "The CLI omits phase breakdown for single-phase proofs"
+    block: "formatHumanReadable omits breakdown for single-phase"
+    target: "output"
+    matcher: "not_contains"
+    value: "Phase breakdown"
+
+  - id: A021
+    says: "The website extraction passes segments through to the proof entry"
+    block: "extraction passes segments"
+    target: "proofEntry.timing.segments"
+    matcher: "exists"
+
+  - id: A022
+    says: "Old proof entries without segments render the same 4-bar Gantt"
+    block: "renders 4-bar fallback"
+    target: "ganttBars[0].label"
+    matcher: "equals"
+    value: "Think"
+
+file_changes:
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "website/lib/docs-data/types.ts"
+    action: modify
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/components/docs/proof/PipelineGantt.tsx"
+    action: modify
+  - path: "website/app/docs/proof/[slug]/page.tsx"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
