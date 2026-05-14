@@ -15546,7 +15546,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "website-visual-fidelity-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: .cardHighlighted .cardPriceUnit override at pricing.module.css:75-77 is required for legibility. The highlighted card inverts to dark background (var(--fg-strong)) — without this override, the price unit text would be invisible. The color-mix ensures it matches the cardSub/cardFeature treatment.",
+          "closed_at": "2026-05-14T16:47:29.228Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
