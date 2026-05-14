@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 144 active · 117 lessons · 0 promoted · 328 closed
+96 runs · 143 active · 117 lessons · 0 promoted · 329 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 144 total)
+## Active Findings (30 shown of 143 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -78,7 +78,6 @@
 ### website/components/docs/proof/PipelineGantt.tsx
 
 - **code:** OPACITY_MAP duplicates opacity values already in STAGES array — two sources of truth for the same constants — *Multi-phase Gantt visualization for proof timeline*
-- **code:** 60px label column may be tight for 'VERIFY 3' at 10.5px mono with 0.06em letter-spacing — fits now but fragile for higher phase counts — *Multi-phase Gantt visualization for proof timeline*
 - **code:** formatDuration defined but unused in PipelineGantt — duration column uses raw `{value}m` instead — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/proof/ProofExplorer.tsx
@@ -101,6 +100,10 @@
 ### website/content/docs/guides/using-ana-setup.mdx
 
 - **code:** NextCards link to unbuilt reference/proof pages — will 404 until Scope 5 — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+
+### website/content/docs/guides/verifying-changes.mdx
+
+- **code:** Stale dynamic-value comment in verifying-changes and troubleshooting — says 17 of 78 proofs but real count may differ — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/scripts/extract-docs-data.ts
 
