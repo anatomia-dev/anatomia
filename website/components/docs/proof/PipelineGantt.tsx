@@ -13,9 +13,9 @@ const STAGES: { key: keyof Omit<ProofTiming, "totalMinutes" | "segments">; label
 ];
 
 const OPACITY_MAP: Record<string, number> = {
-  think: 0.75,
-  plan: 0.85,
-  build: 0.90,
+  think: 0.55,
+  plan: 0.70,
+  build: 0.85,
   verify: 1.0,
 };
 
