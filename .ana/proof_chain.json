@@ -12106,7 +12106,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "security-hardening-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: getCurrentBranch at git-operations.ts:208 uses runGit (hardened spawnSync wrapper with shell:false, array args), NOT execSync. The function was migrated from execSync to runGit by the kind-aware-branch-prefixes scope after the security-hardening scope noted it. The finding's claim is false for the current code.",
+          "closed_at": "2026-05-14T18:55:54.976Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
