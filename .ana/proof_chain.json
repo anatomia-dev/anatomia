@@ -20345,7 +20345,10 @@
             "A023"
           ],
           "id": "version-awareness-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in 1cfa4107 — added encodeURIComponent(packageName) to the npm registry URL in spawnUpdateCheck at update-check.ts:115. Consistent with the JSON.stringify treatment of cacheFile/cacheDir in the same function (ANA-SEC-001 class). No-op for current callers ('anatomia-cli' contains no URL-unsafe characters).",
+          "closed_at": "2026-05-14T23:39:50.457Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
