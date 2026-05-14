@@ -17069,7 +17069,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "ship-log-polish-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: ProofChainEntryForContext at proofSummary.ts:2041 is a minimal projection for getProofContext — it includes only fields that context consumers need (findings, build_concerns, modules_touched). kind is entry metadata not needed for file-level context queries. Finding says 'consistent with projection pattern, no current consumer needs it.'",
+          "closed_at": "2026-05-14T18:08:24.317Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
