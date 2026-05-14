@@ -1158,13 +1158,15 @@ async function main(): Promise<void> {
   // Update dynamic values in MDX files
   updateDynamicMdxValues(proofEntries, skillTemplates.length, gotchas.length);
 
-  // Generate search index
+  // Generate search index — write to both data/docs (for validation) and public (for client fetch)
   const searchIndex = generateSearchIndex(proofEntries, commands, agentTemplates, skillTemplates);
   writeJSON('search-index.json', searchIndex);
+  const publicDir = path.join(WEBSITE_DIR, 'public');
+  fs.writeFileSync(path.join(publicDir, 'search-index.json'), JSON.stringify(searchIndex, null, 2) + '\n', 'utf-8');
+  console.log('  ✓ public/search-index.json');
 
   // Generate llms.txt files
   const { llmsTxt, llmsFullTxt } = generateLlmsTxt(searchIndex);
-  const publicDir = path.join(WEBSITE_DIR, 'public');
   fs.writeFileSync(path.join(publicDir, 'llms.txt'), llmsTxt, 'utf-8');
   console.log('  ✓ public/llms.txt');
   fs.writeFileSync(path.join(publicDir, 'llms-full.txt'), llmsFullTxt, 'utf-8');

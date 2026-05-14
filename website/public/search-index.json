@@ -1,0 +1,902 @@
+[
+  {
+    "type": "page",
+    "title": "Artifacts",
+    "description": "Eight artifact types define a pipeline run. Each is written by one agent, read by specific others, and sealed with a SHA-256 hash at save time. Together they form a complete, auditable record of intent to implementation.",
+    "route": "/docs/concepts/artifacts"
+  },
+  {
+    "type": "page",
+    "title": "Context",
+    "description": "Context files are how agents know your project. Not chat memory — file-based knowledge that persists across sessions, enriched by setup, and kept honest by the proof chain.",
+    "route": "/docs/concepts/context"
+  },
+  {
+    "type": "page",
+    "title": "The contract",
+    "description": "A contract is the seal between Plan and Build. It defines \\u201Cdone\\u201D as a list of assertions with matchers \\u2014 mechanical, testable, unambiguous. Once sealed, it can\\u2019t be changed. Both Build and Verify work against the frozen version.",
+    "route": "/docs/concepts/contract"
+  },
+  {
+    "type": "page",
+    "title": "Findings",
+    "description": "A finding is a specific, located observation from verification — a named file, a concrete issue, and a recommended action. Findings accumulate in the proof chain and are triaged by Learn between pipeline cycles.",
+    "route": "/docs/concepts/findings"
+  },
+  {
+    "type": "page",
+    "title": "The pipeline",
+    "description": "Five stages. Five agents. Each runs in its own session with restricted access — it reads what it needs, produces typed artifacts, and never sees the full picture. No agent grades its own work.",
+    "route": "/docs/concepts/pipeline"
+  },
+  {
+    "type": "page",
+    "title": "Skills",
+    "description": "Skills are project-specific rules that shape what agents build. They start as templates with universal defaults, get enriched with your project's conventions during setup, and grow as you add rules or promote verification findings.",
+    "route": "/docs/concepts/skills"
+  },
+  {
+    "type": "page",
+    "title": "The toolbelt",
+    "description": "Each agent invokes a specific set of ana CLI commands \\u2014 the toolbelt. These commands validate artifact structure, compute integrity hashes, and reject malformed output before it enters the pipeline. The CLI is the enforcement layer that makes \\u201Cverified over trusted\\u201D mechanical.",
+    "route": "/docs/concepts/toolbelt"
+  },
+  {
+    "type": "page",
+    "title": "Configurability",
+    "description": "Everything ships as files in your repo \\u2014 markdown agents, markdown skills, JSON config. Change what you need, from CLI commands to source-level edits. The parts that make verification work are fixed by design.",
+    "route": "/docs/guides/configurability"
+  },
+  {
+    "type": "page",
+    "title": "Reading a proof",
+    "description": "Every pipeline run produces a proof \\u2014 a JSON record committed to your repo that captures what was built, how it was verified, and whether it can be trusted. This guide walks through security-hardening so you know what each part means.",
+    "route": "/docs/guides/reading-a-proof"
+  },
+  {
+    "type": "page",
+    "title": "Troubleshooting",
+    "description": "Common problems grouped by when you hit them. If none of these match, email help@anatomia.dev with your CLI version (ana --version) and the proof slug if applicable.",
+    "route": "/docs/guides/troubleshooting"
+  },
+  {
+    "type": "page",
+    "title": "Using ana-learn",
+    "description": "Findings accumulate. Learn tends them \\u2014 closing what\\u2019s resolved, promoting recurring patterns into skill rules, and routing what needs engineering work back to Think. Run it between pipeline cycles.",
+    "route": "/docs/guides/using-ana-learn"
+  },
+  {
+    "type": "page",
+    "title": "Using ana-setup",
+    "description": "Setup reads your codebase, forms an opinion about your project, and asks you to correct it. Your corrections become the context every agent reads \\u2014 what separates generic AI that happens to know your stack from an engineer who\\u2019s been on your team for six months.",
+    "route": "/docs/guides/using-ana-setup"
+  },
+  {
+    "type": "page",
+    "title": "Verifying changes",
+    "description": "Build finished. You're about to run claude --agent ana-verify. This guide covers what Verify does, what the report means, and what to do when it comes back FAIL.",
+    "route": "/docs/guides/verifying-changes"
+  },
+  {
+    "type": "page",
+    "title": "Quickstart",
+    "description": "Install Anatomia, run init in your repo, and ship a verified change. Two minutes to scaffold. Twenty minutes to your first proof.",
+    "route": "/docs/start"
+  },
+  {
+    "type": "command",
+    "title": "ana scan",
+    "description": "Detect stack, conventions, and patterns",
+    "route": "/docs/reference/cli#getting-started"
+  },
+  {
+    "type": "command",
+    "title": "ana init",
+    "description": "Scan project and generate agent context",
+    "route": "/docs/reference/cli#getting-started"
+  },
+  {
+    "type": "command",
+    "title": "ana setup",
+    "description": "Enrich context with team knowledge",
+    "route": "/docs/reference/cli#getting-started"
+  },
+  {
+    "type": "command",
+    "title": "ana setup complete",
+    "description": "Validate context files and finalize setup",
+    "route": "/docs/reference/cli#getting-started"
+  },
+  {
+    "type": "command",
+    "title": "ana setup check",
+    "description": "Validate context files for quality gates",
+    "route": "/docs/reference/cli#getting-started"
+  },
+  {
+    "type": "command",
+    "title": "ana setup index",
+    "description": "Build symbol index for citation verification",
+    "route": "/docs/reference/cli#getting-started"
+  },
+  {
+    "type": "command",
+    "title": "ana work",
+    "description": "Start, track, and complete development tasks",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana work status",
+    "description": "Show pipeline state for all active work items",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana work start",
+    "description": "Start a new work item",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana work complete",
+    "description": "Archive completed work after PR merge, optionally merging the PR first",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana artifact",
+    "description": "Save pipeline outputs with hash verification",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana artifact save",
+    "description": "Commit a pipeline artifact to the correct branch",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana artifact save-all",
+    "description": "Commit all artifacts in a plan directory atomically",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana verify",
+    "description": "Verify contract assertions before code review",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana verify pre-check",
+    "description": "Run contract seal verification",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana pr",
+    "description": "Create pull request from verified build",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana pr create",
+    "description": "Create GitHub PR from pipeline artifacts",
+    "route": "/docs/reference/cli#pipeline"
+  },
+  {
+    "type": "command",
+    "title": "ana config",
+    "description": "Read and write ana.json settings",
+    "route": "/docs/reference/cli#configuration"
+  },
+  {
+    "type": "command",
+    "title": "ana config show",
+    "description": "Show all settings",
+    "route": "/docs/reference/cli#configuration"
+  },
+  {
+    "type": "command",
+    "title": "ana config get",
+    "description": "Get a config field value",
+    "route": "/docs/reference/cli#configuration"
+  },
+  {
+    "type": "command",
+    "title": "ana config set",
+    "description": "Set a config field value",
+    "route": "/docs/reference/cli#configuration"
+  },
+  {
+    "type": "command",
+    "title": "ana proof",
+    "description": "View proof chain entries, health, and findings",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof context",
+    "description": "Query proof chain for context about specific files",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof close",
+    "description": "Close active findings with a reason",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof lesson",
+    "description": "Record findings as institutional lessons",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof promote",
+    "description": "Promote findings to a skill rule",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof strengthen",
+    "description": "Commit a skill file edit and mark findings as promoted",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof audit",
+    "description": "List active findings grouped by file",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof health",
+    "description": "Display proof chain health dashboard",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana proof stale",
+    "description": "Show findings with staleness signals from subsequent pipeline runs",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana agents",
+    "description": "Agent dashboard — list agents, manage models",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "command",
+    "title": "ana agents model",
+    "description": "Show or set agent model overrides",
+    "route": "/docs/reference/cli#intelligence"
+  },
+  {
+    "type": "proof",
+    "title": "proof-list-view — Proof List View",
+    "description": "When `ana proof` is called with no arguments, show a summary table of all proof chain entries. The developer wants a scannable overview of their proof history without needing to know a slug upfront. The existing `ana proof <slug>` detail card stays unchanged.",
+    "route": "/docs/proof/proof-list-view"
+  },
+  {
+    "type": "proof",
+    "title": "add-project-kind-detection — Project kind detection",
+    "description": "The scan detects language ecosystem (`node`, `python`, `go`) and framework (`Next.js`, `Express`), but has no concept of what a project fundamentally *is* — CLI tool, library, web app, API server, or full-stack app. A Node CLI, a Node web app, and a Node library all produce the same scan identity. Downstream consumers (skills, scaffolds, context generation) can't tailor advice because they don't know what kind of thing they're advising on. The deployment skill gives web-app guidance to a CLI tool. The project description says \"TypeScript project\" for anything without a recognized framework.",
+    "route": "/docs/proof/add-project-kind-detection"
+  },
+  {
+    "type": "proof",
+    "title": "fix-skill-template-gaps — Fix skill template gaps — data-access security, coding-standards error rule",
+    "description": "Two skill templates ship with gaps that affect every new Anatomia project. The data-access template has no security guidance — teams start without IDOR prevention at the data layer. The coding-standards template has an absolutist error-handling rule that contradicts intentional graceful degradation patterns. Fix both.",
+    "route": "/docs/proof/fix-skill-template-gaps"
+  },
+  {
+    "type": "proof",
+    "title": "monorepo-primary-agents-md — Monorepo Primary Package AGENTS.md",
+    "description": "When a monorepo's primary package is opened directly in Cursor/Copilot/Windsurf (e.g., `packages/cli` instead of the repo root), there's no AGENTS.md present. Users get zero Anatomia context. Generate a minimal AGENTS.md in the primary package directory that provides essential context and points to the root for the full picture.",
+    "route": "/docs/proof/monorepo-primary-agents-md"
+  },
+  {
+    "type": "proof",
+    "title": "find-project-root — findProjectRoot utility for subdirectory support",
+    "description": "Running `ana work status` (or any pipeline command) from a subdirectory like `packages/cli/src/` fails because it looks for `.ana/` only in CWD. The CLI should walk up the directory tree to find the project root, matching how git and other tools behave.",
+    "route": "/docs/proof/find-project-root"
+  },
+  {
+    "type": "proof",
+    "title": "add-hook-detection — Add deep-tier hook/composable detection to patterns analyzer",
+    "description": "The scan knows what libraries a project installs but not how those libraries shape the client-side architecture. `@tanstack/react-query` in deps doesn't tell Build agents \"use `useQuery` for all fetching\" — it just says the package exists, which deps already show. Tree-sitter confirmation of actual hook/composable call sites bridges the gap between \"installed\" and \"this is how the project works.\"",
+    "route": "/docs/proof/add-hook-detection"
+  },
+  {
+    "type": "proof",
+    "title": "proof-chain-active-issues — Proof chain active issues index",
+    "description": "Surface callouts from the proof chain in a file-organized index at the top of PROOF_CHAIN.md so agents can immediately find relevant issues when scoping work on specific files. Currently callouts are captured but buried in chronological entries — finding issues for `scan-engine.ts` requires reading through all history hoping to spot mentions.",
+    "route": "/docs/proof/proof-chain-active-issues"
+  },
+  {
+    "type": "proof",
+    "title": "add-readme-extraction — Add README extraction to scan",
+    "description": "The scan reads package.json, tsconfig, prisma schemas, and dozens of config files — but completely ignores the README. A project's README is typically the densest source of human-written intent: what the project does, how it's architected, setup instructions, API surface. This information is exactly what `project-context.md` needs but currently fills with generic placeholders.",
+    "route": "/docs/proof/add-readme-extraction"
+  },
+  {
+    "type": "proof",
+    "title": "add-callout-file-field — Add file field to proof chain callouts",
+    "description": "File association for callouts is derived from summary text via regex (`extractFileRefs`) every time the renderer groups callouts for Active Issues. The parser sees the full callout context but throws away file information. The renderer re-derives it. Downstream features (proof file queries, proof learn matching, resolution detection) would all need the same regex inference.",
+    "route": "/docs/proof/add-callout-file-field"
+  },
+  {
+    "type": "proof",
+    "title": "fix-prisma-schema-detection — Fix Prisma schema detection bugs",
+    "description": "Census breaks on first Prisma schema match per root, starving scan-engine's best-match scorer. Three bugs share one disease: census assumes every Prisma project has exactly one `schema.prisma` at a hardcoded path. This breaks dual-candidate roots, multi-file schemas (`prismaSchemaFolder`, GA since Prisma 5.15), and provider detection in split-file layouts.",
+    "route": "/docs/proof/fix-prisma-schema-detection"
+  },
+  {
+    "type": "proof",
+    "title": "fix-drizzle-schema-detection — Fix Drizzle schema detection",
+    "description": "Drizzle schema detection is a stub — census checks the migrations directory, scan-engine globs inside it, model counting and provider detection are absent, no blind spot fires, and census results are ignored by the scorer. A project using Drizzle gets no model count, no provider, wrong schema path, and no warning when the schema is missing. This is the same class of disease that was just fixed for Prisma (see proof chain: \"Fix Prisma schema detection bugs\"), applied to the second most popular TypeScript ORM.",
+    "route": "/docs/proof/fix-drizzle-schema-detection"
+  },
+  {
+    "type": "proof",
+    "title": "configurable-branch-prefix — Configurable branch prefix",
+    "description": "The pipeline hardcodes `feature/` as the branch prefix across ~36 source and template references. Any team using a different branch convention (`dev/`, `task/`, `issue/`, bare slugs) gets broken pipeline status, incorrect validation warnings, and wrong agent instructions on first use. The user wants `branchPrefix` in `ana.json` so the prefix is configured once and read everywhere.",
+    "route": "/docs/proof/configurable-branch-prefix"
+  },
+  {
+    "type": "proof",
+    "title": "proof-context-query — Proof context file query",
+    "description": "The proof chain stores rich intelligence — 49 callouts with file references, categories, code anchors, and full-text observations from every pipeline cycle. But there is no way to ask \"what does the system know about THIS file?\" Agents read PROOF_CHAIN.md — a flat list of 20 items about all files — and hope they notice what's relevant. The data is organized temporally (which feature produced it) when every consumer needs it organized spatially (which file is it about).",
+    "route": "/docs/proof/proof-context-query"
+  },
+  {
+    "type": "proof",
+    "title": "proof-chain-targeted-queries — Replace PROOF_CHAIN.md reads with targeted proof context queries",
+    "description": "Pipeline agents currently read all of PROOF_CHAIN.md (170+ lines, 58 active issues) and manually filter to relevant modules. This is the exact task agents do poorly. The `ana proof context {files}` command already exists and solves the filtering problem mechanically. Replace the full-file reads with targeted queries in the two agents that are primary proof chain consumers (Ana and Verify), and remove the reads entirely from the two agents that receive proof context through document flow (Plan and Build).",
+    "route": "/docs/proof/proof-chain-targeted-queries"
+  },
+  {
+    "type": "proof",
+    "title": "proof-chain-health-signal — Proof chain health signal",
+    "description": "The proof chain is write-only at the moment of writing. `ana work complete` says \"Proof saved to chain.\" — a write confirmation that tells the developer what the system did, not what they have. After 14 pipeline runs and 62 callouts, the developer has no signal that institutional memory is accumulating. The completion moment, when they just contributed fresh intelligence, gives them nothing back.",
+    "route": "/docs/proof/proof-chain-health-signal"
+  },
+  {
+    "type": "proof",
+    "title": "seal-hash-simplification — Seal hash simplification",
+    "description": "Simplify the contract seal system from git-commit-based verification to content-hash-based verification. This eliminates the post-commit `.saves.json` fixup that makes the file permanently dirty and blocks branch switches on every pipeline run.",
+    "route": "/docs/proof/seal-hash-simplification"
+  },
+  {
+    "type": "proof",
+    "title": "clear-the-deck — Clear the Deck — foundation fixes from proof chain audit",
+    "description": "The proof chain identified bugs in its own codebase. We're fixing them. 6 of 7 items trace directly to proof chain callouts or the deep strategic audit. The 7th (the `custom` namespace) ships a configurability gate that prevents future foreclosure.",
+    "route": "/docs/proof/clear-the-deck"
+  },
+  {
+    "type": "proof",
+    "title": "clear-the-deck-2 — Clear the Deck Phase 2",
+    "description": "Continuation of Clear the Deck. Phase 1 fixed 7 items identified by the proof chain — types, ESLint, dead tests, save-all parity, custom namespace. Phase 2 cleans the next layer: agent templates running at 20% context capacity, a callout file resolution gap that affects customer repos, missing test coverage for proof chain accumulation, and small corrections across the pipeline.",
+    "route": "/docs/proof/clear-the-deck-2"
+  },
+  {
+    "type": "proof",
+    "title": "findings-lifecycle-foundation — Findings Lifecycle Foundation",
+    "description": "The proof chain records intelligence but can't act on it. Verify produces findings every pipeline run. Those findings sit in a flat list with no lifecycle state — no way to distinguish \"needs attention\" from \"already handled,\" no way to mark stale observations, no way to classify informational upstream findings separately from actionable code/test findings. Agents consuming `ana proof context` receive 82 undifferentiated findings including observations about deleted files, absent code anchors, and superseded older observations alongside genuine active findings.",
+    "route": "/docs/proof/findings-lifecycle-foundation"
+  },
+  {
+    "type": "proof",
+    "title": "fix-artifact-save-and-work-complete — Fix artifact save bypass, cwd bug, and work complete crash recovery",
+    "description": "Three interrelated bugs surfaced during the findings-lifecycle-foundation completion (2026-04-27). Build manually committed `build_report.md` via `git add && git commit`, bypassing `ana artifact save`. Save reported \"already up to date\" and skipped its entire metadata pipeline. Then `work complete` ran from `packages/cli/` (a subdirectory), causing `git add .ana/plans/` to fail on a relative path. `process.exit(1)` fired after the plan directory was already moved and proof chain already written. A second `work complete` said \"already completed\" because `active/` was empty.",
+    "route": "/docs/proof/fix-artifact-save-and-work-complete"
+  },
+  {
+    "type": "proof",
+    "title": "fix-proof-chain-mechanical-accuracy — Fix Proof Chain Mechanical Accuracy",
+    "description": "The proof chain's mechanical maintenance layer shipped with 57% closure accuracy. 16 of 37 closures destroyed valid observations. Three bugs: path resolution closed 4 files that exist at different monorepo paths, staleness checks overwrote 3 upstream lessons, and supersession destroyed 9 independent observations using a heuristic too coarse to distinguish same-issue from different-issue-on-same-file. Additionally, 6 findings with bare basenames (no `/`) escape staleness entirely because the syntactic gate skips them — 4 of these reference genuinely deleted files (`projectKind.ts` renamed to `applicationShape.ts` months ago).",
+    "route": "/docs/proof/fix-proof-chain-mechanical-accuracy"
+  },
+  {
+    "type": "proof",
+    "title": "structured-findings-companion — Structured Findings Companion",
+    "description": "The proof chain's highest-value data — findings and build concerns — enters through 216 lines of regex parsing free-text LLM markdown. Every other data type (assertions, timing, hashes, modules) enters through structured sources at 100% reliability. The parser is adequate for what it captures (89% file resolution, 92% anchor accuracy post-F1.5). But two fields that would make the learning loop genuinely intelligent — `related_assertions` (which contract assertion a finding relates to) and `severity` (blocker vs observation vs note) — can't be parser-extracted. The agent knows which assertion it was checking when it found the issue. It just has no structured place to write it.",
+    "route": "/docs/proof/structured-findings-companion"
+  },
+  {
+    "type": "proof",
+    "title": "clean-ground — Clean Ground for Foundation 3",
+    "description": "Three small code fixes before Foundation 3 builds the developer-facing CLI surface on top of `writeProofChain` and `resolveFindingPaths`. Remove dead fallbacks, delete a stale test assertion, and add a glob result cache to `resolveFindingPaths`. The pipeline run doubles as Foundation 2's first non-meta verification — entry #23 is the first time a different scope's Verify agent produces companion YAML using the Foundation 2 template. After `work complete`, audit entry #23 against the Foundation 2 verification checklist.",
+    "route": "/docs/proof/clean-ground"
+  },
+  {
+    "type": "proof",
+    "title": "close-the-loop — Close the Loop",
+    "description": "The proof chain captures verification intelligence across 23 pipeline runs — 57 active findings, 31 mechanically closed, 21 lessons. But the developer can't manage it and Build can't receive it.",
+    "route": "/docs/proof/close-the-loop"
+  },
+  {
+    "type": "proof",
+    "title": "harden-git-commit-calls — Harden git commit calls",
+    "description": "Two fixes on the same files. First: git commit messages are constructed via template literals and passed through the shell — user-controlled text in `--reason` can break commits or theoretically execute code. Replace all 5 `execSync` git commit calls with `spawnSync` so message content is never shell-interpreted. Second: the `work complete` output has a nudge block that re-reads the entire proof_chain.json to decide whether to show a recommendation. The nudge is the wrong design — it's a one-shot discoverability hack with an arbitrary threshold, not a data-driven signal. Remove it entirely and replace the chain output line with a cleaner format that includes the per-run finding delta.",
+    "route": "/docs/proof/harden-git-commit-calls"
+  },
+  {
+    "type": "proof",
+    "title": "finding-enrichment-schema — Finding Enrichment Schema",
+    "description": "The intelligence layer (health, Learn, promote) operates on findings. The quality of every downstream feature is bounded by the quality of what enters the pipe. Right now:",
+    "route": "/docs/proof/finding-enrichment-schema"
+  },
+  {
+    "type": "proof",
+    "title": "diff-scoped-tag-search — Diff-Scoped Tag Search",
+    "description": "Tag collision (INFRA-064) is the most recurring finding in the proof system — 7 instances across 7 runs. Every contract generates `A001`, `A002`, etc. After 25+ pipeline runs, test files accumulate `@ana A001` tags from dozens of different contracts. Pre-check matches any of them, producing false COVEREDs that degrade the signal.",
+    "route": "/docs/proof/diff-scoped-tag-search"
+  },
+  {
+    "type": "proof",
+    "title": "work-complete-json-proof-card — Work Complete JSON + Proof Card Findings",
+    "description": "Every pipeline-critical command has `--json` except the one that finalizes every run. `work complete` produces console output but no structured data. The autonomous pipeline needs structured completion output. Learn chains from completion to triage. CI gates read the result.",
+    "route": "/docs/proof/work-complete-json-proof-card"
+  },
+  {
+    "type": "proof",
+    "title": "proof-health-v1 — Proof Health V1",
+    "description": "The developer wants to see quality trajectory across pipeline runs. `ana proof health` computes severity-weighted metrics, identifies hot modules, surfaces promotion candidates, and reports on promotion effectiveness. The `work complete` output gains a change-driven fourth line that surfaces health insights when something shifted since the last run. Health is the measurement layer that validates the severity taxonomy, informs promotion decisions, and provides the north star metric (risks/run trending down).",
+    "route": "/docs/proof/proof-health-v1"
+  },
+  {
+    "type": "proof",
+    "title": "proof-promote — Proof Promote",
+    "description": "The developer wants to turn a recurring finding into a permanent skill rule. `ana proof promote` takes a finding ID and a target skill, appends the rule text to the skill file, transitions the finding to `promoted` status, and commits the change. The command handles plumbing — git workflow, status transition, dashboard regeneration, skill file mutation. The caller provides the judgment: which skill, and optionally what the rule should say via `--text`.",
+    "route": "/docs/proof/proof-promote"
+  },
+  {
+    "type": "proof",
+    "title": "ana-learn-v1 — Ana Learn V1",
+    "description": "The developer wants an agent that maintains the proof chain and helps improve the system. Ana Learn is the fifth agent — not part of Think → Plan → Build → Verify, but running alongside it. Learn reads health and audit data, verifies findings against current code, suggests closures and promotions, and helps the developer route their own observations into permanent system improvements.",
+    "route": "/docs/proof/ana-learn-v1"
+  },
+  {
+    "type": "proof",
+    "title": "delete-backward-compat — Delete backward-compatibility code",
+    "description": "Delete all backward-compatibility and migration code from the codebase. Zero customers, zero installed base, zero reason to maintain migration paths. The only installation is our own dogfood, which is fully migrated. Every line of backward-compat code is solving a problem for nobody.",
+    "route": "/docs/proof/delete-backward-compat"
+  },
+  {
+    "type": "proof",
+    "title": "harden-hot-files — Harden Hot Files",
+    "description": "Fix four error-handling and display bugs across the three most-modified CLI files (proof.ts, work.ts, artifact.ts). These are all hot files touched by every pipeline run. Closes 5 active findings including all 3 risk-severity findings in the current set.",
+    "route": "/docs/proof/harden-hot-files"
+  },
+  {
+    "type": "proof",
+    "title": "proof-command-ux — Proof Command UX",
+    "description": "The proof system computes quality intelligence — severity classifications, suggested actions, promotion candidates, trend trajectories. The CLI commands that surface this data (`ana proof audit`, `work complete`) show the data but don't tell developers what to do with it. \"71 active findings across 23 files\" is a number. \"5 risk, 4 promote, 9 closeable\" is a decision surface. \"Health: trend worsened\" is a fact. \"Health: trend worsened → ana proof audit\" is a nudge. Two display additions (~25 lines of production code) that transform proof output from data dumps into action surfaces.",
+    "route": "/docs/proof/proof-command-ux"
+  },
+  {
+    "type": "proof",
+    "title": "remove-tag-coverage — Remove Pre-Check Tag Coverage",
+    "description": "Pre-check's tag coverage check is a broken trust layer that corrupts the proof chain. It greps test files for `@ana` tags to report COVERED/UNCOVERED per assertion — but after 33 builds, tag collision makes the signal unreliable (42% of entries have collision findings), and its COVERED/UNCOVERED output infiltrates the permanent record where Verify's independent judgment should be the authority. Two diseases, one root cause. The fix: remove the mechanism entirely, make Verify the sole source of assertion status, and let pre-check do the one job it does well — seal verification.",
+    "route": "/docs/proof/remove-tag-coverage"
+  },
+  {
+    "type": "proof",
+    "title": "learn-v3-cli-commands — Learn V3 — CLI Commands + Template Finalization",
+    "description": "Build the CLI commands that Ana Learn needs to operate deterministically, then strip the graceful degradation from the Learn template. V2 shipped the Learn template with manual workarounds for commands that didn't exist. V3 makes those commands real and removes the workarounds. After V3, every proof chain operation Learn performs goes through a CLI command — no manual git ceremonies, no raw JSON parsing, no fallback instructions.",
+    "route": "/docs/proof/learn-v3-cli-commands"
+  },
+  {
+    "type": "proof",
+    "title": "health-display-polish — Health Display Polish",
+    "description": "Make `ana proof health` match the design language of every other proof command. The data is correct — `computeHealthReport` is solid. The terminal display is debug output next to the proof card's designed surface. This is pure craft: box header, section dividers, truncated paths, one-line summaries, trend-first hierarchy. The developer who runs `ana proof health` should see a dashboard, not a data dump.",
+    "route": "/docs/proof/health-display-polish"
+  },
+  {
+    "type": "proof",
+    "title": "clean-proofsummary — Clean proofSummary.ts",
+    "description": "`proofSummary.ts` is the hottest file in the system — 1865 lines, 8 active findings, touched by 7 pipeline runs. It carries a dead predecessor function (86 lines, zero production callers), a loose type that hides behind a cast, and a path-matching bug that produces false positives in monorepos. Three independent fixes, one file, the diff mostly red. Clean the file every pipeline run reads.",
+    "route": "/docs/proof/clean-proofsummary"
+  },
+  {
+    "type": "proof",
+    "title": "sharpen-agent-templates — Sharpen Agent Templates",
+    "description": "Shift Verify's searchlight from style observations to substantive findings, and give Think awareness of the proof surface. Four template text changes across two agent definitions. Zero CLI code.",
+    "route": "/docs/proof/sharpen-agent-templates"
+  },
+  {
+    "type": "proof",
+    "title": "fix-type-lies — Fix Type Lies",
+    "description": "The code says one thing but reality is different. Tests hardcode 4-5 agents when 6 exist — every new agent requires finding and updating 7 locations. A template gives the wrong filename for multi-phase builds, causing save failures. A type says `skill: string` but Commander makes it optional at runtime. A comment references a function that was deleted. A test asserts inside an `if` guard so it passes without checking. Six fixes. Each corrects a lie.",
+    "route": "/docs/proof/fix-type-lies"
+  },
+  {
+    "type": "proof",
+    "title": "proof-health-v2 — Proof Health V2",
+    "description": "The health dashboard is the proof system's face. It's what a founder screenshots for their co-founder, what a developer checks before scoping work, what Learn reads at startup. Three gaps: the stats don't tell the full story (no verification effectiveness, no pipeline velocity), the timing data lies (think and plan show identical values), and nothing stops failed work from entering the proof chain. Three phases, one goal: the dashboard tells the truth and the proof chain guards its own integrity.",
+    "route": "/docs/proof/proof-health-v2"
+  },
+  {
+    "type": "proof",
+    "title": "strengthen-weak-test-assertions — Strengthen Weak Test Assertions",
+    "description": "Learn triage (2026-05-02) reviewed 62 active findings across 41 pipeline runs and identified 10 that share one disease: tests that pass without proving anything. Weak matchers (`toBeDefined()`, `toBeGreaterThan(0)`), conditional guards that make assertions vacuous, and `not.toContain()` that passes by coincidence of fixture data. An 11th finding (risk severity) surfaces zero coverage for the UNVERIFIED fallback path — a safety-critical code path where silent failure corrupts the proof chain.",
+    "route": "/docs/proof/strengthen-weak-test-assertions"
+  },
+  {
+    "type": "proof",
+    "title": "audit-json-severity-summary — Audit JSON Severity Summary",
+    "description": "`ana proof audit --json` returns active findings grouped by file but no severity or action summary. The terminal output shows `1 risk · 22 debt · 43 observation` — the JSON response doesn't. Learn keeps pulling severity counts from health's meta block (which includes closed/lesson findings) because audit JSON doesn't provide them. This produces wrong numbers in Learn's state summary. Same bug in 3 consecutive Learn sessions despite the template explicitly saying \"use audit, not meta.\"",
+    "route": "/docs/proof/audit-json-severity-summary"
+  },
+  {
+    "type": "proof",
+    "title": "learn-template-session-fixes — Learn Template Session Fixes",
+    "description": "Seven template text fixes based on measured failures across 3 Learn sessions and 42 pipeline runs. Each change addresses a specific behavior that failed in practice — not theoretical improvements. Zero CLI code.",
+    "route": "/docs/proof/learn-template-session-fixes"
+  },
+  {
+    "type": "proof",
+    "title": "fix-ci-failures — Fix CI Test Failures",
+    "description": "CI fails on every push — 5 failures on Ubuntu, 28 on Windows, across 10 test files. The safety net is broken. \"Verified over trusted\" demands the mechanical checks work. This scope fixes all CI failures to get the test matrix green across 3 OS × 2 Node versions.",
+    "route": "/docs/proof/fix-ci-failures"
+  },
+  {
+    "type": "proof",
+    "title": "learn-severity-triage — Learn Severity-Based Triage",
+    "description": "Restructure Learn's triage workflow to eliminate the batch-closing failure mode caused by Phase 1 \"Accept-Action (Clear the Deck).\" Three consecutive sessions proved that grouping findings by `suggested_action: accept` creates batch thinking — Learn recommends closing the entire group without individual evaluation, regardless of template instructions. The fix removes the action-based grouping and triages by severity instead, extending the rigorous Phase 2 workflow to ALL findings.",
+    "route": "/docs/proof/learn-severity-triage"
+  },
+  {
+    "type": "proof",
+    "title": "v1-documentation-overhaul — V1 Documentation Overhaul",
+    "description": "Rewrite every document a stranger reads so the project presents as a publication-grade product, not an internal R&D project. README, CHANGELOG, CONTRIBUTING, ARCHITECTURE — all four are stale, sprint-numbered, or undersized. This is the first of two scopes preparing for the 1.0.0 npm publish. This scope is docs only — no production code changes, no test changes. The second scope (v1-code-changes) handles CLI output polish, parser fixes, and build config.",
+    "route": "/docs/proof/v1-documentation-overhaul"
+  },
+  {
+    "type": "proof",
+    "title": "v1-code-changes — V1 Code Changes",
+    "description": "Surgical code changes preparing for 1.0.0. Remove dead references, fix a parser coupling bug, standardize CLI output, clean build config. No new features. Every change is a fix, removal, or standardization. This is the second of two scopes — the first (v1-documentation-overhaul) handles docs. This scope handles code.",
+    "route": "/docs/proof/v1-code-changes"
+  },
+  {
+    "type": "proof",
+    "title": "v1-release-prep — V1 Release Prep",
+    "description": "Final preparation for publishing `anatomia-cli@1.0.0` to npm. Package metadata, release workflow, community files, repo cleanup, version bump. This is the third of three V1 scopes — docs and code changes must be merged first. After this scope ships and merges, the publish ceremony is: tag, push, verify.",
+    "route": "/docs/proof/v1-release-prep"
+  },
+  {
+    "type": "proof",
+    "title": "security-hardening — Security Hardening — Command Injection Elimination",
+    "description": "Eliminate the command injection attack surface across the CLI. The product targets a clone-and-run deployment — developers clone repos containing `.ana/ana.json` and run pipeline commands. A malicious config file can currently execute arbitrary shell commands because user-controlled and config-controlled values reach `execSync` via string interpolation without validation. This must be mechanically impossible before seeking users.",
+    "route": "/docs/proof/security-hardening"
+  },
+  {
+    "type": "proof",
+    "title": "proof-intelligence-hardening — Proof Intelligence Hardening",
+    "description": "Consolidation pass on the proof intelligence surface. Two confirmed bugs corrupt data, the staleness detector produces 78% false positives, shared logic is copy-pasted three times, and the audit display conflates actionable findings with monitoring noise. These aren't independent problems — they grew feature-by-feature without a consolidation pass. The proof surface now undermines its own credibility: the tool that verifies AI work can't get its own verification data right.",
+    "route": "/docs/proof/proof-intelligence-hardening"
+  },
+  {
+    "type": "proof",
+    "title": "proof-system-near-term — Proof System Near-Term — Learn Infrastructure Foundation",
+    "description": "Fix the infrastructure that makes Learn sessions slow, error-prone, and wasteful. Six changes that each address a verified problem from 3 Learn sessions. The proof commands have push error handling that confuses Learn, a pre-commit hook that wastes 30s per close on JSON files, severity counts that lie, duplicated search loops, an audit command without filters, and a template missing critical guidance.",
+    "route": "/docs/proof/proof-system-near-term"
+  },
+  {
+    "type": "proof",
+    "title": "cli-ux-polish — CLI UX Polish — First 10 Minutes",
+    "description": "Make the first 10 minutes of using Anatomia feel professional. A developer who runs `ana --help` should immediately understand what the tool does, which commands matter, and how to start. Right now: flat command list, jargon descriptions, no examples, wrong ordering, misleading CTA. Every competitor (gh, npm, docker) has grouped commands, clear descriptions, and examples. We don't.",
+    "route": "/docs/proof/cli-ux-polish"
+  },
+  {
+    "type": "proof",
+    "title": "code-comment-cleanup — Code Comment Cleanup",
+    "description": "The codebase carries its construction history. A contributor opens scan-engine.ts and reads about `analyze()` — a function deleted months ago. They copy a JSDoc example and get \"function not found.\" They see `S19/SCAN-032` and learn nothing. 286 internal references across 97 files reference sprints, deleted functions, nonexistent documents, and implementation plan identifiers. The code works. The comments lie.",
+    "route": "/docs/proof/code-comment-cleanup"
+  },
+  {
+    "type": "proof",
+    "title": "worktree-isolation — Worktree Isolation",
+    "description": "The pipeline shares a single working directory and git index across all agents. The branch dance — switching, stashing, validating, recovering — is template-enforced, not mechanically enforced. 30+ lines of branch management instructions tell agents what to do. Nothing prevents them from doing it wrong. This produced a real data corruption incident (ANA-CLI-034: two Plan agents shared a git index, one committed the other's staged files) and creates daily friction (stashing, blocking, wrong-branch errors).",
+    "route": "/docs/proof/worktree-isolation"
+  },
+  {
+    "type": "proof",
+    "title": "non-main-artifact-branch-tests — Non-Main Artifact Branch Tests",
+    "description": "Every test assumes the artifact branch is `main`. The `artifactBranch` field in `ana.json` supports any branch name, and the runtime code reads it correctly via `readArtifactBranch()` — but zero tests exercise a non-main value. A team using `develop` as their artifact branch hits untested code paths in `work start`, `artifact save`, `work complete`, `work status`, and `proof` commands. Add parameterized tests proving non-main values work, and fix a display bug where init shows the git default branch instead of the configured artifact branch.",
+    "route": "/docs/proof/non-main-artifact-branch-tests"
+  },
+  {
+    "type": "proof",
+    "title": "rejection-artifact-preservation — Rejection Cycle Artifact Preservation",
+    "description": "When a pipeline run has rejection cycles (FAIL → fix → PASS), intermediate artifacts are lost. The Verify agent correctly deletes previous reports before writing fresh ones — this ensures write independence across rounds. But the FAIL-round verify report, its companion YAML, and the pre-fix build report are gone by the time `artifact save` runs. The proof chain entry records `rejection_cycles` count and `previous_failures` summaries, but the full artifacts are permanently lost.",
+    "route": "/docs/proof/rejection-artifact-preservation"
+  },
+  {
+    "type": "proof",
+    "title": "worktrees-v2-timing-danger-prune — Worktrees V2 — Phase Timing + Danger Map + Prune",
+    "description": "V1 proved worktree isolation works — the trust model is enforced physically. But Build enters the worktree blind: no knowledge of which files have caused trouble before, and the proof chain is just a record nobody reads at build time. Meanwhile, phase timing lies — it measures gaps between artifact saves (which include developer idle time, sometimes days) instead of actual phase durations. And health display is missing the plan phase entirely.",
+    "route": "/docs/proof/worktrees-v2-timing-danger-prune"
+  },
+  {
+    "type": "proof",
+    "title": "website-lift — Website Lift",
+    "description": "Replace the throwaway `website/` prototype with the production-quality website that exists at `/Users/rsmith/Projects/anatomia_project/anatomia-website/`. Wire the proof feed to live data from the GitHub API. Ensure CI continues to work without the website blocking CLI releases.",
+    "route": "/docs/proof/website-lift"
+  },
+  {
+    "type": "proof",
+    "title": "agent-dashboard-p1 — Agent Dashboard Phase 1",
+    "description": "Agent model configuration requires hand-editing markdown frontmatter — open a file, find `model:`, know the exact identifier, save. Six agents means six manual edits. `ana agents` currently shows name, model, description and nothing else. The user wants CLI-driven model configuration and visibility into what each agent costs in context characters.",
+    "route": "/docs/proof/agent-dashboard-p1"
+  },
+  {
+    "type": "proof",
+    "title": "website-visual-fidelity — Website Visual Fidelity",
+    "description": "Fix 13 visual regressions between the locked handoff HTML and the shipped website. Every item was validated against both the handoff source (`Anatomia Landing Refresh handoff.html`) and the live implementation. The site is live at anatomia.dev — these differences are visible to anyone comparing the design reference.",
+    "route": "/docs/proof/website-visual-fidelity"
+  },
+  {
+    "type": "proof",
+    "title": "website-dead-links — Dead Links & Missing Pages",
+    "description": "Eliminate every dead link on the site, unify navigation across all pages, and build the 5 missing pages that the footer promises. A verification product with dead links is a credibility failure — every `href=\"#\"`, every 404, every anchor that scrolls nowhere undermines the core message. The user wants zero dead links, consistent nav, and every footer link resolving to a real destination.",
+    "route": "/docs/proof/website-dead-links"
+  },
+  {
+    "type": "proof",
+    "title": "website-production-infra — Website Production Infrastructure",
+    "description": "Wire the website to real data, add analytics, add CI coverage, and create OG images. After Scopes A (visual fidelity) and B (dead links) ship, the site looks right and every link works. This scope makes it operationally real — live version numbers, real commit hashes, traffic visibility, social sharing previews, and CI that catches regressions.",
+    "route": "/docs/proof/website-production-infra"
+  },
+  {
+    "type": "proof",
+    "title": "phase-timing-fix — Fix Pipeline Phase Timing",
+    "description": "Pipeline phase timing is structurally broken. Three bugs produce incorrect or missing timestamps for Plan and Verify phases. The user wants accurate phase duration measurements across all pipeline stages so proof chain entries reflect real session times, not artifact-gap estimates.",
+    "route": "/docs/proof/phase-timing-fix"
+  },
+  {
+    "type": "proof",
+    "title": "website-direct-polish — Website Direct Polish",
+    "description": "Fix 12 visual and copy regressions found during post-merge review of the live site against the handoff HTML. These are the gap between \"it builds\" and \"it matches the design.\" The pricing frame is the most visible — it has a static CSS border instead of letting the TetrisSnake canvas be the border, and the content is left-aligned instead of centered. The footer tagline font is missing letter-spacing, the commit pill has a visible border that shouldn't be there, the proof feed copy promises interactivity that was removed, and the nav is taller than designed.",
+    "route": "/docs/proof/website-direct-polish"
+  },
+  {
+    "type": "proof",
+    "title": "ship-log-polish — Ship Log Polish",
+    "description": "The ship log on anatomia.dev calls pipeline runs \"commits,\" displays \"new\" as the tag for features (meaningless), and links to GitHub commits as the source of truth. A verification product whose marketing display is unverified. Fix the copy, add explicit `kind` classification to the proof chain so tags come from data instead of slug heuristics, and make the website read it.",
+    "route": "/docs/proof/ship-log-polish"
+  },
+  {
+    "type": "proof",
+    "title": "test-suite-hygiene — Test Suite Hygiene",
+    "description": "Clean the edges of a fundamentally sound 2000+ test suite. Over 64 pipeline runs, tests have accumulated that don't test behavior: source-reading tests that grep `.ts` files for strings, archaeological tests verifying deleted code stays deleted, mislabeled tests whose names contradict their assertions, weak assertions using `toBeDefined()` on deterministic fields, and dead test helper exports. The suite passes — but passing means less when some tests assert nothing meaningful. This is a hygiene pass, not a rewrite.",
+    "route": "/docs/proof/test-suite-hygiene"
+  },
+  {
+    "type": "proof",
+    "title": "website-nav-copy-polish — Website nav, scroll targets, compat icons, and copy accuracy",
+    "description": "Navigation links on the marketing site scroll to wrong positions (too much whitespace above content), Install buttons point to `/#pricing` instead of the npm package page, the compat sections use placeholder letter-circles instead of real brand icons, and the About/Contact pages contain inaccurate information (wrong city, false headcount claims). Fix all of it in one pass.",
+    "route": "/docs/proof/website-nav-copy-polish"
+  },
+  {
+    "type": "proof",
+    "title": "worktree-artifact-cleanup — Worktree Artifact Path Mismatch — Prevention and Cleanup",
+    "description": "Build and Verify agents run in worktrees but Claude Code's Write tool resolves absolute paths against the main tree. The agent writes `build_report.md` to the main tree. `artifact save` detects this but errors with manual recovery instructions instead of fixing it, leaving a stale copy on main. When `work complete` pulls the merged PR, git refuses because the untracked file would be overwritten. In re-build scenarios (verify FAIL, fix, new artifacts), the stale copy diverges from the PR content, and the existing content-match auto-clean (`be3374f`) can't help.",
+    "route": "/docs/proof/worktree-artifact-cleanup"
+  },
+  {
+    "type": "proof",
+    "title": "ci-artifact-path-ignore — CI path filtering for artifact-only commits",
+    "description": "Pipeline artifact saves (scope, plan, spec, contract, build-report, verify-report) and work completions push to main but only touch `.ana/` files. Every push triggers the full GitHub Actions test matrix — 6 test runners + 1 website check — against completely unchanged source code. 36% of the last 50 CI runs (18 of 50) were triggered by artifact-only commits. The pre-commit hook already skips these correctly; GitHub Actions does not.",
+    "route": "/docs/proof/ci-artifact-path-ignore"
+  },
+  {
+    "type": "proof",
+    "title": "website-mobile-polish — Website Mobile Polish + Marquee Overhaul",
+    "description": "The website's mobile experience is broken in several visible ways: the ship log header text overlaps and garbles, the hamburger nav has no opaque background so content bleeds through, the hero meta row wraps awkwardly, ship log expanded rows lose all proof signal on narrow screens, the compatibility marquee has placeholder icons and a stale tool list, and the \"Full proof chain\" link is a 404. These are all on the primary marketing surface. Fix them, and do it responsively across phone, tablet, and desktop — not just \"desktop and mobile.\"",
+    "route": "/docs/proof/website-mobile-polish"
+  },
+  {
+    "type": "proof",
+    "title": "scope-validation-integrity — Scope Validation Integrity",
+    "description": "Agents write scope fields inconsistently and nothing catches it. Kind was added to the scope template and wired through the CLI — but 1 of 4 post-fix scopes omitted it entirely, 1 wrote an invalid compound value (`fix + chore`), and all 4 produced MISSING in the proof chain because the CLI binary was never rebuilt after the fix merged. The same pattern applies to Size (10 of 70 scopes used non-standard values like `small-medium` or `medium (with explanation)`) and Multi-phase (4 of 70 had trailing context that would break strict parsing). The validator at `ana artifact save scope` checks ACs, Structural Analog, and Intent — but doesn't check any Complexity Assessment fields. Agents populate what they want, the pipeline accepts it silently, and data is lost downstream.",
+    "route": "/docs/proof/scope-validation-integrity"
+  },
+  {
+    "type": "proof",
+    "title": "commit-work-start-timestamps — Commit timestamps written by work start",
+    "description": "`ana work start` writes timestamps to `.saves.json` on the artifact branch without committing, creating dirty tracked state that blocks `git pull --rebase` for concurrent pipeline work. The user wants this fixed — it caused a confirmed failure during concurrent work on 2026-05-07 and is a recurring friction source. Secondary: comments and messages in the affected files say \"main\" when they mean \"artifact branch,\" which is misleading for customers using a different artifact branch name.",
+    "route": "/docs/proof/commit-work-start-timestamps"
+  },
+  {
+    "type": "proof",
+    "title": "work-complete-merge — work complete --merge flag for structured PR merging",
+    "description": "The pipeline manages every step from scope to PR creation, but merge is unmanaged. When developers delegate the merge to an agent (which they inevitably do), the agent improvises with raw `gh` commands — using `--delete-branch` (worktree conflict), `--squash` (opinionated), `--admin` (bypasses branch protection) — producing confusing errors and inconsistent state. Observed live: the verify agent hit every one of these failure modes in sequence when asked to merge PR #95. The user wants a structured merge path that agents can use without improvising.",
+    "route": "/docs/proof/work-complete-merge"
+  },
+  {
+    "type": "proof",
+    "title": "section4-system-bento — Section 4 — The System (replace Bento)",
+    "description": "Replace the existing Bento section with a new \"System\" section that shows what `ana init` ships into a repo: agents, skills, context files, and the CLI. The design is a four-drawer accordion with file trees and a man-page CLI mock. The handoff HTML is approved and responsive-tested at 375/768/1280. This scope covers re-engineering it into modular Next.js components following existing website patterns, fixing factual errors in the handoff, and making key data (version, command count) maintainable.",
+    "route": "/docs/proof/section4-system-bento"
+  },
+  {
+    "type": "proof",
+    "title": "scoped-cli-commits — CLI commits scoped to intended paths",
+    "description": "Every `git commit` in the CLI commits the entire staging index, not the specific files it staged. Pre-existing staged changes from other sessions, manual operations, or concurrent pipeline work leak into unrelated commits. Observed: `work complete commit-work-start-timestamps` (commit `bb2ee1f`) swept `polish-scan-copy`'s staged deletions into its commit — files from a different work item deleted by a different terminal session. The user wants every CLI commit to contain exactly what was intended.",
+    "route": "/docs/proof/scoped-cli-commits"
+  },
+  {
+    "type": "proof",
+    "title": "init-scan-quality — Init must surface scan quality and pipeline readiness",
+    "description": "`ana init` tells users what it found but never what it missed. Tree-sitter failures are silently swallowed — the user sees \"Analysis complete\" with a checkmark and walks away thinking they got a full deep scan when they got surface-tier only. Init also never checks whether the tools needed for the pipeline (`gh`, `git user.name`/`user.email`) are available, leaving users to discover gaps at the worst time — mid-pipeline, after investing real work. The user wants init to be honest about scan quality and upfront about what the pipeline needs.",
+    "route": "/docs/proof/init-scan-quality"
+  },
+  {
+    "type": "proof",
+    "title": "version-awareness — Version Awareness Notifications",
+    "description": "Users have zero visibility into version drift. Two silent failures happen today:",
+    "route": "/docs/proof/version-awareness"
+  },
+  {
+    "type": "proof",
+    "title": "configurability-improvements — Configurability Improvements",
+    "description": "The configurability story is incomplete. Users can't safely store custom config (re-init silently strips unknown keys), the verify agent's skill loading is inconsistent with every other pipeline agent, and there's no CLI command for reading or writing ana.json. These three changes give Anatomia a real configurability surface — user data is preserved, the agent system is internally consistent, and configuration has a proper CLI interface. This also unblocks the docs site configurability guide, which currently has to describe \"edit JSON by hand.\"",
+    "route": "/docs/proof/configurability-improvements"
+  },
+  {
+    "type": "proof",
+    "title": "fix-cycle-stage-detection — Fix cycle stage detection breaks on multi-phase builds",
+    "description": "After a FAIL verification on a multi-phase build, the fix cycle gets permanently stuck at `needs-fixes` even when the fix build completes successfully. AnaVerify reports \"nothing to verify.\" The pipeline is dead until a human manually intervenes. This happened on `configurability-improvements` — the first real multi-phase build to go through a FAIL-fix-re-verify cycle. It will happen to every customer who hits a verify rejection on any multi-phase work item, and the single-spec path has the same underlying fragility.",
+    "route": "/docs/proof/fix-cycle-stage-detection"
+  },
+  {
+    "type": "proof",
+    "title": "add-milestone-kind — Add milestone kind",
+    "description": "The kind system classifies work as `feature`, `fix`, or `chore`. These three values are accurate but incomplete — there's no way to distinguish routine feature work from significant new capabilities. A filter button added to an existing page and an entirely new authentication system are both \"feature.\" This matters because kind flows into the proof chain, the website ship log, and will soon drive branch prefix selection (Scope 2: kind-aware branch prefixes). A fourth kind, `milestone`, gives Ana and developers a way to signal \"this is announcement-worthy\" — enabling downstream consumers to surface significant work differently from routine work.",
+    "route": "/docs/proof/add-milestone-kind"
+  },
+  {
+    "type": "proof",
+    "title": "kind-aware-branch-prefixes — Kind-aware branch prefixes",
+    "description": "Branch prefixes are static — one string for all work items. But the system already knows the work type: Ana classifies every scope as `feature`, `fix`, `chore`, or `milestone` (after Scope 1 ships). Teams with git conventions like `fix/`, `feature/`, `chore/` can't express those conventions through Anatomia. The branch always gets whatever single prefix is configured, regardless of what the work actually is. This scope makes `branchPrefix` kind-aware: a map from kind to prefix, so `fix/auth-timeout` and `feature/add-export` happen automatically based on what Ana already knows.",
+    "route": "/docs/proof/kind-aware-branch-prefixes"
+  },
+  {
+    "type": "proof",
+    "title": "worktree-freshness-detection — Worktree freshness detection",
+    "description": "Worktrees don't know when they're behind main. When multiple pipelines run concurrently — or when main advances for any reason while a worktree is active — the build and verification happen against stale code. The developer discovers this only at merge time (\"branch is behind\"), after wasting an entire build+verify cycle. Worse: if the PR merges cleanly despite being behind (no conflicting files), the proof chain records a PASS that was verified against different code than what shipped. The proof is weak and nobody knows.",
+    "route": "/docs/proof/worktree-freshness-detection"
+  },
+  {
+    "type": "proof",
+    "title": "fix-worktree-branch-parsing — Fix worktree branch parsing",
+    "description": "`git branch -a` marks branches checked out in linked worktrees with a `+ ` prefix. `getWorkBranch()` at `work.ts:144` strips the `* ` prefix (current branch) but not the `+ ` prefix (worktree branch). The result: when a worktree is active, `getWorkBranch` returns `\"+ feature/slug\"` — an invalid git ref — to every caller. Build reports become invisible, pipeline stage detection breaks, `--merge` fails, and `work status` shows wrong stages for every work item with an active worktree.",
+    "route": "/docs/proof/fix-worktree-branch-parsing"
+  },
+  {
+    "type": "proof",
+    "title": "hygiene-debt-cleanup — Hygiene debt cleanup",
+    "description": "Three independent sources of recurring development noise — git pull warnings during `work complete`, Dependabot false positives on test fixtures, and transitive dependency vulnerability alerts. All share the same root cause: incremental maintenance that wasn't done, accumulating into confusing signals. The user wants to clean house — eliminate the noise permanently with minimal regression risk.",
+    "route": "/docs/proof/hygiene-debt-cleanup"
+  },
+  {
+    "type": "proof",
+    "title": "docs-infrastructure — Docs Infrastructure — Fumadocs MDX Pipeline",
+    "description": "Stand up the Fumadocs MDX pipeline inside the existing Next.js 16 website so that one test page renders at `/docs`. This is the foundation for the entire anaDocs production site — 37 routes, 78+ proof pages, 6 guides, 7 concept pages. Nothing renders until this infrastructure works. The old quickstart-style `/docs` page is replaced.",
+    "route": "/docs/proof/docs-infrastructure"
+  },
+  {
+    "type": "proof",
+    "title": "docs-data-pipeline — Docs Data Pipeline",
+    "description": "Every dynamic value on the docs site needs a source, an extraction path, and a typed loader. The docs site currently has no data — proof counts, agent names, command lists, version numbers are all absent. This scope builds the pre-build extraction pipeline that reads source files from the monorepo, writes typed JSON to `website/data/docs/`, and exposes typed loader functions that page components import. Without this, Scopes 3-6 are blocked.",
+    "route": "/docs/proof/docs-data-pipeline"
+  },
+  {
+    "type": "proof",
+    "title": "docs-shell — Docs Shell (Layout + Shared Components)",
+    "description": "Build the complete docs UI shell — navbar, sidebar, right rail, layout grid, and all shared content components. Replace the Scope 1 placeholder layout with the production docs interface matching the supermock pixel-for-pixel. After this scope, every subsequent scope (content pages, dynamic pages, search) just fills in content. The shell IS the visual foundation.",
+    "route": "/docs/proof/docs-shell"
+  },
+  {
+    "type": "proof",
+    "title": "content-pages — Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering",
+    "description": "Ship all 16 editorial content pages for anaDocs: the overview (custom page.tsx), quickstart (MDX), 7 concept pages (MDX with locked copy from the supermock), and 6 guide pages (MDX with rewritten copy from the supermock session). Fix three Scope 3 bugs that affect every page render: responsive breakpoint dead zone (D15), GitHub URL wrong org (D20), and Callout missing label text (D19). After this scope, every editorial page on the docs site is live with correct sidebar navigation, TOC, and dynamic values from data loaders.",
+    "route": "/docs/proof/content-pages"
+  },
+  {
+    "type": "proof",
+    "title": "dynamic-pages — Dynamic Pages — Reference & Proof Chain",
+    "description": "Build all data-driven pages for the anaDocs production site — the reference section (CLI commands, agent templates, skill files, context files) and the proof chain section (explorer with filters/sorting, detail pages for all 89+ proofs). These are the product's signature pages: the proof chain is the \"show, don't tell\" that no competitor has.",
+    "route": "/docs/proof/dynamic-pages"
+  },
+  {
+    "type": "agent",
+    "title": "ana-build",
+    "description": "Builder. Implements spec, writes tests tagged to contract, produces build report.",
+    "route": "/docs/reference/agents/ana-build"
+  },
+  {
+    "type": "agent",
+    "title": "ana-learn",
+    "description": "Quality gardener. Tends the proof chain between cycles. Promotes findings to skill rules.",
+    "route": "/docs/reference/agents/ana-learn"
+  },
+  {
+    "type": "agent",
+    "title": "ana-plan",
+    "description": "Architect. Reads scope, writes spec + sealed contract.",
+    "route": "/docs/reference/agents/ana-plan"
+  },
+  {
+    "type": "agent",
+    "title": "ana-setup",
+    "description": "Calibrates project knowledge during init. Guess-and-confirm pattern.",
+    "route": "/docs/reference/agents/ana-setup"
+  },
+  {
+    "type": "agent",
+    "title": "ana-verify",
+    "description": "Fault-finder. Independent verification against the sealed contract. Never reads the build report.",
+    "route": "/docs/reference/agents/ana-verify"
+  },
+  {
+    "type": "agent",
+    "title": "ana",
+    "description": "Scoper, navigator, advisor. Understands intent, bounds scope, identifies tradeoffs.",
+    "route": "/docs/reference/agents/ana"
+  },
+  {
+    "type": "skill",
+    "title": "ai-patterns",
+    "description": "Invoke when building features that call LLM APIs, handling AI responses, managing prompts, or integrating AI SDKs. Contains error handling, security, prompt management, and observability patterns.",
+    "route": "/docs/reference/skills/ai-patterns"
+  },
+  {
+    "type": "skill",
+    "title": "api-patterns",
+    "description": "Invoke when implementing API routes, request handling, middleware, or error responses. Contains validation, error format, route architecture, and authorization patterns.",
+    "route": "/docs/reference/skills/api-patterns"
+  },
+  {
+    "type": "skill",
+    "title": "coding-standards",
+    "description": "Invoke when implementing features, writing code, or reviewing code quality. Contains project-specific naming conventions, error handling patterns, import style, and deviations from standard practices.",
+    "route": "/docs/reference/skills/coding-standards"
+  },
+  {
+    "type": "skill",
+    "title": "data-access",
+    "description": "Invoke when working with database queries, schema changes, migrations, or data models. Contains project-specific ORM conventions and data access patterns.",
+    "route": "/docs/reference/skills/data-access"
+  },
+  {
+    "type": "skill",
+    "title": "deployment",
+    "description": "Invoke when working on deployment configuration, CI/CD pipelines, environment variables, or release processes. Contains project-specific deploy platform conventions.",
+    "route": "/docs/reference/skills/deployment"
+  },
+  {
+    "type": "skill",
+    "title": "git-workflow",
+    "description": "Invoke before any git operations — branching, committing, merging, or creating pull requests. Contains project-specific branch naming, commit format, and merge strategy.",
+    "route": "/docs/reference/skills/git-workflow"
+  },
+  {
+    "type": "skill",
+    "title": "testing-standards",
+    "description": "Invoke when writing tests, reviewing test quality, or setting up test infrastructure. Contains project-specific testing framework conventions, fixture patterns, and coverage expectations.",
+    "route": "/docs/reference/skills/testing-standards"
+  },
+  {
+    "type": "skill",
+    "title": "troubleshooting",
+    "description": "Invoke when debugging failures, diagnosing unexpected behavior, or investigating test failures. Contains project-specific failure modes, diagnostic workflows, and known issues.",
+    "route": "/docs/reference/skills/troubleshooting"
+  }
+]

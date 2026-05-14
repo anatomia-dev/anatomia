@@ -32,7 +32,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   // Lazy-load search index on first open
   useEffect(() => {
     if (open && !loaded) {
-      fetch("/data/docs/search-index.json")
+      fetch("/search-index.json")
         .then((res) => res.json())
         .then((data: SearchEntry[]) => {
           setEntries(data);
