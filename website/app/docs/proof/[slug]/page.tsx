@@ -22,7 +22,7 @@ function formatDuration(minutes: number): string {
 }
 
 function buildProofMarkdown(entry: ProofEntry): string {
-  const verdict = entry.result === "pass" ? "PASS" : "FAIL";
+  const verdict = entry.result === "PASS" ? "PASS" : "FAIL";
   const date = entry.completedAt ? new Date(entry.completedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
   const lines = [
     `# ${entry.feature} — ${verdict}`,
@@ -31,7 +31,7 @@ function buildProofMarkdown(entry: ProofEntry): string {
     `→ https://anatomia.dev/docs/proof/${entry.slug}`,
     "",
     "## Assertions",
-    ...entry.assertions.map(a => `- ${a.status === "satisfied" ? "✓" : "✗"} ${a.id}: ${a.says}`),
+    ...entry.assertions.map(a => `- ${a.status === "SATISFIED" ? "✓" : "✗"} ${a.id}: ${a.says}`),
     "",
     "## Findings",
     ...entry.findings.map(f => `- [${f.severity}] ${f.summary}`),
