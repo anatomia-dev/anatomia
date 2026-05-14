@@ -15532,7 +15532,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "website-visual-fidelity-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: DPR cap at 2 (TetrisSnake.tsx:50) is standard canvas performance practice. 3x DPR means 9x pixel count — capping at 2 prevents performance issues on high-DPR devices. Visual difference between 2x and 3x rendering on a decorative animation is imperceptible.",
+          "closed_at": "2026-05-14T16:47:12.388Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

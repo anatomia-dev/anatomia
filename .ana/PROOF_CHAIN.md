@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 266 active · 117 lessons · 0 promoted · 206 closed
+96 runs · 265 active · 117 lessons · 0 promoted · 207 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 266 total)
+## Active Findings (30 shown of 265 total)
 
 ### packages/cli/src/commands/artifact.ts
 
