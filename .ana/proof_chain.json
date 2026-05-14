@@ -11188,7 +11188,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "v1-documentation-overhaul-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: README.md and CHANGELOG.md are copied from monorepo root by prepublishOnly (package.json:53). They don't exist in packages/cli/ during development. This is the standard monorepo publish pattern — npm pack --dry-run can't verify them, and that's expected.",
+          "closed_at": "2026-05-14T16:45:49.113Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
