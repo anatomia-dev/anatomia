@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-91 runs · 276 active · 112 lessons · 0 promoted · 161 closed
+92 runs · 284 active · 113 lessons · 0 promoted · 162 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 276 total)
+## Active Findings (30 shown of 284 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,6 +33,7 @@
 
 ### website/app/docs/[...slug]/page.tsx
 
+- **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
 - **code:** Catch-all route renamed from [[...slug]] to [...slug] — not specified in spec but necessary — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/app/docs/docs.css
@@ -55,7 +56,6 @@
 ### website/components/docs/content/Callout.tsx
 
 - **code:** Callout label stores titlecase (Rule/Note), relies on CSS text-transform for uppercase display — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-- **code:** Callout label renders 'Rule' with CSS uppercase — contract A020 expects literal 'RULE'. Visually correct but DOM text differs from contract value. — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/components/docs/content/DocsGrid.tsx
 
@@ -65,13 +65,15 @@
 
 - **code:** ResourceStrip uses <a> for Manifesto link (internal anatomia.dev URL) instead of Next.js Link — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
-### website/components/docs/content/TroubleCard.tsx
-
-- **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
 ### website/components/docs/layout/RightRail.tsx
 
+- **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
+- **code:** Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context — *Docs Search + Polish*
 - **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
+
+### website/components/docs/layout/SearchOverlay.tsx
+
+- **code:** Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side — *Docs Search + Polish*
 
 ### website/components/docs/proof/FindingsList.tsx
 
@@ -91,32 +93,18 @@
 - **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
 - **code:** ProofExplorer inline styles heavily duplicated across 7 column headers — same 9-property object repeated per th element — *Dynamic Pages — Reference & Proof Chain*
 
-### website/content/docs/concepts/context.mdx
-
-- **code:** Context page links to /docs/reference/context twice — page doesn't exist and isn't scoped — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
 ### website/content/docs/concepts/pipeline.mdx
 
-- **code:** Dynamic value comments use {/* Dynamic: update on data change */} but there's no grep-friendly tag to find them at update time — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
-### website/content/docs/concepts/skills.mdx
-
-- **code:** Skills page inline-links 8 individual skill reference pages that don't exist and aren't scoped in any phase — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
-### website/content/docs/guides/using-ana-setup.mdx
-
-- **code:** NextCards link to unbuilt reference/proof pages — will 404 until Scope 5 — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
-### website/content/docs/guides/verifying-changes.mdx
-
-- **code:** Stale dynamic-value comment in verifying-changes and troubleshooting — says 17 of 78 proofs but real count may differ — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
+- **code:** pipeline.mdx rejectionProofCount stale (17 vs 19) — regex marker placement broken, extra text between value and ana:dynamic comment — *Docs Search + Polish*
 
 ### website/scripts/extract-docs-data.ts
 
+- **code:** LLMS_SECTIONS constant declared but never used in extract-docs-data.ts — *Docs Search + Polish*
+- **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
+- **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Variable shadowing in extractSkillTemplates — inner 'content' (line 584) shadows outer 'content' (line 566), latent confusion risk — *Dynamic Pages — Reference & Proof Chain*
 
 ### General
 
 - **test:** No unit tests for any new components — build verification is pnpm build only — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-- **code:** NextCards link to 6 pages that don't exist yet (guides, reference, proof) — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 

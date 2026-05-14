@@ -24213,6 +24213,406 @@
         "commit_count": 0,
         "base_commit": "1bf2899ea7d60688ffde80cb2692ac3f5c7e4208"
       }
+    },
+    {
+      "slug": "docs-search-polish",
+      "feature": "Docs Search + Polish",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 32,
+        "satisfied": 31,
+        "unsatisfied": 1,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Pressing Cmd+K opens the search overlay",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Typing in the search box filters results by relevance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Search results are grouped into Pages, Commands, and Proofs sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Pressing Escape closes the search overlay",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Arrow keys move the selection highlight through search results",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Selection clamps at boundaries instead of wrapping",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Exact title matches rank above partial title matches",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Search index includes more than 100 entries across all content types",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Search index contains MDX pages, CLI commands, proof entries, agents, and skills",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Search modal reduces padding on small screens for keyboard clearance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Claude protocol links are hidden on mobile screens",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Copy as Markdown writes structured content to the clipboard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Proof page copy produces a sharing template with verdict, stats, and URL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Open in Claude constructs a claude:// protocol URL for content pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Proof pages use an enriched grading prompt that explains what Anatomia is",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Open in ChatGPT constructs a chatgpt.com URL with the prompt",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Download artifacts link is removed from proof detail pages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Every page route with a right rail passes an editUrl prop",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "llms.txt is generated in the public directory after build",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "llms.txt contains the project name and navigation sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "llms-full.txt contains concatenated page content with JSX stripped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Build fails when an MDX file contains a broken internal link",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Extraction script validates that proof entries exist before proceeding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Extraction script validates that commands exist before proceeding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "ProofCount component renders the current number of proof entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "RejectionCount component renders the count of proofs with rejection cycles",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "MedianTimings renders computed median values from proof data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Median computation filters out zero-valued stages before calculating",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Dynamic components are registered in the catch-all mdxComponents map",
+          "status": "UNSATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Website builds successfully with all 124+ pages after all changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "No CSS changes appear in globals.css — all styles are in docs.css",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "Search overlay CSS is scoped under docs-layout class",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 22,
+        "met": 19
+      },
+      "timing": {
+        "total_minutes": 75,
+        "think": 5,
+        "plan": 10,
+        "build": 31,
+        "verify": 8
+      },
+      "hashes": {
+        "scope": "sha256:083fd4906eb9449ddc4bbc293ea2f2dc3f1448191b5f2b7a622b30d2442e8a8a",
+        "contract": "sha256:421d1001d2062b92c51920256a26cf98b618dc07ba2cd8dbb0e8d4a6a5b12447",
+        "plan": "sha256:eb4579777e9e0ee1e48399e8118cce90abd5534b29d012366b8cbd728f9d949f",
+        "spec": "sha256:39232e851ba395b06b8a372bc3996309f4280fca1d0c669aa7e83e89c849068c",
+        "build-report": "sha256:0813f46099072b71a6d83ab8c1cc208d72a735aade2fa6b51d6eb3167b33a7f1",
+        "build-data": "sha256:7f35c1a196bdcd7928a6396557d0d8300bd41246394de9fa158b0d933f153a8a",
+        "verify-report": "sha256:db54716137dcca2802c7ecc0a8e4e5369d0ca91e3437bc2d223a58502acd9639",
+        "verify-data": "sha256:46f8130f4d3950437d131a0fcbeb5beca98e742781239948e5d71a8fc31cef66"
+      },
+      "completed_at": "2026-05-14T03:52:55.028Z",
+      "modules_touched": [
+        "pnpm-lock.yaml",
+        "website/app/docs/[...slug]/page.tsx",
+        "website/app/docs/docs.css",
+        "website/app/docs/proof/[slug]/page.tsx",
+        "website/app/docs/reference/agents/[name]/page.tsx",
+        "website/app/docs/reference/agents/page.tsx",
+        "website/app/docs/reference/cli/page.tsx",
+        "website/app/docs/reference/context/page.tsx",
+        "website/app/docs/reference/skills/[name]/page.tsx",
+        "website/app/docs/reference/skills/page.tsx",
+        "website/components/docs/content/DynamicStat.tsx",
+        "website/components/docs/content/NextCards.tsx",
+        "website/components/docs/layout/DocsNav.tsx",
+        "website/components/docs/layout/RightRail.tsx",
+        "website/components/docs/layout/SearchOverlay.tsx",
+        "website/components/docs/layout/SearchTrigger.tsx",
+        "website/content/docs/concepts/pipeline.mdx",
+        "website/content/docs/concepts/skills.mdx",
+        "website/content/docs/guides/reading-a-proof.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx",
+        "website/content/docs/guides/verifying-changes.mdx",
+        "website/content/docs/start.mdx",
+        "website/lib/docs-data/index.ts",
+        "website/lib/docs-data/proofs.ts",
+        "website/lib/docs-data/stripJsx.ts",
+        "website/public/llms-full.txt",
+        "website/public/llms.txt",
+        "website/scripts/extract-docs-data.ts"
+      ],
+      "scope_summary": "The docs site has 124 pages rendering across 37 routes with 171/171 contract assertions passing (Scopes 1-5). But it can't ship: search is a disabled button, the AI surface is placeholder links pointing at `#`, 10 hardcoded numbers are already stale (78 → 90 proofs), and there's no build safety net for link rot. This scope makes the site production-ready — users can find content, the AI links work, the numbers stay current, and the build catches broken links.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "DynamicStat.tsx is dead code — 8 exported components never imported or registered anywhere",
+          "file": "website/components/docs/content/DynamicStat.tsx",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A025",
+            "A026",
+            "A027",
+            "A029"
+          ],
+          "id": "docs-search-polish-C1",
+          "status": "closed",
+          "closed_reason": "file removed",
+          "closed_at": "2026-05-14T03:52:55.087Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead",
+          "file": "website/app/docs/[...slug]/page.tsx",
+          "anchor": null,
+          "line": 21,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A029"
+          ],
+          "id": "docs-search-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "pipeline.mdx rejectionProofCount stale (17 vs 19) — regex marker placement broken, extra text between value and ana:dynamic comment",
+          "file": "website/content/docs/concepts/pipeline.mdx",
+          "anchor": null,
+          "line": 24,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "docs-search-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "LLMS_SECTIONS constant declared but never used in extract-docs-data.ts",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 834,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "docs-search-polish-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 865,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "docs-search-polish-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic",
+          "file": "website/components/docs/layout/RightRail.tsx",
+          "anchor": null,
+          "line": 36,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "docs-search-polish-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 802,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "docs-search-polish-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Clipboard API failure silently swallowed — no user feedback when writeText fails on insecure context",
+          "file": "website/components/docs/layout/RightRail.tsx",
+          "anchor": null,
+          "line": 64,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-search-polish-C8",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Search index fetched on every overlay open without cache invalidation awareness — 69KB JSON loaded client-side",
+          "file": "website/components/docs/layout/SearchOverlay.tsx",
+          "anchor": null,
+          "line": 33,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-search-polish-C9",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A025-A027 specify component-based rendering but builder used build-time regex replacement — functionally equivalent but architecturally different",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A025",
+            "A026",
+            "A027"
+          ],
+          "id": "docs-search-polish-C10",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "stripJsx logic duplicated between extraction script and website/lib",
+          "file": "website/scripts/extract-docs-data.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "DynamicStat components exist but unused in MDX due to fumadocs-mdx limitation",
+          "file": "website/components/docs/content/DynamicStat.tsx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Search overlay lacks unit tests — keyboard nav, ranking, grouping untested",
+          "file": "website/components/docs/layout/SearchOverlay.tsx",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Prebuild MDX text replacement relies on fragile regex patterns around ana:dynamic markers",
+          "file": "website/scripts/extract-docs-data.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing CLI test failures (7 files, 283 tests) on Node v25.9.0",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-14T01:26:53.730Z",
+        "completed_at": "2026-05-14T03:52:55.024Z",
+        "commit_count": 0,
+        "base_commit": "50e9d05f7ca7ce30f1007a3d697798498a23958c"
+      }
     }
   ],
   "schema": 1
