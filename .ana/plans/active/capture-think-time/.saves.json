@@ -35,5 +35,20 @@
     "packages/cli/templates/.claude/agents/ana.md",
     "packages/cli/tests/commands/work.test.ts",
     "pnpm-lock.yaml"
-  ]
+  ],
+  "verify_started_at": "2026-05-14T02:45:25.900Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:7339ff7c7b13a794ccbacb4944362e51a0e86732818f8989356f212f64b15b52",
+    "run_at": "2026-05-14T02:50:27.000Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-14T02:50:27.038Z",
+    "hash": "sha256:b40f01e2d85d36abfe59e4af6361487c520ca873a7f22ec14a5d1b9468c18917"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-14T02:50:27.039Z",
+    "hash": "sha256:ef3e03022afbfaa6b5801bc51031b885df56bf23fe90e5e9a514ad81b1293538"
+  }
 }
