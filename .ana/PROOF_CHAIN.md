@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 137 active · 117 lessons · 0 promoted · 335 closed
+96 runs · 136 active · 117 lessons · 0 promoted · 336 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 137 total)
+## Active Findings (30 shown of 136 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -58,10 +58,6 @@
 
 - **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
 
-### website/components/docs/content/ResourceStrip.tsx
-
-- **code:** ResourceStrip uses <a> for Manifesto link (internal anatomia.dev URL) instead of Next.js Link — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
 ### website/components/docs/content/TroubleCard.tsx
 
 - **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
@@ -89,6 +85,10 @@
 
 - **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
 - **code:** ProofExplorer inline styles heavily duplicated across 7 column headers — same 9-property object repeated per th element — *Dynamic Pages — Reference & Proof Chain*
+
+### website/components/docs/providers/PlatformProvider.tsx
+
+- **code:** Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule — *Docs Shell (Layout + Shared Components)*
 
 ### website/content/docs/concepts/pipeline.mdx
 

@@ -23655,7 +23655,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "content-pages-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional design: ResourceStrip presents all 3 resources as outbound links (external: true, ↗ arrows in names). The Manifesto at anatomia.dev/manifesto IS a Next.js route, but the component treats it as an external resource — consistent with the other two (GitHub, npm). Using <a> for same-domain URLs is acceptable when the UX intent is 'outbound resource' not 'internal navigation.' The layout boundary crossing (docs → marketing) means Link produces a similar navigation experience.",
+          "closed_at": "2026-05-14T21:51:38.898Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
