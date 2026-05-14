@@ -23178,7 +23178,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "docs-shell-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Superseded: data-hide-rail from spec was replaced by the docs-content-full CSS class approach. The proof-explorer page (docs/proof/page.tsx) uses className='docs-content-full' to go full-width without the right rail — verified working (dynamic-pages-C3 closed this session). Different mechanism, same result. The spec's approach was a suggestion, not a requirement.",
+          "closed_at": "2026-05-14T19:43:27.279Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
