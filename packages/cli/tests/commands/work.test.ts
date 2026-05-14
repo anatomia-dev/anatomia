@@ -4586,11 +4586,17 @@ describe('session marker and think-time capture', () => {
     });
 
     // @ana A003
-    it('returns null when ps output is invalid', () => {
-      // We can't easily make ps return invalid output, but we can verify
-      // the function handles the real process tree without error
-      const pid = getClaudePid();
-      expect(pid === null || (typeof pid === 'number' && pid > 0)).toBe(true);
+    it('returns null when ps output is not a valid number', () => {
+      // PID 1 (init/launchd) has parent PID 0. ps returns "0" which is valid
+      // output but triggers the pid <= 0 guard in getClaudePid.
+      const originalPpid = process.ppid;
+      Object.defineProperty(process, 'ppid', { value: 1, writable: true, configurable: true });
+      try {
+        const pid = getClaudePid();
+        expect(pid).toBeNull();
+      } finally {
+        Object.defineProperty(process, 'ppid', { value: originalPpid, writable: true, configurable: true });
+      }
     });
   });
 
