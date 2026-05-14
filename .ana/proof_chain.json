@@ -17302,7 +17302,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "test-suite-hygiene-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: toBeTruthy at proof.test.ts:744 guards against JSON.parse returning a falsy value (e.g., null, 0) before the non-null assertion on line 745. While unlikely for proof command output, the guard is protective — without it, a null parse result would cause a runtime error at parsed!['command']. The redundancy is a safety net, not waste.",
+          "closed_at": "2026-05-14T16:55:03.610Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
