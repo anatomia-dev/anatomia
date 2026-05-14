@@ -21856,7 +21856,10 @@
             "A011"
           ],
           "id": "worktree-freshness-detection-C7",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Acceptable tradeoff: git fetch at pr.ts:179 ensures the behind-warning is accurate (shows commits on remote that need rebasing). On offline networks, git fails after DNS timeout (~5-10s) and the catch block continues silently. On hanging networks, spawnSync blocks until git times out or user Ctrl+C — but this affects all git network operations, not just ana. The fetch is best-effort and the alternative (stale behind-count from unfetched refs) produces misleading warnings.",
+          "closed_at": "2026-05-14T19:32:04.186Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
