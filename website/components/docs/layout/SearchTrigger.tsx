@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { SearchOverlay } from "./SearchOverlay";
 
 /**
@@ -77,7 +78,10 @@ export function SearchTrigger() {
           ⌘K
         </span>
       </button>
-      <SearchOverlay open={open} onClose={close} />
+      {open && createPortal(
+        <SearchOverlay open={open} onClose={close} />,
+        document.body,
+      )}
     </>
   );
 }

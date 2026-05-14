@@ -425,10 +425,10 @@
 /* -------------------------------------------------------------------
    SEARCH OVERLAY — scoped under .docs-layout
    ------------------------------------------------------------------- */
-[data-theme] .docs-layout .docs-search-overlay {
+[data-theme] .docs-search-overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 200;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
@@ -437,7 +437,7 @@
   padding-top: 120px;
 }
 
-[data-theme] .docs-layout .docs-search-modal {
+[data-theme] .docs-search-modal {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -450,7 +450,7 @@
   flex-direction: column;
 }
 
-[data-theme] .docs-layout .docs-search-input-row {
+[data-theme] .docs-search-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -458,17 +458,17 @@
   border-bottom: 1px solid var(--hairline);
 }
 
-[data-theme] .docs-layout .docs-search-results {
+[data-theme] .docs-search-results {
   overflow-y: auto;
   padding: 8px;
   flex: 1;
 }
 
-[data-theme] .docs-layout .docs-sr-group {
+[data-theme] .docs-sr-group {
   margin-bottom: 8px;
 }
 
-[data-theme] .docs-layout .docs-sr-group-label {
+[data-theme] .docs-sr-group-label {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -477,7 +477,7 @@
   padding: 6px 8px 4px;
 }
 
-[data-theme] .docs-layout .docs-sr-item {
+[data-theme] .docs-sr-item {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -492,24 +492,24 @@
   transition: background 0.1s;
 }
 
-[data-theme] .docs-layout .docs-sr-item:hover,
-[data-theme] .docs-layout .docs-sr-item.selected {
+[data-theme] .docs-sr-item:hover,
+[data-theme] .docs-sr-item.selected {
   background: var(--code-bg);
 }
 
-[data-theme] .docs-layout .docs-sr-item-title {
+[data-theme] .docs-sr-item-title {
   font-size: 13.5px;
   font-weight: 500;
   color: var(--fg);
 }
 
-[data-theme] .docs-layout .docs-sr-item-desc {
+[data-theme] .docs-sr-item-desc {
   font-size: 12px;
   color: var(--ink-60);
   line-height: 1.4;
 }
 
-[data-theme] .docs-layout .docs-sr-empty {
+[data-theme] .docs-sr-empty {
   padding: 24px 16px;
   text-align: center;
   font-size: 13px;
@@ -684,10 +684,10 @@
 /* ≤640px: compress navbar + table adjustments + search + claude links */
 @media (max-width: 640px) {
   /* Search overlay: reduce top padding, cap height for mobile keyboard */
-  [data-theme] .docs-layout .docs-search-overlay {
+  [data-theme] .docs-search-overlay {
     padding-top: 40px;
   }
-  [data-theme] .docs-layout .docs-search-modal {
+  [data-theme] .docs-search-modal {
     max-height: 70vh;
   }
 
