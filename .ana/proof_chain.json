@@ -12345,7 +12345,10 @@
             "A004"
           ],
           "id": "proof-intelligence-hardening-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in bc2167a4 — removed stale 'Write proof chain files' JSDoc line from guardFailResult at work.ts:800",
+          "closed_at": "2026-05-14T08:17:29.083Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
