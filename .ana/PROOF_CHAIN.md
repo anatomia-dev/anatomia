@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 210 active · 117 lessons · 0 promoted · 262 closed
+96 runs · 209 active · 117 lessons · 0 promoted · 263 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 210 total)
+## Active Findings (30 shown of 209 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -41,7 +41,6 @@
 
 - **test:** A002 test is tautological — verifies key absence without calling the function, not the gating conditional — *Commit hygiene checks at build-report save*
 - **test:** A017 uses toHaveProperty (existence) instead of asserting specific values — passes on any object shape — *Commit hygiene checks at build-report save*
-- **test:** A019 is type-level only — verifies ProofChainEntry accepts commit_hygiene, not that writeProofChain actually reads and writes it — *Commit hygiene checks at build-report save*
 - **test:** A024 tests the same function call as A001 — doesn't exercise saveAllArtifacts code path, just calls runCommitHygieneChecks directly — *Commit hygiene checks at build-report save*
 
 ### packages/cli/tests/commands/work.test.ts
@@ -83,6 +82,10 @@
 - **code:** OPACITY_MAP duplicates opacity values already in STAGES array — two sources of truth for the same constants — *Multi-phase Gantt visualization for proof timeline*
 - **code:** 60px label column may be tight for 'VERIFY 3' at 10.5px mono with 0.06em letter-spacing — fits now but fragile for higher phase counts — *Multi-phase Gantt visualization for proof timeline*
 - **code:** formatDuration defined but unused in PipelineGantt — duration column uses raw `{value}m` instead — *Dynamic Pages — Reference & Proof Chain*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/content/docs/concepts/pipeline.mdx
 
