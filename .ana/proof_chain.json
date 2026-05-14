@@ -15653,7 +15653,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "website-visual-fidelity-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional per-frame read: getComputedStyle at TetrisSnake.tsx:44 reads --color-brand every frame (14fps) to track theme changes. Comment at line 42 documents the intent. getComputedStyle on document.documentElement with no pending style changes is O(1) — a lookup, not a recalculation. At 14 calls/sec, it adds ~0.14ms/sec total. The canvas drawing (600+ rects/frame) is the actual bottleneck on low-end devices, not one getComputedStyle call.",
+          "closed_at": "2026-05-14T21:53:16.020Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
