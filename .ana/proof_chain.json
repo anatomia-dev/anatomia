@@ -573,9 +573,12 @@
           "summary": "Latent edge case with degenerate package paths — assets.ts:575 `pkg.path.split('/').filter(Boolean).length` would produce incorrect relative paths for `\".\"` (depth 1 → `../AGENTS.md`) or `\"\"` (depth 0 → bare `AGENTS.md`). These values don't occur in practice — monorepo tools always produce subdirectory paths. Not a blocker, but if this function is ever reused for arbitrary paths, it would need a guard.",
           "file": "packages/cli/src/commands/init/assets.ts",
           "anchor": "pkg.path.split('/').filter(Boolean).length",
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Unreachable: degenerate paths (empty string, '.') cannot reach this code. scan-engine.ts:642 sets primaryPackage to null when relativePath === '.' — generatePrimaryPackageAgentsMd is only called when primaryPackage is non-null. Only real subdirectory paths like 'packages/cli' reach line 591. The edge cases the finding describes are structurally prevented.",
+          "closed_at": "2026-05-14T18:25:26.630Z",
+          "closed_by": "human"
         },
         {
           "id": "monorepo-primary-agents-md-C2",
