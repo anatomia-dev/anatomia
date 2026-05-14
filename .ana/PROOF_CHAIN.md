@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 213 active · 117 lessons · 0 promoted · 259 closed
+96 runs · 212 active · 117 lessons · 0 promoted · 260 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 213 total)
+## Active Findings (30 shown of 212 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -61,6 +61,10 @@
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
 
+### website/app/docs/docs.css
+
+- **code:** docs-content-full CSS class added in Phase 1 but only used by Phase 2 explorer — harmless dead code until Phase 2 ships — *Dynamic Pages — Reference & Proof Chain*
+
 ### website/app/docs/proof/[slug]/page.tsx
 
 - **code:** Multi-phase timeline text derives phase count via Math.max on filtered segments — works correctly but couples rendering to segment internals when entry.phases field exists for this purpose — *Multi-phase Gantt visualization for proof timeline*
@@ -80,7 +84,6 @@
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
-- **code:** buildGanttBars and GanttBar exported from PipelineGantt.tsx but never imported — YAGNI exports for potential cross-package testing that doesn't happen — *Multi-phase Gantt visualization for proof timeline*
 - **code:** OPACITY_MAP duplicates opacity values already in STAGES array — two sources of truth for the same constants — *Multi-phase Gantt visualization for proof timeline*
 - **code:** 60px label column may be tight for 'VERIFY 3' at 10.5px mono with 0.06em letter-spacing — fits now but fragile for higher phase counts — *Multi-phase Gantt visualization for proof timeline*
 

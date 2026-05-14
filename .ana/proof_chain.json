@@ -25431,7 +25431,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "gantt-multi-phase-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Dead exports: buildGanttBars and GanttBar at PipelineGantt.tsx:22/39 are exported but never imported — zero consumers outside the file. buildGanttBars is used internally (line 121), GanttBar is its return type. Website has no test suite. Anticipatory exports for nonexistent tests — harmless but unnecessary.",
+          "closed_at": "2026-05-14T17:47:20.093Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
