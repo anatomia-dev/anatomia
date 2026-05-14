@@ -19514,7 +19514,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "scoped-cli-commits-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — toContain('completed/') at work.test.ts:1243 runs against git diff-tree output in a single-slug fixture. No other path can contain 'completed/' in this test. The primary assertion is not.toContain('unrelated.txt') — the completed/ check is a sanity confirmation.",
+          "closed_at": "2026-05-14T08:29:39.033Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
