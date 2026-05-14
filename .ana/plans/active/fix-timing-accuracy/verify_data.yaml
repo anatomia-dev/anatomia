@@ -1,31 +1,34 @@
 schema: 1
 findings:
-  - category: test
-    summary: "Timestamp race in history preservation test — two synchronous writeSaveMetadata calls produce identical saved_at within same millisecond"
-    file: "packages/cli/tests/utils/proofSummary.test.ts"
-    line: 3743
-    severity: risk
-    suggested_action: scope
-    related_assertions: ["A001"]
   - category: code
-    summary: "Non-null assertion on verifyPhases[i-1] crashes if verify-report-(N-1) missing when build-report-N exists"
+    summary: "Non-null assertion on missing verify phase — verifyPhases[i-1]! crashes if verify-report-(N-1) missing when build-report-N exists"
     file: "packages/cli/src/utils/proofSummary.ts"
     line: 1627
-    severity: debt
-    suggested_action: scope
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A007", "A008"]
   - category: code
-    summary: "writeSaveMetadata exported solely for test access — was previously internal function"
+    summary: "writeSaveMetadata export scope widened for tests — only consumed by test files, widens module public API"
     file: "packages/cli/src/commands/artifact.ts"
     line: 46
     severity: observation
     suggested_action: accept
+    related_assertions: ["A001"]
   - category: code
-    summary: "History array grows unbounded through rejection cycles — no cap or pruning"
+    summary: "Unbounded history array growth — each rejection cycle appends with no cap"
     file: "packages/cli/src/commands/artifact.ts"
     line: 74
     severity: debt
     suggested_action: monitor
-  - category: upstream
-    summary: "proofSummary.ts now ~1740 lines — continuing growth past known comfort threshold (~1550 at last cycle)"
+  - category: test
+    summary: "A019 asserts on source code content — reads proofSummary.ts and checks string patterns instead of behavioral assertion"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 3988
     severity: observation
-    suggested_action: monitor
+    suggested_action: accept
+    related_assertions: ["A019"]
+  - category: upstream
+    summary: "proofSummary.ts continuing to grow — now ~1740 lines, past comfort threshold, known from prior cycles"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: debt
+    suggested_action: scope

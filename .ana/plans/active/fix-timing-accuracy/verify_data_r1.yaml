@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Timestamp race in history preservation test — two synchronous writeSaveMetadata calls produce identical saved_at within same millisecond"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 3743
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A001"]
+  - category: code
+    summary: "Non-null assertion on verifyPhases[i-1] crashes if verify-report-(N-1) missing when build-report-N exists"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 1627
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "writeSaveMetadata exported solely for test access — was previously internal function"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 46
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "History array grows unbounded through rejection cycles — no cap or pruning"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 74
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "proofSummary.ts now ~1740 lines — continuing growth past known comfort threshold (~1550 at last cycle)"
+    severity: observation
+    suggested_action: monitor
