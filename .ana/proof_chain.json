@@ -12895,7 +12895,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-system-near-term-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: pre-commit filter at .husky/pre-commit:36 skips .claude/ and website/ in addition to .ana/. Both are correct — .claude/ contains markdown agent/skill files (no TypeScript), and the pre-commit only runs packages/cli checks (lines 42-46) which website changes can't affect. Pragmatic extension beyond contract A006.",
+          "closed_at": "2026-05-14T16:53:18.884Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
