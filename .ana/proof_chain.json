@@ -4590,8 +4590,11 @@
             "A007"
           ],
           "id": "structured-findings-companion-C5",
-          "status": "active",
-          "suggested_action": "monitor"
+          "status": "closed",
+          "suggested_action": "monitor",
+          "closed_reason": "Adequate: bare toThrow() at artifact.test.ts:384 catches process.exit(1) from branch enforcement (line 1110). Steps 0-4 before the branch check are lightweight config reads (parse type, resolve root, read ana.json, get branch) that pass with the test fixture. A false positive would require a broken fixture — a test bug, not an assertion weakness. The fixture at lines 380-382 is specifically designed to trigger the branch rejection for build-report on artifact branch.",
+          "closed_at": "2026-05-15T00:55:33.752Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
