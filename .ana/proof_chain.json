@@ -22723,7 +22723,10 @@
           "suggested_action": "scope",
           "related_assertions": [],
           "id": "docs-infrastructure-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Incorrect finding: site uses custom docs-prose CSS class (25 rules in docs.css:198-350), not Tailwind @tailwindcss/typography. Zero matches for bare 'prose' className in TSX. Zero matches for @tailwindcss/typography in any file. Custom prose styling is intentional — comments say 'matches supermock .prose exactly'.",
+          "closed_at": "2026-05-15T16:25:07.002Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-105 runs · 49 active · 128 lessons · 3 promoted · 449 closed
+105 runs · 48 active · 128 lessons · 3 promoted · 450 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 49 total)
+## Active Findings (30 shown of 48 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -49,10 +49,6 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
-
-### website/app/docs/[[...slug]]/page.tsx
-
-- **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### website/app/docs/reference/cli/page.tsx
 
@@ -104,4 +100,5 @@
 - **code:** Dynamic stat markers (ana:dynamic) updated as prebuild side effect — pipeline.mdx, reading-a-proof.mdx, using-ana-learn.mdx, verifying-changes.mdx, start.mdx, troubleshooting.mdx all have updated proof counts (90->103, 19->21 rejections). These are correct but outside the spec's file_changes list. — *Bump Node Minimum to 22, Add Node 24 to CI*
 - **code:** Lint warning (pre-existing): unused eslint-disable directive for no-control-regex. Not introduced by this build. — *Bump Node Minimum to 22, Add Node 24 to CI*
 - **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
+- **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 
