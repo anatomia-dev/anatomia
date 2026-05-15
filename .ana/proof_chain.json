@@ -9688,7 +9688,10 @@
             "A014"
           ],
           "id": "proof-health-v2-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Covered by combined assertions: toContain('Next Actions') at proof.test.ts:2778 proves ≥1 item (section only renders when cappedActions.length > 0, proof.ts:564). toBeLessThanOrEqual(5) at line 2781 proves ≤5 items. Together: 1-5 items from 8 candidates. The cap is slice(0, MAX_NEXT_ACTIONS) where MAX_NEXT_ACTIONS=5 — produces exactly 5 from any input ≥5. With 8 promote candidates all matching the filter, the output is deterministically 5.",
+          "closed_at": "2026-05-15T00:50:56.536Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
