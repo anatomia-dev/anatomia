@@ -19266,7 +19266,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "work-complete-merge-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: try-catch added at work.ts:1138-1145 after the original work-complete-merge commit (ae45b692). JSON.parse failure now caught with error message and --json envelope support.",
+          "closed_at": "2026-05-15T05:14:22.598Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
