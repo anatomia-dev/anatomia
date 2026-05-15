@@ -48,5 +48,20 @@
     "website/public/search-index.json",
     "website/scripts/extract-docs-data.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T17:03:27.485Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:448e22eaeefd85876e6ab21b95fcc892784253e6312fcbf73d68bd49b27e3b6f",
+    "run_at": "2026-05-15T17:09:36.093Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T17:09:36.128Z",
+    "hash": "sha256:a5dc1d0b2b37771b57a11e2c34e53593f0d1364f818c57e5371740755824f564"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T17:09:36.128Z",
+    "hash": "sha256:1de118a8cd14550563c29289efbc736033b36f9734087218f3f0d6a643b7d749"
+  }
 }

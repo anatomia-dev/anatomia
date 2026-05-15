@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: code
+    summary: "DocsStat component recalculates all 9 values on every render — no caching"
+    file: "website/components/docs/content/DocsStat.tsx"
+    line: 17
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A006", "A007"]
+  - category: code
+    summary: "2 of 9 value keys (skillCount, findings) defined but unused in any MDX file"
+    file: "website/lib/docs-data/docsStatValues.ts"
+    line: 29
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003"]
+  - category: code
+    summary: "Misspelled DocsStat value key silently renders raw key string — no build-time validation"
+    file: "website/components/docs/content/DocsStat.tsx"
+    line: 33
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A006"]
+  - category: code
+    summary: "Prebuild inlines a fresh stripJsx copy instead of importing the lib version — duplication persists"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 815
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "Spec called for skillCount in skills.mdx heading and findings in using-ana-learn description; builder simplified to static text instead"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Median computation duplicated between extract-docs-data.ts main() and lib/docs-data/proofs.ts getMedianTimings()"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 1081
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "Duplicate stripJsx finding still present — known from proof context, not addressed by this scope"
+    severity: observation
+    suggested_action: monitor
