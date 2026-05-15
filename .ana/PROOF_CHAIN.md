@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-101 runs · 81 active · 121 lessons · 0 promoted · 410 closed
+101 runs · 80 active · 121 lessons · 0 promoted · 411 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 81 total)
+## Active Findings (30 shown of 80 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -55,6 +55,10 @@
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
 
+### website/app/docs/[[...slug]]/page.tsx
+
+- **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
 ### website/app/docs/reference/cli/page.tsx
 
 - **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
@@ -88,10 +92,6 @@
 ### website/components/docs/providers/PlatformProvider.tsx
 
 - **code:** Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule — *Docs Shell (Layout + Shared Components)*
-
-### website/content/docs/concepts/pipeline.mdx
-
-- **code:** pipeline.mdx rejectionProofCount stale (17 vs 19) — regex marker placement broken, extra text between value and ana:dynamic comment — *Docs Search + Polish*
 
 ### website/content/docs/concepts/skills.mdx
 

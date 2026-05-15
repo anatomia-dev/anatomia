@@ -25199,7 +25199,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "docs-search-polish-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: the finding says '17 vs 19' but pipeline.mdx now shows '21 of 96' — the rejection count was already updated. The total '96' is stale (now ~100) but this is the dynamic content refresh pattern documented in systemic observations. The ana:dynamic tag is present — the next build touching this file will update the total.",
+          "closed_at": "2026-05-15T03:36:23.767Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
