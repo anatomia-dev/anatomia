@@ -44,6 +44,16 @@ Init scans your project, detects your stack, and scaffolds the pipeline into you
 **Optional but recommended:** Run `claude --agent ana-setup` to calibrate project knowledge (~10 min). Setup investigates your codebase, asks 2–3 questions, and writes rich context.
 </Callout>
 
+### Persist to git
+
+Init created files locally. Commit them to your artifact branch so every collaborator and agent session has the same context:
+
+```bash
+ana init commit
+```
+
+This stages only infrastructure files (`.ana/`, `.claude/`, `CLAUDE.md`, `AGENTS.md`), commits with `--no-verify`, and pushes. Pipeline data and per-developer state are automatically excluded.
+
 ## Step 3: First pipeline run
 
 Describe a small change — a single-file fix or a feature you'd normally spend 30 minutes on.

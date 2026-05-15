@@ -58,6 +58,16 @@ Read by: all agents, the CLI. The configuration file for the [toolbelt](/docs/co
 
 Think, Plan, and Learn read context files on every startup. Build and Verify do not — they're explicitly forbidden. This is intentional: Build and Verify get project knowledge through the spec that Plan wrote, not directly from context. Plan distills what's relevant for the current task. This prevents agents from being influenced by context that Plan didn't consider relevant.
 
+## Infrastructure persistence
+
+Context files follow a create-enrich-persist lifecycle:
+
+1. **Init** creates the infrastructure locally — `.ana/`, `.claude/`, `CLAUDE.md`, `AGENTS.md`
+2. **Setup** enriches context files, design principles, and skills with project-specific knowledge
+3. **`ana init commit`** persists everything to the artifact branch
+
+The commit command discovers dirty infrastructure files from known directory roots, excludes pipeline data (proof chain, plans) and per-developer state (agent memory, local settings), and commits with a path-scoped `--no-verify` commit. It's idempotent — running it when nothing has changed exits cleanly.
+
 ## How context stays fresh
 
 Re-running `ana init` preserves context files completely — the entire `context/` directory is copied wholesale. Your edits are never overwritten. `scan.json` is regenerated from scratch. `ana.json` is merged: your configuration survives, version and timestamps refresh.

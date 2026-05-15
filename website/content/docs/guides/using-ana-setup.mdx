@@ -114,6 +114,12 @@ Then it reads your error handling, import patterns, test structure, and CI confi
 
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>If a template rule contradicts your codebase (e.g., "prefer named exports" but you use default exports), setup adjusts the rule and flags it with ⚠ for review.</p>
 
+## Infrastructure persistence
+
+When setup completes on the artifact branch, it automatically runs `ana init commit` to persist all infrastructure changes to git. This includes context files, design principles, and enriched skills — everything setup wrote during the session.
+
+If you're on a different branch, setup prints a reminder to switch and run `ana init commit` manually.
+
 ## Re-running setup
 
 Setup preserves what you wrote — sections with content aren't overwritten. To re-run after a previous setup, delete the `setupPhase` field from `.ana/ana.json` (or set it to `"not-started"`), then run `claude --agent ana-setup` again. Re-run when:
