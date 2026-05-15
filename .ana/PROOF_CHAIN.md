@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-101 runs · 84 active · 121 lessons · 0 promoted · 407 closed
+101 runs · 83 active · 121 lessons · 0 promoted · 408 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 84 total)
+## Active Findings (30 shown of 83 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -65,6 +65,10 @@
 
 - **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
+### website/components/docs/layout/DocsErrorBoundary.tsx
+
+- **code:** Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation — *Docs Shell (Layout + Shared Components)*
+
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
@@ -73,7 +77,6 @@
 
 ### website/components/docs/proof/FindingsList.tsx
 
-- **code:** Toggle pattern deviates from AssertionLedger — uses !expanded toggle vs separate true/false calls — *FindingsList expand/collapse for proof pages*
 - **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
 
 ### website/components/docs/proof/PipelineGantt.tsx
