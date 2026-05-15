@@ -32,6 +32,7 @@ import { getProjectName } from '../../utils/validators.js';
 import { isWorktreeDirectory } from '../../utils/worktree.js';
 import type { InitCommandOptions } from './types.js';
 import { validateInitPreconditions } from './preflight.js';
+import { registerInitCommitCommand } from './commit.js';
 import {
   createDirectoryStructure,
   generateScaffolds,
@@ -173,5 +174,6 @@ export function registerInitCommand(program: Command): void {
     }
   });
 
+  registerInitCommitCommand(initCommand);
   program.addCommand(initCommand);
 }
