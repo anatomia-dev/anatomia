@@ -18,5 +18,19 @@
   "spec": {
     "saved_at": "2026-05-15T01:51:28.178Z",
     "hash": "sha256:2ea64253795c44ae1e166c966f3054cda076e0b6328da266cb40f1ddb1b6eb6f"
-  }
+  },
+  "build_started_at": "2026-05-15T01:57:47.765Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T02:01:13.467Z",
+    "hash": "sha256:4c066b693da375dff3c2b28c7351c8e864ccf6234233a424fecf633c8f6696c2"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T02:01:13.468Z",
+    "hash": "sha256:9f1424bb781bdeb82e4b32863042568e648118b9f5a04c7ff50c3a1e4111ebf0"
+  },
+  "modules_touched": [
+    "packages/cli/tests/commands/worktree-guards.test.ts"
+  ],
+  "commit_hygiene": []
 }
