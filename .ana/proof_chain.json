@@ -16714,7 +16714,10 @@
             "A003"
           ],
           "id": "phase-timing-fix-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: tagged test for plan_started_at exists at work.test.ts:4274 — '@ana A019, A020: plan_started_at writes plan_agent and verify_started_at writes verify_agent'. Covers the same behavior as phase-timing-fix A003. Tag collision (lesson C3) — different scope reused A-IDs.",
+          "closed_at": "2026-05-15T07:05:11.818Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
