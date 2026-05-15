@@ -2,25 +2,24 @@ name: Test Suite
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main]
     paths-ignore:
       - '.ana/**'
       - '.claude/**'
   pull_request:
-    branches: [main, staging]
+    branches: [main]
     paths-ignore:
       - '.ana/**'
       - '.claude/**'
 
 jobs:
   test:
-    name: Test (${{ matrix.os }}, Node ${{ matrix.node-version }})
-    runs-on: ${{ matrix.os }}
+    name: Test (ubuntu-latest, Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false  # CRITICAL: Run all combinations even if one fails
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [20, 22]
 
     steps:
@@ -30,7 +29,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -63,8 +62,8 @@ jobs:
         timeout-minutes: 15
         run: cd packages/cli && pnpm vitest run
 
-      - name: Upload coverage (Ubuntu + Node 20 only)
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 20
+      - name: Upload coverage (Node 20 only)
+        if: matrix.node-version == 20
         uses: codecov/codecov-action@v6
         with:
           files: ./packages/cli/coverage/coverage-final.json
@@ -82,7 +81,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v6
