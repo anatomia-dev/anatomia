@@ -12997,7 +12997,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "proof-system-near-term-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: rebase --abort added at proof.ts:133 — the conflict path now runs runGit(['rebase', '--abort']) before process.exit(1). Fixed by a subsequent commit after the proof-system-near-term scope.",
+          "closed_at": "2026-05-15T05:02:36.283Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

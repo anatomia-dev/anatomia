@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-102 runs · 74 active · 122 lessons · 3 promoted · 416 closed
+102 runs · 73 active · 122 lessons · 3 promoted · 417 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 74 total)
+## Active Findings (30 shown of 73 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
