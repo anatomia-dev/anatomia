@@ -30047,7 +30047,10 @@
             "A019"
           ],
           "id": "pipeline-concurrency-guards-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Mock is correct: gh pr list --json state -q '.[0].state' outputs raw string MERGED (jq extracts from JSON inside gh). Mock returning 'MERGED\\n' matches actual gh output. Implementation at work.ts:1525 compares trimmed stdout against 'MERGED'. The JSON parsing happens inside gh, not in our code — the mock correctly simulates the CLI's actual behavior.",
+          "closed_at": "2026-05-15T19:21:20.440Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

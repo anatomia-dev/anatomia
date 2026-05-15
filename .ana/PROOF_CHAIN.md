@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-110 runs · 43 active · 3 promoted · 611 closed
+110 runs · 42 active · 3 promoted · 612 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 7 |
-| packages/cli/tests/commands/work.test.ts | 7 | 5 |
+| packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 2 | 2 |
 
@@ -15,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 43 total)
+## Active Findings (30 shown of 42 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -53,10 +53,10 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** No boundary test at exactly 1-hour timeout — tests use 2-hour-old (stale) and new Date() (fresh), missing 59m59s and 60m01s cases — *Pipeline Concurrency Guards*
-- **test:** A019 mock returns raw 'MERGED\n' string but implementation uses -q '.[0].state' jq filter — mock bypasses JSON parsing path — *Pipeline Concurrency Guards*
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
 - **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
+- **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### website/app/docs/reference/cli/page.tsx
 
