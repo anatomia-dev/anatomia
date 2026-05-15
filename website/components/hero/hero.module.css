@@ -17,11 +17,11 @@
 .inner {
   position: relative;
   z-index: 2;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  padding-top: 3vh;
 }
+@media (min-height: 900px) { .inner { padding-top: 6vh; } }
 
 /* --- Eyebrow dispatch pill --- */
 .eyebrow {
