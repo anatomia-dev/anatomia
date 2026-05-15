@@ -28712,6 +28712,247 @@
         "completed_at": "2026-05-15T17:25:24.044Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "upstream-finding-resolution",
+      "feature": "Upstream Finding Resolution",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 22,
+        "satisfied": 22,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Proof context output includes the finding ID for each finding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Finding ID appears between category tag and anchor text",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Upstream findings with valid resolves arrays pass validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Findings without resolves still pass validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Non-array resolves values are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Non-string elements in resolves are rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Invalid finding ID format in resolves produces a warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Resolves on non-upstream findings produces a warning about category mismatch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Proof chain entries preserve the resolves field from upstream findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Referenced findings are not auto-closed by resolution claims",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Work complete shows how many findings Verify claims are resolved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Summary line is omitted when no upstream findings have resolves",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Proof stale shows resolution claims for upstream findings with resolves",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Resolution claims include the upstream finding summary and referenced ID",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Resolution claims include the upstream finding that made the claim",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Resolution claims section is omitted when no unresolved claims exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Claims referencing non-existent finding IDs are silently skipped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Claims referencing already-closed findings are skipped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Multiple claims on the same original show only the most recent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Old upstream findings without resolves work without errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Template ana-verify.md includes resolves field instructions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Dogfood ana-verify.md includes resolves field instructions",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 75,
+        "think": 17,
+        "plan": 10,
+        "build": 22,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:2be18bf1d3b646f5735a74c4991ba5a7e013090bc528df4a5f8e5d4191dda8ec",
+        "contract": "sha256:2722c76c7160b5890874560a216a84974aadc2353d0bf0cc40488bafd32a8564",
+        "plan": "sha256:06c1ed4fce9170968ceeb196eac61faa193d45a414401557f24b0b2f268b6f0c",
+        "spec": "sha256:156b4281c14db0e4a3ade53a7643c13e3aeae6df765f485a00dedbd662bdaf23",
+        "build-report": "sha256:d1f768e2e77c8eec25a018a33cf93987e6d650e4f49531a1be4f835925eef9c6",
+        "build-data": "sha256:2c7f1c44b48abe1207a8b3f9d8647235e70f8151149ac7bc40f0a5726a371841",
+        "verify-report": "sha256:cb1cec784a2e34f4a67b7ea6b3627a4d963083043e8300240c22f8efe6278b42",
+        "verify-data": "sha256:61bac8152e3527a36b1c6d5986353af445184683bf0922cb56d614769b02e5a4"
+      },
+      "completed_at": "2026-05-15T17:47:50.001Z",
+      "modules_touched": [
+        ".claude/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "When Verify runs `ana proof context` and sees active findings for files it's reviewing, it can note that a finding has been resolved by the current build. These observations enter the proof chain as upstream findings with `status: 'lesson'`. But the original finding stays active because nothing connects the upstream claim to the original. Learn must manually read the upstream finding's prose, identify which original it references, verify the claim, and close it with `ana proof close`.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "work.ts duplicates resolves counting logic — JSON and console branches have identical loops",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1691,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A011",
+            "A012"
+          ],
+          "id": "upstream-finding-resolution-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "artifact.ts resolves format warning iterates resolves array twice — once for type check, once for format check",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 920,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "upstream-finding-resolution-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A014 test uses toBeDefined() before toBe() — the toBeDefined assertion is redundant",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 3421,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "upstream-finding-resolution-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "computeResolutionClaims findingIndex overwrites entries when same finding ID appears in multiple chain entries — last write wins, which could mask status transitions",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 1292,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "upstream-finding-resolution-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "proofSummary.ts continues to grow — now ~1620 lines with computeResolutionClaims addition",
+          "file": null,
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "upstream-finding-resolution-C5",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "generateProofSummary regex fallback (parseFindings) cannot parse resolves arrays from Markdown — only YAML companion path extracts them",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T16:49:44.866Z",
+        "completed_at": "2026-05-15T17:47:49.997Z",
+        "commit_count": 0,
+        "base_commit": "d7714fafb957fc0e4c0d6308e20fcaf09b2220a5"
+      }
     }
   ],
   "schema": 1
