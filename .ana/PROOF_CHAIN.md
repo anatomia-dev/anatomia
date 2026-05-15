@@ -1,21 +1,22 @@
 # Proof Chain Dashboard
 
-108 runs · 36 active · 134 lessons · 3 promoted · 474 closed
+109 runs · 38 active · 3 promoted · 609 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 5 | 5 |
+| packages/cli/src/commands/work.ts | 6 | 6 |
 | packages/cli/tests/commands/work.test.ts | 4 | 4 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 2 | 2 |
+| packages/cli/src/utils/proofSummary.ts | 2 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 36 total)
+## Active Findings (30 shown of 38 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -23,6 +24,7 @@
 
 ### packages/cli/src/commands/work.ts
 
+- **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
 - **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
@@ -33,6 +35,10 @@
 
 - **code:** commit_hygiene type duplicated in three locations (proof.ts, proofSummary.ts, work.ts inline) rather than imported from a shared definition — *Commit hygiene checks at build-report save*
 
+### packages/cli/src/utils/proofSummary.ts
+
+- **code:** Stale comment references 'lesson' in getProofContext filter description — *Remove lesson status from proof system*
+
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
@@ -40,7 +46,6 @@
 ### packages/cli/tests/commands/artifact.test.ts
 
 - **test:** A016 only tests 'Feature' case variant, not 'FIX' — contract says both should be accepted — *Scope Validation Integrity*
-- **test:** Pre-existing scope validation tests (lines 697-746) still use plain toThrow() without checking error message content — *Scope Validation Integrity*
 
 ### packages/cli/tests/commands/init/commit.test.ts
 
@@ -62,10 +67,6 @@
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
 - **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
 - **test:** A010 test creates untracked file after commit — doesn't test scoped staging during commit — *Commit timestamps written by work start*
-
-### packages/cli/tests/utils/proofSummary.test.ts
-
-- **test:** proofSummary.test.ts parseFindings uses toBeGreaterThanOrEqual on deterministic fixture data — *Test Suite Hygiene*
 
 ### website/app/docs/reference/cli/page.tsx
 

@@ -340,7 +340,10 @@
           "summary": "Pre-check cross-feature tag collision: The previous round's pre-check reported A015 as COVERED because `@ana A015` existed in `proof.test.ts:296` from a different feature's contract. Pre-check doesn't scope tag searches to the current feature branch's file changes. This masked a real gap until manual review caught it. Worth noting for tooling improvement.",
           "file": "packages/cli/tests/commands/proof.test.ts",
           "anchor": "@ana A015",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-16T01:24:02.438Z"
         }
       ],
       "scope_summary": "The scan detects language ecosystem (`node`, `python`, `go`) and framework (`Next.js`, `Express`), but has no concept of what a project fundamentally *is* — CLI tool, library, web app, API server, or full-stack app. A Node CLI, a Node web app, and a Node library all produce the same scan identity. Downstream consumers (skills, scaffolds, context generation) can't tailor advice because they don't know what kind of thing they're advising on. The deployment skill gives web-app guidance to a CLI tool. The project description says \"TypeScript project\" for anything without a recognized framework."
@@ -433,7 +436,10 @@
           "summary": "Contract assertions A007 and A008 were sealed with incorrect values. The planner counted 6 rules in coding-standards but main has 7. A007 says 6 rules, should say 7. A008 says 5 unchanged rules, should say 6 (7 - 1 modified = 6). The BUILD is correct — the contract is not.",
           "file": null,
           "anchor": null,
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-16T22:36:55.334Z"
         },
         {
           "id": "fix-skill-template-gaps-C2",
@@ -623,7 +629,10 @@
           "summary": "Contract A006 value is overly broad — The contract assertion `matcher: contains, value: \"AGENTS.md\"` is too permissive. Every assertion in this test suite mentions AGENTS.md in some form. The value should have been `[AGENTS.md](` or similar to verify the markdown link specifically, not just the filename.",
           "file": "AGENTS.md",
           "anchor": "matcher: contains, value: \"AGENTS.md\"",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-16T22:37:12.315Z"
         }
       ],
       "scope_summary": "When a monorepo's primary package is opened directly in Cursor/Copilot/Windsurf (e.g., `packages/cli` instead of the repo root), there's no AGENTS.md present. Users get zero Anatomia context. Generate a minimal AGENTS.md in the primary package directory that provides essential context and points to the root for the full picture."
@@ -786,7 +795,10 @@
           "summary": "A009 as a contract assertion (\"all existing tests continue to pass\") is inherently untestable at the unit level. It's a suite-level property. Tagging a single test with `@ana A009` creates pressure to write a sentinel. Future contracts should either omit suite-level regression assertions or express them as \"test command exits 0\" verified during the build step, not as tagged tests.",
           "file": null,
           "anchor": "@ana A009",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-16T23:38:02.725Z"
         }
       ],
       "scope_summary": "Running `ana work status` (or any pipeline command) from a subdirectory like `packages/cli/src/` fails because it looks for `.ana/` only in CWD. The CLI should walk up the directory tree to find the project root, matching how git and other tools behave."
@@ -1053,7 +1065,10 @@
           "summary": "- **Spec suggested regex but import matching is better:** The spec's concern about ParsedFile.functions was valid, but the suggested solution (regex) was suboptimal. Import matching is cleaner. This is a positive deviation but worth noting for future specs.",
           "file": null,
           "anchor": null,
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-16T23:57:17.961Z"
         }
       ],
       "scope_summary": "The scan knows what libraries a project installs but not how those libraries shape the client-side architecture. `@tanstack/react-query` in deps doesn't tell Build agents \"use `useQuery` for all fetching\" — it just says the package exists, which deps already show. Tree-sitter confirmation of actual hook/composable call sites bridges the gap between \"installed\" and \"this is how the project works.\""
@@ -1243,7 +1258,10 @@
           "summary": "Contract seal was UNVERIFIABLE — no `seal_commit` was saved for this contract. This means we can't mechanically verify the contract wasn't modified after planning. Not a blocker for this cycle, but the seal infrastructure should record commits for all contracts.",
           "file": null,
           "anchor": "seal_commit",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-17T00:27:28.906Z"
         }
       ],
       "scope_summary": "Surface callouts from the proof chain in a file-organized index at the top of PROOF_CHAIN.md so agents can immediately find relevant issues when scoping work on specific files. Currently callouts are captured but buried in chronological entries — finding issues for `scan-engine.ts` requires reading through all history hoping to spot mentions."
@@ -1511,7 +1529,10 @@
           "summary": "Contract A009 value should be updated — The contract still says `value: 5000` but the implementation is 4000. If the contract is re-sealed in the future, update the value.",
           "file": null,
           "anchor": "value: 5000",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-17T00:38:39.444Z"
         }
       ],
       "scope_summary": "The scan reads package.json, tsconfig, prisma schemas, and dozens of config files — but completely ignores the README. A project's README is typically the densest source of human-written intent: what the project does, how it's architected, setup instructions, API surface. This information is exactly what `project-context.md` needs but currently fills with generic placeholders."
@@ -1682,7 +1703,10 @@
           "summary": "Known extractFileRefs limitation propagated to stored data: The existing regex limitation where `findProjectRoot.test.ts` extracts as `test.ts` (dotted filenames lose their prefix) is now permanently stored in proof_chain.json `file` fields. Previously, a regex fix in `extractFileRefs` would retroactively fix all groupings. Now the incorrect `file: \"test.ts\"` values are baked into the data. If `extractFileRefs` is ever fixed, a second backfill of proof_chain.json would be needed. This was already flagged in the proof chain active issues index cycle.",
           "file": "packages/cli/tests/utils/findProjectRoot.test.ts",
           "anchor": "findProjectRoot.test.ts",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-24T00:10:33.977Z"
         }
       ],
       "scope_summary": "File association for callouts is derived from summary text via regex (`extractFileRefs`) every time the renderer groups callouts for Active Issues. The parser sees the full callout context but throws away file information. The renderer re-derives it. Downstream features (proof file queries, proof learn matching, resolution detection) would all need the same regex inference."
@@ -1866,7 +1890,10 @@
           "summary": "A002 uses `contains` matcher, allows ambiguous match: Contract A002 says `target: schemas.prisma.path, matcher: contains, value: \"schema.prisma\"`. Both candidates (`prisma/schema.prisma` and `schema.prisma`) contain `\"schema.prisma\"`. The test passes regardless of which candidate wins — it can't distinguish them. The modelCount assertion (A001) indirectly proves the right candidate won, but A002 alone doesn't verify path correctness. A more precise value like `\"prisma/schema.prisma\"` would be unambiguous.",
           "file": null,
           "anchor": "contains",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-24T04:32:53.640Z"
         }
       ],
       "scope_summary": "Census breaks on first Prisma schema match per root, starving scan-engine's best-match scorer. Three bugs share one disease: census assumes every Prisma project has exactly one `schema.prisma` at a hardcoded path. This breaks dual-candidate roots, multi-file schemas (`prismaSchemaFolder`, GA since Prisma 5.15), and provider detection in split-file layouts."
@@ -2096,7 +2123,10 @@
           "summary": "A004/A013 test fixture imports sqliteTable but claims \"no table helpers\": `scanProject.test.ts:331-332` — The schema file has `import { sqliteTable } from 'drizzle-orm/sqlite-core'` but the comment says \"Intentionally no pgTable/mysqlTable — dialect should be the fallback.\" The regex looks for `sqliteTable\\s*\\(` (with paren), so the import alone doesn't count. Technically correct, but the import line misleads the next reader.",
           "file": "packages/cli/tests/engine/scanProject.test.ts",
           "anchor": "import { sqliteTable } from 'drizzle-orm/sqlite-core'",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-24T05:59:11.072Z"
         }
       ],
       "scope_summary": "Drizzle schema detection is a stub — census checks the migrations directory, scan-engine globs inside it, model counting and provider detection are absent, no blind spot fires, and census results are ignored by the scorer. A project using Drizzle gets no model count, no provider, wrong schema path, and no warning when the schema is missing. This is the same class of disease that was just fixed for Prisma (see proof chain: \"Fix Prisma schema detection bugs\"), applied to the second most popular TypeScript ORM."
@@ -2498,7 +2528,10 @@
           "file": "packages/cli/tests/utils/proofSummary.test.ts",
           "anchor": "@ana A007",
           "id": "proof-context-query-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-25T01:05:28.608Z"
         },
         {
           "category": "test",
@@ -2569,7 +2602,10 @@
           "file": "packages/cli/tests/commands/proof.test.ts",
           "anchor": "@ana A001",
           "id": "proof-context-query-C9",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-25T01:05:28.608Z"
         }
       ],
       "scope_summary": "The proof chain stores rich intelligence — 49 callouts with file references, categories, code anchors, and full-text observations from every pipeline cycle. But there is no way to ask \"what does the system know about THIS file?\" Agents read PROOF_CHAIN.md — a flat list of 20 items about all files — and hope they notice what's relevant. The data is organized temporally (which feature produced it) when every consumer needs it organized spatially (which file is it about)."
@@ -2710,7 +2746,10 @@
           "file": ".ana/PROOF_CHAIN.md",
           "anchor": ".ana/PROOF_CHAIN.md",
           "id": "proof-chain-targeted-queries-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-25T06:29:26.320Z"
         }
       ],
       "scope_summary": "Pipeline agents currently read all of PROOF_CHAIN.md (170+ lines, 58 active issues) and manually filter to relevant modules. This is the exact task agents do poorly. The `ana proof context {files}` command already exists and solves the filtering problem mechanically. Replace the full-file reads with targeted queries in the two agents that are primary proof chain consumers (Ana and Verify), and remove the reads entirely from the two agents that receive proof context through document flow (Plan and Build)."
@@ -2856,7 +2895,10 @@
           "file": null,
           "anchor": "result.runs equals 1",
           "id": "proof-chain-health-signal-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-26T03:10:57.958Z"
         }
       ],
       "scope_summary": "The proof chain is write-only at the moment of writing. `ana work complete` says \"Proof saved to chain.\" — a write confirmation that tells the developer what the system did, not what they have. After 14 pipeline runs and 62 callouts, the developer has no signal that institutional memory is accumulating. The completion moment, when they just contributed fresh intelligence, gives them nothing back."
@@ -3028,7 +3070,10 @@
           "file": "packages/cli/tests/commands/pr.test.ts",
           "anchor": "commit",
           "id": "seal-hash-simplification-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-26T04:29:13.409Z"
         }
       ],
       "scope_summary": "Simplify the contract seal system from git-commit-based verification to content-hash-based verification. This eliminates the post-commit `.saves.json` fixup that makes the file permanently dirty and blocks branch switches on every pipeline run."
@@ -3309,7 +3354,10 @@
           "file": null,
           "anchor": null,
           "id": "clear-the-deck-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-27T02:44:09.803Z"
         },
         {
           "category": "code",
@@ -3543,7 +3591,10 @@
           "file": "packages/cli/templates/.claude/agents/ana-setup.md",
           "anchor": null,
           "id": "clear-the-deck-2-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-27T04:06:22.985Z"
         },
         {
           "category": "code",
@@ -3823,7 +3874,10 @@
           "file": "packages/cli/src/commands/work.ts",
           "anchor": "delete existingAny['callouts']",
           "id": "findings-lifecycle-foundation-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-27T20:36:18.633Z"
         }
       ],
       "rejection_cycles": 0,
@@ -4043,7 +4097,10 @@
           "file": null,
           "anchor": "target: \"writeResult\"",
           "id": "fix-artifact-save-and-work-complete-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-27T22:03:13.633Z"
         }
       ],
       "rejection_cycles": 0,
@@ -4261,7 +4318,10 @@
           "file": null,
           "anchor": "not_equals",
           "id": "fix-proof-chain-mechanical-accuracy-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-28T00:07:41.079Z"
         }
       ],
       "rejection_cycles": 0,
@@ -4619,7 +4679,10 @@
             "A029"
           ],
           "id": "structured-findings-companion-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-28T07:14:32.579Z"
         }
       ],
       "rejection_cycles": 0,
@@ -5088,7 +5151,10 @@
             "A015"
           ],
           "id": "close-the-loop-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-29T01:32:06.937Z"
         }
       ],
       "rejection_cycles": 1,
@@ -5300,7 +5366,10 @@
           "anchor": null,
           "severity": "observation",
           "id": "harden-git-commit-calls-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-29T06:16:00.484Z"
         }
       ],
       "rejection_cycles": 0,
@@ -5706,7 +5775,10 @@
             "A033"
           ],
           "id": "finding-enrichment-schema-C10",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-29T15:47:34.786Z"
         }
       ],
       "rejection_cycles": 0,
@@ -5874,7 +5946,10 @@
             "A016"
           ],
           "id": "diff-scoped-tag-search-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-29T17:58:27.285Z"
         },
         {
           "category": "test",
@@ -7331,7 +7406,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "delete-backward-compat-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-30T19:02:41.192Z"
         },
         {
           "category": "upstream",
@@ -7341,7 +7419,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "delete-backward-compat-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-30T19:02:41.192Z"
         }
       ],
       "rejection_cycles": 0,
@@ -7530,7 +7611,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "harden-hot-files-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-30T19:22:40.130Z"
         },
         {
           "category": "code",
@@ -7785,7 +7869,10 @@
             "A013"
           ],
           "id": "proof-command-ux-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-04-30T20:08:50.594Z"
         }
       ],
       "rejection_cycles": 0,
@@ -8501,7 +8588,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "learn-v3-cli-commands-C16",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-01T19:40:57.105Z"
         },
         {
           "category": "code",
@@ -8779,7 +8869,10 @@
             "A011"
           ],
           "id": "health-display-polish-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-01T23:26:24.774Z"
         },
         {
           "category": "code",
@@ -9034,7 +9127,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "clean-proofsummary-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T03:24:45.042Z"
         }
       ],
       "rejection_cycles": 0,
@@ -9209,7 +9305,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "sharpen-agent-templates-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T03:39:55.930Z"
         },
         {
           "category": "code",
@@ -9247,7 +9346,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "sharpen-agent-templates-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T03:39:55.930Z"
         },
         {
           "category": "upstream",
@@ -9258,7 +9360,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "sharpen-agent-templates-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T03:39:55.930Z"
         }
       ],
       "rejection_cycles": 0,
@@ -9420,7 +9525,10 @@
             "A015"
           ],
           "id": "fix-type-lies-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T04:02:43.247Z"
         },
         {
           "category": "test",
@@ -9447,7 +9555,10 @@
             "A017"
           ],
           "id": "fix-type-lies-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T04:02:43.247Z"
         },
         {
           "category": "code",
@@ -9760,7 +9871,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-health-v2-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T07:26:53.029Z"
         },
         {
           "category": "code",
@@ -9815,7 +9929,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "proof-health-v2-C9",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T07:26:53.029Z"
         },
         {
           "category": "code",
@@ -9890,7 +10007,10 @@
             "A030"
           ],
           "id": "proof-health-v2-C14",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T07:26:53.029Z"
         }
       ],
       "rejection_cycles": 0,
@@ -10089,7 +10209,10 @@
             "A007"
           ],
           "id": "strengthen-weak-test-assertions-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T18:53:57.101Z"
         },
         {
           "category": "upstream",
@@ -10103,7 +10226,10 @@
             "A008"
           ],
           "id": "strengthen-weak-test-assertions-C2",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T18:53:57.101Z"
         },
         {
           "category": "upstream",
@@ -10116,7 +10242,10 @@
             "A014"
           ],
           "id": "strengthen-weak-test-assertions-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T18:53:57.101Z"
         },
         {
           "category": "test",
@@ -10401,7 +10530,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "audit-json-severity-summary-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T22:16:48.831Z"
         }
       ],
       "rejection_cycles": 0,
@@ -10549,7 +10681,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "learn-template-session-fixes-C2",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T22:39:44.863Z"
         },
         {
           "category": "upstream",
@@ -10559,7 +10694,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "learn-template-session-fixes-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T22:39:44.863Z"
         }
       ],
       "rejection_cycles": 0,
@@ -10738,7 +10876,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "fix-ci-failures-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T23:15:16.668Z"
         },
         {
           "category": "upstream",
@@ -10752,7 +10893,10 @@
             "A005"
           ],
           "id": "fix-ci-failures-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-02T23:15:16.668Z"
         },
         {
           "category": "code",
@@ -11003,7 +11147,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "learn-severity-triage-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-03T01:16:09.678Z"
         },
         {
           "category": "upstream",
@@ -11013,7 +11160,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "learn-severity-triage-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-03T01:16:09.678Z"
         }
       ],
       "rejection_cycles": 0,
@@ -11260,7 +11410,10 @@
             "A002"
           ],
           "id": "v1-documentation-overhaul-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-03T20:05:56.130Z"
         },
         {
           "category": "upstream",
@@ -11271,7 +11424,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "v1-documentation-overhaul-C2",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-03T20:05:56.130Z"
         },
         {
           "category": "code",
@@ -11323,7 +11479,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "v1-documentation-overhaul-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-03T20:05:56.130Z"
         },
         {
           "category": "code",
@@ -12170,7 +12329,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "security-hardening-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-04T22:07:55.429Z"
         },
         {
           "category": "code",
@@ -12544,7 +12706,7 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-intelligence-hardening-C3",
-          "status": "lesson",
+          "status": "closed",
           "closed_reason": "Verified observations — theoretical edge cases and minor test quality notes that nobody will scope. C3: case-sensitive heading match is fine (all reports use exact heading). C4/C6: structural assertions and weak test matchers in non-critical paths.",
           "closed_at": "2026-05-05T06:54:47.973Z",
           "closed_by": "human"
@@ -12564,7 +12726,7 @@
             "A008"
           ],
           "id": "proof-intelligence-hardening-C4",
-          "status": "lesson",
+          "status": "closed",
           "closed_reason": "Verified observations — theoretical edge cases and minor test quality notes that nobody will scope. C3: case-sensitive heading match is fine (all reports use exact heading). C4/C6: structural assertions and weak test matchers in non-critical paths.",
           "closed_at": "2026-05-05T06:54:47.974Z",
           "closed_by": "human"
@@ -12577,7 +12739,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-intelligence-hardening-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-05T05:13:14.890Z"
         },
         {
           "category": "test",
@@ -12591,7 +12756,7 @@
             "A013"
           ],
           "id": "proof-intelligence-hardening-C6",
-          "status": "lesson",
+          "status": "closed",
           "closed_reason": "Verified observations — theoretical edge cases and minor test quality notes that nobody will scope. C3: case-sensitive heading match is fine (all reports use exact heading). C4/C6: structural assertions and weak test matchers in non-critical paths.",
           "closed_at": "2026-05-05T06:54:47.974Z",
           "closed_by": "human"
@@ -12608,7 +12773,7 @@
             "A011"
           ],
           "id": "proof-intelligence-hardening-C7",
-          "status": "lesson",
+          "status": "closed",
           "closed_reason": "Verified observations — edge cases and process notes. C7: formatHint empty-array edge only triggers if callback intentionally returns []. C12: CI timeout config is operational, not spec-level. C16: template not_contains assertions don't need test files — source inspection is the verification.",
           "closed_at": "2026-05-05T06:55:09.484Z",
           "closed_by": "human"
@@ -12638,7 +12803,10 @@
             "A012"
           ],
           "id": "proof-intelligence-hardening-C9",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-05T05:13:14.890Z"
         },
         {
           "category": "code",
@@ -12681,7 +12849,7 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-intelligence-hardening-C12",
-          "status": "lesson",
+          "status": "closed",
           "closed_reason": "Verified observations — edge cases and process notes. C7: formatHint empty-array edge only triggers if callback intentionally returns []. C12: CI timeout config is operational, not spec-level. C16: template not_contains assertions don't need test files — source inspection is the verification.",
           "closed_at": "2026-05-05T06:55:09.485Z",
           "closed_by": "human"
@@ -12722,7 +12890,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-intelligence-hardening-C15",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-05T05:13:14.890Z"
         },
         {
           "category": "test",
@@ -12732,7 +12903,7 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "proof-intelligence-hardening-C16",
-          "status": "lesson",
+          "status": "closed",
           "closed_reason": "Verified observations — edge cases and process notes. C7: formatHint empty-array edge only triggers if callback intentionally returns []. C12: CI timeout config is operational, not spec-level. C16: template not_contains assertions don't need test files — source inspection is the verification.",
           "closed_at": "2026-05-05T06:55:09.485Z",
           "closed_by": "human"
@@ -13088,7 +13259,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "proof-system-near-term-C8",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-05T20:03:50.173Z"
         }
       ],
       "rejection_cycles": 0,
@@ -13319,7 +13493,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "cli-ux-polish-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-05T20:31:26.549Z"
         }
       ],
       "rejection_cycles": 0,
@@ -13641,7 +13818,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "code-comment-cleanup-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-06T00:11:52.029Z"
         }
       ],
       "rejection_cycles": 1,
@@ -14089,7 +14269,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "worktree-isolation-C9",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-06T10:21:53.862Z"
         }
       ],
       "rejection_cycles": 1,
@@ -14277,7 +14460,10 @@
             "A010"
           ],
           "id": "non-main-artifact-branch-tests-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-06T19:14:51.142Z"
         },
         {
           "category": "test",
@@ -14771,7 +14957,10 @@
             "A007"
           ],
           "id": "worktrees-v2-timing-danger-prune-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-06T20:09:59.799Z"
         },
         {
           "category": "upstream",
@@ -14784,7 +14973,10 @@
             "A011"
           ],
           "id": "worktrees-v2-timing-danger-prune-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-06T20:09:59.799Z"
         },
         {
           "category": "upstream",
@@ -14794,7 +14986,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "worktrees-v2-timing-danger-prune-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-06T20:09:59.799Z"
         },
         {
           "category": "test",
@@ -15214,7 +15409,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-lift-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T04:23:33.913Z"
         }
       ],
       "rejection_cycles": 0,
@@ -15485,7 +15683,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "agent-dashboard-p1-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T06:55:20.148Z"
         }
       ],
       "rejection_cycles": 0,
@@ -16135,7 +16336,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-dead-links-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T07:37:51.557Z"
         },
         {
           "category": "upstream",
@@ -16146,7 +16350,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-dead-links-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T07:37:51.557Z"
         }
       ],
       "rejection_cycles": 0,
@@ -16480,7 +16687,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-production-infra-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T17:15:20.363Z"
         },
         {
           "category": "upstream",
@@ -16490,7 +16700,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "website-production-infra-C8",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T17:15:20.363Z"
         }
       ],
       "rejection_cycles": 0,
@@ -16747,7 +16960,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "phase-timing-fix-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T17:17:26.870Z"
         }
       ],
       "rejection_cycles": 0,
@@ -17034,7 +17250,10 @@
             "A022"
           ],
           "id": "website-direct-polish-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-07T18:08:18.493Z"
         },
         {
           "category": "code",
@@ -17310,7 +17529,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "ship-log-polish-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T01:37:08.981Z"
         },
         {
           "category": "upstream",
@@ -17320,7 +17542,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "ship-log-polish-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T01:37:08.981Z"
         },
         {
           "category": "code",
@@ -17635,7 +17860,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "test-suite-hygiene-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T01:46:47.006Z"
         }
       ],
       "rejection_cycles": 1,
@@ -17915,7 +18143,10 @@
           "severity": "observation",
           "suggested_action": "scope",
           "id": "website-nav-copy-polish-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T04:44:27.592Z"
         },
         {
           "category": "code",
@@ -18188,7 +18419,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "worktree-artifact-cleanup-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T04:47:42.435Z"
         }
       ],
       "rejection_cycles": 0,
@@ -18310,7 +18544,10 @@
             "A007"
           ],
           "id": "ci-artifact-path-ignore-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T05:04:36.107Z"
         },
         {
           "category": "upstream",
@@ -18320,7 +18557,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "ci-artifact-path-ignore-C2",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T05:04:36.107Z"
         },
         {
           "category": "code",
@@ -18564,7 +18804,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "website-mobile-polish-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T18:58:30.148Z"
         },
         {
           "category": "code",
@@ -18855,7 +19098,10 @@
             "A015"
           ],
           "id": "scope-validation-integrity-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-08T20:41:48.378Z"
         }
       ],
       "rejection_cycles": 0,
@@ -19076,7 +19322,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "commit-work-start-timestamps-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-09T02:22:41.840Z"
         }
       ],
       "rejection_cycles": 0,
@@ -19378,7 +19627,10 @@
             "A013"
           ],
           "id": "work-complete-merge-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-09T20:38:06.453Z"
         }
       ],
       "rejection_cycles": 0,
@@ -19706,7 +19958,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "section4-system-bento-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-09T20:48:04.339Z"
         }
       ],
       "rejection_cycles": 1,
@@ -19975,7 +20230,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "scoped-cli-commits-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-10T18:06:25.372Z"
         }
       ],
       "rejection_cycles": 0,
@@ -20271,7 +20529,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "init-scan-quality-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-10T20:40:37.562Z"
         }
       ],
       "rejection_cycles": 1,
@@ -20603,7 +20864,10 @@
             "A025"
           ],
           "id": "version-awareness-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-10T22:58:56.417Z"
         }
       ],
       "rejection_cycles": 0,
@@ -20818,7 +21082,10 @@
             "A009"
           ],
           "id": "configurability-improvements-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T08:10:49.379Z"
         },
         {
           "category": "code",
@@ -20869,7 +21136,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "configurability-improvements-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T08:10:49.379Z"
         },
         {
           "category": "code",
@@ -20939,7 +21209,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "configurability-improvements-C10",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T08:10:49.379Z"
         },
         {
           "category": "code",
@@ -21234,7 +21507,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-cycle-stage-detection-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T09:05:28.329Z"
         }
       ],
       "rejection_cycles": 0,
@@ -21422,7 +21698,10 @@
             "A016"
           ],
           "id": "add-milestone-kind-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T09:35:34.992Z"
         },
         {
           "category": "test",
@@ -21810,7 +22089,10 @@
             "A016"
           ],
           "id": "kind-aware-branch-prefixes-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T16:55:20.674Z"
         },
         {
           "category": "code",
@@ -22101,7 +22383,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "worktree-freshness-detection-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T17:38:24.394Z"
         },
         {
           "category": "code",
@@ -22310,7 +22595,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "fix-worktree-branch-parsing-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T20:23:06.254Z"
         }
       ],
       "rejection_cycles": 0,
@@ -22487,7 +22775,10 @@
             "A008"
           ],
           "id": "hygiene-debt-cleanup-C2",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T20:57:58.026Z"
         },
         {
           "category": "code",
@@ -22517,7 +22808,10 @@
             "A012"
           ],
           "id": "hygiene-debt-cleanup-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T20:57:58.026Z"
         },
         {
           "category": "test",
@@ -23143,7 +23437,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "docs-data-pipeline-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T22:39:42.969Z"
         }
       ],
       "rejection_cycles": 0,
@@ -23517,7 +23814,10 @@
             "A007"
           ],
           "id": "docs-shell-C8",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T23:29:33.473Z"
         },
         {
           "category": "test",
@@ -23540,7 +23840,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "docs-shell-C10",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-12T23:29:33.473Z"
         }
       ],
       "rejection_cycles": 0,
@@ -23961,7 +24264,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "content-pages-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-13T20:44:00.961Z"
         },
         {
           "category": "test",
@@ -24042,7 +24348,10 @@
           "severity": "observation",
           "suggested_action": "scope",
           "id": "content-pages-C13",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-13T20:44:00.961Z"
         },
         {
           "category": "code",
@@ -24122,7 +24431,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "content-pages-C19",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-13T20:44:00.961Z"
         }
       ],
       "rejection_cycles": 0,
@@ -24656,7 +24968,10 @@
             "A003"
           ],
           "id": "dynamic-pages-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T00:20:36.395Z"
         },
         {
           "category": "code",
@@ -25017,7 +25332,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "fix-timing-accuracy-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T03:31:59.296Z"
         }
       ],
       "rejection_cycles": 1,
@@ -25440,7 +25758,10 @@
             "A027"
           ],
           "id": "docs-search-polish-C10",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T03:52:55.028Z"
         }
       ],
       "rejection_cycles": 0,
@@ -25723,7 +26044,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "capture-think-time-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T04:00:05.955Z"
         }
       ],
       "rejection_cycles": 1,
@@ -26040,7 +26364,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "gantt-multi-phase-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T06:23:47.946Z"
         },
         {
           "category": "test",
@@ -26373,7 +26700,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "commit-hygiene-checks-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T07:40:19.423Z"
         },
         {
           "category": "code",
@@ -26628,7 +26958,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "worktree-build-step-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-14T07:55:44.334Z"
         }
       ],
       "rejection_cycles": 0,
@@ -26804,7 +27137,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "fix-merge-json-pollution-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T01:45:14.858Z"
         }
       ],
       "rejection_cycles": 0,
@@ -27079,7 +27415,10 @@
             "A010"
           ],
           "id": "init-commit-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T01:48:20.453Z"
         }
       ],
       "rejection_cycles": 0,
@@ -27581,7 +27920,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "findings-expand-collapse-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T03:31:52.175Z"
         },
         {
           "category": "upstream",
@@ -27591,7 +27933,10 @@
           "severity": "observation",
           "suggested_action": "scope",
           "id": "findings-expand-collapse-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T03:31:52.175Z"
         }
       ],
       "rejection_cycles": 0,
@@ -27741,7 +28086,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "docs-links-init-setup-C2",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T04:09:45.384Z"
         },
         {
           "category": "code",
@@ -27963,7 +28311,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-ci-matrix-and-broken-tests-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T06:22:49.990Z"
         },
         {
           "category": "upstream",
@@ -27973,7 +28324,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-ci-matrix-and-broken-tests-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T06:22:49.990Z"
         },
         {
           "category": "upstream",
@@ -27983,7 +28337,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-ci-matrix-and-broken-tests-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T06:22:49.990Z"
         },
         {
           "category": "test",
@@ -28211,7 +28568,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "bump-node-minimum-22-C1",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T07:00:13.044Z"
         },
         {
           "category": "code",
@@ -28234,7 +28594,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "bump-node-minimum-22-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T07:00:13.044Z"
         },
         {
           "category": "code",
@@ -28431,7 +28794,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "fix-gantt-bar-distortion-C3",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T15:54:12.931Z"
         },
         {
           "category": "code",
@@ -28666,7 +29032,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-prebuild-source-mutation-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T17:25:24.048Z"
         },
         {
           "category": "code",
@@ -28687,7 +29056,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "fix-prebuild-source-mutation-C7",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T17:25:24.048Z"
         }
       ],
       "rejection_cycles": 0,
@@ -28942,7 +29314,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "upstream-finding-resolution-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T17:47:50.001Z"
         }
       ],
       "rejection_cycles": 0,
@@ -29109,7 +29484,10 @@
             "kind-aware-branch-prefixes-C5"
           ],
           "id": "fix-work-saves-compat-C4",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T18:13:06.760Z"
         },
         {
           "category": "upstream",
@@ -29122,7 +29500,10 @@
             "fix-cycle-stage-detection-C3"
           ],
           "id": "fix-work-saves-compat-C5",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T18:13:06.760Z"
         },
         {
           "category": "upstream",
@@ -29135,7 +29516,10 @@
             "work-complete-merge-C4"
           ],
           "id": "fix-work-saves-compat-C6",
-          "status": "lesson"
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_by": "mechanical",
+          "closed_at": "2026-05-15T18:13:06.760Z"
         }
       ],
       "rejection_cycles": 0,
@@ -29160,6 +29544,271 @@
         "completed_at": "2026-05-15T18:13:06.755Z",
         "commit_count": 0,
         "base_commit": "72186019c2f9977e054fd3d9b329e616cfb8ac62"
+      }
+    },
+    {
+      "slug": "remove-lesson-status",
+      "feature": "Remove lesson status from proof system",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 28,
+        "satisfied": 28,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The finding status type only allows active, promoted, or closed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Chain health stats no longer track lessons as a separate count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "New upstream findings are automatically closed instead of lessoned",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "New upstream findings record why they were closed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "New upstream findings record they were closed mechanically",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "New upstream findings record when they were closed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Old lesson findings in the proof chain are migrated to closed during work complete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Migrated lessons without existing metadata get default close fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Migrated lessons with existing close metadata keep their original reason",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Old lesson data in proof chains is counted as closed for health calculations",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Health calculations no longer return a lesson count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The proof dashboard shows runs, active, promoted, and closed counts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The proof dashboard does not mention lessons",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The upstream staleness skip is no longer needed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The learn agent template does not reference the lesson command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The learn agent template uses 'closed' not 'closed/lesson'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The learn agent template does not recommend lesson candidates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Backfilled upstream lessons record they were closed mechanically",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Backfilled upstream lessons record when they were closed using the original entry timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The ana agent template says 'findings' not 'lessons' for proof context",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The findings documentation no longer lists lesson as a lifecycle state",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The troubleshooting guide no longer references the lesson command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The learn guide no longer references the lesson command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The README command table no longer lists the lesson command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The project-local ana agent says findings not lessons",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The project-local learn agent has no lesson references",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The project context reflects the simplified finding lifecycle",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "All tests pass after the removal",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 22,
+        "met": 22
+      },
+      "timing": {
+        "total_minutes": 871,
+        "think": 2,
+        "plan": 692,
+        "build": 11,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:625ab5ed737a46a9b3ec26de3c6e0cfb749258c3a0de45b70794060e726332bb",
+        "contract": "sha256:1b945b9b60ad41e05832057d19613fd5b539e257c1a8a6a2201ae1eacc1c8bd3",
+        "plan": "sha256:2104ba73ac523ee35f0ea4e6a9f3e6f6121eb9ae7b8181684fe71b509f6f64a6",
+        "spec": "sha256:1b5cc6b303dd31363f1e83ab534a2b21eba29a2eabfccd65b3f80fc3cbd23d59",
+        "build-report": "sha256:588c25b5613e37776cfa582b6cdd65ac6c53f1139d6c19a155d4d7bf464d1bf6",
+        "build-data": "sha256:16110f8f90565c1e4a0e709baae98d818a75e74bc2e96fbeaf9e9f4b3a0ccada",
+        "verify-report": "sha256:871980268fe74c0537410069e34a0259b6b5e8a971310d61c4d55721a9675b7a",
+        "verify-data": "sha256:b9629b6e2cabe68855bc113e9d8e1ba58de99e64f89a3565f3008e2fa8cc9322"
+      },
+      "completed_at": "2026-05-15T18:55:24.678Z",
+      "modules_touched": [
+        ".claude/agents/ana-learn.md",
+        ".claude/agents/ana.md",
+        "README.md",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts",
+        "website/content/docs/concepts/findings.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx"
+      ],
+      "scope_summary": "The lesson status occupies a semantic niche already filled by close-with-reason. Post-availability adoption data shows 128 findings closed with \"accept/intentional\" reasons vs. 6 using the lesson command — the workflow voted with its feet. The Learn agent's triage phases produce close, keep, or promote — lesson isn't part of the loop. No agent reads lessons, no command surfaces them, and Ana's own instruction to \"surface relevant lessons\" via `proof context` is broken because `getProofContext` filters lessons out. Meanwhile, 116 upstream auto-lessons (pipeline forensics about contract quality and tag collisions) dilute the concept so thoroughly that a lesson query would return 95% noise. The status adds a fourth value every consumer must handle while contributing no retrievable information.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 985,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A007",
+            "A008",
+            "A009",
+            "A027",
+            "A028"
+          ],
+          "id": "remove-lesson-status-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Stale comment references 'lesson' in getProofContext filter description",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 2257,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "remove-lesson-status-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "proofSummary.ts ~1550 lines — still past comfort threshold, this build adds 2 lines net",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "remove-lesson-status-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-15T18:55:24.678Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "promotedEntry fixture removed — may need recreation for future promoted-status tests",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Backfill migration path (Scenario 1: no metadata, Scenario 2: has metadata) lacks dedicated integration test — covered by code inspection only",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T18:31:27.000Z",
+        "completed_at": "2026-05-15T18:55:24.673Z",
+        "commit_count": 0,
+        "base_commit": "68cd51fd2bfda4ba28ee24555f969467b709a725"
       }
     }
   ],
