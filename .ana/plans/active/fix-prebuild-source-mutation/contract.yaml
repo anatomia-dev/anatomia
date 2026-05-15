@@ -1,0 +1,143 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix prebuild source mutation"
+
+assertions:
+  - id: A001
+    says: "The prebuild no longer rewrites tracked MDX source files"
+    block: "source mutation eliminated"
+    target: "updateDynamicMdxValues"
+    matcher: "not_contains"
+    value: "updateDynamicMdxValues"
+
+  - id: A002
+    says: "No MDX files contain ana:dynamic markers after the fix"
+    block: "source mutation eliminated"
+    target: "mdx.markers"
+    matcher: "equals"
+    value: 0
+
+  - id: A003
+    says: "A shared values module defines all 9 dynamic value keys in one place"
+    block: "shared values module"
+    target: "docsStatValues.valueKeys"
+    matcher: "contains"
+    value: "proofCount"
+
+  - id: A004
+    says: "The shared values module maps all 9 keys including median timings"
+    block: "shared values module"
+    target: "docsStatValues.valueKeys"
+    matcher: "contains"
+    value: "medianBuild"
+
+  - id: A005
+    says: "The tag resolution function replaces DocsStat tags with computed values"
+    block: "shared values module"
+    target: "resolveDocsStatTags.output"
+    matcher: "not_contains"
+    value: "<DocsStat"
+
+  - id: A006
+    says: "The DocsStat component renders as an inline span element"
+    block: "server component renders values"
+    target: "DocsStat.element"
+    matcher: "equals"
+    value: "span"
+
+  - id: A007
+    says: "The DocsStat component reads from the shared values module, not its own map"
+    block: "server component renders values"
+    target: "DocsStat.imports"
+    matcher: "contains"
+    value: "buildDocsStatValues"
+
+  - id: A008
+    says: "The component is registered in the MDX components map"
+    block: "server component renders values"
+    target: "mdxComponents.DocsStat"
+    matcher: "exists"
+
+  - id: A009
+    says: "The lib stripJsx resolves DocsStat tags before stripping other JSX"
+    block: "lib stripJsx resolves values"
+    target: "stripJsx.resolution"
+    matcher: "exists"
+
+  - id: A010
+    says: "Copy-as-markdown output contains resolved numbers, not component tags"
+    block: "lib stripJsx resolves values"
+    target: "stripJsx.output"
+    matcher: "not_contains"
+    value: "<DocsStat"
+
+  - id: A011
+    says: "The prebuild llms-full.txt generator resolves DocsStat tags before stripping"
+    block: "prebuild resolves values"
+    target: "generateLlmsTxt.resolution"
+    matcher: "exists"
+
+  - id: A012
+    says: "The prebuild imports the shared values module instead of defining its own map"
+    block: "prebuild resolves values"
+    target: "extractDocsData.imports"
+    matcher: "contains"
+    value: "docsStatValues"
+
+  - id: A013
+    says: "Generated llms.txt is no longer tracked in git"
+    block: "generated files gitignored"
+    target: "gitignore"
+    matcher: "contains"
+    value: "public/llms.txt"
+
+  - id: A014
+    says: "Generated llms-full.txt is no longer tracked in git"
+    block: "generated files gitignored"
+    target: "gitignore"
+    matcher: "contains"
+    value: "public/llms-full.txt"
+
+  - id: A015
+    says: "Generated search-index.json is no longer tracked in git"
+    block: "generated files gitignored"
+    target: "gitignore"
+    matcher: "contains"
+    value: "public/search-index.json"
+
+  - id: A016
+    says: "The website builds end-to-end without errors after all changes"
+    block: "build succeeds"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "website/lib/docs-data/docsStatValues.ts"
+    action: create
+  - path: "website/lib/docs-data/index.ts"
+    action: modify
+  - path: "website/lib/docs-data/stripJsx.ts"
+    action: modify
+  - path: "website/components/docs/content/DocsStat.tsx"
+    action: create
+  - path: "website/app/docs/[...slug]/page.tsx"
+    action: modify
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/content/docs/concepts/pipeline.mdx"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/content/docs/guides/verifying-changes.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: modify
+  - path: "website/content/docs/guides/reading-a-proof.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/skills.mdx"
+    action: modify
+  - path: "website/.gitignore"
+    action: modify
