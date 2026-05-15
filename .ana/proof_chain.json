@@ -25723,7 +25723,10 @@
             "A022"
           ],
           "id": "gantt-multi-phase-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by Think direct commit — removed opacity assertions and re-implementation from Gantt bar tests in proofSummary.test.ts. The test re-implemented buildGanttBars from PipelineGantt.tsx (cross-package boundary), and the production function changed to progressive opacity (commit 99e2e862) causing drift. Opacity is a rendering concern — CLI tests now test timing computation only, not website rendering decisions.",
+          "closed_at": "2026-05-15T00:22:11.245Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
