@@ -1,0 +1,204 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "ana init commit — persist infrastructure to git"
+
+assertions:
+  # AC1 + AC12: File discovery and commit
+  - id: A001
+    says: "Running init commit stages and commits discovered infrastructure files"
+    block: "commits infrastructure files to artifact branch"
+    target: "git.log.lastCommit.files"
+    matcher: "contains"
+    value: ".ana/ana.json"
+
+  - id: A002
+    says: "The commit is path-scoped to only infrastructure files"
+    block: "commits infrastructure files to artifact branch"
+    target: "git.log.lastCommit.message"
+    matcher: "contains"
+    value: "[ana]"
+
+  - id: A003
+    says: "File discovery walks known directory roots, not a hardcoded list"
+    block: "discovers files from known roots"
+    target: "discoveredFiles"
+    matcher: "contains"
+    value: ".claude/"
+
+  # AC2: Pipeline exclusions
+  - id: A004
+    says: "Proof chain files are never committed by this command"
+    block: "excludes pipeline data from commit"
+    target: "committedFiles"
+    matcher: "not_contains"
+    value: "proof_chain.json"
+
+  - id: A005
+    says: "Plan directory contents are never committed by this command"
+    block: "excludes pipeline data from commit"
+    target: "committedFiles"
+    matcher: "not_contains"
+    value: ".ana/plans/"
+
+  - id: A006
+    says: "Proof chain markdown is never committed by this command"
+    block: "excludes pipeline data from commit"
+    target: "committedFiles"
+    matcher: "not_contains"
+    value: "PROOF_CHAIN.md"
+
+  # AC3: Runtime state exclusions
+  - id: A007
+    says: "Per-developer state directory is excluded from commits"
+    block: "excludes runtime state from commit"
+    target: "committedFiles"
+    matcher: "not_contains"
+    value: ".ana/state/"
+
+  - id: A008
+    says: "Agent memory is excluded from commits"
+    block: "excludes runtime state from commit"
+    target: "committedFiles"
+    matcher: "not_contains"
+    value: ".claude/agent-memory/"
+
+  - id: A009
+    says: "Local settings file is excluded from commits"
+    block: "excludes runtime state from commit"
+    target: "committedFiles"
+    matcher: "not_contains"
+    value: "settings.local.json"
+
+  # AC4: Guard sequence
+  - id: A010
+    says: "Running from a worktree is rejected with a clear error"
+    block: "rejects execution from worktree"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A011
+    says: "Running on the wrong branch is rejected with a clear error"
+    block: "rejects wrong branch"
+    target: "stderr"
+    matcher: "contains"
+    value: "must be committed to"
+
+  - id: A012
+    says: "Running without init is rejected"
+    block: "rejects missing init"
+    target: "stderr"
+    matcher: "contains"
+    value: "ana init"
+
+  # AC5: Commit mechanics
+  - id: A013
+    says: "Commits bypass pre-commit hooks to avoid triggering unrelated checks"
+    block: "uses --no-verify on commit"
+    target: "git.commitArgs"
+    matcher: "contains"
+    value: "--no-verify"
+
+  # AC6: Idempotent behavior
+  - id: A014
+    says: "Running when nothing has changed exits successfully with an up-to-date message"
+    block: "exits cleanly when nothing to commit"
+    target: "stdout"
+    matcher: "contains"
+    value: "up to date"
+
+  - id: A015
+    says: "Running when nothing has changed does not create a new commit"
+    block: "exits cleanly when nothing to commit"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  # AC7: Commit messages
+  - id: A016
+    says: "First commit uses the initialize message"
+    block: "uses initialize message on first commit"
+    target: "git.log.lastCommit.message"
+    matcher: "contains"
+    value: "Initialize project context"
+
+  - id: A017
+    says: "Subsequent commits use the update message"
+    block: "uses update message on subsequent commits"
+    target: "git.log.lastCommit.message"
+    matcher: "contains"
+    value: "Update project context"
+
+  - id: A018
+    says: "Commit includes co-author trailer"
+    block: "uses initialize message on first commit"
+    target: "git.log.lastCommit.message"
+    matcher: "contains"
+    value: "Co-authored-by:"
+
+  # AC8: Push behavior
+  - id: A019
+    says: "Push failure does not cause the command to exit with an error code"
+    block: "soft-fails on push failure"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A020
+    says: "Push failure produces a warning message"
+    block: "soft-fails on push failure"
+    target: "stderr"
+    matcher: "contains"
+    value: "git push"
+
+  # AC9: Success message readiness check
+  - id: A021
+    says: "Init success message shows commit readiness when on the correct branch"
+    block: "displays commit readiness in success message"
+    target: "stdout"
+    matcher: "contains"
+    value: "ana init commit"
+
+  # AC10: Setup template integration
+  - id: A022
+    says: "Setup template Step 8 includes auto-commit instruction"
+    block: "setup template includes commit step"
+    target: "templateContent"
+    matcher: "contains"
+    value: "ana init commit"
+
+  # AC11: Monorepo support
+  - id: A023
+    says: "Monorepo primary package AGENTS.md is included when it exists"
+    block: "discovers monorepo AGENTS.md"
+    target: "discoveredFiles"
+    matcher: "contains"
+    value: "AGENTS.md"
+
+  # AC4: Pull before commit
+  - id: A024
+    says: "Pull conflicts cause the command to abort with a clear message"
+    block: "aborts on pull conflict"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+file_changes:
+  - path: "packages/cli/src/commands/init/commit.ts"
+    action: create
+  - path: "packages/cli/src/commands/init/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-setup.md"
+    action: modify
+  - path: "packages/cli/tests/commands/init/commit.test.ts"
+    action: create
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-setup.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/context.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/toolbelt.mdx"
+    action: modify
