@@ -19676,7 +19676,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "section4-system-bento-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed: removed dead systemThread object from copy.ts. Zero references in any TSX file — grep for systemThread returns only the definition. Type (Copy = typeof copy) auto-shrinks. Commit 3b023833.",
+          "closed_at": "2026-05-15T16:06:04.519Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
