@@ -1148,7 +1148,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
 
     // Already merged — skip merge step
     if (prData.state === 'MERGED') {
-      console.log('PR already merged. Continuing with completion...');
+      if (!options?.json) {
+        console.log('PR already merged. Continuing with completion...');
+      }
     } else {
       // Validate base branch matches artifactBranch
       if (prData.baseRefName !== artifactBranch) {
@@ -1161,7 +1163,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
       }
 
       // Attempt merge
-      console.log('Merging PR...');
+      if (!options?.json) {
+        console.log('Merging PR...');
+      }
       const mergeResult = spawnSync('gh', ['pr', 'merge', workBranchName], {
         cwd: projectRoot, encoding: 'utf-8', stdio: 'pipe',
       });
@@ -1228,7 +1232,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
         process.exit(1);
       }
 
-      console.log('PR merged.');
+      if (!options?.json) {
+        console.log('PR merged.');
+      }
     }
   }
 
@@ -1284,7 +1290,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
                 // Best-effort
               }
             }
-            console.log(chalk.yellow(`  ⚠ Removed ${buildVerifyFiles.length} untracked build/verify artifact(s) from the artifact branch (always agent-written).`));
+            if (!options?.json) {
+              console.log(chalk.yellow(`  ⚠ Removed ${buildVerifyFiles.length} untracked build/verify artifact(s) from the artifact branch (always agent-written).`));
+            }
           }
 
           // Planning artifacts require content-match before removal
@@ -1304,7 +1312,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
               for (const relPath of planningFiles) {
                 fs.unlinkSync(path.join(projectRoot, relPath));
               }
-              console.log(chalk.yellow(`  ⚠ Removed ${planningFiles.length} untracked planning artifact(s) from the artifact branch (matched merged content).`));
+              if (!options?.json) {
+                console.log(chalk.yellow(`  ⚠ Removed ${planningFiles.length} untracked planning artifact(s) from the artifact branch (matched merged content).`));
+              }
             } else {
               console.error(chalk.red('Error: Pull blocked by untracked files that differ from the merged version:'));
               for (const f of planningFiles) {
