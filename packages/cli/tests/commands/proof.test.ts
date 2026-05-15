@@ -512,6 +512,20 @@ describe('ana proof', () => {
       expect(stdout).toContain('drizzle-dialect');
       expect(stdout).toContain('Fix Drizzle schema detection');
     });
+
+    // @ana A001, A002
+    it('shows finding IDs in proof context output', async () => {
+      await createContextChain();
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['context', 'census.ts']);
+      expect(exitCode).toBe(0);
+      // Finding IDs appear parenthesized after category tag
+      expect(stdout).toContain('(drizzle-C1)');
+      expect(stdout).toContain('(drizzle-C2)');
+      // ID appears between category tag and anchor
+      expect(stdout).toContain('[code] (drizzle-C1)');
+    });
   });
 
   // @ana A011, A012, A022, A023
@@ -3926,6 +3940,97 @@ describe('ana proof', () => {
   });
 
   // ─── Audit --full tests ──────��────────────────────────────────────
+
+  describe('stale shows resolution claims section', () => {
+    it('displays claims when upstream findings have resolves referencing active findings', async () => {
+      const entries = [
+        {
+          slug: 'entry-A',
+          feature: 'Feature A',
+          result: 'PASS',
+          author: { name: 'Dev', email: 'dev@example.com' },
+          contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+          assertions: [{ id: 'A001', says: 'Works', status: 'SATISFIED' }],
+          acceptance_criteria: { total: 1, met: 1 },
+          timing: { total_minutes: 10 },
+          hashes: {},
+          completed_at: '2026-04-20T10:00:00Z',
+          modules_touched: ['src/api.ts'],
+          findings: [
+            { id: 'entry-A-C1', category: 'code', summary: 'Missing validation', file: 'src/api.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
+          ],
+          rejection_cycles: 0,
+          previous_failures: [],
+          build_concerns: [],
+        },
+        {
+          slug: 'entry-B',
+          feature: 'Feature B',
+          result: 'PASS',
+          author: { name: 'Dev', email: 'dev@example.com' },
+          contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+          assertions: [{ id: 'A001', says: 'Works', status: 'SATISFIED' }],
+          acceptance_criteria: { total: 1, met: 1 },
+          timing: { total_minutes: 10 },
+          hashes: {},
+          completed_at: '2026-04-21T10:00:00Z',
+          modules_touched: ['src/other.ts'],
+          findings: [
+            { id: 'entry-B-C1', category: 'upstream', summary: 'Validation added in this build', file: null, anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor', resolves: ['entry-A-C1'] },
+          ],
+          rejection_cycles: 0,
+          previous_failures: [],
+          build_concerns: [],
+        },
+      ];
+
+      await createTestProject(tempDir);
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'proof_chain.json'),
+        JSON.stringify({ entries }, null, 2),
+      );
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['stale']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Verify resolution claims');
+      expect(stdout).toContain('entry-B-C1 claims entry-A-C1 resolved');
+      expect(stdout).toContain('Missing validation');
+    });
+
+    it('omits resolution claims section when no claims exist', async () => {
+      const entries = [{
+        slug: 'no-claims',
+        feature: 'No Claims',
+        result: 'PASS',
+        author: { name: 'Dev', email: 'dev@example.com' },
+        contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+        assertions: [{ id: 'A001', says: 'Works', status: 'SATISFIED' }],
+        acceptance_criteria: { total: 1, met: 1 },
+        timing: { total_minutes: 10 },
+        hashes: {},
+        completed_at: '2026-04-20T10:00:00Z',
+        modules_touched: ['src/a.ts'],
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Issue', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
+        ],
+        rejection_cycles: 0,
+        previous_failures: [],
+        build_concerns: [],
+      }];
+
+      await createTestProject(tempDir);
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'proof_chain.json'),
+        JSON.stringify({ entries }, null, 2),
+      );
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['stale']);
+      expect(exitCode).toBe(0);
+      expect(stdout).not.toContain('Verify resolution claims');
+    });
+  });
 
   // @ana A026
   describe('audit --json --full bypasses caps', () => {
