@@ -1,10 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'node:fs/promises';
-import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync, spawnSync } from 'node:child_process';
 import { createPr } from '../../src/commands/pr.js';
+
+// Mock spawnSync to enable interception of gh CLI calls in PR guard tests.
+// By default passes through to the original; tests override via vi.mocked(spawnSync).
+vi.mock('node:child_process', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('node:child_process')>();
+  return { ...mod, spawnSync: vi.fn(mod.spawnSync) };
+});
 
 /**
  * Tests for `ana pr create` command
@@ -425,38 +431,118 @@ ${complianceTable}
   });
 
   describe('PR duplicate detection', () => {
+    /**
+     * Helper to create a mock spawnSync that intercepts gh commands
+     * and passes through git commands to the real implementation.
+     */
+    async function mockGhCommands(ghPrListResponse: { status: number; stdout: string }) {
+      const { spawnSync: realSpawnSync } = await vi.importActual<typeof import('node:child_process')>('node:child_process');
+      vi.mocked(spawnSync).mockImplementation(
+        ((command: string, args?: readonly string[], options?: object) => {
+          if (command === 'gh') {
+            if (args && args[0] === '--version') {
+              return { pid: 0, status: 0, stdout: 'gh version 2.0.0\n', stderr: '', output: [null, '', ''], signal: null };
+            }
+            if (args && args[0] === 'pr' && args[1] === 'list') {
+              return { pid: 0, status: ghPrListResponse.status, stdout: ghPrListResponse.stdout, stderr: '', output: [null, '', ''], signal: null };
+            }
+            if (args && args[0] === 'pr' && args[1] === 'create') {
+              return { pid: 0, status: 0, stdout: 'https://github.com/org/repo/pull/42\n', stderr: '', output: [null, '', ''], signal: null };
+            }
+            // Other gh commands — return success
+            return { pid: 0, status: 0, stdout: '', stderr: '', output: [null, '', ''], signal: null };
+          }
+          return realSpawnSync(command, args as string[], options);
+        }) as typeof spawnSync,
+      );
+    }
+
+    afterEach(() => {
+      vi.mocked(spawnSync).mockRestore();
+    });
+
     // @ana A014, A015
-    it('guard code checks for MERGED state and directs to work complete', () => {
-      const prSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'pr.ts');
-      const content = fsSync.readFileSync(prSrcPath, 'utf-8');
-      // Verify the guard checks for MERGED PRs
-      expect(content).toContain("pr.state === 'MERGED'");
-      // Verify it directs to work complete
-      expect(content).toContain('work complete');
-      // Verify it uses --head and --state all for the query
-      expect(content).toContain('--head');
-      expect(content).toContain("'--state', 'all'");
+    it('blocks PR creation when merged PR exists', async () => {
+      await createTestProject({ currentBranch: 'feature/test-feature' });
+      await createPipelineArtifacts('test-feature', {
+        includeScope: true, includePlan: true, includeBuild: true,
+        includeVerify: true, verifyResult: 'PASS', includePrSummary: true,
+      });
+      execSync('git add -A && git commit -m "artifacts"', { cwd: tempDir, stdio: 'ignore' });
+
+      await mockGhCommands({
+        status: 0,
+        stdout: JSON.stringify([{ state: 'MERGED', url: 'https://github.com/org/repo/pull/1' }]),
+      });
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => { throw new Error('process.exit'); }) as never);
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      try { createPr('test-feature'); } catch { /* expected */ }
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      const errorOutput = errorSpy.mock.calls.flat().join(' ');
+      expect(errorOutput).toContain('was already merged');
+      expect(errorOutput).toContain('work complete');
+
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
     });
 
     // @ana A016, A017
-    it('guard code checks for OPEN state and includes PR URL', () => {
-      const prSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'pr.ts');
-      const content = fsSync.readFileSync(prSrcPath, 'utf-8');
-      // Verify the guard checks for OPEN PRs
-      expect(content).toContain("pr.state === 'OPEN'");
-      // Verify it shows the existing PR URL
-      expect(content).toContain('is already open');
-      expect(content).toContain('pr.url');
+    it('blocks PR creation when open PR exists', async () => {
+      await createTestProject({ currentBranch: 'feature/test-feature' });
+      await createPipelineArtifacts('test-feature', {
+        includeScope: true, includePlan: true, includeBuild: true,
+        includeVerify: true, verifyResult: 'PASS', includePrSummary: true,
+      });
+      execSync('git add -A && git commit -m "artifacts"', { cwd: tempDir, stdio: 'ignore' });
+
+      await mockGhCommands({
+        status: 0,
+        stdout: JSON.stringify([{ state: 'OPEN', url: 'https://github.com/org/repo/pull/140' }]),
+      });
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => { throw new Error('process.exit'); }) as never);
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      try { createPr('test-feature'); } catch { /* expected */ }
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      const errorOutput = errorSpy.mock.calls.flat().join(' ');
+      expect(errorOutput).toContain('is already open');
+      expect(errorOutput).toContain('https://github.com/org/repo/pull/140');
+
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
     });
 
     // @ana A018
-    it('guard allows PR creation when no existing PR found', () => {
-      const prSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'pr.ts');
-      const content = fsSync.readFileSync(prSrcPath, 'utf-8');
-      // The guard iterates existing PRs — if none match MERGED or OPEN, no exit
-      expect(content).toContain('for (const pr of existingPrs)');
-      // After the for loop and catch, code continues to step 4 (read verify report)
-      expect(content).toContain('// 4. Read verify report');
+    it('allows PR creation when no existing PR found', async () => {
+      await createTestProject({ currentBranch: 'feature/test-feature' });
+      await createPipelineArtifacts('test-feature', {
+        includeScope: true, includePlan: true, includeBuild: true,
+        includeVerify: true, verifyResult: 'PASS', includePrSummary: true,
+      });
+      execSync('git add -A && git commit -m "artifacts"', { cwd: tempDir, stdio: 'ignore' });
+
+      await mockGhCommands({
+        status: 0,
+        stdout: JSON.stringify([]),
+      });
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      createPr('test-feature');
+
+      // Guard passed — function did not exit(1) with guard messages
+      const errorOutput = errorSpy.mock.calls.flat().join(' ');
+      expect(errorOutput).not.toContain('was already merged');
+      expect(errorOutput).not.toContain('is already open');
+      // Function completed and printed PR URL
+      const logOutput = logSpy.mock.calls.flat().join(' ');
+      expect(logOutput).toContain('PR created');
+
+      logSpy.mockRestore();
+      errorSpy.mockRestore();
     });
   });
 

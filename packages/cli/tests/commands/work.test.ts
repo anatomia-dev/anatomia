@@ -3,7 +3,14 @@ import * as fs from 'node:fs/promises';
 import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
+
+// Mock spawnSync for merge detection tests (A019, A020).
+// Passes through to the real implementation by default.
+vi.mock('node:child_process', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('node:child_process')>();
+  return { ...mod, spawnSync: vi.fn(mod.spawnSync) };
+});
 import { getWorkStatus, completeWork, startWork, getClaudePid, checkConcurrencyGuard } from '../../src/commands/work.js';
 
 /**
@@ -5626,27 +5633,150 @@ describe('concurrency guards', () => {
   });
 
   // @ana A019
-  it('completeWork merge detection uses gh pr list before is-ancestor', () => {
-    const workSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'work.ts');
-    const content = fsSync.readFileSync(workSrcPath, 'utf-8');
-    const ghListIdx = content.indexOf("'pr', 'list', '--head'");
-    const isAncestorIdx = content.indexOf("'merge-base', '--is-ancestor'", ghListIdx);
-    expect(ghListIdx).toBeGreaterThan(-1);
-    expect(isAncestorIdx).toBeGreaterThan(ghListIdx);
+  it('detects merge via gh when is-ancestor fails', async () => {
+    // Create project with a bare remote so hasRemote=true
+    const remoteDir = tempDir + '-remote';
+    execSync(`git init --bare "${remoteDir}"`, { stdio: 'ignore' });
+
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+    execSync(`git remote add origin "${remoteDir}"`, { cwd: tempDir, stdio: 'ignore' });
+
+    // Set up ana.json and pipeline artifacts on main
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(path.join(anaDir, 'ana.json'), JSON.stringify({ artifactBranch: 'main' }), 'utf-8');
+    const slugPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+    await fs.mkdir(slugPath, { recursive: true });
+    await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec', 'utf-8');
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git push -u origin main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Create feature branch with build/verify reports — NOT merged (is-ancestor will fail)
+    execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+    await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build Report', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
+    const savesEntries = {
+      'build-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+      'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+    };
+    await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify(savesEntries), 'utf-8');
+    execSync('git add -A && git commit -m "reports"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git push -u origin feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Restore artifacts on filesystem (checkout main removes feature-only files)
+    await fs.mkdir(slugPath, { recursive: true });
+    await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build Report', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
+    const savesOnMain = {
+      'build-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+      'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+    };
+    await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify(savesOnMain), 'utf-8');
+
+    // Mock spawnSync: gh says MERGED, git commands pass through
+    const { spawnSync: realSpawnSync } = await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    vi.mocked(spawnSync).mockImplementation(
+      ((command: string, args?: readonly string[], options?: object) => {
+        if (command === 'gh') {
+          if (args && args[0] === 'pr' && args[1] === 'list' && args?.includes('--state')) {
+            return { pid: 0, status: 0, stdout: 'MERGED\n', stderr: '', output: [null, '', ''], signal: null };
+          }
+          return { pid: 0, status: 1, stdout: '', stderr: 'gh not available', output: [null, '', ''], signal: null };
+        }
+        return realSpawnSync(command, args as string[], options);
+      }) as typeof spawnSync,
+    );
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // completeWork should succeed — merge detected via gh even though branch is not merged locally
+    await completeWork('test-slug');
+
+    // Verify it completed (directory archived)
+    const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+    expect(fsSync.existsSync(completedPath)).toBe(true);
+
+    vi.mocked(spawnSync).mockRestore();
+    logSpy.mockRestore();
+    errorSpy.mockRestore();
+    // Clean up remote dir
+    await fs.rm(remoteDir, { recursive: true, force: true });
   });
 
   // @ana A020
-  it('completeWork falls back to is-ancestor when gh unavailable', () => {
-    const workSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'work.ts');
-    const content = fsSync.readFileSync(workSrcPath, 'utf-8');
-    const mergeBlock = content.slice(
-      content.indexOf('// Detect merge: gh pr list first'),
-      content.indexOf('if (!merged) {', content.indexOf('// Detect merge: gh pr list first')),
+  it('falls back to is-ancestor when gh unavailable', async () => {
+    // Create project with a bare remote so hasRemote=true
+    const remoteDir = tempDir + '-remote';
+    execSync(`git init --bare "${remoteDir}"`, { stdio: 'ignore' });
+
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+    execSync(`git remote add origin "${remoteDir}"`, { cwd: tempDir, stdio: 'ignore' });
+
+    // Set up ana.json and pipeline artifacts on main
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(path.join(anaDir, 'ana.json'), JSON.stringify({ artifactBranch: 'main' }), 'utf-8');
+    const slugPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+    await fs.mkdir(slugPath, { recursive: true });
+    await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec', 'utf-8');
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git push -u origin main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Create feature branch, then merge it (is-ancestor will succeed)
+    execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+    await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build Report', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
+    const savesEntries = {
+      'build-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+      'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+    };
+    await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify(savesEntries), 'utf-8');
+    execSync('git add -A && git commit -m "reports"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git push -u origin feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git merge --no-ff feature/test-slug -m "merge"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git push origin main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Mock spawnSync: gh fails, git commands pass through (is-ancestor succeeds naturally)
+    const { spawnSync: realSpawnSync } = await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    vi.mocked(spawnSync).mockImplementation(
+      ((command: string, args?: readonly string[], options?: object) => {
+        if (command === 'gh') {
+          return { pid: 0, status: 1, stdout: '', stderr: 'gh not found', output: [null, '', ''], signal: null };
+        }
+        return realSpawnSync(command, args as string[], options);
+      }) as typeof spawnSync,
     );
-    expect(mergeBlock).toContain('--state');
-    expect(mergeBlock).toContain('merged');
-    expect(mergeBlock).toContain('merge-base');
-    expect(mergeBlock).toContain('--is-ancestor');
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // completeWork should succeed — merge detected via is-ancestor fallback
+    await completeWork('test-slug');
+
+    // Verify it completed (directory archived)
+    const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+    expect(fsSync.existsSync(completedPath)).toBe(true);
+
+    vi.mocked(spawnSync).mockRestore();
+    logSpy.mockRestore();
+    errorSpy.mockRestore();
+    // Clean up remote dir
+    await fs.rm(remoteDir, { recursive: true, force: true });
   });
 
   // @ana A022
