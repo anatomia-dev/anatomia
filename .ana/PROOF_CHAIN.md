@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-96 runs · 88 active · 117 lessons · 0 promoted · 384 closed
+96 runs · 87 active · 117 lessons · 0 promoted · 385 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 14 | 8 |
-| packages/cli/tests/commands/work.test.ts | 9 | 8 |
+| packages/cli/tests/commands/work.test.ts | 8 | 8 |
 | packages/cli/src/utils/worktree.ts | 5 | 3 |
 | packages/cli/src/commands/proof.ts | 4 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 4 | 2 |
@@ -16,12 +16,13 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 88 total)
+## Active Findings (30 shown of 87 total)
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix') — *Kind-aware branch prefixes*
+- **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 
 ### packages/cli/src/types/proof.ts
 
@@ -40,7 +41,6 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
-- **test:** A008 ordering verified by inspection only — no test enforces delete-before-use sequence — *Capture actual think time from Ana session start*
 
 ### website/app/docs/[...slug]/page.tsx
 

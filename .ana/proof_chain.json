@@ -25489,7 +25489,10 @@
             "A008"
           ],
           "id": "capture-think-time-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Ordering is immaterial: even if read→use→delete instead of read→delete→use (work.ts:1848-1850), the worst case is two simultaneous startWork calls reading the same session file. Both would get the same timestamp — which is correct since they're in the same Claude session. The session file records 'when did this Claude session start' — that value is the same for all slugs started in the same session. The test at line 4714 proves the file IS deleted, which is the important invariant.",
+          "closed_at": "2026-05-15T01:13:59.532Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
