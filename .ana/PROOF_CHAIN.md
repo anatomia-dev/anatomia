@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-102 runs · 77 active · 122 lessons · 3 promoted · 413 closed
+102 runs · 76 active · 122 lessons · 3 promoted · 414 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 77 total)
+## Active Findings (30 shown of 76 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -55,6 +55,10 @@
 
 - **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
+### website/app/docs/layout.tsx
+
+- **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
 ### website/app/docs/reference/cli/page.tsx
 
 - **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
@@ -70,7 +74,6 @@
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
-- **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
 - **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
 
 ### website/components/docs/proof/FindingsList.tsx

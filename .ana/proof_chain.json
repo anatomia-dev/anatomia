@@ -24587,7 +24587,10 @@
           "severity": "observation",
           "suggested_action": "scope",
           "id": "dynamic-pages-C9",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: claudeUrl/chatgptUrl at RightRail.tsx:48-53 use '#' as graceful degradation when prompt is empty (variant lacks data). proofLinks?.githubUrl at line 205 falls back to '#' when prop is missing. These are conditional renders, not forgotten placeholders.",
+          "closed_at": "2026-05-15T04:39:54.305Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
