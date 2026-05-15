@@ -18298,7 +18298,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "ci-artifact-path-ignore-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-ci-matrix-and-broken-tests: staging branch removed from .github/workflows/test.yml trigger list. Zero matches for 'staging' in the file. Verify upstream finding C5 confirmed.",
+          "closed_at": "2026-05-15T06:34:24.597Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
