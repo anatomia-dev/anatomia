@@ -27369,7 +27369,10 @@
             "A003"
           ],
           "id": "findings-expand-collapse-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Harmless CSS redundancy: cursor:pointer on parent div (line 111) and inner span (line 125). Inner inherits from parent. Removing the inner one changes nothing visually. Belt-and-suspenders styling.",
+          "closed_at": "2026-05-15T03:35:31.096Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-101 runs · 85 active · 121 lessons · 0 promoted · 406 closed
+101 runs · 84 active · 121 lessons · 0 promoted · 407 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 85 total)
+## Active Findings (30 shown of 84 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -69,10 +69,10 @@
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 - **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
+- **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
 
 ### website/components/docs/proof/FindingsList.tsx
 
-- **code:** Redundant cursor:pointer on inner collapse span — parent div already sets it — *FindingsList expand/collapse for proof pages*
 - **code:** Toggle pattern deviates from AssertionLedger — uses !expanded toggle vs separate true/false calls — *FindingsList expand/collapse for proof pages*
 - **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
 
