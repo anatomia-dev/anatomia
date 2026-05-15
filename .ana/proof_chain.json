@@ -10118,7 +10118,10 @@
             "A014"
           ],
           "id": "strengthen-weak-test-assertions-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Tests are correctly scoped: each test at work.test.ts:2912/2955/3005/3058 verifies a specific trigger→nudge mapping (new_candidates→learn, trend_worsened→audit, informational→no nudge). The hardcoded patterns ('→ claude', '→ ana proof') are the ACTUAL nudge text — asserting on them is asserting on the correct output. If a new nudge type is added, a new test would be written for it. The tests verify what exists, not what might exist in the future.",
+          "closed_at": "2026-05-15T01:57:37.454Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
