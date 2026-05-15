@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-96 runs · 85 active · 117 lessons · 0 promoted · 387 closed
+96 runs · 84 active · 117 lessons · 0 promoted · 388 closed
 
 ## Hot Modules
 
@@ -16,13 +16,14 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 85 total)
+## Active Findings (30 shown of 84 total)
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** getWorkBranch glob pattern `*${slug}` may over-match for short slugs (e.g., slug 'fix' matches all branches containing 'fix') — *Kind-aware branch prefixes*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
+- **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 
 ### packages/cli/src/types/proof.ts
 
@@ -71,10 +72,6 @@
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 - **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
 - **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
-
-### website/components/docs/proof/FindingsList.tsx
-
-- **code:** FindingsList shows max 5 findings with no toggle to expand — AssertionLedger has expand/collapse but FindingsList truncates permanently — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 

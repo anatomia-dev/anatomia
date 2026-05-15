@@ -24575,7 +24575,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "dynamic-pages-C11",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Scoped: FindingsList expand/collapse scope prompt delivered to Think. 48% of proof pages (46 of 96 entries) truncate findings at 5 with no expand. Scope adds useState toggle matching AssertionLedger pattern on the same page. Converts server component to client component (same as AssertionLedger). One-file change, no CLI impact.",
+          "closed_at": "2026-05-15T01:24:42.390Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
