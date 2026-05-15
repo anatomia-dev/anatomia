@@ -9,7 +9,7 @@ Every file path and code identifier below is verified against the current codeba
 ## Development Setup
 
 **Prerequisites:**
-- Node.js 20+
+- Node.js 22+
 - pnpm 9+
 
 **Setup:**
@@ -395,7 +395,7 @@ The catch blocks in `src/` are all legitimately one of the three patterns above.
 
 1. Create a branch: `feature/<slug>` or `fix/<short-description>`
 2. Open a PR to `main`
-3. **CI must pass** — the workflow runs typecheck + typecheck:tests + lint + test + build on Ubuntu x Node 20/22
+3. **CI must pass** — the workflow runs typecheck + typecheck:tests + lint + test + build on Ubuntu x Node 22/24
 4. **Pre-commit hook** runs typecheck + typecheck:tests + lint locally on every commit (installed by husky; `pnpm install` sets it up)
 5. **Human review required** before merge
 6. **Squash-merge preferred** for clean history
@@ -411,7 +411,7 @@ Do not `--no-verify`. The pre-commit hook catches the exact class of bugs that l
 3. Make your changes — the husky pre-commit hook will run checks on every commit
 4. Run the full suite locally: `cd packages/cli && pnpm vitest run && pnpm lint && pnpm typecheck && pnpm typecheck:tests`
 5. Push and open a Pull Request
-6. Wait for CI — the same four checks run on Ubuntu x Node 20/22
+6. Wait for CI — the same four checks run on Ubuntu x Node 22/24
 7. Address review feedback
 
 **PR requirements:**

@@ -32,7 +32,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 
-    // Language Target - Node 20+ supports ES2022
+    // Language Target - Node 22+ supports ES2022
     "target": "ES2022",
     "lib": ["ES2022"],
 

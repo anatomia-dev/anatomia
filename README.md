@@ -53,7 +53,7 @@ Like what you see? Install globally to use the `ana` command directly:
 npm install -g anatomia-cli
 ```
 
-Requires Node.js 20+.
+Requires Node.js 22+.
 
 ## Quick start
 

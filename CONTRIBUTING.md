@@ -10,4 +10,4 @@ It covers:
 
 ## Workspace Setup
 
-Requires Node.js 20+ and pnpm 9+. Run `pnpm install` at the repo root.
+Requires Node.js 22+ and pnpm 9+. Run `pnpm install` at the repo root.

@@ -846,6 +846,84 @@
     "route": "/docs/proof/dynamic-pages"
   },
   {
+    "type": "proof",
+    "title": "fix-timing-accuracy — Fix pipeline timing accuracy for multi-phase and rejection cycles",
+    "description": "Pipeline timing records inaccurate build/verify splits for any proof with multi-phase builds or rejection cycles. A 3-phase, 108-minute pipeline run (content-pages) initially recorded 0 minutes due to a key-lookup bug. The hotfix (`getLatestTime`) fixed the lookup but still produces wrong splits: for dynamic-pages (2 phases), it records build=56m/verify=41m when the accurate values are build=46m/verify=22m. The same conflation affects all 19 rejected proofs (21% of the chain). The total is always correct — it's the build/verify attribution that's wrong, with verify time counted as build time.",
+    "route": "/docs/proof/fix-timing-accuracy"
+  },
+  {
+    "type": "proof",
+    "title": "docs-search-polish — Docs Search + Polish",
+    "description": "The docs site has 124 pages rendering across 37 routes with 171/171 contract assertions passing (Scopes 1-5). But it can't ship: search is a disabled button, the AI surface is placeholder links pointing at `#`, 10 hardcoded numbers are already stale (78 → 90 proofs), and there's no build safety net for link rot. This scope makes the site production-ready — users can find content, the AI links work, the numbers stay current, and the build catches broken links.",
+    "route": "/docs/proof/docs-search-polish"
+  },
+  {
+    "type": "proof",
+    "title": "capture-think-time — Capture actual think time from Ana session start",
+    "description": "The think phase in pipeline timing systematically undercounts. Every proof shows 1-2 minutes of \"think\" time because the clock starts at `ana work start` (when the slug directory is created), not when the Ana conversation actually began. The real thinking — investigation, navigation, tradeoff discussion, scope drafting — happens before `work start`. A 45-minute scoping conversation records as 1 minute.",
+    "route": "/docs/proof/capture-think-time"
+  },
+  {
+    "type": "proof",
+    "title": "gantt-multi-phase — Multi-phase Gantt visualization for proof timeline",
+    "description": "The pipeline Gantt chart on proof detail pages always renders 4 bars (Think, Plan, Build, Verify) regardless of how many phases a proof went through. A 3-phase proof like content-pages (108 minutes across 3 build/verify cycles) shows a single \"Build 57m\" bar and \"Verify 30m\" bar — hiding that phase 1 took 32+7 minutes, phase 2 took 14+13 minutes, and phase 3 took 11+10 minutes. The temporal shape of the pipeline run is invisible.",
+    "route": "/docs/proof/gantt-multi-phase"
+  },
+  {
+    "type": "proof",
+    "title": "commit-hygiene-checks — Commit hygiene checks at build-report save",
+    "description": "Build agents make normal `git commit` calls during the build phase — code changes, test additions, dependency updates. These commits go through whatever hooks the project has (or doesn't have). But `ana artifact save build-report` commits with `--no-verify`, bypassing all hooks. Between these two commit types, there's no mechanical check that inspects the full branch diff for pipeline-specific footguns.",
+    "route": "/docs/proof/commit-hygiene-checks"
+  },
+  {
+    "type": "proof",
+    "title": "worktree-build-step — Run build command during worktree creation",
+    "description": "Build agents enter fresh worktrees and hit 283 test failures (MODULE_NOT_FOUND) because `dist/` is gitignored and `createWorktree()` never runs the project's build command. The developer wants worktrees to be ready for baseline testing the moment they're created — deps installed, env linked, artifacts built.",
+    "route": "/docs/proof/worktree-build-step"
+  },
+  {
+    "type": "proof",
+    "title": "fix-merge-json-pollution — Fix --merge stdout pollution in --json mode",
+    "description": "`ana work complete --merge --json <slug>` produces invalid JSON output. Progress messages (\"Merging PR...\", \"PR merged.\") and pull-recovery warnings write to stdout before the JSON envelope, breaking any consumer that pipes the output to `jq` or parses it programmatically. The fix guards these messages behind `if (!options?.json)` and adds test coverage for the `--merge --json` interaction.",
+    "route": "/docs/proof/fix-merge-json-pollution"
+  },
+  {
+    "type": "proof",
+    "title": "init-commit — ana init commit — persist infrastructure to git",
+    "description": "The CLI has no concept of committing infrastructure. Init writes files to disk. Setup enriches them. Neither commits. A teammate who clones gets nothing Anatomia-related. The investment of a 10-minute setup session exists only on one developer's machine. This scope adds `ana init commit` — a command that commits Anatomia infrastructure files to the artifact branch, distinct from pipeline artifacts (`ana artifact save`) and proof chain data (`ana work complete`, `ana proof close/promote/strengthen`).",
+    "route": "/docs/proof/init-commit"
+  },
+  {
+    "type": "proof",
+    "title": "worktree-guard-tests — Worktree Guard Integration Tests",
+    "description": "Three CLI commands hard-block execution when run from inside a worktree: `init`, `setup complete`, and `work complete`. A fourth (`scan --save`) warns but continues. These guards prevent repo corruption — running `init` from a worktree creates a nested `.ana/`, running `work complete` corrupts the proof chain. All four guards are verified only by source inspection (A028, A030, A031, A032 in the worktree-isolation verify report). No integration test verifies that the guard actually fires when a command runs from inside a worktree. This scope adds those tests.",
+    "route": "/docs/proof/worktree-guard-tests"
+  },
+  {
+    "type": "proof",
+    "title": "work-ts-branch-coverage — work.ts untested branch coverage",
+    "description": "Two proof findings (proof-health-v2-C12, proof-health-v2-C8) identify untested defensive branches in work.ts. The UNKNOWN verification result warning and the git pull conflict error path have zero test coverage. Both protect users from silent failures — a malformed verify report proceeding unnoticed, and a rebase conflict during completion losing work. The user wants regression tests for both paths.",
+    "route": "/docs/proof/work-ts-branch-coverage"
+  },
+  {
+    "type": "proof",
+    "title": "findings-expand-collapse — FindingsList expand/collapse for proof pages",
+    "description": "Nearly half of proof pages (46 of 96 entries, 48%) show truncated findings with no way to view the rest. FindingsList hard-caps at 5 items and renders a \"+N more findings\" badge that is purely informational. Users see data is hidden but have no way to reveal it. AssertionLedger on the same page already has expand/collapse — FindingsList should match.",
+    "route": "/docs/proof/findings-expand-collapse"
+  },
+  {
+    "type": "proof",
+    "title": "docs-links-init-setup — Documentation links in init and setup",
+    "description": "Users complete init and setup without knowing the documentation exists. The docs site has a quickstart guide, a detailed setup walkthrough, and Anatomia's own design principles as a working example — content that directly helps at the moments users encounter it. The CLI and agent template should surface these URLs at the right moments: orientation points where users are deciding what to do, not flow moments where they're in the middle of doing something.",
+    "route": "/docs/proof/docs-links-init-setup"
+  },
+  {
+    "type": "proof",
+    "title": "fix-ci-matrix-and-broken-tests — Fix CI Matrix and Broken Tests",
+    "description": "CI has been red for 50+ consecutive runs. Three tests in `work.test.ts` have never passed in CI since they were added (May 13-14). Windows runners intermittently timeout on top of that. The entire user base runs on macOS/Linux (Claude Code doesn't run natively on Windows), and the CLI has zero OS-specific code paths. We're burning billable minutes and developer attention on platforms that don't serve our users, and the constant red masks real regressions.",
+    "route": "/docs/proof/fix-ci-matrix-and-broken-tests"
+  },
+  {
     "type": "agent",
     "title": "ana-build",
     "description": "Builder. Implements spec, writes tests tagged to contract, produces build report.",

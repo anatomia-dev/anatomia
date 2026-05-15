@@ -7,7 +7,7 @@ lastReviewed: "2026-05-13"
 
 ## Prerequisites
 
-- Node.js 20 or later
+- Node.js 22 or later
 - Git with `user.name` and `user.email` configured
 - A Git repository with at least one commit
 - [Claude Code](https://claude.ai/code) with an active subscription — needed for pipeline agents (Steps 3–4)
@@ -72,7 +72,7 @@ Ana investigates the codebase, surfaces tradeoffs, and writes a scope. You can s
 Each agent runs CLI commands like `ana work start` and `ana artifact save` under the hood — managing worktrees, validating artifact structure, and computing integrity hashes. You don't run these manually.
 </Callout>
 
-If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — 19 of Anatomia's own 90 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}
+If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — 21 of Anatomia's own 103 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}
 
 ## Step 4: Review, merge, and complete
 

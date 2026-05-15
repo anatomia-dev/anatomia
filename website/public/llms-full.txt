@@ -95,27 +95,37 @@ Context describes the project — what it does, who it serves, how it's organize
 
 ## What each file does
 
-### [project-context.md](/docs/reference/context)
+### project-context.md
 
 Read by: `ana` (Think), `ana-plan`, `ana-learn`. The most important context file — it tells agents why the product exists, who it serves, what decisions the team has made and why, and what looks wrong but is intentional. Without this, agents understand your stack but not your product.
 
-### [design-principles.md](/docs/reference/context)
+### design-principles.md
 
 Read by: `ana` (Think), `ana-plan`, `ana-learn`. When building costs zero, knowing *what* to build is the only differentiation. Design principles are how Ana evaluates tradeoffs, how Plan makes design decisions, and how Learn judges whether a finding is worth promoting. They encode your team's taste — the thing that makes your product yours and not a generic implementation.
 
 The gatekeeping rule: if a principle wouldn't change how you scope or design, it doesn't belong here. Principles that don't change decisions are decoration.
 
-### [scan.json](/docs/reference/context)
+### scan.json
 
 Read by: all agents. The machine-detected truth about your project. Stack, file counts, patterns, conventions, dependencies. Regenerated from scratch on each `ana scan`. Don't edit this file — run `ana scan` to refresh it.
 
-### [ana.json](/docs/reference/context)
+### ana.json
 
 Read by: all agents, the CLI. The configuration file for the [toolbelt](/docs/concepts/toolbelt) — build, test, and lint commands that agents run mechanically, co-author trailer for commits, artifact branch. On re-init, user fields (`commands`, `coAuthor`, `artifactBranch`) are preserved; machine fields (`anaVersion`, `lastScanAt`) are refreshed.
 
 ## Who reads context — and who doesn't
 
 Think, Plan, and Learn read context files on every startup. Build and Verify do not — they're explicitly forbidden. This is intentional: Build and Verify get project knowledge through the spec that Plan wrote, not directly from context. Plan distills what's relevant for the current task. This prevents agents from being influenced by context that Plan didn't consider relevant.
+
+## Infrastructure persistence
+
+Context files follow a create-enrich-persist lifecycle:
+
+1. **Init** creates the infrastructure locally — `.ana/`, `.claude/`, `CLAUDE.md`, `AGENTS.md`
+2. **Setup** enriches context files, design principles, and skills with project-specific knowledge
+3. **`ana init commit`** persists everything to the artifact branch
+
+The commit command discovers dirty infrastructure files from known directory roots, excludes pipeline data (proof chain, plans) and per-developer state (agent memory, local settings), and commits with a path-scoped `--no-verify` commit. It's idempotent — running it when nothing has changed exits cleanly.
 
 ## How context stays fresh
 
@@ -279,7 +289,7 @@ Each agent runs in a separate Claude Code session with no shared memory. The con
 
 ## When Verify fails
 
-Verify can return FAIL. When it does, the work goes back to Build: fix the issues, re-run Verify. This is normal — 19 of Anatomia's own 90 proofs had rejection cycles.  The pipeline is designed for iteration, not perfection on the first pass.
+Verify can return FAIL. When it does, the work goes back to Build: fix the issues, re-run Verify. This is normal — 21 of Anatomia's own 103 proofs had rejection cycles.  The pipeline is designed for iteration, not perfection on the first pass.
 
 ## What each stage produces
 
@@ -420,6 +430,7 @@ Every agent runs `ana work status` on startup to discover pipeline state. Beyond
 | `ana-build` | [`ana work start`](/docs/reference/cli), [`ana artifact save build-report`](/docs/reference/cli), build/test/lint from `ana.json` |
 | `ana-verify` | [`ana verify pre-check`](/docs/reference/cli), [`ana artifact save verify-report`](/docs/reference/cli), [`ana pr create`](/docs/reference/cli) |
 | `ana-learn` | [`ana proof audit`](/docs/reference/cli), [`ana proof promote`](/docs/reference/cli), [`ana proof close`](/docs/reference/cli), [`ana proof stale`](/docs/reference/cli) |
+| `ana-setup` | [`ana init commit`](/docs/reference/cli) — persists infrastructure to the artifact branch after setup completes |
 
 ## Why this matters
 
@@ -661,7 +672,7 @@ Score is contract assertions satisfied. Findings are independent observations fr
 
 Four bars showing Think, Plan, Build, and Verify. The shape tells you what kind of work this was. Security-hardening: Think 2m, Plan 15m, Build 53m, Verify 5m — a heavy build, light verification. Compare with [worktree-isolation](/docs/proof/worktree-isolation): Think 3m, Plan 22m, Build 63m, Verify 11m — similar build but double the verification time because the contract had 45 assertions.
 
-The median across all 90 proofs: 7m think, 10m plan, 31m build, 8m verify.
+The median across all 103 proofs: 9m think, 10m plan, 27m build, 7m verify.
 
 ## The assertion ledger
 
@@ -707,7 +718,7 @@ Scan → init → setup → first pipeline run. Once you complete one end-to-end
 
 1. Run from your project root, not a subdirectory or a worktree
 2. Git must be configured: `git status` must succeed, `git config user.name` and `user.email` must be set
-3. Node 20+ required (`node --version`) — declared in `package.json` but not checked at runtime, so older versions produce cryptic errors
+3. Node 22+ required (`node --version`) — declared in `package.json` but not checked at runtime, so older versions produce cryptic errors
 4. If a prior init was interrupted, you'll see "Found incomplete init from a previous run" — follow the recovery steps it prints
 5. If re-initializing: `ana init --force` skips confirmation prompts but still preserves your data
 
@@ -719,7 +730,7 @@ Anatomia scans the full repository, not individual packages. Init detects your p
 
 ## Pipeline problems
 
-FAIL means Verify found issues — this is the pipeline working as designed. 19 of our 90 proofs had rejection cycles. 
+FAIL means Verify found issues — this is the pipeline working as designed. 21 of our 103 proofs had rejection cycles. 
 
 1. Read `verify_report.md`. It lists every UNSATISFIED assertion with evidence.
 2. Common causes: test tagged `@ana A003` but doesn't actually test what the contract says, missing test tags, tests that pass on both correct and incorrect implementations.
@@ -931,6 +942,8 @@ The cost of building is near zero — the cost of building the
 WRONG thing is enormous. Spend time on diagnosis and design.
 ```
 
+See our design principles reference for the full list and how each one shapes agent behavior.
+
 "Name the disease" means Think pushes back on symptom-level requests. "Every character earns its place" means Plan writes tighter specs. "Think more, build less" means Think spends longer on tradeoff analysis before recommending an approach. Each one shapes agent behavior on every pipeline run.
 
 ### 5. Skill enrichment
@@ -940,6 +953,12 @@ Setup asks two more questions: how code reaches production (writes your deployme
 Then it reads your error handling, import patterns, test structure, and CI configuration, and drafts enrichments for every remaining skill. You can review each file individually (`"show me coding-standards"`) or accept all at once. Every enrichment includes rationale — what setup found in your code and why Build would write different code with the rule.
 
 If a template rule contradicts your codebase (e.g., "prefer named exports" but you use default exports), setup adjusts the rule and flags it with ⚠ for review.
+
+## Infrastructure persistence
+
+When setup completes on the artifact branch, it automatically runs `ana init commit` to persist all infrastructure changes to git. This includes context files, design principles, and enriched skills — everything setup wrote during the session.
+
+If you're on a different branch, setup prints a reminder to switch and run `ana init commit` manually.
 
 ## Re-running setup
 
@@ -1010,7 +1029,7 @@ Findings measure depth of review. The verdict measures contract compliance. They
 
 ## When Verify fails
 
-FAIL sends the work back to Build. 19 of Anatomia's own 90 proofs had rejection cycles. 
+FAIL sends the work back to Build. 21 of Anatomia's own 103 proofs had rejection cycles. 
 
 1. Read the verify report. It lists every UNSATISFIED assertion and every finding.
 2. Run `claude --agent ana-build`. Build reads the verify report and fixes exactly what failed.
@@ -1049,7 +1068,7 @@ After PASS, you have `build_report.md` and `verify_report.md`. Read both before 
 
 ## Prerequisites
 
-- Node.js 20 or later
+- Node.js 22 or later
 - Git with `user.name` and `user.email` configured
 - A Git repository with at least one commit
 - [Claude Code](https://claude.ai/code) with an active subscription — needed for pipeline agents (Steps 3–4)
@@ -1079,6 +1098,16 @@ terminal
 
 **Optional but recommended:** Run `claude --agent ana-setup` to calibrate project knowledge (~10 min). Setup investigates your codebase, asks 2–3 questions, and writes rich context.
 
+### Persist to git
+
+Init created files locally. Commit them to your artifact branch so every collaborator and agent session has the same context:
+
+```bash
+ana init commit
+```
+
+This stages only infrastructure files (`.ana/`, `.claude/`, `CLAUDE.md`, `AGENTS.md`), commits with `--no-verify`, and pushes. Pipeline data and per-developer state are automatically excluded.
+
 ## Step 3: First pipeline run
 
 Describe a small change — a single-file fix or a feature you'd normally spend 30 minutes on.
@@ -1095,7 +1124,7 @@ Ana investigates the codebase, surfaces tradeoffs, and writes a scope. You can s
 
 Each agent runs CLI commands like `ana work start` and `ana artifact save` under the hood — managing worktrees, validating artifact structure, and computing integrity hashes. You don't run these manually.
 
-If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — 19 of Anatomia's own 90 proofs had rejection cycles. 
+If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — 21 of Anatomia's own 103 proofs had rejection cycles. 
 
 ## Step 4: Review, merge, and complete
 

@@ -472,7 +472,7 @@ export const copy = {
       "Five minutes, four commands, no account. Anatomia runs locally against any Git repository and emits a signed proof for every change a model makes. This page walks the smallest useful path end-to-end — enough to see what the pipeline gives you before you commit to anything bigger.",
     install: {
       tag: "Install",
-      reqs: "Requires Node 20+ and Git",
+      reqs: "Requires Node 22+ and Git",
       commands: ["npx anatomia-cli init", "npm i -g anatomia-cli", "ana init"],
       reqNote: "macOS, Linux, Windows (WSL). No data leaves your machine by default.",
     },

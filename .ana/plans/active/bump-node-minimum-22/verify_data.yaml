@@ -1,0 +1,18 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Branch is 4 commits behind main — PR diff includes deletion of fix-gantt-bar-distortion plan artifacts (scope.md, spec.md, contract.yaml, plan.md) that were committed to main after the branch point. Rebase before merge."
+    severity: risk
+    suggested_action: scope
+  - category: code
+    summary: "Dynamic stat markers (ana:dynamic) updated as prebuild side effect — pipeline.mdx, reading-a-proof.mdx, using-ana-learn.mdx, verifying-changes.mdx, start.mdx, troubleshooting.mdx all have updated proof counts (90->103, 19->21 rejections). These are correct but outside the spec's file_changes list."
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Contract A021 value may be stale — says 2297 tests but this is a snapshot. If main gains tests before merge, the assertion value won't match. The test count is correct for the current branch."
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Lint warning (pre-existing): unused eslint-disable directive for no-control-regex. Not introduced by this build."
+    severity: observation
+    suggested_action: accept

@@ -12,7 +12,7 @@ Scan → init → setup → first pipeline run. Once you complete one end-to-end
 
 1. Run from your project root, not a subdirectory or a worktree
 2. Git must be configured: `git status` must succeed, `git config user.name` and `user.email` must be set
-3. Node 20+ required (`node --version`) — declared in `package.json` but not checked at runtime, so older versions produce cryptic errors
+3. Node 22+ required (`node --version`) — declared in `package.json` but not checked at runtime, so older versions produce cryptic errors
 4. If a prior init was interrupted, you'll see "Found incomplete init from a previous run" — follow the recovery steps it prints
 5. If re-initializing: `ana init --force` skips confirmation prompts but still preserves your data
 
@@ -40,7 +40,7 @@ Anatomia scans the full repository, not individual packages. Init detects your p
 
 <TroubleCard title="My verify failed">
 
-FAIL means Verify found issues — this is the pipeline working as designed. 19 of our 90 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}
+FAIL means Verify found issues — this is the pipeline working as designed. 21 of our 103 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */}
 
 1. Read `verify_report.md`. It lists every UNSATISFIED assertion with evidence.
 2. Common causes: test tagged `@ana A003` but doesn't actually test what the contract says, missing test tags, tests that pass on both correct and incorrect implementations.
@@ -130,6 +130,6 @@ Still stuck? [help@anatomia.dev](mailto:help@anatomia.dev) — include your CLI 
     eyebrow: "Browse",
     title: "Proof chain",
     href: "/docs/proof",
-    description: "90 verified pipeline runs." /* ana:dynamic proofSummary */
+    description: "103 verified pipeline runs." /* ana:dynamic proofSummary */
   }
 ]} />

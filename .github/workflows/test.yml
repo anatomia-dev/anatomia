@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22]
+        node-version: [22, 24]
 
     steps:
       - name: Checkout code
@@ -62,8 +62,8 @@ jobs:
         timeout-minutes: 15
         run: cd packages/cli && pnpm vitest run
 
-      - name: Upload coverage (Node 20 only)
-        if: matrix.node-version == 20
+      - name: Upload coverage (Node 22 only)
+        if: matrix.node-version == 22
         uses: codecov/codecov-action@v6
         with:
           files: ./packages/cli/coverage/coverage-final.json

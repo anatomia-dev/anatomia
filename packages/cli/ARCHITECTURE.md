@@ -222,7 +222,7 @@ Brief list of where to add things. Step-by-step guides for each are in [CONTRIBU
 
 **Phantom code gets deleted.** `typeHints.ts` and `docstrings.ts` were removed — they read nonexistent fields via `as unknown as` and always returned zeros. **Do not recreate** without real tree-sitter extraction.
 
-**tsc is the enforcement layer.** `pnpm build` runs `tsc --noEmit` before `tsup`. Husky pre-commit runs typecheck + typecheck:tests + lint. CI runs the same three on Ubuntu x Node 20/22. No path for untyped code to reach main.
+**tsc is the enforcement layer.** `pnpm build` runs `tsc --noEmit` before `tsup`. Husky pre-commit runs typecheck + typecheck:tests + lint. CI runs the same three on Ubuntu x Node 22/24. No path for untyped code to reach main.
 
 **Templates are behavioral contracts.** Skill templates (`templates/.claude/skills/<name>/SKILL.md`) are not documentation — they are executable behavioral contracts that shape how AI tools interact with the project. The `## Detected` section is machine-owned (refreshed on every `ana init`); `## Rules`, `## Gotchas`, and `## Examples` are human-owned and preserved across regeneration.
 
