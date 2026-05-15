@@ -1,0 +1,149 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Remove lesson status from proof system"
+
+assertions:
+  - id: A001
+    says: "The finding status type only allows active, promoted, or closed"
+    block: "status union excludes lesson"
+    target: "ProofChainEntry.findings.status"
+    matcher: "not_contains"
+    value: "lesson"
+
+  - id: A002
+    says: "Chain health stats no longer track lessons as a separate count"
+    block: "ProofChainStats has no lessons field"
+    target: "ProofChainStats.lessons"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A003
+    says: "New upstream findings are automatically closed instead of lessoned"
+    block: "upstream findings get closed status"
+    target: "upstreamFinding.status"
+    matcher: "equals"
+    value: "closed"
+
+  - id: A004
+    says: "New upstream findings record why they were closed"
+    block: "upstream findings get closed status"
+    target: "upstreamFinding.closed_reason"
+    matcher: "equals"
+    value: "upstream"
+
+  - id: A005
+    says: "New upstream findings record they were closed mechanically"
+    block: "upstream findings get closed status"
+    target: "upstreamFinding.closed_by"
+    matcher: "equals"
+    value: "mechanical"
+
+  - id: A006
+    says: "New upstream findings record when they were closed"
+    block: "upstream findings get closed status"
+    target: "upstreamFinding.closed_at"
+    matcher: "exists"
+
+  - id: A007
+    says: "Old lesson findings in the proof chain are migrated to closed during work complete"
+    block: "backfill migrates lesson findings to closed"
+    target: "migratedFinding.status"
+    matcher: "equals"
+    value: "closed"
+
+  - id: A008
+    says: "Migrated lessons without existing metadata get default close fields"
+    block: "backfill migrates lesson findings to closed"
+    target: "migratedFinding.closed_reason"
+    matcher: "equals"
+    value: "upstream"
+
+  - id: A009
+    says: "Migrated lessons with existing close metadata keep their original reason"
+    block: "backfill preserves human-created lesson metadata"
+    target: "humanLessonFinding.closed_reason"
+    matcher: "not_equals"
+    value: "upstream"
+
+  - id: A010
+    says: "Old lesson data in proof chains is counted as closed for health calculations"
+    block: "computeChainHealth backward compat counts lesson as closed"
+    target: "health.findings.closed"
+    matcher: "greater"
+    value: 0
+
+  - id: A011
+    says: "Health calculations no longer return a lesson count"
+    block: "computeChainHealth backward compat counts lesson as closed"
+    target: "health.findings.lesson"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A012
+    says: "The proof dashboard shows runs, active, promoted, and closed counts"
+    block: "dashboard summary line excludes lessons"
+    target: "dashboardOutput"
+    matcher: "contains"
+    value: "promoted"
+
+  - id: A013
+    says: "The proof dashboard does not mention lessons"
+    block: "dashboard summary line excludes lessons"
+    target: "dashboardOutput"
+    matcher: "not_contains"
+    value: "lessons"
+
+  - id: A014
+    says: "The upstream staleness skip is no longer needed"
+    block: "upstream staleness skip removed"
+    target: "staleness loop"
+    matcher: "not_contains"
+    value: "category === 'upstream'"
+
+  - id: A015
+    says: "The learn agent template does not reference the lesson command"
+    block: "ana-learn.md has no lesson references"
+    target: "ana-learn.md"
+    matcher: "not_contains"
+    value: "ana proof lesson"
+
+  - id: A016
+    says: "The learn agent template uses 'closed' not 'closed/lesson'"
+    block: "ana-learn.md has no lesson references"
+    target: "ana-learn.md"
+    matcher: "not_contains"
+    value: "closed/lesson"
+
+  - id: A017
+    says: "The ana agent template says 'findings' not 'lessons' for proof context"
+    block: "ana.md says surface relevant findings"
+    target: "ana.md line 108"
+    matcher: "contains"
+    value: "findings"
+
+  - id: A018
+    says: "All tests pass after the removal"
+    block: "full test suite passes"
+    target: "test exit code"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-learn.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
