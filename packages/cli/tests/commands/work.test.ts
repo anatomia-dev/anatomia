@@ -3312,64 +3312,6 @@ file_changes:
       });
     });
 
-    // @ana A005, A006, A007
-    describe('exits on pull conflict', () => {
-      it('exits with code 1 on rebase conflict', async () => {
-        await createMergedProject({ slug: 'conflict-test', phases: 1 });
-
-        // Set up a bare remote
-        const bareDir = path.join(tempDir, '..', 'bare-remote-' + Date.now());
-        execSync(`git init --bare "${bareDir}"`, { stdio: 'ignore' });
-        execSync(`git remote add origin "${bareDir}"`, { cwd: tempDir, stdio: 'ignore' });
-        execSync('git push -u origin main', { cwd: tempDir, stdio: 'ignore' });
-
-        // Create a divergent commit on the remote (via a temp clone)
-        const cloneDir = path.join(tempDir, '..', 'clone-' + Date.now());
-        execSync(`git clone "${bareDir}" "${cloneDir}"`, { stdio: 'ignore' });
-        execSync('git config user.email "other@test.com"', { cwd: cloneDir, stdio: 'ignore' });
-        execSync('git config user.name "Other"', { cwd: cloneDir, stdio: 'ignore' });
-        // Create a conflicting file
-        const conflictFile = path.join(cloneDir, 'conflict.txt');
-        fsSync.writeFileSync(conflictFile, 'remote content\n');
-        execSync('git add -A && git commit -m "remote change" && git push', { cwd: cloneDir, stdio: 'ignore' });
-
-        // Create a local divergent commit on the same file
-        fsSync.writeFileSync(path.join(tempDir, 'conflict.txt'), 'local content\n');
-        execSync('git add -A && git commit -m "local change"', { cwd: tempDir, stdio: 'ignore' });
-
-        const originalError = console.error;
-        const errors: string[] = [];
-        console.error = (...args: unknown[]) => { errors.push(args.map(String).join(' ')); };
-
-        // process.exit spy — throws to prevent actual exit
-        const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
-          throw new Error('process.exit');
-        }) as never);
-
-        try {
-          await completeWork('conflict-test');
-        } catch (e) {
-          // Expected: process.exit mock throws
-          expect((e as Error).message).toBe('process.exit');
-        }
-
-        // Check spy calls before restoring
-        const exitCalls = exitSpy.mock.calls;
-        const output = errors.join('\n');
-
-        console.error = originalError;
-        exitSpy.mockRestore();
-
-        // A005: process.exit(1) was called
-        expect(exitCalls.length).toBeGreaterThan(0);
-        expect(exitCalls[0]?.[0]).toBe(1);
-        // A006: error message contains "conflict"
-        expect(output.toLowerCase()).toContain('conflict');
-        // A007: error message instructs user to resolve
-        expect(output).toContain('Resolve conflicts and try again');
-      });
-    });
-
   });
 
   describe('non-main artifact branch', () => {
@@ -4661,46 +4603,6 @@ describe('session marker and think-time capture', () => {
       execSync('git add -A && git commit -m "add active slugs"', { cwd: tempDir, stdio: 'ignore' });
     }
   }
-
-  describe('getClaudePid', () => {
-    // @ana A001
-    it('resolves Claude PID from process tree', () => {
-      const pid = getClaudePid();
-      // In a test environment, we have a process tree so pid should be a number
-      // (unless running in an unusual environment where ps fails)
-      if (pid !== null) {
-        expect(typeof pid).toBe('number');
-        expect(pid).toBeGreaterThan(0);
-      }
-    });
-
-    // @ana A002
-    it('returns null when ps command fails', () => {
-      const originalPpid = process.ppid;
-      // Set ppid to an impossible value to make ps fail
-      Object.defineProperty(process, 'ppid', { value: 99999999, writable: true, configurable: true });
-      try {
-        const pid = getClaudePid();
-        expect(pid).toBeNull();
-      } finally {
-        Object.defineProperty(process, 'ppid', { value: originalPpid, writable: true, configurable: true });
-      }
-    });
-
-    // @ana A003
-    it('returns null when ps output is not a valid number', () => {
-      // PID 1 (init/launchd) has parent PID 0. ps returns "0" which is valid
-      // output but triggers the pid <= 0 guard in getClaudePid.
-      const originalPpid = process.ppid;
-      Object.defineProperty(process, 'ppid', { value: 1, writable: true, configurable: true });
-      try {
-        const pid = getClaudePid();
-        expect(pid).toBeNull();
-      } finally {
-        Object.defineProperty(process, 'ppid', { value: originalPpid, writable: true, configurable: true });
-      }
-    });
-  });
 
   describe('--session flag', () => {
     // @ana A004, A005

@@ -36,5 +36,40 @@
         "hash": "sha256:11551528268681011339d3007d35afee7a52ccb74f6ff14f119465a3ee12b946"
       }
     ]
+  },
+  "build_started_at": "2026-05-15T05:13:20.239Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T06:06:04.096Z",
+    "hash": "sha256:83ec572b5a02efaaacadb16652aea576b282683adba23dee8d5c7153eebb8e25"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T06:06:04.097Z",
+    "hash": "sha256:d0c5534922720f40fc38d23ce9fffd4458bc4bd524376edaaa9a6d3cecd0f8f5"
+  },
+  "modules_touched": [
+    ".claude/skills/deployment/SKILL.md",
+    ".github/workflows/release.yml",
+    ".github/workflows/test.yml",
+    "packages/cli/ARCHITECTURE.md",
+    "packages/cli/CONTRIBUTING.md",
+    "packages/cli/tests/commands/work-ci-mocked.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T06:07:56.734Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:cbf34eb02b669f616a874cb1982fd83bca501083a16699a79cf8af46fbc287d7",
+    "run_at": "2026-05-15T06:13:10.704Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T06:13:10.740Z",
+    "hash": "sha256:077ff45e76b9ecffd782ee4eb7522b1fda26ccfac5e5ee4105353decfbd91d66"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T06:13:10.740Z",
+    "hash": "sha256:93cecb194f1687ab5c43922c7b2171c3120935097e4bba8d45d6d2b98d317db8"
   }
 }

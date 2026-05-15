@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "AC4 branch protection must be updated manually via gh api before/after merge"
+    severity: risk
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Contract A001 deviation: mocked test uses deterministic pid 12345 instead of real process tree"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    severity: observation
+    suggested_action: accept
