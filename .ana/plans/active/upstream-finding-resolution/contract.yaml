@@ -1,0 +1,181 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Upstream Finding Resolution"
+
+assertions:
+  # AC1 — proof context shows finding IDs
+  - id: A001
+    says: "Proof context output includes the finding ID for each finding"
+    block: "proof context displays finding IDs"
+    target: "proofContextOutput"
+    matcher: "contains"
+    value: "(slug-C1)"
+
+  - id: A002
+    says: "Finding ID appears between category tag and anchor text"
+    block: "proof context finding ID position"
+    target: "proofContextLine"
+    matcher: "contains"
+    value: "[code] (slug-C1)"
+
+  # AC2 — resolves field validation
+  - id: A003
+    says: "Upstream findings with valid resolves arrays pass validation"
+    block: "validates resolves on upstream finding"
+    target: "result.errors.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A004
+    says: "Findings without resolves still pass validation"
+    block: "resolves is optional"
+    target: "result.errors.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A005
+    says: "Non-array resolves values are rejected"
+    block: "rejects non-array resolves"
+    target: "result.errors"
+    matcher: "contains"
+    value: "resolves"
+
+  - id: A006
+    says: "Non-string elements in resolves are rejected"
+    block: "rejects non-string resolves elements"
+    target: "result.errors"
+    matcher: "contains"
+    value: "resolves"
+
+  - id: A007
+    says: "Invalid finding ID format in resolves produces a warning"
+    block: "warns on invalid resolves ID format"
+    target: "result.warnings"
+    matcher: "contains"
+    value: "resolves"
+
+  # AC3 — resolves on non-upstream warning
+  - id: A008
+    says: "Resolves on non-upstream findings produces a warning about category mismatch"
+    block: "warns on resolves for non-upstream finding"
+    target: "result.warnings"
+    matcher: "contains"
+    value: "resolves"
+
+  # AC4 — work complete preserves resolves
+  - id: A009
+    says: "Proof chain entries preserve the resolves field from upstream findings"
+    block: "resolves preserved in proof chain"
+    target: "finding.resolves"
+    matcher: "exists"
+
+  - id: A010
+    says: "Referenced findings are not auto-closed by resolution claims"
+    block: "no auto-close of resolved findings"
+    target: "referencedFinding.status"
+    matcher: "equals"
+    value: "active"
+
+  # AC5 — work complete summary line
+  - id: A011
+    says: "Work complete shows how many findings Verify claims are resolved"
+    block: "work complete emits resolves summary"
+    target: "stdout"
+    matcher: "contains"
+    value: "claims"
+
+  - id: A012
+    says: "Summary line is omitted when no upstream findings have resolves"
+    block: "no summary without resolves claims"
+    target: "stdout"
+    matcher: "not_contains"
+    value: "claims"
+
+  # AC6 — proof stale resolution claims section
+  - id: A013
+    says: "Proof stale shows resolution claims for upstream findings with resolves"
+    block: "computeResolutionClaims finds active claims"
+    target: "result.claims.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A014
+    says: "Resolution claims include the upstream finding summary and referenced ID"
+    block: "resolution claim contains expected fields"
+    target: "claim.referenced_id"
+    matcher: "exists"
+
+  - id: A015
+    says: "Resolution claims include the upstream finding that made the claim"
+    block: "resolution claim contains expected fields"
+    target: "claim.upstream_id"
+    matcher: "exists"
+
+  # AC7 — empty claims section hidden
+  - id: A016
+    says: "Resolution claims section is omitted when no unresolved claims exist"
+    block: "no claims section when empty"
+    target: "result.claims.length"
+    matcher: "equals"
+    value: 0
+
+  # Edge cases for computeResolutionClaims
+  - id: A017
+    says: "Claims referencing non-existent finding IDs are silently skipped"
+    block: "skips claims with non-existent referenced IDs"
+    target: "result.claims.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A018
+    says: "Claims referencing already-closed findings are skipped"
+    block: "skips claims for closed findings"
+    target: "result.claims.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A019
+    says: "Multiple claims on the same original show only the most recent"
+    block: "deduplicates claims on same original"
+    target: "result.claims.length"
+    matcher: "equals"
+    value: 1
+
+  # AC9 — backward compatibility
+  - id: A020
+    says: "Old upstream findings without resolves work without errors"
+    block: "backward compat — no resolves field"
+    target: "result.claims.length"
+    matcher: "equals"
+    value: 0
+
+  # AC8 — agent definition updates (structural, verified by content)
+  - id: A021
+    says: "Template ana-verify.md includes resolves field instructions"
+    block: "template includes resolves instruction"
+    target: "templateContent"
+    matcher: "contains"
+    value: "resolves"
+
+  - id: A022
+    says: "Dogfood ana-verify.md includes resolves field instructions"
+    block: "dogfood includes resolves instruction"
+    target: "dogfoodContent"
+    matcher: "contains"
+    value: "resolves"
+
+file_changes:
+  - path: "src/types/proof.ts"
+    action: modify
+  - path: "src/utils/proofSummary.ts"
+    action: modify
+  - path: "src/commands/artifact.ts"
+    action: modify
+  - path: "src/commands/proof.ts"
+    action: modify
+  - path: "src/commands/work.ts"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
+  - path: "templates/.claude/agents/ana-verify.md"
+    action: modify
