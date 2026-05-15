@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-100 runs · 82 active · 119 lessons · 0 promoted · 406 closed
+101 runs · 85 active · 121 lessons · 0 promoted · 406 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 82 total)
+## Active Findings (30 shown of 85 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -65,15 +65,16 @@
 
 - **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
-### website/components/docs/layout/DocsErrorBoundary.tsx
-
-- **code:** Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation — *Docs Shell (Layout + Shared Components)*
-
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
 - **code:** RightRail 'Download artifacts' and 'Open in Claude' links point to '#' — placeholder hrefs with no target — *Dynamic Pages — Reference & Proof Chain*
-- **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
+
+### website/components/docs/proof/FindingsList.tsx
+
+- **code:** Redundant cursor:pointer on inner collapse span — parent div already sets it — *FindingsList expand/collapse for proof pages*
+- **code:** Toggle pattern deviates from AssertionLedger — uses !expanded toggle vs separate true/false calls — *FindingsList expand/collapse for proof pages*
+- **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
@@ -82,10 +83,6 @@
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
-
-### website/components/docs/providers/PlatformProvider.tsx
-
-- **code:** Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule — *Docs Shell (Layout + Shared Components)*
 
 ### website/content/docs/concepts/pipeline.mdx
 

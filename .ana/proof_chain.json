@@ -27272,6 +27272,166 @@
         "commit_count": 3,
         "base_commit": "8adfb1a09f14de0ae4fb33de37b5dd8ef00191ca"
       }
+    },
+    {
+      "slug": "findings-expand-collapse",
+      "feature": "FindingsList expand/collapse for proof pages",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Findings list shows only the first 5 findings by default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Clicking the badge reveals all hidden findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The badge is clickable with a pointer cursor",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Expanded badge shows collapse text instead of the count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Collapsing returns to showing only 5 findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "After collapsing, the badge shows the hidden count again",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Pages with 5 or fewer findings show no toggle badge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The component uses client-side state for toggling",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 129,
+        "think": 13,
+        "plan": 2,
+        "build": 3,
+        "verify": 3
+      },
+      "hashes": {
+        "scope": "sha256:682ec0a9d43a91e431d302ca6293f2687f140b19be81ee73f64e979e740ce254",
+        "contract": "sha256:3d7587634f9453c0278b5c91008a09296110465ff40e9b211f725111f0c45354",
+        "plan": "sha256:74f40cb549f45f3cd9bc0ce60dbde01528c59c89aca016203186680af320c3ed",
+        "spec": "sha256:fd4163ee47363e6eb127ceb412443e18eba2be7f49b857951e47620c2a4aa301",
+        "build-report": "sha256:c8bd0ab1bd481cdb2689dd57fc4a8bbaa7fe0b1a60a4615b759541d91cd53179",
+        "build-data": "sha256:1d2f1492242273a585e49040ad6ed314c926c85428819b5c185ad65e032b6dde",
+        "verify-report": "sha256:ae96fe9e044149cc06725a714155d032a89bea08bebeb75bd65c8e057a5448af",
+        "verify-data": "sha256:e538ca3be5df75fc97859057010b027c34dbea8e08f25151162bd8ef2f383b8c"
+      },
+      "completed_at": "2026-05-15T03:31:52.175Z",
+      "modules_touched": [
+        "website/components/docs/proof/FindingsList.tsx"
+      ],
+      "scope_summary": "Nearly half of proof pages (46 of 96 entries, 48%) show truncated findings with no way to view the rest. FindingsList hard-caps at 5 items and renders a \"+N more findings\" badge that is purely informational. Users see data is hidden but have no way to reveal it. AssertionLedger on the same page already has expand/collapse — FindingsList should match.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Redundant cursor:pointer on inner collapse span — parent div already sets it",
+          "file": "website/components/docs/proof/FindingsList.tsx",
+          "anchor": null,
+          "line": 125,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "findings-expand-collapse-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Toggle pattern deviates from AssertionLedger — uses !expanded toggle vs separate true/false calls",
+          "file": "website/components/docs/proof/FindingsList.tsx",
+          "anchor": null,
+          "line": 104,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "findings-expand-collapse-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern",
+          "file": "website/components/docs/proof/FindingsList.tsx",
+          "anchor": null,
+          "line": 111,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "findings-expand-collapse-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "No ARIA attributes on interactive badge div — onClick on div without role='button' or tabIndex",
+          "file": "website/components/docs/proof/FindingsList.tsx",
+          "anchor": null,
+          "line": 103,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "findings-expand-collapse-C4",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract has no assertion for keyboard accessibility of the toggle",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "findings-expand-collapse-C5",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "website/data/docs/ is gitignored — worktree builds fail until generated data is copied from main tree",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T03:23:10.564Z",
+        "completed_at": "2026-05-15T03:31:52.170Z",
+        "commit_count": 3,
+        "base_commit": "362187befdd7cde4377c5a941ea8138c5cbab383"
+      }
     }
   ],
   "schema": 1
