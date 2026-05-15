@@ -14051,7 +14051,10 @@
           "severity": "observation",
           "suggested_action": "scope",
           "id": "worktree-isolation-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Correct guidance is shown: WRONG_BRANCH error at proof.ts:800/1050/1342/1681 says 'Switch to main' (generic). The formatHint callback at lines 778/1028/1298/1637 adds 'You're in a worktree. Run from the main project directory' when isWorktreeDirectory() is true. The user sees BOTH — the hint provides the correct worktree-specific instruction. Making the primary message worktree-aware would require isWorktreeDirectory checks in createExitError — UX polish for an edge case that already has correct guidance in the hint.",
+          "closed_at": "2026-05-15T03:30:38.098Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
