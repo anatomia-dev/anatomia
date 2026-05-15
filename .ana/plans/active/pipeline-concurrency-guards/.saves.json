@@ -19,7 +19,7 @@
     "saved_at": "2026-05-15T18:12:00.942Z",
     "hash": "sha256:8c46744ed3b84a465301092bc990a73427cdb07e192f0f2146c69243e707e8dd"
   },
-  "build_started_at": "2026-05-15T18:16:26.202Z",
+  "build_started_at": "2026-05-15T19:05:46.690Z",
   "build_agent": "ana-build",
   "build-report": {
     "saved_at": "2026-05-15T19:04:08.101Z",
@@ -53,14 +53,26 @@
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:b4a85d19f8a96afc329b6d24f0e4e65388c9811e6d4ec12503d7e94e0b76140d",
-    "run_at": "2026-05-15T18:44:59.929Z"
+    "run_at": "2026-05-15T19:12:07.886Z"
   },
   "verify-report": {
-    "saved_at": "2026-05-15T18:44:59.966Z",
-    "hash": "sha256:a8854998141e3df5b89fc91581dfb960fa27f4399775a42827eab6da48bc279f"
+    "saved_at": "2026-05-15T19:12:07.939Z",
+    "hash": "sha256:4eec4ff2ad3a16d2f05f161cb7c7f93155382d1274efb34683cecc6279b7f432",
+    "history": [
+      {
+        "saved_at": "2026-05-15T18:44:59.966Z",
+        "hash": "sha256:a8854998141e3df5b89fc91581dfb960fa27f4399775a42827eab6da48bc279f"
+      }
+    ]
   },
   "verify-data": {
-    "saved_at": "2026-05-15T18:44:59.967Z",
-    "hash": "sha256:d3cba57b6808bd62c3e92a6ff839551803fc0bf60e8c7cf582b5d551be6e1583"
+    "saved_at": "2026-05-15T19:12:07.939Z",
+    "hash": "sha256:6a1cb23f9827b55b6cac80ff11fd57c4739f82af43330025bcd47798aad53cfd",
+    "history": [
+      {
+        "saved_at": "2026-05-15T18:44:59.967Z",
+        "hash": "sha256:d3cba57b6808bd62c3e92a6ff839551803fc0bf60e8c7cf582b5d551be6e1583"
+      }
+    ]
   }
 }
