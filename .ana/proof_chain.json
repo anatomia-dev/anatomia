@@ -26620,6 +26620,291 @@
         "commit_count": 0,
         "base_commit": "b1e4385e96f8327181c75e423a534357a457794a"
       }
+    },
+    {
+      "slug": "init-commit",
+      "feature": "ana init commit — persist infrastructure to git",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Running init commit stages and commits discovered infrastructure files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The commit is path-scoped to only infrastructure files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "File discovery walks known directory roots, not a hardcoded list",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Proof chain files are never committed by this command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Plan directory contents are never committed by this command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Proof chain markdown is never committed by this command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Per-developer state directory is excluded from commits",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Agent memory is excluded from commits",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Local settings file is excluded from commits",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Running from a worktree is rejected with a clear error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Running on the wrong branch is rejected with a clear error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Running without init is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Commits bypass pre-commit hooks to avoid triggering unrelated checks",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Running when nothing has changed exits successfully with an up-to-date message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Running when nothing has changed does not create a new commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "First commit uses the initialize message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Subsequent commits use the update message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Commit includes co-author trailer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Push failure does not cause the command to exit with an error code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Push failure produces a warning message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Init success message shows commit readiness when on the correct branch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Setup template Step 8 includes auto-commit instruction",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Monorepo primary package AGENTS.md is included when it exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Pull conflicts cause the command to abort with a clear message",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 200,
+        "think": 2,
+        "plan": 6,
+        "build": 20,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:7459a7862be75c763eae79b4289d52e8d8833bd630e7896d712a330e6279f4c5",
+        "contract": "sha256:c6f8537e1192a45f8d51d941d584f0864a49c274098d86974fc73f625a496de1",
+        "plan": "sha256:dc5008e41603296a499671e59789f7ebc9b882e4d318cf57ff76f8835715e10c",
+        "spec": "sha256:6d403d11130a074b653ffae3f0741e542b6f7c11e43ca9d29ad04bbe840c4d0a",
+        "build-report": "sha256:54e688419bcc2851a1a79c83ac0f804febcc366e41fa3adbf799aa6131238f06",
+        "build-data": "sha256:7440f7dc6b3e045ad6770c5bc30a7aa27adab880c6a97d9c0939ad70db1e89c4",
+        "verify-report": "sha256:87c3fafe8ce798986eef9e3b6865cb53bbacf0709a2bf20e4a3f9666d1586e40",
+        "verify-data": "sha256:62b954a1e85891633cd929b1de5b5a0eba782d7660cdfe98cd1d28ff5d451ea1"
+      },
+      "completed_at": "2026-05-15T01:48:20.453Z",
+      "modules_touched": [
+        ".claude/agents/ana-setup.md",
+        "packages/cli/src/commands/init/commit.ts",
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/templates/.claude/agents/ana-setup.md",
+        "packages/cli/tests/commands/init/commit.test.ts",
+        "website/content/docs/concepts/context.mdx",
+        "website/content/docs/concepts/toolbelt.mdx",
+        "website/content/docs/guides/using-ana-setup.mdx",
+        "website/content/docs/start.mdx"
+      ],
+      "scope_summary": "The CLI has no concept of committing infrastructure. Init writes files to disk. Setup enriches them. Neither commits. A teammate who clones gets nothing Anatomia-related. The investment of a 10-minute setup session exists only on one developer's machine. This scope adds `ana init commit` — a command that commits Anatomia infrastructure files to the artifact branch, distinct from pipeline artifacts (`ana artifact save`) and proof chain data (`ana work complete`, `ana proof close/promote/strengthen`).",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Push failure test doesn't test push failure — tests push skip (no remote)",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "anchor": null,
+          "line": 425,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A019",
+            "A020"
+          ],
+          "id": "init-commit-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No integration test for pull conflict abort path",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 224,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A024"
+          ],
+          "id": "init-commit-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No integration test for worktree guard — verified by source inspection only",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 287,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "init-commit-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "discoverDirtyFiles returns empty array on git status failure without reporting why",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 102,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "init-commit-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A013 (--no-verify) has no runtime assertion — test name claims it but only verifies commit happened",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "anchor": null,
+          "line": 349,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "init-commit-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Still present — see worktree-isolation proof finding: guard commands lack integration tests",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "init-commit-C6",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Push behavior tested only with no-remote scenario, not actual push failure",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "runGit trims stdout which corrupts git status --porcelain first line — worked around with direct spawnSync",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "File count in success message counts directory entries not individual files for untracked dirs",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T01:12:58.279Z",
+        "completed_at": "2026-05-15T01:48:20.449Z",
+        "commit_count": 0,
+        "base_commit": "871f0c0cdc37a530b4ff08fad10c54b135e22b53"
+      }
     }
   ],
   "schema": 1

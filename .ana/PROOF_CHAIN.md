@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-97 runs · 87 active · 118 lessons · 0 promoted · 388 closed
+98 runs · 92 active · 119 lessons · 0 promoted · 388 closed
 
 ## Hot Modules
 
@@ -16,12 +16,17 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 87 total)
+## Active Findings (30 shown of 92 total)
+
+### packages/cli/src/commands/init/commit.ts
+
+- **test:** No integration test for pull conflict abort path — *ana init commit — persist infrastructure to git*
+- **test:** No integration test for worktree guard — verified by source inspection only — *ana init commit — persist infrastructure to git*
+- **code:** discoverDirtyFiles returns empty array on git status failure without reporting why — *ana init commit — persist infrastructure to git*
 
 ### packages/cli/src/commands/work.ts
 
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
-- **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 
 ### packages/cli/src/types/proof.ts
 
@@ -37,6 +42,11 @@
 - **code:** Empty string build command passes typeof guard and executes spawnSync('') — *Run build command during worktree creation*
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
 
+### packages/cli/tests/commands/init/commit.test.ts
+
+- **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
+- **test:** A013 (--no-verify) has no runtime assertion — test name claims it but only verifies commit happened — *ana init commit — persist infrastructure to git*
+
 ### packages/cli/tests/commands/work-merge.test.ts
 
 - **test:** A004 meta assertion uses toBeTypeOf('object') — passes for null — *Fix --merge stdout pollution in --json mode*
@@ -49,14 +59,6 @@
 ### website/app/docs/[...slug]/page.tsx
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
-
-### website/app/docs/[[...slug]]/page.tsx
-
-- **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
-
-### website/app/docs/layout.tsx
-
-- **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### website/app/docs/reference/cli/page.tsx
 
@@ -105,9 +107,4 @@
 - **code:** LLMS_SECTIONS constant declared but never used in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
 - **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
-- **code:** Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine — *Docs Data Pipeline*
-
-### General
-
-- **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 
