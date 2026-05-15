@@ -28962,6 +28962,199 @@
         "commit_count": 0,
         "base_commit": "d7714fafb957fc0e4c0d6308e20fcaf09b2220a5"
       }
+    },
+    {
+      "slug": "fix-work-saves-compat",
+      "feature": "work.ts saves.json backward compat bug + worktree dedup + formatting",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Phase 2 cannot pass completeness checks using phase 1's legacy save data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Phase 1 still uses legacy save data when numbered keys are missing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Phase 2 status detection does not fall back to legacy save keys",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Phase 1 status detection still uses legacy save keys when needed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The existing backward compat test asserts the corrected behavior",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Worktree display reuses the shared worktree info function instead of duplicating git queries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Worktree display still shows branch name, commit count, and path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Multi-line next actions display with proper arrow prefix on each line",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Next action returns an array for multi-line cases instead of embedded newlines",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "All existing tests continue to pass after the changes",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 100,
+        "think": 1,
+        "plan": 4,
+        "build": 9,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:be2ed5885dc48fc8f387495f5b48eb005f260ad6e41e9b3ed081925f10445035",
+        "contract": "sha256:07ec902427d6cfa6eef4d6447fbd405851dc8a1dafb73a313ac8da7f244ac4e9",
+        "plan": "sha256:fc0fb2fe5484b702fc814952733523664610635a08fb399b05ae4a57967dd77c",
+        "spec": "sha256:91dcd2f0c16504b56b2988b8ce6e5a4d2ae45c344cdc4d34faab534f28e25d40",
+        "build-report": "sha256:da5238875c7a63bac9d3c48ee3224ec0733dedffa786ff184b51f06dc647375e",
+        "build-data": "sha256:b48c5b445a560354b25e06459f30147db3ae5328901b52ef941a87274ceb0c29",
+        "verify-report": "sha256:465c97de13d4579ec9a4de7a89bcdb228f82034f76693c704ec2d378de1ff089",
+        "verify-data": "sha256:0cab077de2c76e22f6416a8f69236fc8e866e49152ff20e731f135bfd721992e"
+      },
+      "completed_at": "2026-05-15T18:13:06.760Z",
+      "modules_touched": [
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "Fix three clustered quality issues in work.ts identified by AnaLearn session 5. The priority is a logic bug in saves.json backward compatibility that allows multi-phase completeness checks to pass using wrong-phase data. Secondary: eliminate duplicated worktree-info computation and fix a broken multi-line display in work status.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Resolves claims summary removed from completeWork — both JSON and human-readable output — without spec authorization",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-work-saves-compat-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Resolves claims tests removed (3 tests, ~120 lines) — unscoped deletion of upstream-finding-resolution feature tests",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "fix-work-saves-compat-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 728,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "fix-work-saves-compat-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "printExistingWorktree duplication resolved — uses getWorktreeInfo now",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "kind-aware-branch-prefixes-C5"
+          ],
+          "id": "fix-work-saves-compat-C4",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "saves.json fallback bug resolved — phase guard added in both code paths",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "fix-cycle-stage-detection-C3"
+          ],
+          "id": "fix-work-saves-compat-C5",
+          "status": "lesson"
+        },
+        {
+          "category": "upstream",
+          "summary": "getNextAction multi-line formatting resolved — returns array for ready-to-merge",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "work-complete-merge-C4"
+          ],
+          "id": "fix-work-saves-compat-C6",
+          "status": "lesson"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "createMergedProject helper previously masked the saves.json bug by writing unnumbered keys for multi-phase — fixed but future tests must be aware",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts line 198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T16:50:27.676Z",
+        "completed_at": "2026-05-15T18:13:06.755Z",
+        "commit_count": 0,
+        "base_commit": "72186019c2f9977e054fd3d9b329e616cfb8ac62"
+      }
     }
   ],
   "schema": 1
