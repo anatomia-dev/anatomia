@@ -23417,7 +23417,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "docs-shell-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: eslint-disable at DocsErrorBoundary.tsx:53 documents why — error boundary catches when React tree is broken, Link depends on Next.js router which may be unavailable. Raw <a> is the only safe navigation in error boundary fallback. The lint suppression is correct with thorough justification.",
+          "closed_at": "2026-05-15T16:25:27.689Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

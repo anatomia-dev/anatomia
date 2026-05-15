@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-105 runs · 48 active · 128 lessons · 3 promoted · 450 closed
+105 runs · 47 active · 128 lessons · 3 promoted · 451 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 48 total)
+## Active Findings (30 shown of 47 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -27,6 +27,7 @@
 - **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
+- **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 
 ### packages/cli/src/types/proof.ts
 
@@ -57,10 +58,6 @@
 ### website/components/docs/content/TroubleCard.tsx
 
 - **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
-### website/components/docs/layout/DocsErrorBoundary.tsx
-
-- **code:** Lint error: DocsErrorBoundary uses <a> tag instead of Next.js <Link> for /docs/ navigation — *Docs Shell (Layout + Shared Components)*
 
 ### website/components/docs/layout/RightRail.tsx
 
