@@ -18,5 +18,27 @@
   "spec": {
     "saved_at": "2026-05-15T06:52:56.674Z",
     "hash": "sha256:ab2c94a8c8be1d30faac488688123061b5a948a46e145825f852cb84f8d66dd3"
-  }
+  },
+  "build_started_at": "2026-05-15T06:55:24.701Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T06:58:58.044Z",
+    "hash": "sha256:88be7fc8a99c2ffc5826de84e9807b596ec2f384b4826468f7430962fdcf818e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T06:58:58.045Z",
+    "hash": "sha256:7b7fe5f4f09e1fd91fc1eefc3fdd147de3411cf16ca992522bb97bd69730b253"
+  },
+  "modules_touched": [
+    "website/components/docs/proof/PipelineGantt.tsx",
+    "website/content/docs/concepts/pipeline.mdx",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/guides/verifying-changes.mdx",
+    "website/content/docs/start.mdx",
+    "website/public/llms-full.txt",
+    "website/public/search-index.json"
+  ],
+  "commit_hygiene": []
 }
