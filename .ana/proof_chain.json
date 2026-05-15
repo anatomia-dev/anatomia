@@ -24838,11 +24838,10 @@
             "A001"
           ],
           "id": "fix-timing-accuracy-C2",
-          "status": "promoted",
+          "status": "closed",
           "closed_reason": "Intentional: writeSaveMetadata at artifact.ts:47 is exported for unit test access — used in-file at lines 1427, 1432, 1833, 1839 (same-file calls don't need export) and imported by artifact.test.ts and proofSummary.test.ts for 8+ unit tests. Same pattern as branchExists, SLUG_PATTERN, formatHumanReadable, isNewerVersion — exports for thorough unit testing. 6+ prior closures in this session establish the precedent.",
           "closed_at": "2026-05-14T17:20:20.180Z",
-          "closed_by": "human",
-          "promoted_to": ".claude/skills/testing-standards/SKILL.md"
+          "closed_by": "human"
         },
         {
           "category": "code",
@@ -25848,11 +25847,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "gantt-multi-phase-C4",
-          "status": "promoted",
+          "status": "closed",
           "closed_reason": "Intentional: formatHumanReadable at proof.ts:234 is used internally (line 699 for proof show) and imported by 2 test files for direct unit testing of rendering output. Exporting rendering functions for test access is standard — same pattern as branchExists (closed in this session). Testing formatting directly is better than testing through CLI output capture.",
           "closed_at": "2026-05-14T16:32:38.959Z",
-          "closed_by": "human",
-          "promoted_to": ".claude/skills/testing-standards/SKILL.md"
+          "closed_by": "human"
         },
         {
           "category": "code",
@@ -26200,11 +26198,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "commit-hygiene-checks-C5",
-          "status": "promoted",
+          "status": "closed",
           "closed_reason": "Intentional: CommitHygieneFinding and runCommitHygieneChecks exported at artifact.ts:185/230 for unit test access. runCommitHygieneChecks is called in production at lines 1439 and 1732 (same-file calls don't need export) but is a standalone testable unit with a dedicated test file (commit-hygiene.test.ts, 20+ tests). Same pattern as writeSaveMetadata, branchExists — 7+ precedents this session.",
           "closed_at": "2026-05-14T17:41:57.125Z",
-          "closed_by": "human",
-          "promoted_to": ".claude/skills/testing-standards/SKILL.md"
+          "closed_by": "human"
         },
         {
           "category": "code",
