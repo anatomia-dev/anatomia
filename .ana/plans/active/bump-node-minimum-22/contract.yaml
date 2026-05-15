@@ -1,0 +1,202 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Bump Node Minimum to 22, Add Node 24 to CI"
+
+assertions:
+  # AC1: engines fields
+  - id: A001
+    says: "Root package requires Node 22 or higher"
+    block: "engines.node is >=22.0.0 in root package.json"
+    target: "package.json.engines.node"
+    matcher: "equals"
+    value: ">=22.0.0"
+
+  - id: A002
+    says: "CLI package requires Node 22 or higher"
+    block: "engines.node is >=22.0.0 in cli package.json"
+    target: "packages/cli/package.json.engines.node"
+    matcher: "equals"
+    value: ">=22.0.0"
+
+  - id: A003
+    says: "Website package requires Node 22 or higher"
+    block: "engines.node is >=22.0.0 in website package.json"
+    target: "website/package.json.engines.node"
+    matcher: "equals"
+    value: ">=22.0.0"
+
+  # AC2: tsup target
+  - id: A004
+    says: "CLI builds against Node 22 as the syntax floor"
+    block: "tsup target is node22"
+    target: "packages/cli/tsup.config.ts.target"
+    matcher: "equals"
+    value: "node22"
+
+  # AC3: CI matrix
+  - id: A005
+    says: "CI tests against Node 22 and Node 24"
+    block: "CI matrix includes Node 22 and 24"
+    target: "test.yml.matrix.node-version"
+    matcher: "contains"
+    value: "22, 24"
+
+  - id: A006
+    says: "CI no longer tests against the end-of-life Node 20"
+    block: "CI matrix does not include Node 20"
+    target: "test.yml.matrix.node-version"
+    matcher: "not_contains"
+    value: "20"
+
+  # AC4: coverage gate
+  - id: A007
+    says: "Coverage uploads from the lowest supported Node version"
+    block: "coverage upload gated on Node 22"
+    target: "test.yml.coverage.condition"
+    matcher: "contains"
+    value: "== 22"
+
+  - id: A008
+    says: "Coverage upload step name reflects Node 22"
+    block: "coverage step name says Node 22"
+    target: "test.yml.coverage.stepName"
+    matcher: "contains"
+    value: "Node 22"
+
+  # AC6: README
+  - id: A009
+    says: "README tells users Node 22 is required"
+    block: "README says Node.js 22+"
+    target: "README.md.content"
+    matcher: "contains"
+    value: "Node.js 22+"
+
+  # AC7: start.mdx
+  - id: A010
+    says: "Getting started page tells users to install Node 22"
+    block: "start.mdx says Node.js 22 or later"
+    target: "start.mdx.content"
+    matcher: "contains"
+    value: "Node.js 22 or later"
+
+  # AC8: troubleshooting.mdx
+  - id: A011
+    says: "Troubleshooting page references Node 22 as minimum"
+    block: "troubleshooting.mdx says Node 22+"
+    target: "troubleshooting.mdx.content"
+    matcher: "contains"
+    value: "Node 22+"
+
+  # AC10: remaining docs
+  - id: A012
+    says: "Root contributing guide requires Node 22"
+    block: "CONTRIBUTING.md says Node.js 22+"
+    target: "CONTRIBUTING.md.content"
+    matcher: "contains"
+    value: "Node.js 22+"
+
+  - id: A013
+    says: "CLI contributing guide requires Node 22"
+    block: "cli CONTRIBUTING.md line 12 says Node.js 22+"
+    target: "packages/cli/CONTRIBUTING.md.line12"
+    matcher: "contains"
+    value: "Node.js 22+"
+
+  - id: A014
+    says: "CLI contributing guide describes the updated CI matrix"
+    block: "cli CONTRIBUTING.md CI references say Node 22/24"
+    target: "packages/cli/CONTRIBUTING.md.ciRefs"
+    matcher: "contains"
+    value: "Node 22/24"
+
+  - id: A015
+    says: "Architecture doc describes the updated CI matrix"
+    block: "ARCHITECTURE.md says Node 22/24"
+    target: "packages/cli/ARCHITECTURE.md.content"
+    matcher: "contains"
+    value: "Node 22/24"
+
+  - id: A016
+    says: "Deployment skill reflects the current CI runners"
+    block: "deployment SKILL.md says Node 22, 24"
+    target: ".claude/skills/deployment/SKILL.md.content"
+    matcher: "contains"
+    value: "Node 22, 24"
+
+  - id: A017
+    says: "tsconfig comment references Node 22 as the baseline"
+    block: "tsconfig.base.json comment says Node 22+"
+    target: "tsconfig.base.json.content"
+    matcher: "contains"
+    value: "Node 22+"
+
+  - id: A018
+    says: "Website copy tells visitors Node 22 is required"
+    block: "copy.ts says Node 22+"
+    target: "website/lib/copy.ts.reqs"
+    matcher: "contains"
+    value: "Node 22+"
+
+  # AC9: regeneration
+  - id: A019
+    says: "Generated docs file reflects the updated Node version from sources"
+    block: "llms-full.txt contains Node 22 references"
+    target: "website/public/llms-full.txt.content"
+    matcher: "contains"
+    value: "Node.js 22"
+
+  - id: A020
+    says: "Generated docs file has no stale Node 20 references from source pages"
+    block: "llms-full.txt does not contain stale Node 20 requirements"
+    target: "website/public/llms-full.txt.nodeRefs"
+    matcher: "not_contains"
+    value: "Node.js 20 or later"
+
+  # AC11-13: build health
+  - id: A021
+    says: "All existing tests still pass after the version bump"
+    block: "test suite passes"
+    target: "testRun.passed"
+    matcher: "equals"
+    value: 2297
+
+  - id: A022
+    says: "CLI builds without errors"
+    block: "build succeeds"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "package.json"
+    action: modify
+  - path: "packages/cli/package.json"
+    action: modify
+  - path: "website/package.json"
+    action: modify
+  - path: "packages/cli/tsup.config.ts"
+    action: modify
+  - path: "tsconfig.base.json"
+    action: modify
+  - path: ".github/workflows/test.yml"
+    action: modify
+  - path: "README.md"
+    action: modify
+  - path: "CONTRIBUTING.md"
+    action: modify
+  - path: "packages/cli/CONTRIBUTING.md"
+    action: modify
+  - path: "packages/cli/ARCHITECTURE.md"
+    action: modify
+  - path: ".claude/skills/deployment/SKILL.md"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/lib/copy.ts"
+    action: modify
+  - path: "website/public/llms-full.txt"
+    action: modify
+  - path: "website/public/search-index.json"
+    action: modify
