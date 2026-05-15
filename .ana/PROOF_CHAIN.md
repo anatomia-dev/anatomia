@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-105 runs · 43 active · 128 lessons · 3 promoted · 455 closed
+105 runs · 42 active · 128 lessons · 3 promoted · 456 closed
 
 ## Hot Modules
 
@@ -15,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 43 total)
+## Active Findings (30 shown of 42 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -49,6 +49,10 @@
 - **code:** createMergedProject duplicated between work-ci-mocked.test.ts and work.test.ts — both have independent copies with different mock routing — *Fix CI Matrix and Broken Tests*
 - **test:** A004 assertion uses toBeGreaterThan(0) for exit call count instead of toBe(1) — passes even if process.exit is called multiple times — *Fix CI Matrix and Broken Tests*
 
+### packages/cli/tests/commands/work-merge.test.ts
+
+- **test:** No tests verify --json output for any of the 7 merge failure paths — *work complete --merge flag for structured PR merging*
+
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
@@ -79,10 +83,6 @@
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
-
-### website/content/docs/concepts/skills.mdx
-
-- **code:** Skills page inline-links 8 individual skill reference pages that don't exist and aren't scoped in any phase — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/scripts/extract-docs-data.ts
 
