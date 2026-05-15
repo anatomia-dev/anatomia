@@ -682,6 +682,28 @@ describe('ana init', () => {
       expect(content).toContain('git config user.name');
       expect(content).toContain('Do not install software');
     });
+
+    // @ana A009
+    it('includes design principles guide URL in Step 6 block', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatePath = path.join(__dirname, '..', '..', 'templates', '.claude', 'agents', 'ana-setup.md');
+      const content = await fs.readFile(templatePath, 'utf-8');
+
+      expect(content).toContain('https://anatomia.dev/docs/guides/using-ana-setup#design-principles');
+    });
+  });
+
+  describe('using-ana-setup docs page', () => {
+    // @ana A010
+    it('links to design principles reference section', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const mdxPath = path.join(__dirname, '..', '..', '..', '..', 'website', 'content', 'docs', 'guides', 'using-ana-setup.mdx');
+      const content = await fs.readFile(mdxPath, 'utf-8');
+
+      expect(content).toContain('/docs/reference/context#design-principles');
+    });
   });
 
   describe('scan engine blind spot messages', () => {
