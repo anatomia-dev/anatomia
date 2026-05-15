@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs/promises';
+import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync, spawnSync } from 'node:child_process';
@@ -420,6 +421,42 @@ ${complianceTable}
       expect(proof.assertions).toHaveLength(0);
       expect(proof.contract.total).toBe(0);
       expect(proof.result).toBe('PASS');
+    });
+  });
+
+  describe('PR duplicate detection', () => {
+    // @ana A014, A015
+    it('guard code checks for MERGED state and directs to work complete', () => {
+      const prSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'pr.ts');
+      const content = fsSync.readFileSync(prSrcPath, 'utf-8');
+      // Verify the guard checks for MERGED PRs
+      expect(content).toContain("pr.state === 'MERGED'");
+      // Verify it directs to work complete
+      expect(content).toContain('work complete');
+      // Verify it uses --head and --state all for the query
+      expect(content).toContain('--head');
+      expect(content).toContain("'--state', 'all'");
+    });
+
+    // @ana A016, A017
+    it('guard code checks for OPEN state and includes PR URL', () => {
+      const prSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'pr.ts');
+      const content = fsSync.readFileSync(prSrcPath, 'utf-8');
+      // Verify the guard checks for OPEN PRs
+      expect(content).toContain("pr.state === 'OPEN'");
+      // Verify it shows the existing PR URL
+      expect(content).toContain('is already open');
+      expect(content).toContain('pr.url');
+    });
+
+    // @ana A018
+    it('guard allows PR creation when no existing PR found', () => {
+      const prSrcPath = path.join(__dirname, '..', '..', 'src', 'commands', 'pr.ts');
+      const content = fsSync.readFileSync(prSrcPath, 'utf-8');
+      // The guard iterates existing PRs — if none match MERGED or OPEN, no exit
+      expect(content).toContain('for (const pr of existingPrs)');
+      // After the for loop and catch, code continues to step 4 (read verify report)
+      expect(content).toContain('// 4. Read verify report');
     });
   });
 

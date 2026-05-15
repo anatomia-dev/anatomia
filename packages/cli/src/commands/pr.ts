@@ -14,7 +14,7 @@ import chalk from 'chalk';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
+import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { generateProofSummary, type ProofSummary } from '../utils/proofSummary.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 
@@ -196,6 +196,32 @@ export function createPr(slug: string): void {
     console.error(chalk.red('Error: GitHub CLI (gh) not found.'));
     console.error(chalk.gray('Install from https://cli.github.com/'));
     process.exit(1);
+  }
+
+  // 3b. Check for existing PRs on this branch
+  const branchPrefix = readBranchPrefix(projectRoot);
+  const workBranch = currentBranch.endsWith('/' + slug) ? currentBranch : `${branchPrefix}${slug}`;
+  const prListResult = spawnSync('gh', ['pr', 'list', '--head', workBranch, '--state', 'all', '--json', 'state,url'], {
+    cwd: projectRoot, encoding: 'utf-8', stdio: 'pipe',
+  });
+  if (prListResult.status === 0 && prListResult.stdout) {
+    try {
+      const existingPrs = JSON.parse(prListResult.stdout.trim()) as Array<{ state: string; url: string }>;
+      for (const pr of existingPrs) {
+        if (pr.state === 'MERGED') {
+          console.error(chalk.red(`Error: A PR for \`${workBranch}\` was already merged.`));
+          console.error(chalk.gray(`Run \`ana work complete ${slug}\` to archive this work item.`));
+          process.exit(1);
+        }
+        if (pr.state === 'OPEN') {
+          console.error(chalk.red(`Error: A PR for \`${workBranch}\` is already open.`));
+          console.error(chalk.gray(`  ${pr.url}`));
+          process.exit(1);
+        }
+      }
+    } catch {
+      // JSON parse error — continue with PR creation
+    }
   }
 
   // 4. Read verify report (single-spec: verify_report.md, multi-spec: verify_report_N.md)
