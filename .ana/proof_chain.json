@@ -1027,9 +1027,12 @@
           "summary": "- **Component file heuristic may over-count:** confirmation.ts:797-811 `isComponentFile` excludes test files but includes any .tsx/.jsx/.vue file regardless of purpose. A file like `utils/formatters.tsx` would count as a component file, slightly inflating dominance percentages. Not blocking — dominance is still directionally correct. - **Nuxt detection deviates from spec:** Spec said to use regex on raw file content because ParsedFile.functions captures definitions not calls. Implementation uses import matching instead (confirmation.ts:885-888). This is actually MORE reliable — it won't match comments or strings. The deviation improves the implementation.",
           "file": "packages/cli/src/engine/analyzers/patterns/confirmation.ts",
           "anchor": "isComponentFile",
-          "status": "active",
+          "status": "closed",
           "severity": "observation",
-          "suggested_action": "monitor"
+          "suggested_action": "monitor",
+          "closed_reason": "Acceptable imprecision: isComponentFile at confirmation.ts:797 counts .tsx/.jsx/.vue files as components regardless of purpose. Over-counting is conservative — inflates component count, under-estimates hook ratio. Scan engine produces directional signals ('some hooks detected'), not precise ratios. A utility like formatters.tsx being counted as a component doesn't change the dominance classification.",
+          "closed_at": "2026-05-15T00:02:02.655Z",
+          "closed_by": "human"
         },
         {
           "id": "add-hook-detection-C2",
