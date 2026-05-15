@@ -2,7 +2,7 @@
 
 .section {
   position: relative;
-  padding: 56px 0 40px;
+  padding: 80px 0 40px;
   border-bottom: 1px solid var(--hairline);
   overflow: hidden;
 }
