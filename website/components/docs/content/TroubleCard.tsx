@@ -13,6 +13,7 @@ export function TroubleCard({ title, children }: TroubleCardProps) {
   return (
     <div
       className="docs-trouble-card"
+      role="note"
       style={{
         border: "1px solid var(--border)",
         borderRadius: "var(--radius-md)",

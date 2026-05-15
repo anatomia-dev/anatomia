@@ -28,6 +28,7 @@ import type {
   ContextFile,
   BuildMeta,
 } from '../lib/docs-data/types';
+import { stripJsx } from '../lib/docs-data/stripJsx';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -810,37 +811,6 @@ function generateSearchIndex(
 // ---------------------------------------------------------------------------
 // 9. llms.txt generation
 // ---------------------------------------------------------------------------
-
-function stripJsx(mdxSource: string): string {
-  let result = mdxSource;
-  // Remove import/export lines
-  result = result.replace(/^(?:import|export)\s+.*$/gm, '');
-  // Remove JSX expression comments
-  result = result.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
-  // Remove self-closing JSX components
-  result = result.replace(/<[A-Z]\w*\s*(?:[^>]*?)?\s*\/>/g, '');
-  // Block components with children — preserve content
-  for (const comp of ['Callout', 'ForPlatform', 'TroubleCard']) {
-    const regex = new RegExp(`<${comp}[^>]*>([\\s\\S]*?)<\\/${comp}>`, 'g');
-    result = result.replace(regex, '$1');
-  }
-  // Fully strip these components
-  for (const comp of ['PipelineDiagram', 'NextCards', 'StatsStrip', 'CodeBlock']) {
-    result = result.replace(new RegExp(`<${comp}\\s*(?:[^>]*?)?\\s*/>`, 'g'), '');
-    result = result.replace(new RegExp(`<${comp}[^>]*>[\\s\\S]*?<\\/${comp}>`, 'g'), '');
-  }
-  // Strip div/span/p/pre wrappers
-  for (let i = 0; i < 5; i++) {
-    const before = result;
-    result = result.replace(/<(?:div|span|p|pre)\s+style=\{\{[^}]*\}\}[^>]*>([\s\S]*?)<\/(?:div|span|p|pre)>/g, '$1');
-    if (result === before) break;
-  }
-  // Strip remaining HTML-like tags
-  result = result.replace(/<\/?(?:div|span|p|pre|a|code|b|strong|em|br)\b[^>]*>/g, '');
-  // Clean up excessive blank lines
-  result = result.replace(/\n{3,}/g, '\n\n');
-  return result.trim();
-}
 
 function generateLlmsTxt(
   searchIndex: SearchIndexEntry[],
