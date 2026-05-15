@@ -48,21 +48,16 @@ interface TestProofTiming {
 interface TestGanttBar {
   label: string;
   minutes: number;
-  opacity: number;
   leftPct: number;
   widthPct: number;
 }
 
 const TEST_STAGES = [
-  { key: 'think' as const, label: 'Think', opacity: 0.55 },
-  { key: 'plan' as const, label: 'Plan', opacity: 0.70 },
-  { key: 'build' as const, label: 'Build', opacity: 0.85 },
-  { key: 'verify' as const, label: 'Verify', opacity: 1.0 },
+  { key: 'think' as const, label: 'Think' },
+  { key: 'plan' as const, label: 'Plan' },
+  { key: 'build' as const, label: 'Build' },
+  { key: 'verify' as const, label: 'Verify' },
 ];
-
-const TEST_OPACITY_MAP: Record<string, number> = {
-  think: 0.55, plan: 0.70, build: 0.85, verify: 1.0,
-};
 
 function buildGanttBars(timing: TestProofTiming): TestGanttBar[] {
   const total = timing.totalMinutes;
@@ -79,7 +74,6 @@ function buildGanttBars(timing: TestProofTiming): TestGanttBar[] {
       bars.push({
         label,
         minutes: seg.minutes,
-        opacity: TEST_OPACITY_MAP[seg.stage] ?? 0.85,
         leftPct: total > 0 ? Math.round((cumulative / total) * 100) : 0,
         widthPct: seg.minutes === 0 ? 2 : pct,
       });
@@ -96,7 +90,6 @@ function buildGanttBars(timing: TestProofTiming): TestGanttBar[] {
     bars.push({
       label: stage.label,
       minutes: value,
-      opacity: stage.opacity,
       leftPct: total > 0 ? Math.round((cumulative / total) * 100) : 0,
       widthPct: value === 0 ? 2 : pct,
     });
@@ -4327,7 +4320,7 @@ describe('formatHumanReadable phase breakdown', () => {
 });
 
 describe('buildGanttBars', () => {
-  // @ana A014, A015, A017, A018
+  // @ana A014, A015
   it('renders multi-phase bars', () => {
     const timing: TestProofTiming = {
       think: 8,
@@ -4356,15 +4349,10 @@ describe('buildGanttBars', () => {
     expect(ganttBars[2]!.label).toContain('Build 1');
     expect(ganttBars[3]!.label).toContain('Verify 1');
 
-    // A017: build bars use 0.85 opacity
-    expect(ganttBars[2]!.opacity).toBe(0.85);
-    expect(ganttBars[4]!.opacity).toBe(0.85);
-    expect(ganttBars[6]!.opacity).toBe(0.85);
-
-    // A018: verify bars use 1.0 opacity
-    expect(ganttBars[3]!.opacity).toBe(1.0);
-    expect(ganttBars[5]!.opacity).toBe(1.0);
-    expect(ganttBars[7]!.opacity).toBe(1.0);
+    // A017/A018 removed: opacity is a website rendering concern (PipelineGantt.tsx),
+    // not a CLI timing concern. The test re-implements buildGanttBars for structural
+    // assertions — opacity assertions drifted when production moved to progressive
+    // opacity (commit 99e2e862) and would drift again with any rendering change.
   });
 
   // @ana A016, A022
