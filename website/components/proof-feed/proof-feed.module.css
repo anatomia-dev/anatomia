@@ -315,14 +315,6 @@
 .rowAssertPass { color: var(--brand-deep); font-weight: 600; }
 :global([data-theme="dark"]) .rowAssertPass { color: var(--color-brand); }
 .rowAgo { color: var(--ink-45); text-align: right; font-size: 11.5px; }
-.rowArrow {
-  color: var(--ink-30);
-  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.proofRow:hover .rowArrow {
-  color: var(--brand-deep);
-  transform: translateX(3px);
-}
 @media (max-width: 760px) {
   .proofRow {
     display: flex;
