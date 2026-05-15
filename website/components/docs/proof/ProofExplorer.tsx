@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { type CSSProperties, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { ProofEntry, ProofStats } from "@/lib/docs-data/types";
 
@@ -24,6 +24,22 @@ function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+
+const thBase: CSSProperties = {
+  fontSize: "10.5px",
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+  color: "var(--ink-40)",
+  padding: "11px 16px",
+  background: "var(--bg-elev)",
+  borderBottom: "1px solid var(--border)",
+};
+
+const thSortable: CSSProperties = {
+  cursor: "pointer",
+  userSelect: "none",
+};
 
 export function ProofExplorer({ entries, stats, className }: ProofExplorerProps) {
   const router = useRouter();
@@ -191,91 +207,13 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
         }}>
           <thead>
             <tr>
-              <th style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "left",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-              }}>Proof</th>
-              <th style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "left",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-              }}>Stage</th>
-              <th onClick={() => handleSort("assertions")} className="docs-exp-th-sort" style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "right",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-                cursor: "pointer",
-                userSelect: "none",
-              }}>Assertions{sortArrow("assertions")}</th>
-              <th onClick={() => handleSort("findings")} className="docs-exp-th-sort" style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "right",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-                cursor: "pointer",
-                userSelect: "none",
-              }}>Findings{sortArrow("findings")}</th>
-              <th onClick={() => handleSort("duration")} className="docs-exp-th-sort" style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "right",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-                cursor: "pointer",
-                userSelect: "none",
-              }}>Duration{sortArrow("duration")}</th>
-              <th onClick={() => handleSort("completed")} className="docs-exp-th-sort" style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "right",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-                cursor: "pointer",
-                userSelect: "none",
-              }}>Shipped{sortArrow("completed")}</th>
-              <th style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--ink-40)",
-                textAlign: "right",
-                padding: "11px 16px",
-                background: "var(--bg-elev)",
-                borderBottom: "1px solid var(--border)",
-              }}></th>
+              <th style={{ ...thBase, textAlign: "left" }}>Proof</th>
+              <th style={{ ...thBase, textAlign: "left" }}>Stage</th>
+              <th onClick={() => handleSort("assertions")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Assertions{sortArrow("assertions")}</th>
+              <th onClick={() => handleSort("findings")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Findings{sortArrow("findings")}</th>
+              <th onClick={() => handleSort("duration")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Duration{sortArrow("duration")}</th>
+              <th onClick={() => handleSort("completed")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Shipped{sortArrow("completed")}</th>
+              <th style={{ ...thBase, textAlign: "right" }}></th>
             </tr>
           </thead>
           <tbody>
