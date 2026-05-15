@@ -14,6 +14,7 @@ import { StatsStrip } from "@/components/docs/content/StatsStrip";
 import { ForPlatform } from "@/components/docs/content/ForPlatform";
 import { PipelineDiagram } from "@/components/docs/content/PipelineDiagram";
 import { TroubleCard } from "@/components/docs/content/TroubleCard";
+import { DocsStat } from "@/components/docs/content/DocsStat";
 import { stripJsx } from "@/lib/docs-data/stripJsx";
 
 import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
@@ -29,6 +30,7 @@ const mdxComponents = {
   ForPlatform,
   PipelineDiagram,
   TroubleCard,
+  DocsStat,
 };
 
 interface DocsPageProps {
