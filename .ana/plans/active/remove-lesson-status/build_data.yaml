@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "promotedEntry fixture removed — may need recreation for future promoted-status tests"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Backfill migration path (Scenario 1: no metadata, Scenario 2: has metadata) lacks dedicated integration test — covered by code inspection only"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: monitor
