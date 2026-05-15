@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { ProofFinding } from "@/lib/docs-data/types";
 
 interface FindingsListProps {
@@ -25,7 +28,8 @@ function severityColor(severity: string): { bg: string; fg: string } {
 }
 
 export function FindingsList({ findings, className }: FindingsListProps) {
-  const visible = findings.slice(0, 5);
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? findings : findings.slice(0, 5);
   const extra = findings.length - 5;
 
   return (
@@ -96,13 +100,17 @@ export function FindingsList({ findings, className }: FindingsListProps) {
         );
       })}
       {extra > 0 && (
-        <div style={{
-          border: "1px solid var(--border)",
-          borderRadius: "var(--r-md)",
-          padding: "13px 16px",
-          background: "var(--bg-card)",
-          opacity: 0.75,
-        }}>
+        <div
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            border: "1px solid var(--border)",
+            borderRadius: "var(--r-md)",
+            padding: "13px 16px",
+            background: "var(--bg-card)",
+            opacity: 0.75,
+            cursor: "pointer",
+          }}
+        >
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -112,24 +120,36 @@ export function FindingsList({ findings, className }: FindingsListProps) {
             textTransform: "uppercase",
             letterSpacing: "0.06em",
           }}>
-            <span style={{
-              padding: "2px 7px",
-              borderRadius: "3px",
-              fontWeight: 500,
-              letterSpacing: "0.06em",
-              background: "var(--info-bg)",
-              color: "var(--info)",
-            }}>
-              +{extra}
-            </span>
-            <span style={{
-              color: "var(--ink-60)",
-              fontSize: "11px",
-              textTransform: "none",
-              letterSpacing: "0",
-            }}>
-              more findings
-            </span>
+            {expanded ? (
+              <span style={{
+                cursor: "pointer",
+                color: "var(--brand-light)",
+                borderBottom: "1px solid var(--ink-25)",
+              }}>
+                collapse ↑
+              </span>
+            ) : (
+              <>
+                <span style={{
+                  padding: "2px 7px",
+                  borderRadius: "3px",
+                  fontWeight: 500,
+                  letterSpacing: "0.06em",
+                  background: "var(--info-bg)",
+                  color: "var(--info)",
+                }}>
+                  +{extra}
+                </span>
+                <span style={{
+                  color: "var(--ink-60)",
+                  fontSize: "11px",
+                  textTransform: "none",
+                  letterSpacing: "0",
+                }}>
+                  more findings
+                </span>
+              </>
+            )}
           </div>
         </div>
       )}
