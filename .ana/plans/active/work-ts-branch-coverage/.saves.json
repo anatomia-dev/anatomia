@@ -1,4 +1,8 @@
 {
   "work_started_at": "2026-05-15T01:56:35.980Z",
-  "work_agent": "ana"
+  "work_agent": "ana",
+  "scope": {
+    "saved_at": "2026-05-15T01:57:23.474Z",
+    "hash": "sha256:48349541fd19b5e8ec2455ca725ce199587a9b1a0f75c448c8a622d6915596cc"
+  }
 }
