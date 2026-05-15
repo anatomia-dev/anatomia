@@ -18,5 +18,22 @@
   "spec": {
     "saved_at": "2026-05-15T18:12:00.942Z",
     "hash": "sha256:8c46744ed3b84a465301092bc990a73427cdb07e192f0f2146c69243e707e8dd"
-  }
+  },
+  "build_started_at": "2026-05-15T18:16:26.202Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T18:38:05.795Z",
+    "hash": "sha256:da3baa3a89e3c83d889252ea762bcec2913a3d63e60cf82a24e0ee29ab53a6a9"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T18:38:05.796Z",
+    "hash": "sha256:6d93edc43724cc6554d94286f9221bb25106c1cecc004b2772e17cb47c608d83"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/pr.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "commit_hygiene": []
 }
