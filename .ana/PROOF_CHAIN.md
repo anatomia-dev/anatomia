@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-101 runs · 80 active · 121 lessons · 0 promoted · 411 closed
+102 runs · 82 active · 122 lessons · 0 promoted · 411 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 80 total)
+## Active Findings (30 shown of 82 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -41,6 +41,10 @@
 - **code:** Empty string build command passes typeof guard and executes spawnSync('') — *Run build command during worktree creation*
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
 
+### packages/cli/tests/commands/init.test.ts
+
+- **test:** A009 and A010 assert on source file content instead of runtime output — *Documentation links in init and setup*
+
 ### packages/cli/tests/commands/init/commit.test.ts
 
 - **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
@@ -54,10 +58,6 @@
 ### website/app/docs/[...slug]/page.tsx
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
-
-### website/app/docs/[[...slug]]/page.tsx
-
-- **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### website/app/docs/reference/cli/page.tsx
 
@@ -106,5 +106,8 @@
 - **code:** LLMS_SECTIONS constant declared but never used in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
 - **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
-- **code:** Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine — *Docs Data Pipeline*
+
+### General
+
+- **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
 

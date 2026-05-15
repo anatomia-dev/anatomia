@@ -27447,6 +27447,171 @@
         "commit_count": 3,
         "base_commit": "362187befdd7cde4377c5a941ea8138c5cbab383"
       }
+    },
+    {
+      "slug": "docs-links-init-setup",
+      "feature": "Documentation links in init and setup",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 11,
+        "satisfied": 11,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Init success output shows a quickstart documentation link",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The quickstart link has a labeled format users can scan",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The quickstart link appears after the Next steps block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Setup bare command shows a link to the setup guide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The setup guide link has a labeled format users can scan",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The setup guide link appears between the agent command and subcommands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "CLI documentation URLs are defined as named constants, not inline strings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The setup guide URL constant matches the expected path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The setup agent template includes a link to the design principles guide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The docs page links to the reference page's design principles section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Init quickstart link appears even when scan data is unavailable",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 369,
+        "think": 10,
+        "plan": 8,
+        "build": 12,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:985574a727aaf9f50be5aba2855b049e48e33e7191bddbcc848fb052a7140691",
+        "contract": "sha256:2a661b4b4e3f3333481d20afeb462c489a60956bcb1181beedbf5034ed88060d",
+        "plan": "sha256:c75bed198e26532b4aaa4a22613d67b1280dc97261284913228ff801bf529df3",
+        "spec": "sha256:985b5e8eaa40fcd15532cf704fa1a1e2c1024904b7708faebf81143d91739dbd",
+        "build-report": "sha256:76d45feeab55268c9ed9a2247d4f695d34ea68aeafbe2a9dacf3f36efab39f15",
+        "build-data": "sha256:47ca3f01836fa63a85d61bed6cf19e51760620c5ed1ed95b1fbcedbd8cce8c98",
+        "verify-report": "sha256:6b1d6810bf27149d204e3b2a41126eb20c45dbb01cb934de65a160eec36ca6e2",
+        "verify-data": "sha256:cd79e97dd9d8e26a441d0696c55d7efd88c0e7cb6b332d2dfb27677f4bad104e"
+      },
+      "completed_at": "2026-05-15T04:09:45.384Z",
+      "modules_touched": [
+        ".claude/agents/ana-setup.md",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/setup.ts",
+        "packages/cli/src/constants.ts",
+        "packages/cli/templates/.claude/agents/ana-setup.md",
+        "packages/cli/tests/commands/init.test.ts",
+        "website/content/docs/guides/using-ana-setup.mdx"
+      ],
+      "scope_summary": "Users complete init and setup without knowing the documentation exists. The docs site has a quickstart guide, a detailed setup walkthrough, and Anatomia's own design principles as a working example — content that directly helps at the moments users encounter it. The CLI and agent template should surface these URLs at the right moments: orientation points where users are deciding what to do, not flow moments where they're in the middle of doing something.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A009 and A010 assert on source file content instead of runtime output",
+          "file": "packages/cli/tests/commands/init.test.ts",
+          "anchor": null,
+          "line": 687,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A009",
+            "A010"
+          ],
+          "id": "docs-links-init-setup-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Dogfood copy .claude/agents/ana-setup.md manually synced — no test enforces sync",
+          "file": ".claude/agents/ana-setup.md",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "docs-links-init-setup-C2",
+          "status": "lesson"
+        },
+        {
+          "category": "code",
+          "summary": "URL reachability not verified — stable URL contract is a deployment assumption",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001",
+            "A004",
+            "A009",
+            "A010"
+          ],
+          "id": "docs-links-init-setup-C3",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "/docs/reference/context#design-principles target must exist on website for MDX link to resolve",
+          "file": "website/content/docs/guides/using-ana-setup.mdx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T03:48:38.853Z",
+        "completed_at": "2026-05-15T04:09:45.379Z",
+        "commit_count": 0,
+        "base_commit": "9d8be960cdc0bc12dd83581bfc2794a242b51106"
+      }
     }
   ],
   "schema": 1
