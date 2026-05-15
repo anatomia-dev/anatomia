@@ -90,16 +90,24 @@ export function isExcluded(filePath: string): boolean {
  * @returns Array of repo-relative paths to dirty infrastructure files
  */
 export function discoverDirtyFiles(projectRoot: string): string[] {
-  // Get git status — porcelain paths are relative to repo root
-  const statusResult = runGit(['status', '--porcelain'], { cwd: projectRoot });
-  if (statusResult.exitCode !== 0) {
+  // Get git status — porcelain paths are relative to repo root.
+  // Use spawnSync directly (not runGit) because runGit trims stdout,
+  // which corrupts the first line's leading space in porcelain format
+  // (e.g., " M .ana/ana.json" → "M .ana/ana.json" → slice(3) = "ana/ana.json").
+  const statusResult = spawnSync('git', ['status', '--porcelain'], {
+    cwd: projectRoot,
+    stdio: 'pipe',
+    encoding: 'utf-8',
+  });
+  if (statusResult.status !== 0) {
     return [];
   }
 
   // Parse porcelain output: "XY path" or "XY path -> renamed"
   const dirtyPaths = new Set<string>();
-  for (const line of statusResult.stdout.split('\n')) {
-    if (!line.trim()) continue;
+  const rawOutput = statusResult.stdout ?? '';
+  for (const line of rawOutput.split('\n')) {
+    if (!line || line.length < 4) continue;
     // Status is first 2 chars, then space, then path
     const filePath = line.slice(3).split(' -> ')[0];
     if (filePath) {
@@ -137,6 +145,23 @@ export function discoverDirtyFiles(projectRoot: string): string[] {
     const matchesRoot = roots.some(root => dirtyPath.startsWith(root));
     if (matchesRoot && !isExcluded(dirtyPath)) {
       discovered.push(dirtyPath);
+    }
+  }
+
+  // Second pass: root files whose parent directories appear as untracked
+  // directories in git status (e.g., "?? packages/" when we want
+  // "packages/cli/AGENTS.md"). Check if the file exists on disk and
+  // its containing untracked directory is in the dirty set.
+  for (const rootFile of rootFiles) {
+    if (discovered.includes(rootFile)) continue;
+    if (isExcluded(rootFile)) continue;
+
+    // Check if any dirty directory entry is a prefix of this root file
+    const containedInDirtyDir = [...dirtyPaths].some(dp =>
+      dp.endsWith('/') && rootFile.startsWith(dp)
+    );
+    if (containedInDirtyDir && fs.existsSync(path.join(projectRoot, rootFile))) {
+      discovered.push(rootFile);
     }
   }
 
