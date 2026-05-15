@@ -17,6 +17,7 @@ import { getStackSummary, CONTEXT_FILES, CORE_SKILLS, computeSkillManifest } fro
 import { matchGotchas } from '../../utils/gotchas.js';
 import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
+import { getCurrentBranch } from '../../utils/git-operations.js';
 
 /**
  * Prompt user for confirmation
@@ -701,5 +702,14 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
   console.log('  Next:');
   console.log(chalk.cyan('    claude --agent ana') + '          Start working (Ana knows your stack)');
   console.log(chalk.cyan('    claude --agent ana-setup') + '    Enrich with your team\'s knowledge (optional, ~10 min)');
+
+  // Commit-readiness indicator
+  const artifactBranch = anaConfig?.['artifactBranch'] as string ?? 'main';
+  const currentBranch = getCurrentBranch();
+  if (currentBranch === artifactBranch) {
+    console.log(chalk.cyan('    ana init commit') + `             Save to ${artifactBranch} ✓`);
+  } else if (currentBranch) {
+    console.log(chalk.cyan('    ana init commit') + `             ⚠ you're on ${currentBranch} — switch to ${artifactBranch} first`);
+  }
   console.log('');
 }
