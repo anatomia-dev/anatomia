@@ -14248,7 +14248,10 @@
           "severity": "observation",
           "suggested_action": "scope",
           "id": "non-main-artifact-branch-tests-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: detectWorktreeSlug('') is guarded by explicit check at worktree.ts:112 (if (dir === '') return null) — added in commit df833875. The empty string case returns null immediately without touching process.cwd(). No environment dependency. The finding describes pre-fix behavior.",
+          "closed_at": "2026-05-15T03:23:02.857Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
