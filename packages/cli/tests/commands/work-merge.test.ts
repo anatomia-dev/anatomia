@@ -363,4 +363,58 @@ describe('ana work complete --merge', () => {
     const output = errors.join('\n');
     expect(output).toContain('https://cli.github.com/');
   });
+
+  // @ana A001, A002, A003, A004, A007
+  it('already-merged path with --json produces valid JSON', async () => {
+    await createMergedProject('test-slug');
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'MERGED', baseRefName: 'main' }), stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await completeWork('test-slug', { json: true, merge: true });
+
+    console.log = originalLog;
+    const output = logs.join('\n');
+
+    // Should be clean JSON — no human-readable text before the envelope
+    const json = JSON.parse(output);
+    expect(json.command).toBe('work complete');
+    expect(json.results.slug).toBe('test-slug');
+    expect(json.meta).toBeTypeOf('object');
+    expect(output).not.toContain('already merged');
+  });
+
+  // @ana A005, A006, A008
+  it('merge-succeeded path with --json produces valid JSON', async () => {
+    await createMergedProject('test-slug');
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await completeWork('test-slug', { json: true, merge: true });
+
+    console.log = originalLog;
+    const output = logs.join('\n');
+
+    // Should be clean JSON — no human-readable text before the envelope
+    const json = JSON.parse(output);
+    expect(json.command).toBe('work complete');
+    expect(json.results.slug).toBe('test-slug');
+    expect(json.meta).toBeTypeOf('object');
+    expect(output).not.toContain('Merging PR');
+    expect(output).not.toContain('PR merged');
+  });
 });

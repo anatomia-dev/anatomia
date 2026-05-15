@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A004 meta assertion uses toBeTypeOf('object') — passes for null"
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    line: 386
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A004"]
+  - category: test
+    summary: "A009/A010 satisfied by existing tests but lack @ana tags for this contract"
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    line: 148
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A009", "A010"]
+  - category: test
+    summary: "Pull-recovery guards (2 of 5) not directly exercised by any test"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1290
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "JSON.parse on gh pr view stdout has no try/catch — malformed response crashes (pre-existing)"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: monitor
