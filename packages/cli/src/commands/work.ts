@@ -355,6 +355,29 @@ function gatherArtifactState(
 }
 
 /**
+ * Check if a timestamp key in a `.saves.json` is recent (< 1 hour old).
+ * Reads from a filesystem path (not git). Returns false for missing/corrupted files.
+ *
+ * @param savesDir - Directory containing `.saves.json`
+ * @param timestampKey - The key to check
+ * @returns Whether the timestamp is recent
+ */
+function isTimestampRecent(savesDir: string, timestampKey: string): boolean {
+  try {
+    const savesPath = path.join(savesDir, '.saves.json');
+    if (!fs.existsSync(savesPath)) return false;
+    const saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
+    const timestamp = saves[timestampKey];
+    if (typeof timestamp !== 'string') return false;
+    const startedAt = new Date(timestamp);
+    if (isNaN(startedAt.getTime())) return false;
+    return (Date.now() - startedAt.getTime()) < CONCURRENCY_TIMEOUT_MS;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Determine pipeline stage for a work item
  *
  * @param slug - Work item slug
@@ -367,8 +390,14 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
   const { scope, plan, specs, buildReports, verifyReports } = artifacts;
   const totalPhases = specs.length;
 
-  // Scope only → ready for plan
+  // Scope only → ready for plan (or plan-in-progress if timestamp is recent)
   if (scope.exists && !plan.exists) {
+    if (projectRoot) {
+      const planSavesDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+      if (isTimestampRecent(planSavesDir, 'plan_started_at')) {
+        return 'plan-in-progress';
+      }
+    }
     return 'ready-for-plan';
   }
 
@@ -395,6 +424,13 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
     }
 
     if (hasBuildReport && !hasVerifyReport) {
+      // Check if verify session is in progress via worktree timestamp
+      if (projectRoot && worktreeExists(projectRoot, slug)) {
+        const wtSavesDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
+        if (isTimestampRecent(wtSavesDir, 'verify_started_at')) {
+          return 'verify-in-progress';
+        }
+      }
       return 'ready-for-verify';
     }
 
@@ -453,7 +489,13 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
       }
 
       if (phaseBuildReport && !phaseVerifyReport) {
-        // This phase built but not verified
+        // Check verify-in-progress via worktree timestamp
+        if (projectRoot && worktreeExists(projectRoot, slug)) {
+          const wtSavesDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
+          if (isTimestampRecent(wtSavesDir, 'verify_started_at')) {
+            return `phase-${phaseNum}-verify-in-progress`;
+          }
+        }
         return `phase-${phaseNum}-ready-for-verify`;
       }
 
@@ -503,8 +545,16 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
  * @returns Copy-pasteable command
  */
 function getNextAction(stage: string, slug: string, _branchPrefix: string, artifactBranch?: string): string | string[] {
+  if (stage === 'plan-in-progress') {
+    return `Plan session in progress. Use \`ana work start ${slug} --force\` to override.`;
+  }
+
   if (stage === 'ready-for-plan') {
     return 'claude --agent ana-plan';
+  }
+
+  if (stage === 'verify-in-progress') {
+    return `Verify session in progress. Use \`ana work start ${slug} --force\` to override.`;
   }
 
   if (stage === 'ready-for-build') {
@@ -535,6 +585,10 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
   }
 
   // Multi-phase stages
+  if (stage.includes('verify-in-progress')) {
+    return `Verify session in progress. Use \`ana work start ${slug} --force\` to override.`;
+  }
+
   if (stage.includes('ready-for-build')) {
     return 'claude --agent ana-build';
   }
@@ -1466,18 +1520,18 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     const hasRemote = remoteBranchResult.exitCode === 0 && remoteBranchResult.stdout.length > 0;
 
     if (hasRemote) {
-      // Remote still exists — verify with is-ancestor (regular merge)
+      // Detect merge: gh pr list first (reliable for squash/rebase/force-push), is-ancestor fallback
       let merged = false;
-      const ancestorResult = runGit(['merge-base', '--is-ancestor', workBranchName, 'HEAD'], { cwd: projectRoot });
-      if (ancestorResult.exitCode === 0) {
+      const ghResult = spawnSync('gh', ['pr', 'list', '--head', workBranchName, '--state', 'merged', '--json', 'state', '-q', '.[0].state'], {
+        encoding: 'utf-8', stdio: 'pipe',
+      });
+      if (ghResult.status === 0 && ghResult.stdout && ghResult.stdout.trim() === 'MERGED') {
         merged = true;
       } else {
-        // is-ancestor failed — might be squash merge. Check via gh CLI.
-        const ghResult = spawnSync('gh', ['pr', 'view', workBranchName, '--json', 'state', '-q', '.state'], {
-          encoding: 'utf-8', stdio: 'pipe',
-        });
-        if (ghResult.status === 0 && ghResult.stdout) {
-          merged = ghResult.stdout.trim() === 'MERGED';
+        // gh unavailable or no merged PR found — fall back to is-ancestor
+        const ancestorResult = runGit(['merge-base', '--is-ancestor', workBranchName, 'HEAD'], { cwd: projectRoot });
+        if (ancestorResult.exitCode === 0) {
+          merged = true;
         }
       }
       if (!merged) {
@@ -1764,9 +1818,12 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
  * From inside worktree (Resume): prints current path.
  *
  * @param slug - Kebab-case slug for the work item
+ * @param options - Optional settings
+ * @param options.force - When true, override active session concurrency guards
  * @returns void — exits with code 1 on validation failures
  */
-export async function startWork(slug: string): Promise<void> {
+export async function startWork(slug: string, options?: { force?: boolean }): Promise<void> {
+  const force = options?.force ?? false;
   // 1. Validate slug format
   try {
     validateSlug(slug);
@@ -1837,7 +1894,7 @@ export async function startWork(slug: string): Promise<void> {
           }
         } else if (buildReportExists) {
           // Verify phase: build report exists, no verify report
-          await writeTimestamp(localActivePath, 'verify_started_at', 'ana-verify');
+          await writeTimestamp(localActivePath, 'verify_started_at', 'ana-verify', true);
         } else if (specExists || hasContract) {
           // Build phase: spec/contract exists, no build report
           await writeTimestamp(localActivePath, 'build_started_at', 'ana-build');
@@ -1955,7 +2012,18 @@ export async function startWork(slug: string): Promise<void> {
       process.exit(1);
     }
 
-    await writeTimestamp(activePath, 'plan_started_at', 'ana-plan');
+    // Concurrency guard: check plan_started_at before writing
+    const planGuard = checkConcurrencyGuard(activePath, 'plan_started_at', slug);
+    if (planGuard.blocked) {
+      if (force) {
+        console.log(chalk.yellow(`⚠ Overriding active plan session for \`${slug}\` (started ${planGuard.startedAgo}).`));
+      } else {
+        console.error(chalk.red(planGuard.message!));
+        process.exit(1);
+      }
+    }
+
+    await writeTimestamp(activePath, 'plan_started_at', 'ana-plan', true);
     commitSaves(projectRoot, slug, `[${slug}] Start plan phase`);
     console.log(`Resuming \`${slug}\` — Plan phase. Run \`claude --agent ana-plan\`.`);
     return;
@@ -1968,10 +2036,19 @@ export async function startWork(slug: string): Promise<void> {
 
   // Phase: build report exists, no verify report → Verify (print worktree)
   if (buildReportExists && !verifyReportExists) {
-    // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
+    // Concurrency guard: check verify_started_at in worktree before writing
     if (worktreeExists(projectRoot, slug)) {
       const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
-      await writeTimestamp(wtPlanDir, 'verify_started_at', 'ana-verify');
+      const verifyGuard = checkConcurrencyGuard(wtPlanDir, 'verify_started_at', slug);
+      if (verifyGuard.blocked) {
+        if (force) {
+          console.log(chalk.yellow(`⚠ Overriding active verify session for \`${slug}\` (started ${verifyGuard.startedAgo}).`));
+        } else {
+          console.error(chalk.red(verifyGuard.message!));
+          process.exit(1);
+        }
+      }
+      await writeTimestamp(wtPlanDir, 'verify_started_at', 'ana-verify', true);
     } else {
       console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
     }
@@ -2206,6 +2283,79 @@ export function getClaudePid(): number | null {
 }
 
 /**
+ * Result of a concurrency guard check
+ */
+export interface ConcurrencyGuardResult {
+  blocked: boolean;
+  message?: string;
+  startedAgo?: string;
+}
+
+const CONCURRENCY_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Check whether a concurrency guard should block entry to a pipeline phase.
+ *
+ * Reads a specific timestamp key from `.saves.json` at the given filesystem path.
+ * If the timestamp is recent (< 1 hour), the guard blocks. Missing or corrupted
+ * `.saves.json` files are treated as "no guard" — they do not block.
+ *
+ * @param savesDir - Directory containing `.saves.json`
+ * @param timestampKey - The key to check (e.g., 'verify_started_at', 'plan_started_at')
+ * @param slug - Work item slug (for error messages)
+ * @param force - When true, skip the guard entirely
+ * @returns Guard result indicating whether to block
+ */
+export function checkConcurrencyGuard(
+  savesDir: string,
+  timestampKey: string,
+  slug: string,
+  force: boolean = false,
+): ConcurrencyGuardResult {
+  if (force) {
+    return { blocked: false };
+  }
+
+  const savesPath = path.join(savesDir, '.saves.json');
+  let saves: Record<string, unknown> = {};
+  try {
+    if (!fs.existsSync(savesPath)) {
+      return { blocked: false };
+    }
+    saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
+  } catch {
+    // Corrupted JSON — do not block
+    return { blocked: false };
+  }
+
+  const timestamp = saves[timestampKey];
+  if (typeof timestamp !== 'string') {
+    return { blocked: false };
+  }
+
+  const startedAt = new Date(timestamp);
+  if (isNaN(startedAt.getTime())) {
+    return { blocked: false };
+  }
+
+  const elapsedMs = Date.now() - startedAt.getTime();
+  if (elapsedMs >= CONCURRENCY_TIMEOUT_MS) {
+    return { blocked: false };
+  }
+
+  // Format relative time
+  const minutes = Math.floor(elapsedMs / 60000);
+  const startedAgo = minutes < 1 ? 'less than a minute ago' : `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+  const phaseName = timestampKey.replace('_started_at', '');
+
+  return {
+    blocked: true,
+    message: `Error: A ${phaseName} session is already in progress for \`${slug}\`.\n  Started: ${startedAgo}\n  Use \`ana work start ${slug} --force\` to override.`,
+    startedAgo,
+  };
+}
+
+/**
  * Write a timestamp to .saves.json.
  *
  * @param activePath - Path to the active plan directory
@@ -2295,9 +2445,10 @@ export function registerWorkCommand(program: Command): void {
   const startCommand = new Command('start')
     .description('Start a new work item')
     .argument('<slug>', 'Kebab-case slug for the work item')
+    .option('--force', 'Override active session concurrency guards')
     .addHelpText('after', '\nEXAMPLES\n  $ ana work start fix-auth-timeout')
-    .action(async (slug: string) => {
-      await startWork(slug);
+    .action(async (slug: string, cmdOptions: { force?: boolean }) => {
+      await startWork(slug, cmdOptions.force ? { force: true } : undefined);
     });
 
   const completeCommand = new Command('complete')
