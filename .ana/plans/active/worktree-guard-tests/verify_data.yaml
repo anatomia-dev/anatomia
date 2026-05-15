@@ -1,0 +1,23 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A009 test only verifies cwd restoration, not process.exit or console spy cleanup"
+    file: "packages/cli/tests/commands/worktree-guards.test.ts"
+    line: 150
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A009"]
+
+  - category: test
+    summary: "Console and process.exit spies restored inline after assertions — leak on assertion failure"
+    file: "packages/cli/tests/commands/worktree-guards.test.ts"
+    line: 59
+    severity: risk
+    suggested_action: scope
+
+  - category: test
+    summary: "A009 test is order-dependent — relies on running after the other describe blocks"
+    file: "packages/cli/tests/commands/worktree-guards.test.ts"
+    line: 149
+    severity: debt
+    suggested_action: accept

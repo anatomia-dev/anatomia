@@ -18,5 +18,34 @@
   "spec": {
     "saved_at": "2026-05-15T01:51:28.178Z",
     "hash": "sha256:2ea64253795c44ae1e166c966f3054cda076e0b6328da266cb40f1ddb1b6eb6f"
+  },
+  "build_started_at": "2026-05-15T01:57:47.765Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T02:01:13.467Z",
+    "hash": "sha256:4c066b693da375dff3c2b28c7351c8e864ccf6234233a424fecf633c8f6696c2"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T02:01:13.468Z",
+    "hash": "sha256:9f1424bb781bdeb82e4b32863042568e648118b9f5a04c7ff50c3a1e4111ebf0"
+  },
+  "modules_touched": [
+    "packages/cli/tests/commands/worktree-guards.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T02:05:16.962Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:47f9e1c0190bbaa4a40a56e72633b750667bc587ca8d1c0f6edb78b9c7f602a8",
+    "run_at": "2026-05-15T02:08:47.400Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T02:08:47.437Z",
+    "hash": "sha256:ebd5549fcfd5f56dbae8af953065c6baa7ecff27def3106cbc1a1c50dda65619"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T02:08:47.437Z",
+    "hash": "sha256:b517e916d6e6b12a20c264f19faaa3b8e133f3899ee91e937cbd3337332e27f5"
   }
 }
