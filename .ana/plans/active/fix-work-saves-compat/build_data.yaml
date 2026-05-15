@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "createMergedProject helper previously masked the saves.json bug by writing unnumbered keys for multi-phase — fixed but future tests must be aware"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts line 198 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept
