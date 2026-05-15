@@ -1,0 +1,63 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "work.ts untested branch coverage"
+
+assertions:
+  - id: A001
+    says: "Completing work with a malformed verify report triggers an UNKNOWN warning"
+    block: "warns on UNKNOWN result when verify report exists"
+    target: "console.error output"
+    matcher: "contains"
+    value: "UNKNOWN"
+
+  - id: A002
+    says: "The UNKNOWN warning tells the user to check the verify report"
+    block: "warns on UNKNOWN result when verify report exists"
+    target: "console.error output"
+    matcher: "contains"
+    value: "verify_report.md"
+
+  - id: A003
+    says: "Work still completes successfully despite the UNKNOWN result"
+    block: "warns on UNKNOWN result when verify report exists"
+    target: "proof_chain.json entry"
+    matcher: "exists"
+
+  - id: A004
+    says: "The proof chain entry records the result as UNKNOWN"
+    block: "warns on UNKNOWN result when verify report exists"
+    target: "proof_chain.json entry.result"
+    matcher: "equals"
+    value: "UNKNOWN"
+
+  - id: A005
+    says: "A git conflict during pull causes the process to exit"
+    block: "exits on pull conflict"
+    target: "process.exit"
+    matcher: "equals"
+    value: 1
+
+  - id: A006
+    says: "The conflict error message tells the user about the conflict"
+    block: "exits on pull conflict"
+    target: "console.error output"
+    matcher: "contains"
+    value: "conflict"
+
+  - id: A007
+    says: "The conflict error message instructs the user to resolve and retry"
+    block: "exits on pull conflict"
+    target: "console.error output"
+    matcher: "contains"
+    value: "Resolve conflicts and try again"
+
+  - id: A008
+    says: "Both tests live in the existing work.test.ts file"
+    block: "file location"
+    target: "test file path"
+    matcher: "equals"
+    value: "packages/cli/tests/commands/work.test.ts"
+
+file_changes:
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
