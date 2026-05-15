@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-102 runs · 66 active · 122 lessons · 3 promoted · 424 closed
+102 runs · 65 active · 122 lessons · 3 promoted · 425 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 66 total)
+## Active Findings (30 shown of 65 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -28,6 +28,7 @@
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
+- **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 
 ### packages/cli/src/types/proof.ts
 
@@ -71,7 +72,6 @@
 ### website/components/docs/layout/RightRail.tsx
 
 - **code:** pageTitle and pageDescription props accepted by RightRail but never used in any rendering logic — *Docs Search + Polish*
-- **code:** Right rail responsive breakpoint mismatch — hidden from 1181-1279px where spec says visible above 1180px — *Docs Shell (Layout + Shared Components)*
 
 ### website/components/docs/proof/FindingsList.tsx
 

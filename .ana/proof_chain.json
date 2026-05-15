@@ -23343,7 +23343,10 @@
             "A002"
           ],
           "id": "docs-shell-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: original docs-shell commit (4d6cab66) used Tailwind 'hidden xl:block' on RightRail — xl breakpoint is 1280px, creating a 1181-1279px gap with the CSS max-width:1180px rule. Current code at RightRail.tsx:70 uses className='docs-right-rail' with inline styles, no hidden/xl:block classes. Only hiding rule is CSS max-width:1180px. Gap eliminated.",
+          "closed_at": "2026-05-15T05:14:44.642Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
