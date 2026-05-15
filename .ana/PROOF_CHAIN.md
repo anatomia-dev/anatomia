@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-105 runs · 34 active · 128 lessons · 3 promoted · 464 closed
+105 runs · 33 active · 128 lessons · 3 promoted · 465 closed
 
 ## Hot Modules
 
@@ -15,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 34 total)
+## Active Findings (30 shown of 33 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -27,6 +27,10 @@
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 - **code:** Auto-merge enabled path writes plain text to stdout before JSON output — pollutes stdout for --json consumers — *work complete --merge flag for structured PR merging*
+
+### packages/cli/src/engine/detectors/git.ts
+
+- **code:** git.ts in src/engine/detectors/ retains execSync — architecturally correct (engine boundary, not commands/utils) but is the last remaining execSync in the codebase outside tests. Future hardening could migrate this to spawnSync for consistency. — *Security Hardening — Command Injection Elimination*
 
 ### packages/cli/src/types/proof.ts
 
@@ -90,7 +94,6 @@
 
 ### General
 
-- **code:** Dynamic stat markers (ana:dynamic) updated as prebuild side effect — pipeline.mdx, reading-a-proof.mdx, using-ana-learn.mdx, verifying-changes.mdx, start.mdx, troubleshooting.mdx all have updated proof counts (90->103, 19->21 rejections). These are correct but outside the spec's file_changes list. — *Bump Node Minimum to 22, Add Node 24 to CI*
 - **code:** Lint warning (pre-existing): unused eslint-disable directive for no-control-regex. Not introduced by this build. — *Bump Node Minimum to 22, Add Node 24 to CI*
 - **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
 - **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
