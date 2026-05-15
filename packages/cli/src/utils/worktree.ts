@@ -451,7 +451,7 @@ function runBuildCommand(wtPath: string): boolean | null {
     const config = JSON.parse(raw);
     const buildCmd = config?.commands?.build;
 
-    if (typeof buildCmd !== 'string') {
+    if (typeof buildCmd !== 'string' || !buildCmd.trim()) {
       return null;
     }
 
@@ -460,6 +460,7 @@ function runBuildCommand(wtPath: string): boolean | null {
       stdio: 'pipe',
       encoding: 'utf-8',
       shell: true,
+      timeout: 300000,
     });
 
     return result.status === 0;
