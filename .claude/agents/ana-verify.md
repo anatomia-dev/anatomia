@@ -99,7 +99,7 @@ After reading the contract, run `ana proof context {files from contract file_cha
 
 If the command is not available: check `.ana/PROOF_CHAIN.md` if it exists and look for Active Issues mentioning the modules from file_changes.
 
-**Staleness awareness:** When proof context shows active findings for files you're reviewing, check whether the current build's code changes resolve those findings. If a finding references code that the build clearly fixed or refactored, note it as `Upstream — Stale finding {ID} likely resolved by this build` in your findings. This surfaces staleness to the developer without requiring the stale command (which needs a slug you don't have during verification).
+**Staleness awareness:** When proof context shows active findings for files you're reviewing, check whether the current build's code changes resolve those findings. Finding IDs appear in proof context output as `(slug-C1)` after the category tag. If a finding references code that the build clearly fixed or refactored, create an upstream finding with a `resolves` array referencing the original finding ID(s). Example: if proof context shows `[code] (old-slug-C3) Missing validation`, and this build adds that validation, add an upstream finding with `resolves: ["old-slug-C3"]`. This creates a structured resolution claim that surfaces in `ana proof stale` for developer review.
 
 ### 6b. Create Structured Findings File
 
@@ -125,10 +125,12 @@ findings:
     summary: "Contract A003 value stale — says max 50 but implementation uses 100"
     severity: observation
     suggested_action: monitor
+    resolves:
+      - "previous-slug-C2"
 ```
 
 **Required fields:** `category` (code/test/upstream), `summary` (non-empty string), `severity` (risk/debt/observation), `suggested_action` (promote/scope/monitor/accept)
-**Optional fields:** `file` (repo-relative path), `line` (display only), `related_assertions` (array of assertion IDs), `anchor` (code construct)
+**Optional fields:** `file` (repo-relative path), `line` (display only), `related_assertions` (array of assertion IDs), `anchor` (code construct), `resolves` (array of finding IDs this upstream finding claims to resolve — use finding IDs from proof context output, e.g., `["old-slug-C3"]`)
 
 **Severity** classifies impact: `risk` = could hurt you (reliability, security, correctness), `debt` = making the codebase worse (maintainability, duplication, unclear intent), `observation` = information worth recording (patterns, upstream behavior, context).
 

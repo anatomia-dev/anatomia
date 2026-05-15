@@ -2046,6 +2046,28 @@ describe('ana proof', () => {
 
   // ─── Health Subcommand Tests ────────────────────────────────────────
 
+  // @ana A021
+  describe('template ana-verify.md includes resolves instructions', () => {
+    it('template has resolves field documentation', async () => {
+      const templatePath = path.join(__dirname, '../../templates/.claude/agents/ana-verify.md');
+      const content = await fs.readFile(templatePath, 'utf-8');
+      expect(content).toContain('resolves');
+      expect(content).toContain('resolves:');
+      expect(content).toContain('finding ID');
+    });
+  });
+
+  // @ana A022
+  describe('dogfood ana-verify.md includes resolves instructions', () => {
+    it('dogfood has resolves field documentation', async () => {
+      const dogfoodPath = path.join(__dirname, '../../../../.claude/agents/ana-verify.md');
+      const content = await fs.readFile(dogfoodPath, 'utf-8');
+      expect(content).toContain('resolves');
+      expect(content).toContain('resolves:');
+      expect(content).toContain('finding ID');
+    });
+  });
+
   describe('ana proof health', () => {
     /**
      * Helper to create entries with findings for health testing
