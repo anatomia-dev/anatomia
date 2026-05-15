@@ -26878,7 +26878,10 @@
             "A013"
           ],
           "id": "init-commit-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Testing git flag behavior: --no-verify at commit.ts:330 is a git flag. The test at commit.test.ts:349 proves the commit succeeds. Verifying that --no-verify actually bypasses hooks would test git's behavior, not our code. To assert the flag is passed, you'd need to mock spawnSync and check args — invasive for a hardcoded flag. The flag is visible by source inspection at line 330 and documented in the header comment at line 16.",
+          "closed_at": "2026-05-15T02:07:53.323Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

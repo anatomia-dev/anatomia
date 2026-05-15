@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-98 runs · 86 active · 119 lessons · 0 promoted · 394 closed
+98 runs · 85 active · 119 lessons · 0 promoted · 395 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 86 total)
+## Active Findings (30 shown of 85 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -26,6 +26,7 @@
 ### packages/cli/src/commands/work.ts
 
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
+- **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 
 ### packages/cli/src/types/proof.ts
 
@@ -44,7 +45,6 @@
 ### packages/cli/tests/commands/init/commit.test.ts
 
 - **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
-- **test:** A013 (--no-verify) has no runtime assertion — test name claims it but only verifies commit happened — *ana init commit — persist infrastructure to git*
 
 ### packages/cli/tests/commands/work.test.ts
 
