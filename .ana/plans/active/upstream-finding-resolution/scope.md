@@ -18,7 +18,8 @@ The user wants structured resolution claims so the system can surface Verify's c
   - `src/commands/work.ts` — upstream finding processing at lines 926-932 (piece 3)
   - `src/utils/proofSummary.ts` — `computeStaleness` if stale integration lives here (piece 4)
   - `src/types/proof.ts` — finding type extension for `resolves` (pieces 2-3)
-  - `templates/.claude/agents/ana-verify.md` — staleness awareness instruction (piece 5)
+  - `templates/.claude/agents/ana-verify.md` — staleness awareness instruction, template for new users (piece 5)
+  - `.claude/agents/ana-verify.md` — staleness awareness instruction, dogfood instance our pipeline reads (piece 5)
 - **Blast radius:** Low. All changes are additive — existing fields untouched, existing behavior preserved. `resolves` is optional. proof context format change adds information without removing any. Verify agent definition change is instruction text, not code.
 - **Estimated effort:** 1 pipeline run
 - **Multi-phase:** no
@@ -44,7 +45,7 @@ This is the "structured claims without auto-close" approach. It separates signal
 - AC5: `work complete` emits a summary line when upstream findings contain `resolves` claims (e.g., "Verify claims N findings resolved — review with `ana proof stale`")
 - AC6: `ana proof stale` includes a new section: "Verify resolution claims" — listing upstream findings with `resolves` fields whose referenced finding IDs are still active. Shows the upstream claim summary and the original finding ID.
 - AC7: `ana proof stale` resolution claims section is empty (not shown) when no unresolved claims exist
-- AC8: ana-verify.md staleness awareness instruction tells Verify to: use finding IDs from proof context output, populate the `resolves` field in verify_data.yaml for upstream findings, include the original finding ID (not just the description)
+- AC8: ana-verify.md staleness awareness instruction tells Verify to: use finding IDs from proof context output, populate the `resolves` field in verify_data.yaml for upstream findings, include the original finding ID (not just the description). Applied to BOTH `templates/.claude/agents/ana-verify.md` (template for new users) and `.claude/agents/ana-verify.md` (dogfood instance our pipeline reads). Agent definitions aren't overwritten on re-init, so both files must be updated explicitly.
 - AC9: Existing upstream findings without `resolves` field continue to work — no migration needed, no breakage of existing proof chain entries
 - AC10: All new behavior has test coverage
 
@@ -100,7 +101,8 @@ This is the "structured claims without auto-close" approach. It separates signal
 - work.ts:926-932 — where upstream finding processing happens (passthrough, no new logic needed if type allows it)
 - `computeStaleness` (proofSummary.ts:1124-1200) — where resolution claims analysis may live
 - stale display in proof.ts — where the new "Verify resolution claims" section renders
-- ana-verify.md:98-102 — where Verify's staleness awareness instruction lives
+- `templates/.claude/agents/ana-verify.md`:98-102 — template staleness awareness instruction
+- `.claude/agents/ana-verify.md` — dogfood instance, same instruction block (line numbers may differ)
 
 ### Patterns to Follow
 - `related_assertions` validation in artifact.ts:894-906 — same optional-array-of-strings pattern
