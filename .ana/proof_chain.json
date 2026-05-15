@@ -14719,7 +14719,10 @@
             "A001"
           ],
           "id": "worktrees-v2-timing-danger-prune-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed: removed '## Proof Findings' wrapper heading from worktree.ts:608. The proofFindings content already starts with '## Risk Profile' (work.ts:2055). Only one code path sets proofFindings, always with its own heading. Commit b1b699fc.",
+          "closed_at": "2026-05-15T15:44:33.684Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
