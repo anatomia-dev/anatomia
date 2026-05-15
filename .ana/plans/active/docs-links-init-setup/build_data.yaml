@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "/docs/reference/context#design-principles target must exist on website for MDX link to resolve"
+    file: "website/content/docs/guides/using-ana-setup.mdx"
+    severity: observation
+    suggested_action: monitor

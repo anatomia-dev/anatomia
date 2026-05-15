@@ -344,6 +344,8 @@ Examples from other teams:
   - "Prefer explicit over clever" — code a junior reads in 30 seconds 
     beats code a senior admires for 5 minutes.
 
+More examples and guidance: https://anatomia.dev/docs/guides/using-ana-setup#design-principles
+
 Your project starts with 3 defaults:
 
   1. "Name the disease, not the symptom" — state the root cause before 

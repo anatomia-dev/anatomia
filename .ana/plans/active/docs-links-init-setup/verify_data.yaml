@@ -1,0 +1,19 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A009 and A010 assert on source file content instead of runtime output"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 687
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A009", "A010"]
+  - category: upstream
+    summary: "Dogfood copy .claude/agents/ana-setup.md manually synced — no test enforces sync"
+    file: ".claude/agents/ana-setup.md"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "URL reachability not verified — stable URL contract is a deployment assumption"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001", "A004", "A009", "A010"]

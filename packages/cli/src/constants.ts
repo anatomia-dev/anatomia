@@ -131,6 +131,17 @@ export function getStackSummary(result: EngineResult): string[] {
 }
 
 // ============================================================
+// Documentation URLs
+// Centralized so CLI output surfaces stable, maintainable links.
+// ============================================================
+
+/** Quickstart guide — shown after `ana init` success */
+export const DOCS_QUICKSTART = 'https://anatomia.dev/docs/start';
+
+/** Setup guide — shown by bare `ana setup` command */
+export const DOCS_SETUP_GUIDE = 'https://anatomia.dev/docs/guides/using-ana-setup';
+
+// ============================================================
 // LEGACY CONSTANTS (pre-vault — still referenced by current code)
 // These will be migrated to vault constants as init/validators are rewritten.
 // ============================================================

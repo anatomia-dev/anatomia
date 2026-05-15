@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
 import type { EngineResult } from '../../engine/types/engineResult.js';
 import { createEmptyEngineResult } from '../../engine/types/engineResult.js';
-import { getStackSummary, CONTEXT_FILES, CORE_SKILLS, computeSkillManifest } from '../../constants.js';
+import { getStackSummary, CONTEXT_FILES, CORE_SKILLS, computeSkillManifest, DOCS_QUICKSTART } from '../../constants.js';
 import { matchGotchas } from '../../utils/gotchas.js';
 import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
@@ -711,5 +711,9 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
   } else if (currentBranch) {
     console.log(chalk.cyan('    ana init commit') + `             ⚠ you're on ${currentBranch} — switch to ${artifactBranch} first`);
   }
+  console.log('');
+
+  // Documentation link
+  console.log(`  ${chalk.bold('Quickstart')}  ${chalk.gray(DOCS_QUICKSTART)}`);
   console.log('');
 }

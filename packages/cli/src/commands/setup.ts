@@ -8,6 +8,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'node:path';
+import { DOCS_SETUP_GUIDE } from '../constants.js';
 import * as fs from 'node:fs/promises';
 import { pathExists, findProjectRoot } from '../utils/validators.js';
 import { isWorktreeDirectory } from '../utils/worktree.js';
@@ -40,6 +41,8 @@ export function registerSetupCommand(program: Command): void {
   setupCommand.action(() => {
     console.log(chalk.bold('\nSetup is an interactive agent flow.\n'));
     console.log(`  ${chalk.cyan('claude --agent ana-setup')}`);
+    console.log();
+    console.log(`  ${chalk.bold('Guide')}  ${chalk.gray(DOCS_SETUP_GUIDE)}`);
     console.log();
     console.log(chalk.gray('Subcommands:'));
     console.log(chalk.gray('  ana setup check     — validate setup state'));
