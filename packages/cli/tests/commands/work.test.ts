@@ -3267,6 +3267,109 @@ file_changes:
       });
     });
 
+    // @ana A001, A002, A003, A004
+    describe('warns on UNKNOWN result when verify report exists', () => {
+      it('fires UNKNOWN warning and records UNKNOWN in proof chain', async () => {
+        await createMergedProject({ slug: 'unknown-test', phases: 1 });
+
+        // Overwrite verify report to remove the Result line (in active dir, before completeWork copies to completed)
+        const verifyPath = path.join(tempDir, '.ana', 'plans', 'active', 'unknown-test', 'verify_report.md');
+        await fs.writeFile(verifyPath, '# Verify Report\n\nNo result line here.', 'utf-8');
+        execSync('git add -A && git commit -m "malformed verify report"', { cwd: tempDir, stdio: 'ignore' });
+
+        const originalError = console.error;
+        const errors: string[] = [];
+        console.error = (...args: unknown[]) => { errors.push(args.map(String).join(' ')); };
+
+        // Mock process.exit as no-op — the early guard at work.ts:1513-1516 also exits on
+        // UNKNOWN results. We need execution to continue past that guard to reach the
+        // UNKNOWN warning branch at work.ts:868-875 inside writeProofChain.
+        const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+        try {
+          await completeWork('unknown-test');
+        } finally {
+          console.error = originalError;
+          exitSpy.mockRestore();
+        }
+
+        const output = errors.join('\n');
+
+        // A001: warning contains "UNKNOWN"
+        expect(output).toContain('UNKNOWN');
+        // A002: warning references verify_report.md
+        expect(output).toContain('verify_report.md');
+
+        // A003: proof chain entry exists
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        expect(fsSync.existsSync(chainPath)).toBe(true);
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        const entry = chain.entries.find((e: { slug: string }) => e.slug === 'unknown-test');
+        expect(entry).toBeDefined();
+
+        // A004: proof chain entry records result as UNKNOWN
+        expect(entry.result).toBe('UNKNOWN');
+      });
+    });
+
+    // @ana A005, A006, A007
+    describe('exits on pull conflict', () => {
+      it('exits with code 1 on rebase conflict', async () => {
+        await createMergedProject({ slug: 'conflict-test', phases: 1 });
+
+        // Set up a bare remote
+        const bareDir = path.join(tempDir, '..', 'bare-remote-' + Date.now());
+        execSync(`git init --bare "${bareDir}"`, { stdio: 'ignore' });
+        execSync(`git remote add origin "${bareDir}"`, { cwd: tempDir, stdio: 'ignore' });
+        execSync('git push -u origin main', { cwd: tempDir, stdio: 'ignore' });
+
+        // Create a divergent commit on the remote (via a temp clone)
+        const cloneDir = path.join(tempDir, '..', 'clone-' + Date.now());
+        execSync(`git clone "${bareDir}" "${cloneDir}"`, { stdio: 'ignore' });
+        execSync('git config user.email "other@test.com"', { cwd: cloneDir, stdio: 'ignore' });
+        execSync('git config user.name "Other"', { cwd: cloneDir, stdio: 'ignore' });
+        // Create a conflicting file
+        const conflictFile = path.join(cloneDir, 'conflict.txt');
+        fsSync.writeFileSync(conflictFile, 'remote content\n');
+        execSync('git add -A && git commit -m "remote change" && git push', { cwd: cloneDir, stdio: 'ignore' });
+
+        // Create a local divergent commit on the same file
+        fsSync.writeFileSync(path.join(tempDir, 'conflict.txt'), 'local content\n');
+        execSync('git add -A && git commit -m "local change"', { cwd: tempDir, stdio: 'ignore' });
+
+        const originalError = console.error;
+        const errors: string[] = [];
+        console.error = (...args: unknown[]) => { errors.push(args.map(String).join(' ')); };
+
+        // process.exit spy — throws to prevent actual exit
+        const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+          throw new Error('process.exit');
+        }) as never);
+
+        try {
+          await completeWork('conflict-test');
+        } catch (e) {
+          // Expected: process.exit mock throws
+          expect((e as Error).message).toBe('process.exit');
+        }
+
+        // Check spy calls before restoring
+        const exitCalls = exitSpy.mock.calls;
+        const output = errors.join('\n');
+
+        console.error = originalError;
+        exitSpy.mockRestore();
+
+        // A005: process.exit(1) was called
+        expect(exitCalls.length).toBeGreaterThan(0);
+        expect(exitCalls[0]?.[0]).toBe(1);
+        // A006: error message contains "conflict"
+        expect(output.toLowerCase()).toContain('conflict');
+        // A007: error message instructs user to resolve
+        expect(output).toContain('Resolve conflicts and try again');
+      });
+    });
+
   });
 
   describe('non-main artifact branch', () => {

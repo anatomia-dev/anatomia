@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "UNKNOWN warning branch (work.ts:868-875) is unreachable in normal flow due to early guard at work.ts:1513-1516"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: monitor
