@@ -18,5 +18,28 @@
   "spec": {
     "saved_at": "2026-05-15T01:10:47.303Z",
     "hash": "sha256:6d403d11130a074b653ffae3f0741e542b6f7c11e43ca9d29ad04bbe840c4d0a"
-  }
+  },
+  "build_started_at": "2026-05-15T01:12:58.279Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T01:32:42.091Z",
+    "hash": "sha256:54e688419bcc2851a1a79c83ac0f804febcc366e41fa3adbf799aa6131238f06"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T01:32:42.092Z",
+    "hash": "sha256:7440f7dc6b3e045ad6770c5bc30a7aa27adab880c6a97d9c0939ad70db1e89c4"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-setup.md",
+    "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/tests/commands/init/commit.test.ts",
+    "website/content/docs/concepts/context.mdx",
+    "website/content/docs/concepts/toolbelt.mdx",
+    "website/content/docs/guides/using-ana-setup.mdx",
+    "website/content/docs/start.mdx"
+  ],
+  "commit_hygiene": []
 }

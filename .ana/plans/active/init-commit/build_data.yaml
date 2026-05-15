@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "Push behavior tested only with no-remote scenario, not actual push failure"
+    severity: observation
+    suggested_action: accept
+  - summary: "runGit trims stdout which corrupts git status --porcelain first line — worked around with direct spawnSync"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "File count in success message counts directory entries not individual files for untracked dirs"
+    file: "packages/cli/src/commands/init/commit.ts"
+    severity: observation
+    suggested_action: accept
