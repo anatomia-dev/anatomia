@@ -21,7 +21,7 @@ Each agent runs in a separate Claude Code session with no shared memory. The con
 
 ## When Verify fails
 
-Verify can return FAIL. When it does, the work goes back to Build: fix the issues, re-run Verify. This is normal — 21 of Anatomia's own 103 proofs had rejection cycles. {/* ana:dynamic rejectionProofCount */} The pipeline is designed for iteration, not perfection on the first pass.
+Verify can return FAIL. When it does, the work goes back to Build: fix the issues, re-run Verify. This is normal — <DocsStat value="rejections" /> of Anatomia's own <DocsStat value="proofCount" /> proofs had rejection cycles. The pipeline is designed for iteration, not perfection on the first pass.
 
 ## What each stage produces
 

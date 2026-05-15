@@ -63,7 +63,7 @@ Four bars showing Think, Plan, Build, and Verify. The shape tells you what kind 
 
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>**Multi-phase timing.** Some proofs split Build or Verify into numbered phases (Build 1, Build 2). Each phase gets its own bar, measured from that phase's session start to its artifact save. The bars are proportional to active time — a 3-minute verify phase next to a 53-minute build renders at roughly 5% width, not stretched to fill the remaining space.</p>
 
-<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The median across all 103 proofs: 9m think, 10m plan, 27m build, 7m verify.</p>{/* ana:dynamic medianTimings */}
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The median across all <DocsStat value="proofCount" /> proofs: <DocsStat value="medianThink" />m think, <DocsStat value="medianPlan" />m plan, <DocsStat value="medianBuild" />m build, <DocsStat value="medianVerify" />m verify.</p>
 
 ## The assertion ledger
 
