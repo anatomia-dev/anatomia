@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-103 runs · 58 active · 125 lessons · 3 promoted · 435 closed
+103 runs · 57 active · 125 lessons · 3 promoted · 436 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 8 |
-| packages/cli/tests/commands/work.test.ts | 5 | 5 |
+| packages/cli/tests/commands/work.test.ts | 4 | 4 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 2 | 2 |
 | packages/cli/src/utils/worktree.ts | 2 | 2 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 58 total)
+## Active Findings (30 shown of 57 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -30,6 +30,7 @@
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 - **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
+- **code:** completeWork fallback lets two multi-phase specs share one unnumbered saves.json entry — phase 2 passes if phase 1's unnumbered key exists — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/src/types/proof.ts
 
@@ -51,7 +52,6 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
-- **test:** Conflict test creates bareDir and cloneDir as siblings of tempDir — afterEach only cleans tempDir, so these directories leak on each test run — *work.ts untested branch coverage*
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
 
 ### website/app/docs/[[...slug]]/page.tsx

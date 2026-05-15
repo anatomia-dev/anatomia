@@ -27296,7 +27296,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "work-ts-branch-coverage-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-ci-matrix-and-broken-tests: original conflict test with bareDir/cloneDir as siblings of tempDir (path.join(tempDir, '..')) removed from work.test.ts. Replaced by mocked version in work-ci-mocked.test.ts that creates no temp directories outside tempDir. Zero matches for bareDir/cloneDir in work.test.ts. Verify upstream finding C4 confirmed.",
+          "closed_at": "2026-05-15T06:34:33.698Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
