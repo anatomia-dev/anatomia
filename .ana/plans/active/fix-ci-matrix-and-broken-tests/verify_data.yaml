@@ -1,0 +1,34 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Broad mock intercept matches any git command with 'pull' in args, not specifically 'git pull --rebase'"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    line: 188
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A004", "A005", "A006"]
+  - category: code
+    summary: "createMergedProject duplicated between work-ci-mocked.test.ts and work.test.ts — both have independent copies with different mock routing"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    line: 125
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "Stale finding 'Conditional PID guard makes 8 tests potential no-ops' resolved by this build — getClaudePid tests now use deterministic mocks"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Stale finding 'Conflict test creates bareDir and cloneDir as siblings of tempDir' resolved by this build — mocked version creates no temp directories outside tempDir"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Stale finding 'staging branch in trigger list is a no-op' resolved by this build — staging removed from test.yml"
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "A004 assertion uses toBeGreaterThan(0) for exit call count instead of toBe(1) — passes even if process.exit is called multiple times"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    line: 211
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A004"]

@@ -56,5 +56,20 @@
     "packages/cli/tests/commands/work-ci-mocked.test.ts",
     "packages/cli/tests/commands/work.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T06:07:56.734Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:cbf34eb02b669f616a874cb1982fd83bca501083a16699a79cf8af46fbc287d7",
+    "run_at": "2026-05-15T06:13:10.704Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T06:13:10.740Z",
+    "hash": "sha256:077ff45e76b9ecffd782ee4eb7522b1fda26ccfac5e5ee4105353decfbd91d66"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T06:13:10.740Z",
+    "hash": "sha256:93cecb194f1687ab5c43922c7b2171c3120935097e4bba8d45d6d2b98d317db8"
+  }
 }
