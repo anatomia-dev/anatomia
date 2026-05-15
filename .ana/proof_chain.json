@@ -9712,7 +9712,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "proof-health-v2-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Covered through integration: computeFirstPassRate is tested at proof.test.ts:2834 with exact assertion toBe(80) — 4 of 5 entries with 0 rejection cycles. computePipelineStats is tested at line 2836-2837 with structural and value assertions. Both functions are simple (counter + division for first-pass, median for pipeline). Integration path through runProof(['health', '--json']) exercises the full computation. Direct unit tests would duplicate the integration assertions.",
+          "closed_at": "2026-05-15T00:32:25.096Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
