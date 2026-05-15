@@ -2139,43 +2139,23 @@ function printExistingWorktree(
   artifactBranch: string,
   phase: string
 ): void {
-  const wtPath = getWorktreePath(projectRoot, slug);
+  const wtInfo = getWorktreeInfo(projectRoot, slug);
 
-  if (!fs.existsSync(wtPath)) {
+  if (!wtInfo) {
     console.log(`No worktree for \`${slug}\`. ${phase} phase — worktree may need to be recreated.`);
     return;
   }
 
-  // Read branch name from git HEAD — the worktree knows its own branch
-  const headResult = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: wtPath });
-  const branchName = headResult.exitCode === 0 ? headResult.stdout : `(unknown)`;
-
-  let commitCount = 0;
-  try {
-    const result = runGit(
-      ['rev-list', '--count', `${artifactBranch}..${branchName}`],
-      { cwd: wtPath }
-    );
-    if (result.exitCode === 0) commitCount = parseInt(result.stdout) || 0;
-  } catch { /* ignore */ }
-
-  let commitsBehind = 0;
-  try {
-    const result = runGit(
-      ['rev-list', '--count', `${branchName}..origin/${artifactBranch}`],
-      { cwd: wtPath }
-    );
-    if (result.exitCode === 0) commitsBehind = parseInt(result.stdout) || 0;
-  } catch { /* ignore */ }
+  const relativePath = path.relative(process.cwd(), wtInfo.path) || wtInfo.path;
 
   console.log(`Worktree exists for \`${slug}\`.`);
-  console.log(`  Path: ${path.relative(process.cwd(), wtPath) || wtPath}`);
-  console.log(`  Branch: ${branchName}`);
-  console.log(`  Commits: ${commitCount} since branch point`);
-  if (commitsBehind > 0) {
-    console.log(chalk.yellow(`  ⚠ ${commitsBehind} commits behind ${artifactBranch}. Consider rebasing before building.`));
+  console.log(`  Path: ${relativePath}`);
+  console.log(`  Branch: ${wtInfo.branch}`);
+  console.log(`  Commits: ${wtInfo.commitCount} since branch point`);
+  if (wtInfo.commitsBehind > 0) {
+    console.log(chalk.yellow(`  ⚠ ${wtInfo.commitsBehind} commits behind ${artifactBranch}. Consider rebasing before building.`));
   }
-  console.log(`\ncd ${path.relative(process.cwd(), wtPath) || wtPath}`);
+  console.log(`\ncd ${relativePath}`);
 }
 
 /**
