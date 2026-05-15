@@ -27250,7 +27250,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "work-ts-branch-coverage-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Accepted: test comment at work.test.ts:3284-3286 documents the dual exit-point coupling explicitly. process.exit mock is necessary because work.ts has two UNKNOWN exit paths (line 1513 and line 870). Test exercises both intentionally. Fixing requires restructuring UNKNOWN handling in work.ts — marginal gain for scope-level effort.",
+          "closed_at": "2026-05-15T04:44:38.141Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

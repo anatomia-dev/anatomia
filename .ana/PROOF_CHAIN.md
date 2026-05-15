@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-102 runs · 75 active · 122 lessons · 3 promoted · 415 closed
+102 runs · 74 active · 122 lessons · 3 promoted · 416 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 14 | 9 |
-| packages/cli/tests/commands/work.test.ts | 6 | 5 |
+| packages/cli/tests/commands/work.test.ts | 5 | 5 |
 | packages/cli/src/utils/worktree.ts | 5 | 3 |
 | website/lib/copy.ts | 4 | 3 |
 | website/scripts/extract-docs-data.ts | 4 | 2 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 75 total)
+## Active Findings (30 shown of 74 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -45,7 +45,6 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Conflict test creates bareDir and cloneDir as siblings of tempDir — afterEach only cleans tempDir, so these directories leak on each test run — *work.ts untested branch coverage*
-- **test:** UNKNOWN test mocks process.exit as no-op, causing execution to pass through the early UNKNOWN guard at work.ts:1513 before reaching the target branch at work.ts:870 — exercises two exit points instead of isolating one — *work.ts untested branch coverage*
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
 
 ### website/app/docs/[...slug]/page.tsx
@@ -107,4 +106,5 @@
 ### General
 
 - **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
+- **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 
