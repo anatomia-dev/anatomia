@@ -47,6 +47,8 @@ No install. One command. Here's what you'll see:
 
 ## Install
 
+Like what you see? Install globally to use the `ana` command directly:
+
 ```bash
 npm install -g anatomia-cli
 ```
