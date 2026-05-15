@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: code
+    summary: "work.ts duplicates resolves counting logic — JSON and console branches have identical loops"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1691
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A011", "A012"]
+  - category: code
+    summary: "artifact.ts resolves format warning iterates resolves array twice — once for type check, once for format check"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 920
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "A014 test uses toBeDefined() before toBe() — the toBeDefined assertion is redundant"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 3421
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "computeResolutionClaims findingIndex overwrites entries when same finding ID appears in multiple chain entries — last write wins, which could mask status transitions"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 1292
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "proofSummary.ts continues to grow — now ~1620 lines with computeResolutionClaims addition"
+    severity: debt
+    suggested_action: monitor

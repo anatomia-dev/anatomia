@@ -1691,6 +1691,15 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
             : null,
       },
     };
+    let resolvesClaimsCount = 0;
+    for (const f of proof.findings) {
+      if (f.category === 'upstream' && f.resolves && f.resolves.length > 0) {
+        resolvesClaimsCount += f.resolves.length;
+      }
+    }
+    if (resolvesClaimsCount > 0) {
+      (jsonResults as Record<string, unknown>)['resolves_claims'] = resolvesClaimsCount;
+    }
     console.log(JSON.stringify(wrapJsonResponse('work complete', jsonResults, mainChain), null, 2));
   } else {
     const statusIcon = proof.result === 'PASS' ? '✓' : '✗';
@@ -1710,6 +1719,17 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
         healthLine += ' → ana proof audit';
       }
       console.log(chalk.gray(healthLine));
+    }
+
+    // Fifth line: resolution claims summary (only when upstream findings have resolves)
+    let resolvesCount = 0;
+    for (const f of proof.findings) {
+      if (f.category === 'upstream' && f.resolves && f.resolves.length > 0) {
+        resolvesCount += f.resolves.length;
+      }
+    }
+    if (resolvesCount > 0) {
+      console.log(chalk.gray(`  Verify claims ${resolvesCount} finding${resolvesCount !== 1 ? 's' : ''} resolved — review with \`ana proof stale\``));
     }
   }
 }

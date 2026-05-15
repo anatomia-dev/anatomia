@@ -25,7 +25,7 @@ import { spawnSync } from 'node:child_process';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain } from '../types/proof.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
-import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, truncateSummary, findFindingById, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
+import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, computeResolutionClaims, truncateSummary, findFindingById, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
 import type { ProofContextResult } from '../utils/proofSummary.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 
@@ -2214,8 +2214,10 @@ export function registerProofCommand(program: Command): void {
       if (options.minConfidence === 'high') stalenessOpts.minConfidence = 'high';
       const result = computeStaleness(chain, stalenessOpts);
 
+      const resolutionClaims = computeResolutionClaims(chain);
+
       if (useJson) {
-        console.log(JSON.stringify(wrapJsonResponse('proof stale', result, chain), null, 2));
+        console.log(JSON.stringify(wrapJsonResponse('proof stale', { ...result, resolution_claims: resolutionClaims.claims }, chain), null, 2));
         return;
       }
 
@@ -2226,7 +2228,7 @@ export function registerProofCommand(program: Command): void {
         console.log(`Stale Findings: ${result.total_stale} finding${result.total_stale !== 1 ? 's' : ''} with staleness signals`);
       }
 
-      if (result.total_stale === 0) {
+      if (result.total_stale === 0 && resolutionClaims.claims.length === 0) {
         console.log('');
         console.log('No active findings have been modified by subsequent pipeline runs.');
         return;
@@ -2264,6 +2266,19 @@ export function registerProofCommand(program: Command): void {
           console.log('');
         }
       }
+
+      // Resolution claims section
+      if (resolutionClaims.claims.length > 0) {
+        console.log('');
+        console.log('Verify resolution claims:');
+        for (const claim of resolutionClaims.claims) {
+          console.log(`  ${claim.upstream_id} claims ${claim.referenced_id} resolved`);
+          console.log(`    "${claim.upstream_summary}"`);
+          const fileSuffix = claim.referenced_file ? ` — ${claim.referenced_file}` : '';
+          console.log(`    Original: [${claim.referenced_severity}] ${claim.referenced_summary}${fileSuffix} (${claim.referenced_status})`);
+          console.log('');
+        }
+      }
     });
 
   proofCommand.addCommand(staleCommand);
@@ -2298,9 +2313,10 @@ function formatContextResult(result: ProofContextResult): string {
   if (result.findings.length > 0) {
     lines.push('Findings:');
     for (const finding of result.findings) {
+      const idTag = finding.id ? ` (${finding.id})` : '';
       const anchor = finding.anchor ? ` ${finding.anchor} —` : '';
       const truncatedSummary = truncateSummary(finding.summary, 250);
-      lines.push(`  ${chalk.dim(`[${finding.category}]`)}${anchor} ${truncatedSummary}`);
+      lines.push(`  ${chalk.dim(`[${finding.category}]`)}${idTag}${anchor} ${truncatedSummary}`);
       lines.push(`         ${chalk.gray(`From: ${finding.from}`)}`);
       lines.push('');
     }

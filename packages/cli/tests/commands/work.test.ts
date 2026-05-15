@@ -3216,6 +3216,121 @@ file_changes:
       });
     });
 
+    // @ana A009, A010, A011, A012
+    describe('resolves claims summary line', () => {
+      it('emits summary line when upstream findings have resolves', async () => {
+        await createMergedProject({ slug: 'test-feature', phases: 1 });
+
+        const slugDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-feature');
+        fsSync.writeFileSync(path.join(slugDir, 'verify_data.yaml'),
+          'schema: 1\n' +
+          'findings:\n' +
+          '  - category: upstream\n' +
+          '    summary: "Contract A003 value corrected"\n' +
+          '    severity: observation\n' +
+          '    suggested_action: monitor\n' +
+          '    resolves:\n' +
+          '      - "previous-slug-C2"\n');
+
+        execSync('git add -A && git commit -m "add verify data"', { cwd: tempDir, stdio: 'ignore' });
+
+        const originalLog = console.log;
+        const logs: string[] = [];
+        console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+
+        await completeWork('test-feature');
+
+        console.log = originalLog;
+        const output = logs.join('\n');
+        expect(output).toContain('claims');
+        expect(output).toContain('1 finding');
+        expect(output).toContain('ana proof stale');
+      });
+
+      it('does not emit summary line when no upstream findings have resolves', async () => {
+        await createMergedProject({ slug: 'test-feature', phases: 1 });
+
+        const slugDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-feature');
+        fsSync.writeFileSync(path.join(slugDir, 'verify_data.yaml'),
+          'schema: 1\n' +
+          'findings:\n' +
+          '  - category: code\n' +
+          '    summary: "Plain code finding"\n' +
+          '    severity: observation\n' +
+          '    suggested_action: monitor\n');
+
+        execSync('git add -A && git commit -m "add verify data"', { cwd: tempDir, stdio: 'ignore' });
+
+        const originalLog = console.log;
+        const logs: string[] = [];
+        console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+
+        await completeWork('test-feature');
+
+        console.log = originalLog;
+        const output = logs.join('\n');
+        expect(output).not.toContain('claims');
+      });
+
+      it('preserves resolves field in proof chain entry and does not auto-close referenced findings', async () => {
+        await createMergedProject({ slug: 'test-feature', phases: 1 });
+
+        // Create existing chain with a finding that will be referenced by resolves
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        fsSync.writeFileSync(chainPath, JSON.stringify({
+          entries: [{
+            slug: 'old-slug',
+            feature: 'Old Feature',
+            result: 'PASS',
+            author: { name: 'Dev', email: 'dev@test.com' },
+            contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+            assertions: [{ id: 'A001', says: 'Works', status: 'SATISFIED' }],
+            acceptance_criteria: { total: 1, met: 1 },
+            timing: { total_minutes: 10 },
+            hashes: {},
+            completed_at: '2026-03-01T00:00:00Z',
+            modules_touched: [],
+            findings: [
+              { id: 'old-slug-C3', category: 'upstream', summary: 'Old issue', file: null, anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
+            ],
+            build_concerns: [],
+          }],
+        }, null, 2));
+
+        const slugDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-feature');
+        fsSync.writeFileSync(path.join(slugDir, 'verify_data.yaml'),
+          'schema: 1\n' +
+          'findings:\n' +
+          '  - category: upstream\n' +
+          '    summary: "Resolved an old finding"\n' +
+          '    severity: observation\n' +
+          '    suggested_action: monitor\n' +
+          '    resolves:\n' +
+          '      - "old-slug-C3"\n');
+
+        execSync('git add -A && git commit -m "add verify data and chain"', { cwd: tempDir, stdio: 'ignore' });
+
+        await completeWork('test-feature');
+
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        // New entry preserves resolves
+        const newEntry = chain.entries[chain.entries.length - 1];
+        const upstreamFinding = newEntry.findings.find(
+          (f: { category: string }) => f.category === 'upstream'
+        );
+        expect(upstreamFinding).toBeDefined();
+        expect(upstreamFinding.resolves).toEqual(['old-slug-C3']);
+
+        // Referenced finding in old entry should NOT be auto-closed
+        const oldEntry = chain.entries.find((e: { slug: string }) => e.slug === 'old-slug');
+        expect(oldEntry).toBeDefined();
+        const referencedFinding = oldEntry.findings.find(
+          (f: { id: string }) => f.id === 'old-slug-C3'
+        );
+        expect(referencedFinding.status).toBe('active');
+      });
+    });
+
     describe('commit failure error message', () => {
       // @ana A020
       it('commit failure error includes retry command', async () => {

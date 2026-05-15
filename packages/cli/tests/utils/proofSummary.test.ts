@@ -25,6 +25,7 @@ import {
   computeHealthReport,
   detectHealthChange,
   computeStaleness,
+  computeResolutionClaims,
   truncateSummary,
   MIN_FINDINGS_HOT,
   MIN_ENTRIES_HOT,
@@ -3377,6 +3378,215 @@ describe('computeStaleness', () => {
     // 6 touches across 11 entries → rate=6/11≈0.545, expected=ceil(10*0.545)=6, 6>=6 → high
     expect(result.high_confidence.length).toBe(1);
     expect(result.high_confidence[0]!.confidence).toBe('high');
+  });
+});
+
+describe('computeResolutionClaims', () => {
+  // @ana A013
+  it('finds claims where referenced finding is still active', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'entry-A',
+          findings: [
+            { id: 'entry-A-C1', status: 'active', severity: 'risk', category: 'code', summary: 'Missing validation', file: 'src/api.ts' },
+          ],
+        },
+        {
+          slug: 'entry-B',
+          findings: [
+            { id: 'entry-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'Validation added', resolves: ['entry-A-C1'] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(1);
+    expect(result.claims[0]!.upstream_id).toBe('entry-B-C1');
+    expect(result.claims[0]!.referenced_id).toBe('entry-A-C1');
+    expect(result.claims[0]!.referenced_summary).toBe('Missing validation');
+    expect(result.claims[0]!.referenced_status).toBe('active');
+    expect(result.claims[0]!.upstream_slug).toBe('entry-B');
+  });
+
+  // @ana A014
+  it('resolution claim contains upstream_id and referenced_id', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'slug-A',
+          findings: [
+            { id: 'slug-A-C2', status: 'active', severity: 'debt', category: 'code', summary: 'Debt issue', file: 'src/b.ts' },
+          ],
+        },
+        {
+          slug: 'slug-B',
+          findings: [
+            { id: 'slug-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'Fixed debt', resolves: ['slug-A-C2'] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims[0]!.referenced_id).toBeDefined();
+    expect(result.claims[0]!.referenced_id).toBe('slug-A-C2');
+  });
+
+  // @ana A015
+  it('resolution claim contains upstream finding info', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'slug-A',
+          findings: [
+            { id: 'slug-A-C1', status: 'active', severity: 'risk', category: 'code', summary: 'Original', file: 'src/x.ts' },
+          ],
+        },
+        {
+          slug: 'slug-B',
+          findings: [
+            { id: 'slug-B-C3', status: 'active', severity: 'observation', category: 'upstream', summary: 'Resolved it', resolves: ['slug-A-C1'] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims[0]!.upstream_id).toBe('slug-B-C3');
+    expect(result.claims[0]!.upstream_summary).toBe('Resolved it');
+    expect(result.claims[0]!.upstream_slug).toBe('slug-B');
+  });
+
+  // @ana A016
+  it('returns empty claims when no upstream findings have resolves', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'entry-A',
+          findings: [
+            { id: 'entry-A-C1', status: 'active', severity: 'risk', category: 'code', summary: 'Issue', file: 'src/a.ts' },
+          ],
+        },
+        {
+          slug: 'entry-B',
+          findings: [
+            { id: 'entry-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'No resolves' },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(0);
+  });
+
+  // @ana A017
+  it('skips claims referencing non-existent finding IDs', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'entry-B',
+          findings: [
+            { id: 'entry-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'Claims ghost', resolves: ['nonexistent-C99'] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(0);
+  });
+
+  // @ana A018
+  it('skips claims referencing already-closed findings', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'entry-A',
+          findings: [
+            { id: 'entry-A-C1', status: 'closed', severity: 'risk', category: 'code', summary: 'Already closed', file: 'src/a.ts' },
+          ],
+        },
+        {
+          slug: 'entry-B',
+          findings: [
+            { id: 'entry-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'Claims closed', resolves: ['entry-A-C1'] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(0);
+  });
+
+  // @ana A019
+  it('deduplicates multiple claims on same original — most recent wins', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'entry-A',
+          findings: [
+            { id: 'entry-A-C1', status: 'active', severity: 'risk', category: 'code', summary: 'Original issue', file: 'src/a.ts' },
+          ],
+        },
+        {
+          slug: 'entry-B',
+          findings: [
+            { id: 'entry-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'First claim', resolves: ['entry-A-C1'] },
+          ],
+        },
+        {
+          slug: 'entry-C',
+          findings: [
+            { id: 'entry-C-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'Second claim', resolves: ['entry-A-C1'] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(1);
+    expect(result.claims[0]!.upstream_id).toBe('entry-C-C1');
+    expect(result.claims[0]!.upstream_summary).toBe('Second claim');
+  });
+
+  // @ana A020
+  it('handles old chain entries without resolves field (backward compat)', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'old-entry',
+          findings: [
+            { id: 'old-C1', status: 'active', severity: 'risk', category: 'code', summary: 'Old finding', file: 'src/old.ts' },
+          ],
+        },
+        {
+          slug: 'also-old',
+          findings: [
+            { id: 'also-old-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'No resolves field' },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(0);
+  });
+
+  it('handles empty resolves array without producing claims', () => {
+    const chain = {
+      entries: [
+        {
+          slug: 'entry-A',
+          findings: [
+            { id: 'entry-A-C1', status: 'active', severity: 'risk', category: 'code', summary: 'Issue', file: 'src/a.ts' },
+          ],
+        },
+        {
+          slug: 'entry-B',
+          findings: [
+            { id: 'entry-B-C1', status: 'active', severity: 'observation', category: 'upstream', summary: 'Empty resolves', resolves: [] },
+          ],
+        },
+      ],
+    };
+    const result = computeResolutionClaims(chain);
+    expect(result.claims.length).toBe(0);
   });
 });
 

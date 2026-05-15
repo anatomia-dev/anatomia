@@ -74,6 +74,7 @@ export interface ProofChainEntry {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
     related_assertions?: string[];
+    resolves?: string[];
     status?: 'active' | 'lesson' | 'promoted' | 'closed';
     closed_reason?: string;
     closed_at?: string;
