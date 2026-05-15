@@ -23999,7 +23999,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "content-pages-C15",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: old '17 of 78' values replaced by ana:dynamic build-time injection system. verifying-changes.mdx:67 now shows '21 of 96' with {/* ana:dynamic rejectionProofCount */} marker. troubleshooting.mdx:43 same pattern. Values are computed from proof chain at build time.",
+          "closed_at": "2026-05-15T06:24:06.592Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

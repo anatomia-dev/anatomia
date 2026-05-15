@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-103 runs · 60 active · 125 lessons · 3 promoted · 433 closed
+103 runs · 59 active · 125 lessons · 3 promoted · 434 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 60 total)
+## Active Findings (30 shown of 59 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -29,6 +29,7 @@
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
+- **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/src/types/proof.ts
 
@@ -92,10 +93,6 @@
 ### website/content/docs/concepts/skills.mdx
 
 - **code:** Skills page inline-links 8 individual skill reference pages that don't exist and aren't scoped in any phase — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
-
-### website/content/docs/guides/verifying-changes.mdx
-
-- **code:** Stale dynamic-value comment in verifying-changes and troubleshooting — says 17 of 78 proofs but real count may differ — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/scripts/extract-docs-data.ts
 
