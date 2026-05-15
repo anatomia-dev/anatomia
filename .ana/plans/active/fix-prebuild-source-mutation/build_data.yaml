@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Fumadocs MDX cannot use server components in headings or JSX prop expressions"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Two stripJsx copies remain (lib + prebuild inline) with separate DocsStat resolution paths"
+    file: "website/scripts/extract-docs-data.ts"
+    severity: debt
+    suggested_action: scope

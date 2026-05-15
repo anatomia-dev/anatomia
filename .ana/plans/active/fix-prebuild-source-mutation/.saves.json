@@ -18,5 +18,35 @@
   "spec": {
     "saved_at": "2026-05-15T16:28:13.485Z",
     "hash": "sha256:a462aef87a878778ccf3f13b35a1a18df276e0190fc534042de8e7f0a8e278ee"
-  }
+  },
+  "build_started_at": "2026-05-15T16:41:24.496Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T16:53:42.289Z",
+    "hash": "sha256:5196229da24622d8d4d8fb31e0600c13232519db026a8373347ec5771be2cd44"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T16:53:42.290Z",
+    "hash": "sha256:f7918fa3fe75966c86d385b2c0f03ee3b97490890047925585ac042d13a4328c"
+  },
+  "modules_touched": [
+    "website/.gitignore",
+    "website/app/docs/[...slug]/page.tsx",
+    "website/components/docs/content/DocsStat.tsx",
+    "website/content/docs/concepts/pipeline.mdx",
+    "website/content/docs/concepts/skills.mdx",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/guides/verifying-changes.mdx",
+    "website/content/docs/start.mdx",
+    "website/lib/docs-data/docsStatValues.ts",
+    "website/lib/docs-data/index.ts",
+    "website/lib/docs-data/stripJsx.ts",
+    "website/public/llms-full.txt",
+    "website/public/llms.txt",
+    "website/public/search-index.json",
+    "website/scripts/extract-docs-data.ts"
+  ],
+  "commit_hygiene": []
 }
