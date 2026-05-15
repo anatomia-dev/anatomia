@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Redundant cursor:pointer on inner collapse span — parent div already sets it"
+    file: "website/components/docs/proof/FindingsList.tsx"
+    line: 125
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A003"]
+  - category: code
+    summary: "Toggle pattern deviates from AssertionLedger — uses !expanded toggle vs separate true/false calls"
+    file: "website/components/docs/proof/FindingsList.tsx"
+    line: 104
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern"
+    file: "website/components/docs/proof/FindingsList.tsx"
+    line: 111
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "No ARIA attributes on interactive badge div — onClick on div without role='button' or tabIndex"
+    file: "website/components/docs/proof/FindingsList.tsx"
+    line: 103
+    severity: risk
+    suggested_action: scope
+  - category: upstream
+    summary: "Contract has no assertion for keyboard accessibility of the toggle"
+    severity: observation
+    suggested_action: scope
