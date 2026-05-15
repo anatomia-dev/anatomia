@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-110 runs · 44 active · 3 promoted · 610 closed
+110 runs · 43 active · 3 promoted · 611 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 10 | 7 |
+| packages/cli/src/commands/work.ts | 9 | 7 |
 | packages/cli/tests/commands/work.test.ts | 7 | 5 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 2 | 2 |
@@ -15,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 44 total)
+## Active Findings (30 shown of 43 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -26,11 +26,11 @@
 - **code:** checkConcurrencyGuard has dead `force` parameter — never passed true from production call sites — *Pipeline Concurrency Guards*
 - **code:** isTimestampRecent duplicates checkConcurrencyGuard logic — both parse .saves.json, extract timestamp, compare against CONCURRENCY_TIMEOUT_MS — *Pipeline Concurrency Guards*
 - **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
-- **code:** plan_started_at written with force:true — spec only mentions verify_started_at force-write, this is over-building for consistency — *Pipeline Concurrency Guards*
 - **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
 - **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
+- **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 
 ### packages/cli/src/types/proof.ts
 

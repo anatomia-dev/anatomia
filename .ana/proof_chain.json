@@ -30030,7 +30030,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "pipeline-concurrency-guards-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Correct engineering, not over-building: plan_started_at force-write is necessary for the concurrency guard. Without force-write, a crashed plan session's old timestamp persists (write-once prevents overwrite on re-entry) and blocks the next session. The guard checks recency — it needs the LATEST timestamp, not the first. Same reasoning as verify_started_at force-write at line 1797.",
+          "closed_at": "2026-05-15T19:21:08.763Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
