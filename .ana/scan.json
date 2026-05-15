@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-05-15T20:28:30.065Z",
+    "scannedAt": "2026-05-15T22:10:51.022Z",
     "depth": "deep"
   },
   "stack": {
@@ -77,112 +77,23 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "de4fdf19",
+    "head": "2c2c3f01",
     "branch": "main",
-    "commitCount": 2356,
-    "lastCommitAt": "2026-05-15T14:12:40-06:00",
+    "commitCount": 2362,
+    "lastCommitAt": "2026-05-15T14:59:09-06:00",
     "uncommittedChanges": false,
     "contributorCount": 3,
     "defaultBranch": "main",
     "branches": [
-      "SideSprint/setup-redesign",
-      "archive/test-ana-feature-work",
       "dependabot/npm_and_yarn/next-16.2.6",
       "dependabot/npm_and_yarn/packages/cli/glob-13.0.6",
       "dependabot/npm_and_yarn/packages/cli/ora-9.4.0",
       "dependabot/npm_and_yarn/packages/cli/typescript-6.0.3",
       "dependabot/npm_and_yarn/packages/cli/vite-8.0.11",
+      "dependabot/npm_and_yarn/packages/cli/vite-8.0.13",
       "dependabot/npm_and_yarn/packages/cli/web-tree-sitter-0.26.8",
       "dependabot/npm_and_yarn/website/next-16.2.6",
-      "effort/STEP_0_1_FOUNDATION",
-      "effort/STEP_0_2_TEMPLATES",
-      "effort/STEP_0_3_CONTENT",
-      "effort/STEP_0_4_VALIDATION",
-      "effort/STEP_1_1_DETECTION",
-      "effort/STEP_1_2_STRUCTURE",
-      "effort/STEP_1_3_TREE_SITTER",
-      "effort/STEP_1_4_ALPHA",
-      "effort/STEP_2_1_PATTERNS",
-      "effort/STEP_2_2_CONVENTIONS",
-      "effort/STEP_2_3_FRAMEWORK_REDESIGN",
-      "effort/STEP_2_5_CLI_CODE",
-      "experiment/wider-sections",
-      "feature/dynamic-pages",
-      "feature/fix-merge-flag-detection",
-      "feature/fix-skill-template-gaps",
-      "feature/monorepo-primary-agents-md",
-      "feature/proof-chain-health-signal",
-      "feature/proof-context-query",
-      "feature/proof-intelligence-hardening",
-      "feature/proof-system-near-term",
-      "feature/s10-engine",
-      "feature/s11-init-reset",
-      "feature/s12-prove-it",
-      "feature/s2-toolbelt-foundation",
-      "feature/s3-ana-verify",
-      "feature/s4-pipeline-calibration",
-      "feature/s5-verification-overhaul",
-      "feature/s6-verification-architecture",
-      "feature/section5-proof",
-      "feature/worktree-freshness-detection",
-      "fix/build-prompt-gaps",
-      "fix/system-typography-hover",
-      "lane0/census-architecture",
-      "main",
-      "s13/vault-foundations",
-      "s14/scan-perfection",
-      "s15/init-perfection",
-      "s16/setup-confirm",
-      "s17/setup-enrich",
-      "s18/architectural-cleanup",
-      "s18/deep-review-fixes",
-      "s18/docs-and-hygiene",
-      "s18/dogfood-fixes",
-      "s18/final-fixes",
-      "s18/final-polish",
-      "s18/fix-clean-dogfood",
-      "s18/low-tier",
-      "s18/medium-tier",
-      "s18/scan-polish",
-      "s19/lane-1",
-      "s19/lane-1-polish",
-      "s19/lane-2",
-      "s19/scan-var-fix",
-      "s20/detection-maps",
-      "s20/detection-maps-2",
-      "s20/final-polish",
-      "s20/scan-polish",
-      "s21/findings",
-      "s22/canvas-content",
-      "s22/init-wiring",
-      "s22/scan-fixes",
-      "s23-final-polish",
-      "s23-infra-polish",
-      "s23-pipeline-hardening",
-      "s23-proof-quality",
-      "s23/mona-lisa",
-      "s24-p1-foundation",
-      "s24-p2-design-principles",
-      "s24-p2-enhanced-review",
-      "s24-p2-gap-fills",
-      "s24-p2-persistent-fixes",
-      "s24-p2-preprod-detection",
-      "s24-p2-run2-fixes",
-      "s24-p2-scan-improvements",
-      "s24-p2-setup-agent",
-      "s24-p2-skill-enrichment",
-      "s24-p2-skill-gate",
-      "s24-p2-template-protections",
-      "s24-p2-template-revision",
-      "s24-p2-testing-fixes",
-      "s24-p2-wave2",
-      "s24-p2-wave3",
-      "s25-m1-dogfood-fixes",
-      "s25-multi-spec-fixes",
-      "s25-prework",
-      "s25-proof-prework",
-      "ux/copy-update",
-      "ux/fix-copy"
+      "main"
     ],
     "commitFormat": {
       "conventional": false,
@@ -191,7 +102,7 @@
     },
     "branchPatterns": {
       "prefixes": {
-        "dependabot/": 7
+        "dependabot/": 8
       },
       "primary": "dependabot/"
     },
@@ -257,10 +168,10 @@
       ],
       "activeContributors": 3,
       "weeklyCommits": [
-        851,
-        437,
-        276,
-        126
+        850,
+        444,
+        270,
+        132
       ]
     }
   },
@@ -458,7 +369,7 @@
       }
     },
     "sampledFiles": 248,
-    "detectionTime": 363
+    "detectionTime": 392
   },
   "readme": {
     "description": "Anatomia is the engineering judgment your AI doesn't have. Four agents scope, plan, build, and verify every change. Contracts are sealed before code is written — typed assertions the verifier checks against the code, not Build's account of what it did. Every run produces a proof chain entry — what was asserted, what was found, what shipped. A fifth agent learns from that record and promotes what it finds to rules that shape future builds. Not opinion. Mechanical proof.",
@@ -484,18 +395,18 @@
         "path": "SECURITY.md",
         "category": "guides",
         "sizeBytes": 1016,
-        "lastModifiedDays": 11
+        "lastModifiedDays": 12
       },
       {
         "path": "CODE_OF_CONDUCT.md",
         "category": "guides",
         "sizeBytes": 5477,
-        "lastModifiedDays": 11
+        "lastModifiedDays": 12
       },
       {
         "path": "CHANGELOG.md",
         "category": "changelog",
-        "sizeBytes": 4356,
+        "sizeBytes": 8295,
         "lastModifiedDays": 0
       },
       {
@@ -508,7 +419,7 @@
         "path": ".github/ISSUE_TEMPLATE",
         "category": "templates",
         "sizeBytes": 0,
-        "lastModifiedDays": 11
+        "lastModifiedDays": 12
       },
       {
         "path": "packages/cli/ARCHITECTURE.md",
