@@ -2254,7 +2254,7 @@ export function getProofContext(queries: string[], projectRoot: string, options?
       // Match findings
       for (const finding of entry.findings ?? []) {
         if (!finding.file) continue;
-        // Filter by status: default excludes closed/lesson/promoted, includeAll returns everything
+        // Filter by status: default excludes closed/promoted, includeAll returns everything
         if (!options?.includeAll && finding.status && finding.status !== 'active') continue;
         if (fileMatches(finding.file, query)) {
           const matched: ProofContextResult['findings'][0] = {
