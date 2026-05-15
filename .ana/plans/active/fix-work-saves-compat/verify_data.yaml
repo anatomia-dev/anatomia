@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Resolves claims summary removed from completeWork — both JSON and human-readable output — without spec authorization"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Resolves claims tests removed (3 tests, ~120 lines) — unscoped deletion of upstream-finding-resolution feature tests"
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: risk
+    suggested_action: scope
+  - category: test
+    summary: "Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 728
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A008"]
+  - category: upstream
+    summary: "printExistingWorktree duplication resolved — uses getWorktreeInfo now"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "kind-aware-branch-prefixes-C5"
+  - category: upstream
+    summary: "saves.json fallback bug resolved — phase guard added in both code paths"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "fix-cycle-stage-detection-C3"
+  - category: upstream
+    summary: "getNextAction multi-line formatting resolved — returns array for ready-to-merge"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "work-complete-merge-C4"

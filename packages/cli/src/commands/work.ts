@@ -79,7 +79,7 @@ interface WorkItem {
   artifacts: ArtifactState;
   workBranch: string | null;
   stage: string;
-  nextAction: string;
+  nextAction: string | string[];
   worktreeInfo?: {
     path: string;
     branch: string;
@@ -469,8 +469,8 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
               // Try phase-numbered keys first, fall back to unnumbered for backward compat
               const buildKey = `build-report-${phaseNum}`;
               const verifyKey = `verify-report-${phaseNum}`;
-              const buildSavedAt = (saves[buildKey] ?? saves['build-report'])?.saved_at;
-              const verifySavedAt = (saves[verifyKey] ?? saves['verify-report'])?.saved_at;
+              const buildSavedAt = (saves[buildKey] ?? (phaseNum === 1 ? saves['build-report'] : undefined))?.saved_at;
+              const verifySavedAt = (saves[verifyKey] ?? (phaseNum === 1 ? saves['verify-report'] : undefined))?.saved_at;
               if (buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt)) {
                 return `phase-${phaseNum}-ready-for-re-verify`;
               }
@@ -502,7 +502,7 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
  * @param artifactBranch - Artifact branch name for --merge guidance
  * @returns Copy-pasteable command
  */
-function getNextAction(stage: string, slug: string, _branchPrefix: string, artifactBranch?: string): string {
+function getNextAction(stage: string, slug: string, _branchPrefix: string, artifactBranch?: string): string | string[] {
   if (stage === 'ready-for-plan') {
     return 'claude --agent ana-plan';
   }
@@ -528,7 +528,10 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
   }
 
   if (stage === 'ready-to-merge') {
-    return `Review PR, then: ana work complete ${slug}\nOr to merge and complete (from ${artifactBranch ?? 'the artifact branch'}): ana work complete --merge ${slug}`;
+    return [
+      `Review PR, then: ana work complete ${slug}`,
+      `Or to merge and complete (from ${artifactBranch ?? 'the artifact branch'}): ana work complete --merge ${slug}`,
+    ];
   }
 
   // Multi-phase stages
@@ -656,7 +659,14 @@ function printHumanReadable(output: StatusOutput): void {
 
     // Show stage and next action
     console.log(`    ${chalk.bold('Stage:')} ${item.stage}`);
-    console.log(chalk.cyan(`    → ${item.nextAction}\n`));
+    if (Array.isArray(item.nextAction)) {
+      for (const line of item.nextAction) {
+        console.log(chalk.cyan(`    → ${line}`));
+      }
+      console.log('');
+    } else {
+      console.log(chalk.cyan(`    → ${item.nextAction}\n`));
+    }
   }
 
   printVersionNotifications(output);
@@ -1549,9 +1559,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     const buildKey = isUnnumbered ? 'build-report' : `build-report-${phaseNum}`;
     const verifyKey = isUnnumbered ? 'verify-report' : `verify-report-${phaseNum}`;
 
-    // Phase-aware lookup with fallback to unnumbered keys for backward compat
-    const buildSave = savesData[buildKey] ?? (!isUnnumbered ? savesData['build-report'] : undefined);
-    const verifySave = savesData[verifyKey] ?? (!isUnnumbered ? savesData['verify-report'] : undefined);
+    // Phase-aware lookup with fallback to unnumbered keys for backward compat (phase 1 only)
+    const buildSave = savesData[buildKey] ?? (!isUnnumbered && phaseNum === 1 ? savesData['build-report'] : undefined);
+    const verifySave = savesData[verifyKey] ?? (!isUnnumbered && phaseNum === 1 ? savesData['verify-report'] : undefined);
     const buildMissing = !buildSave || !buildSave.saved_at || !buildSave.hash;
     const verifyMissing = !verifySave || !verifySave.saved_at || !verifySave.hash;
 
@@ -2139,43 +2149,23 @@ function printExistingWorktree(
   artifactBranch: string,
   phase: string
 ): void {
-  const wtPath = getWorktreePath(projectRoot, slug);
+  const wtInfo = getWorktreeInfo(projectRoot, slug);
 
-  if (!fs.existsSync(wtPath)) {
+  if (!wtInfo) {
     console.log(`No worktree for \`${slug}\`. ${phase} phase — worktree may need to be recreated.`);
     return;
   }
 
-  // Read branch name from git HEAD — the worktree knows its own branch
-  const headResult = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: wtPath });
-  const branchName = headResult.exitCode === 0 ? headResult.stdout : `(unknown)`;
-
-  let commitCount = 0;
-  try {
-    const result = runGit(
-      ['rev-list', '--count', `${artifactBranch}..${branchName}`],
-      { cwd: wtPath }
-    );
-    if (result.exitCode === 0) commitCount = parseInt(result.stdout) || 0;
-  } catch { /* ignore */ }
-
-  let commitsBehind = 0;
-  try {
-    const result = runGit(
-      ['rev-list', '--count', `${branchName}..origin/${artifactBranch}`],
-      { cwd: wtPath }
-    );
-    if (result.exitCode === 0) commitsBehind = parseInt(result.stdout) || 0;
-  } catch { /* ignore */ }
+  const relativePath = path.relative(process.cwd(), wtInfo.path) || wtInfo.path;
 
   console.log(`Worktree exists for \`${slug}\`.`);
-  console.log(`  Path: ${path.relative(process.cwd(), wtPath) || wtPath}`);
-  console.log(`  Branch: ${branchName}`);
-  console.log(`  Commits: ${commitCount} since branch point`);
-  if (commitsBehind > 0) {
-    console.log(chalk.yellow(`  ⚠ ${commitsBehind} commits behind ${artifactBranch}. Consider rebasing before building.`));
+  console.log(`  Path: ${relativePath}`);
+  console.log(`  Branch: ${wtInfo.branch}`);
+  console.log(`  Commits: ${wtInfo.commitCount} since branch point`);
+  if (wtInfo.commitsBehind > 0) {
+    console.log(chalk.yellow(`  ⚠ ${wtInfo.commitsBehind} commits behind ${artifactBranch}. Consider rebasing before building.`));
   }
-  console.log(`\ncd ${path.relative(process.cwd(), wtPath) || wtPath}`);
+  console.log(`\ncd ${relativePath}`);
 }
 
 /**

@@ -561,8 +561,8 @@ describe('ana work status', () => {
       expect(output).toContain('phase-2-ready-for-re-verify');
     });
 
-    // @ana A009
-    it('multi-phase stage detection falls back to unnumbered saves.json keys', async () => {
+    // @ana A003, A005
+    it('multi-phase stage detection does not fall back to unnumbered saves.json keys for phase 2', async () => {
       const planContent = `# Plan
 ## Phases
 - [ ] Phase 1
@@ -571,7 +571,7 @@ describe('ana work status', () => {
   Spec: spec-2.md`;
       const passContent = `# Verify\n\n**Result:** PASS`;
       const failContent = `# Verify\n\n**Result:** FAIL`;
-      // Unnumbered keys — backward compat for pre-fix items on phase 2
+      // Unnumbered keys — these should NOT satisfy phase 2 fallback
       const savesJson = JSON.stringify({
         'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
         'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
@@ -593,7 +593,42 @@ describe('ana work status', () => {
       });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
-      expect(output).toContain('phase-2-ready-for-re-verify');
+      // Phase 2 should NOT fall back to unnumbered keys — should show needs-fixes, not ready-for-re-verify
+      expect(output).not.toContain('phase-2-ready-for-re-verify');
+      expect(output).toContain('phase-2-needs-fixes');
+    });
+
+    // @ana A004
+    it('multi-phase stage detection falls back to unnumbered saves.json keys for phase 1', async () => {
+      const planContent = `# Plan
+## Phases
+- [ ] Phase 1
+  Spec: spec-1.md
+- [ ] Phase 2
+  Spec: spec-2.md`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+      // Unnumbered keys — should satisfy phase 1 fallback
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: failContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      // Phase 1 SHOULD fall back to unnumbered keys
+      expect(output).toContain('phase-1-ready-for-re-verify');
     });
   });
 
@@ -661,6 +696,67 @@ describe('ana work status', () => {
       const json = JSON.parse(output);
       expect(json.items[0].worktreeInfo).toBeDefined();
       expect(json.items[0].worktreeInfo.commitsBehind).toBe(0);
+    });
+  });
+
+  // @ana A008, A009
+  describe('multi-line next action display', () => {
+    it('ready-to-merge next action renders with per-line arrow prefix', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: passContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      // Both lines should have → prefix
+      const arrowLines = output.split('\n').filter(l => l.includes('→'));
+      expect(arrowLines.length).toBeGreaterThanOrEqual(2);
+      expect(arrowLines[0]).toContain('Review PR');
+      expect(arrowLines[1]).toContain('Or to merge');
+    });
+
+    it('getNextAction returns array for ready-to-merge in JSON output', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: passContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const json = JSON.parse(output);
+      expect(Array.isArray(json.items[0].nextAction)).toBe(true);
+      expect(json.items[0].nextAction).toHaveLength(2);
+      expect(json.items[0].nextAction[0]).toContain('Review PR');
+      expect(json.items[0].nextAction[1]).toContain('merge and complete');
     });
   });
 
@@ -1151,14 +1247,30 @@ describe('ana work status', () => {
 
       // Write .saves.json with required entries for completeness check
       const savesEntries: Record<string, { saved_at: string; hash: string }> = {};
-      savesEntries['build-report'] = {
-        saved_at: new Date().toISOString(),
-        hash: 'sha256:' + '0'.repeat(64),
-      };
-      savesEntries['verify-report'] = {
-        saved_at: new Date().toISOString(),
-        hash: 'sha256:' + '0'.repeat(64),
-      };
+      if (phases === 1) {
+        // Single-phase: unnumbered keys
+        savesEntries['build-report'] = {
+          saved_at: new Date().toISOString(),
+          hash: 'sha256:' + '0'.repeat(64),
+        };
+        savesEntries['verify-report'] = {
+          saved_at: new Date().toISOString(),
+          hash: 'sha256:' + '0'.repeat(64),
+        };
+      } else {
+        // Multi-phase: phase-numbered keys
+        for (let i = 0; i < phases; i++) {
+          const phaseNum = i + 1;
+          savesEntries[`build-report-${phaseNum}`] = {
+            saved_at: new Date().toISOString(),
+            hash: 'sha256:' + '0'.repeat(64),
+          };
+          savesEntries[`verify-report-${phaseNum}`] = {
+            saved_at: new Date().toISOString(),
+            hash: 'sha256:' + '0'.repeat(64),
+          };
+        }
+      }
       await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify(savesEntries), 'utf-8');
 
       execSync('git add -A && git commit -m "add reports"', { cwd: tempDir, stdio: 'ignore' });
@@ -2478,6 +2590,40 @@ file_changes:
         await completeWork('test-slug');
 
         // Verify directory was moved (completion proceeded)
+        const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+        expect(fsSync.existsSync(completedPath)).toBe(true);
+      });
+
+      // @ana A001
+      it('completeWork rejects phase 2 with only unnumbered saves.json keys', async () => {
+        // Create a multi-phase (2-phase) project with unnumbered saves keys
+        await createMergedProject({ slug: 'test-slug', phases: 2 });
+
+        // Overwrite .saves.json with unnumbered keys only (simulating legacy data)
+        const slugPath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+        execSync('git checkout feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+        const legacySaves = JSON.stringify({
+          'build-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+          'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+        });
+        await fs.writeFile(path.join(slugPath, '.saves.json'), legacySaves, 'utf-8');
+        execSync('git add -A && git commit -m "use legacy saves"', { cwd: tempDir, stdio: 'ignore' });
+        execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+        execSync('git merge --no-ff feature/test-slug -m "merge legacy saves"', { cwd: tempDir, stdio: 'ignore' });
+
+        const error = await captureAsyncError(() => completeWork('test-slug'));
+        // Phase 2 should fail completeness — unnumbered keys don't satisfy phase 2
+        expect(error).toContain('build-report');
+      });
+
+      // @ana A002
+      it('completeWork accepts phase 1 with unnumbered saves.json keys', async () => {
+        // Create a single-phase project — uses unnumbered keys via createMergedProject
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+
+        // Verify it completes successfully (no exit(1))
+        await completeWork('test-slug');
+
         const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
         expect(fsSync.existsSync(completedPath)).toBe(true);
       });
