@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-105 runs · 41 active · 128 lessons · 3 promoted · 457 closed
+105 runs · 40 active · 128 lessons · 3 promoted · 458 closed
 
 ## Hot Modules
 
@@ -15,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 41 total)
+## Active Findings (30 shown of 40 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -31,6 +31,7 @@
 - **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
 - **code:** completeWork fallback lets two multi-phase specs share one unnumbered saves.json entry — phase 2 passes if phase 1's unnumbered key exists — *Fix cycle stage detection breaks on multi-phase builds*
 - **code:** getNextAction multi-line return breaks status output formatting — second line lacks indentation and styling — *work complete --merge flag for structured PR merging*
+- **code:** Auto-merge enabled path writes plain text to stdout before JSON output — pollutes stdout for --json consumers — *work complete --merge flag for structured PR merging*
 
 ### packages/cli/src/types/proof.ts
 
@@ -62,10 +63,6 @@
 ### website/app/docs/reference/cli/page.tsx
 
 - **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
-
-### website/components/docs/content/TroubleCard.tsx
-
-- **code:** TroubleCard has no aria/role attribute for accessibility — Callout uses role=note — *Content Pages — 16 editorial docs pages with bug fixes and sidebar ordering*
 
 ### website/components/docs/proof/FindingsList.tsx
 
