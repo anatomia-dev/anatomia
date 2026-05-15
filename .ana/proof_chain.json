@@ -22029,7 +22029,10 @@
             "A009"
           ],
           "id": "worktree-freshness-detection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Scoped in fix-work-saves-compat: spec Fix 2 replaces printExistingWorktree's commitsBehind rev-list computation with getWorktreeInfo, which already computes commitsBehind (WorktreeInfo includes the field — verified type at worktree.ts:38-45). Contract A006-A007.",
+          "closed_at": "2026-05-15T16:49:15.105Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
