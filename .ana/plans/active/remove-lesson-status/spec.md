@@ -83,13 +83,14 @@ Additionally, add a **backfill migration block** inside the staleness loop (the 
 **Why:** The lesson subcommand is the primary deletion target. The dashboard calls must match the updated `generateDashboard` signature.
 
 ### `packages/cli/templates/.claude/agents/ana-learn.md` (modify)
-**What changes:** Four locations reference lesson:
+**What changes:** Five locations reference lesson:
 - Line 86: "meta includes closed and lesson findings" → "meta includes closed findings"
 - Line 105: "closed/lesson entries" → "closed entries" (appears twice in the sentence)
 - Line 452: "closed/lesson entries" → "closed entries"
 - Line 498: remove the `ana proof lesson` command reference line entirely
+- Line 506: "**Lesson candidates:**" → "**Closeable observations:**" (the guidance still applies — observations with `--severity observation` are closeable, not lessonable)
 **Pattern to follow:** The surrounding prose style.
-**Why:** The template ships to users. References to a removed command create confusion.
+**Why:** The template ships to users. References to a removed command and concept create confusion.
 
 ### `packages/cli/templates/.claude/agents/ana.md` (modify)
 **What changes:** Line 108: "surface relevant lessons" → "surface relevant findings"
@@ -126,11 +127,12 @@ Additionally, add a **backfill migration block** inside the staleness loop (the 
 **Why:** The project-local agent definition must match the template. This project uses its own agents for development.
 
 ### `.claude/agents/ana-learn.md` (modify)
-**What changes:** Same 4 changes as the template version — this is the project-local copy:
+**What changes:** Same 5 changes as the template version — this is the project-local copy:
 - Line 86: "meta includes closed and lesson findings" → "meta includes closed findings"
 - Line 105: "closed/lesson entries" → "closed entries" (appears twice)
 - Line 452: "closed/lesson entries" → "closed entries"
 - Line 498: remove the `ana proof lesson` command reference line
+- Line 506: "**Lesson candidates:**" → "**Closeable observations:**"
 **Pattern to follow:** Same as template changes.
 **Why:** The project-local agent definition must match the template.
 
@@ -198,6 +200,37 @@ Additionally, add a **backfill migration block** inside the staleness loop (the 
 - **Unit tests:** Update `computeChainHealth` tests to remove lesson field assertions and add backward compat test for old `status: 'lesson'` data counted as closed. Update `generateDashboard` calls to remove `lessons` param.
 - **Integration tests:** Update `work complete` tests for upstream status assignment (lesson → closed with metadata fields). Update staleness exemption test fixtures.
 - **Edge cases:** The backward compat test in proofSummary.test.ts is the critical edge case — it proves that user projects with old lesson data in proof_chain.json won't break after upgrade.
+
+## Backfill Migration
+
+The backfill handles two distinct populations of lesson findings in proof_chain.json. Both are migrated to `status: 'closed'` during the next `work complete`. The migration is idempotent — once a finding has `status: 'closed'`, it's skipped on subsequent runs.
+
+### Scenario 1: Upstream auto-lessons (122 findings)
+- **Profile:** `category: 'upstream'`, no `closed_reason`, no `closed_at`, no `closed_by`
+- **Origin:** Auto-assigned by `work.ts` line 929 (`finding.status = 'lesson'`)
+- **Migration:** Set `status: 'closed'`, `closed_reason: 'upstream'`, `closed_by: 'mechanical'`, `closed_at: entry.completed_at` (from the parent proof chain entry's `completed_at` field — preserving the original timestamp rather than using `new Date()`)
+- **Website impact:** Proof detail pages change `→ lesson` to `→ closed` for these findings after website rebuild
+
+### Scenario 2: Human-created lessons (6 findings)
+- **Profile:** `category: 'code'` or `'test'`, has `closed_reason`, `closed_at`, `closed_by: 'human'`
+- **Origin:** Created via `ana proof lesson` command by a human developer
+- **Migration:** Set `status: 'closed'` only. Preserve `closed_reason`, `closed_at`, `closed_by` — the semantic content of the institutional decision survives
+- **Website impact:** Same as Scenario 1 — `→ lesson` becomes `→ closed`
+
+### What is NOT backfilled
+- **Historical assertion `says` text** — assertions like "Findings from upstream observations are classified as lessons" are historical records in proof_chain.json. They accurately describe what was verified when that pipeline ran. They are NOT modified. They will continue to display on proof detail pages with their original text.
+- **Finding `summary` text** — some finding summaries mention "lesson" in prose (e.g., "Lesson command duplicates close's pattern"). These are historical observations. They are NOT modified.
+- **Finding `closed_reason` text** — some closed_reason values mention "lesson" in prose (e.g., "Systemic tag collision (lesson C3)"). These are historical decision records. They are NOT modified.
+- **`scope_summary` text** — entry-level summaries mentioning lessons (e.g., "57 active findings, 31 mechanically closed, 21 lessons") are historical. NOT modified.
+- **Website data files** (`proof-entries.json`, `commands.json`, `agent-templates.json`, `search-index.json`, `llms-full.txt`) — all generated by the `prebuild` script. They self-correct on the next website build after CLI changes land and `work complete` runs the backfill. Do NOT manually edit.
+
+### Backfill timing
+The backfill runs inside `writeProofChain` (work.ts), which is called by `work complete`. This means:
+1. CLI ships with the code change
+2. User upgrades CLI
+3. Between upgrade and next `work complete`, the `computeChainHealth` backward compat case counts old lesson findings as closed (no crash, correct counts)
+4. Next `work complete` runs the backfill — lesson findings mutated to closed in proof_chain.json
+5. Next website build runs `prebuild` extraction — proof-entries.json reflects the migrated data
 
 ## Dependencies
 

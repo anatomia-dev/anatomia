@@ -114,6 +114,13 @@ assertions:
     matcher: "not_contains"
     value: "closed/lesson"
 
+  - id: A026
+    says: "The learn agent template does not recommend lesson candidates"
+    block: "ana-learn.md has no lesson references"
+    target: "ana-learn.md"
+    matcher: "not_contains"
+    value: "Lesson candidates"
+
   - id: A017
     says: "The ana agent template says 'findings' not 'lessons' for proof context"
     block: "ana.md says surface relevant findings"
