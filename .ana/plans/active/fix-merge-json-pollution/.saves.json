@@ -33,5 +33,20 @@
     "packages/cli/src/commands/work.ts",
     "packages/cli/tests/commands/work-merge.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T01:36:20.863Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:9e1409911a63e1000263a6e1e9a6e4d1b7a8f3162fbbfb6cd8f5971e77854df6",
+    "run_at": "2026-05-15T01:40:46.966Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T01:40:47.004Z",
+    "hash": "sha256:bbdbe6152a1eb0a04749f378aca832edcfe6d5da2943157b7445f1b1eb21b590"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T01:40:47.005Z",
+    "hash": "sha256:8eda1542fe2d9f65712f582d836a86658f4f7d527ab8daeae2889c37a4e0a0da"
+  }
 }
