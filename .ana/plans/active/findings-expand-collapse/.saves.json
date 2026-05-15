@@ -32,5 +32,20 @@
   "modules_touched": [
     "website/components/docs/proof/FindingsList.tsx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T03:26:48.544Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:3d7587634f9453c0278b5c91008a09296110465ff40e9b211f725111f0c45354",
+    "run_at": "2026-05-15T03:29:46.109Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T03:29:46.141Z",
+    "hash": "sha256:ae96fe9e044149cc06725a714155d032a89bea08bebeb75bd65c8e057a5448af"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T03:29:46.141Z",
+    "hash": "sha256:e538ca3be5df75fc97859057010b027c34dbea8e08f25151162bd8ef2f383b8c"
+  }
 }
