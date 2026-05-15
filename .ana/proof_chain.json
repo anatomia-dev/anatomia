@@ -12695,7 +12695,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "proof-intelligence-hardening-C13",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: the lesson command's error handling was refactored into commitAndPushProofChanges (proof.ts:156-195). Commit failure now reports stderr at line 169, exits with code 1 at line 170. JSON parse failure calls exitError at line 1067. No catch block swallows errors.",
+          "closed_at": "2026-05-15T06:58:44.760Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
