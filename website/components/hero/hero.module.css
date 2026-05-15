@@ -252,7 +252,7 @@
   gap: 14px;
   width: max-content;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 40px 24px 0;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
