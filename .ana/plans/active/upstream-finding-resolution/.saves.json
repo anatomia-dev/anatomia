@@ -24,5 +24,29 @@
   "spec": {
     "saved_at": "2026-05-15T16:44:03.909Z",
     "hash": "sha256:156b4281c14db0e4a3ade53a7643c13e3aeae6df765f485a00dedbd662bdaf23"
-  }
+  },
+  "build_started_at": "2026-05-15T16:49:44.866Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T17:12:05.904Z",
+    "hash": "sha256:d1f768e2e77c8eec25a018a33cf93987e6d650e4f49531a1be4f835925eef9c6"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T17:12:05.905Z",
+    "hash": "sha256:2c7f1c44b48abe1207a8b3f9d8647235e70f8151149ac7bc40f0a5726a371841"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/proofSummary.test.ts"
+  ],
+  "commit_hygiene": []
 }

@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "generateProofSummary regex fallback (parseFindings) cannot parse resolves arrays from Markdown — only YAML companion path extracts them"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor
