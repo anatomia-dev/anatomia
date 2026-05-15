@@ -79,7 +79,7 @@ interface WorkItem {
   artifacts: ArtifactState;
   workBranch: string | null;
   stage: string;
-  nextAction: string;
+  nextAction: string | string[];
   worktreeInfo?: {
     path: string;
     branch: string;
@@ -502,7 +502,7 @@ function determineStage(slug: string, artifacts: ArtifactState, workBranch: stri
  * @param artifactBranch - Artifact branch name for --merge guidance
  * @returns Copy-pasteable command
  */
-function getNextAction(stage: string, slug: string, _branchPrefix: string, artifactBranch?: string): string {
+function getNextAction(stage: string, slug: string, _branchPrefix: string, artifactBranch?: string): string | string[] {
   if (stage === 'ready-for-plan') {
     return 'claude --agent ana-plan';
   }
@@ -528,7 +528,10 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
   }
 
   if (stage === 'ready-to-merge') {
-    return `Review PR, then: ana work complete ${slug}\nOr to merge and complete (from ${artifactBranch ?? 'the artifact branch'}): ana work complete --merge ${slug}`;
+    return [
+      `Review PR, then: ana work complete ${slug}`,
+      `Or to merge and complete (from ${artifactBranch ?? 'the artifact branch'}): ana work complete --merge ${slug}`,
+    ];
   }
 
   // Multi-phase stages
@@ -656,7 +659,14 @@ function printHumanReadable(output: StatusOutput): void {
 
     // Show stage and next action
     console.log(`    ${chalk.bold('Stage:')} ${item.stage}`);
-    console.log(chalk.cyan(`    → ${item.nextAction}\n`));
+    if (Array.isArray(item.nextAction)) {
+      for (const line of item.nextAction) {
+        console.log(chalk.cyan(`    → ${line}`));
+      }
+      console.log('');
+    } else {
+      console.log(chalk.cyan(`    → ${item.nextAction}\n`));
+    }
   }
 
   printVersionNotifications(output);

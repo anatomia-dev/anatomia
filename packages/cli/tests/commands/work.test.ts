@@ -699,6 +699,67 @@ describe('ana work status', () => {
     });
   });
 
+  // @ana A008, A009
+  describe('multi-line next action display', () => {
+    it('ready-to-merge next action renders with per-line arrow prefix', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: passContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      // Both lines should have → prefix
+      const arrowLines = output.split('\n').filter(l => l.includes('→'));
+      expect(arrowLines.length).toBeGreaterThanOrEqual(2);
+      expect(arrowLines[0]).toContain('Review PR');
+      expect(arrowLines[1]).toContain('Or to merge');
+    });
+
+    it('getNextAction returns array for ready-to-merge in JSON output', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:def' },
+      });
+      await createWorkTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: passContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const json = JSON.parse(output);
+      expect(Array.isArray(json.items[0].nextAction)).toBe(true);
+      expect(json.items[0].nextAction).toHaveLength(2);
+      expect(json.items[0].nextAction[0]).toContain('Review PR');
+      expect(json.items[0].nextAction[1]).toContain('merge and complete');
+    });
+  });
+
   describe('JSON output', () => {
     it('produces valid JSON with correct structure', async () => {
       const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
