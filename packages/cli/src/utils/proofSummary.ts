@@ -76,6 +76,7 @@ export interface ProofSummary {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
     related_assertions?: string[];
+    resolves?: string[];
   }>;
   rejection_cycles: number;
   previous_failures: Array<{ id: string; summary: string }>;
@@ -2022,6 +2023,7 @@ export interface ProofContextResult {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
     related_assertions?: string[];
+    resolves?: string[];
     from: string;
     date: string;
     status?: string | undefined;
@@ -2053,6 +2055,7 @@ interface ProofChainEntryForContext {
     severity?: 'risk' | 'debt' | 'observation';
     suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
     related_assertions?: string[];
+    resolves?: string[];
     status?: string;
   }>;
   build_concerns?: Array<{
@@ -2168,6 +2171,7 @@ export function getProofContext(queries: string[], projectRoot: string, options?
           if (finding.severity !== undefined) matched.severity = finding.severity;
           if (finding.suggested_action !== undefined) matched.suggested_action = finding.suggested_action;
           if (finding.related_assertions !== undefined) matched.related_assertions = finding.related_assertions;
+          if (finding.resolves !== undefined) matched.resolves = finding.resolves;
           matchedFindings.push(matched);
           entryTouches = true;
         }
