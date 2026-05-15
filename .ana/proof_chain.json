@@ -18705,7 +18705,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "scope-validation-integrity-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Test hygiene preference, not a problem: 12 console.error capture instances in artifact.test.ts use the standard vitest pattern (save→mock→capture→restore→assert). All 12 tests work correctly. The pattern hasn't changed in the project's lifetime. Extracting a helper would reduce maintenance if the pattern changes — but it's the standard approach and is unlikely to change. The duplication is localized (one test file) and each instance is self-contained.",
+          "closed_at": "2026-05-15T01:14:32.550Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
