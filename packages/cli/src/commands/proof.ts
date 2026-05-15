@@ -126,7 +126,7 @@ function createExitError(opts: {
 function pullBeforeRead(proofRoot: string): void {
   const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
   if (remotes) {
-    const pullResult = runGit(['pull', '--rebase'], { cwd: proofRoot });
+    const pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: proofRoot });
     if (pullResult.exitCode !== 0) {
       const errorMessage = pullResult.stderr;
       if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
@@ -134,7 +134,7 @@ function pullBeforeRead(proofRoot: string): void {
         console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
         process.exit(1);
       }
-      console.error(chalk.yellow('⚠ Warning: Pull failed (network error). Continuing with local data.'));
+      console.error(chalk.yellow('⚠ Warning: Pull failed. Continuing with local data.'));
     }
   }
 }
@@ -175,7 +175,7 @@ function commitAndPushProofChanges(options: {
   if (pushResult.exitCode === 0) return;
 
   // Push failed — pull --rebase and retry
-  const pullResult = runGit(['pull', '--rebase'], { cwd: options.proofRoot });
+  const pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: options.proofRoot });
   if (pullResult.exitCode !== 0) {
     const pullStderr = pullResult.stderr;
     if (pullStderr.includes('conflict') || pullStderr.includes('Cannot rebase') || pullStderr.includes('CONFLICT')) {
@@ -184,7 +184,7 @@ function commitAndPushProofChanges(options: {
       console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
       return;
     }
-    // Network failure on pull — can't retry
+    // Pull failed (network, auth, or other) — can't retry
     console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
     return;
   }

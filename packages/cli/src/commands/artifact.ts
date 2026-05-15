@@ -1375,7 +1375,7 @@ export function saveArtifact(type: string, slug: string): void {
       // Check if remote exists first
       const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
       if (remotes) {
-        runGit(['pull', '--rebase'], { cwd: projectRoot });
+        runGit(['pull', '--rebase', '--autostash'], { cwd: projectRoot });
       }
       // If no remotes, skip pull (e.g., in tests or new repos)
     } catch (error) {
