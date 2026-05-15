@@ -18,5 +18,20 @@
   "spec": {
     "saved_at": "2026-05-15T01:14:31.286Z",
     "hash": "sha256:7d95cfccbd0cf9c9a6489925e649d7d0858f946ae31e49a4e3a6383faa6ec501"
-  }
+  },
+  "build_started_at": "2026-05-15T01:19:20.003Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-15T01:23:14.353Z",
+    "hash": "sha256:655dbf76c1c748be5b85896c6b172b1725d1847f13cf543eda41851130e41471"
+  },
+  "build-data": {
+    "saved_at": "2026-05-15T01:23:14.354Z",
+    "hash": "sha256:7b7fe5f4f09e1fd91fc1eefc3fdd147de3411cf16ca992522bb97bd69730b253"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/work-merge.test.ts"
+  ],
+  "commit_hygiene": []
 }
