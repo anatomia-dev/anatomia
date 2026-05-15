@@ -3,6 +3,7 @@ import { splitHeadline } from "@/lib/format";
 import { getProofFeed, formatAge } from "@/lib/proof-feed";
 import { Formatted } from "@/components/ui/Formatted";
 import { Container } from "@/components/ui/Container";
+import { CompatMarquee } from "@/components/marquee/CompatMarquee";
 import { HeroNoise } from "./HeroNoise";
 import { ScrollHint } from "./ScrollHint";
 import styles from "./hero.module.css";
@@ -102,6 +103,7 @@ export async function Hero() {
         </div>
       </Container>
 
+      <CompatMarquee />
       <ScrollHint />
     </section>
   );

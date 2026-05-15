@@ -7,7 +7,6 @@
  */
 import type { Metadata } from "next";
 import { Hero } from "@/components/hero/Hero";
-import { CompatMarquee } from "@/components/marquee/CompatMarquee";
 import { ScanSlab } from "@/components/scan/ScanSlab";
 import { SystemSection } from "@/components/system/SystemSection";
 import { ProofSection } from "@/components/proof/ProofSection";
@@ -25,7 +24,7 @@ export default function LandingPage() {
     <>
       <main id="main">
         <Hero />
-        <CompatMarquee />
+
         <ScanSlab />
         <SystemSection />
         <ProofSection />
