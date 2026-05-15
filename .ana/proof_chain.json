@@ -5247,8 +5247,11 @@
           "line": 1607,
           "severity": "observation",
           "id": "harden-git-commit-calls-C1",
-          "status": "active",
-          "suggested_action": "scope"
+          "status": "closed",
+          "suggested_action": "scope",
+          "closed_reason": "Stale: the test at work.test.ts:2274 now says 'does not show Maintenance label when findings are auto-closed' — matches the not.toContain('Maintenance:') assertion at line 2298. Name and assertion are consistent. The finding referenced line 1607 which is now fixture data — code shifted since the finding was created.",
+          "closed_at": "2026-05-15T03:22:49.753Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
