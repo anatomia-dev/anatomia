@@ -1,0 +1,64 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "FindingsList expand/collapse for proof pages"
+
+assertions:
+  - id: A001
+    says: "Findings list shows only the first 5 findings by default"
+    block: "collapsed state"
+    target: "visibleFindings.length"
+    matcher: "equals"
+    value: 5
+
+  - id: A002
+    says: "Clicking the badge reveals all hidden findings"
+    block: "expand toggle"
+    target: "visibleFindings.length"
+    matcher: "equals"
+    value: 8
+
+  - id: A003
+    says: "The badge is clickable with a pointer cursor"
+    block: "toggle affordance"
+    target: "badge.style.cursor"
+    matcher: "equals"
+    value: "pointer"
+
+  - id: A004
+    says: "Expanded badge shows collapse text instead of the count"
+    block: "expanded badge text"
+    target: "badge.textContent"
+    matcher: "contains"
+    value: "collapse"
+
+  - id: A005
+    says: "Collapsing returns to showing only 5 findings"
+    block: "collapse toggle"
+    target: "visibleFindings.length"
+    matcher: "equals"
+    value: 5
+
+  - id: A006
+    says: "After collapsing, the badge shows the hidden count again"
+    block: "collapsed badge text"
+    target: "badge.textContent"
+    matcher: "contains"
+    value: "more findings"
+
+  - id: A007
+    says: "Pages with 5 or fewer findings show no toggle badge"
+    block: "no badge for small lists"
+    target: "badge"
+    matcher: "not_equals"
+    value: "rendered"
+
+  - id: A008
+    says: "The component uses client-side state for toggling"
+    block: "client component"
+    target: "directive"
+    matcher: "equals"
+    value: "use client"
+
+file_changes:
+  - path: "website/components/docs/proof/FindingsList.tsx"
+    action: modify
