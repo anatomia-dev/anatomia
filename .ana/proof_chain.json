@@ -7492,7 +7492,10 @@
             "A003"
           ],
           "id": "harden-hot-files-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Tag reuse across contracts: A003 is used by 5 different contracts. The finding says the A003-tagged test from harden-hot-files exercises normal completion instead of recovery. But the @ana A003 tag on the test is from a different contract — the test correctly tests its original purpose. The harden-hot-files contract's A003 assertion about recovery is satisfied by the recovery tests at lines 2274-2299, not by this test. Tag ID collision, not a test gap.",
+          "closed_at": "2026-05-15T03:30:22.068Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
