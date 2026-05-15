@@ -27567,7 +27567,8 @@
             "A010"
           ],
           "id": "docs-links-init-setup-C1",
-          "status": "active"
+          "status": "promoted",
+          "promoted_to": ".claude/skills/testing-standards/SKILL.md"
         },
         {
           "category": "upstream",

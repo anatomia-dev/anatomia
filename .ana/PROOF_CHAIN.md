@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-102 runs · 81 active · 122 lessons · 1 promoted · 411 closed
+102 runs · 80 active · 122 lessons · 2 promoted · 411 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 81 total)
+## Active Findings (30 shown of 80 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -40,10 +40,6 @@
 - **code:** No timeout on spawnSync — hanging build command blocks worktree creation indefinitely — *Run build command during worktree creation*
 - **code:** Empty string build command passes typeof guard and executes spawnSync('') — *Run build command during worktree creation*
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
-
-### packages/cli/tests/commands/init.test.ts
-
-- **test:** A009 and A010 assert on source file content instead of runtime output — *Documentation links in init and setup*
 
 ### packages/cli/tests/commands/init/commit.test.ts
 
@@ -106,6 +102,7 @@
 - **code:** LLMS_SECTIONS constant declared but never used in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
 - **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
+- **code:** Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine — *Docs Data Pipeline*
 
 ### General
 
