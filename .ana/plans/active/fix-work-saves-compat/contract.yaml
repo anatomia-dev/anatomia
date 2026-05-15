@@ -1,0 +1,78 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "work.ts saves.json backward compat bug + worktree dedup + formatting"
+
+assertions:
+  - id: A001
+    says: "Phase 2 cannot pass completeness checks using phase 1's legacy save data"
+    block: "completeWork rejects phase 2 with only unnumbered saves.json keys"
+    target: "process.exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A002
+    says: "Phase 1 still uses legacy save data when numbered keys are missing"
+    block: "completeWork accepts phase 1 with unnumbered saves.json keys"
+    target: "process.exitCode"
+    matcher: "not_equals"
+    value: 1
+
+  - id: A003
+    says: "Phase 2 status detection does not fall back to legacy save keys"
+    block: "multi-phase stage detection does not fall back to unnumbered saves.json keys for phase 2"
+    target: "output"
+    matcher: "not_contains"
+    value: "phase-2-ready-for-re-verify"
+
+  - id: A004
+    says: "Phase 1 status detection still uses legacy save keys when needed"
+    block: "multi-phase stage detection falls back to unnumbered saves.json keys for phase 1"
+    target: "output"
+    matcher: "contains"
+    value: "phase-1"
+
+  - id: A005
+    says: "The existing backward compat test asserts the corrected behavior"
+    block: "multi-phase stage detection does not fall back to unnumbered saves.json keys for phase 2"
+    target: "testAssertion"
+    matcher: "exists"
+
+  - id: A006
+    says: "Worktree display reuses the shared worktree info function instead of duplicating git queries"
+    block: "printExistingWorktree uses getWorktreeInfo"
+    target: "printExistingWorktree.implementation"
+    matcher: "contains"
+    value: "getWorktreeInfo"
+
+  - id: A007
+    says: "Worktree display still shows branch name, commit count, and path"
+    block: "printExistingWorktree preserves display output"
+    target: "printExistingWorktree.output"
+    matcher: "exists"
+
+  - id: A008
+    says: "Multi-line next actions display with proper arrow prefix on each line"
+    block: "ready-to-merge next action renders with per-line arrow prefix"
+    target: "output"
+    matcher: "contains"
+    value: "→"
+
+  - id: A009
+    says: "Next action returns an array for multi-line cases instead of embedded newlines"
+    block: "getNextAction returns array for ready-to-merge"
+    target: "nextAction.type"
+    matcher: "equals"
+    value: "array"
+
+  - id: A010
+    says: "All existing tests continue to pass after the changes"
+    block: "full test suite passes"
+    target: "testSuite.result"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
