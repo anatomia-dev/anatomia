@@ -18517,7 +18517,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "website-mobile-polish-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed: removed dead rowArrow CSS class and its hover state from proof-feed.module.css. Zero references to styles.rowArrow in ProofFeed.tsx or any other component. Commit 3d59defb.",
+          "closed_at": "2026-05-15T15:57:18.959Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
