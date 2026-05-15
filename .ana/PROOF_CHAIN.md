@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-102 runs · 64 active · 122 lessons · 3 promoted · 426 closed
+102 runs · 63 active · 122 lessons · 3 promoted · 427 closed
 
 ## Hot Modules
 
@@ -8,7 +8,7 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 8 |
 | packages/cli/tests/commands/work.test.ts | 5 | 5 |
-| packages/cli/src/utils/worktree.ts | 5 | 3 |
+| packages/cli/src/utils/worktree.ts | 4 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
 | website/lib/copy.ts | 3 | 2 |
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 64 total)
+## Active Findings (30 shown of 63 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -30,6 +30,7 @@
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 - **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
+- **code:** completeWork fallback lets two multi-phase specs share one unnumbered saves.json entry — phase 2 passes if phase 1's unnumbered key exists — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/src/types/proof.ts
 
@@ -38,7 +39,6 @@
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** No timeout on spawnSync — hanging build command blocks worktree creation indefinitely — *Run build command during worktree creation*
-- **code:** Empty string build command passes typeof guard and executes spawnSync('') — *Run build command during worktree creation*
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
 
 ### packages/cli/tests/commands/init/commit.test.ts

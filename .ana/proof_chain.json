@@ -26447,7 +26447,10 @@
             "A007"
           ],
           "id": "worktree-build-step-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed: added empty/whitespace guard at worktree.ts:454 — typeof check now includes !buildCmd.trim(). Empty string previously passed typeof guard; on Node 25 spawnSync throws (caught by try-catch), on older Node runs no-op shell command returning exit 0. Guard makes behavior consistent across versions. Commit 3ba6e5df.",
+          "closed_at": "2026-05-15T06:14:41.633Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
