@@ -1,0 +1,34 @@
+schema: 1
+findings:
+  - category: test
+    summary: "exitCalls count assertion uses toBeGreaterThan(0) instead of toBe(1)"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3364
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A005"]
+  - category: test
+    summary: "Conflict test creates bareDir and cloneDir as siblings of tempDir — afterEach only cleans tempDir, so these directories leak on each test run"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3321
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "UNKNOWN test mocks process.exit as no-op, causing execution to pass through the early UNKNOWN guard at work.ts:1513 before reaching the target branch at work.ts:870 — exercises two exit points instead of isolating one"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3287
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "A003 assertion uses toBeDefined() for proof chain entry — matches contract 'exists' matcher but weaker than testing standards preference for specific value assertions"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 3308
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A003"]
+  - category: code
+    summary: "Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations"
+    file: "packages/cli/src/commands/work.ts"
+    line: 187
+    severity: observation
+    suggested_action: monitor

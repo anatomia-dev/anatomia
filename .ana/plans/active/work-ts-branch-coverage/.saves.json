@@ -32,5 +32,20 @@
   "modules_touched": [
     "packages/cli/tests/commands/work.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-15T02:19:03.140Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:e165b52b403ede294f81723ec22032d458401313df22e6c2fa8eeb87b6cca5e3",
+    "run_at": "2026-05-15T02:25:05.980Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-15T02:25:06.013Z",
+    "hash": "sha256:fafe2712f4b7562f2c0a6b3b3103238c83a75c70382e4664079a764987c323ca"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-15T02:25:06.013Z",
+    "hash": "sha256:6925dc1c5a0de27bf3a46430a23444f4301c7bfacada1550bbcd6aa4587c8962"
+  }
 }
