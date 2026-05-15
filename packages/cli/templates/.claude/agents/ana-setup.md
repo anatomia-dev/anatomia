@@ -150,8 +150,20 @@ Does this look right?
 
 Read each value from `.ana/ana.json` and `.ana/scan.json`. Show only what was detected — skip null/empty fields.
 
-**On "yes":** Move to Step 3.
-**On correction:** Read `.ana/ana.json`, change the corrected field(s), write the file back, then read it again to confirm the change persisted. Only THEN acknowledge the correction. Never say "got it" before the file is written — a verbal acknowledgment without a filesystem write means the user believes the fix is saved when it isn't. Move to Step 3.
+**On "yes":** Check branch (below), then move to Step 3.
+**On correction:** Read `.ana/ana.json`, change the corrected field(s), write the file back, then read it again to confirm the change persisted. Only THEN acknowledge the correction. Never say "got it" before the file is written — a verbal acknowledgment without a filesystem write means the user believes the fix is saved when it isn't.
+
+### Branch check
+
+After confirmation, read `artifactBranch` from `.ana/ana.json` and check the current branch with `git rev-parse --abbrev-ref HEAD`. If the current branch does not match the artifact branch:
+
+```
+⚠ You're on `{currentBranch}` but infrastructure should be committed to `{artifactBranch}`.
+  Switch now with: git checkout {artifactBranch}
+  Or continue — you can switch before committing at the end.
+```
+
+Let the user decide. Then move to Step 3.
 
 ---
 
@@ -597,6 +609,8 @@ git config user.email
 git remote -v
 ```
 Report findings. Do not install software or modify git configuration unless the user explicitly asks.
+
+**Persist infrastructure:** Check the current branch against `artifactBranch` from `.ana/ana.json`. If on the artifact branch, run `ana init commit` to persist all infrastructure changes. If not on the artifact branch, print: "Run `ana init commit` after switching to `{artifactBranch}` to persist your infrastructure."
 
 **Present:**
 
