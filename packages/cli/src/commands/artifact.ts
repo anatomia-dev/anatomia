@@ -905,6 +905,32 @@ export function validateVerifyDataFormat(filePath: string, projectRoot?: string)
         }
       }
 
+      // resolves optional, but if present must be array of strings with valid ID format
+      const resolves = finding['resolves'];
+      if (resolves !== undefined) {
+        if (!Array.isArray(resolves)) {
+          errors.push(`${prefix}: "resolves" must be an array`);
+        } else {
+          for (const item of resolves) {
+            if (typeof item !== 'string') {
+              errors.push(`${prefix}: "resolves" elements must be strings`);
+              break;
+            }
+          }
+          // Format warning for IDs not matching {slug}-C{N} pattern
+          const idPattern = /^[a-z0-9-]+-C\d+$/;
+          for (const item of resolves) {
+            if (typeof item === 'string' && !idPattern.test(item)) {
+              warnings.push(`${prefix}: "resolves" entry "${item}" does not match expected finding ID format ({slug}-C{N}).`);
+            }
+          }
+        }
+        // resolves on non-upstream findings is likely a mistake
+        if (cat !== 'upstream' && typeof cat === 'string') {
+          warnings.push(`${prefix}: "resolves" is intended for upstream findings, but category is "${cat}".`);
+        }
+      }
+
       // file warnings (non-blocking)
       if (file && typeof file === 'string' && projectRoot) {
         if (!fs.existsSync(path.join(projectRoot, file))) {

@@ -2810,6 +2810,109 @@ findings:
     const result = validateVerifyDataFormat(filePath);
     expect(result.errors.length).toBe(0);
   });
+
+  // @ana A003
+  it('accepts upstream finding with valid resolves array', async () => {
+    const filePath = path.join(tempDir, 'verify_data.yaml');
+    await fs.writeFile(filePath, `schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A003 value corrected"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "previous-slug-C2"
+      - "other-slug-C7"
+`, 'utf-8');
+
+    const result = validateVerifyDataFormat(filePath);
+    expect(result.errors.length).toBe(0);
+    expect(result.warnings.length).toBe(0);
+  });
+
+  // @ana A004
+  it('accepts finding without resolves field (optional)', async () => {
+    const filePath = path.join(tempDir, 'verify_data.yaml');
+    await fs.writeFile(filePath, `schema: 1
+findings:
+  - category: upstream
+    summary: "Upstream issue"
+    severity: observation
+    suggested_action: monitor
+`, 'utf-8');
+
+    const result = validateVerifyDataFormat(filePath);
+    expect(result.errors.length).toBe(0);
+  });
+
+  // @ana A005
+  it('rejects non-array resolves value', async () => {
+    const filePath = path.join(tempDir, 'verify_data.yaml');
+    await fs.writeFile(filePath, `schema: 1
+findings:
+  - category: upstream
+    summary: "Test"
+    severity: observation
+    suggested_action: monitor
+    resolves: "previous-slug-C2"
+`, 'utf-8');
+
+    const result = validateVerifyDataFormat(filePath);
+    expect(result.errors.some(e => e.includes('resolves') && e.includes('must be an array'))).toBe(true);
+  });
+
+  // @ana A006
+  it('rejects non-string elements in resolves array', async () => {
+    const filePath = path.join(tempDir, 'verify_data.yaml');
+    await fs.writeFile(filePath, `schema: 1
+findings:
+  - category: upstream
+    summary: "Test"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - 123
+`, 'utf-8');
+
+    const result = validateVerifyDataFormat(filePath);
+    expect(result.errors.some(e => e.includes('resolves') && e.includes('elements must be strings'))).toBe(true);
+  });
+
+  // @ana A007
+  it('warns on invalid finding ID format in resolves', async () => {
+    const filePath = path.join(tempDir, 'verify_data.yaml');
+    await fs.writeFile(filePath, `schema: 1
+findings:
+  - category: upstream
+    summary: "Test"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "not a valid id"
+`, 'utf-8');
+
+    const result = validateVerifyDataFormat(filePath);
+    expect(result.errors.length).toBe(0);
+    expect(result.warnings.some(w => w.includes('resolves') && w.includes('not a valid id'))).toBe(true);
+  });
+
+  // @ana A008
+  it('warns when resolves appears on non-upstream finding', async () => {
+    const filePath = path.join(tempDir, 'verify_data.yaml');
+    await fs.writeFile(filePath, `schema: 1
+findings:
+  - category: code
+    summary: "Code finding with resolves"
+    severity: risk
+    suggested_action: scope
+    resolves:
+      - "some-slug-C1"
+`, 'utf-8');
+
+    const result = validateVerifyDataFormat(filePath);
+    expect(result.errors.length).toBe(0);
+    expect(result.warnings.some(w => w.includes('resolves') && w.includes('upstream'))).toBe(true);
+  });
 });
 
 // @ana A010
