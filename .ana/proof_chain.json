@@ -17809,7 +17809,10 @@
             "A011"
           ],
           "id": "website-nav-copy-polish-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Stale: zero #pipeline matches in website/lib/copy.ts. All three dead links removed by subsequent website scopes (section4-system-bento, website-mobile-polish).",
+          "closed_at": "2026-05-15T05:02:46.205Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
