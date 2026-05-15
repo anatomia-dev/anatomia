@@ -26929,6 +26929,155 @@
         "commit_count": 0,
         "base_commit": "871f0c0cdc37a530b4ff08fad10c54b135e22b53"
       }
+    },
+    {
+      "slug": "worktree-guard-tests",
+      "feature": "Worktree Guard Integration Tests",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Running init from a worktree exits with an error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The init worktree error tells the user to use the main directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Running setup complete from a worktree exits with an error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The setup complete worktree error tells the user to use the main directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Running work complete from a worktree exits with an error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The work complete worktree error tells the user to use the main directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Running scan --save from a worktree warns but does not exit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The scan --save worktree warning mentions being in a worktree",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Tests clean up process.cwd, process.exit, and console spies after each test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "All existing tests continue to pass after adding worktree guard tests",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 7
+      },
+      "timing": {
+        "total_minutes": 28,
+        "think": 4,
+        "plan": 3,
+        "build": 3,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:0bc4ee861115a5085153c2e7676eb7df479115e39c55bf5fcef8cf10e561ac56",
+        "contract": "sha256:47f9e1c0190bbaa4a40a56e72633b750667bc587ca8d1c0f6edb78b9c7f602a8",
+        "plan": "sha256:11b5256d1fda674dbdbdea6f0a3aff0eaa98da84b09d2fc46945bf393f52b47f",
+        "spec": "sha256:2ea64253795c44ae1e166c966f3054cda076e0b6328da266cb40f1ddb1b6eb6f",
+        "build-report": "sha256:4c066b693da375dff3c2b28c7351c8e864ccf6234233a424fecf633c8f6696c2",
+        "build-data": "sha256:9f1424bb781bdeb82e4b32863042568e648118b9f5a04c7ff50c3a1e4111ebf0",
+        "verify-report": "sha256:ebd5549fcfd5f56dbae8af953065c6baa7ecff27def3106cbc1a1c50dda65619",
+        "verify-data": "sha256:b517e916d6e6b12a20c264f19faaa3b8e133f3899ee91e937cbd3337332e27f5"
+      },
+      "completed_at": "2026-05-15T02:10:43.413Z",
+      "modules_touched": [
+        "packages/cli/tests/commands/worktree-guards.test.ts"
+      ],
+      "scope_summary": "Three CLI commands hard-block execution when run from inside a worktree: `init`, `setup complete`, and `work complete`. A fourth (`scan --save`) warns but continues. These guards prevent repo corruption — running `init` from a worktree creates a nested `.ana/`, running `work complete` corrupts the proof chain. All four guards are verified only by source inspection (A028, A030, A031, A032 in the worktree-isolation verify report). No integration test verifies that the guard actually fires when a command runs from inside a worktree. This scope adds those tests.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A009 test only verifies cwd restoration, not process.exit or console spy cleanup",
+          "file": "packages/cli/tests/commands/worktree-guards.test.ts",
+          "anchor": null,
+          "line": 150,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "worktree-guard-tests-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Console and process.exit spies restored inline after assertions — leak on assertion failure",
+          "file": "packages/cli/tests/commands/worktree-guards.test.ts",
+          "anchor": null,
+          "line": 59,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "worktree-guard-tests-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A009 test is order-dependent — relies on running after the other describe blocks",
+          "file": "packages/cli/tests/commands/worktree-guards.test.ts",
+          "anchor": null,
+          "line": 149,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "worktree-guard-tests-C3",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-15T01:57:47.765Z",
+        "completed_at": "2026-05-15T02:10:43.409Z",
+        "commit_count": 3,
+        "base_commit": "11abad9acab9051f1405390790fa821108c7311c"
+      }
     }
   ],
   "schema": 1

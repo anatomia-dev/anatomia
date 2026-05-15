@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-98 runs · 84 active · 119 lessons · 0 promoted · 396 closed
+99 runs · 87 active · 119 lessons · 0 promoted · 396 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 84 total)
+## Active Findings (30 shown of 87 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -25,7 +25,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
-- **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 
 ### packages/cli/src/types/proof.ts
 
@@ -49,6 +48,12 @@
 
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
 
+### packages/cli/tests/commands/worktree-guards.test.ts
+
+- **test:** A009 test only verifies cwd restoration, not process.exit or console spy cleanup — *Worktree Guard Integration Tests*
+- **test:** Console and process.exit spies restored inline after assertions — leak on assertion failure — *Worktree Guard Integration Tests*
+- **test:** A009 test is order-dependent — relies on running after the other describe blocks — *Worktree Guard Integration Tests*
+
 ### website/app/docs/[...slug]/page.tsx
 
 - **code:** Dynamic components not registered in catch-all mdxComponents map — contract specifies registration but builder used build-time regex approach instead — *Docs Search + Polish*
@@ -56,10 +61,6 @@
 ### website/app/docs/[[...slug]]/page.tsx
 
 - **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
-
-### website/app/docs/layout.tsx
-
-- **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### website/app/docs/reference/cli/page.tsx
 
@@ -109,8 +110,4 @@
 - **code:** Unused variable 'other' in generateLlmsTxt — pages filtered but remainder never referenced — *Docs Search + Polish*
 - **code:** Duplicate stripJsx implementation — one in website/lib/docs-data/stripJsx.ts, another inlined in extract-docs-data.ts — *Docs Search + Polish*
 - **code:** Keyword fallback categorization lacks word boundaries — 'scannable' matches /scan/, misassigning proof entries to Engine — *Docs Data Pipeline*
-
-### General
-
-- **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 
