@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-105 runs · 32 active · 128 lessons · 3 promoted · 466 closed
+105 runs · 31 active · 128 lessons · 3 promoted · 467 closed
 
 ## Hot Modules
 
@@ -15,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 32 total)
+## Active Findings (30 shown of 31 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -54,6 +54,10 @@
 
 - **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
 
+### packages/cli/tests/commands/proof.test.ts
+
+- **test:** 5-finding fixture manually duplicated three times across test blocks instead of shared constant — *Audit JSON Severity Summary*
+
 ### packages/cli/tests/commands/work-ci-mocked.test.ts
 
 - **test:** Broad mock intercept matches any git command with 'pull' in args, not specifically 'git pull --rebase' — *Fix CI Matrix and Broken Tests*
@@ -89,7 +93,6 @@
 ### website/components/docs/proof/PipelineGantt.tsx
 
 - **code:** Negative phase values display raw in bar label while bar width is clamped — *Fix Gantt Bar Distortion and Document Timing*
-- **code:** buildGanttBars and GanttBar exported but only consumed within PipelineGantt.tsx — *Fix Gantt Bar Distortion and Document Timing*
 - **code:** Zero-duration bars get minimum 2% width that can push cumulative past 100% if many zero-duration phases exist — *Fix Gantt Bar Distortion and Document Timing*
 
 ### website/components/docs/proof/ProofExplorer.tsx

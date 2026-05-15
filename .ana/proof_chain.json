@@ -28418,7 +28418,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "fix-gantt-bar-distortion-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Accepted: buildGanttBars and GanttBar are exported but have zero external consumers — no test files, no other components import them. Only PipelineGantt itself is imported externally (proof/[slug]/page.tsx:6). Exports are harmless in this leaf component — tree-shaking handles unused exports. Not worth a direct commit for two keywords.",
+          "closed_at": "2026-05-15T17:09:57.476Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
