@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-101 runs · 83 active · 121 lessons · 0 promoted · 408 closed
+101 runs · 82 active · 121 lessons · 0 promoted · 409 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 15 | 9 |
-| packages/cli/tests/commands/work.test.ts | 8 | 5 |
+| packages/cli/tests/commands/work.test.ts | 7 | 5 |
 | packages/cli/src/utils/worktree.ts | 5 | 3 |
 | website/lib/copy.ts | 4 | 3 |
 | website/scripts/extract-docs-data.ts | 4 | 2 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 83 total)
+## Active Findings (30 shown of 82 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -47,7 +47,6 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
-- **test:** exitCalls count assertion uses toBeGreaterThan(0) instead of toBe(1) — *work.ts untested branch coverage*
 - **test:** Conflict test creates bareDir and cloneDir as siblings of tempDir — afterEach only cleans tempDir, so these directories leak on each test run — *work.ts untested branch coverage*
 - **test:** UNKNOWN test mocks process.exit as no-op, causing execution to pass through the early UNKNOWN guard at work.ts:1513 before reaching the target branch at work.ts:870 — exercises two exit points instead of isolating one — *work.ts untested branch coverage*
 - **test:** A003 assertion uses toBeDefined() for proof chain entry — matches contract 'exists' matcher but weaker than testing standards preference for specific value assertions — *work.ts untested branch coverage*
@@ -86,6 +85,10 @@
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
+
+### website/components/docs/providers/PlatformProvider.tsx
+
+- **code:** Lint error: PlatformProvider calls setState synchronously inside useEffect — violates react-hooks/set-state-in-effect rule — *Docs Shell (Layout + Shared Components)*
 
 ### website/content/docs/concepts/pipeline.mdx
 

@@ -27205,7 +27205,10 @@
             "A005"
           ],
           "id": "work-ts-branch-coverage-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Adequate: toBeGreaterThan(0) at work.test.ts:3364 proves process.exit was called at least once. The test verifies the guard fires — exact call count (toBe(1)) adds marginal value since the guard calls exit once and throws, preventing a second call. Same weak-assertion pattern closed throughout this session.",
+          "closed_at": "2026-05-15T03:35:58.503Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
