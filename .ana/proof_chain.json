@@ -16963,7 +16963,10 @@
             "A016"
           ],
           "id": "website-direct-polish-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional: page.tsx:34 documents the sibling coupling. ProofFeed is the direct previous sibling of Footer by React fragment flattening — the :has() + footer rule is the correct CSS mechanism for margin bonding. Coupling is limited to one page and explicitly commented.",
+          "closed_at": "2026-05-15T04:31:45.789Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
