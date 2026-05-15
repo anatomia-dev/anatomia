@@ -1,13 +1,12 @@
 # Proof Chain Dashboard
 
-105 runs · 46 active · 128 lessons · 3 promoted · 452 closed
+105 runs · 45 active · 128 lessons · 3 promoted · 453 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 6 |
-| website/components/docs/proof/PipelineGantt.tsx | 4 | 2 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
 | packages/cli/tests/commands/work.test.ts | 3 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 2 | 2 |
@@ -16,7 +15,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 46 total)
+## Active Findings (30 shown of 45 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -29,6 +28,7 @@
 - **code:** printExistingWorktree duplicates commitsBehind rev-list logic from getWorktreeInfo — now two inline computations duplicated instead of one — *Worktree freshness detection*
 - **code:** printExistingWorktree duplicates HEAD-reading logic from getWorktreeInfo — same pattern in two places — *Kind-aware branch prefixes*
 - **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
+- **test:** A013/A014 completeWork backward compat assertions have no tagged tests — verified by source inspection only — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### packages/cli/src/types/proof.ts
 
@@ -73,7 +73,6 @@
 - **code:** Negative phase values display raw in bar label while bar width is clamped — *Fix Gantt Bar Distortion and Document Timing*
 - **code:** buildGanttBars and GanttBar exported but only consumed within PipelineGantt.tsx — *Fix Gantt Bar Distortion and Document Timing*
 - **code:** Zero-duration bars get minimum 2% width that can push cumulative past 100% if many zero-duration phases exist — *Fix Gantt Bar Distortion and Document Timing*
-- **code:** formatDuration defined but unused in PipelineGantt — duration column uses raw `{value}m` instead — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 
