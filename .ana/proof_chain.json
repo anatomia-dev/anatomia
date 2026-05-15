@@ -26580,7 +26580,10 @@
             "A004"
           ],
           "id": "fix-merge-json-pollution-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Structural type check is correct: toBeTypeOf('object') at work-merge.test.ts:388 verifies meta field exists and is an object. computeChainHealth (proofSummary.ts:1338) never returns null — it always returns a ChainHealth object. The typeof null gotcha is theoretical. Specific meta field assertions exist in the main work.test.ts health tests. Same pattern closed for audit-json-severity-summary-C3 this session.",
+          "closed_at": "2026-05-15T02:06:57.543Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

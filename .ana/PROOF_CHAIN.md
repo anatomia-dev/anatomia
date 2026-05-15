@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-98 runs · 87 active · 119 lessons · 0 promoted · 393 closed
+98 runs · 86 active · 119 lessons · 0 promoted · 394 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 87 total)
+## Active Findings (30 shown of 86 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -46,10 +46,6 @@
 - **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
 - **test:** A013 (--no-verify) has no runtime assertion — test name claims it but only verifies commit happened — *ana init commit — persist infrastructure to git*
 
-### packages/cli/tests/commands/work-merge.test.ts
-
-- **test:** A004 meta assertion uses toBeTypeOf('object') — passes for null — *Fix --merge stdout pollution in --json mode*
-
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
@@ -61,6 +57,10 @@
 ### website/app/docs/[[...slug]]/page.tsx
 
 - **code:** Prose classes used without @tailwindcss/typography installed — *Docs Infrastructure — Fumadocs MDX Pipeline*
+
+### website/app/docs/layout.tsx
+
+- **code:** No error boundary in docs layout — broken MDX crashes entire docs section — *Docs Infrastructure — Fumadocs MDX Pipeline*
 
 ### website/app/docs/reference/cli/page.tsx
 
