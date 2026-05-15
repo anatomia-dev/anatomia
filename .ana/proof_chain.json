@@ -14247,7 +14247,10 @@
             "A010"
           ],
           "id": "non-main-artifact-branch-tests-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Source inspection is the correct verification method: contract A010 targets state.ts source content (matcher: contains, value: anaConfig). The anaConfig object at state.ts:412 is what populates ana.json — verifying the display function references it proves it reads the configured branch, not a default. Covered by Rule 2 (enforcement tests for structural invariants).",
+          "closed_at": "2026-05-15T07:05:00.668Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
