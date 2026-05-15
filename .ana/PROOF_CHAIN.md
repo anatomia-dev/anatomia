@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-102 runs · 63 active · 122 lessons · 3 promoted · 427 closed
+102 runs · 62 active · 122 lessons · 3 promoted · 428 closed
 
 ## Hot Modules
 
@@ -8,15 +8,15 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 8 |
 | packages/cli/tests/commands/work.test.ts | 5 | 5 |
-| packages/cli/src/utils/worktree.ts | 4 | 3 |
 | packages/cli/tests/commands/artifact.test.ts | 3 | 2 |
+| packages/cli/src/utils/worktree.ts | 3 | 3 |
 | website/lib/copy.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 63 total)
+## Active Findings (30 shown of 62 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -38,7 +38,6 @@
 
 ### packages/cli/src/utils/worktree.ts
 
-- **code:** No timeout on spawnSync — hanging build command blocks worktree creation indefinitely — *Run build command during worktree creation*
 - **code:** getBuildCommandString re-reads ana.json instead of receiving command from runBuildCommand — duplicate I/O with misleading 'pnpm run build' fallback — *Run build command during worktree creation*
 
 ### packages/cli/tests/commands/init/commit.test.ts
@@ -49,6 +48,7 @@
 
 - **test:** Conflict test creates bareDir and cloneDir as siblings of tempDir — afterEach only cleans tempDir, so these directories leak on each test run — *work.ts untested branch coverage*
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
+- **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
 
 ### website/app/docs/[[...slug]]/page.tsx
 
