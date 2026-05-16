@@ -65,15 +65,47 @@ export function TetrisSnake() {
       for (let x = cols - 2; x >= 0; x--) perim.push({ x, y: rows - 1 });
       for (let y = rows - 2; y > 0; y--) perim.push({ x: 0, y });
       if (perim.length > 0) pos = pos % perim.length;
+
+      // Precompute corner indices and placement set so blocks always
+      // land on corners and space evenly along each edge.
+      corners = new Set<number>();
+      placeSet = new Set<number>();
+      if (perim.length > 0) {
+        const c0 = 0;                                    // top-left
+        const c1 = cols - 1;                              // top-right
+        const c2 = cols - 1 + rows - 1;                   // bottom-right
+        const c3 = cols - 1 + rows - 1 + cols - 1;        // bottom-left
+        corners.add(c0); corners.add(c1); corners.add(c2); corners.add(c3);
+
+        // Space blocks evenly along each edge (including corners)
+        const edges = [
+          [c0, c1],     // top
+          [c1, c2],     // right
+          [c2, c3],     // bottom
+          [c3, perim.length], // left (wraps to 0)
+        ];
+        for (const [start, end] of edges) {
+          const len = end - start;
+          const spacing = Math.max(3, Math.round(len / Math.floor(len / 3)));
+          for (let i = start; i < end; i += spacing) {
+            placeSet.add(i % perim.length);
+          }
+        }
+        // Ensure all corners are in the placement set
+        for (const c of corners) placeSet.add(c);
+      }
     }
+
+    let corners = new Set<number>();
+    let placeSet = new Set<number>();
 
     function step() {
       if (!perim.length) return;
       const p = perim[pos];
       trail.push({ x: p.x, y: p.y, age: 0 });
 
-      // Every 3 steps, lay a permanent block
-      if (pos % 3 === 0) {
+      // Place blocks at precomputed positions (corners + evenly spaced)
+      if (placeSet.has(pos)) {
         placed.push({ x: p.x, y: p.y, alpha: 0.18 });
       }
 
