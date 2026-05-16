@@ -5,7 +5,7 @@
 .hero {
   position: relative;
   overflow: hidden;
-  min-height: 100svh;
+  min-height: 88svh;
   display: flex;
   flex-direction: column;
   padding-top: 72px;
