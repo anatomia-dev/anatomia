@@ -17,6 +17,8 @@
  * ==================================================================
  */
 
+import { getMarketingVersion } from '@/lib/marketing-stats';
+
 export type ProofKind = "feature" | "fix" | "chore" | "milestone";
 
 export interface ProofEntry {
@@ -57,7 +59,7 @@ const GITHUB_TAGS_URL =
 const GITHUB_COMMITS_URL =
   "https://api.github.com/repos/anatomia-dev/anatomia/commits";
 
-const VERSION_FALLBACK = "v1.1.0";
+const VERSION_FALLBACK = getMarketingVersion();
 
 /**
  * Build GitHub API headers with conditional auth.

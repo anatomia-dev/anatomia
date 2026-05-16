@@ -1,0 +1,53 @@
+schema: 1
+findings:
+  - category: code
+    summary: "getMarketingVersion produces 'vundefined' when BuildMeta has undefined version field"
+    file: "website/lib/marketing-stats.ts"
+    line: 38
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A004", "A005"]
+
+  - category: code
+    summary: "VERSION_FALLBACK evaluated at module load time — single-shot, no retry on transient readFileSync failure"
+    file: "website/lib/proof-feed.ts"
+    line: 61
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "Drawer moreCount has no floor guard — commandCount < 6 produces negative display"
+    file: "website/components/system/Drawer.tsx"
+    line: 128
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "Two separate imports from same module instead of combined destructured import"
+    file: "website/lib/marketing-stats.ts"
+    line: 12
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "vundefined test documents a real gap but accepts broken output as expected behavior"
+    file: "website/lib/__tests__/marketing-stats.test.ts"
+    line: 84
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A004"]
+
+  - category: code
+    summary: "Over-build: vitest added to website package.json + vitest.config.ts created (not in spec file_changes)"
+    file: "website/vitest.config.ts"
+    line: 1
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "proof-feed.ts header comment still says 'mock-only state' — stale from Website Lift"
+    file: "website/lib/proof-feed.ts"
+    line: 1
+    severity: observation
+    suggested_action: monitor
+    resolves: []

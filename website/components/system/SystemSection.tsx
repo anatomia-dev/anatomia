@@ -1,4 +1,5 @@
 import { copy } from "@/lib/copy";
+import { getMarketingCommandCount } from "@/lib/marketing-stats";
 import { Container } from "@/components/ui/Container";
 import { Formatted } from "@/components/ui/Formatted";
 import { SpecStrip } from "./SpecStrip";
@@ -12,6 +13,11 @@ import cliPkg from "../../../packages/cli/package.json";
  * Server component (Drawer is the only client child).
  */
 export function SystemSection() {
+  const commandCount = getMarketingCommandCount();
+  const specStrip = copy.system.specStrip.map((item) =>
+    item.label === "cli" ? { ...item, value: `${commandCount} commands` } : item,
+  );
+
   return (
     <section
       className={`reveal ${styles.section}`}
@@ -48,10 +54,10 @@ export function SystemSection() {
         </header>
 
         {/* Spec strip */}
-        <SpecStrip items={copy.system.specStrip} />
+        <SpecStrip items={specStrip} />
 
         {/* Drawers */}
-        <Drawer version={cliPkg.version} />
+        <Drawer version={cliPkg.version} commandCount={commandCount} />
 
         {/* Section closer */}
         <a href={copy.system.closer.href} className={styles.closer}>

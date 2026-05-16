@@ -14,10 +14,16 @@ import type { TreeData } from "./FileTree";
  * Multiple drawers can be open simultaneously.
  * Uses IntersectionObserver for one-shot pulse animation on viewport entry.
  */
+/**
+ * @param version - CLI package version string
+ * @param commandCount - total CLI command count from extraction data
+ */
 export function Drawer({
   version,
+  commandCount,
 }: {
   version: string;
+  commandCount: number;
 }) {
   const [openSet, setOpenSet] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,7 +87,9 @@ export function Drawer({
               <span className={styles.dNum}>{drawer.num}</span>
               <span className={styles.dName}>{drawer.name}</span>
               <span className={styles.dTeaser}>{drawer.teaser}</span>
-              <span className={styles.dMeta}>{drawer.meta}</span>
+              <span className={styles.dMeta}>
+                {drawer.id === "cli" ? `${commandCount} commands` : drawer.meta}
+              </span>
               <span
                 className={`${styles.dToggle} ${isOpen ? styles.dToggleOpen : ""}`}
                 aria-hidden="true"
@@ -116,7 +124,7 @@ export function Drawer({
                         data={{
                           version,
                           commands: drawer.manPage.commands,
-                          moreCount: drawer.manPage.moreCount,
+                          moreCount: commandCount - 6,
                           moreNames: drawer.manPage.moreNames,
                         }}
                       />
