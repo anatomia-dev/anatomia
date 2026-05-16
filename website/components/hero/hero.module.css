@@ -253,7 +253,7 @@
   flex: 1;
   min-height: 120px;
   margin-top: 32px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -279,23 +279,33 @@
 :global([data-theme="dark"]) .wordmark {
   color: color-mix(in oklch, var(--color-brand) 3%, transparent);
 }
+@media (min-width: 768px) {
+  .wordmarkWrap { display: flex; }
+}
 @media (max-height: 780px) {
-  .wordmarkWrap { min-height: 120px; margin-top: 32px; }
+  .wordmarkWrap { min-height: 100px; margin-top: 24px; }
   .wordmark { font-size: clamp(120px, 22vw, 280px); }
 }
 
 /* --- Scroll hint --- */
 .scrollHint {
-  position: fixed;
-  left: 50%;
-  bottom: 56px;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 40;
   display: flex;
   align-items: center;
   gap: 14px;
   width: max-content;
+  margin: 0 auto;
   padding: 0 24px;
+}
+@media (min-width: 768px) {
+  .scrollHint {
+    position: fixed;
+    left: 50%;
+    bottom: 56px;
+    transform: translateX(-50%);
+    margin: 0;
+  }
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
