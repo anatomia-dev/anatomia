@@ -8,21 +8,45 @@
 
 set -e
 
-# Verify lockfile is in sync with package.json (catches desync before push)
+# Lockfile sync — ensures pnpm-lock.yaml travels with package.json.
 # Runs before the skip block so website-only commits still check lockfile sync.
 #
-# Two checks:
-# 1. If lockfile is staged, block if any package.json has unstaged changes.
-#    Catches: pnpm install bumps both files, only lockfile gets staged.
-# 2. frozen-lockfile checks disk consistency (lockfile vs package.json on disk).
-if git diff --cached --name-only | grep -q "^pnpm-lock.yaml$"; then
-  UNSTAGED_PKGS=$(git diff --name-only | grep "package\.json$" || true)
-  if [ -n "$UNSTAGED_PKGS" ]; then
-    echo "❌ pnpm-lock.yaml is staged but package.json has unstaged changes:"
-    echo "$UNSTAGED_PKGS"
-    echo "   Stage both: git add package.json pnpm-lock.yaml"
-    exit 1
-  fi
+# History: this hook was patched 4 times in one week (508aa20f, eb96c1ba,
+# f34d0ede, 40341104) for lockfile desync. Root cause: Build agents stage
+# package.json but not the lockfile (instruction says "stage only spec files").
+# frozen-lockfile validates disk state, not staging-area state, so it passes
+# when disk is consistent even if the lockfile isn't staged.
+#
+# Two layers:
+# 1. Staging guard — auto-stages lockfile when package.json is staged.
+#    Blocks if lockfile is staged but package.json has unstaged changes.
+# 2. frozen-lockfile — validates disk consistency (lockfile matches package.json).
+#
+# KNOWN LIMITATION: frozen-lockfile passes when lockfile is a SUPERSET of what
+# package.json requires. If the lockfile is dirty from an unrelated workspace
+# change (e.g., tested a dep in packages/cli/ but committing website/), the
+# auto-stage commits extra lockfile entries. Blast radius is cosmetic — extra
+# entries, no broken builds, self-corrects on next clean pnpm install.
+#
+# IF THIS CAUSES A PROBLEM: check whether pnpm-lock.yaml was auto-staged with
+# entries from an unrelated workspace. Run: git diff HEAD~1 pnpm-lock.yaml
+# to see what was committed. If entries don't correspond to the package.json
+# change in the same commit, the auto-stage picked up cross-workspace drift.
+# Fix: pnpm install && git add pnpm-lock.yaml && git commit --amend
+STAGED_PKGS=$(git diff --cached --name-only | grep "package\.json$" || true)
+STAGED_LOCK=$(git diff --cached --name-only | grep "^pnpm-lock.yaml$" || true)
+DIRTY_LOCK=$(git diff --name-only | grep "^pnpm-lock.yaml$" || true)
+DIRTY_PKGS=$(git diff --name-only | grep "package\.json$" || true)
+
+if [ -n "$STAGED_PKGS" ] && [ -n "$DIRTY_LOCK" ]; then
+  echo "ℹ️  Auto-staged pnpm-lock.yaml (triggered by: $STAGED_PKGS)"
+  git add pnpm-lock.yaml
+fi
+if [ -n "$STAGED_LOCK" ] && [ -n "$DIRTY_PKGS" ]; then
+  echo "❌ pnpm-lock.yaml is staged but package.json has unstaged changes:"
+  echo "$DIRTY_PKGS"
+  echo "   Run: git add <package.json files above>"
+  exit 1
 fi
 pnpm install --frozen-lockfile --silent 2>/dev/null || {
   echo "❌ pnpm-lock.yaml is out of sync with package.json. Run 'pnpm install' first."
