@@ -132,6 +132,24 @@ export function About() {
             </p>
           </div>
 
+          {/* ── Founder ── */}
+          <div className={styles.founder}>
+            <span className={styles.founderName}>Ryan Patrick Smith</span>
+            <span className={styles.founderSep}>·</span>
+            <span className={styles.founderMeta}>Denver, CO</span>
+            <span className={styles.founderSep}>·</span>
+            <span className={styles.founderMeta}>Schwab ML → solo founder</span>
+            <span className={styles.founderSep}>·</span>
+            <a
+              href="https://www.linkedin.com/in/ryanpatricksmith"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.founderLink}
+            >
+              LinkedIn
+            </a>
+          </div>
+
         </div>
       </Container>
     </article>
