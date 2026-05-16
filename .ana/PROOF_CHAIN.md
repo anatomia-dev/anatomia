@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-110 runs · 42 active · 3 promoted · 612 closed
+111 runs · 47 active · 3 promoted · 612 closed
 
 ## Hot Modules
 
@@ -15,11 +15,17 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 42 total)
+## Active Findings (30 shown of 47 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
 - **test:** No integration test for pull conflict abort path — *ana init commit — persist infrastructure to git*
+
+### packages/cli/src/commands/init/state.ts
+
+- **code:** Build/lint scoping silently degrades when cwd is omitted — no warning that scoping was skipped — *Monorepo build command scoping*
+- **code:** Empty catch block swallows all errors including unexpected ones (permission denied, disk full) — *Monorepo build command scoping*
+- **code:** pkg.path injected into shell command without sanitization — path with spaces or special chars would produce broken subshell — *Monorepo build command scoping*
 
 ### packages/cli/src/commands/work.ts
 
@@ -30,7 +36,6 @@
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
 - **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 - **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
-- **code:** startWork resume path at line 1685 also duplicates HEAD-reading pattern — three places total read HEAD for branch name — *Kind-aware branch prefixes*
 
 ### packages/cli/src/types/proof.ts
 
@@ -44,6 +49,11 @@
 
 - **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
 
+### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
+
+- **test:** No test for 'tsc' build key or 'eslint' lint key variants individually — *Monorepo build command scoping*
+- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in every test — no shared beforeEach/afterEach — *Monorepo build command scoping*
+
 ### packages/cli/tests/commands/work-ci-mocked.test.ts
 
 - **test:** Broad mock intercept matches any git command with 'pull' in args, not specifically 'git pull --rebase' — *Fix CI Matrix and Broken Tests*
@@ -56,11 +66,6 @@
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
 - **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
 - **test:** Conditional PID guard makes 8 tests potential no-ops in environments where getClaudePid() returns null — *Capture actual think time from Ana session start*
-- **test:** Stage detection tests use hardcoded timestamps with 1-hour gaps — no boundary test for equal timestamps — *Fix cycle stage detection breaks on multi-phase builds*
-
-### website/app/docs/reference/cli/page.tsx
-
-- **code:** Hardcoded 'Last reviewed · 2026-05-11' in CLI reference page will become stale — *Dynamic Pages — Reference & Proof Chain*
 
 ### website/components/docs/content/DocsStat.tsx
 
@@ -75,10 +80,6 @@
 - **code:** Negative phase values display raw in bar label while bar width is clamped — *Fix Gantt Bar Distortion and Document Timing*
 - **code:** Zero-duration bars get minimum 2% width that can push cumulative past 100% if many zero-duration phases exist — *Fix Gantt Bar Distortion and Document Timing*
 
-### website/components/docs/proof/ProofExplorer.tsx
-
-- **code:** formatDuration duplicated in 4 files (ProofExplorer, ProofHero, PipelineGantt, detail page) — extract to shared utility — *Dynamic Pages — Reference & Proof Chain*
-
 ### website/lib/docs-data/docsStatValues.ts
 
 - **code:** 2 of 9 value keys (skillCount, findings) defined but unused in any MDX file — *Fix prebuild source mutation*
@@ -90,5 +91,4 @@
 ### General
 
 - **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
-- **test:** Contract assertions A013-A019 have no tagged tests — verified by source inspection only — *Kind-aware branch prefixes*
 

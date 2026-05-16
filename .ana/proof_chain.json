@@ -30134,6 +30134,188 @@
         "commit_count": 0,
         "base_commit": "f0e37ec5aa3cfb6cfc6713bc229a8199f5ed3f35"
       }
+    },
+    {
+      "slug": "monorepo-build-scoping",
+      "feature": "Monorepo build command scoping",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Monorepo build command targets only the primary package, not the whole workspace",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Monorepo lint command targets only the primary package, not the whole workspace",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Build command falls back to root when primary package has no build script",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Lint command falls back to root when primary package has no lint script",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-package repos are unaffected by monorepo scoping",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Dev command is never scoped regardless of monorepo status",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Build scoping recognizes alternate script names like compile and tsc",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Lint scoping recognizes alternate script names like eslint and biome",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Missing primary package.json does not crash init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Malformed primary package.json does not crash init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Scoped build command uses the correct package manager prefix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Existing test command scoping still works after the signature change",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 26,
+        "think": 5,
+        "plan": 4,
+        "build": 7,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:3a7512bb8cca81002a64954a4b497dcfa05cfbecb1c851d3786af5dbb9574fd5",
+        "contract": "sha256:9fd6f9b5807a9e401cbba956dda46ba7512e66843fa3bb71d8df0bd59f501f8c",
+        "plan": "sha256:7e4b8314873c4e69babbebd58a95ecd041a9eff109e17a6982ace93c4b065fe3",
+        "spec": "sha256:cf8482afb3ac408372b70fa22acb22b7e6552e336d0b496e7d770e4cca4e9060",
+        "build-report": "sha256:c507b740a5e7e0ec7aa7a16f60af3549e3b348fdec1331f6d83039bc7c33cbac",
+        "build-data": "sha256:eedbc774d51648a41fd85967353118a351016c807e36f3fb94fe06370f9e2b15",
+        "verify-report": "sha256:83d61ee46dde0f0abd2c1819ede3fd4a1ddc7373ee1a6c2884248a2e3314ae87",
+        "verify-data": "sha256:e6cf742b2bf294a747799cb79ca8c3487dd7ddcf0cec335cdcba9ca8c507dc46"
+      },
+      "completed_at": "2026-05-16T17:01:19.242Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+      ],
+      "scope_summary": "`createAnaJson` scopes the test command to the primary package in monorepos but takes build and lint raw from the root package.json. Monorepo customers get `pnpm run build` which triggers `turbo run build` across all packages (30-60s), when agents only need the primary package build (3s). The test scoping has been proven across 110+ pipeline runs. Build and lint should follow the same principle.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "No test for 'tsc' build key or 'eslint' lint key variants individually",
+          "file": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007",
+            "A008"
+          ],
+          "id": "monorepo-build-scoping-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Build/lint scoping silently degrades when cwd is omitted — no warning that scoping was skipped",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 420,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "monorepo-build-scoping-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Empty catch block swallows all errors including unexpected ones (permission denied, disk full)",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 446,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "monorepo-build-scoping-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Repeated tmpDir/cwdDir setup+teardown boilerplate in every test — no shared beforeEach/afterEach",
+          "file": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "monorepo-build-scoping-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "pkg.path injected into shell command without sanitization — path with spaces or special chars would produce broken subshell",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 434,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "id": "monorepo-build-scoping-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-16T04:32:23.315Z",
+        "completed_at": "2026-05-16T17:01:19.236Z",
+        "commit_count": 0,
+        "base_commit": "41d384046a258e610cac10c58b3f7a0fe330a788"
+      }
     }
   ],
   "schema": 1
