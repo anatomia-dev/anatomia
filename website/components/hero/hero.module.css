@@ -277,7 +277,7 @@
   transition: opacity 120ms linear;
 }
 :global([data-theme="dark"]) .wordmark {
-  color: color-mix(in oklch, var(--color-brand) 7.6%, transparent);
+  color: color-mix(in oklch, var(--color-brand) 6%, transparent);
 }
 @media (max-height: 780px) {
   .wordmarkWrap { min-height: 120px; margin-top: 32px; }
@@ -286,13 +286,15 @@
 
 /* --- Scroll hint --- */
 .scrollHint {
-  position: relative;
-  z-index: 10;
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 40;
   display: flex;
   align-items: center;
   gap: 14px;
   width: max-content;
-  margin: 0 auto;
   padding: 0 24px;
   font-family: var(--font-mono);
   font-size: 11px;
