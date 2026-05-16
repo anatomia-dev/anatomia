@@ -248,6 +248,42 @@
   .sep { display: none; }
 }
 
+/* --- Wordmark background --- */
+.wordmarkWrap {
+  flex: 1;
+  min-height: 160px;
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  transform: translateY(-30%);
+}
+.wordmark {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: "opsz" 144;
+  font-size: clamp(140px, 24vw, 380px);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  text-align: center;
+  color: color-mix(in oklch, var(--color-brand) 4%, transparent);
+  user-select: none;
+  opacity: var(--mark-opacity, 1);
+  transition: opacity 120ms linear;
+}
+:global([data-theme="dark"]) .wordmark {
+  color: color-mix(in oklch, var(--color-brand) 9%, transparent);
+}
+@media (max-height: 780px) {
+  .wordmarkWrap { min-height: 120px; margin-top: 32px; }
+  .wordmark { font-size: clamp(120px, 22vw, 280px); }
+}
+
 /* --- Scroll hint --- */
 .scrollHint {
   position: relative;
