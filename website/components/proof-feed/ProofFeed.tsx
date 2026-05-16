@@ -107,8 +107,10 @@ export async function ProofFeed() {
                 <span className={styles.rowFeat}>
                   <Formatted text={e.feat} />
                 </span>
-                <span className={styles.rowMeta}>
+                <span className={styles.riskCell}>
                   {e.hasRisk && <span className={styles.riskTag}>risk</span>}
+                </span>
+                <span className={styles.rowMeta}>
                   <span className={styles.rowAssert}>
                     <span className={styles.rowAssertPass}>{e.passed}</span>/{e.assertions}
                   </span>
