@@ -1,5 +1,4 @@
-/* About page — editorial luxury. Three acts: thesis, founder, proof.
-   Fraunces headlines, Geist body, mono labels. Generous vertical rhythm. */
+/* About page — stats-first, centered editorial. */
 
 .page {
   padding-bottom: 120px;
@@ -16,7 +15,7 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .eyebrowLine {
   width: 24px;
@@ -24,175 +23,38 @@
   background: var(--color-brand);
 }
 
-/* ── Section 1: Thesis ── */
-.thesis {
-  max-width: 780px;
+/* ── Genesis (top section) ── */
+.genesis {
+  text-align: center;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
 .headline {
   font-family: var(--font-serif);
-  font-size: clamp(38px, 5.4vw, 58px);
+  font-size: clamp(36px, 5vw, 52px);
   font-weight: 400;
   font-style: italic;
   font-variation-settings: "opsz" 72;
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--fg-strong);
-  margin-bottom: 48px;
-  max-width: 16ch;
+  margin-bottom: 16px;
 }
 .headline :global(em) {
   color: var(--color-brand);
 }
 
-.thesisBody {
-  max-width: 620px;
-}
-
-.lede {
-  font-family: var(--font-serif);
-  font-size: 19px;
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--ink-75);
-  margin-bottom: 24px;
-}
-.lede::first-letter {
-  font-family: var(--font-serif);
-  font-size: 3.2em;
-  font-weight: 600;
-  float: left;
-  line-height: 0.82;
-  margin-right: 8px;
-  margin-top: 5px;
-  color: var(--color-brand);
-}
-
-.bodyText {
+.genesisIntro {
   font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.65;
   color: var(--ink-60);
-  margin-bottom: 20px;
-}
-.bodyText :global(em) {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 400;
-  color: var(--fg-strong);
+  max-width: 520px;
+  margin: 0 auto 48px;
 }
 
-.link {
-  color: var(--fg-strong);
-  text-decoration: underline;
-  text-decoration-color: var(--border);
-  text-underline-offset: 3px;
-  transition: text-decoration-color 0.2s ease;
-}
-.link:hover {
-  text-decoration-color: var(--color-brand);
-}
-
-/* ── Divider ── */
-.divider {
-  padding: 56px 0;
-}
-.dividerLine {
-  height: 1px;
-  background: var(--hairline);
-  max-width: 780px;
-}
-
-/* ── Section 2: Founder ── */
-.founder {
-  max-width: 780px;
-}
-
-.founderLabel {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-30);
-  margin-bottom: 32px;
-}
-
-.founderContent {
-  display: flex;
-  gap: 28px;
-  align-items: flex-start;
-}
-
-.founderInitial {
-  font-family: var(--font-serif);
-  font-size: 64px;
-  font-weight: 600;
-  font-style: italic;
-  font-variation-settings: "opsz" 144;
-  line-height: 1;
-  color: color-mix(in oklch, var(--color-brand) 20%, transparent);
-  flex-shrink: 0;
-  margin-top: -4px;
-  user-select: none;
-}
-
-.founderText {
-  min-width: 0;
-}
-
-.founderName {
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--fg-strong);
-  margin-bottom: 4px;
-}
-
-.founderRole {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-45);
-  margin-bottom: 20px;
-}
-
-@media (max-width: 640px) {
-  .founderContent {
-    flex-direction: column;
-    gap: 16px;
-  }
-  .founderInitial {
-    font-size: 48px;
-    margin-top: 0;
-  }
-}
-
-/* ── Section 3: Proof / Genesis ── */
-.proof {
-  max-width: 780px;
-}
-
-.proofLabel {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-30);
-  margin-bottom: 20px;
-}
-
-.proofIntro {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.7;
-  color: var(--ink-60);
-  max-width: 580px;
-  margin-bottom: 48px;
-}
-
+/* ── Stats grid ── */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -201,7 +63,7 @@
   border: 1px solid var(--hairline);
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: 40px;
+  text-align: left;
 }
 
 .stat {
@@ -238,22 +100,74 @@
 }
 
 @media (max-width: 640px) {
-  .statsGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .statsGrid { grid-template-columns: repeat(2, 1fr); }
+  .stat { padding: 22px 18px; }
+  .statValue { font-size: 26px; }
 }
 @media (max-width: 400px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
+  .statsGrid { grid-template-columns: 1fr; }
 }
 
-.proofCoda {
+/* ── Divider ── */
+.dividerLine {
+  height: 1px;
+  background: var(--hairline);
+  max-width: 680px;
+  margin: 56px auto;
+}
+
+/* ── Centered text sections (thesis + founder) ── */
+.centered {
+  max-width: 580px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-30);
+  margin-bottom: 24px;
+}
+
+.thesisText {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
+  font-variation-settings: "opsz" 36;
+  line-height: 1.65;
+  color: var(--ink-75);
+  margin-bottom: 20px;
+}
+
+.bodyText {
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 400;
   line-height: 1.7;
-  color: var(--ink-45);
-  max-width: 520px;
+  color: var(--ink-60);
+  margin-bottom: 16px;
+}
+.bodyText :global(em) {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--fg-strong);
+}
+
+.link {
+  color: var(--fg-strong);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
+}
+.link:hover {
+  text-decoration-color: var(--color-brand);
 }
 
 .inlineCode {
@@ -266,10 +180,24 @@
   color: var(--fg);
 }
 
-/* ── Dark theme refinements ── */
-:global([data-theme="dark"]) .founderInitial {
-  color: color-mix(in oklch, var(--color-brand) 30%, transparent);
+/* ── Founder ── */
+.founderName {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  margin-bottom: 4px;
 }
+
+.founderRole {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-45);
+  margin-bottom: 24px;
+}
+
+/* ── Dark theme ── */
 :global([data-theme="dark"]) .stat {
   background: var(--bg-elev);
 }
