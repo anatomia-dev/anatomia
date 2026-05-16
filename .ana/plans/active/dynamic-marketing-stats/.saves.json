@@ -18,5 +18,26 @@
   "spec": {
     "saved_at": "2026-05-16T06:21:46.452Z",
     "hash": "sha256:8eae9b927c93c0d7dc7aa54b4326c7f7f58d487ac7a2fc95e108aee4edc8048b"
-  }
+  },
+  "build_started_at": "2026-05-16T06:39:31.156Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-16T06:47:12.824Z",
+    "hash": "sha256:c9476b87183e99136663773f2a0446e26c9a4bb095ebabed7082e815f43dc736"
+  },
+  "build-data": {
+    "saved_at": "2026-05-16T06:47:12.825Z",
+    "hash": "sha256:adac5334ae94b87168d75fc8b688b1b04148fa2543df3449fd733e607a146e8a"
+  },
+  "modules_touched": [
+    "pnpm-lock.yaml",
+    "website/components/system/Drawer.tsx",
+    "website/components/system/SystemSection.tsx",
+    "website/lib/__tests__/marketing-stats.test.ts",
+    "website/lib/marketing-stats.ts",
+    "website/lib/proof-feed.ts",
+    "website/package.json",
+    "website/vitest.config.ts"
+  ],
+  "commit_hygiene": []
 }

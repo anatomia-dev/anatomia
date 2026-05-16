@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint errors in TetrisSnake.tsx and git-operations.ts block pnpm run lint"
+    file: "website/components/pricing/TetrisSnake.tsx"
+    severity: debt
+    suggested_action: scope
+  - summary: "getMarketingVersion returns 'vundefined' if getBuildMeta returns object with missing version field"
+    file: "website/lib/marketing-stats.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Website vitest infrastructure added (vitest dep + config) beyond spec file changes"
+    file: "website/vitest.config.ts"
+    severity: observation
+    suggested_action: accept
