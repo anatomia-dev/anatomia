@@ -277,7 +277,7 @@
   transition: opacity 120ms linear;
 }
 :global([data-theme="dark"]) .wordmark {
-  color: color-mix(in oklch, var(--color-brand) 4%, transparent);
+  color: color-mix(in oklch, var(--color-brand) 3%, transparent);
 }
 @media (max-height: 780px) {
   .wordmarkWrap { min-height: 120px; margin-top: 32px; }
