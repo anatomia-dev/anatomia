@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "Fallback page omits RightRail — visually inconsistent with full proof pages until next static build"
+    file: "website/app/docs/proof/[slug]/page.tsx"
+    severity: observation
+    suggested_action: accept

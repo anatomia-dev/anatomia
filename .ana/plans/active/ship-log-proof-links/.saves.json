@@ -18,5 +18,21 @@
   "spec": {
     "saved_at": "2026-05-16T22:15:15.813Z",
     "hash": "sha256:35105dfb556689d1fe243f5b32c085c3e9bff8e39a72251fb3e030d2299d5121"
-  }
+  },
+  "build_started_at": "2026-05-16T22:21:36.484Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-16T22:26:39.496Z",
+    "hash": "sha256:d13a4d2dae26d4d6106d4086955a7a9cdeb474d456f6aa215a727c04d6343880"
+  },
+  "build-data": {
+    "saved_at": "2026-05-16T22:26:39.497Z",
+    "hash": "sha256:558b19f74b59cbebf2e872999b7c35eef0c1d622393c3507d8bb188aeeab1b9e"
+  },
+  "modules_touched": [
+    "website/app/docs/proof/[slug]/page.tsx",
+    "website/components/proof-feed/ProofFeed.tsx",
+    "website/lib/proof-feed.ts"
+  ],
+  "commit_hygiene": []
 }
