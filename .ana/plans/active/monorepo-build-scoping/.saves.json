@@ -18,5 +18,21 @@
   "spec": {
     "saved_at": "2026-05-16T04:31:28.168Z",
     "hash": "sha256:cf8482afb3ac408372b70fa22acb22b7e6552e336d0b496e7d770e4cca4e9060"
-  }
+  },
+  "build_started_at": "2026-05-16T04:32:23.315Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-16T04:39:31.806Z",
+    "hash": "sha256:c507b740a5e7e0ec7aa7a16f60af3549e3b348fdec1331f6d83039bc7c33cbac"
+  },
+  "build-data": {
+    "saved_at": "2026-05-16T04:39:31.807Z",
+    "hash": "sha256:eedbc774d51648a41fd85967353118a351016c807e36f3fb94fe06370f9e2b15"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+  ],
+  "commit_hygiene": []
 }
