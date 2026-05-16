@@ -31,6 +31,7 @@ export interface ProofEntry {
   assertions: number;
   passed: number;
   hasRisk: boolean;
+  slug?: string;
 }
 
 /**
@@ -41,12 +42,12 @@ function mockFeed(): ProofEntry[] {
   const NOW = Date.now();
   const m = (minAgo: number) => new Date(NOW - minAgo * 60_000).toISOString();
   return [
-    { version: "v1.0.2", hash: "93a4cac", ts: m(4), kind: "feature", feat: "Worktree isolation — concurrent agents, each in their own git index.", feature_em: "Worktree isolation", assertions: 45, passed: 45, hasRisk: false },
-    { version: "v1.0.2", hash: "426c378", ts: m(120), kind: "feature", feat: "Rejection artifact preservation — git-history extraction at save time.", feature_em: "Rejection artifact", assertions: 16, passed: 16, hasRisk: false },
-    { version: "v1.0.2", hash: "8048ec7", ts: m(240), kind: "fix", feat: "Non-main artifact branch tests — 8 new tests + state display fix.", feature_em: "artifact branch", assertions: 10, passed: 10, hasRisk: true },
-    { version: "v1.0.1", hash: "f987bb1", ts: m(1440), kind: "feature", feat: "Phase timing with sanity guards, danger map risk profile, agent identity.", feature_em: "Phase timing", assertions: 21, passed: 21, hasRisk: false },
-    { version: "v1.0.1", hash: "3242d31", ts: m(2880), kind: "chore", feat: "Code comment cleanup — 286 internal references removed across 97 files.", feature_em: "comment cleanup", assertions: 24, passed: 24, hasRisk: false },
-    { version: "v1.0.0", hash: "7ff2987", ts: m(4320), kind: "feature", feat: "CLI UX polish — command grouping, jargon-free descriptions, help examples.", feature_em: "CLI UX", assertions: 19, passed: 19, hasRisk: false },
+    { version: "v1.0.2", hash: "93a4cac", ts: m(4), kind: "feature", feat: "Worktree isolation — concurrent agents, each in their own git index.", feature_em: "Worktree isolation", assertions: 45, passed: 45, hasRisk: false, slug: "proof-list-view" },
+    { version: "v1.0.2", hash: "426c378", ts: m(120), kind: "feature", feat: "Rejection artifact preservation — git-history extraction at save time.", feature_em: "Rejection artifact", assertions: 16, passed: 16, hasRisk: false, slug: "add-project-kind-detection" },
+    { version: "v1.0.2", hash: "8048ec7", ts: m(240), kind: "fix", feat: "Non-main artifact branch tests — 8 new tests + state display fix.", feature_em: "artifact branch", assertions: 10, passed: 10, hasRisk: true, slug: "fix-skill-template-gaps" },
+    { version: "v1.0.1", hash: "f987bb1", ts: m(1440), kind: "feature", feat: "Phase timing with sanity guards, danger map risk profile, agent identity.", feature_em: "Phase timing", assertions: 21, passed: 21, hasRisk: false, slug: "monorepo-primary-agents-md" },
+    { version: "v1.0.1", hash: "3242d31", ts: m(2880), kind: "chore", feat: "Code comment cleanup — 286 internal references removed across 97 files.", feature_em: "comment cleanup", assertions: 24, passed: 24, hasRisk: false, slug: "find-project-root" },
+    { version: "v1.0.0", hash: "7ff2987", ts: m(4320), kind: "feature", feat: "CLI UX polish — command grouping, jargon-free descriptions, help examples.", feature_em: "CLI UX", assertions: 19, passed: 19, hasRisk: false, slug: "add-hook-detection" },
   ];
 }
 
@@ -169,6 +170,7 @@ function mapEntry(entry: ProofChainEntry, version: string): ProofEntry {
     assertions: entry.contract.total,
     passed: entry.contract.satisfied,
     hasRisk: (entry.findings ?? []).some(f => f.severity === 'risk'),
+    slug: entry.slug,
   };
 }
 
