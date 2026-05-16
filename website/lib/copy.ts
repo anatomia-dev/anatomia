@@ -441,11 +441,11 @@ export const copy = {
         sub: "hosted · coming Q3 2026",
         highlighted: true,
         features: [
-          "Everything in Free",
-          "Proof cards · a URL for every verified change",
+          "Dashboard · proof explorer, pipeline health, shareable URLs",
+          "AnaWeb · pipeline access for product and leadership",
           "Team visibility · Slack · GitHub PRs",
           "Hosted backlog · queue, build, verify",
-          "Collective intelligence · the network learns",
+          "Cross-project intelligence · patterns from one repo improve the next",
         ],
         // TODO: Replace with waitlist form URL when available
         cta: { label: "Join the waitlist", href: "/contact" },
