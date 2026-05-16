@@ -356,11 +356,13 @@ export function makeTestCommandNonInteractive(
  *
  * @param tmpAnaPath - Temp .ana/ path
  * @param engineResult - Engine result or null
+ * @param cwd - Project root directory (needed for monorepo build/lint scoping)
  * @returns The ana.json config object that was written
  */
 export async function createAnaJson(
   tmpAnaPath: string,
   engineResult: EngineResult | null,
+  cwd?: string,
 ): Promise<Record<string, unknown>> {
   const spinner = ora('Creating ana.json...').start();
 
@@ -409,6 +411,43 @@ export async function createAnaJson(
     }
   }
 
+  // Scope build and lint commands to primary package in monorepos.
+  // Unlike test scoping (which maps framework → direct runner), build/lint
+  // reads the primary package's package.json to find the actual script key.
+  let buildCmd = result.commands.build || null;
+  let lintCmd = result.commands.lint || null;
+
+  if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage) {
+    const pkg = result.monorepo.primaryPackage;
+    const pm = result.commands.packageManager || 'pnpm';
+    const prefix = pm === 'npm' ? 'npm run' : `${pm} run`;
+
+    try {
+      const pkgJsonPath = path.join(cwd, pkg.path, 'package.json');
+      const pkgContent = await fs.readFile(pkgJsonPath, 'utf-8');
+      const pkgJson = JSON.parse(pkgContent);
+      const scripts = pkgJson.scripts || {};
+
+      // Build: first match — same key order as detectCommands
+      for (const key of ['build', 'compile', 'tsc']) {
+        if (scripts[key]) {
+          buildCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
+          break;
+        }
+      }
+
+      // Lint: first match — same key order as detectCommands
+      for (const key of ['lint', 'eslint', 'biome']) {
+        if (scripts[key]) {
+          lintCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
+          break;
+        }
+      }
+    } catch {
+      // Missing or malformed package.json — keep root commands
+    }
+  }
+
   const anaConfig: Record<string, unknown> = {
     anaVersion: cliVersion,
     name: result.overview.project,
@@ -416,9 +455,9 @@ export async function createAnaJson(
     framework: result.stack.framework || null,
     packageManager: result.commands.packageManager,
     commands: {
-      build: result.commands.build || null,
+      build: buildCmd,
       test: testCmd,
-      lint: result.commands.lint || null,
+      lint: lintCmd,
       dev: result.commands.dev || null,
     },
     coAuthor: 'Ana <build@anatomia.dev>',

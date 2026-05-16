@@ -1,0 +1,35 @@
+schema: 1
+findings:
+  - category: test
+    summary: "No test for 'tsc' build key or 'eslint' lint key variants individually"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A007", "A008"]
+
+  - category: code
+    summary: "Build/lint scoping silently degrades when cwd is omitted — no warning that scoping was skipped"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 420
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "Empty catch block swallows all errors including unexpected ones (permission denied, disk full)"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 446
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "Repeated tmpDir/cwdDir setup+teardown boilerplate in every test — no shared beforeEach/afterEach"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "pkg.path injected into shell command without sanitization — path with spaces or special chars would produce broken subshell"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 434
+    severity: risk
+    suggested_action: monitor
