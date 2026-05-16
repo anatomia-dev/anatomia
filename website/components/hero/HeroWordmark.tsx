@@ -19,8 +19,8 @@ export function HeroWordmark() {
       ticking = false;
       const y = window.scrollY;
       const vh = window.innerHeight;
-      const start = vh * 0.25;
-      const end = vh * 0.75;
+      const start = vh * 0.08;
+      const end = vh * 0.55;
       let op: number;
       if (y <= start) op = 1;
       else if (y >= end) op = 0;

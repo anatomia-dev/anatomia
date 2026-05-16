@@ -9,9 +9,9 @@
   display: flex;
   flex-direction: column;
   padding-top: 72px;
-  padding-bottom: 48px;
+  padding-bottom: 32px;
 }
-@media (min-width: 1024px) { .hero { padding-top: 96px; padding-bottom: 64px; } }
+@media (min-width: 1024px) { .hero { padding-top: 96px; padding-bottom: 40px; } }
 @media (min-height: 1100px) { .hero { min-height: 1000px; } }
 
 .inner {
