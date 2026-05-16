@@ -20,9 +20,17 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 1vh;
+  justify-content: center;
 }
-@media (min-height: 900px) { .inner { padding-top: 3vh; } }
+@media (min-width: 768px) {
+  .inner {
+    justify-content: flex-start;
+    padding-top: 1vh;
+  }
+}
+@media (min-width: 768px) and (min-height: 900px) {
+  .inner { padding-top: 3vh; }
+}
 
 /* --- Eyebrow dispatch pill --- */
 .eyebrow {
