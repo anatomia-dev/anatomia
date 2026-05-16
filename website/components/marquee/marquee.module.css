@@ -2,6 +2,7 @@
 
 .section {
   position: relative;
+  margin-top: -80px;
   padding: 36px 0 56px;
   border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
