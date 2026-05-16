@@ -271,7 +271,7 @@
   letter-spacing: -0.045em;
   white-space: nowrap;
   text-align: center;
-  color: color-mix(in oklch, var(--color-brand) 2.5%, transparent);
+  color: color-mix(in oklch, var(--color-brand) 3%, transparent);
   user-select: none;
   opacity: var(--mark-opacity, 1);
   transition: opacity 120ms linear;
