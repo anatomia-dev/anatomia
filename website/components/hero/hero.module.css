@@ -288,7 +288,7 @@
 .scrollHint {
   position: fixed;
   left: 50%;
-  bottom: 96px;
+  bottom: 56px;
   transform: translateX(-50%);
   z-index: 40;
   display: flex;
