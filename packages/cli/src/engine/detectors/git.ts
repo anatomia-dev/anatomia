@@ -94,23 +94,58 @@ function detectDefaultBranch(cwd: string, currentBranch: string | null): string 
   return currentBranch;
 }
 
+/** Known bot branch prefixes to exclude from shared intelligence. */
+const BOT_BRANCH_PREFIXES = new Set([
+  'dependabot/',
+  'renovate/',
+  'snyk-',
+  'greenkeeper/',
+  'imgbot/',
+]);
+
 /**
- * Detect all branches (local + remote, deduplicated).
+ * Check if a branch name starts with any known bot prefix.
+ */
+function isBotBranch(name: string): boolean {
+  for (const prefix of BOT_BRANCH_PREFIXES) {
+    if (name.startsWith(prefix)) return true;
+  }
+  return false;
+}
+
+/**
+ * Detect branches visible on the remote (shared state only).
+ * Falls back to local branches when no remote is configured.
  */
 function detectBranches(cwd: string): string[] | null {
-  const output = gitExec('git branch -a', cwd);
-  if (!output) return null;
+  // Check if any remote exists
+  const remotes = gitExec('git remote', cwd);
+
+  if (!remotes) {
+    // No remote — fall back to local branches
+    const output = gitExec('git branch', cwd);
+    if (!output) return null;
+
+    const seen = new Set<string>();
+    for (const line of output.split('\n')) {
+      let name = line.trim();
+      if (!name) continue;
+      name = name.replace(/^[*+] /, '');
+      if (name.includes(' -> ')) continue;
+      seen.add(name);
+    }
+    return [...seen].sort();
+  }
+
+  // Remote exists — use only remote-tracking branches
+  const output = gitExec('git branch -r', cwd);
+  if (!output) return [];
 
   const seen = new Set<string>();
   for (const line of output.split('\n')) {
-    let name = line.trim();
-    if (!name) continue;
-    // Strip leading "* " or "+ " (worktree) marker from branch name
-    name = name.replace(/^[*+] /, '');
-    // Skip HEAD pointer lines like "remotes/origin/HEAD -> origin/main"
-    if (name.includes(' -> ')) continue;
-    // Strip remote prefix
-    name = name.replace(/^remotes\/origin\//, '');
+    const name = line.trim().replace(/^origin\//, '');
+    if (!name || name.includes(' -> ') || name === 'HEAD') continue;
+    if (isBotBranch(name)) continue;
     seen.add(name);
   }
 
@@ -153,6 +188,7 @@ function detectBranchPatterns(cwd: string): GitInfo['branchPatterns'] {
   for (const line of output.split('\n')) {
     const name = line.trim().replace(/^origin\//, '');
     if (!name || name.includes(' -> ') || name === 'HEAD') continue;
+    if (isBotBranch(name)) continue;
     // Extract prefix: feature/foo → feature/, fix/bar → fix/
     const slashIdx = name.indexOf('/');
     if (slashIdx > 0) {
