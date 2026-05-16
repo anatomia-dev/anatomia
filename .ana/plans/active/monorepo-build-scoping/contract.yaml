@@ -1,0 +1,96 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Monorepo build command scoping"
+
+assertions:
+  - id: A001
+    says: "Monorepo build command targets only the primary package, not the whole workspace"
+    block: "scopes build command for monorepo with primary package build script"
+    target: "commands.build"
+    matcher: "contains"
+    value: "(cd"
+
+  - id: A002
+    says: "Monorepo lint command targets only the primary package, not the whole workspace"
+    block: "scopes lint command for monorepo with primary package lint script"
+    target: "commands.lint"
+    matcher: "contains"
+    value: "(cd"
+
+  - id: A003
+    says: "Build command falls back to root when primary package has no build script"
+    block: "keeps root build command when primary package has no build script"
+    target: "commands.build"
+    matcher: "equals"
+    value: "pnpm run build"
+
+  - id: A004
+    says: "Lint command falls back to root when primary package has no lint script"
+    block: "keeps root lint command when primary package has no lint script"
+    target: "commands.lint"
+    matcher: "equals"
+    value: "pnpm run lint"
+
+  - id: A005
+    says: "Single-package repos are unaffected by monorepo scoping"
+    block: "does not scope single-repo projects"
+    target: "commands.build"
+    matcher: "equals"
+    value: "pnpm run build"
+
+  - id: A006
+    says: "Dev command is never scoped regardless of monorepo status"
+    block: "does not scope dev command in monorepo"
+    target: "commands.dev"
+    matcher: "equals"
+    value: "pnpm run dev"
+
+  - id: A007
+    says: "Build scoping recognizes alternate script names like compile and tsc"
+    block: "scopes build command using compile key when build key is absent"
+    target: "commands.build"
+    matcher: "contains"
+    value: "compile"
+
+  - id: A008
+    says: "Lint scoping recognizes alternate script names like eslint and biome"
+    block: "scopes lint command using biome key when lint key is absent"
+    target: "commands.lint"
+    matcher: "contains"
+    value: "biome"
+
+  - id: A009
+    says: "Missing primary package.json does not crash init"
+    block: "falls back to root commands when primary package.json is missing"
+    target: "commands.build"
+    matcher: "equals"
+    value: "pnpm run build"
+
+  - id: A010
+    says: "Malformed primary package.json does not crash init"
+    block: "falls back to root commands when primary package.json is malformed"
+    target: "commands.build"
+    matcher: "equals"
+    value: "pnpm run build"
+
+  - id: A011
+    says: "Scoped build command uses the correct package manager prefix"
+    block: "scopes build command with npm prefix for npm monorepo"
+    target: "commands.build"
+    matcher: "contains"
+    value: "npm run build"
+
+  - id: A012
+    says: "Existing test command scoping still works after the signature change"
+    block: "scopes pnpm monorepo with Vitest using direct invocation"
+    target: "commands.test"
+    matcher: "equals"
+    value: "(cd apps/web && pnpm vitest run)"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/index.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    action: create
