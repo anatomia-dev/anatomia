@@ -297,15 +297,6 @@
   width: max-content;
   margin: 0 auto;
   padding: 0 24px;
-}
-@media (min-width: 768px) {
-  .scrollHint {
-    position: fixed;
-    left: 50%;
-    bottom: 56px;
-    transform: translateX(-50%);
-    margin: 0;
-  }
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -315,6 +306,15 @@
   opacity: 1;
   transition: opacity 400ms ease, transform 400ms ease;
   cursor: pointer;
+}
+@media (min-width: 768px) {
+  .scrollHint {
+    position: fixed;
+    left: 50%;
+    bottom: 56px;
+    transform: translateX(-50%);
+    margin: 0;
+  }
 }
 .scrollHint:hover { color: var(--fg); }
 .scrollHintHidden {
