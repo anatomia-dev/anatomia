@@ -30253,7 +30253,10 @@
             "A008"
           ],
           "id": "monorepo-build-scoping-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Loop logic is key-agnostic: state.ts:432 iterates ['build', 'compile', 'tsc'] with scripts[key] check. A007 tests 'compile' (second element), proving the loop iterates past the first key. Testing 'tsc' (third element) exercises the same scripts[key] truthiness check with a different string — no additional branch or behavioral coverage.",
+          "closed_at": "2026-05-16T17:13:40.472Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

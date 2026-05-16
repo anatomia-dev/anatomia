@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-113 runs · 55 active · 3 promoted · 614 closed
+113 runs · 54 active · 3 promoted · 615 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 55 total)
+## Active Findings (30 shown of 54 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -38,7 +38,6 @@
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
-- **test:** No test for 'tsc' build key or 'eslint' lint key variants individually — *Monorepo build command scoping*
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in every test — no shared beforeEach/afterEach — *Monorepo build command scoping*
 
 ### packages/cli/tests/commands/work-ci-mocked.test.ts
@@ -60,6 +59,10 @@
 ### website/components/docs/content/DocsStat.tsx
 
 - **code:** Misspelled DocsStat value key silently renders raw key string — no build-time validation — *Fix prebuild source mutation*
+
+### website/components/docs/proof/FindingsList.tsx
+
+- **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
