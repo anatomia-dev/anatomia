@@ -266,7 +266,7 @@
   font-style: italic;
   font-weight: 400;
   font-variation-settings: "opsz" 144;
-  font-size: clamp(180px, 30vw, 480px);
+  font-size: clamp(160px, 27.5vw, 437px);
   line-height: 0.85;
   letter-spacing: -0.045em;
   white-space: nowrap;
