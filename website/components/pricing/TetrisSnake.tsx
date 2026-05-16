@@ -133,7 +133,7 @@ export function TetrisSnake() {
 
       // Trail (fading)
       for (const t of trail) {
-        const a = Math.max(0, 1 - t.age / 18);
+        const a = Math.max(0, 1 - t.age / 10);
         ctx.fillStyle = c;
         ctx.globalAlpha = a * 0.9;
         ctx.fillRect(t.x * CELL + 1, t.y * CELL + 1, CELL - 2, CELL - 2);
@@ -153,7 +153,7 @@ export function TetrisSnake() {
       if (t - lastStep > STEP_MS) {
         step();
         for (const x of trail) x.age++;
-        trail = trail.filter((x) => x.age < 20);
+        trail = trail.filter((x) => x.age < 12);
         lastStep = t;
       }
       draw();
