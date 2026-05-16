@@ -39,5 +39,20 @@
     "website/package.json",
     "website/vitest.config.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-16T06:48:37.974Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:1ebf1cb8e486d2e543d8449bd5fead1fc2dbac5d86e6ac0e2e30315e48ca0d99",
+    "run_at": "2026-05-16T06:52:31.889Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-16T06:52:31.932Z",
+    "hash": "sha256:0c45791d4504a34a8b7e3b95dc726ff93b0ba6834726fa7a336c18d11bb50aff"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-16T06:52:31.932Z",
+    "hash": "sha256:8e111ef1c8af96b5dbf4a7b655e6ab578050a114bd7ec437161f2de8f98f6b89"
+  }
 }
