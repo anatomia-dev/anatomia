@@ -35,7 +35,8 @@ export function getMarketingCommandCount(): number {
  */
 export function getMarketingVersion(): string {
   try {
-    return `v${getBuildMeta().version}`;
+    const { version } = getBuildMeta();
+    return version ? `v${version}` : VERSION_FALLBACK;
   } catch {
     return VERSION_FALLBACK;
   }

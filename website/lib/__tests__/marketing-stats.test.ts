@@ -79,8 +79,7 @@ describe('getMarketingVersion', () => {
       commitSha: 'abc1234',
       buildTimestamp: '2026-05-16T00:00:00Z',
     });
-    // v + undefined = "vundefined" — the accessor should throw before this
-    // In practice, getBuildMeta would throw on malformed data
-    expect(getMarketingVersion()).toBe('vundefined');
+    // Missing version falls back to hardcoded default
+    expect(getMarketingVersion()).toBe('v1.1.0');
   });
 });
