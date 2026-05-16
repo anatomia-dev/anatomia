@@ -148,7 +148,9 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 | Command | Description |
 |---------|-------------|
 | `ana scan [path]` | Detect stack, conventions, patterns. `--quick` for surface-only, `--json` for structured output |
-| `ana init` | Generate `.ana/` context and `.claude/` agent definitions |
+| `ana init` | Generate `.ana/` context and `.claude/` agent definitions. Re-run after CLI updates to refresh |
+| `ana init commit` | Commit infrastructure files to the artifact branch |
+| `ana config show` | Display current ana.json settings |
 
 ### Pipeline
 

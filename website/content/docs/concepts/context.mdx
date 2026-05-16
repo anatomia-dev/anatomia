@@ -70,7 +70,7 @@ The commit command discovers dirty infrastructure files from known directory roo
 
 ## How context stays fresh
 
-Re-running `ana init` preserves context files completely — the entire `context/` directory is copied wholesale. Your edits are never overwritten. `scan.json` is regenerated from scratch. `ana.json` is merged: your configuration survives, version and timestamps refresh.
+Re-running `ana init` preserves context files completely — the entire `context/` directory is copied wholesale. Your edits are never overwritten. `scan.json` is regenerated from scratch. `ana.json` is merged: your configuration survives, version and timestamps refresh. Run `ana init commit` afterward to persist the refresh to git.
 
 The proof chain provides a second freshness signal: when Learn surfaces a finding that suggests context may be outdated — a shifted architecture, a changed test pattern — it flags the observation for you to update. Context evolves through your judgment, not through automation.
 
