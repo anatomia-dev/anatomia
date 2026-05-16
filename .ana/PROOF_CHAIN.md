@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-113 runs · 53 active · 3 promoted · 616 closed
+113 runs · 52 active · 3 promoted · 617 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 53 total)
+## Active Findings (30 shown of 52 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -36,6 +36,10 @@
 
 - **code:** Multi-remote repos: origin/ prefix stripping ignores non-origin remotes — *Fix scan branch detection — remove local branches from shared intelligence*
 - **code:** detectBranches and detectBranchPatterns both run git branch -r independently — two subprocess calls for the same data — *Fix scan branch detection — remove local branches from shared intelligence*
+
+### packages/cli/tests/commands/init/commit.test.ts
+
+- **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
@@ -81,7 +85,6 @@
 ### website/lib/marketing-stats.ts
 
 - **code:** getMarketingVersion produces 'vundefined' when BuildMeta has undefined version field — *Dynamic marketing stats — wire command count and version fallback*
-- **code:** Two separate imports from same module instead of combined destructured import — *Dynamic marketing stats — wire command count and version fallback*
 
 ### website/lib/proof-feed.ts
 

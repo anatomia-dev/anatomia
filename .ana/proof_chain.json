@@ -30643,7 +30643,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "dynamic-marketing-stats-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Cosmetic: two import lines from the same module (@/lib/docs-data) at marketing-stats.ts:12-13. TypeScript resolves identically — no double-import, no behavioral difference. Combining to one line is a style preference, not a code quality issue.",
+          "closed_at": "2026-05-16T17:31:04.250Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
