@@ -271,13 +271,13 @@
   letter-spacing: -0.045em;
   white-space: nowrap;
   text-align: center;
-  color: color-mix(in oklch, var(--color-brand) 4%, transparent);
+  color: color-mix(in oklch, var(--color-brand) 3.4%, transparent);
   user-select: none;
   opacity: var(--mark-opacity, 1);
   transition: opacity 120ms linear;
 }
 :global([data-theme="dark"]) .wordmark {
-  color: color-mix(in oklch, var(--color-brand) 9%, transparent);
+  color: color-mix(in oklch, var(--color-brand) 7.6%, transparent);
 }
 @media (max-height: 780px) {
   .wordmarkWrap { min-height: 120px; margin-top: 32px; }
