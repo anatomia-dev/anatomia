@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-113 runs · 51 active · 3 promoted · 618 closed
+113 runs · 50 active · 3 promoted · 619 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 51 total)
+## Active Findings (30 shown of 50 total)
 
 ### packages/cli/src/commands/init/commit.ts
 
@@ -35,6 +35,7 @@
 - **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
 - **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
+- **test:** Pull-recovery guards (2 of 5) not directly exercised by any test — *Fix --merge stdout pollution in --json mode*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -85,10 +86,6 @@
 ### website/lib/docs-data/docsStatValues.ts
 
 - **code:** 2 of 9 value keys (skillCount, findings) defined but unused in any MDX file — *Fix prebuild source mutation*
-
-### website/lib/marketing-stats.ts
-
-- **code:** getMarketingVersion produces 'vundefined' when BuildMeta has undefined version field — *Dynamic marketing stats — wire command count and version fallback*
 
 ### website/lib/proof-feed.ts
 
