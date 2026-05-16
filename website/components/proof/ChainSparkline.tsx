@@ -27,20 +27,28 @@ export function ChainSparkline() {
       </div>
 
       <div className={styles.chainSpark} aria-label={`showing ${c.pattern.length} of ${c.count} proofs`}>
-        {c.pattern.map((p, i) => (
-          <span
-            key={i}
-            className={[
-              styles.pip,
-              classMap[p],
-              i === c.pattern.length - 1 ? styles.pipLatest : "",
-              i >= 35 ? styles.pipDesktopOnly : "",
-              i >= 25 ? styles.pipTabletUp : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          />
-        ))}
+        {c.pattern.map((p, i) => {
+          // Last visible pip at each breakpoint gets the highlight
+          const isLastDesktop = i === c.pattern.length - 1;
+          const isLastTablet = i === 34;  // last before pipDesktopOnly kicks in
+          const isLastPhone = i === 24;   // last before pipTabletUp kicks in
+          return (
+            <span
+              key={i}
+              className={[
+                styles.pip,
+                classMap[p],
+                isLastDesktop ? styles.pipLatest : "",
+                isLastTablet ? styles.pipLatestTablet : "",
+                isLastPhone ? styles.pipLatestPhone : "",
+                i >= 35 ? styles.pipDesktopOnly : "",
+                i >= 25 ? styles.pipTabletUp : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            />
+          );
+        })}
       </div>
 
       <div className={styles.chainStats}>

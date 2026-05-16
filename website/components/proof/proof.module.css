@@ -643,16 +643,22 @@
 /* Hide later pips on smaller screens */
 .pipDesktopOnly {}
 .pipTabletUp {}
+.pipLatestTablet {}
+.pipLatestPhone {}
 .shownDesktop {}
 .shownTablet { display: none; }
 .shownPhone { display: none; }
 @media (max-width: 720px) {
   .pipDesktopOnly { display: none; }
+  .pipLatest { transform: none; z-index: auto; box-shadow: none; }
+  .pipLatestTablet { transform: scaleY(1.5); z-index: 2; box-shadow: 0 0 0 2px rgba(46, 93, 58, 0.25); }
   .shownDesktop { display: none; }
   .shownTablet { display: inline; }
 }
 @media (max-width: 480px) {
   .pipTabletUp { display: none; }
+  .pipLatestTablet { transform: none; z-index: auto; box-shadow: none; }
+  .pipLatestPhone { transform: scaleY(1.5); z-index: 2; box-shadow: 0 0 0 2px rgba(46, 93, 58, 0.25); }
   .shownTablet { display: none; }
   .shownPhone { display: inline; }
 }
