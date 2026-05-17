@@ -122,10 +122,31 @@ const SERVER_FRAMEWORKS = new Set([
  * @param input - Detection signals from census and framework detection
  * @returns The most specific matching application shape
  */
+// Framework-to-shape mapping for non-Node projects.
+// Source files: python/framework-registry.ts, go.ts, rust.ts
+const FRAMEWORK_TO_SHAPE: Record<string, ApplicationShape> = {
+  'fastapi': 'api-server',
+  'django': 'full-stack',
+  'django-drf': 'api-server',
+  'flask': 'api-server',
+  'typer': 'cli',
+  'click': 'cli',
+  'gin': 'api-server',
+  'echo': 'api-server',
+  'chi': 'api-server',
+  'cobra-cli': 'cli',
+  'fiber': 'api-server',
+  'axum': 'api-server',
+  'actix-web': 'api-server',
+  'rocket': 'api-server',
+  'clap-cli': 'cli',
+};
+
 export function detectApplicationShape(input: ApplicationShapeInput): ApplicationShapeResult {
-  // Non-Node projects: short-circuit to unknown
+  // Non-Node projects: use the framework lookup table
   if (input.projectType !== null && input.projectType !== 'node') {
-    return { shape: 'unknown' };
+    const shape = input.frameworkName ? FRAMEWORK_TO_SHAPE[input.frameworkName] : undefined;
+    return { shape: shape ?? 'unknown' };
   }
 
   // 1. MCP server (most specific — dedicated protocol server)

@@ -347,6 +347,119 @@ describe('detectApplicationShape', () => {
     });
   });
 
+  // @ana A001, A002, A003, A004, A005, A006, A007
+  describe('non-Node shape mapping', () => {
+    it('maps fastapi to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'fastapi' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps django to full-stack shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'django' }));
+      expect(result.shape).toBe('full-stack');
+    });
+
+    it('maps django-drf to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'django-drf' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps flask to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'flask' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps typer to cli shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'typer' }));
+      expect(result.shape).toBe('cli');
+    });
+
+    it('maps click to cli shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'click' }));
+      expect(result.shape).toBe('cli');
+    });
+
+    it('maps gin to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'go', frameworkName: 'gin' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps echo to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'go', frameworkName: 'echo' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps chi to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'go', frameworkName: 'chi' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps cobra-cli to cli shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'go', frameworkName: 'cobra-cli' }));
+      expect(result.shape).toBe('cli');
+    });
+
+    it('maps fiber to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'go', frameworkName: 'fiber' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps axum to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'rust', frameworkName: 'axum' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps actix-web to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'rust', frameworkName: 'actix-web' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps rocket to api-server shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'rust', frameworkName: 'rocket' }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    it('maps clap-cli to cli shape', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'rust', frameworkName: 'clap-cli' }));
+      expect(result.shape).toBe('cli');
+    });
+
+    // @ana A008
+    it('returns unknown when frameworkName is null', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: null }));
+      expect(result.shape).toBe('unknown');
+    });
+
+    // @ana A009
+    it('returns unknown for unmapped framework string', () => {
+      const result = detectApplicationShape(makeInput({ projectType: 'python', frameworkName: 'some-unknown-framework' }));
+      expect(result.shape).toBe('unknown');
+    });
+
+    // @ana A018
+    it('maps all 15 framework strings', () => {
+      const frameworks = [
+        'fastapi', 'django', 'django-drf', 'flask', 'typer', 'click',
+        'gin', 'echo', 'chi', 'cobra-cli', 'fiber',
+        'axum', 'actix-web', 'rocket', 'clap-cli',
+      ];
+      const mapped = frameworks.filter(fw =>
+        detectApplicationShape(makeInput({ projectType: 'python', frameworkName: fw })).shape !== 'unknown'
+      );
+      expect(mapped).toHaveLength(15);
+    });
+
+    // @ana A010
+    it('does not affect Node shape detection', () => {
+      const result = detectApplicationShape(makeInput({
+        projectType: 'node',
+        frameworkName: 'express',
+        deps: ['express'],
+      }));
+      expect(result.shape).not.toBe('unknown');
+    });
+  });
+
   // @ana A015
   describe('scaffold generator uses applicationShape for descriptions', () => {
     it('includes shape label when applicationShape is set', async () => {
