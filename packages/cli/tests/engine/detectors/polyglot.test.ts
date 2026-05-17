@@ -228,6 +228,42 @@ dependencies = ["fastapi", "uvicorn", "sqlalchemy"]
     expect(wrongResult.framework).not.toBe('fastapi');
   });
 
+  it('detects Python with PEP 508 extras in dependencies', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pyproject.toml'), `[project]
+name = "langflow"
+dependencies = [
+    "langflow-base[complete]>=0.9.3",
+]
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('python');
+    expect(result.confidence).toBe(0.90);
+  });
+
+  it('detects Python with multiple extras in dependencies', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pyproject.toml'), `[project]
+name = "myapp"
+dependencies = [
+    "requests[security,socks]>=2.28",
+    "uvicorn[standard]",
+    "fastapi",
+]
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('python');
+    expect(result.confidence).toBe(0.90);
+  });
+
   it('pyproject.toml with only [project] but no dependencies key → node', async () => {
     const dir = await createTempDir();
     await fs.writeFile(path.join(dir, 'package.json'), '{}');

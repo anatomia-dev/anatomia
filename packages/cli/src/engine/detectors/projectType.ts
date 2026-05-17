@@ -42,10 +42,21 @@ function hasPythonProjectDeps(content: string): boolean {
       const projectBlock = nextSection === -1
         ? content.slice(projectStart)
         : content.slice(projectStart, nextSection);
-      // Match dependencies = [...] with at least one quoted entry
-      const depsMatch = projectBlock.match(/^dependencies\s*=\s*\[([^\]]*)\]/m);
-      if (depsMatch && depsMatch[1]?.match(/["'][^"']+["']/)) {
-        return true;
+      // Find dependencies array and check for at least one quoted entry.
+      // Cannot use [^\]]* to match array content because PEP 508 extras
+      // put ] inside quoted strings: "pkg[extra]>=1.0". Instead, find the
+      // structural closing bracket by its position at line-start.
+      const depsStart = projectBlock.match(/^dependencies\s*=\s*\[/m);
+      if (depsStart) {
+        const afterOpen = projectBlock.slice(depsStart.index! + depsStart[0].length);
+        // Single-line: greedy match to last ] on the line (safe — extras ] are mid-string)
+        const singleLine = afterOpen.match(/^([^\n]*)\]/);
+        // Multi-line: content up to a ] at the start of a line (structural close)
+        const multiLine = afterOpen.match(/^([\s\S]*?)^\s*\]/m);
+        const arrayContent = singleLine?.[1] || multiLine?.[1] || '';
+        if (arrayContent.match(/["'][^"']+["']/)) {
+          return true;
+        }
       }
     }
 
