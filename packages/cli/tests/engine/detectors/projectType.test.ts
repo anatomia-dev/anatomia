@@ -33,14 +33,14 @@ describe('detectProjectType', () => {
     tempDirs.length = 0;
   });
 
-  it('detects Node.js project from package.json', async () => {
+  it('detects Node.js project from bare package.json (reduced confidence)', async () => {
     const dir = await createTempDir();
     await fs.writeFile(path.join(dir, 'package.json'), '{}');
 
     const result = await detectProjectType(dir);
 
     expect(result.type).toBe('node');
-    expect(result.confidence).toBe(0.95);
+    expect(result.confidence).toBe(0.70);
     expect(result.indicators).toContain('package.json');
   });
 
@@ -174,9 +174,9 @@ describe('detectProjectType', () => {
 
     const result = await detectProjectType(dir);
 
-    // Node.js comes first in priority order
+    // Node.js comes first in priority order (bare package.json = 0.70)
     expect(result.type).toBe('node');
-    expect(result.confidence).toBe(0.95);
+    expect(result.confidence).toBe(0.70);
     expect(result.indicators).toContain('package.json');
   });
 
@@ -191,5 +191,66 @@ describe('detectProjectType', () => {
     expect(result.type).toBe('python');
     expect(result.confidence).toBe(0.95);
     expect(result.indicators).toContain('pyproject.toml');
+  });
+
+  // Lockfile invariant tests: package.json + lockfile + NO pyproject.toml → always node 0.95
+  // @ana A013
+  it('lockfile invariant: pnpm-lock.yaml', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pnpm-lock.yaml'), '');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.95);
+  });
+
+  // @ana A014
+  it('lockfile invariant: package-lock.json', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.95);
+  });
+
+  // @ana A015
+  it('lockfile invariant: yarn.lock', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'yarn.lock'), '');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.95);
+  });
+
+  // @ana A016
+  it('lockfile invariant: bun.lockb', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'bun.lockb'), '');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.95);
+  });
+
+  // @ana A017
+  it('lockfile invariant: bun.lock', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'bun.lock'), '');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.95);
   });
 });
