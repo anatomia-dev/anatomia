@@ -188,4 +188,20 @@ describe('Hardcoded secrets rule', () => {
     const findings = await checkHardcodedSecrets(makeContext(tmpDir));
     expect(findings.some(f => f.title.includes('SendGrid'))).toBe(true);
   });
+
+  it('filters placeholder GitHub token with repeated characters', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      placeholder: 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical' && f.title.includes('GitHub'))).toBe(false);
+  });
+
+  it('detects real GitHub token with high entropy', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const token = "ghp_A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical' && f.title.includes('GitHub'))).toBe(true);
+  });
 });

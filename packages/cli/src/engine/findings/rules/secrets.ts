@@ -53,6 +53,15 @@ function isTemplateSyntax(pw: string): boolean {
 }
 
 /**
+ * Rejects placeholder tokens with very low entropy (e.g., all x's, all zeros).
+ * Real tokens are random alphanumeric — they'll have many unique characters.
+ * Placeholders like "xxxxxxxxxxxx" or "000000000000" have ≤2 unique chars.
+ */
+function hasMinimumEntropy(token: string, minUniqueChars: number = 3): boolean {
+  return new Set(token.toLowerCase()).size >= minUniqueChars;
+}
+
+/**
  * Exported for transparency. Each pattern documents what service it catches.
  */
 export const SECRET_PATTERNS: SecretPattern[] = [
@@ -72,7 +81,9 @@ export const SECRET_PATTERNS: SecretPattern[] = [
   { regex: /AKIA[A-Z0-9]{16}/g, type: 'AWS access key', severity: 'critical' },
 
   // GitHub tokens — fixed prefixes
-  { regex: /ghp_[a-zA-Z0-9]{36}/g, type: 'GitHub personal access token', severity: 'critical' },
+  { regex: /ghp_[a-zA-Z0-9]{36}/g, type: 'GitHub personal access token', severity: 'critical',
+    validate: (match: string) => hasMinimumEntropy(match.slice(4)),
+  },
   { regex: /github_pat_[a-zA-Z0-9_]{80,}/g, type: 'GitHub fine-grained token', severity: 'critical' },
 
   // Database URLs with embedded credentials
