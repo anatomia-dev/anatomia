@@ -34,6 +34,24 @@ const DB_URL_PLACEHOLDERS = [
   'postgres', 'mysql', 'redis',
 ];
 
+/** Structural template patterns — anchored to match the ENTIRE password. */
+const TEMPLATE_PATTERNS: RegExp[] = [
+  /^<<[^>]+>>$/,          // <<password>>
+  /^\{\{[^}]+\}\}$/,      // {{db_pass}}
+  /^\$\{[^}]+\}$/,        // ${dbPassword}, ${process.env.DB_URL}
+  /^<[a-z][a-z_-]*>$/,    // <your_password>, <your-password>
+];
+
+/**
+ * Checks if a lowercased password is structural template syntax.
+ *
+ * @param pw - The lowercased extracted password
+ * @returns true if the password matches a known template pattern
+ */
+function isTemplateSyntax(pw: string): boolean {
+  return TEMPLATE_PATTERNS.some(pattern => pattern.test(pw));
+}
+
 /**
  * Exported for transparency. Each pattern documents what service it catches.
  */
@@ -63,7 +81,9 @@ export const SECRET_PATTERNS: SecretPattern[] = [
     validate: (match: string) => {
       const pwMatch = match.match(/:\/\/[^:]+:([^@]+)@/);
       const pw = pwMatch?.[1]?.toLowerCase();
-      return pw ? !DB_URL_PLACEHOLDERS.some(p => pw === p || pw.startsWith(p + '-')) : true;
+      if (!pw) return true;
+      if (isTemplateSyntax(pw)) return false;
+      return !DB_URL_PLACEHOLDERS.some(p => pw === p || pw.startsWith(p + '-'));
     },
   },
 

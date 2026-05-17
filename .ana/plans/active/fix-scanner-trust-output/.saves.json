@@ -24,5 +24,37 @@
         "hash": "sha256:29a742ff389aa9f28973995a5325438df822cc87af4f1a6d3899a74ec2714a1b"
       }
     ]
+  },
+  "build_started_at": "2026-05-17T05:36:10.434Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-17T05:40:25.326Z",
+    "hash": "sha256:18c8d92c14008adc6e132ba823753ed19f04ddf6c8d3da8fe23b681a5ef5e76c"
+  },
+  "build-data": {
+    "saved_at": "2026-05-17T05:40:25.327Z",
+    "hash": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/engine/findings/rules/secrets.ts",
+    "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+    "packages/cli/tests/engine/findings/secrets.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T05:42:31.796Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:d2f86ad220310165247968e46a2cf33bb183587e975989f1c0bef6aa06e64c9b",
+    "run_at": "2026-05-17T05:45:54.004Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T05:45:54.044Z",
+    "hash": "sha256:ea11112629b342769b7e8476cba67fb74dab05e436d6c4b54816dd375f930503"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T05:45:54.044Z",
+    "hash": "sha256:41b4843b8f82285d1f4f8ea551abb892783469bc1d8ec437cfe025b6733b525a"
   }
 }

@@ -1,0 +1,19 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A007 test asserts 'at least one critical' but doesn't verify BOTH passwords fire — url2 could silently pass"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    line: 167
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A007"]
+  - category: code
+    summary: "Single-angle pattern suppresses real passwords that happen to be lowercase words in angle brackets (e.g., <admin>, <token>)"
+    file: "packages/cli/src/engine/findings/rules/secrets.ts"
+    line: 43
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Proof chain finding monorepo-build-scoping-C5 (path injection in state.ts) still present — this build doesn't touch that code path"
+    severity: observation
+    suggested_action: monitor
