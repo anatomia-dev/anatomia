@@ -1,0 +1,49 @@
+schema: 1
+findings:
+  - category: code
+    summary: "formatRelativeTime doesn't handle invalid input — produces 'NaNw ago' for bad ISO strings"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 2320
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A026", "A027"]
+
+  - category: upstream
+    summary: "Contract A027 value '1w ago' unreachable — 30-day week threshold means minimum is '4w ago'"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A027"]
+
+  - category: upstream
+    summary: "Contract A003 value 2 doesn't match test fixture which produces risk/scope=1"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A003"]
+
+  - category: upstream
+    summary: "Contract A029 value 'cleanup' (lowercase) doesn't match template 'Cleanup' (capital C)"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A029"]
+
+  - category: code
+    summary: "Duplicated zero-entry JSON payload — identical object literal at two call sites"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 1598
+    severity: debt
+    suggested_action: monitor
+
+  - category: test
+    summary: "A008/A009 use toBeDefined() instead of specific values for stale_count and recent_entries"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 4408
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A008", "A009"]
+
+  - category: code
+    summary: "proofSummary.ts now ~2330 lines — past comfort threshold, growing"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: debt
+    suggested_action: monitor
+    resolves: []

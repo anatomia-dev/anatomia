@@ -42,5 +42,20 @@
     "packages/cli/templates/.claude/agents/ana-learn.md",
     "packages/cli/tests/commands/proof.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T19:06:00.212Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b46c5aa103e3a9e91a1ae170e67402e4f5ca84607020a70e211d1b9a7d6231cc",
+    "run_at": "2026-05-17T19:11:25.229Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T19:11:25.276Z",
+    "hash": "sha256:0a7a7712dde3c0dc4819e376033a51923c8fbf6a88dc89a4f282d8b0ff9a89f5"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T19:11:25.276Z",
+    "hash": "sha256:304e5b4a10449abc5abaf770000446c2accbb0ba43edbfa9cb651cd66f57c9e4"
+  }
 }
