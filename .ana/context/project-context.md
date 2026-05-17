@@ -131,6 +131,7 @@ Re-running `ana init` is designed to be safe. The function `preserveUserState` (
 - **Test count must not decrease.** CI runs across 3 OS × 2 Node versions. Coverage thresholds enforced in vitest.config.ts.
 - **ana.json user fields are preserved on re-init.** Only `anaVersion` and `lastScanAt` refresh mechanically. Fields like `commands` and `artifactBranch` are user-owned and require manual update if the scan would produce a different value. Full mechanical-field refresh is a separate design decision.
 - **Every product change must work for all customers.** Anatomia dogfoods itself, but we are not the only user. Any change to templates, generators, scan detectors, CLI commands, or agent behavior ships to every customer on their next `ana init` or CLI update. A change that works for a TypeScript CLI monorepo (us) but breaks for a Python web app or a Go microservice is not shippable. Scope and test with the sniper customer (2-4 person startup, AI product, vibe-coded) and the shotgun customer (5-15 engineers, real conventions) in mind.
+- **Scope for teams shipping production software.** The pipeline's value requires a codebase with real stakes — users, revenue, or team dependencies. Don't scope features for hobby projects or hello-world demos. The verification overhead should be proportional to the stakes.
 
 ## Domain Vocabulary
 
