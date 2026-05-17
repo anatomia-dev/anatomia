@@ -529,7 +529,7 @@ export const copy = {
       "Anatomia is a small bet against that trade. Every change the pipeline ships arrives with a *proof chain*: the intent that produced it, the plan the model followed, the assertions it committed to, the tests it ran, and the verifier\u2019s signed verdict. You don\u2019t have to trust the model. You read the chain.",
     ],
     pull:
-      "The future isn\u2019t AI that writes more code. It\u2019s AI that writes code you can actually stand behind.",
+      "The future isn\u2019t AI that writes more code. It\u2019s AI that helps you think before any code is written.",
     bodyAfterPull: [
       "We\u2019re not trying to slow anyone down. Proofs are *cheap* when they\u2019re built into the pipeline; it\u2019s reviewing opaque code that\u2019s expensive. The whole point is that a verified change goes in without a human re-reading every line. Speed comes from trust, and trust has to come from somewhere real.",
       "Everything we build is open source, MIT-licensed, and runnable on your own machine. You can read the verifier. You can fork the pipeline. The proof is in the code, not in our word for it — which is how it should be.",
