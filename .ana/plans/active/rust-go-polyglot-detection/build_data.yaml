@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "Updated pre-existing projectType.test.ts assertion from Node→Go to match new AC9 behavior"
+    file: "packages/cli/tests/engine/detectors/projectType.test.ts"
+    severity: observation
+    suggested_action: accept
