@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-114 runs · 52 active · 3 promoted · 621 closed
+115 runs · 56 active · 3 promoted · 621 closed
 
 ## Hot Modules
 
@@ -16,7 +16,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 52 total)
+## Active Findings (30 shown of 56 total)
+
+### packages/cli/src/commands/check.ts
+
+- **code:** Freshness section shows 'current' when scan data is unavailable (null result) — *Unified Staleness Awareness*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -30,16 +34,15 @@
 - **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
 - **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
-- **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 
 ### packages/cli/src/engine/detectors/git.ts
 
 - **code:** Multi-remote repos: origin/ prefix stripping ignores non-origin remotes — *Fix scan branch detection — remove local branches from shared intelligence*
 - **code:** detectBranches and detectBranchPatterns both run git branch -r independently — two subprocess calls for the same data — *Fix scan branch detection — remove local branches from shared intelligence*
 
-### packages/cli/tests/commands/init/commit.test.ts
+### packages/cli/src/utils/scan-freshness.ts
 
-- **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
+- **code:** daysSinceScan uses Math.floor — scan exactly 7.9 days old shows as 7, not stale — *Unified Staleness Awareness*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
@@ -57,6 +60,10 @@
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
 - **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
 
+### packages/cli/tests/utils/scan-freshness.test.ts
+
+- **test:** No integration tests for output/JSON assertions — unit tests + source inspection chain only — *Unified Staleness Awareness*
+
 ### website/app/docs/proof/[slug]/page.tsx
 
 - **code:** Duplicate GitHub fetch for dynamic slugs — generateMetadata and page component both call fetchProofChainEntry independently — *Ship log proof linking*
@@ -66,10 +73,6 @@
 
 - **code:** Misspelled DocsStat value key silently renders raw key string — no build-time validation — *Fix prebuild source mutation*
 
-### website/components/docs/proof/FindingsList.tsx
-
-- **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
-
 ### website/components/docs/proof/PipelineGantt.tsx
 
 - **code:** Negative phase values display raw in bar label while bar width is clamped — *Fix Gantt Bar Distortion and Document Timing*
@@ -78,6 +81,10 @@
 ### website/components/system/Drawer.tsx
 
 - **code:** Drawer moreCount has no floor guard — commandCount < 6 produces negative display — *Dynamic marketing stats — wire command count and version fallback*
+
+### website/lib/copy.ts
+
+- **code:** Unrelated website pricing change included in feature branch — *Unified Staleness Awareness*
 
 ### website/lib/docs-data/docsStatValues.ts
 
@@ -91,8 +98,4 @@
 ### website/scripts/extract-docs-data.ts
 
 - **code:** Median computation duplicated between extract-docs-data.ts main() and lib/docs-data/proofs.ts getMedianTimings() — *Fix prebuild source mutation*
-
-### General
-
-- **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
 
