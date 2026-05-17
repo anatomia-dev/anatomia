@@ -31926,7 +31926,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "rust-go-polyglot-detection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Historical build discipline observation: init/state.ts, init/index.ts, scan.ts changes included in the polyglot feature branch. The changes are correct regardless of which branch introduced them. Same pattern as unified-staleness-awareness-C2 — about commit history, not current code state. Cannot resurface.",
+          "closed_at": "2026-05-17T20:54:49.850Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

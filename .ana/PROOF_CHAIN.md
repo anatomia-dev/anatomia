@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-120 runs · 65 active · 3 promoted · 636 closed
+120 runs · 64 active · 3 promoted · 637 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 65 total)
+## Active Findings (30 shown of 64 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -31,16 +31,13 @@
 
 - **code:** Duplicated zero-entry JSON payload — identical object literal at two call sites — *Audit matrix orientation*
 
-### packages/cli/src/commands/scan.ts
-
-- **code:** Over-building — init/state.ts, init/index.ts, scan.ts changes unrelated to polyglot detection — *Rust/Go Polyglot Detection*
-
 ### packages/cli/src/commands/work.ts
 
 - **code:** checkConcurrencyGuard has dead `force` parameter — never passed true from production call sites — *Pipeline Concurrency Guards*
 - **code:** isTimestampRecent duplicates checkConcurrencyGuard logic — both parse .saves.json, extract timestamp, compare against CONCURRENCY_TIMEOUT_MS — *Pipeline Concurrency Guards*
 - **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
 - **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
+- **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
 
 ### packages/cli/src/engine/detectors/git.ts
 
