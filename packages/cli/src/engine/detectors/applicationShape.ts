@@ -1,5 +1,5 @@
 /**
- * Application shape detection — classifies Node projects by interpreting
+ * Application shape detection — classifies projects by interpreting
  * signals from census and framework detection.
  *
  * Pure function: receives data, returns classification. No filesystem reads.
