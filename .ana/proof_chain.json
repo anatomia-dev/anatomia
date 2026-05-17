@@ -30887,7 +30887,10 @@
             "A004"
           ],
           "id": "ship-log-proof-links-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Mock data for development only: proof-feed.ts mock entries are used for local development preview when extraction data isn't available. Production renders from real proof chain data. Semantic mismatch between slug names and entry content in mock fixtures has no behavioral impact — it's visual scaffolding, not a data contract.",
+          "closed_at": "2026-05-17T03:53:16.195Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

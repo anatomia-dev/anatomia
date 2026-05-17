@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-115 runs · 55 active · 3 promoted · 622 closed
+115 runs · 54 active · 3 promoted · 623 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 55 total)
+## Active Findings (30 shown of 54 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -72,6 +72,10 @@
 
 - **code:** Misspelled DocsStat value key silently renders raw key string — no build-time validation — *Fix prebuild source mutation*
 
+### website/components/docs/proof/FindingsList.tsx
+
+- **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
+
 ### website/components/docs/proof/PipelineGantt.tsx
 
 - **code:** Negative phase values display raw in bar label while bar width is clamped — *Fix Gantt Bar Distortion and Document Timing*
@@ -91,7 +95,6 @@
 
 ### website/lib/proof-feed.ts
 
-- **code:** Mock feed slug-to-entry mapping is positional, not semantic — mock entry content describes different features than the slug names imply — *Ship log proof linking*
 - **code:** VERSION_FALLBACK evaluated at module load time — single-shot, no retry on transient readFileSync failure — *Dynamic marketing stats — wire command count and version fallback*
 
 ### website/scripts/extract-docs-data.ts
