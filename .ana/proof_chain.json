@@ -31159,6 +31159,170 @@
         "commit_count": 6,
         "base_commit": "ecaf649421eb440141eadae08c15fd132b166e06"
       }
+    },
+    {
+      "slug": "fix-scanner-trust-output",
+      "feature": "Fix Scanner Trust Output",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Double-angle template passwords are not flagged as secrets",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Mustache template passwords are not flagged as secrets",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Dollar-brace template passwords are not flagged as secrets",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Environment variable references in DB URLs are not flagged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-angle placeholder passwords are not flagged as secrets",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Real passwords in database URLs are still caught as critical",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Passwords containing angle brackets but not template syntax still fire",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "npm projects get npx vitest run, not npm vitest run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "npm projects get npx jest with watch disabled",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "npm projects get npx mocha with exit flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "pnpm projects still get pnpm as the command prefix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "yarn projects still get yarn as the command prefix",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 132,
+        "think": 17,
+        "plan": 4,
+        "build": 4,
+        "verify": 3
+      },
+      "hashes": {
+        "scope": "sha256:2940774b539529035b6cc52ba2adbd043a89853e20adf0adb640abf16f23b424",
+        "contract": "sha256:d2f86ad220310165247968e46a2cf33bb183587e975989f1c0bef6aa06e64c9b",
+        "plan": "sha256:21d5b12f22043cce48c912d8e34dddd6914a46801cabbaf289332752ea7f0a4d",
+        "spec": "sha256:eccbbb0407bbcaaae8df21e7fccece7ac157fe9d1df4bbdc7e4565aea2c9c59c",
+        "build-report": "sha256:18c8d92c14008adc6e132ba823753ed19f04ddf6c8d3da8fe23b681a5ef5e76c",
+        "build-data": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd",
+        "verify-report": "sha256:ea11112629b342769b7e8476cba67fb74dab05e436d6c4b54816dd375f930503",
+        "verify-data": "sha256:41b4843b8f82285d1f4f8ea551abb892783469bc1d8ec437cfe025b6733b525a"
+      },
+      "completed_at": "2026-05-17T05:52:41.394Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/engine/findings/rules/secrets.ts",
+        "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+        "packages/cli/tests/engine/findings/secrets.test.ts"
+      ],
+      "scope_summary": "The scanner produces incorrect output in two narrow, high-impact ways: it flags template URL patterns as critical secrets (false positives), and it generates unrunnable `npm vitest run` commands for monorepo projects. Both erode first-user trust — the tool's own output is untrustworthy. A user who sees a false CRITICAL finding or a broken test command in their first scan has no reason to trust anything else the tool says.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A007 test asserts 'at least one critical' but doesn't verify BOTH passwords fire — url2 could silently pass",
+          "file": "packages/cli/tests/engine/findings/secrets.test.ts",
+          "anchor": null,
+          "line": 167,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "fix-scanner-trust-output-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Single-angle pattern suppresses real passwords that happen to be lowercase words in angle brackets (e.g., <admin>, <token>)",
+          "file": "packages/cli/src/engine/findings/rules/secrets.ts",
+          "anchor": null,
+          "line": 43,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-scanner-trust-output-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof chain finding monorepo-build-scoping-C5 (path injection in state.ts) still present — this build doesn't touch that code path",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-scanner-trust-output-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-17T05:52:41.394Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-17T05:36:10.434Z",
+        "completed_at": "2026-05-17T05:52:41.389Z",
+        "commit_count": 0,
+        "base_commit": "16a10ebd29851018881d171c2b782efe5286d5b9"
+      }
     }
   ],
   "schema": 1

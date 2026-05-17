@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-115 runs · 52 active · 3 promoted · 625 closed
+116 runs · 54 active · 3 promoted · 626 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 52 total)
+## Active Findings (30 shown of 54 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -34,16 +34,15 @@
 - **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
 - **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
-- **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 
 ### packages/cli/src/engine/detectors/git.ts
 
 - **code:** Multi-remote repos: origin/ prefix stripping ignores non-origin remotes — *Fix scan branch detection — remove local branches from shared intelligence*
 - **code:** detectBranches and detectBranchPatterns both run git branch -r independently — two subprocess calls for the same data — *Fix scan branch detection — remove local branches from shared intelligence*
 
-### packages/cli/tests/commands/init/commit.test.ts
+### packages/cli/src/engine/findings/rules/secrets.ts
 
-- **test:** Push failure test doesn't test push failure — tests push skip (no remote) — *ana init commit — persist infrastructure to git*
+- **code:** Single-angle pattern suppresses real passwords that happen to be lowercase words in angle brackets (e.g., <admin>, <token>) — *Fix Scanner Trust Output*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
@@ -60,6 +59,10 @@
 - **test:** No boundary test at exactly 1-hour timeout — tests use 2-hour-old (stale) and new Date() (fresh), missing 59m59s and 60m01s cases — *Pipeline Concurrency Guards*
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
 - **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
+
+### packages/cli/tests/engine/findings/secrets.test.ts
+
+- **test:** A007 test asserts 'at least one critical' but doesn't verify BOTH passwords fire — url2 could silently pass — *Fix Scanner Trust Output*
 
 ### packages/cli/tests/utils/scan-freshness.test.ts
 
