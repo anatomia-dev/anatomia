@@ -24,6 +24,8 @@ import { generateProofSummary, resolveFindingPaths, generateDashboard, computeCh
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { isWorktreeDirectory, detectWorktreeSlug, worktreeExists, getWorktreeInfo, createWorktree, removeWorktree, getWorktreePath } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
+import { checkScanFreshness } from '../utils/scan-freshness.js';
+import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import type { ProofChainEntry, ProofChain, ProofChainStats } from '../types/proof.js';
 
 /**
@@ -99,6 +101,7 @@ interface StatusOutput {
   onArtifactBranch: boolean;
   updateAvailable: { current: string; latest: string } | null;
   projectMismatch: { cliVersion: string; projectVersion: string } | null;
+  scanStale: ScanFreshnessResult | null;
   items: WorkItem[];
 }
 
@@ -613,11 +616,11 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
 }
 
 /**
- * Render version notification lines (update available, project mismatch).
+ * Render notification lines (update available, project mismatch, scan staleness).
  *
- * @param output - Status output with version check results
+ * @param output - Status output with version check and scan staleness results
  */
-function printVersionNotifications(output: StatusOutput): void {
+function printNotifications(output: StatusOutput): void {
   if (output.updateAvailable) {
     console.log(chalk.gray(
       `ℹ anatomia-cli v${output.updateAvailable.latest} available (current: v${output.updateAvailable.current}). Run: npm update -g anatomia-cli`
@@ -626,6 +629,14 @@ function printVersionNotifications(output: StatusOutput): void {
   if (output.projectMismatch) {
     console.log(chalk.gray(
       `ℹ Project initialized with v${output.projectMismatch.projectVersion} (current CLI: v${output.projectMismatch.cliVersion}). Run: ana init`
+    ));
+  }
+  if (output.scanStale?.isStale) {
+    const commitPart = output.scanStale.commitsSinceScan !== null
+      ? ` (${output.scanStale.commitsSinceScan} commits since scan)`
+      : '';
+    console.log(chalk.gray(
+      `ℹ Scan is ${output.scanStale.daysSinceScan} days old${commitPart}. Run: ana init`
     ));
   }
 }
@@ -644,7 +655,7 @@ function printHumanReadable(output: StatusOutput): void {
   }
 
   if (output.items.length === 0) {
-    printVersionNotifications(output);
+    printNotifications(output);
     console.log(chalk.gray('No active work. Run: claude --agent ana to scope new work.'));
     return;
   }
@@ -723,7 +734,7 @@ function printHumanReadable(output: StatusOutput): void {
     }
   }
 
-  printVersionNotifications(output);
+  printNotifications(output);
   console.log(chalk.gray('Scope new work: claude --agent ana'));
 }
 
@@ -787,6 +798,18 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
   // Version awareness checks (best-effort, non-blocking)
   const versionCheck = await checkForUpdates(projectRoot);
 
+  // Scan freshness check (best-effort, non-blocking)
+  let lastScanAt: string | undefined;
+  try {
+    const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
+    const anaContent = fs.readFileSync(anaJsonPath, 'utf-8');
+    const anaData = JSON.parse(anaContent);
+    lastScanAt = anaData.lastScanAt;
+  } catch {
+    // Silent — ana.json might not exist or be unreadable
+  }
+  const scanFreshness = checkScanFreshness(lastScanAt, projectRoot);
+
   // Discover slugs
   const slugs = discoverSlugs(artifactBranch, onArtifactBranch, projectRoot);
 
@@ -798,15 +821,17 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
         onArtifactBranch,
         updateAvailable: versionCheck.updateAvailable,
         projectMismatch: versionCheck.projectMismatch,
+        scanStale: scanFreshness?.isStale ? scanFreshness : null,
         items: [],
       }, null, 2));
     } else {
-      printVersionNotifications({
+      printNotifications({
         artifactBranch,
         currentBranch: currentBranch || 'unknown',
         onArtifactBranch,
         updateAvailable: versionCheck.updateAvailable,
         projectMismatch: versionCheck.projectMismatch,
+        scanStale: scanFreshness?.isStale ? scanFreshness : null,
         items: [],
       });
       console.log(chalk.gray('\nNo active work. Run: claude --agent ana to scope new work.'));
@@ -848,6 +873,7 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
     onArtifactBranch,
     updateAvailable: versionCheck.updateAvailable,
     projectMismatch: versionCheck.projectMismatch,
+    scanStale: scanFreshness?.isStale ? scanFreshness : null,
     items,
   };
 
