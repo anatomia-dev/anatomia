@@ -743,6 +743,17 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     if (engineResult.commands.build) {
       console.log(`  ${chalk.bold('Build:')}    ${engineResult.commands.build}`);
     }
+
+    // Suggest manual config when commands are null for non-Node projects
+    const lang = engineResult.stack.language;
+    if (lang && lang !== 'TypeScript' && lang !== 'Node.js') {
+      const nullCmds = ['test', 'build', 'lint'].filter(k => !configCmds?.[k]);
+      if (nullCmds.length > 0) {
+        const example = lang === 'Python' ? 'pytest' : lang === 'Go' ? 'go test ./...' : 'make test';
+        console.log(chalk.blue(`  ℹ No ${nullCmds.join('/')} commands detected. Set them manually:`));
+        console.log(chalk.gray(`    ana config set commands.test "${example}"`));
+      }
+    }
     console.log('');
   }
 

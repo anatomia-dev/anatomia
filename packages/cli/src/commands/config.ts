@@ -323,6 +323,16 @@ export function registerConfigCommand(program: Command): void {
 
         const config = readRawConfig(root);
         const value = parseValue(rawValue);
+
+        // Reject empty strings for command fields — never a valid command
+        const COMMAND_FIELDS = ['commands.test', 'commands.build', 'commands.lint', 'commands.dev'];
+        if (COMMAND_FIELDS.includes(field) && value === '') {
+          console.error(chalk.red('Empty string is not a valid command. Provide a command or omit the field.'));
+          console.error(chalk.gray(`  To unset: ana config set ${field} null`));
+          process.exitCode = 1;
+          return;
+        }
+
         setByPath(config, field, value);
         writeRawConfig(root, config);
 
