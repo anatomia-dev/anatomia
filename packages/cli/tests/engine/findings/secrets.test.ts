@@ -109,6 +109,70 @@ describe('Hardcoded secrets rule', () => {
     expect(critical?.detail).not.toContain('1234567890abcdefghijk');
   });
 
+  // @ana A001
+  it('filters <<password>> template in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:<<password>>@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A002
+  it('filters {{db_pass}} template in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:{{db_pass}}@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A003
+  it('filters ${dbPassword} template in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:\${dbPassword}@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A004
+  it('filters ${process.env.DB_URL} template in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:\${process.env.DB_URL}@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A005
+  it('filters <your_password> template in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:<YOUR_PASSWORD>@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A006
+  it('detects real credentials in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:realPassword123@prod.example.com:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(true);
+  });
+
+  // @ana A007
+  it('does not suppress passwords with partial template characters', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url1 = "postgres://user:p@ss<w0rd@host:5432/db";
+      const url2 = "postgres://user:my{secret}123@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(true);
+  });
+
   it('detects Resend API key', async () => {
     fs.writeFileSync(path.join(tmpDir, 'email.ts'), `
       const key = "re_abc123def456ghi789jkl0";
