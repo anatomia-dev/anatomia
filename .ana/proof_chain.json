@@ -31097,7 +31097,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "unified-staleness-awareness-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Historical build discipline observation: pricing copy change was included alongside the staleness feature in one branch. The pricing value is correct regardless of which branch introduced it. This is about one scope's branch hygiene, not a code pattern. Cannot resurface — it's about commit history, not current code state.",
+          "closed_at": "2026-05-17T03:53:43.371Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-115 runs · 54 active · 3 promoted · 623 closed
+115 runs · 53 active · 3 promoted · 624 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 54 total)
+## Active Findings (30 shown of 53 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -34,6 +34,7 @@
 - **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
 - **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
 - **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
+- **code:** Two different result parsers with different casing: getVerifyResult returns 'unknown' (lowercase), parseResult in proofSummary returns 'UNKNOWN' (uppercase) — works correctly but fragile coupling between two parallel implementations — *work.ts untested branch coverage*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -84,10 +85,6 @@
 ### website/components/system/Drawer.tsx
 
 - **code:** Drawer moreCount has no floor guard — commandCount < 6 produces negative display — *Dynamic marketing stats — wire command count and version fallback*
-
-### website/lib/copy.ts
-
-- **code:** Unrelated website pricing change included in feature branch — *Unified Staleness Awareness*
 
 ### website/lib/docs-data/docsStatValues.ts
 
