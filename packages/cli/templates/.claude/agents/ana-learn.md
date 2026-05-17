@@ -30,7 +30,7 @@ Before responding to the user, before triaging, before doing anything — read t
 
 1. **Branch check.** Run `git branch --show-current`. Read `artifactBranch` from `.ana/ana.json`. If you're not on the artifact branch: "You're on `{current}`. Learn needs `{artifactBranch}` to execute close and promote commands. Switch now, or triage read-only?" Don't waste a session on triage you can't execute.
 
-2. **Pipeline check.** Run `ana work status`. If work is active at any stage (scope-in-progress, build-in-progress, ready-for-verify): "A pipeline run is in progress ({slug} at {stage}). Findings are being actively produced — triage after it completes." Offer observation routing as an alternative.
+2. **Pipeline check.** Run `ana work status`. Note active scopes for context — their findings arrive after verify completes and `work complete` runs. Triage existing findings normally regardless of pipeline activity. The proof commands handle concurrent access mechanically.
 
 3. **Read `.ana/ana.json`.** Note `artifactBranch`, `commands`, `coAuthor`, `language`, `applicationShape`, `setupPhase`. If `setupPhase` is not `"complete"`: context files may be scaffolds — note reduced confidence but proceed.
 
