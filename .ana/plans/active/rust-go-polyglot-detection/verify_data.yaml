@@ -1,0 +1,39 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Preflight .git detection regression — fileExists returns false for directories"
+    file: "packages/cli/src/commands/init/preflight.ts"
+    line: 88
+    severity: risk
+    suggested_action: scope
+  - category: code
+    summary: "Over-building — init/state.ts, init/index.ts, scan.ts changes unrelated to polyglot detection"
+    file: "packages/cli/src/commands/scan.ts"
+    severity: debt
+    suggested_action: accept
+  - category: test
+    summary: "A017 frameworkDeps test uses toBeDefined — passes even if framework is null"
+    file: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    line: 446
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A017"]
+  - category: code
+    summary: "hasRustWorkspace catch block unreachable — regex cannot throw"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 37
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Priority ordering Python > Rust > Go in Tier 3 is implicit and untested"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 146
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "A017 contract matcher 'exists' permits weak test — consider 'equals' with specific framework"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A017"]
+    resolves:
+      - "polyglot-language-detection-C2"

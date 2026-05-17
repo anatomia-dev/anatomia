@@ -34,5 +34,20 @@
     "packages/cli/tests/engine/detectors/polyglot.test.ts",
     "packages/cli/tests/engine/detectors/projectType.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T17:17:11.676Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:5be120e2d744626407b60485fb0ae99793917b6eeb6efbd9948245c651beef71",
+    "run_at": "2026-05-17T17:21:23.216Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T17:21:23.252Z",
+    "hash": "sha256:ebac47ea6d2c8fbe610dd7110afdc02b1e887eb2d32e61cd21560cd1ef9c767c"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T17:21:23.252Z",
+    "hash": "sha256:6bac0f659016e0a6bd49ce34e901d791c34095fc51ac78fceb438ba3fc793a92"
+  }
 }
