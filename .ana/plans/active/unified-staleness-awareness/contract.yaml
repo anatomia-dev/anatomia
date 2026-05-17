@@ -1,0 +1,140 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Unified Staleness Awareness"
+
+assertions:
+  - id: A001
+    says: "Stale scan triggers a notification with age and commit count"
+    block: "displays staleness notification when thresholds exceeded"
+    target: "output"
+    matcher: "contains"
+    value: "ℹ Scan is"
+
+  - id: A002
+    says: "Staleness requires both time AND commit thresholds to be met"
+    block: "does not notify when only time threshold exceeded"
+    target: "result.isStale"
+    matcher: "equals"
+    value: false
+
+  - id: A003
+    says: "Staleness requires both time AND commit thresholds to be met"
+    block: "does not notify when only commit threshold exceeded"
+    target: "result.isStale"
+    matcher: "equals"
+    value: false
+
+  - id: A004
+    says: "Unresolvable git SHA falls back to time-only notification"
+    block: "falls back to time-only when git rev-list fails"
+    target: "result.commitsSinceScan"
+    matcher: "equals"
+    value: null
+
+  - id: A005
+    says: "Time-only fallback still detects staleness by age alone"
+    block: "falls back to time-only when git rev-list fails"
+    target: "result.isStale"
+    matcher: "equals"
+    value: true
+
+  - id: A006
+    says: "CI environments never see staleness warnings"
+    block: "returns null when CI=true"
+    target: "result"
+    matcher: "equals"
+    value: null
+
+  - id: A007
+    says: "Missing scan date is handled gracefully without crashing"
+    block: "returns null when lastScanAt is missing"
+    target: "result"
+    matcher: "equals"
+    value: null
+
+  - id: A008
+    says: "Unparseable scan date is handled gracefully without crashing"
+    block: "returns null when lastScanAt is unparseable"
+    target: "result"
+    matcher: "equals"
+    value: null
+
+  - id: A009
+    says: "Setup check shows scan freshness status"
+    block: "displays Freshness section in setup check"
+    target: "output"
+    matcher: "contains"
+    value: "Freshness"
+
+  - id: A010
+    says: "Current scan shows as healthy in the dashboard"
+    block: "shows current status when scan is fresh"
+    target: "output"
+    matcher: "contains"
+    value: "current"
+
+  - id: A011
+    says: "The notification function works for all notification types"
+    block: "renamed function still prints update available notification"
+    target: "output"
+    matcher: "contains"
+    value: "ℹ anatomia-cli"
+
+  - id: A012
+    says: "The notification function works for all notification types"
+    block: "renamed function still prints project mismatch notification"
+    target: "output"
+    matcher: "contains"
+    value: "ℹ Project initialized"
+
+  - id: A013
+    says: "JSON output includes scan staleness data"
+    block: "includes scanStale field in JSON output"
+    target: "json.scanStale"
+    matcher: "exists"
+
+  - id: A014
+    says: "JSON output includes scan staleness even with no work items"
+    block: "includes scanStale in empty-items JSON path"
+    target: "json.scanStale"
+    matcher: "exists"
+
+  - id: A015
+    says: "Agents are instructed to relay notification lines to the user"
+    block: "template contains relay instruction"
+    target: "templateContent"
+    matcher: "contains"
+    value: "include them in your first message verbatim"
+
+  - id: A016
+    says: "Product template and dogfood template match for the modified section"
+    block: "templates are byte-identical for modified paragraph"
+    target: "templatesMatch"
+    matcher: "equals"
+    value: true
+
+  - id: A017
+    says: "Staleness result includes days since scan"
+    block: "returns correct daysSinceScan"
+    target: "result.daysSinceScan"
+    matcher: "greater"
+    value: 0
+
+  - id: A018
+    says: "Staleness result includes commits since scan"
+    block: "returns correct commitsSinceScan"
+    target: "result.commitsSinceScan"
+    matcher: "greater"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/utils/scan-freshness.ts"
+    action: create
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/check.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: ".claude/agents/ana.md"
+    action: modify
