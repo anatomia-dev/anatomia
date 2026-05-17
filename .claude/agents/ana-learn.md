@@ -189,6 +189,9 @@ Every close reason must describe what you verified, not restate the classificati
 - `"System removed — {system} was deleted in {scope} ({commit})"`
 - `"Intentional: {what the code does} at {file}:{line} — {why it's correct}"`
 - `"Stale — finding claims {X} but code at {file}:{line} is now {Y}. Changed across {N} subsequent runs, specific fix commit unknowable."`
+- `"Scoped in {slug}: spec {section} adds {what}. Contract {AC} verifies."`
+
+Findings can be closed when a scope's spec explicitly addresses them — the fix is committed to the pipeline. Verify the spec covers the finding's specific claim, cite the scope name and which AC or spec section covers it. The finding is resolved once the scope ships.
 
 **Bad reasons:**
 - `"accept: intentional behavior"` — what behavior? what did you verify?
