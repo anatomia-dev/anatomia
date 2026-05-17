@@ -21,6 +21,7 @@ import { CONTEXT_FILES, CORE_SKILLS } from '../constants.js';
 import { parseEngineResultPartial } from '../engine/types/engineResult-partial.js';
 import { AnaJsonSchema, type AnaJson } from './init/anaJsonSchema.js';
 import { findProjectRoot } from '../utils/validators.js';
+import { checkScanFreshness } from '../utils/scan-freshness.js';
 
 /**
  * The 6 canonical sections of project-context.md.
@@ -1428,6 +1429,24 @@ async function displaySetupDashboard(cwd: string): Promise<boolean> {
     for (const r of consistencyResults) {
       console.log(`  ${r.symbol} ${r.label}: ${r.detail}`);
       if (r.symbol.includes('✗')) hasErrors = true;
+    }
+  }
+
+  // --- Freshness ---
+  {
+    const anaJsonData = await readAnaJson(cwd);
+    const lastScanAt = anaJsonData?.lastScanAt as string | undefined;
+    const freshness = checkScanFreshness(lastScanAt, cwd);
+
+    console.log(chalk.bold('\nFreshness'));
+    console.log('─────────');
+    if (freshness?.isStale) {
+      const commitPart = freshness.commitsSinceScan !== null
+        ? ` (${freshness.commitsSinceScan} commits since scan)`
+        : '';
+      console.log(`  ⚠ Scan age: ${freshness.daysSinceScan} days old${commitPart}`);
+    } else {
+      console.log(`  ✓ Scan age: current`);
     }
   }
 
