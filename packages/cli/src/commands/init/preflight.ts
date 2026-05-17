@@ -85,10 +85,14 @@ export async function validateInitPreconditions(
   }
 
   // 7.1 — Project root detection
-  const rootIndicators = ['package.json', 'go.mod', 'Cargo.toml', 'pyproject.toml', '.git'];
-  const hasRoot = await Promise.all(
-    rootIndicators.map(f => fileExists(path.join(cwd, f)))
+  // .git is checked separately: it can be a directory (normal repos) or a
+  // file (worktrees/submodules), so neither fileExists nor dirExists covers both.
+  const fileIndicators = ['package.json', 'go.mod', 'Cargo.toml', 'pyproject.toml'];
+  const hasFileIndicator = await Promise.all(
+    fileIndicators.map(f => fileExists(path.join(cwd, f)))
   ).then(results => results.some(Boolean));
+  const hasGitIndicator = await fs.stat(path.join(cwd, '.git')).then(() => true, () => false);
+  const hasRoot = hasFileIndicator || hasGitIndicator;
 
   if (!hasRoot) {
     console.error(chalk.red('No project root detected in this directory.'));

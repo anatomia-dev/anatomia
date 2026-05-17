@@ -78,17 +78,16 @@ function collapseServiceVariants(names: string[]): string[] {
 }
 
 /**
- * Count findings for dynamic CTA (funnel context)
+ * Count actionable findings for dynamic CTA (funnel context).
+ * Blind spots are informational detection gaps, not user-actionable issues —
+ * they are displayed separately and excluded from this count.
  * @param result - Engine analysis result
- * @returns Number of findings (blind spots + null pattern slots)
+ * @returns Number of actionable findings (critical + warn)
  */
 function countFindings(result: EngineResult): number {
-  // Count actionable findings (critical + warn) plus blind spots
-  const actionableFindings = result.findings.filter(
+  return result.findings.filter(
     f => f.severity === 'critical' || f.severity === 'warn'
   ).length;
-
-  return actionableFindings + result.blindSpots.length;
 }
 
 /**
@@ -320,7 +319,7 @@ function formatHumanReadable(
     if (findings === 0) {
       lines.push(chalk.gray('  Run `ana init` to get started.'));
     } else {
-      lines.push(chalk.gray(`  Found ${findings} issues. Run \`ana init\` to scaffold context and agents for your project.`));
+      lines.push(chalk.gray(`  Found ${findings} issue${findings === 1 ? '' : 's'}. Run \`ana init\` to scaffold context and agents for your project.`));
     }
   } else {
     const skills = computeSkillManifest(result);

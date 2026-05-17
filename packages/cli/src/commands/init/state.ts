@@ -511,12 +511,15 @@ export async function createAnaJson(
  * @param existingAnaPath - Path to the still-existing `.ana/` directory
  * @param tmpAnaPath - Path to the tmp build directory
  * @param newAnaConfig - In-memory ana.json config from createAnaJson
+ * @returns Merged config if ana.json was merged, null otherwise
  */
 export async function preserveUserState(
   existingAnaPath: string,
   tmpAnaPath: string,
   newAnaConfig: Record<string, unknown>
-): Promise<void> {
+): Promise<Record<string, unknown> | null> {
+  let mergedConfig: Record<string, unknown> | null = null;
+
   // 1. Copy context/ wholesale (overwriting the fresh scaffolds)
   const contextSrc = path.join(existingAnaPath, 'context');
   const contextDst = path.join(tmpAnaPath, 'context');
@@ -561,6 +564,7 @@ export async function preserveUserState(
 
     const newAnaJsonPath = path.join(tmpAnaPath, 'ana.json');
     await fs.writeFile(newAnaJsonPath, JSON.stringify(merged, null, 2), 'utf-8');
+    mergedConfig = merged as Record<string, unknown>;
   }
 
   // 3. Copy setup-progress.json only if setup is still in progress
@@ -614,6 +618,8 @@ export async function preserveUserState(
   } catch {
     // No active plans — keep the fresh .gitkeep
   }
+
+  return mergedConfig;
 }
 
 /**
@@ -753,8 +759,9 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     if (displayTest) {
       console.log(`  ${chalk.bold('Test:')}     ${displayTest}`);
     }
-    if (engineResult.commands.build) {
-      console.log(`  ${chalk.bold('Build:')}    ${engineResult.commands.build}`);
+    const displayBuild = configCmds?.['build'] ?? engineResult.commands.build;
+    if (displayBuild) {
+      console.log(`  ${chalk.bold('Build:')}    ${displayBuild}`);
     }
 
     // Suggest manual config when commands are null for non-Node projects

@@ -109,9 +109,9 @@ export function registerInitCommand(program: Command): void {
       await buildSymbolIndexSafe(cwd, tmpAnaPath);
 
       // Preserve user state from the still-existing .ana/
-      if (preflight.anaExisted) {
-        await preserveUserState(anaPath, tmpAnaPath, newAnaConfig);
-      }
+      const mergedConfig = preflight.anaExisted
+        ? await preserveUserState(anaPath, tmpAnaPath, newAnaConfig)
+        : null;
 
       // Atomic swap:
       //   1. .ana/ → .ana.old-{ts}  (same-FS rename, atomic)
@@ -133,7 +133,7 @@ export function registerInitCommand(program: Command): void {
       // Display success
       const scanTime = ((Date.now() - scanStart) / 1000).toFixed(1);
       const projectName = await getProjectName(cwd);
-      displaySuccessMessage(engineResult, projectName, scanTime, newAnaConfig, preflight.warnings);
+      displaySuccessMessage(engineResult, projectName, scanTime, mergedConfig ?? newAnaConfig, preflight.warnings);
     } catch (error) {
       // FAILURE: clean up tmp build. If the swap had started, roll back.
       await fs.rm(tmpDir, { recursive: true, force: true });
