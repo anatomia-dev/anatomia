@@ -82,10 +82,12 @@ describe('makeTestCommandNonInteractive', () => {
 });
 
 describe('buildDirectTestCommand', () => {
+  // @ana A011
   it('returns pnpm vitest run for Vitest', () => {
     expect(buildDirectTestCommand(['Vitest'], 'pnpm')).toBe('pnpm vitest run');
   });
 
+  // @ana A012
   it('returns yarn vitest run for Vitest + yarn', () => {
     expect(buildDirectTestCommand(['Vitest'], 'yarn')).toBe('yarn vitest run');
   });
@@ -95,7 +97,22 @@ describe('buildDirectTestCommand', () => {
   });
 
   it('returns mocha --exit for Mocha', () => {
-    expect(buildDirectTestCommand(['Mocha'], 'npm')).toBe('npm mocha --exit');
+    expect(buildDirectTestCommand(['Mocha'], 'pnpm')).toBe('pnpm mocha --exit');
+  });
+
+  // @ana A008
+  it('returns npx vitest run for npm', () => {
+    expect(buildDirectTestCommand(['Vitest'], 'npm')).toBe('npx vitest run');
+  });
+
+  // @ana A009
+  it('returns npx jest --watchAll=false for npm', () => {
+    expect(buildDirectTestCommand(['Jest'], 'npm')).toBe('npx jest --watchAll=false');
+  });
+
+  // @ana A010
+  it('returns npx mocha --exit for npm', () => {
+    expect(buildDirectTestCommand(['Mocha'], 'npm')).toBe('npx mocha --exit');
   });
 
   it('returns pytest for pytest (no pm prefix)', () => {

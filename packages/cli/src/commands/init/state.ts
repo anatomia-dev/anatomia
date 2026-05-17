@@ -251,14 +251,15 @@ export function buildDirectTestCommand(
 ): string | null {
   // Priority: Vitest > Jest > Mocha > pytest. stack.testing may contain
   // multiple frameworks (e.g. Jest + Playwright). Unit runner wins over E2E.
+  const runner = packageManager === 'npm' ? 'npx' : packageManager;
   if (frameworks.includes('Vitest')) {
-    return `${packageManager} vitest run`;
+    return `${runner} vitest run`;
   }
   if (frameworks.includes('Jest')) {
-    return `${packageManager} jest --watchAll=false`;
+    return `${runner} jest --watchAll=false`;
   }
   if (frameworks.includes('Mocha')) {
-    return `${packageManager} mocha --exit`;
+    return `${runner} mocha --exit`;
   }
   // pytest, go test, Playwright, Cypress — non-interactive by default
   if (frameworks.includes('pytest')) {
