@@ -40,5 +40,20 @@
     "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
     "packages/cli/tests/utils/worktree.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T21:59:01.130Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:0eff11b4ce1396e317c21eea4cc852c611aee44cc2b71a15d54447ad55eccdb5",
+    "run_at": "2026-05-17T22:04:20.482Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T22:04:20.520Z",
+    "hash": "sha256:ce04c79ed12d28848b3612aaee095275613c5e32e49609663ba2628638c1cc6f"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T22:04:20.520Z",
+    "hash": "sha256:7825e6067194b472fd42e294063bae6027dfcbd144fa3f1706b78dc97ac1e765"
+  }
 }

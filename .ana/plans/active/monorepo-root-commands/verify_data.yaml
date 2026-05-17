@@ -1,0 +1,23 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A011 display fallback test checks execution but not display output"
+    file: "packages/cli/tests/utils/worktree.test.ts"
+    line: 354
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A011"]
+  - category: test
+    summary: "testRoot value never asserted specifically — contract only requires exists/not_contains, but the actual value (pnpm run test -- --run) is unverified"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    line: 302
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A002", "A004"]
+  - category: upstream
+    summary: "getBuildCommandString still re-reads ana.json independently — fallback chain now aligns with runBuildCommand but duplicate I/O remains"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 427
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A010", "A011"]
