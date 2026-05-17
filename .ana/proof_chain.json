@@ -31998,6 +31998,324 @@
         "commit_count": 0,
         "base_commit": "f79ba254dbcbaee68c350f8b299a9c778692b3e0"
       }
+    },
+    {
+      "slug": "audit-matrix-orientation",
+      "feature": "Audit matrix orientation",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 29,
+        "satisfied": 29,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Audit JSON includes a severity-by-action cross-tab showing how findings distribute",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Cross-tab pairs use the severity/action format",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Cross-tab counts match actual finding distribution",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Human-readable audit shows the severity/action cross-tab inline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Cross-tab line uses dot-separator formatting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Matrix mode returns orientation without individual findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Matrix mode includes total active count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Matrix mode includes staleness count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Matrix mode includes recent entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Recent entries include the proof slug",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Recent entries include active finding count from that run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Recent entries include human-readable relative time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Recent entries are limited to at most 3",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Matrix human output shows the orientation header",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Matrix human output shows staleness signal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Matrix human output shows recent proofs with relative time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Matrix mode does not read source files for anchor checking",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Matrix mode shows full orientation even when severity filter is passed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Matrix mode shows full orientation even when entry filter is passed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Matrix with no active findings still returns orientation structure",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Matrix with no active findings still includes recent entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Matrix with empty chain returns clean no-data response",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Matrix human output does not show file-grouped findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Filtering by severity restricts the cross-tab to matching pairs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Filtered cross-tab counts only filtered findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Relative time formatter produces day-level precision for recent dates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Relative time formatter produces week-level precision for older dates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Learn template instructs running audit --matrix as first orientation command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Learn template presents three-option adaptive menu",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 14,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 131,
+        "think": 21,
+        "plan": 81,
+        "build": 15,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:e46ec013667df890881c6049eef4ee8c05a570f91c6147ff6f19b6d4eb6bcff5",
+        "contract": "sha256:b46c5aa103e3a9e91a1ae170e67402e4f5ca84607020a70e211d1b9a7d6231cc",
+        "plan": "sha256:078da95aba68a836dfbf286aa65dfc83c5382ab7adbc2d97c1fa34a530bd0be4",
+        "spec": "sha256:166309aa8a0c7d197f89eed766d5a652098ae4cc63ad622fa013222d85b13442",
+        "build-report": "sha256:9036fde80c00cca35915de8f2c1b49e4b09b8b65cf4af149300bfec48f345ab8",
+        "build-data": "sha256:31390d23a3eb9b1e897d47d424fd3d2d556ffba99860fd7fc67cc102e2425d69",
+        "verify-report": "sha256:0a7a7712dde3c0dc4819e376033a51923c8fbf6a88dc89a4f282d8b0ff9a89f5",
+        "verify-data": "sha256:304e5b4a10449abc5abaf770000446c2accbb0ba43edbfa9cb651cd66f57c9e4"
+      },
+      "completed_at": "2026-05-17T19:17:47.875Z",
+      "modules_touched": [
+        ".claude/agents/ana-learn.md",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/tests/commands/proof.test.ts"
+      ],
+      "scope_summary": "Learn's orientation phase requires 3+ commands and manual synthesis to understand the shape of the proof chain before triage. The severity × action cross-tab (the intersection of these two dimensions) is the single most useful orientation data — it tells Learn the shape of work, not just counts. \"4 risk\" is less actionable than \"3 risk/scope + 1 risk/monitor.\" Additionally, Learn needs to know what shipped recently and how many findings are stale. Today this requires running `ana proof audit`, `ana proof stale`, and manually checking the last 3 entries.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "formatRelativeTime doesn't handle invalid input — produces 'NaNw ago' for bad ISO strings",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 2320,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A026",
+            "A027"
+          ],
+          "id": "audit-matrix-orientation-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A027 value '1w ago' unreachable — 30-day week threshold means minimum is '4w ago'",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A027"
+          ],
+          "id": "audit-matrix-orientation-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-17T19:17:47.875Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A003 value 2 doesn't match test fixture which produces risk/scope=1",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "audit-matrix-orientation-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-17T19:17:47.875Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A029 value 'cleanup' (lowercase) doesn't match template 'Cleanup' (capital C)",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A029"
+          ],
+          "id": "audit-matrix-orientation-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-17T19:17:47.875Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Duplicated zero-entry JSON payload — identical object literal at two call sites",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 1598,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "audit-matrix-orientation-C5",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A008/A009 use toBeDefined() instead of specific values for stale_count and recent_entries",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 4408,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008",
+            "A009"
+          ],
+          "id": "audit-matrix-orientation-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "proofSummary.ts now ~2330 lines — past comfort threshold, growing",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "resolves": [],
+          "id": "audit-matrix-orientation-C7",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "matrixAllUnclassified variable set but only conditionally read in human-readable path",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-17T18:50:12.072Z",
+        "completed_at": "2026-05-17T19:17:47.869Z",
+        "commit_count": 6,
+        "base_commit": "08165f3f05e579ca981db408b7970f33a68e095d"
+      }
     }
   ],
   "schema": 1
