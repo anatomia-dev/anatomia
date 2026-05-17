@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-120 runs · 66 active · 3 promoted · 635 closed
+120 runs · 65 active · 3 promoted · 636 closed
 
 ## Hot Modules
 
@@ -16,15 +16,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 66 total)
+## Active Findings (30 shown of 65 total)
 
 ### packages/cli/src/commands/check.ts
 
 - **code:** Freshness section shows 'current' when scan data is unavailable (null result) — *Unified Staleness Awareness*
-
-### packages/cli/src/commands/init/preflight.ts
-
-- **code:** Preflight .git detection regression — fileExists returns false for directories — *Rust/Go Polyglot Detection*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -79,6 +75,7 @@
 
 - **test:** No boundary test at exactly 1-hour timeout — tests use 2-hour-old (stale) and new Date() (fresh), missing 59m59s and 60m01s cases — *Pipeline Concurrency Guards*
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
+- **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 

@@ -31913,7 +31913,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "rust-go-polyglot-detection-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Not a regression: .git is checked with raw fs.stat at preflight.ts:94, NOT fileExists. fs.stat succeeds for both files and directories. The fileIndicators array (line 90) only contains package.json, go.mod, Cargo.toml, pyproject.toml — all files. Comment at lines 88-89 explicitly documents why .git is separate: 'it can be a directory (normal repos) or a file (worktrees/submodules), so neither fileExists nor dirExists covers both.'",
+          "closed_at": "2026-05-17T20:54:35.342Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
