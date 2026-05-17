@@ -18,5 +18,27 @@
   "spec": {
     "saved_at": "2026-05-17T21:44:02.844Z",
     "hash": "sha256:242f3d297ec94a6f11b180cef817e828535ec415de4e54e8b2cdb8fadf96522a"
-  }
+  },
+  "build_started_at": "2026-05-17T21:45:02.070Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-17T21:58:32.073Z",
+    "hash": "sha256:ce60e029eaa4da51188be02f1449c9616c2ef6235b668eccc89269a4b81de15a"
+  },
+  "build-data": {
+    "saved_at": "2026-05-17T21:58:32.073Z",
+    "hash": "sha256:8ffce79dede761c1b996383f85eb20a606dea08b89b9e3075a3d7594ba9f98f8"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-verify.md",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/utils/worktree.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "packages/cli/tests/utils/worktree.test.ts"
+  ],
+  "commit_hygiene": []
 }

@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "testRoot has no mechanical consumer — agent-readable only"
+    severity: observation
+    suggested_action: monitor
+  - summary: "runBuildCommand and getBuildCommandString both re-read ana.json independently (duplicate I/O)"
+    file: "packages/cli/src/utils/worktree.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
