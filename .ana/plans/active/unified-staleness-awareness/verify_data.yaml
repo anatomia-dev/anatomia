@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Freshness section shows 'current' when scan data is unavailable (null result)"
+    file: "packages/cli/src/commands/check.ts"
+    line: 1449
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A009", "A010"]
+  - category: code
+    summary: "Unrelated website pricing change included in feature branch"
+    file: "website/lib/copy.ts"
+    line: 439
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "No integration tests for output/JSON assertions — unit tests + source inspection chain only"
+    file: "packages/cli/tests/utils/scan-freshness.test.ts"
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A001", "A009", "A010", "A011", "A012", "A013", "A014"]
+  - category: code
+    summary: "daysSinceScan uses Math.floor — scan exactly 7.9 days old shows as 7, not stale"
+    file: "packages/cli/src/utils/scan-freshness.ts"
+    line: 56
+    severity: observation
+    suggested_action: accept

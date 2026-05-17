@@ -49,5 +49,20 @@
     "packages/cli/templates/.claude/agents/ana.md",
     "packages/cli/tests/utils/scan-freshness.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T03:07:11.613Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:00512cbdd460482d408cfaeb5228b2ec9e679126d0011db3ae8200a2bdc14275",
+    "run_at": "2026-05-17T03:13:33.020Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T03:13:33.061Z",
+    "hash": "sha256:38fef33fa84af3956b95a517d8def278cf277d1a563c67e02399d9bc727e1e29"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T03:13:33.062Z",
+    "hash": "sha256:16f83deeaf2a39e8570907637a3e758fd1d44c107d7bad73ddabf6eafd0c1107"
+  }
 }
