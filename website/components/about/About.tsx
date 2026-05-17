@@ -93,9 +93,8 @@ export function About() {
           <div className={styles.genesis}>
             <div className={styles.genesisLine} />
             <p className={styles.genesisIntro}>
-              Anatomia was built with Anatomia. One developer, one AI
-              subscription, every feature verified through the same pipeline
-              this tool installs for you.
+              One developer. One AI subscription. Every feature verified
+              through the same pipeline this tool installs for you.
             </p>
 
             <div className={styles.statsRow}>
