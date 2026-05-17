@@ -1,0 +1,103 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Scanner Trust Output"
+
+assertions:
+  # Template pattern suppression
+  - id: A001
+    says: "Double-angle template passwords are not flagged as secrets"
+    block: "filters <<password>> template in database URL"
+    target: "findings.critical"
+    matcher: "equals"
+    value: 0
+
+  - id: A002
+    says: "Mustache template passwords are not flagged as secrets"
+    block: "filters {{db_pass}} template in database URL"
+    target: "findings.critical"
+    matcher: "equals"
+    value: 0
+
+  - id: A003
+    says: "Dollar-brace template passwords are not flagged as secrets"
+    block: "filters ${dbPassword} template in database URL"
+    target: "findings.critical"
+    matcher: "equals"
+    value: 0
+
+  - id: A004
+    says: "Environment variable references in DB URLs are not flagged"
+    block: "filters ${process.env.DB_URL} template in database URL"
+    target: "findings.critical"
+    matcher: "equals"
+    value: 0
+
+  - id: A005
+    says: "Single-angle placeholder passwords are not flagged as secrets"
+    block: "filters <your_password> template in database URL"
+    target: "findings.critical"
+    matcher: "equals"
+    value: 0
+
+  # Real credentials still fire
+  - id: A006
+    says: "Real passwords in database URLs are still caught as critical"
+    block: "detects real credentials in database URL"
+    target: "findings.critical"
+    matcher: "greater"
+    value: 0
+
+  # Passwords with template chars that are NOT templates
+  - id: A007
+    says: "Passwords containing angle brackets but not template syntax still fire"
+    block: "does not suppress passwords with partial template characters"
+    target: "findings.critical"
+    matcher: "greater"
+    value: 0
+
+  # npm test command fixes
+  - id: A008
+    says: "npm projects get npx vitest run, not npm vitest run"
+    block: "returns npx vitest run for npm"
+    target: "result"
+    matcher: "equals"
+    value: "npx vitest run"
+
+  - id: A009
+    says: "npm projects get npx jest with watch disabled"
+    block: "returns npx jest --watchAll=false for npm"
+    target: "result"
+    matcher: "equals"
+    value: "npx jest --watchAll=false"
+
+  - id: A010
+    says: "npm projects get npx mocha with exit flag"
+    block: "returns npx mocha --exit for npm"
+    target: "result"
+    matcher: "equals"
+    value: "npx mocha --exit"
+
+  # pnpm/yarn unchanged
+  - id: A011
+    says: "pnpm projects still get pnpm as the command prefix"
+    block: "returns pnpm vitest run for Vitest"
+    target: "result"
+    matcher: "equals"
+    value: "pnpm vitest run"
+
+  - id: A012
+    says: "yarn projects still get yarn as the command prefix"
+    block: "returns yarn vitest run for Vitest + yarn"
+    target: "result"
+    matcher: "equals"
+    value: "yarn vitest run"
+
+file_changes:
+  - path: "packages/cli/src/engine/findings/rules/secrets.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/findings/secrets.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    action: modify
