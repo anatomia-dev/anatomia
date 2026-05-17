@@ -86,7 +86,7 @@ Framework: unknown
   - package.json + no lockfile + no pyproject.toml → node 0.70
   - Malformed/unreadable pyproject.toml → falls through to node
   - bun.lock recognized as lockfile indicator
-- **Integration-level:** AC8 (frameworkDeps fix) needs a test that verifies the cascade: type=python → frameworkDeps=python deps → framework=fastapi. This can be in the polyglot test file using a mock that writes both manifests and checks the full detectProjectType result, or in a separate scan-engine integration test if one exists.
+- **Integration-level:** AC8 (frameworkDeps fix) needs a test that verifies the cascade. Recommended approach: in `polyglot.test.ts`, import `detectFramework` alongside `detectProjectType`. Write a test that creates a temp dir with package.json + lockfile + pyproject.toml (containing fastapi in deps), calls `detectProjectType` to get the type, then calls `detectFramework(pythonDeps, type, [])` and asserts `framework === 'fastapi'`. This proves the frameworkDeps path uses Python deps when type flips. The scan-engine.ts ternary fix enables this cascade — the test proves the cascade works end-to-end at the detector level without needing full scan-engine integration.
 - **Edge cases:** Empty pyproject.toml, pyproject.toml with `[project]` but empty `dependencies = []`, pyproject.toml with only `[tool.ruff]` and `[tool.black]`.
 
 ## Dependencies
@@ -135,6 +135,8 @@ From `packages/cli/src/engine/detectors/projectType.ts` lines 41-48 (the block b
     return { type: 'node', confidence: 0.95, indicators };
   }
 ```
+
+**Implementation note:** `projectType.ts` already imports `node:fs/promises` as `fs` and has a local `exists()` helper (line 19). No new imports are needed for `fs.readFile` calls — use the existing `fs` import directly.
 
 From `packages/cli/src/engine/scan-engine.ts` lines 675-678 (the ternary to patch):
 ```typescript
