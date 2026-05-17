@@ -18,6 +18,8 @@ describe('checkScanFreshness', () => {
     tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'scan-freshness-'));
     fs.mkdirSync(path.join(tmpDir, '.ana'), { recursive: true });
     vi.unstubAllEnvs();
+    // Ensure CI suppression doesn't trigger in test environment
+    delete process.env['CI'];
     mockRunGit.mockReset();
   });
 
