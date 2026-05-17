@@ -41,5 +41,20 @@
     "packages/cli/tests/commands/init/makeTestCommand.test.ts",
     "packages/cli/tests/engine/findings/secrets.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T05:42:31.796Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:d2f86ad220310165247968e46a2cf33bb183587e975989f1c0bef6aa06e64c9b",
+    "run_at": "2026-05-17T05:45:54.004Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T05:45:54.044Z",
+    "hash": "sha256:ea11112629b342769b7e8476cba67fb74dab05e436d6c4b54816dd375f930503"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T05:45:54.044Z",
+    "hash": "sha256:41b4843b8f82285d1f4f8ea551abb892783469bc1d8ec437cfe025b6733b525a"
+  }
 }
