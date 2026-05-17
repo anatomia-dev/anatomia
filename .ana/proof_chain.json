@@ -31499,7 +31499,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "non-node-scan-enrichment-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Code style — deliberate locality: FRAMEWORK_TO_SHAPE (lines 125-143) is placed between JSDoc and function because it's the function's only constant, used exclusively at line 148. Co-location with its sole consumer is a valid organizational choice. No behavioral impact, no confusion risk.",
+          "closed_at": "2026-05-17T06:13:39.864Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

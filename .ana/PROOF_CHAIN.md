@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-117 runs · 57 active · 3 promoted · 627 closed
+117 runs · 56 active · 3 promoted · 628 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 57 total)
+## Active Findings (30 shown of 56 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -38,7 +38,6 @@
 ### packages/cli/src/engine/detectors/applicationShape.ts
 
 - **code:** Module JSDoc says 'classifies Node projects' but function now also classifies non-Node — *Non-Node Scan Enrichment (Application Shape + Python AI SDK)*
-- **code:** FRAMEWORK_TO_SHAPE map placed between JSDoc and function — unconventional positioning — *Non-Node Scan Enrichment (Application Shape + Python AI SDK)*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -57,6 +56,7 @@
 
 - **test:** Broad mock intercept matches any git command with 'pull' in args, not specifically 'git pull --rebase' — *Fix CI Matrix and Broken Tests*
 - **code:** createMergedProject duplicated between work-ci-mocked.test.ts and work.test.ts — both have independent copies with different mock routing — *Fix CI Matrix and Broken Tests*
+- **test:** A004 assertion uses toBeGreaterThan(0) for exit call count instead of toBe(1) — passes even if process.exit is called multiple times — *Fix CI Matrix and Broken Tests*
 
 ### packages/cli/tests/commands/work.test.ts
 
