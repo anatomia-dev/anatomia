@@ -19,7 +19,7 @@ import { glob } from 'glob';
 const toPosix = (p: string): string => p.replace(/\\/g, '/');
 import type { EngineResult } from './types/engineResult.js';
 import { getPatternLibrary } from './types/patterns.js';
-import { detectFromDeps, detectServiceDeps, detectAiSdk, TESTING_PACKAGES } from './detectors/dependencies.js';
+import { detectFromDeps, detectServiceDeps, detectAiSdk, detectNonNodeAiSdk, TESTING_PACKAGES } from './detectors/dependencies.js';
 import { readPythonDependencies } from './parsers/python.js';
 import { readGoDependencies } from './parsers/go.js';
 import { detectPackageManager } from './detectors/packageManager.js';
@@ -810,6 +810,15 @@ export async function scanProject(
     const nonNodeTesting = await detectNonNodeTesting(rootPath, projectTypeResult.type);
     if (nonNodeTesting.length > 0) {
       stack.testing = nonNodeTesting;
+    }
+  }
+
+  // Non-Node AI SDK enrichment. Python/Go/Rust deps are in `deps` (overwritten
+  // at line 663) as bare package names — use the string[] variant.
+  if (!stack.aiSdk && projectTypeResult.type !== 'node') {
+    const nonNodeAiSdk = detectNonNodeAiSdk(deps);
+    if (nonNodeAiSdk) {
+      stack.aiSdk = nonNodeAiSdk;
     }
   }
 

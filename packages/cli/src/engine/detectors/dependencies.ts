@@ -216,6 +216,34 @@ export function detectAiSdk(allDeps: Record<string, string>): string | null {
   return null;
 }
 
+/**
+ * Python AI SDK detection — priority-ordered list of Python AI packages.
+ * Meta-frameworks listed before providers so they win when both are present.
+ */
+const PYTHON_AI_SDK_PACKAGES: Array<[string, string]> = [
+  ['langchain', 'LangChain'],
+  ['crewai', 'CrewAI'],
+  ['autogen', 'AutoGen'],
+  ['anthropic', 'Anthropic'],
+  ['openai', 'OpenAI'],
+  ['google-generativeai', 'Google AI'],
+  ['cohere', 'Cohere'],
+];
+
+/**
+ * Detect the primary AI SDK from a list of bare Python/Go/Rust package names.
+ * Returns branded name of the first/primary match, or null.
+ *
+ * @param deps - Array of bare package names (lowercase, version-stripped)
+ * @returns Display name of the detected AI SDK, or null if none found
+ */
+export function detectNonNodeAiSdk(deps: string[]): string | null {
+  for (const [pkg, name] of PYTHON_AI_SDK_PACKAGES) {
+    if (deps.includes(pkg)) return name;
+  }
+  return null;
+}
+
 export interface DependencyDetectionResult {
   database: string | null;
   auth: string | null;

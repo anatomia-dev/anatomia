@@ -1,0 +1,28 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A017 has no @ana-tagged test — verified by source inspection only"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 818
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A017"]
+  - category: code
+    summary: "Module JSDoc says 'classifies Node projects' but function now also classifies non-Node"
+    file: "packages/cli/src/engine/detectors/applicationShape.ts"
+    line: 1
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "FRAMEWORK_TO_SHAPE map placed between JSDoc and function — unconventional positioning"
+    file: "packages/cli/src/engine/detectors/applicationShape.ts"
+    line: 127
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "A001-A007 multi-tagged on single describe block — assertion-to-test tracing is ambiguous"
+    file: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    line: 350
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A001", "A002", "A003", "A004", "A005", "A006", "A007"]

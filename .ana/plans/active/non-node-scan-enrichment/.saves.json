@@ -18,5 +18,38 @@
   "spec": {
     "saved_at": "2026-05-17T05:38:56.757Z",
     "hash": "sha256:86f540ca8443539af8000b4f40b6213af4d5c2d94d1d7f67591b6814e6ea53db"
+  },
+  "build_started_at": "2026-05-17T05:48:36.427Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-17T05:54:05.079Z",
+    "hash": "sha256:b2aceae7503392be3eb8c72e7c617e00b7a9148d64dfdd27e326a36ca3e1ff70"
+  },
+  "build-data": {
+    "saved_at": "2026-05-17T05:54:05.080Z",
+    "hash": "sha256:2a2931fe86110fce5f49432d0c2e1120a8b9f19b1de1411592780dc351714031"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/detectors/applicationShape.ts",
+    "packages/cli/src/engine/detectors/dependencies.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts",
+    "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-17T05:58:48.289Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f6fa674e3d50ac411b1da3d72c68753d367f0b72bab1673b70404a61a46f6586",
+    "run_at": "2026-05-17T06:03:18.282Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-17T06:03:18.328Z",
+    "hash": "sha256:be26ce7a8971733c04b45cdbc818dbb320cac8079851ac510c0bcd05709a0e15"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-17T06:03:18.328Z",
+    "hash": "sha256:49545e057a4772840d92f54b4d6ed06b9aacb3e85c40fb6246f2bcfccd8b2f22"
   }
 }

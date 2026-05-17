@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { detectAiSdk } from '../../../src/engine/detectors/dependencies.js';
+import { detectAiSdk, detectNonNodeAiSdk } from '../../../src/engine/detectors/dependencies.js';
 import { computeSkillManifest } from '../../../src/constants.js';
 import { createEmptyEngineResult } from '../../../src/engine/types/engineResult.js';
 
@@ -62,6 +62,54 @@ describe('AI SDK detection', () => {
     // Anatomia doesn't use any AI SDK
     const deps = { 'typescript': '5.0.0', 'vitest': '2.0.0', 'chalk': '5.0.0' };
     expect(detectAiSdk(deps)).toBeNull();
+  });
+});
+
+describe('detectNonNodeAiSdk', () => {
+  // @ana A011
+  it('detects openai as OpenAI', () => {
+    expect(detectNonNodeAiSdk(['openai'])).toBe('OpenAI');
+  });
+
+  // @ana A012
+  it('prioritizes langchain over openai', () => {
+    expect(detectNonNodeAiSdk(['langchain', 'openai'])).toBe('LangChain');
+  });
+
+  // @ana A013
+  it('detects crewai as CrewAI', () => {
+    expect(detectNonNodeAiSdk(['crewai'])).toBe('CrewAI');
+  });
+
+  // @ana A014
+  it('detects anthropic as Anthropic', () => {
+    expect(detectNonNodeAiSdk(['anthropic'])).toBe('Anthropic');
+  });
+
+  it('detects autogen as AutoGen', () => {
+    expect(detectNonNodeAiSdk(['autogen'])).toBe('AutoGen');
+  });
+
+  it('detects google-generativeai as Google AI', () => {
+    expect(detectNonNodeAiSdk(['google-generativeai'])).toBe('Google AI');
+  });
+
+  it('detects cohere as Cohere', () => {
+    expect(detectNonNodeAiSdk(['cohere'])).toBe('Cohere');
+  });
+
+  // @ana A015
+  it('returns null for empty deps', () => {
+    expect(detectNonNodeAiSdk([])).toBeNull();
+  });
+
+  // @ana A016
+  it('returns null when no AI packages present', () => {
+    expect(detectNonNodeAiSdk(['flask', 'pytest', 'requests'])).toBeNull();
+  });
+
+  it('priority: crewai beats anthropic and openai', () => {
+    expect(detectNonNodeAiSdk(['openai', 'crewai', 'anthropic'])).toBe('CrewAI');
   });
 });
 
