@@ -546,6 +546,19 @@ export async function preserveUserState(
       anaVersion: newAnaConfig['anaVersion'],
       lastScanAt: newAnaConfig['lastScanAt'],
     };
+
+    // Sanitize blank commands — fall through to fresh detection value.
+    // null is intentional absence (acceptable). "" is accidental blank (never valid).
+    const mergedCommands = merged.commands as Record<string, unknown> | undefined;
+    if (mergedCommands) {
+      const freshCommands = (newAnaConfig['commands'] ?? {}) as Record<string, unknown>;
+      for (const key of ['test', 'build', 'lint']) {
+        if (mergedCommands[key] === '') {
+          mergedCommands[key] = freshCommands[key] ?? null;
+        }
+      }
+    }
+
     const newAnaJsonPath = path.join(tmpAnaPath, 'ana.json');
     await fs.writeFile(newAnaJsonPath, JSON.stringify(merged, null, 2), 'utf-8');
   }
