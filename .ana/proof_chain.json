@@ -31554,6 +31554,219 @@
         "commit_count": 0,
         "base_commit": "249f8cc4a3395582256080d0d4f4b82d3a6bc943"
       }
+    },
+    {
+      "slug": "polyglot-language-detection",
+      "feature": "Polyglot Language Detection",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 19,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A Python project with frontend tooling (package.json + lockfile + pyproject.toml with deps) detects as Python",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A standard Node project with a lockfile still detects as Node",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Standard Node projects retain full confidence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A monorepo with workspaces always detects as Node even with pyproject.toml present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Poetry-based Python projects are correctly identified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A project without a lockfile but with pyproject.toml detects as Python",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A project without a lockfile but with pyproject.toml gets appropriate confidence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A bare package.json without lockfile or competing manifest gets reduced confidence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Tooling-only pyproject.toml (ruff/black config) does not flip type to Python",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Malformed pyproject.toml falls through safely to Node detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Bun 1.2 text-based lockfile is recognized as a lockfile indicator",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Python framework detection works after type flip from Node to Python",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Lockfile invariant holds: package.json + pnpm-lock.yaml without pyproject.toml is always Node",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Lockfile invariant holds: package.json + package-lock.json without pyproject.toml is always Node",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Lockfile invariant holds: package.json + yarn.lock without pyproject.toml is always Node",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Lockfile invariant holds: package.json + bun.lockb without pyproject.toml is always Node",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Lockfile invariant holds: package.json + bun.lock without pyproject.toml is always Node",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Empty dependencies array in pyproject.toml does not count as a Python project",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A bare package.json without lockfile or competing manifest still detects as Node",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 56,
+        "think": 2,
+        "plan": 9,
+        "build": 6,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:e60be011f8dea563c4b9da17ab353d5d39afae6e38876582f334232e80674f2c",
+        "contract": "sha256:a9af3f25e9f60a2a118d6e8aa402dba9f3d7962116778a1387f7fbcf28213c08",
+        "plan": "sha256:9298e635f312460505d4a78a4975490814e53a5da66280c150cd22ae273f27de",
+        "spec": "sha256:a4d5dbac3ee0f1c205f0cbaa15901cf330c560b7b938f8b62fcf3d42d3082075",
+        "build-report": "sha256:1c902a29ee26e19020f0cf4afc94f9c669d19c57bc886d1e42f86a5cc88066bd",
+        "build-data": "sha256:9f1424bb781bdeb82e4b32863042568e648118b9f5a04c7ff50c3a1e4111ebf0",
+        "verify-report": "sha256:ed1a2d046985d2446fc12ad808f7ff7da039d13ab668278b7384b510deea41eb",
+        "verify-data": "sha256:f31db0eee770fbe10041be8a3396d631e0499e5b169c87e39842d48f223e2c88"
+      },
+      "completed_at": "2026-05-17T06:36:09.590Z",
+      "modules_touched": [
+        "packages/cli/src/engine/detectors/projectType.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/detectors/polyglot.test.ts",
+        "packages/cli/tests/engine/detectors/projectType.test.ts"
+      ],
+      "scope_summary": "`detectProjectType` returns `'node'` the moment `package.json` exists. It never checks whether pyproject.toml also exists. Result: litellm (47k stars, YC W23, Python FastAPI) and langflow (140k stars, Python FastAPI) detect as \"Node.js\" because they have `package.json` + `package-lock.json` at root for their frontend UI tooling. A potential pilot customer seeing \"Language: Node.js\" on their Python project is an immediate credibility failure for Anatomia's core value proposition.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Tier 4 no-lockfile + pyproject with no real deps returns 0.70 — same confidence as Tier 5 bare package.json, indistinguishable to downstream consumers",
+          "file": "packages/cli/src/engine/detectors/projectType.ts",
+          "anchor": null,
+          "line": 146,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "polyglot-language-detection-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A012 frameworkDeps test verifies detector-level cascade but not the actual scan-engine.ts ternary conditional — the ternary fix is tested structurally, not behaviorally",
+          "file": "packages/cli/tests/engine/detectors/polyglot.test.ts",
+          "anchor": null,
+          "line": 203,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A012"
+          ],
+          "id": "polyglot-language-detection-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "nextSection search uses indexOf('\\n[') which misses a section header at position 0 of the sliced block (no preceding newline)",
+          "file": "packages/cli/src/engine/detectors/projectType.ts",
+          "anchor": null,
+          "line": 41,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "polyglot-language-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec says Tier 2 workspaces is 0.90, Tier 1 lockfile-only is 0.95 — a monorepo with a lockfile gets LOWER confidence than a non-monorepo with a lockfile, which is counterintuitive",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "polyglot-language-detection-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-17T06:36:09.590Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-17T06:21:12.563Z",
+        "completed_at": "2026-05-17T06:36:09.584Z",
+        "commit_count": 0,
+        "base_commit": "9386717ee82a97fae4d1ae450995dc5d4157e882"
+      }
     }
   ],
   "schema": 1

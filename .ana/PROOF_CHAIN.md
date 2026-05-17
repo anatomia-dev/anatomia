@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-117 runs · 54 active · 3 promoted · 630 closed
+118 runs · 57 active · 3 promoted · 631 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 54 total)
+## Active Findings (30 shown of 57 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -40,6 +40,11 @@
 - **code:** Multi-remote repos: origin/ prefix stripping ignores non-origin remotes — *Fix scan branch detection — remove local branches from shared intelligence*
 - **code:** detectBranches and detectBranchPatterns both run git branch -r independently — two subprocess calls for the same data — *Fix scan branch detection — remove local branches from shared intelligence*
 
+### packages/cli/src/engine/detectors/projectType.ts
+
+- **code:** Tier 4 no-lockfile + pyproject with no real deps returns 0.70 — same confidence as Tier 5 bare package.json, indistinguishable to downstream consumers — *Polyglot Language Detection*
+- **code:** nextSection search uses indexOf('\n[') which misses a section header at position 0 of the sliced block (no preceding newline) — *Polyglot Language Detection*
+
 ### packages/cli/src/engine/findings/rules/secrets.ts
 
 - **code:** Single-angle pattern suppresses real passwords that happen to be lowercase words in angle brackets (e.g., <admin>, <token>) — *Fix Scanner Trust Output*
@@ -52,13 +57,16 @@
 
 - **test:** Broad mock intercept matches any git command with 'pull' in args, not specifically 'git pull --rebase' — *Fix CI Matrix and Broken Tests*
 - **code:** createMergedProject duplicated between work-ci-mocked.test.ts and work.test.ts — both have independent copies with different mock routing — *Fix CI Matrix and Broken Tests*
-- **test:** A004 assertion uses toBeGreaterThan(0) for exit call count instead of toBe(1) — passes even if process.exit is called multiple times — *Fix CI Matrix and Broken Tests*
 
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** No boundary test at exactly 1-hour timeout — tests use 2-hour-old (stale) and new Date() (fresh), missing 59m59s and 60m01s cases — *Pipeline Concurrency Guards*
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
 - **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
+
+### packages/cli/tests/engine/detectors/polyglot.test.ts
+
+- **test:** A012 frameworkDeps test verifies detector-level cascade but not the actual scan-engine.ts ternary conditional — the ternary fix is tested structurally, not behaviorally — *Polyglot Language Detection*
 
 ### packages/cli/tests/engine/findings/secrets.test.ts
 
@@ -75,10 +83,6 @@
 ### website/components/docs/content/DocsStat.tsx
 
 - **code:** Misspelled DocsStat value key silently renders raw key string — no build-time validation — *Fix prebuild source mutation*
-
-### website/components/docs/proof/FindingsList.tsx
-
-- **code:** Badge opacity 0.75 persists when interactive — reduces contrast for clickable element, potential a11y concern — *FindingsList expand/collapse for proof pages*
 
 ### website/components/docs/proof/PipelineGantt.tsx
 
@@ -100,8 +104,4 @@
 ### website/scripts/extract-docs-data.ts
 
 - **code:** Median computation duplicated between extract-docs-data.ts main() and lib/docs-data/proofs.ts getMedianTimings() — *Fix prebuild source mutation*
-
-### General
-
-- **code:** URL reachability not verified — stable URL contract is a deployment assumption — *Documentation links in init and setup*
 
