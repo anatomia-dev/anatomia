@@ -15,7 +15,8 @@ This scope delivers two changes: (1) the cross-tab as standard audit output (alw
 - **Files affected:**
   - `packages/cli/src/commands/proof.ts` (audit subcommand handler)
   - `packages/cli/src/utils/proofSummary.ts` (computeStaleness import, possibly utility for relative time)
-  - `packages/cli/templates/.claude/agents/ana-learn.md` (template change)
+  - `packages/cli/templates/.claude/agents/ana-learn.md` (template — ships to new users)
+  - `.claude/agents/ana-learn.md` (dogfood — what our pipeline reads)
   - `packages/cli/tests/commands/proof.test.ts` (new test cases)
 - **Blast radius:** Low. Audit's JSON output gets new fields (additive, non-breaking). The `--matrix` flag produces a different response shape (new behavior, no existing behavior changes). Template change affects new Learn installations and our dogfood.
 - **Estimated effort:** ~2-3 hours build + verify
@@ -29,7 +30,7 @@ Two additive changes to the audit subcommand, plus a template update:
 
 **Change 2 — `--matrix` orientation mode.** When `--matrix` is passed, audit returns ONLY orientation data: the standard summary counts (total_active, by_severity, by_action, by_severity_action) plus bundled orientation fields (recent_entries, stale_count, stale_high, stale_medium). No `by_file` array. No individual findings. No anchor-presence file I/O. This makes `--matrix` fast and focused — a summary that tells Learn where to look next, not the findings themselves.
 
-**Change 3 — Template update.** Replace the "Assess the Proof Chain" section of ana-learn.md with instructions to run `ana proof audit --matrix` as the single orientation command, then present a three-option menu (cleanup / highest-impact / recent findings) with an adaptive recommendation.
+**Change 3 — Template update.** Replace the "Assess the Proof Chain" section of ana-learn.md with instructions to run `ana proof audit --matrix` as the single orientation command, then present a three-option menu (cleanup / highest-impact / recent findings) with an adaptive recommendation. Both the template (`packages/cli/templates/.claude/agents/ana-learn.md`) and the dogfood instance (`.claude/agents/ana-learn.md`) must be updated identically — agent definitions aren't overwritten on re-init.
 
 ## Acceptance Criteria
 - AC1: `ana proof audit --json` output includes `by_severity_action` field — a flat object with `"severity/action": count` pairs for all non-zero combinations among active findings.
@@ -92,7 +93,8 @@ None. All investigation questions resolved during scoping conversation.
 - `packages/cli/src/commands/proof.ts:1634-1672` — active findings collection loop (cross-tab accumulator goes here)
 - `packages/cli/src/commands/proof.ts:1734-1745` — existing severity/action counting (cross-tab is the intersection)
 - `packages/cli/src/utils/proofSummary.ts:1123-1226` — `computeStaleness` (called by `--matrix`)
-- `packages/cli/templates/.claude/agents/ana-learn.md:65-113` — "Assess the Proof Chain" and "Present State" sections (template change)
+- `packages/cli/templates/.claude/agents/ana-learn.md:65-113` — "Assess the Proof Chain" and "Present State" sections (template)
+- `.claude/agents/ana-learn.md:65-113` — same sections in dogfood instance (must match template exactly)
 
 ### Patterns to Follow
 - Flag interaction: see `--full` handling at lines 1591-1595 (validates flag combinations, prints hint)
