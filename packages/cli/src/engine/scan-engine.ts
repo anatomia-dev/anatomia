@@ -672,7 +672,7 @@ export async function scanProject(
   // only. A demo site's Next.js shouldn't define the project identity when
   // the primary product is a CLI. Detection fields (database, auth, testing,
   // payments, aiSdk, services) stay on allDeps — they're project-wide facts.
-  const frameworkDeps = census.layout === 'monorepo'
+  const frameworkDeps = census.layout === 'monorepo' && projectTypeResult.type === 'node'
     ? Object.keys(census.primaryDeps)
     : deps;
   const frameworkResult = detectFramework(frameworkDeps, projectTypeResult.type, census.configs.frameworkHints);
