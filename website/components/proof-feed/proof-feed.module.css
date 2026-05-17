@@ -242,15 +242,6 @@
   letter-spacing: -0.01em;
   color: var(--fg);
 }
-.brandMark {
-  display: inline-block;
-  width: 0.3em;
-  height: 0.37em;
-  background: var(--brand-mark);
-  margin-left: 0.12em;
-  position: relative;
-  top: -0.02em;
-}
 .feedHeadTitle :global(em) {
   font-style: italic;
   color: var(--brand-deep);

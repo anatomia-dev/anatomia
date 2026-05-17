@@ -455,7 +455,7 @@ export const copy = {
 
   proofFeed: {
     kicker: "Ship log",
-    headTitle: "Our *proofs*",
+    headTitle: "Our *proofs*.",
     headSub: "",
   },
 
