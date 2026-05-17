@@ -500,7 +500,8 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 - `ana work status` — pipeline state check
 
 **When to use which:**
-- **Session start:** `--severity risk,debt` to identify deep review targets
+- **Session start:** `--matrix` for orientation, then `health --json` for trajectory and promotion candidates
+- **Deep review:** `--severity risk,debt` to focus on risk and debt findings during triage
 - **Low-priority observations:** `--severity observation` for findings that are real but not actionable
 - **Post-ship review:** `--entry {slug}` after a scope ships to see its findings in isolation
 - **Full picture:** `--full` when the truncated top 3 per file isn't enough
