@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Tier 4 no-lockfile + pyproject with no real deps returns 0.70 — same confidence as Tier 5 bare package.json, indistinguishable to downstream consumers"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 146
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A008"]
+  - category: test
+    summary: "A012 frameworkDeps test verifies detector-level cascade but not the actual scan-engine.ts ternary conditional — the ternary fix is tested structurally, not behaviorally"
+    file: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    line: 203
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A012"]
+  - category: code
+    summary: "nextSection search uses indexOf('\\n[') which misses a section header at position 0 of the sliced block (no preceding newline)"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 41
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Spec says Tier 2 workspaces is 0.90, Tier 1 lockfile-only is 0.95 — a monorepo with a lockfile gets LOWER confidence than a non-monorepo with a lockfile, which is counterintuitive"
+    severity: observation
+    suggested_action: monitor
