@@ -2310,6 +2310,26 @@ export function getProofContext(queries: string[], projectRoot: string, options?
 }
 
 /**
+ * Convert an ISO date string to a human-readable relative time.
+ *
+ * Precision: "<1h ago" for <1 hour, "{N}h ago" for <24h,
+ * "{N}d ago" for <30d, "{N}w ago" for >=30d.
+ *
+ * @param isoDate - ISO 8601 date string
+ * @returns Human-readable relative time string (e.g., "2d ago", "1w ago")
+ */
+export function formatRelativeTime(isoDate: string): string {
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (hours < 1) return '<1h ago';
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks}w ago`;
+}
+
+/**
  * Truncate text at a word boundary, appending '...' if truncated.
  *
  * If text fits within maxLength, returns it unchanged. Otherwise finds
