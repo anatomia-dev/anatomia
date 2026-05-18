@@ -32826,7 +32826,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "learn-session-memory-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Not duplication: matrix block (line 1717) and filter block (line 1913) are mutually exclusive code paths. Matrix early-returns before the filter section runs. They never both parse state.json in the same invocation. Extracting to a shared read would parse the file even when neither --new nor --matrix is used.",
+          "closed_at": "2026-05-18T03:43:39.692Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
