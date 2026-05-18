@@ -1,0 +1,46 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A007 tagged test checks null-test path, not identical-values path as contract describes"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    line: 334
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A007"]
+  - category: test
+    summary: "A002 tag on compile-variant test — contract's exact value checked in A001 test instead"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    line: 195
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A002"]
+  - category: upstream
+    summary: "makeTestCommand.test.ts modified but not listed in contract file_changes — necessary to avoid regressions"
+    file: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "pkg.path injected without sanitization in new buildPackageCmd and testPackageCmd — same known risk as monorepo-build-scoping-C5"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 439
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A001", "A004"]
+  - category: test
+    summary: "preserveUserState propagation tested via direct call, not through full createAnaJson re-init integration flow"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    line: 356
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010", "A011"]
+  - category: code
+    summary: "Propagation loop iterates all freshCommands keys including non-command keys like 'packageManager' and 'all' if present"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 582
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Contract A005 matcher/value encoding semantically confusing — says 'no buildPackage' but uses 'not_equals'/'undefined'"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005"]
