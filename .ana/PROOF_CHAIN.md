@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-122 runs · 71 active · 3 promoted · 642 closed
+122 runs · 70 active · 3 promoted · 643 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 71 total)
+## Active Findings (30 shown of 70 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -40,12 +40,12 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** commitAndPushProofChanges and pullBeforeRead exported from proof.ts instead of extracted to git-operations.ts — *Learn Session Memory*
-- **code:** --new and --since can be provided simultaneously — --since silently wins with no documentation — *Learn Session Memory*
 - **code:** Duplicated zero-entry JSON payload — identical object literal at two call sites — *Audit matrix orientation*
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** checkConcurrencyGuard has dead `force` parameter — never passed true from production call sites — *Pipeline Concurrency Guards*
+- **code:** isTimestampRecent duplicates checkConcurrencyGuard logic — both parse .saves.json, extract timestamp, compare against CONCURRENCY_TIMEOUT_MS — *Pipeline Concurrency Guards*
 
 ### packages/cli/src/engine/detectors/git.ts
 

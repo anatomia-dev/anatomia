@@ -32840,7 +32840,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "learn-session-memory-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional precedence: --since is checked first (proof.ts:1902), --new is in the else block (line 1910). Explicit date overrides implicit 'since last session.' Standard CLI pattern — more specific flag wins. No ambiguity, no data loss. Behavior is correct and unsurprising.",
+          "closed_at": "2026-05-18T03:44:12.745Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
