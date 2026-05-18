@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-122 runs · 67 active · 3 promoted · 646 closed
+123 runs · 72 active · 3 promoted · 648 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 67 total)
+## Active Findings (30 shown of 72 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -36,12 +36,6 @@
 
 - **code:** commitAndPushProofChanges and pullBeforeRead exported from proof.ts instead of extracted to git-operations.ts — *Learn Session Memory*
 - **code:** Duplicated zero-entry JSON payload — identical object literal at two call sites — *Audit matrix orientation*
-
-### packages/cli/src/commands/work.ts
-
-- **code:** checkConcurrencyGuard has dead `force` parameter — never passed true from production call sites — *Pipeline Concurrency Guards*
-- **code:** isTimestampRecent duplicates checkConcurrencyGuard logic — both parse .saves.json, extract timestamp, compare against CONCURRENCY_TIMEOUT_MS — *Pipeline Concurrency Guards*
-- **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -73,11 +67,6 @@
 
 - **test:** A008/A009 use toBeDefined() instead of specific values for stale_count and recent_entries — *Audit matrix orientation*
 
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** No boundary test at exactly 1-hour timeout — tests use 2-hour-old (stale) and new Date() (fresh), missing 59m59s and 60m01s cases — *Pipeline Concurrency Guards*
-- **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
-
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
 - **test:** A012 frameworkDeps test verifies detector-level cascade but not the actual scan-engine.ts ternary conditional — the ternary fix is tested structurally, not behaviorally — *Polyglot Language Detection*
@@ -93,6 +82,17 @@
 ### website/app/docs/proof/[slug]/page.tsx
 
 - **code:** GitHub outage degrades valid new slugs to 404 — fetchProofChainEntry returns null on network failure, triggering notFound() — *Ship log proof linking*
+
+### website/components/pricing/pricing.module.css
+
+- **code:** Error color hardcoded as #ff8a8a on highlighted card instead of CSS custom property — *Team edition waitlist form*
+
+### website/components/pricing/WaitlistForm.tsx
+
+- **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
+- **code:** Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read — *Team edition waitlist form*
+- **code:** Success message aria-live on freshly mounted element — screen readers may not announce dynamically inserted aria-live regions — *Team edition waitlist form*
+- **code:** No client-side rate limiting — user can spam submit after error state re-enables the button — *Team edition waitlist form*
 
 ### website/components/system/Drawer.tsx
 

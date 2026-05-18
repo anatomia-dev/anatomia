@@ -32919,6 +32919,294 @@
         "completed_at": "2026-05-18T03:40:00.300Z",
         "commit_count": 0
       }
+    },
+    {
+      "slug": "waitlist-form",
+      "feature": "Team edition waitlist form",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 23,
+        "satisfied": 23,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The Team card shows an email form instead of a link button",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The Individual card still shows its original install button",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Submitting an email sends a POST to Formspree with JSON headers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The submission includes an Accept JSON header so Formspree returns JSON",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "After a successful submission the form disappears and a confirmation message shows",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The success message has a fade-in transition",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "When submission fails an error message appears with a fallback email",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The form stays interactive after an error so the user can retry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A honeypot field traps bots without affecting real users",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A source field tags submissions as coming from the pricing card",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Empty email input shows a validation error instead of submitting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A malformed email address is rejected before submission",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The submit button is disabled while the email is being sent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The button text changes during submission to indicate progress",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "On desktop the input and button sit side by side",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "On mobile the input and button stack vertically",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The email input has an accessible label for screen readers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Success and error messages are announced to screen readers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The email input is visible on the dark card surface in light mode",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The Formspree form ID is defined as a constant in the component file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The input uses email type for mobile keyboard optimization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Focus moves to the success message after submission for screen reader announcement",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A network timeout prevents the loading state from spinning forever",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 103,
+        "think": 1,
+        "plan": 4,
+        "build": 4,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:f387a3f35df9ebeb6a57b21c3e539d2c03628740d7ceabded1c3e61ee81ad550",
+        "contract": "sha256:b7c91dfdf3d46a924bef827485bdb02d99fa9c4c7e72f09babf98c4cdff5d5a9",
+        "plan": "sha256:2636016defd5b0d96dc9ef6a3811a410331c5f699bca928f5caf5cce10ed22e2",
+        "spec": "sha256:2f4eb2de9669b4c5df27525aef307859f90090dfd4b7b9b0dc3b8c015e932efc",
+        "build-report": "sha256:21c8328603505569208fb5b7aaa790ebb76853e540fc14c9604e871bd3d664b9",
+        "build-data": "sha256:9e50852d5cad2f59cb726bc38885636efd0b86ef94aba983771731cb41b41e60",
+        "verify-report": "sha256:1d8d43a710985a1e161a65f759204e1a4d3d9a1a4620b7cd0b15ab2d29bfe478",
+        "verify-data": "sha256:acd77807eb50afc1f813de11522ffff5f24a04eef559199b326abd87d9fbbba2"
+      },
+      "completed_at": "2026-05-18T05:58:11.230Z",
+      "modules_touched": [
+        "website/components/pricing/PriceCard.tsx",
+        "website/components/pricing/WaitlistForm.tsx",
+        "website/components/pricing/pricing.module.css",
+        "website/lib/copy.ts"
+      ],
+      "scope_summary": "The \"Join the waitlist\" button on the Team pricing card links to `/contact` — a page with email addresses and no form. A visitor who wants to join the waitlist has to manually compose an email. That's a dead conversion path that loses every casual-interest lead. Replace the CTA with an inline email capture form backed by Formspree. No redirect, no modal, no page navigation. Type email, submit, see confirmation.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value",
+          "file": "website/components/pricing/WaitlistForm.tsx",
+          "anchor": null,
+          "line": 87,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "waitlist-form-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read",
+          "file": "website/components/pricing/WaitlistForm.tsx",
+          "anchor": null,
+          "line": 89,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "waitlist-form-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Success message aria-live on freshly mounted element — screen readers may not announce dynamically inserted aria-live regions",
+          "file": "website/components/pricing/WaitlistForm.tsx",
+          "anchor": null,
+          "line": 71,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A018",
+            "A022"
+          ],
+          "id": "waitlist-form-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Error color hardcoded as #ff8a8a on highlighted card instead of CSS custom property",
+          "file": "website/components/pricing/pricing.module.css",
+          "anchor": null,
+          "line": 242,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "waitlist-form-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No client-side rate limiting — user can spam submit after error state re-enables the button",
+          "file": "website/components/pricing/WaitlistForm.tsx",
+          "anchor": null,
+          "line": 54,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "waitlist-form-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec says desktop >768px for side-by-side but CSS only enforces column at ≤480px — 481-768px relies on flex-wrap heuristics",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A015",
+            "A016"
+          ],
+          "id": "waitlist-form-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-18T05:58:11.230Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "copy.ts still has stale manifesto link (/#pipeline) and proofFeed clickable rows reference — pre-existing, not introduced by this build",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "waitlist-form-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-18T05:58:11.230Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "No automated test coverage for form behavior — website lacks Vitest/testing-library infrastructure",
+          "file": "website/components/pricing/WaitlistForm.tsx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Error color on highlighted card (#ff8a8a) is hardcoded hex, not a CSS custom property",
+          "file": "website/components/pricing/pricing.module.css",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "--color-danger CSS variable not defined in site theme; fallback #dc3545 is active",
+          "file": "website/components/pricing/pricing.module.css",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-18T05:32:05.684Z",
+        "completed_at": "2026-05-18T05:58:11.224Z",
+        "commit_count": 7,
+        "base_commit": "6a1ae5fc7ffbb55bf9fe74afc15080fd97284c0c"
+      }
     }
   ],
   "schema": 1
