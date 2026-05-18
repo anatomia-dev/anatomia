@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: code
+    summary: "commitAndPushProofChanges and pullBeforeRead exported from proof.ts instead of extracted to git-operations.ts"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 126
+    severity: debt
+    suggested_action: scope
+    related_assertions: []
+
+  - category: code
+    summary: "Duplicated learn state reading logic — matrix block and filter block both parse state.json independently"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 1717
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "--new and --since can be provided simultaneously — --since silently wins with no documentation"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 1899
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "No @ana tags for A025-A029 — template/doc assertions verified by source inspection only"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A025", "A026", "A027", "A028", "A029"]
+
+  - category: code
+    summary: "learn.ts uses synchronous fs (existsSync, readFileSync, writeFileSync, mkdirSync) while init assets.ts uses async fs"
+    file: "packages/cli/src/commands/learn.ts"
+    line: 63
+    severity: debt
+    suggested_action: accept
+
+  - category: upstream
+    summary: "Lint warning: unused eslint-disable directive in git-operations.ts — pre-existing, not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: observation
+    suggested_action: monitor

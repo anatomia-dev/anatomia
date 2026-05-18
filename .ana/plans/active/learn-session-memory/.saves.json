@@ -50,5 +50,20 @@
     "website/content/docs/concepts/toolbelt.mdx",
     "website/content/docs/guides/using-ana-learn.mdx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-18T03:20:22.590Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f17ae9fb0cc9c446edad2482ea557bb9bff86504dd0110a1ce7986b3caef5fb3",
+    "run_at": "2026-05-18T03:27:35.197Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-18T03:27:35.239Z",
+    "hash": "sha256:97383d13fd3b09301ca7349884e6cf847227504cad012a6d6b9925c216909ff6"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-18T03:27:35.239Z",
+    "hash": "sha256:1f398ddf39bf224be9c393ba17ddb7ca56cf416239a784631e2a790b1f0b4af4"
+  }
 }
