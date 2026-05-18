@@ -517,10 +517,9 @@ export async function createAnaJson(
  *   - .gitignore → NOT copied. Infrastructure-owned by createDirectoryStructure;
  *     must match current CLI version's expectations (state/, worktrees/).
  *
- * Note on merge semantics: only anaVersion and lastScanAt refresh from
- * the new scan. language/framework/packageManager/commands preserve
- * from the old ana.json — pre-existing behavior. Full mechanical-field
- * refresh is a separate design decision for a later sprint.
+ * Note on merge semantics: six mechanical fields refresh from the new
+ * scan: anaVersion, lastScanAt, name, language, framework, packageManager.
+ * Commands preserve from the old ana.json — user tuning must survive.
  *
  * @param existingAnaPath - Path to the still-existing `.ana/` directory
  * @param tmpAnaPath - Path to the tmp build directory
@@ -562,6 +561,10 @@ export async function preserveUserState(
       ...parsed.data,
       anaVersion: newAnaConfig['anaVersion'],
       lastScanAt: newAnaConfig['lastScanAt'],
+      name: newAnaConfig['name'],
+      language: newAnaConfig['language'],
+      framework: newAnaConfig['framework'],
+      packageManager: newAnaConfig['packageManager'],
     };
 
     // Sanitize blank commands — fall through to fresh detection value.
