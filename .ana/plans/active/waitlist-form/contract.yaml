@@ -1,0 +1,184 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Team edition waitlist form"
+
+assertions:
+  # AC1 — Form replaces CTA
+  - id: A001
+    says: "The Team card shows an email form instead of a link button"
+    block: "form renders on Team card"
+    target: "WaitlistForm.rendered"
+    matcher: "truthy"
+
+  - id: A002
+    says: "The Individual card still shows its original install button"
+    block: "Individual card unchanged"
+    target: "IndividualCard.cta.type"
+    matcher: "equals"
+    value: "link"
+
+  # AC2 — Formspree submission
+  - id: A003
+    says: "Submitting an email sends a POST to Formspree with JSON headers"
+    block: "submits to Formspree"
+    target: "fetch.method"
+    matcher: "equals"
+    value: "POST"
+
+  - id: A004
+    says: "The submission includes an Accept JSON header so Formspree returns JSON"
+    block: "submits to Formspree"
+    target: "fetch.headers.Accept"
+    matcher: "equals"
+    value: "application/json"
+
+  # AC3 — Success state
+  - id: A005
+    says: "After a successful submission the form disappears and a confirmation message shows"
+    block: "shows success state"
+    target: "successMessage.textContent"
+    matcher: "contains"
+    value: "You're on the list"
+
+  - id: A006
+    says: "The success message has a fade-in transition"
+    block: "shows success state"
+    target: "successMessage.className"
+    matcher: "contains"
+    value: "waitlistSuccess"
+
+  # AC4 — Error state
+  - id: A007
+    says: "When submission fails an error message appears with a fallback email"
+    block: "shows error state"
+    target: "errorMessage.textContent"
+    matcher: "contains"
+    value: "team@anatomia.dev"
+
+  - id: A008
+    says: "The form stays interactive after an error so the user can retry"
+    block: "shows error state"
+    target: "submitButton.disabled"
+    matcher: "equals"
+    value: false
+
+  # AC5 — Spam protection
+  - id: A009
+    says: "A honeypot field traps bots without affecting real users"
+    block: "honeypot present"
+    target: "honeypotField.name"
+    matcher: "equals"
+    value: "_gotcha"
+
+  - id: A010
+    says: "A source field tags submissions as coming from the pricing card"
+    block: "source field present"
+    target: "sourceField.value"
+    matcher: "equals"
+    value: "pricing-card"
+
+  # AC6 — Validation
+  - id: A011
+    says: "Empty email input shows a validation error instead of submitting"
+    block: "validates empty input"
+    target: "validationError.textContent"
+    matcher: "contains"
+    value: "valid email"
+
+  - id: A012
+    says: "A malformed email address is rejected before submission"
+    block: "validates malformed input"
+    target: "validationError.visible"
+    matcher: "truthy"
+
+  # AC7 — Loading state
+  - id: A013
+    says: "The submit button is disabled while the email is being sent"
+    block: "shows loading state"
+    target: "submitButton.disabled"
+    matcher: "truthy"
+
+  - id: A014
+    says: "The button text changes during submission to indicate progress"
+    block: "shows loading state"
+    target: "submitButton.textContent"
+    matcher: "contains"
+    value: "Sending"
+
+  # AC8 — Responsive layout
+  - id: A015
+    says: "On desktop the input and button sit side by side"
+    block: "responsive layout"
+    target: "form.layout.desktop"
+    matcher: "equals"
+    value: "row"
+
+  - id: A016
+    says: "On mobile the input and button stack vertically"
+    block: "responsive layout"
+    target: "form.layout.mobile"
+    matcher: "equals"
+    value: "column"
+
+  # AC9 — Accessibility
+  - id: A017
+    says: "The email input has an accessible label for screen readers"
+    block: "accessible form"
+    target: "input.ariaLabel"
+    matcher: "exists"
+
+  - id: A018
+    says: "Success and error messages are announced to screen readers"
+    block: "accessible form"
+    target: "messageRegion.ariaLive"
+    matcher: "equals"
+    value: "polite"
+
+  # AC10 — Inverted card styling
+  - id: A019
+    says: "The email input is visible on the dark card surface in light mode"
+    block: "inverted card styling"
+    target: "input.background"
+    matcher: "exists"
+
+  # AC11 — Form ID location
+  - id: A020
+    says: "The Formspree form ID is defined as a constant in the component file"
+    block: "form ID hardcoded"
+    target: "FORMSPREE_ID.location"
+    matcher: "equals"
+    value: "WaitlistForm.tsx"
+
+  # AC14 — Email input type
+  - id: A021
+    says: "The input uses email type for mobile keyboard optimization"
+    block: "email input type"
+    target: "input.type"
+    matcher: "equals"
+    value: "email"
+
+  # AC15 — Focus management
+  - id: A022
+    says: "Focus moves to the success message after submission for screen reader announcement"
+    block: "focus management"
+    target: "successMessage.tabIndex"
+    matcher: "equals"
+    value: -1
+
+  # Network timeout
+  - id: A023
+    says: "A network timeout prevents the loading state from spinning forever"
+    block: "fetch timeout"
+    target: "AbortController.timeout"
+    matcher: "greater"
+    value: 0
+
+file_changes:
+  - path: "website/components/pricing/WaitlistForm.tsx"
+    action: create
+  - path: "website/components/pricing/pricing.module.css"
+    action: modify
+  - path: "website/components/pricing/PriceCard.tsx"
+    action: modify
+  - path: "website/lib/copy.ts"
+    action: modify
