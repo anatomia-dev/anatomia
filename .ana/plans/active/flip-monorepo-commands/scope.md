@@ -24,6 +24,7 @@ This scope flips the semantics: `build`/`test` are project-wide. `buildPackage`/
   - `.claude/agents/ana-verify.md` — dogfood sync
   - `.claude/agents/ana-plan.md` — dogfood sync
   - `website/content/docs/guides/troubleshooting.mdx` — update monorepo command guidance (2 TroubleCards)
+  - `website/content/docs/start.mdx` — line 44 callout says "In monorepos they may not target the right package" which is stale after the flip (commands ARE project-wide now)
 - **Files NOT affected (verified):**
   - `packages/cli/src/utils/worktree.ts` — already reads `commands.build` directly (line 452). After the flip, `build` contains the project-wide command. Zero code changes needed. The worktree automatically gets correct behavior from the upstream change in `createAnaJson`.
   - `packages/cli/src/commands/init/anaJsonSchema.ts` — `commands` is `z.record(z.string(), z.unknown())` with passthrough. New keys handled automatically.
@@ -49,10 +50,10 @@ A propagation loop in `preserveUserState` ensures new command keys (like `buildP
 - AC4: Worktree `runBuildCommand` continues to read `commands.build` directly (no code change needed — it already does this). After the flip, `build` contains the project-wide command, so the worktree compiles all packages correctly.
 - AC5: Build template says "use `build`" unconditionally for baseline builds, Build Brief checkpoint commands for focused testing. No "if present" or "or" language.
 - AC6: Verify template uses `build` for the build step and Build Brief checkpoint commands for test verification.
-- AC7: Plan template references `test` for full baseline runs and `testPackage` (or direct test file targeting) for Build Brief checkpoint commands.
+- AC7: Plan template references `test` for full baseline runs. For Build Brief checkpoint commands, Plan uses `testPackage` as a starting point but adapts the path for the ACTUAL target package of the scope (since `testPackage` always targets the primary package, which may not be the scope's target).
 - AC8: `preserveUserState` propagation loop: new command keys from fresh detection appear on re-init without overwriting existing user-customized values.
 - AC9: `ana config set commands.buildPackage ""` is rejected (COMMAND_FIELDS validation).
-- AC10: Troubleshooting docs reflect the new command semantics.
+- AC10: Troubleshooting docs and quickstart callout reflect the new command semantics.
 - AC11: Dogfood templates (`.claude/agents/`) are byte-identical to product templates after changes.
 
 ## Edge Cases & Risks
@@ -122,7 +123,7 @@ For the propagation loop: the existing blank-string sanitization loop (state.ts:
 - Template style: unconditional instructions. "Use `build` from ana.json" — no "if present" or "or" qualifiers.
 
 ### Known Gotchas
-- **`testCmd` transformation order matters.** `makeTestCommandNonInteractive` runs first (produces the root non-interactive variant). Then monorepo scoping produces the scoped variant. `test` in ana.json = the non-interactive root variant. `testPackage` = the scoped variant. Don't confuse pre-scoping and post-scoping values.
+- **`test` scoping requires restructuring, not just "don't overwrite."** The current code (lines 400-412) mutates `testCmd` in place — starts as root non-interactive, then gets overwritten with the scoped `(cd ... && ...)` variant. The flip requires splitting this into TWO separate computations: (1) `test` = `makeTestCommandNonInteractive(result.commands.test, ...)` (capture BEFORE the monorepo block runs), (2) `testPackage` = the `(cd ${pkg.path} && ${directCmd})` value (computed inside the monorepo block). This is NOT symmetric with `build` — the build scoping (lines 421-450) reads primary package.json scripts, while the test scoping uses `buildDirectTestCommand` framework mapping. Both mechanisms stay; they just write to different variables (`build`/`buildPackage` and `test`/`testPackage`).
 - **"Only when different" check.** `buildPackage` should only be written when its value differs from `build`. For single-package projects, they'd be identical — so don't write it. For monorepos where the primary package IS the root (relativePath === '.'), `primaryPackage` is null (census.ts:642-644) and the scoping block doesn't execute — so no `buildPackage` is computed.
 - **Template changes span three agent templates.** Build, Verify, AND Plan. Plus three dogfood copies. Six files total. All must be consistent with each other. The original scope missed the Plan template.
 - **DO NOT modify worktree.ts.** `runBuildCommand` (line 452) and `getBuildCommandString` (line 430) already read `commands.build`. After the flip, `build` contains the project-wide command. The worktree automatically gets correct behavior. Any change here is unnecessary work.
