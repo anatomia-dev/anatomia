@@ -1,0 +1,188 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Flip Monorepo Command Semantics"
+
+assertions:
+  - id: A001
+    says: "Monorepo build command is project-wide, not scoped to primary package"
+    block: "monorepo build is project-wide root command"
+    target: "commands.build"
+    matcher: "equals"
+    value: "pnpm run build"
+
+  - id: A002
+    says: "Monorepo buildPackage contains the scoped command for primary package"
+    block: "monorepo buildPackage is scoped to primary package"
+    target: "commands.buildPackage"
+    matcher: "equals"
+    value: "(cd packages/cli && pnpm run build)"
+
+  - id: A003
+    says: "Monorepo test command is project-wide non-interactive"
+    block: "monorepo test is project-wide root command"
+    target: "commands.test"
+    matcher: "not_contains"
+    value: "(cd "
+
+  - id: A004
+    says: "Monorepo testPackage contains the scoped test command"
+    block: "monorepo testPackage is scoped to primary package"
+    target: "commands.testPackage"
+    matcher: "contains"
+    value: "(cd "
+
+  - id: A005
+    says: "Single-package projects have no buildPackage or testPackage fields"
+    block: "single-repo has no scoped command variants"
+    target: "commands.buildPackage"
+    matcher: "not_equals"
+    value: "undefined"
+
+  - id: A006
+    says: "buildPackage is omitted when its value would be identical to build"
+    block: "identical root and scoped values produce no buildPackage"
+    target: "commands.buildPackage"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A007
+    says: "testPackage is omitted when its value would be identical to test"
+    block: "identical root and scoped values produce no testPackage"
+    target: "commands.testPackage"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A008
+    says: "Build command stays root when primary package has no build script"
+    block: "fallback to root when primary package lacks build script"
+    target: "commands.build"
+    matcher: "equals"
+    value: "pnpm run build"
+
+  - id: A009
+    says: "buildPackage not written when primary package has no build script"
+    block: "fallback to root when primary package lacks build script"
+    target: "commands.buildPackage"
+    matcher: "not_equals"
+    value: "defined"
+
+  - id: A010
+    says: "New command keys appear on re-init without overwriting existing customizations"
+    block: "preserveUserState propagation adds new keys"
+    target: "mergedCommands.buildPackage"
+    matcher: "exists"
+
+  - id: A011
+    says: "Existing user-customized commands survive re-init unchanged"
+    block: "preserveUserState propagation does not overwrite existing keys"
+    target: "mergedCommands.build"
+    matcher: "equals"
+    value: "custom-build-command"
+
+  - id: A012
+    says: "Empty string buildPackage is rejected by config validation"
+    block: "COMMAND_FIELDS rejects empty buildPackage"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A013
+    says: "Empty string testPackage is rejected by config validation"
+    block: "COMMAND_FIELDS rejects empty testPackage"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A014
+    says: "Build template instructs using commands.build for project build"
+    block: "build template uses commands.build unconditionally"
+    target: "template.content"
+    matcher: "contains"
+    value: "commands.build"
+
+  - id: A015
+    says: "Build template instructs using Build Brief for test checkpoints, not commands.test"
+    block: "build template uses Build Brief for test execution"
+    target: "template.verificationCommands"
+    matcher: "not_contains"
+    value: "{test command from ana.json commands.test}"
+
+  - id: A016
+    says: "Verify template uses Build Brief checkpoint commands for test verification"
+    block: "verify template uses Build Brief for test step"
+    target: "template.step2"
+    matcher: "not_contains"
+    value: "{test command from ana.json commands.test}"
+
+  - id: A017
+    says: "Plan template references commands.test for full baseline runs"
+    block: "plan template uses commands.test for baseline"
+    target: "template.buildBaseline"
+    matcher: "contains"
+    value: "commands.test"
+
+  - id: A018
+    says: "Dogfood build template is byte-identical to product template"
+    block: "dogfood sync build template"
+    target: "diff.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A019
+    says: "Dogfood verify template is byte-identical to product template"
+    block: "dogfood sync verify template"
+    target: "diff.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A020
+    says: "Dogfood plan template is byte-identical to product template"
+    block: "dogfood sync plan template"
+    target: "diff.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A021
+    says: "Troubleshooting docs reference the new command semantics"
+    block: "docs updated for new semantics"
+    target: "troubleshooting.content"
+    matcher: "contains"
+    value: "buildPackage"
+
+  - id: A022
+    says: "Quickstart callout describes commands as project-wide"
+    block: "quickstart callout updated"
+    target: "start.content"
+    matcher: "contains"
+    value: "project-wide"
+
+  - id: A023
+    says: "Lint command stays scoped in monorepos (not flipped)"
+    block: "lint is not flipped"
+    target: "commands.lint"
+    matcher: "contains"
+    value: "(cd "
+
+file_changes:
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-plan.md"
+    action: modify
+  - path: ".claude/agents/ana-build.md"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
+  - path: ".claude/agents/ana-plan.md"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    action: modify
