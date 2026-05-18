@@ -1,0 +1,22 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A013 (doc comment) has no tagged test — verified by source inspection only"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 520
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A013"]
+  - category: code
+    summary: "Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 564
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001", "A002", "A003", "A004"]
+  - category: code
+    summary: "pkg.path injected without sanitization in createAnaJson — pre-existing, unrelated to this build"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: observation
+    suggested_action: monitor
+    resolves: []

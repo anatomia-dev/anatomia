@@ -82,7 +82,7 @@ An LLM asked to "change the default coding-standards rules" should edit `templat
 Re-running `ana init` is designed to be safe. The function `preserveUserState` (state.ts) governs what survives:
 
 - **Preserved:** `context/` (user-enriched content), `plans/completed/` (pipeline history), `proof_chain.json` + `PROOF_CHAIN.md` (proof data), `ana.json` user fields (commands, coAuthor, artifactBranch, branchPrefix, custom), `state/setup-progress.json` (only during in-progress setup).
-- **Refreshed:** `scan.json` (full re-scan), `ana.json` mechanical fields (anaVersion, lastScanAt), skills `## Detected` sections, symbol index, `.ana/.gitignore`.
+- **Refreshed:** `scan.json` (full re-scan), `ana.json` mechanical fields (anaVersion, lastScanAt, name, language, framework, packageManager), skills `## Detected` sections, symbol index, `.ana/.gitignore`.
 - **Merge-not-overwrite:** CLAUDE.md, AGENTS.md, agent definitions (`.claude/agents/*.md`). If they exist, they're kept as-is. Skill files get Detected refreshed but Rules/Gotchas/Examples preserved.
 
 ## Key Decisions

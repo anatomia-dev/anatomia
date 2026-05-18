@@ -767,6 +767,142 @@ describe('ana init', () => {
     });
   });
 
+  // @ana A001, A002, A003, A004, A005, A006
+  describe('re-init refreshes metadata fields from new scan', () => {
+    it('refreshes name, language, framework, packageManager from new config', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'old-project',
+          language: 'JavaScript',
+          framework: null,
+          packageManager: 'npm',
+          commands: { test: 'my-custom-test', build: 'my-build' },
+          coAuthor: 'Old Author <old@example.com>',
+          artifactBranch: 'main',
+          myCustomKey: true,
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'fresh-project-name',
+        language: 'Python',
+        framework: 'Django',
+        packageManager: 'pip',
+        commands: { test: 'pytest', build: 'python -m build' },
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(
+        await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'),
+      );
+      // Metadata fields refresh from new scan
+      expect(result.name).toBe('fresh-project-name');
+      expect(result.language).toBe('Python');
+      expect(result.framework).toBe('Django');
+      expect(result.packageManager).toBe('pip');
+      // Commands preserve from old config
+      expect(result.commands.test).toBe('my-custom-test');
+      expect(result.commands.build).toBe('my-build');
+      // Passthrough key survives
+      expect(result.myCustomKey).toBe(true);
+    });
+  });
+
+  // @ana A007, A008, A009, A010
+  describe('preserves user-owned fields during metadata refresh', () => {
+    it('preserves coAuthor, artifactBranch, branchPrefix, custom', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'old-name',
+          language: 'Go',
+          framework: 'Gin',
+          packageManager: 'go',
+          coAuthor: 'My Team <team@example.com>',
+          artifactBranch: 'develop',
+          branchPrefix: 'fix/',
+          custom: { myFlag: true },
+          commands: { test: 'go test ./...' },
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'new-name',
+        language: 'Rust',
+        framework: null,
+        packageManager: 'cargo',
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(
+        await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'),
+      );
+      expect(result.coAuthor).toBe('My Team <team@example.com>');
+      expect(result.artifactBranch).toBe('develop');
+      expect(result.branchPrefix).toBe('fix/');
+      expect(result.custom.myFlag).toBe(true);
+      // Metadata did refresh
+      expect(result.name).toBe('new-name');
+      expect(result.language).toBe('Rust');
+    });
+  });
+
+  // @ana A011, A012
+  describe('refreshes null values from scan without preserving stale data', () => {
+    it('null scan results overwrite non-null old values', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'my-project',
+          language: 'TypeScript',
+          framework: 'Express',
+          packageManager: 'pnpm',
+          artifactBranch: 'main',
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'my-project',
+        language: null,
+        framework: null,
+        packageManager: null,
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(
+        await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'),
+      );
+      expect(result.language).toBe(null);
+      expect(result.framework).toBe(null);
+      expect(result.packageManager).toBe(null);
+    });
+  });
+
   describe('scan engine blind spot messages', () => {
     // @ana A022
     it('scan-engine blind spot message is not modified', async () => {

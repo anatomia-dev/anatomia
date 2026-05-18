@@ -18,5 +18,35 @@
   "spec": {
     "saved_at": "2026-05-18T18:17:58.882Z",
     "hash": "sha256:34014f2078122279f0be22f0df8e8bb94b1ae02c1ca9cdb7c2c0e20b472cb340"
+  },
+  "build_started_at": "2026-05-18T18:22:03.925Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-18T18:25:15.579Z",
+    "hash": "sha256:ab7f898cc2d637d0fb60e1567fed8d4fbfc382e08ab148ec70888dc3b281b3f7"
+  },
+  "build-data": {
+    "saved_at": "2026-05-18T18:25:15.580Z",
+    "hash": "sha256:bb9080c9cfd9af3bd66f2e3b80819ee837e6167885aeb354bc1d33fa4f1d4226"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/tests/commands/init.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-18T18:27:28.851Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:038d579a1a343babd584312907aeb9e5f396154daa812eb507c98a20ba20715c",
+    "run_at": "2026-05-18T18:30:41.767Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-18T18:30:41.806Z",
+    "hash": "sha256:dbacd07bf843a47c7c46b0e85c1306a00c1f8221275f569378f4711b79286c67"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-18T18:30:41.807Z",
+    "hash": "sha256:7c478a3537791cbee9ec96d8140abc9cec5d2b66112992533e88e5b426dbfb5f"
   }
 }
