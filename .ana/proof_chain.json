@@ -32860,7 +32860,10 @@
             "A029"
           ],
           "id": "learn-session-memory-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Rule 2 (enforcement tests): A025-A029 are template/documentation content assertions with matcher 'contains' on template_content, readme_content, guide_content, toolbelt_content. Source-content verification is the correct method for structural invariants. Same pattern as 8+ findings closed this session under Rule 2.",
+          "closed_at": "2026-05-18T03:44:37.377Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

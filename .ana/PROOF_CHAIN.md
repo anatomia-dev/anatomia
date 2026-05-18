@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-122 runs · 70 active · 3 promoted · 643 closed
+122 runs · 69 active · 3 promoted · 644 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 70 total)
+## Active Findings (30 shown of 69 total)
 
 ### packages/cli/src/commands/check.ts
 
@@ -46,6 +46,7 @@
 
 - **code:** checkConcurrencyGuard has dead `force` parameter — never passed true from production call sites — *Pipeline Concurrency Guards*
 - **code:** isTimestampRecent duplicates checkConcurrencyGuard logic — both parse .saves.json, extract timestamp, compare against CONCURRENCY_TIMEOUT_MS — *Pipeline Concurrency Guards*
+- **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -100,8 +101,4 @@
 ### website/lib/proof-feed.ts
 
 - **code:** VERSION_FALLBACK evaluated at module load time — single-shot, no retry on transient readFileSync failure — *Dynamic marketing stats — wire command count and version fallback*
-
-### General
-
-- **test:** No @ana tags for A025-A029 — template/doc assertions verified by source inspection only — *Learn Session Memory*
 
