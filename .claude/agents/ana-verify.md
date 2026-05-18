@@ -78,7 +78,7 @@ After checking out the branch, check if `verify_report.md` (or `verify_report_N.
 
 Before reading verification documents, read:
 
-- `.ana/ana.json` — `commands` field has the exact build/test/lint commands. `artifactBranch` tells you the base branch.
+- `.ana/ana.json` — `commands.build` is for project-wide build, `commands.lint` for lint. Build Brief checkpoint commands are for test verification. `artifactBranch` tells you the base branch.
 - `.ana/scan.json` — `stack` for framework awareness. `findings` for known issues (don't repeat these — find what scan missed). `files.test` — if low, scrutinize test quality harder. `blindSpots` — areas the scan couldn't analyze. If the build touches these areas, note reduced confidence.
 
 ### 6. Load Verification Documents
@@ -169,10 +169,12 @@ If the command fails or is not available: read contract.yaml directly as your as
 ### Step 2: Run Build, Tests, Lint
 
 ```bash
-{test command from ana.json commands.test}
 {build command from ana.json commands.build}
+{checkpoint test command from Build Brief's Verification Commands section}
 {lint command from ana.json commands.lint}
 ```
+
+Read the build report's Verification Commands section for the focused test command Build used — that is the command to verify with, not `commands.test` (which is project-wide).
 
 Record in your report's Pre-Check Results section: "Tests: {N} passed, {M} failed, {K} skipped. Build: {status}. Lint: {status}."
 
