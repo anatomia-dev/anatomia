@@ -34,5 +34,51 @@
         "hash": "sha256:36856dbe00f76d9cee06390cd9b07d39c72eb16e7388bcb682a9c8d9b5fdf505"
       }
     ]
+  },
+  "build_started_at": "2026-05-18T02:49:59.272Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-18T03:07:44.814Z",
+    "hash": "sha256:8f0f32ab262b933bc3b83b85850dbc9fdcd41ea9dcc7b610613003695cadfccb"
+  },
+  "build-data": {
+    "saved_at": "2026-05-18T03:07:44.816Z",
+    "hash": "sha256:904fb4c2da49feb7e940e67e3c9643f06377de54e9b8ed3a51eadfc9be2ec8c5"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-verify.md",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/start.mdx"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-18T03:10:40.020Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:91bdf99d8722ed973499c73ea2571d315edbcbcff9f0406efd9d0695c3d0535b",
+    "run_at": "2026-05-18T03:16:59.041Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-18T03:15:44.700Z",
+    "hash": "sha256:4ff4815e0092afee6ab6e862fd65744296fa0bbb4607007dd3a3f1f184a2106e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-18T03:16:59.090Z",
+    "hash": "sha256:616858bf547b338d56b4c5abfa8358276c7f4630c99b39f0e3c5c0c4abe873f5",
+    "history": [
+      {
+        "saved_at": "2026-05-18T03:15:44.700Z",
+        "hash": "sha256:657e6a9652c8f7eee848fe34b900505f0faf920d372375b5f5b68c3e601cf313"
+      }
+    ]
   }
 }

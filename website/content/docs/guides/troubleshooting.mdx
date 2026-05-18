@@ -38,7 +38,7 @@ Setup's quality depends on your answers. Don't describe your stack — describe 
 
 <TroubleCard title="Monorepo: scan covers the whole repo">
 
-Anatomia scans the full repository, not individual packages. Init detects your primary package (largest `apps/` package with framework hints) and focuses convention detection there. Per-package scanning is planned. To scope pipeline work to a specific package, set `commands.test` and `commands.build` in `ana.json` to target it (e.g., `pnpm --filter web test`).
+Anatomia scans the full repository, not individual packages. Init detects your primary package (largest `apps/` package with framework hints) and focuses convention detection there. Per-package scanning is planned. `commands.test` and `commands.build` are project-wide by default. To scope pipeline work to a specific package, set `commands.testPackage` for the primary package focus, or use Build Brief checkpoint commands for per-scope targeting.
 
 </TroubleCard>
 
@@ -66,9 +66,9 @@ FAIL means Verify found issues — this is the pipeline working as designed. <Do
 
 <TroubleCard title="Tests fail in pipeline but pass locally">
 
-1. Check the detected command: `ana config show` — look at `commands.test`
+1. Check the detected commands: `ana config show` — look at `commands.test` (project-wide) and `commands.testPackage` (primary package)
 2. In monorepos, init may target the wrong package or produce an invalid invocation
-3. Override: `ana config set commands.test "your-command"`
+3. Override: `ana config set commands.test "your-command"` for project-wide, or `ana config set commands.testPackage "your-command"` for the primary package
 4. Common fixes: `pnpm --filter web test`, `npx vitest run`, `npm run test:unit`
 
 </TroubleCard>

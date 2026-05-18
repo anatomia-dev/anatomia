@@ -41,7 +41,7 @@ Init scans your project, detects your stack, and scaffolds the pipeline into you
 </div>
 
 <Callout variant="note">
-**Verify detected commands.** The Test, Build, and Lint lines above are inferred from your package.json. In monorepos they may not target the right package. Override with `ana config set commands.test "your-command"` if needed.
+**Verify detected commands.** The Test, Build, and Lint lines above are project-wide commands inferred from your package.json. For monorepos, `buildPackage` and `testPackage` target your primary package specifically. Override with `ana config set commands.test "your-command"` if needed.
 </Callout>
 
 <Callout variant="note">

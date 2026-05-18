@@ -417,14 +417,14 @@ Run `ana proof context {affected files}` for each file in the File Changes secti
 This delivers institutional memory to Build — awareness of known issues that could inform implementation decisions.
 
 ### Checkpoint Commands
-Copy checkpoint commands from `ana.json` `commands` field.
+Use `commands.testPackage` (if present) as a starting point for per-file checkpoint commands, adapting for the scope's target package. Use `commands.test` for the final "after all changes" baseline.
 
-- After {first file change}: `{exact test command}` — Expected: {result}
-- After all changes: `{full test command}` — Expected: {test count} tests pass
+- After {first file change}: `{focused test command for target package}` — Expected: {result}
+- After all changes: `{commands.test from ana.json}` — Expected: {test count} tests pass
 - Lint: `{lint command}`
 
 ### Build Baseline
-Run the test command from `ana.json` `commands.test` and record exact counts. Every number comes from the terminal, not from a guess.
+Run `commands.test` from `ana.json` and record exact counts. Every number comes from the terminal, not from a guess.
 - Current tests: {exact number from running the command}
 - Current test files: {exact number}
 - Command used: {exact command string}

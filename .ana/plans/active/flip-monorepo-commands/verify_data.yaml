@@ -1,0 +1,44 @@
+schema: 1
+findings:
+  - category: test
+    summary: "No dedicated test for empty-string buildPackage/testPackage rejection — verified by source inspection only"
+    file: "packages/cli/src/commands/config.ts"
+    line: 328
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A012", "A013"]
+
+  - category: test
+    summary: "A007 tests null equality, not string equality — doesn't exercise the string-comparison branch"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    line: 334
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]
+
+  - category: upstream
+    summary: "makeTestCommand.test.ts modified but not listed in contract file_changes — necessary to avoid regressions"
+    file: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    severity: observation
+    suggested_action: accept
+
+  - category: code
+    summary: "pkg.path injected without sanitization in new buildPackageCmd and testPackageCmd — same known risk as monorepo-build-scoping-C5"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 412
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A001", "A004"]
+
+  - category: upstream
+    summary: "Contract A005 matcher/value encoding semantically confusing — says 'no buildPackage' but uses 'not_equals'/'undefined'"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005"]
+
+  - category: code
+    summary: "Propagation loop iterates all freshCommands keys including non-command keys like 'packageManager' and 'all' if present"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 582
+    severity: observation
+    suggested_action: accept

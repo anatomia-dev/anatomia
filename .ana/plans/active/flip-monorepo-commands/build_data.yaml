@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "makeTestCommand.test.ts required assertion updates not listed in spec File Changes"
+    file: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
