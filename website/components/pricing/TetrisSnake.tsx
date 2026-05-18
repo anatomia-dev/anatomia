@@ -64,6 +64,11 @@ export function TetrisSnake() {
       rows = snap(rawRows);
       if (cols < 7 || rows < 7) return;
 
+      // Center the snapped grid within the canvas so the border
+      // is equidistant from top/bottom and left/right content.
+      offsetX = ((rawCols - cols) * CELL) / 2;
+      offsetY = ((rawRows - rows) * CELL) / 2;
+
       // Build perimeter clockwise from top-left
       perim = [];
       for (let x = 0; x < cols; x++) perim.push({ x, y: 0 });
@@ -81,6 +86,8 @@ export function TetrisSnake() {
     }
 
     let placeSet = new Set<number>();
+    let offsetX = 0;
+    let offsetY = 0;
 
     function step() {
       if (!perim.length) return;
@@ -104,7 +111,7 @@ export function TetrisSnake() {
       for (const b of placed) {
         ctx.fillStyle = c;
         ctx.globalAlpha = b.alpha;
-        ctx.fillRect(b.x * CELL + 1, b.y * CELL + 1, CELL - 2, CELL - 2);
+        ctx.fillRect(offsetX + b.x * CELL + 1, offsetY + b.y * CELL + 1, CELL - 2, CELL - 2);
       }
       ctx.globalAlpha = 1;
 
@@ -113,7 +120,7 @@ export function TetrisSnake() {
         const a = Math.max(0, 1 - t.age / 10);
         ctx.fillStyle = c;
         ctx.globalAlpha = a * 0.9;
-        ctx.fillRect(t.x * CELL + 1, t.y * CELL + 1, CELL - 2, CELL - 2);
+        ctx.fillRect(offsetX + t.x * CELL + 1, offsetY + t.y * CELL + 1, CELL - 2, CELL - 2);
       }
       ctx.globalAlpha = 1;
 
@@ -121,7 +128,7 @@ export function TetrisSnake() {
       const head = perim[pos];
       if (head) {
         ctx.fillStyle = c;
-        ctx.fillRect(head.x * CELL, head.y * CELL, CELL, CELL);
+        ctx.fillRect(offsetX + head.x * CELL, offsetY + head.y * CELL, CELL, CELL);
       }
     }
 
