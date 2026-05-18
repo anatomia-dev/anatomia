@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-120 runs · 63 active · 3 promoted · 638 closed
+121 runs · 67 active · 3 promoted · 640 closed
 
 ## Hot Modules
 
@@ -8,22 +8,28 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 7 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
+| packages/cli/src/commands/init/state.ts | 4 | 2 |
 | packages/cli/src/engine/detectors/projectType.ts | 4 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
-| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 63 total)
+## Active Findings (30 shown of 67 total)
 
 ### packages/cli/src/commands/check.ts
 
 - **code:** Freshness section shows 'current' when scan data is unavailable (null result) — *Unified Staleness Awareness*
 
+### packages/cli/src/commands/config.ts
+
+- **test:** No dedicated test for empty-string buildPackage/testPackage rejection — verified by source inspection only — *Flip Monorepo Command Semantics*
+
 ### packages/cli/src/commands/init/state.ts
 
+- **code:** pkg.path injected without sanitization in new buildPackageCmd and testPackageCmd — same known risk as monorepo-build-scoping-C5 — *Flip Monorepo Command Semantics*
+- **code:** Propagation loop iterates all freshCommands keys including non-command keys like 'packageManager' and 'all' if present — *Flip Monorepo Command Semantics*
 - **code:** Build/lint scoping silently degrades when cwd is omitted — no warning that scoping was skipped — *Monorepo build command scoping*
 - **code:** pkg.path injected into shell command without sanitization — path with spaces or special chars would produce broken subshell — *Monorepo build command scoping*
 
@@ -36,8 +42,6 @@
 - **code:** checkConcurrencyGuard has dead `force` parameter — never passed true from production call sites — *Pipeline Concurrency Guards*
 - **code:** isTimestampRecent duplicates checkConcurrencyGuard logic — both parse .saves.json, extract timestamp, compare against CONCURRENCY_TIMEOUT_MS — *Pipeline Concurrency Guards*
 - **code:** Inside-worktree resume path writes verify_started_at without checking concurrency guard first — *Pipeline Concurrency Guards*
-- **test:** Backfill migration logic has no dedicated test — mutation from lesson→closed with conditional metadata preservation is untested — *Remove lesson status from proof system*
-- **code:** work.ts duplicates resolves counting logic — JSON and console branches have identical loops — *Upstream Finding Resolution*
 
 ### packages/cli/src/engine/detectors/git.ts
 
@@ -62,6 +66,7 @@
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
+- **test:** A007 tests null equality, not string equality — doesn't exercise the string-comparison branch — *Flip Monorepo Command Semantics*
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in every test — no shared beforeEach/afterEach — *Monorepo build command scoping*
 
 ### packages/cli/tests/commands/proof.test.ts
@@ -72,7 +77,6 @@
 
 - **test:** No boundary test at exactly 1-hour timeout — tests use 2-hour-old (stale) and new Date() (fresh), missing 59m59s and 60m01s cases — *Pipeline Concurrency Guards*
 - **test:** A019/A020 tests create full git repos with bare remotes — heavyweight setup that could be simplified with targeted spawnSync+runGit mocking — *Pipeline Concurrency Guards*
-- **test:** Arrow-line count assertion uses toBeGreaterThanOrEqual(2) — passes with any number >= 2, not specific to the 2-line ready-to-merge case — *work.ts saves.json backward compat bug + worktree dedup + formatting*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
@@ -93,10 +97,6 @@
 ### website/components/system/Drawer.tsx
 
 - **code:** Drawer moreCount has no floor guard — commandCount < 6 produces negative display — *Dynamic marketing stats — wire command count and version fallback*
-
-### website/lib/docs-data/docsStatValues.ts
-
-- **code:** 2 of 9 value keys (skillCount, findings) defined but unused in any MDX file — *Fix prebuild source mutation*
 
 ### website/lib/proof-feed.ts
 

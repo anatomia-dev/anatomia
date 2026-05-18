@@ -32325,6 +32325,284 @@
         "commit_count": 6,
         "base_commit": "08165f3f05e579ca981db408b7970f33a68e095d"
       }
+    },
+    {
+      "slug": "flip-monorepo-commands",
+      "feature": "Flip Monorepo Command Semantics",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 23,
+        "satisfied": 23,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Monorepo build command is project-wide, not scoped to primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Monorepo buildPackage contains the scoped command for primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Monorepo test command is project-wide non-interactive",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Monorepo testPackage contains the scoped test command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-package projects have no buildPackage or testPackage fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "buildPackage is omitted when its value would be identical to build",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "testPackage is omitted when its value would be identical to test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Build command stays root when primary package has no build script",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "buildPackage not written when primary package has no build script",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "New command keys appear on re-init without overwriting existing customizations",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Existing user-customized commands survive re-init unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Empty string buildPackage is rejected by config validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Empty string testPackage is rejected by config validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Build template instructs using commands.build for project build",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Build template instructs using Build Brief for test checkpoints, not commands.test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Verify template uses Build Brief checkpoint commands for test verification",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Plan template references commands.test for full baseline runs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Dogfood build template is byte-identical to product template",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Dogfood verify template is byte-identical to product template",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Dogfood plan template is byte-identical to product template",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Troubleshooting docs reference the new command semantics",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Quickstart callout describes commands as project-wide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Lint command stays scoped in monorepos (not flipped)",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 68,
+        "think": 20,
+        "plan": 7,
+        "build": 18,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:f9c2a2ab4ff330e5678500c08e5a2af38c9334e7179e191cd3b11321840922bc",
+        "contract": "sha256:91bdf99d8722ed973499c73ea2571d315edbcbcff9f0406efd9d0695c3d0535b",
+        "plan": "sha256:c9200cd3bad4bdc1a4e622c4f921615d6d6978c22e9daf2f41d3388db95d47ce",
+        "spec": "sha256:82a104fc0fa66f94647ac6b23e518d95f3394e340de906439abd695c5c9c45b1",
+        "build-report": "sha256:8f0f32ab262b933bc3b83b85850dbc9fdcd41ea9dcc7b610613003695cadfccb",
+        "build-data": "sha256:904fb4c2da49feb7e940e67e3c9643f06377de54e9b8ed3a51eadfc9be2ec8c5",
+        "verify-report": "sha256:4ff4815e0092afee6ab6e862fd65744296fa0bbb4607007dd3a3f1f184a2106e",
+        "verify-data": "sha256:616858bf547b338d56b4c5abfa8358276c7f4630c99b39f0e3c5c0c4abe873f5"
+      },
+      "completed_at": "2026-05-18T03:30:53.821Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-plan.md",
+        ".claude/agents/ana-verify.md",
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-plan.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/start.mdx"
+      ],
+      "scope_summary": "The scan detects root-level commands (`pnpm run build`, `pnpm run test`) but only surfaces primary-package-scoped commands to ana.json. When pipeline work targets a non-primary package, the worktree builds the wrong package, baseline tests run in the wrong place, and the proof chain records misleading results.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "No dedicated test for empty-string buildPackage/testPackage rejection — verified by source inspection only",
+          "file": "packages/cli/src/commands/config.ts",
+          "anchor": null,
+          "line": 328,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A012",
+            "A013"
+          ],
+          "id": "flip-monorepo-commands-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A007 tests null equality, not string equality — doesn't exercise the string-comparison branch",
+          "file": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "anchor": null,
+          "line": 334,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "flip-monorepo-commands-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "makeTestCommand.test.ts modified but not listed in contract file_changes — necessary to avoid regressions",
+          "file": "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "flip-monorepo-commands-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-18T03:30:53.821Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "pkg.path injected without sanitization in new buildPackageCmd and testPackageCmd — same known risk as monorepo-build-scoping-C5",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 412,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001",
+            "A004"
+          ],
+          "id": "flip-monorepo-commands-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A005 matcher/value encoding semantically confusing — says 'no buildPackage' but uses 'not_equals'/'undefined'",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "flip-monorepo-commands-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-18T03:30:53.821Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Propagation loop iterates all freshCommands keys including non-command keys like 'packageManager' and 'all' if present",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 582,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "flip-monorepo-commands-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "makeTestCommand.test.ts required assertion updates not listed in spec File Changes",
+          "file": "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": false,
+        "created_at": "2026-05-18T02:49:59.272Z",
+        "completed_at": "2026-05-18T03:30:53.817Z",
+        "commit_count": 0
+      }
     }
   ],
   "schema": 1
