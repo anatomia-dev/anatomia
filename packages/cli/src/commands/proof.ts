@@ -123,7 +123,7 @@ function createExitError(opts: {
  *
  * @param proofRoot - Project root directory
  */
-function pullBeforeRead(proofRoot: string): void {
+export function pullBeforeRead(proofRoot: string): void {
   const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
   if (remotes) {
     const pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: proofRoot });
@@ -153,7 +153,7 @@ function pullBeforeRead(proofRoot: string): void {
  * @param options.message - Commit message (without co-author trailer)
  * @param options.coAuthor - Co-author trailer string
  */
-function commitAndPushProofChanges(options: {
+export function commitAndPushProofChanges(options: {
   proofRoot: string;
   files: string[];
   message: string;

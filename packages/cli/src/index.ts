@@ -21,6 +21,7 @@ import { registerWorkCommand } from './commands/work.js';
 import { registerProofCommand } from './commands/proof.js';
 import { registerPrCommand } from './commands/pr.js';
 import { registerAgentsCommand } from './commands/agents.js';
+import { registerLearnCommand } from './commands/learn.js';
 import { registerVerifyCommand } from './commands/verify.js';
 import { registerConfigCommand } from './commands/config.js';
 
@@ -56,6 +57,7 @@ registerConfigCommand(program);
 
 program.commandsGroup('INTELLIGENCE');
 registerProofCommand(program);
+registerLearnCommand(program);
 registerAgentsCommand(program);
 
 // Parse arguments with async support
