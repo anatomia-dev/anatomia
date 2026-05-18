@@ -397,7 +397,11 @@ export async function createAnaJson(
     return res.git.defaultBranch ?? res.git.branch ?? 'main';
   }
 
-  let testCmd = makeTestCommandNonInteractive(result.commands.test, result.stack.testing, result.commands.all?.['test']);
+  // Root test command: non-interactive, project-wide (no cd scoping).
+  const testCmd = makeTestCommandNonInteractive(result.commands.test, result.stack.testing, result.commands.all?.['test']);
+
+  // Scoped test command for monorepo primary package.
+  let testPackageCmd: string | null = null;
   if (testCmd && result.monorepo.isMonorepo && result.monorepo.primaryPackage) {
     const pkg = result.monorepo.primaryPackage;
     const pm = result.commands.packageManager || 'pnpm';
@@ -405,18 +409,18 @@ export async function createAnaJson(
     // Map detected testing framework to direct runner invocation
     const directCmd = buildDirectTestCommand(result.stack.testing, pm);
     if (directCmd) {
-      testCmd = `(cd ${pkg.path} && ${directCmd})`;
+      testPackageCmd = `(cd ${pkg.path} && ${directCmd})`;
     } else {
       // Unknown framework — cd with root-derived command as fallback
-      testCmd = `(cd ${pkg.path} && ${testCmd})`;
+      testPackageCmd = `(cd ${pkg.path} && ${testCmd})`;
     }
   }
 
-  // Scope build and lint commands to primary package in monorepos.
-  // Unlike test scoping (which maps framework → direct runner), build/lint
-  // reads the primary package's package.json to find the actual script key.
-  let buildCmd = result.commands.build || null;
+  // Root build command: project-wide (no cd scoping).
+  // Lint stays scoped — only build and test get flipped to project-wide.
+  const buildCmd = result.commands.build || null;
   let lintCmd = result.commands.lint || null;
+  let buildPackageCmd: string | null = null;
 
   if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage) {
     const pkg = result.monorepo.primaryPackage;
@@ -432,12 +436,12 @@ export async function createAnaJson(
       // Build: first match — same key order as detectCommands
       for (const key of ['build', 'compile', 'tsc']) {
         if (scripts[key]) {
-          buildCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
+          buildPackageCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
           break;
         }
       }
 
-      // Lint: first match — same key order as detectCommands
+      // Lint: first match — same key order as detectCommands (stays scoped)
       for (const key of ['lint', 'eslint', 'biome']) {
         if (scripts[key]) {
           lintCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
@@ -449,18 +453,28 @@ export async function createAnaJson(
     }
   }
 
+  // Only write *Package keys when their value differs from the root command.
+  // Single-package projects and monorepos where root == scoped get no extra fields.
+  const commands: Record<string, unknown> = {
+    build: buildCmd,
+    test: testCmd,
+    lint: lintCmd,
+    dev: result.commands.dev || null,
+  };
+  if (buildPackageCmd && buildPackageCmd !== buildCmd) {
+    commands['buildPackage'] = buildPackageCmd;
+  }
+  if (testPackageCmd && testPackageCmd !== testCmd) {
+    commands['testPackage'] = testPackageCmd;
+  }
+
   const anaConfig: Record<string, unknown> = {
     anaVersion: cliVersion,
     name: result.overview.project,
     language: result.stack.language || null,
     framework: result.stack.framework || null,
     packageManager: result.commands.packageManager,
-    commands: {
-      build: buildCmd,
-      test: testCmd,
-      lint: lintCmd,
-      dev: result.commands.dev || null,
-    },
+    commands,
     coAuthor: 'Ana <build@anatomia.dev>',
     artifactBranch: detectArtifactBranch(result),
     branchPrefix: 'feature/',
@@ -555,9 +569,19 @@ export async function preserveUserState(
     const mergedCommands = merged.commands as Record<string, unknown> | undefined;
     if (mergedCommands) {
       const freshCommands = (newAnaConfig['commands'] ?? {}) as Record<string, unknown>;
-      for (const key of ['test', 'build', 'lint']) {
+      for (const key of ['test', 'build', 'lint', 'buildPackage', 'testPackage']) {
         if (mergedCommands[key] === '') {
           mergedCommands[key] = freshCommands[key] ?? null;
+        }
+      }
+
+      // Propagate new command keys from fresh detection without overwriting
+      // existing user customizations. Additive only — if re-init detects a
+      // new key (e.g., buildPackage) that doesn't exist in the old config,
+      // copy the fresh value so users get the new field automatically.
+      for (const key of Object.keys(freshCommands)) {
+        if (!(key in mergedCommands) && freshCommands[key] != null && freshCommands[key] !== '') {
+          mergedCommands[key] = freshCommands[key];
         }
       }
     }
