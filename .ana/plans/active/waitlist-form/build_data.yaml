@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "No automated test coverage for form behavior — website lacks Vitest/testing-library infrastructure"
+    file: "website/components/pricing/WaitlistForm.tsx"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Error color on highlighted card (#ff8a8a) is hardcoded hex, not a CSS custom property"
+    file: "website/components/pricing/pricing.module.css"
+    severity: debt
+    suggested_action: accept
+  - summary: "--color-danger CSS variable not defined in site theme; fallback #dc3545 is active"
+    file: "website/components/pricing/pricing.module.css"
+    severity: observation
+    suggested_action: monitor
