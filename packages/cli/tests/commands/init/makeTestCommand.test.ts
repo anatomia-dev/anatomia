@@ -140,7 +140,7 @@ describe('createAnaJson monorepo test command scoping', () => {
     return JSON.parse(content);
   }
 
-  it('scopes pnpm monorepo with Vitest using direct invocation', async () => {
+  it('keeps test as root non-interactive and writes testPackage for pnpm Vitest monorepo', async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
     try {
       const result = createEmptyEngineResult();
@@ -154,13 +154,14 @@ describe('createAnaJson monorepo test command scoping', () => {
 
       await createAnaJson(tmpDir, result);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
-      expect(cmds['test']).toBe('(cd apps/web && pnpm vitest run)');
+      expect(cmds['test']).toBe('pnpm run test -- --run');
+      expect(cmds['testPackage']).toBe('(cd apps/web && pnpm vitest run)');
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }
   });
 
-  it('scopes yarn monorepo with Jest using direct invocation', async () => {
+  it('keeps test as root and writes testPackage for yarn Jest monorepo', async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
     try {
       const result = createEmptyEngineResult();
@@ -174,13 +175,14 @@ describe('createAnaJson monorepo test command scoping', () => {
 
       await createAnaJson(tmpDir, result);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
-      expect(cmds['test']).toBe('(cd apps/web && yarn jest --watchAll=false)');
+      expect(cmds['test']).toBe('yarn run test');
+      expect(cmds['testPackage']).toBe('(cd apps/web && yarn jest --watchAll=false)');
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }
   });
 
-  it('falls back to root command with cd when framework unknown', async () => {
+  it('keeps test as root and writes testPackage with cd fallback when framework unknown', async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
     try {
       const result = createEmptyEngineResult();
@@ -194,7 +196,8 @@ describe('createAnaJson monorepo test command scoping', () => {
 
       await createAnaJson(tmpDir, result);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
-      expect(cmds['test']).toBe('(cd apps/web && pnpm run test)');
+      expect(cmds['test']).toBe('pnpm run test');
+      expect(cmds['testPackage']).toBe('(cd apps/web && pnpm run test)');
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }
