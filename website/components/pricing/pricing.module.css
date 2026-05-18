@@ -119,7 +119,7 @@
   font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--fg-strong);
+  color: var(--bg);
 }
 
 .cardPrice {
@@ -132,7 +132,7 @@
   font-size: 48px;
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: var(--fg-strong);
+  color: var(--bg);
 }
 .cardPriceUnit {
   font-size: 14px;
@@ -221,7 +221,7 @@
 [data-theme="dark"] .cardHighlighted .waitlistInput {
   background: rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.2);
-  color: var(--fg-strong);
+  color: var(--bg);
 }
 [data-theme="dark"] .cardHighlighted .waitlistInput::placeholder {
   color: rgba(0, 0, 0, 0.35);
