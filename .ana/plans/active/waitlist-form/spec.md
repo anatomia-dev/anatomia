@@ -132,7 +132,7 @@ No Vitest tests — the website has no test infrastructure and this is a visual,
 
 ## Dependencies
 
-- Formspree account with a form created. The form ID must be known before implementation — builder uses a placeholder constant that the developer replaces with the real ID.
+- Formspree form ID: `xbdbjkkg`. Endpoint: `https://formspree.io/f/xbdbjkkg`. The builder hardcodes `const FORMSPREE_ID = "xbdbjkkg"` at the top of WaitlistForm.tsx and constructs the endpoint URL from it.
 - No npm packages to install. `fetch` is built-in.
 
 ## Constraints
