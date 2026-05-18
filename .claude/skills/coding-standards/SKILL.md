@@ -30,6 +30,7 @@ description: "Invoke when implementing features, writing code, or reviewing code
 - Explicit return types on all exported functions. Internal helpers can use inference.
 - Avoid disabling lint rules inline. When necessary, add a comment explaining why the disable is required.
 - Exported functions require `@param` and `@returns` JSDoc tags. The eslint rules enforce this — pre-commit will reject missing tags.
+- In JSX text content, use `&apos;` for apostrophes. The `react/no-unescaped-entities` lint rule rejects raw `'` characters in JSX — contractions like "don't" must be written as `don&apos;t`.
 
 ## Gotchas
 - **Missing `.js` on imports:** Every relative import MUST end in `.js` (e.g., `import { foo } from './bar.js'`). TypeScript compiles fine without it, but the built CLI crashes at runtime with `ERR_MODULE_NOT_FOUND`. Standard TypeScript training doesn't include this — it's an ESM-specific requirement.
