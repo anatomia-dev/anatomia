@@ -207,12 +207,12 @@
 
 /* Input on the highlighted (inverted) card */
 .cardHighlighted .waitlistInput {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--bg);
 }
 .cardHighlighted .waitlistInput::placeholder {
-  color: color-mix(in oklch, var(--bg) 50%, transparent);
+  color: rgba(255, 255, 255, 0.4);
 }
 .cardHighlighted .waitlistInput:focus {
   border-color: var(--color-brand);
@@ -220,7 +220,7 @@
 }
 [data-theme="dark"] .cardHighlighted .waitlistInput {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .waitlistMessage {
