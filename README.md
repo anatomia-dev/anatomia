@@ -183,8 +183,11 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 | `ana proof promote <ids...>` | Promote findings to skill rules |
 | `ana proof strengthen <ids...>` | Commit skill edits and close findings |
 
+| `ana proof audit --new` | Filter to findings since last learn session |
+| `ana proof audit --since <date>` | Filter to findings after ISO date |
 | `ana proof stale` | Show findings with staleness signals |
 | `ana proof context <files...>` | Query proof chain for file context |
+| `ana learn end` | Mark session boundary — next Learn session knows what's new |
 
 ### Setup
 

@@ -38,7 +38,7 @@ Every agent runs `ana work status` on startup to discover pipeline state. Beyond
 | `ana-plan` | [`ana work start`](/docs/reference/cli), [`ana artifact save-all`](/docs/reference/cli), [`ana proof context`](/docs/reference/cli) |
 | `ana-build` | [`ana work start`](/docs/reference/cli), [`ana artifact save build-report`](/docs/reference/cli), build/test/lint from `ana.json` |
 | `ana-verify` | [`ana verify pre-check`](/docs/reference/cli), [`ana artifact save verify-report`](/docs/reference/cli), [`ana pr create`](/docs/reference/cli) |
-| `ana-learn` | [`ana proof audit`](/docs/reference/cli), [`ana proof promote`](/docs/reference/cli), [`ana proof close`](/docs/reference/cli), [`ana proof stale`](/docs/reference/cli) |
+| `ana-learn` | [`ana proof audit`](/docs/reference/cli) (+ `--new`), [`ana proof promote`](/docs/reference/cli), [`ana proof close`](/docs/reference/cli), [`ana proof stale`](/docs/reference/cli), [`ana learn end`](/docs/reference/cli) |
 | `ana-setup` | [`ana init commit`](/docs/reference/cli) — persists infrastructure to the artifact branch after setup completes |
 
 ## Why this matters

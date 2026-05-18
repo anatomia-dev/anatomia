@@ -12,11 +12,11 @@ lastReviewed: "2026-05-17"
 <span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>bash</span>
 </div>
 <pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
-{"$ "}<span style={{color:"var(--pass)"}}>claude --agent ana-learn</span>{"\n\nProof Orientation: 47 active findings (31 actionable, 16 monitoring)\n  3 risk · 28 debt · 16 observation\n  3 risk/scope · 18 debt/scope · 10 debt/monitor · 8 observation/monitor · 8 observation/accept\n  Staleness: 12 stale (4 high, 8 medium)\n\n  Recent proofs:\n    auth-refactor      PASS  3 findings  2d ago\n    api-validation     PASS  5 findings  4d ago\n    stripe-payments    PASS  1 finding   1w ago\n\nBefore we start \u2014 anything you've noticed since the last session?"}
+{"$ "}<span style={{color:"var(--pass)"}}>claude --agent ana-learn</span>{"\n\nProof Orientation: 47 active findings (31 actionable, 16 monitoring)\n  3 risk · 28 debt · 16 observation\n  3 risk/scope · 18 debt/scope · 10 debt/monitor · 8 observation/monitor · 8 observation/accept\n  Staleness: 12 stale (4 high, 8 medium)\n  New since last session: 8 findings (last session: 2026-05-15T14:30:00Z)\n\n  Recent proofs:\n    auth-refactor      PASS  3 findings  2d ago\n    api-validation     PASS  5 findings  4d ago\n    stripe-payments    PASS  1 finding   1w ago\n\nBefore we start \u2014 anything you've noticed since the last session?"}
 </pre>
 </div>
 
-Learn reads the proof chain, checks staleness, and presents the orientation — the severity/action cross-tab that tells you the shape of work, recent proofs, and how many findings are stale. Then it recommends a direction:
+Learn reads the proof chain, checks staleness, and presents the orientation — the severity/action cross-tab that tells you the shape of work, recent proofs, and how many findings are stale. When a previous session exists, `--new` filters to findings since the last session so you can focus on what changed. Then it recommends a direction:
 
 - **Cleanup** — 12 stale findings to triage. Quick verifications, highest closure rate.
 - **Highest-impact** — 3 risk/scope findings to review. These may need engineering work.
@@ -98,6 +98,8 @@ Session complete.
   Promoted this session: testing-standards, coding-standards
 ```
 {/* Dynamic: session greeting numbers (47 findings, severity/action splits, recent proofs) and delta numbers above are illustrative — update on data change */}
+
+At wrap-up, Learn runs `ana learn end` to set the session boundary. The next session will know what's new since this point.
 
 If actionable work remains — scope-action findings, real debt, recurring patterns that need code fixes before they can become rules — Learn drafts a prompt for Think that synthesizes the remaining work.
 
