@@ -23,8 +23,8 @@ Templates get simplified: unconditional "use `commands.build`" for project build
 {
   "commands": {
     "build": "pnpm run build",
-    "test": "pnpm vitest run",
-    "lint": "pnpm run lint",
+    "test": "pnpm run test -- --run",
+    "lint": "(cd packages/cli && pnpm run lint)",
     "dev": "pnpm run dev",
     "buildPackage": "(cd packages/cli && pnpm run build)",
     "testPackage": "(cd packages/cli && pnpm vitest run)"
@@ -37,7 +37,7 @@ Templates get simplified: unconditional "use `commands.build`" for project build
 {
   "commands": {
     "build": "pnpm run build",
-    "test": "pnpm vitest run",
+    "test": "pnpm run test -- --run",
     "lint": "pnpm run lint",
     "dev": "pnpm run dev"
   }
@@ -49,7 +49,7 @@ Templates get simplified: unconditional "use `commands.build`" for project build
 {
   "commands": {
     "build": "pnpm run build",
-    "test": "pnpm vitest run",
+    "test": "pnpm run test -- --run",
     "lint": "pnpm run lint",
     "dev": "pnpm run dev"
   }
