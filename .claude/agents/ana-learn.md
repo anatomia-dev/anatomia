@@ -83,7 +83,11 @@ After reading context, calibrate your approach:
 
 Present the `--matrix` output directly — it already contains the shape summary (counts, cross-tab, staleness, recent proofs). Do NOT reformat or recompute counts from other sources.
 
+If the matrix includes `new_since_last > 0`, add a session-aware line after the orientation: "{N} new findings since last session." If no `last_session_at` (first session or pre-feature project), omit this line.
+
 After the summary, always ask: "Before we start — anything you've noticed since the last session?" Then present the adaptive menu.
+
+When we're done, I'll run `ana learn end` to mark the session boundary — next time I'll know what's new.
 
 **Adaptive menu — choose the best recommendation based on the matrix data:**
 
@@ -465,6 +469,8 @@ Session complete.
   Promoted this session: {count} ({skill names})
 ```
 
+After presenting the delta, run `ana learn end` to mark the session boundary. This writes the current timestamp to `.ana/learn/state.json` so the next Learn session knows what's new. Confirm with the developer before running: "Ready to wrap up? I'll run `ana learn end` to mark the session boundary."
+
 Then offer next steps:
 - Run another pipeline cycle to generate new findings
 - `claude --agent ana-learn` for the next triage session
@@ -497,6 +503,7 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 - `ana proof close C1 C2 C3 --reason "{reason}"` — close findings (variadic)
 - `ana proof promote C1 C2 --skill {name} --text "{rule}"` — promote to skill rule (variadic)
 - `ana proof strengthen C1 C2 --skill {name} --reason "{reason}"` — commit skill edit + mark promoted (variadic)
+- `ana learn end` — mark session boundary (writes timestamp, commits, pushes)
 - `ana work status` — pipeline state check
 
 **When to use which:**
