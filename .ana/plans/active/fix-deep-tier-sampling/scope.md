@@ -15,8 +15,8 @@ These issues were discovered during V2-Alpha pre-launch testing across 20 real o
 - **Size:** medium — 5 files changed, ~130 lines new/changed code, each component independently testable
 - **Files affected:**
   - `packages/cli/src/engine/findings/rules/validation.ts` — rewrite to use own glob
-  - `packages/cli/src/engine/findings/rules/errorBoundaries.ts` — rewrite to use own glob
-  - `packages/cli/src/engine/analyzers/conventions/imports.ts` — fix `parseTsconfigAlias` to return all aliases
+  - `packages/cli/src/engine/findings/rules/errorBoundaries.ts` — update to glob for error.tsx/jsx and page.tsx/jsx directly (~15 lines changed, smallest change in the set)
+  - `packages/cli/src/engine/analyzers/conventions/imports.ts` — fix `parseTsconfigAlias` return type from `string | null` to `string[]`, fix alias filter to include all path aliases (not just `@/`-prefixed)
   - `packages/cli/src/engine/sampling/proportionalSampler.ts` — add depth stratification, increase budget to 750
   - `packages/cli/src/engine/parsers/treeSitter.ts` — fix misleading comment (line 904)
 - **Blast radius:** scan output changes for every deep-tier scan. Finding titles/severities change. Convention import classification changes. These are correctness improvements — the current outputs are wrong.
@@ -29,7 +29,9 @@ Three independent fixes that address three independent problems, shipped togethe
 
 **1. Findings get their own file discovery.** The validation and error-boundaries rules stop depending on the general-purpose sample and instead glob for the specific files they need. The validation rule reads all API routes (not a sample), checks imports directly, and reports with full denominator. The error-boundaries rule globs for `error.tsx` files directly. This decouples finding accuracy from sample composition — the right architecture, since findings need specific files while conventions/patterns need representative files.
 
-**2. The import alias classifier returns all aliases.** `parseTsconfigAlias` currently returns the first matching alias from tsconfig paths. Projects with multiple aliases (`@/pages/*`, `@/lib/*`, `@/ui/*`) get only the first one, causing the rest to be misclassified as external. The fix returns all aliases. `classifyTSImport` already accepts an array — it's just receiving too few entries.
+**2. The import alias classifier returns all aliases.** `parseTsconfigAlias` currently returns `string | null` — the first matching alias from tsconfig paths. Projects with multiple aliases (`@/pages/*`, `@/lib/*`, `@/ui/*`) get only the first one, causing the rest to be misclassified as external. The fix changes the return type to `string[]` and returns all tsconfig `paths` keys that look like path aliases — not just `@/`-prefixed ones. The heuristic: a key is an alias if it ends with `/*` and is NOT an `@scope/package` pattern (where scope is a word longer than 2 chars). This catches `@/*`, `@/lib/*`, `~/lib/*`, `#imports/*`, `components/*` while excluding `@nestjs/*`, `@types/*`. The caller that previously wrapped the single result in an array can pass the array directly. `classifyTSImport` already accepts `aliases?: string[]` — it's just receiving too few entries.
+
+The FindingContext interface is unchanged. The `sampledFiles` and `parsedFiles` fields remain available for rules that need them. The validation and error-boundaries rules simply stop depending on them.
 
 **3. The general sample gets depth stratification and a larger budget.** Replace depth-first sorting with depth-bucketed allocation (proportional representation at every depth level). Increase budget from 500 to 750 — costs ~150ms based on benchmarks, well within the 12s performance target. This improves representativeness for convention detection and pattern inference.
 
@@ -40,11 +42,12 @@ Three independent fixes that address three independent problems, shipped togethe
 - AC3: Validation finding covers both App Router (`**/api/**/route.{ts,js,tsx,jsx}`) and Pages Router (`**/pages/api/**/*.{ts,js,tsx,jsx}`) patterns
 - AC4: Validation severity considers absolute route count — projects with <10 total routes get `info` at most
 - AC5: Error-boundaries finding detects `error.tsx` files regardless of their depth in the directory tree
-- AC6: `parseTsconfigAlias` returns all path aliases from tsconfig, not just the first match
-- AC7: A project with `@/lib/*`, `@/pages/*`, `@/ui/*` aliases classifies all three as absolute imports
+- AC6: `parseTsconfigAlias` returns `string[]` containing all path aliases from tsconfig, not just the first match
+- AC7: A project with `@/lib/*`, `@/pages/*`, `@/ui/*` aliases classifies all three as absolute imports. A project with `~/lib/*` or `#imports/*` aliases classifies those as absolute, not external
 - AC8: General sample at budget 750 includes files from all depth levels (not just shallowest)
 - AC9: Scan performance remains under 12 seconds on repos up to 11k source files
 - AC10: treeSitter.ts comment accurately reflects measured parse performance (~0.8ms/file amortized)
+- AC11: Validation finding title uses actual counts, not "sampled" (e.g., "63/139 API routes have no validation imports" or "All 139 API routes have validation imports"). Detail text includes a limitation note when less than 100% of routes have validation imports (e.g., "Checked top-of-file imports for validation libraries. Routes using wrapper-based or middleware-based validation may not be detected.")
 
 ## Edge Cases & Risks
 
@@ -67,6 +70,8 @@ Three independent fixes that address three independent problems, shipped togethe
 
 **Random/seeded-random sampling.** Unbiased but harder to reason about. "Why was this file sampled?" becomes "it was random." Stratified sampling is deterministic, explainable, and achieves the same representativeness goal.
 
+**Tier 2 module path heuristics for wrapper detection.** Considered detecting validation wrappers by checking if imported module paths contain `api-wrapper`, `validate-request`, etc. Investigated and rejected — module path alone cannot distinguish auth wrappers from validation wrappers (Dub's `withWorkspace` is the most imported module in API routes and is auth, not validation). Ship with Tier 1 (direct validation library imports + schema/validate path patterns) only.
+
 ## Open Questions
 
 None — all design-judgment questions were resolved during investigation.
@@ -78,7 +83,7 @@ None — all design-judgment questions were resolved during investigation.
 - `validation.ts` lines 27-33: API route detection already handles both App Router and Pages Router patterns — the glob patterns should match both
 - `FindingContext` already has `rootPath` (line 31) — no interface changes needed for findings to do their own globbing
 - `FindingRule.check` already returns `Promise` (line 38) — async glob is already supported
-- `parseTsconfigAlias` line 342: `aliasKeys.find()` returns only the first match — the bug
+- `parseTsconfigAlias` line 342: `aliasKeys.find()` returns only the first match — the bug. Return type is `string | null`, needs to become `string[]`. Lines 342-346 filter for `@`-prefixed aliases with scope length ≤ 2, which excludes `~/`, `#/`, and bare aliases — the filter needs to be generalized
 - `classifyTSImport` line 83: already calls `aliases?.some()` — handles multiple aliases correctly if they're passed
 - Convention analyzer line 93-94: passes `parseTsconfigAlias` result to `classifyTSImport` — the pipeline is correct, just underfed
 
@@ -104,7 +109,7 @@ None — all design-judgment questions were resolved during investigation.
 ### Relevant Code Paths
 
 - `packages/cli/src/engine/findings/rules/validation.ts` — current rule, 63 lines. Rewrite to glob + read imports
-- `packages/cli/src/engine/findings/rules/errorBoundaries.ts` — current rule, 50 lines. Rewrite to glob for error.tsx
+- `packages/cli/src/engine/findings/rules/errorBoundaries.ts` — current rule, 50 lines. Update to glob for `**/error.{tsx,jsx}` and `**/page.{tsx,jsx}` directly (~15 lines changed, smallest change in the set)
 - `packages/cli/src/engine/analyzers/conventions/imports.ts` — `parseTsconfigAlias` at line 316, `classifyTSImport` at line 67
 - `packages/cli/src/engine/sampling/proportionalSampler.ts` — `depthThenAlpha` at line 55, `sampleFilesProportional` at line 69
 - `packages/cli/src/engine/scan-engine.ts` line 719 — budget parameter passed to sampler
@@ -125,4 +130,3 @@ None — all design-judgment questions were resolved during investigation.
 
 - What's the right number of depth buckets for stratification? 3 (shallow/mid/deep) or 4 (quartiles)? The planner should decide based on typical depth distributions in the sniper customer's repos.
 - Should the validation rule's "first 30 lines" approach use a simple `readFile` + split, or the existing `readFile` utility with a byte limit? The planner should check what utilities exist for partial file reads.
-- The Tier 2 validation detection (module paths containing `api-wrapper`, `validate-request`, etc.) — the planner should decide the exact pattern list and whether it's worth the false-positive risk vs. just sticking with Tier 1 + honest reporting.
