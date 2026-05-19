@@ -61,5 +61,20 @@
     "website/content/docs/start.mdx",
     "website/scripts/extract-docs-data.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-19T18:52:59.982Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:17d5f48bc65d6a755395d2df2a3d2c48eab8469e6ab3129254cd52643192aae6",
+    "run_at": "2026-05-19T18:58:59.477Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-19T18:58:59.529Z",
+    "hash": "sha256:fba16a81dcf0ab2e4295704bce94e06f8d8e1348e010218a56a53b3f91f4862e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-19T18:58:59.529Z",
+    "hash": "sha256:772d763ef5b4f80a201ec666e9dfab72db6b02448f50d4d0dfbdbd0b9cd53e56"
+  }
 }
