@@ -51,7 +51,7 @@ describe('Proportional sampler', () => {
       root.absolutePath = tmpDir;
       const census = makeCensus(tmpDir, [root]);
 
-      const files = await sampleFilesProportional(census, 500);
+      const files = await sampleFilesProportional(census, 750);
       expect(files.length).toBe(10);
       expect(files.every(f => f.endsWith('.ts'))).toBe(true);
     } finally {
@@ -110,7 +110,7 @@ describe('Proportional sampler', () => {
       root.absolutePath = tmpDir;
       const census = makeCensus(tmpDir, [root]);
 
-      const files = await sampleFilesProportional(census, 500);
+      const files = await sampleFilesProportional(census, 750);
       expect(files).toHaveLength(1);
       expect(files[0]).toContain('app.ts');
       expect(files.some(f => f.includes('.test.'))).toBe(false);
@@ -139,21 +139,102 @@ describe('Proportional sampler', () => {
     }
   });
 
-  it('sorts by depth then alpha (shallow files first)', async () => {
+  // @ana A018
+  it('includes files from all depth levels via stratification', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
     try {
-      fs.mkdirSync(path.join(tmpDir, 'src', 'deep', 'nested'), { recursive: true });
-      fs.writeFileSync(path.join(tmpDir, 'src', 'deep', 'nested', 'deep.ts'), '// deep');
-      fs.writeFileSync(path.join(tmpDir, 'src', 'shallow.ts'), '// shallow');
-      fs.writeFileSync(path.join(tmpDir, 'index.ts'), '// root');
+      // Create files at different depths
+      // Shallow (depth ≤ 2): 50 files
+      fs.mkdirSync(path.join(tmpDir, 'src'), { recursive: true });
+      for (let i = 0; i < 50; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', `shallow${i}.ts`), '// shallow');
+      }
+      // Mid (depth 3-5): 30 files
+      fs.mkdirSync(path.join(tmpDir, 'src', 'features', 'auth'), { recursive: true });
+      for (let i = 0; i < 30; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'features', 'auth', `mid${i}.ts`), '// mid');
+      }
+      // Deep (depth 6+): 20 files
+      fs.mkdirSync(path.join(tmpDir, 'src', 'features', 'auth', 'providers', 'oauth', 'google'), { recursive: true });
+      for (let i = 0; i < 20; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'features', 'auth', 'providers', 'oauth', 'google', `deep${i}.ts`), '// deep');
+      }
 
-      const root = makeRoot('.', 3, true);
+      const root = makeRoot('.', 100, true);
       root.absolutePath = tmpDir;
       const census = makeCensus(tmpDir, [root]);
 
-      const files = await sampleFilesProportional(census, 500);
-      // Root-level files should come first, then src/, then deep
-      expect(files.indexOf('index.ts')).toBeLessThan(files.indexOf('src/shallow.ts'));
+      // Budget smaller than total — must still include deep files
+      const files = await sampleFilesProportional(census, 20);
+      const hasDeepFiles = files.some(f => f.includes('google/'));
+      expect(hasDeepFiles).toBe(true);
+
+      // Also verify all depth levels represented
+      const hasShallow = files.some(f => f.includes('shallow'));
+      const hasMid = files.some(f => f.includes('mid'));
+      expect(hasShallow).toBe(true);
+      expect(hasMid).toBe(true);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A019
+  it('uses default budget of 750', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
+    try {
+      fs.mkdirSync(path.join(tmpDir, 'src'), { recursive: true });
+      for (let i = 0; i < 1000; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', `f${i}.ts`), '// source');
+      }
+
+      const root = makeRoot('.', 1000, true);
+      root.absolutePath = tmpDir;
+      const census = makeCensus(tmpDir, [root]);
+
+      // Call without explicit budget — should use default 750
+      const files = await sampleFilesProportional(census);
+      expect(files.length).toBe(750);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A020
+  it('handles flat project with all files at same depth', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
+    try {
+      fs.mkdirSync(path.join(tmpDir, 'src'), { recursive: true });
+      for (let i = 0; i < 10; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', `flat${i}.ts`), '// flat');
+      }
+
+      const root = makeRoot('.', 10, true);
+      root.absolutePath = tmpDir;
+      const census = makeCensus(tmpDir, [root]);
+
+      const files = await sampleFilesProportional(census, 100);
+      expect(files.length).toBe(10);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  it('empty depth buckets do not break allocation', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
+    try {
+      // Only deep files, no shallow
+      fs.mkdirSync(path.join(tmpDir, 'src', 'a', 'b', 'c', 'd', 'e'), { recursive: true });
+      for (let i = 0; i < 5; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'a', 'b', 'c', 'd', 'e', `deep${i}.ts`), '// deep');
+      }
+
+      const root = makeRoot('.', 5, true);
+      root.absolutePath = tmpDir;
+      const census = makeCensus(tmpDir, [root]);
+
+      const files = await sampleFilesProportional(census, 100);
+      expect(files.length).toBe(5);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }

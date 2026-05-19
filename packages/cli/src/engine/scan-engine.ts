@@ -716,7 +716,7 @@ export async function scanProject(
     try {
       // Sample files ONCE with proportional sampler (Disease B cure), thread to both consumers.
       const { sampleFilesProportional } = await import('./sampling/proportionalSampler.js');
-      sampledFiles = await sampleFilesProportional(census, 500);
+      sampledFiles = await sampleFilesProportional(census, 750);
 
       // Dynamic imports — tree-sitter loads WASM at module-evaluation time.
       const { parseProjectFiles } = await import('./parsers/treeSitter.js');
