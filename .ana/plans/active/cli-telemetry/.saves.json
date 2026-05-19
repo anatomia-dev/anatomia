@@ -30,5 +30,33 @@
         "hash": "sha256:1afc0eac236ee4e5bfe073622fec4cc5915087532724546ce6689d32936127d8"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-19T04:29:53.692Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-19T04:40:11.540Z",
+    "hash": "sha256:be0ce6f3cdbac396bfcb2f57f68096fe3ad191c35b6342095b0ee131840dcf69"
+  },
+  "build-data": {
+    "saved_at": "2026-05-19T04:40:11.541Z",
+    "hash": "sha256:e806ac3955ccfbe355b85ee147ad5e6e727bf96010c24b14435c5880ddcaae69"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/commands/telemetry.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/utils/telemetry.ts",
+    "packages/cli/tests/utils/telemetry.test.ts"
+  ],
+  "commit_hygiene": [
+    {
+      "check": "secret-detected",
+      "file": "packages/cli/src/utils/telemetry.ts",
+      "severity": "warn",
+      "message": "possible secret in packages/cli/src/utils/telemetry.ts (PostHog project key)"
+    }
+  ]
 }

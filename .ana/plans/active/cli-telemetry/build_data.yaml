@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "ensureConsent() interactive readline path not tested — only non-TTY and already-prompted paths exercised"
+    file: "packages/cli/src/utils/telemetry.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "error_occurred event includes error.message which could theoretically contain path fragments in edge cases"
+    file: "packages/cli/src/index.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive warning in git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
