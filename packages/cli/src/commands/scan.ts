@@ -26,6 +26,7 @@ import type { EngineResult } from '../engine/types/engineResult.js';
 import { computeSkillManifest, CORE_SKILLS } from '../constants.js';
 import { selectPrimarySchema } from '../utils/scaffold-generators.js';
 import { isWorktreeDirectory } from '../utils/worktree.js';
+import { track } from '../utils/telemetry.js';
 
 /**
  * Display names imported from shared utility
@@ -413,6 +414,7 @@ export function registerScanCommand(program: Command): void {
       }
     }
 
+    const scanStart = Date.now();
     const spinner = options.json || options.quiet ? null : ora('Scanning project...').start();
 
     try {
@@ -466,6 +468,7 @@ export function registerScanCommand(program: Command): void {
           console.error(chalk.yellow(`Warning: Failed to save scan results. ${writeError instanceof Error ? writeError.message : ''}`));
         }
       }
+      track('scan_completed', { duration_ms: Date.now() - scanStart, hasFindings: countFindings(result) > 0 });
     } catch (error) {
       if (spinner) spinner.fail('Scan failed');
       if (error instanceof Error) console.error(chalk.red(`Error: ${error.message}`));

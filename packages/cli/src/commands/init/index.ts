@@ -47,6 +47,7 @@ import {
   displaySuccessMessage,
   preserveUserState,
 } from './state.js';
+import { track } from '../../utils/telemetry.js';
 
 /**
  * Register the `init` command.
@@ -134,6 +135,9 @@ export function registerInitCommand(program: Command): void {
       const scanTime = ((Date.now() - scanStart) / 1000).toFixed(1);
       const projectName = await getProjectName(cwd);
       displaySuccessMessage(engineResult, projectName, scanTime, mergedConfig ?? newAnaConfig, preflight.warnings);
+
+      const detectedStack = engineResult ? [engineResult.stack.language, engineResult.stack.framework].filter(Boolean).join(' + ') || 'unknown' : 'unknown';
+      track('init_completed', { duration_ms: Date.now() - scanStart, isReinit: preflight.anaExisted, detectedStack });
     } catch (error) {
       // FAILURE: clean up tmp build. If the swap had started, roll back.
       await fs.rm(tmpDir, { recursive: true, force: true });
