@@ -6,8 +6,7 @@ import styles from "./manifesto.module.css";
 
 /**
  * Manifesto — single <article>. Fraunces serif body text.
- * Oxblood drop cap on first paragraph. Pull quote. Signature.
- * NO numbered sections, no footnotes. Restraint is the point.
+ * Oxblood drop cap on first paragraph. Pull quote. Principles. Signature.
  */
 export function Manifesto() {
   const title = splitHeadline(copy.manifesto.title);
@@ -36,8 +35,18 @@ export function Manifesto() {
         {copy.manifesto.pull}
       </blockquote>
 
-      {/* Body paragraphs (after pull quote) */}
-      {copy.manifesto.bodyAfterPull.map((para, i) => (
+      {/* Principles */}
+      <h2 id="principles" className={styles.sectionHead}>Principles</h2>
+      {copy.manifesto.principles.map((p) => (
+        <div key={p.name} className={styles.principle}>
+          <p className={styles.principleName}>{p.name}</p>
+          <p className={styles.principleBody}>{p.body}</p>
+        </div>
+      ))}
+
+      {/* The commitment */}
+      <h2 className={styles.sectionHead}>The commitment</h2>
+      {copy.manifesto.commitment.map((para, i) => (
         <p key={i} className={styles.body}>
           <Formatted text={para} />
         </p>
@@ -46,7 +55,6 @@ export function Manifesto() {
       {/* Signature */}
       <div className={styles.signature}>
         <span className={styles.signatureWho}>{copy.manifesto.signature.who}</span>
-        <span>{copy.manifesto.signature.when}</span>
       </div>
 
       {/* Outbound links */}

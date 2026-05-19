@@ -1,10 +1,16 @@
-/* Manifesto — editorial essay with Fraunces serif, drop cap, pull quote.
-   Needs a module for ::first-letter and .pull pseudo-element rule. */
+/* Manifesto — editorial essay with Fraunces serif, drop cap, pull quote,
+   principles, commitment, signature. Restraint is the point. */
 
 .article {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 8px;
+  padding: 0 24px;
+}
+
+@media (max-width: 520px) {
+  .article {
+    padding: 0 16px;
+  }
 }
 
 .eyebrow {
@@ -56,17 +62,7 @@
   color: var(--fg-strong);
 }
 
-/* Drop cap on first paragraph */
-.lede::first-letter {
-  font-family: var(--font-serif);
-  font-size: 3.4em;
-  font-weight: 600;
-  float: left;
-  line-height: 0.8;
-  margin-right: 8px;
-  margin-top: 6px;
-  color: var(--color-brand);
-}
+/* Drop cap removed — first word "AI" doesn't work as a giant A */
 
 /* Pull quote */
 .pull {
@@ -80,6 +76,42 @@
   padding: 28px 0 28px 24px;
   margin: 36px 0;
   border-left: 2px solid var(--color-brand);
+}
+
+/* ── Section heads ── */
+.sectionHead {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-45);
+  margin-top: 48px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* ── Principles ── */
+.principle {
+  margin-bottom: 28px;
+}
+
+.principleName {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--fg-strong);
+  margin-bottom: 6px;
+}
+
+.principleBody {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--ink-60);
 }
 
 /* Signature */
@@ -117,4 +149,32 @@
 .outbound a:hover {
   color: var(--fg);
   border-color: var(--color-brand);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .pull {
+    font-size: clamp(20px, 2.8vw, 26px);
+    padding: 20px 0 20px 20px;
+    margin: 28px 0;
+  }
+  .sectionHead {
+    margin-top: 36px;
+  }
+}
+
+@media (max-width: 520px) {
+  .body {
+    font-size: 16.5px;
+  }
+  .pull {
+    font-size: 20px;
+    padding: 16px 0 16px 16px;
+  }
+  .principleName {
+    font-size: 15.5px;
+  }
+  .principleBody {
+    font-size: 15px;
+  }
 }

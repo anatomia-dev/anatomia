@@ -526,16 +526,28 @@ export const copy = {
     title: "Code should come with *proof*.",
     body: [
       "AI writes more of our code every month, and most of it arrives naked — a diff, a confident summary, no evidence. We read it, nod, and merge. The promise is speed. The hidden price is a codebase nobody can vouch for, least of all the model that wrote it.",
-      "Anatomia is a small bet against that trade. Every change the pipeline ships arrives with a *proof chain*: the intent that produced it, the plan the model followed, the assertions it committed to, the tests it ran, and the verifier\u2019s signed verdict. You don\u2019t have to trust the model. You read the chain.",
     ],
     pull:
-      "The future isn\u2019t AI that writes more code. It\u2019s AI that helps you think before any code is written.",
-    bodyAfterPull: [
-      "We\u2019re not trying to slow anyone down. Proofs are *cheap* when they\u2019re built into the pipeline; it\u2019s reviewing opaque code that\u2019s expensive. The whole point is that a verified change goes in without a human re-reading every line. Speed comes from trust, and trust has to come from somewhere real.",
-      "Everything we build is open source, MIT-licensed, and runnable on your own machine. You can read the verifier. You can fork the pipeline. The proof is in the code, not in our word for it — which is how it should be.",
-      "That\u2019s the whole idea. The rest is execution.",
+      "You don\u2019t have to trust the model. You read the chain.",
+    principles: [
+      {
+        name: "Think more, build less.",
+        body: "AI was built to think less, build more. We reverse that. The cost of building is near zero. The cost of building the wrong thing is enormous. A feature that took an hour to think through and ten minutes to build beats one that took ten minutes to think through and an hour to debug.",
+      },
+      {
+        name: "Name the disease, not the symptom.",
+        body: "Before fixing something, state the root cause in one sentence. A fix that addresses the symptom is the first of many. A fix that addresses the cause is one fix forever.",
+      },
+      {
+        name: "Every character earns its place.",
+        body: "No slop. Not in code, not in prompts, not in documentation. If three words do what five did, use three.",
+      },
     ],
-    signature: { who: "— Anatomia", when: "Written April 2026" },
+    commitment: [
+      "Everything is open source, MIT-licensed, and runnable on your own machine. You can read the verifier. You can fork the pipeline. The proof is in the code, not in our word for it.",
+      "Speed comes from trust. Trust comes from proof. Proof comes from a system that doesn\u2019t care whether the output looks right — only whether it is.",
+    ],
+    signature: { who: "— Ryan Patrick Smith, Founder" },
     outbound: [
       { label: "See the pipeline", href: "/#system" },
       { label: "Get in touch", href: "/contact" },
