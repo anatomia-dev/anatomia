@@ -58,5 +58,20 @@
       "severity": "warn",
       "message": "possible secret in packages/cli/src/utils/telemetry.ts (PostHog project key)"
     }
-  ]
+  ],
+  "verify_started_at": "2026-05-19T07:55:12.391Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:6bcfc753b409824517df9a74069528816e15cb85df43f7e92420bcf34cd6a732",
+    "run_at": "2026-05-19T08:01:13.941Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-19T08:01:13.979Z",
+    "hash": "sha256:5c903033a2f9f2bfd064cd3589809d8de9bd2d0708f7c79113e55ccb70759d29"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-19T08:01:13.979Z",
+    "hash": "sha256:b2312485a32e8730ceb422ea8fe8fb110d1e000011bd40ec211cd8fce08796d8"
+  }
 }

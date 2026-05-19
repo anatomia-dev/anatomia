@@ -1,0 +1,45 @@
+schema: 1
+findings:
+  - category: code
+    summary: "error_occurred event passes errorMessage which can contain file paths (PII)"
+    file: "packages/cli/src/index.ts"
+    line: 95
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A015"]
+  - category: test
+    summary: "A021 test checks readConfig() instead of command output containing 'Telemetry:'"
+    file: "packages/cli/tests/utils/telemetry.test.ts"
+    line: 575
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A021"]
+  - category: test
+    summary: "A024 test checks buildCommandRunProperties instead of show command output containing 'command_run'"
+    file: "packages/cli/tests/utils/telemetry.test.ts"
+    line: 630
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A024"]
+  - category: upstream
+    summary: "Contract A015 only covers command_run events for no-PII check — error_occurred and future events uncovered"
+    severity: observation
+    suggested_action: scope
+    related_assertions: ["A015"]
+  - category: code
+    summary: "isEnabled() exported but only consumed by tests — test-only export"
+    file: "packages/cli/src/utils/telemetry.ts"
+    line: 123
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Hardcoded cliVersion '1.1.1' in telemetry show command — becomes stale on version bumps"
+    file: "packages/cli/src/commands/telemetry.ts"
+    line: 98
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "ensureConsent interactive path (readline prompt) not tested — only non-TTY path exercised"
+    file: "packages/cli/tests/utils/telemetry.test.ts"
+    severity: debt
+    suggested_action: monitor
