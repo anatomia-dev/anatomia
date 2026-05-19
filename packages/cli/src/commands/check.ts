@@ -35,7 +35,7 @@ import { checkScanFreshness } from '../utils/scan-freshness.js';
  * and inside validateSetupCompletion. Adding a section required updating
  * both places; a later review caught the drift.
  */
-const PROJECT_CONTEXT_SECTIONS = [
+export const PROJECT_CONTEXT_SECTIONS = [
   'What This Project Does',
   'Architecture',
   'Key Decisions',
@@ -792,7 +792,7 @@ export function checkSkillSections(content: string): { valid: boolean; missing: 
  * @param cwd - Project root directory
  * @returns Sorted array of skill directory names
  */
-async function discoverSkills(cwd: string): Promise<string[]> {
+export async function discoverSkills(cwd: string): Promise<string[]> {
   const skillsDir = path.join(cwd, '.claude', 'skills');
   try {
     const entries = await fs.readdir(skillsDir, { withFileTypes: true });
@@ -1220,7 +1220,7 @@ function isScaffoldTemplateLine(trimmed: string): boolean {
  * @param sectionNames - Section headings to check (without the `## ` prefix)
  * @returns Number of sections whose content passes `hasRealContent`
  */
-function countPopulatedContextSections(
+export function countPopulatedContextSections(
   content: string,
   sectionNames: readonly string[]
 ): number {
