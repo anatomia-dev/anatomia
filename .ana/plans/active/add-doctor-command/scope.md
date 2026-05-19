@@ -124,14 +124,18 @@ New projects get the compact welcome view with a "Next:" CTA. Early and establis
 **3. Context Quality** (red/green/yellow)
 - Calls `checkContextForDashboard()` from `check.ts` for project-context.md
 - Also calls `countPopulatedContextSections()` for section-level detail
+- Checks `setupPhase` from ana.json (or `readSetupProgress()` from check.ts) to detect interrupted setups
 - Green: all sections populated beyond scaffold
-- Yellow: scaffold or partially populated
+- Yellow with setup-aware messaging:
+  - If `setupPhase` is an intermediate value (e.g., "guided"): `○ Context — setup in progress (resume: claude --agent ana-setup)`
+  - If `setupPhase` is "complete" but sections are still scaffold-quality: `○ Context — scaffold (setup completed but sections thin)`
+  - If no `setupPhase` (setup never started): `○ Context — scaffold (run: claude --agent ana-setup)`
 - Red: missing sections or file not found
 
 **4. Skill Enrichment** (green/yellow)
 - Calls `checkSkill()` from `check.ts` for each discovered skill
-- Counts enriched (has Detected facts OR Rules entries) vs scaffold-default
-- Green: all skills enriched
+- Enriched means the Rules section has content beyond the template default. Detected is machine-populated by init — every skill has Detected after init, so Detected alone does NOT indicate enrichment. Uses `countEntriesInSection(content, 'Rules')` from check.ts to count Rules entries. A skill with 3 Detected lines but zero non-template Rules lines is scaffold, not enriched.
+- Green: all skills have Rules entries beyond template defaults
 - Yellow: N of M enriched, names the scaffold-default ones
 - Never red — scaffold skills aren't broken, they're just not enriched yet
 
@@ -160,7 +164,7 @@ Structured envelope following the `proof` command pattern:
     "dimensions": {
       "cli_version": { "status": "pass" | "warn" | "fail", "current": "1.1.1", "latest": "1.3.0" | null, "project_version": "1.1.1" | null },
       "scan_freshness": { "status": "pass" | "warn" | "fail", "days_since_scan": 2, "commits_since_scan": 8 | null, "depth": "deep" | "surface" },
-      "context": { "status": "pass" | "warn" | "fail", "sections_populated": 6, "sections_total": 6 },
+      "context": { "status": "pass" | "warn" | "fail", "sections_populated": 6, "sections_total": 6, "setup_state": "not_started" | "in_progress" | "complete" },
       "skills": { "status": "pass" | "warn", "enriched": 5, "total": 5, "scaffold_defaults": [] },
       "proof_chain": { "status": "pass" | "warn", "runs": 42, "active_findings": 8, "risk_findings": 2, "trend": "stable" }
     },
@@ -190,6 +194,7 @@ Structured envelope following the `proof` command pattern:
 - AC12: `README.md` Quick Start section includes `ana doctor` as the "check your installation" step after `ana init commit`, and the Commands table has a `ana doctor` row under "Scan and init"
 - AC13: `website/content/docs/guides/troubleshooting.mdx` has a new TroubleCard "How do I know if my installation is healthy?" that directs users to `ana doctor`, and the existing "Version mismatch warning" card mentions `ana doctor` alongside `ana work status`
 - AC14: `website/content/docs/start.mdx` mentions `ana doctor` as a verification step after init (Step 2), and the Updating section references `ana doctor` for version/health checking
+- AC15: Running `ana doctor` from inside a worktree prints "Run from the main project directory, not from a worktree." and exits 1 — same guard pattern as init, setup complete, and work complete
 
 ## Edge Cases & Risks
 
@@ -200,6 +205,7 @@ Structured envelope following the `proof` command pattern:
 - **No git repo:** Some dimensions (scan freshness commit count) won't have data. Degrade to time-only, same as existing `checkScanFreshness()` behavior.
 - **Massive proof chain (100+ entries):** `computeChainHealth()` iterates all entries. This is already tested at scale in `proof health`. No additional risk.
 - **Concurrent agent runs:** Doctor is read-only. No git operations, no file writes. Safe to run concurrently with anything.
+- **Running from a worktree:** The worktree's `.ana/` has different content (Build/Verify artifacts, different `.saves.json`). `findProjectRoot()` inside a worktree returns the worktree root. Doctor would show misleading results. Guard with `isWorktreeDirectory()` from `worktree.ts` — same 3-line pattern used by init, setup complete, and work complete.
 - **proofSummary.ts at 2330 lines:** Doctor MUST NOT add code to this file. Doctor is its own module that imports from it.
 
 ## Rejected Approaches
@@ -216,7 +222,7 @@ Structured envelope following the `proof` command pattern:
 
 ## Open Questions
 
-- Should doctor detect and surface setup-in-progress state (setupPhase in ana.json)? If setup started but didn't complete, that's arguably more actionable than "scaffold." AnaPlan should investigate whether `readSetupProgress()` from check.ts adds value here.
+None — all resolved during scoping.
 
 ## Exploration Findings
 
@@ -272,6 +278,7 @@ Structured envelope following the `proof` command pattern:
 - `packages/cli/src/utils/scan-freshness.ts` — `checkScanFreshness()`
 - `packages/cli/src/commands/init/state.ts` — `getCliVersion()`
 - `packages/cli/src/utils/validators.ts` — `findProjectRoot()`
+- `packages/cli/src/utils/worktree.ts` — `isWorktreeDirectory()` for the worktree guard
 - `packages/cli/src/index.ts` — command registration, `commandsGroup('GETTING STARTED')` block
 - `website/scripts/extract-docs-data.ts` — `funcToFile` map (line 448-459), `extractCommands()` function, `buildCommandTree()` parser. The extraction script reads the actual CLI source to auto-generate commands.json. Doctor needs one map entry added.
 - `website/content/docs/guides/troubleshooting.mdx` — existing TroubleCards using `<TroubleCard title="...">` component. Doctor adds one new card and edits one existing card.
