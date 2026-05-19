@@ -155,7 +155,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       await createAnaJson(tmpDir, result);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
       expect(cmds['test']).toBe('pnpm run test -- --run');
-      expect(cmds['testPackage']).toBe('(cd apps/web && pnpm vitest run)');
+      expect(cmds['testPackage']).toBe(`(cd 'apps/web' && pnpm vitest run)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -176,7 +176,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       await createAnaJson(tmpDir, result);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
       expect(cmds['test']).toBe('yarn run test');
-      expect(cmds['testPackage']).toBe('(cd apps/web && yarn jest --watchAll=false)');
+      expect(cmds['testPackage']).toBe(`(cd 'apps/web' && yarn jest --watchAll=false)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -197,7 +197,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       await createAnaJson(tmpDir, result);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
       expect(cmds['test']).toBe('pnpm run test');
-      expect(cmds['testPackage']).toBe('(cd apps/web && pnpm run test)');
+      expect(cmds['testPackage']).toBe(`(cd 'apps/web' && pnpm run test)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
     }

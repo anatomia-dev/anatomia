@@ -409,10 +409,10 @@ export async function createAnaJson(
     // Map detected testing framework to direct runner invocation
     const directCmd = buildDirectTestCommand(result.stack.testing, pm);
     if (directCmd) {
-      testPackageCmd = `(cd ${pkg.path} && ${directCmd})`;
+      testPackageCmd = `(cd '${pkg.path}' && ${directCmd})`;
     } else {
       // Unknown framework — cd with root-derived command as fallback
-      testPackageCmd = `(cd ${pkg.path} && ${testCmd})`;
+      testPackageCmd = `(cd '${pkg.path}' && ${testCmd})`;
     }
   }
 
@@ -436,7 +436,7 @@ export async function createAnaJson(
       // Build: first match — same key order as detectCommands
       for (const key of ['build', 'compile', 'tsc']) {
         if (scripts[key]) {
-          buildPackageCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
+          buildPackageCmd = `(cd '${pkg.path}' && ${prefix} ${key})`;
           break;
         }
       }
@@ -444,7 +444,7 @@ export async function createAnaJson(
       // Lint: first match — same key order as detectCommands (stays scoped)
       for (const key of ['lint', 'eslint', 'biome']) {
         if (scripts[key]) {
-          lintCmd = `(cd ${pkg.path} && ${prefix} ${key})`;
+          lintCmd = `(cd '${pkg.path}' && ${prefix} ${key})`;
           break;
         }
       }

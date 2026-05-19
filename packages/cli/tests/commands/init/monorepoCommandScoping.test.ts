@@ -92,7 +92,7 @@ describe('createAnaJson monorepo command scoping', () => {
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
       expect(cmds['build']).toBe('pnpm run build');
-      expect(cmds['buildPackage']).toBe('(cd packages/cli && pnpm run build)');
+      expect(cmds['buildPackage']).toBe(`(cd 'packages/cli' && pnpm run build)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -109,7 +109,7 @@ describe('createAnaJson monorepo command scoping', () => {
 
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
-      expect(cmds['lint']).toBe('(cd packages/cli && pnpm run lint)');
+      expect(cmds['lint']).toBe(`(cd 'packages/cli' && pnpm run lint)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -203,7 +203,7 @@ describe('createAnaJson monorepo command scoping', () => {
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
       expect(cmds['build']).toBe('pnpm run build');
-      expect(cmds['buildPackage']).toBe('(cd packages/cli && pnpm run compile)');
+      expect(cmds['buildPackage']).toBe(`(cd 'packages/cli' && pnpm run compile)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -219,7 +219,7 @@ describe('createAnaJson monorepo command scoping', () => {
 
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
-      expect(cmds['lint']).toBe('(cd packages/cli && pnpm run biome)');
+      expect(cmds['lint']).toBe(`(cd 'packages/cli' && pnpm run biome)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -275,7 +275,7 @@ describe('createAnaJson monorepo command scoping', () => {
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
       expect(cmds['build']).toBe('npm run build');
-      expect(cmds['buildPackage']).toBe('(cd packages/cli && npm run build)');
+      expect(cmds['buildPackage']).toBe(`(cd 'packages/cli' && npm run build)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -306,7 +306,7 @@ describe('createAnaJson monorepo command scoping', () => {
       expect(cmds['test']).not.toContain('(cd ');
       expect(cmds['test']).toContain('--run');
       // testPackage is scoped to primary package
-      expect(cmds['testPackage']).toBe('(cd apps/web && pnpm vitest run)');
+      expect(cmds['testPackage']).toBe(`(cd 'apps/web' && pnpm vitest run)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -320,7 +320,7 @@ describe('createAnaJson monorepo command scoping', () => {
     try {
       // Set root build to the same value the scoping would produce
       await setupPrimaryPackage(cwdDir, 'packages/cli', { build: 'tsup' });
-      const result = makeMonorepoResult({ build: '(cd packages/cli && pnpm run build)' });
+      const result = makeMonorepoResult({ build: `(cd 'packages/cli' && pnpm run build)` });
 
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
@@ -391,10 +391,10 @@ describe('createAnaJson monorepo command scoping', () => {
         commands: {
           build: 'pnpm run build',
           test: 'pnpm run test -- --run',
-          lint: '(cd packages/cli && pnpm run lint)',
+          lint: `(cd 'packages/cli' && pnpm run lint)`,
           dev: 'pnpm run dev',
-          buildPackage: '(cd packages/cli && pnpm run build)',
-          testPackage: '(cd packages/cli && pnpm vitest run)',
+          buildPackage: `(cd 'packages/cli' && pnpm run build)`,
+          testPackage: `(cd 'packages/cli' && pnpm vitest run)`,
         },
       };
 
@@ -412,8 +412,8 @@ describe('createAnaJson monorepo command scoping', () => {
       // @ana A011 — existing build NOT overwritten
       expect(mergedCmds['build']).toBe('custom-build-command');
       // New key propagated from fresh detection
-      expect(mergedCmds['buildPackage']).toBe('(cd packages/cli && pnpm run build)');
-      expect(mergedCmds['testPackage']).toBe('(cd packages/cli && pnpm vitest run)');
+      expect(mergedCmds['buildPackage']).toBe(`(cd 'packages/cli' && pnpm run build)`);
+      expect(mergedCmds['testPackage']).toBe(`(cd 'packages/cli' && pnpm vitest run)`);
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(existingAnaPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -458,9 +458,9 @@ describe('createAnaJson monorepo command scoping', () => {
         commands: {
           build: 'pnpm run build',
           test: 'pnpm run test -- --run',
-          lint: '(cd packages/cli && pnpm run lint)',
+          lint: `(cd 'packages/cli' && pnpm run lint)`,
           dev: 'pnpm run dev',
-          buildPackage: '(cd packages/cli && pnpm run build)',
+          buildPackage: `(cd 'packages/cli' && pnpm run build)`,
         },
       };
 
