@@ -42,12 +42,27 @@ function daysSinceGenesis(): number {
   return Math.floor((Date.now() - GENESIS.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+const PRINCIPLES = [
+  {
+    name: "The elegant solution is the one that removes.",
+    body: "Adding code to manage a problem is engineering. Removing the code that causes the problem is design. The best diff is mostly red.",
+  },
+  {
+    name: "Verified over trusted.",
+    body: "When software can verify something mechanically, don\u2019t rely on intention to get it right. Trust is earned through proof, not good behavior.",
+  },
+  {
+    name: "When building costs zero, taste is the differentiator.",
+    body: "Everyone can build anything. The person who knows what to build wins. Correctness is table stakes. Craft is the product.",
+  },
+];
+
 export async function About() {
   const days = daysSinceGenesis();
   const credits = computeCredits();
 
   // Proof count — same data source and fetch pattern as the ship log (proof-feed.ts)
-  let proofCount = 113;
+  let proofCount = 124;
   try {
     const res = await fetch(
       "https://raw.githubusercontent.com/anatomia-dev/anatomia/main/.ana/proof_chain.json",
@@ -72,65 +87,74 @@ export async function About() {
           </div>
 
           <h1 className={styles.headline}>
-            Building faster doesn&apos;t mean<br />
-            you know what you <em>built</em>.
+            AI made building easy.<br />
+            Understanding what you <em>built</em> is the hard part.
           </h1>
 
+          {/* ── Narrative ── */}
           <div className={styles.narrative}>
-            <p className={styles.lede}>
-              AI makes building easy. Knowing is the hard part.
+            <p className={styles.body}>
+              The code ships fast. It looks right. The tests pass. Three months
+              later nobody can explain why it&apos;s structured the way it is —
+              because the reasoning that produced it didn&apos;t survive the
+              conversation that generated it.
             </p>
 
             <p className={styles.body}>
-              Anatomia started with a frustration. Every AI coding tool we
-              used was fast, fluent, and wrong in ways we couldn&apos;t catch until
-              later. They all said yes. They all sounded confident. None of
-              them showed their work.
+              The AI doesn&apos;t remember your last review. It doesn&apos;t
+              learn from your feedback. It builds from whatever context it has
+              right now, and that context disappears the moment the session ends.
+              What&apos;s left is the artifact. Not the thinking behind it.
             </p>
 
             <p className={styles.body}>
-              The best features are sometimes the ones that don&apos;t get built.
-              The best solutions expose a deeper problem worth solving first.
-              A senior engineer knows this — they push back before the first
-              line is written. They don&apos;t build what you said. They build what
-              you meant.
-            </p>
-
-            <p className={styles.body}>
-              So we built a system that does that. It scans your codebase,
-              builds validated context, and runs every change through a
-              pipeline that thinks before it builds, plans before it codes,
-              and verifies independently before it ships.
+              Every engineering team knows the fix: scope before you build,
+              define what correct means before anyone writes code, have someone
+              else check who wasn&apos;t the one building, record what you
+              learned and let it shape what comes next.
             </p>
 
             <p className={styles.accent}>
-              How do you know you built the right thing? How do you know you
-              built it the right way? How do you know there isn&apos;t risk you
-              can&apos;t see?
+              AI made it easy to skip all of it.
             </p>
 
             <p className={styles.body}>
-              You ship with proof. A sealed contract before code is written.
-              An independent verification after. A proof chain that compounds
-              what the system learns into rules that shape the next build. Not
-              opinion. Not a confident summary. Mechanical evidence that
-              travels with the code.
+              Anatomia makes it mechanical. It reads your codebase, builds
+              verified context specific to your project, and structures how your
+              team works with AI so that good engineering happens whether
+              you&apos;re disciplined enough to enforce it yourself or not.
             </p>
+
+            <p className={styles.body}>
+              Good methodology shouldn&apos;t depend on good intentions.
+            </p>
+
+            <p className={styles.body}>
+              What comes out naturally — not as extra work, but as a byproduct
+              of the process — is a structured record of every decision. What
+              problem was being solved. What was asserted. What was found. What
+              shipped. When someone new joins the team, the record is the
+              context. When someone leaves, the knowledge doesn&apos;t leave
+              with them.
+            </p>
+          </div>
+
+          {/* ── Principles ── */}
+          <div className={styles.principles}>
+            <h2 className={styles.sectionHead}>What drives this</h2>
+            {PRINCIPLES.map((p) => (
+              <div key={p.name} className={styles.principle}>
+                <p className={styles.principleName}>{p.name}</p>
+                <p className={styles.principleBody}>{p.body}</p>
+              </div>
+            ))}
           </div>
 
           {/* ── Genesis ── */}
           <div className={styles.genesis}>
-            <div className={styles.genesisLine} />
-            <p className={styles.genesisIntro}>
-              One developer. One AI subscription. Every feature verified
-              through the same pipeline this tool installs for you.
-            </p>
+            <h2 className={styles.sectionHead}>Genesis</h2>
 
             <div className={styles.statsRow}>
-              <div className={styles.stat}>
-                <span className={styles.statValue}>{days}</span>
-                <span className={styles.statLabel}>days</span>
-              </div>
               <div className={styles.stat}>
                 <span className={styles.statValue}>{proofCount}</span>
                 <span className={styles.statLabel}>verified runs</span>
@@ -140,39 +164,56 @@ export async function About() {
                 <span className={styles.statLabel}>tests</span>
               </div>
               <div className={styles.stat}>
+                <span className={styles.statValue}>{days}</span>
+                <span className={styles.statLabel}>days</span>
+              </div>
+              <div className={styles.stat}>
                 <span className={styles.statValue}>${credits.toLocaleString()}</span>
                 <span className={styles.statLabel}>AI credits</span>
               </div>
             </div>
 
             <p className={styles.genesisCoda}>
-              Open source. MIT-licensed. Works with{" "}
-              <a href="https://claude.ai/code" target="_blank" rel="noopener noreferrer" className={styles.link}>
-                Claude Code
+              Every feature shipped through the same pipeline you install with{" "}
+              <code className={styles.inlineCode}>ana init</code>. Every run
+              is auditable in the{" "}
+              <a
+                href="https://github.com/anatomia-dev/anatomia"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                repo
               </a>
-              . The{" "}
-              <a href="https://github.com/anatomia-dev/anatomia" target="_blank" rel="noopener noreferrer" className={styles.link}>
-                .ana/ directory
-              </a>{" "}
-              is the receipt.
+              . Open source. MIT licensed.
+            </p>
+
+            <p className={styles.genesisVision}>
+              We&apos;re building toward a future where AI-written code is more
+              trustworthy than human-written code — because it ships with
+              mechanical proof that human code never had.
             </p>
           </div>
 
           {/* ── Founder ── */}
           <div className={styles.founder}>
-            <span className={styles.founderName}>Ryan Patrick Smith</span>
-            <span className={styles.founderSep}>·</span>
-            <span className={styles.founderMeta}>Denver, CO</span>
-            <span className={styles.founderSep}>·</span>
-            <span className={styles.founderMeta}>Schwab ML → solo founder</span>
-            <span className={styles.founderSep}>·</span>
+            <div className={styles.founderHeader}>
+              <span className={styles.founderName}>Ryan Smith</span>
+              <span className={styles.founderRole}>Founder</span>
+            </div>
+            <p className={styles.founderMeta}>
+              Denver, CO · 8 years at Schwab building ML systems for 30M+ clients · CU Boulder CS + Economics
+            </p>
+            <p className={styles.founderStory}>
+              Built five projects with AI coding tools. Couldn&apos;t fully
+              trust any of them. Anatomia is the verification layer all of them
+              needed.
+            </p>
             <a
-              href="https://www.linkedin.com/in/rsmith-ai/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:ryan@anatomia.dev"
               className={styles.founderLink}
             >
-              LinkedIn
+              ryan@anatomia.dev
             </a>
           </div>
 
