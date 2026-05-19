@@ -144,7 +144,7 @@ New projects get the compact welcome view with a "Next:" CTA. Early and establis
 
 **Stale work items** (bonus line, not a dimension)
 - Reads active work directories from `.ana/plans/active/`
-- For each, checks `.saves.json` timestamps
+- For each, determines the last activity timestamp. **Critical:** `.saves.json` has a two-domain split — Think/Plan timestamps live on the artifact branch, Build/Verify timestamps live in the worktree's copy (see saves-json-system reference doc). For staleness detection, doctor should use the artifact branch's `.saves.json` timestamps (scope/contract `saved_at`) for pre-build stages, and worktree existence + git log for build/verify stages. Alternatively, delegate to `determineStage()` from work.ts which already handles this complexity, and compute staleness from the stage + the most recent artifact-branch timestamp.
 - Surfaces items stalled > 14 days at any stage
 - Rendered as ⚠ lines after the five dimensions
 
@@ -293,8 +293,10 @@ Structured envelope following the `proof` command pattern:
 - The `readScanJson()` function in check.ts is private. Doctor needs scan depth (deep vs surface). Plan should determine whether to export `readScanJson` or read scan.json directly (it's a simple JSON.parse).
 - The `funcToFile` map in `extract-docs-data.ts` (line 448-459) is NOT auto-discovered — each command registration function name must be mapped explicitly to its source file. The map key is the PascalCase name from `register{Name}Command`. For doctor: `Doctor: 'src/commands/doctor.ts'`. Missing this entry means the command exists in the CLI but is invisible in AnaDocs, the search index, and llms.txt.
 - The `buildCommandTree()` parser relies on Commander method chains (`.description()`, `.option()`, `.argument()`) following specific regex patterns. Doctor's Commander setup must follow the same patterns as existing commands for the extraction to work. Unusual patterns (multiline template strings for descriptions, etc.) can cause the parser to miss data.
+- `.saves.json` has a two-domain split (see `anatomia_reference/TEAM_DOCS/COMPLICATED_CONCEPTS/saves-json-system.md`). Think/Plan timestamps and scope/contract save metadata live on the artifact branch. Build/Verify timestamps, build-report/verify-report metadata, modules_touched, and commit_hygiene live in the worktree's copy (feature branch). Doctor's stale work detection cannot simply read the artifact branch `.saves.json` and get a complete picture — for work items in build/verify stages, the most recent timestamps are in the worktree, accessible only via `git show` on the feature branch or by checking worktree existence. Plan should investigate whether to reuse `determineStage()` from work.ts (which already handles this via `readFileOnBranch`) or take a simpler approach using the artifact-branch timestamps as a lower bound on activity.
 
 ### Things to Investigate
 
 - Whether `discoverSkills()` should be exported from check.ts or whether a simpler skill discovery belongs in a shared utility. This is a design judgment about where skill enumeration lives long-term.
 - The right level of proof chain detail for the proof dimension. `computeChainHealth()` gives counts; `computeHealthReport()` gives trajectory and hot modules. Doctor probably needs `computeHealthReport()` for the trend indicator but shouldn't render hot modules — decide the right function to call.
+- The right approach for stale work item detection given the two-domain `.saves.json` split. Options: (a) reuse `determineStage()` which already handles `readFileOnBranch` for worktree data, then compute staleness from the stage and the latest artifact-branch timestamp; (b) use a simpler heuristic — artifact-branch timestamps give a lower bound on activity, worktree existence means build is in progress. The simpler approach may be sufficient since doctor's goal is "stalled > 14 days" not "exactly when was the last activity."
