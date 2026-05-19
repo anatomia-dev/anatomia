@@ -19,7 +19,8 @@ There is no single command that answers "is my Anatomia installation healthy?" T
   - `packages/cli/tests/commands/doctor.test.ts` (new)
   - `website/scripts/extract-docs-data.ts` (add `Doctor` to `funcToFile` map so the prebuild extraction picks up the new command)
   - `website/content/docs/guides/troubleshooting.mdx` (add TroubleCard for "How do I know if my installation is healthy?", update "Version mismatch warning" card to mention `ana doctor`)
-  - `README.md` (add `ana doctor` to Quick Start section)
+  - `website/content/docs/start.mdx` (add `ana doctor` as a post-init verification step in Step 2, update Updating section to mention `ana doctor`)
+  - `README.md` (add `ana doctor` to Quick Start section and to the Commands table under "Scan and init")
 - **Blast radius:** Low. Doctor reads from existing modules but doesn't modify them. The structural changes are: command registration in index.ts, a one-entry map addition in extract-docs-data.ts (the prebuild script that auto-generates commands.json, search index, and llms.txt from CLI source), two small edits to the troubleshooting guide, and a one-line addition to the README Quick Start.
 - **Estimated effort:** 1-2 days
 - **Multi-phase:** no
@@ -186,8 +187,9 @@ Structured envelope following the `proof` command pattern:
 - AC9: Skills dimension names which skills are still scaffold-default when not all are enriched
 - AC10: Stale work items (>14 days at any stage) appear as ⚠ lines after the five dimensions
 - AC11: `website/scripts/extract-docs-data.ts` `funcToFile` map includes `Doctor: 'src/commands/doctor.ts'` so the prebuild extraction auto-generates the correct commands.json entry, search index entry, and llms.txt reference — no manual data file edits needed
-- AC12: `README.md` Quick Start section includes `ana doctor` as the "check your installation" step after `ana init commit`
+- AC12: `README.md` Quick Start section includes `ana doctor` as the "check your installation" step after `ana init commit`, and the Commands table has a `ana doctor` row under "Scan and init"
 - AC13: `website/content/docs/guides/troubleshooting.mdx` has a new TroubleCard "How do I know if my installation is healthy?" that directs users to `ana doctor`, and the existing "Version mismatch warning" card mentions `ana doctor` alongside `ana work status`
+- AC14: `website/content/docs/start.mdx` mentions `ana doctor` as a verification step after init (Step 2), and the Updating section references `ana doctor` for version/health checking
 
 ## Edge Cases & Risks
 
@@ -253,12 +255,14 @@ Structured envelope following the `proof` command pattern:
 - The `funcToFile` map currently has 10 entries (Scan through Agents). It does NOT auto-discover — new commands must be added explicitly. The script also has a hard-coded validation: it expects specific totals for agents (6), skills (8), context files (4). Commands don't have a hard-coded count so doctor won't break the validation.
 
 **Manual edits:**
-- `README.md` — Quick Start section (lines ~58-65). Doctor belongs after `ana init commit` as the "check your installation" step.
-- `website/content/docs/guides/troubleshooting.mdx` — Two changes: (1) New TroubleCard under "Getting through the gate" section for "How do I know if my installation is healthy?" pointing to `ana doctor`. This is the natural question a new user asks after init. (2) Update the existing "Version mismatch warning" card under "Configuration and state" to mention `ana doctor` as the primary diagnostic, alongside `ana work status`.
+- `README.md` — Two locations: (1) Quick Start section (lines ~58-65) — add `ana doctor` after `ana init commit` as the "check your installation" step. (2) Commands table under "Scan and init" (lines ~154-161) — add a row: `ana doctor | Check project health and configuration. --json for CI`.
+- `website/content/docs/start.mdx` — The primary onboarding path for strangers. Two locations: (1) After Step 2 (Initialize), add a note that users can run `ana doctor` to verify their installation is healthy before entering the pipeline. This is where a stranger naturally wants confirmation that init worked. (2) The "Updating" section (line ~101) currently says "`ana work status` will tell you when your project was initialized with an older version" — update to mention `ana doctor` as the primary health check after updates.
+- `website/content/docs/guides/troubleshooting.mdx` — Two changes: (1) New TroubleCard under "Getting through the gate" section for "How do I know if my installation is healthy?" pointing to `ana doctor`. This is the natural first question after init. (2) Update the existing "Version mismatch warning" card under "Configuration and state" to mention `ana doctor` as the primary diagnostic, alongside `ana work status`.
 
 **Not needed:**
-- No dedicated guide page for doctor. It's a single command, not a concept. The auto-generated CLI reference entry is sufficient. A guide page can be added later if customers need more explanation.
-- No changes to concept pages. Doctor doesn't introduce new concepts.
+- No dedicated guide page for doctor. It's a single command, not a concept. The auto-generated CLI reference entry plus the mentions in start.mdx and troubleshooting.mdx are sufficient.
+- No changes to concept pages (pipeline.mdx, context.mdx, toolbelt.mdx, etc.). Doctor doesn't introduce new concepts. Toolbelt.mdx covers agent-facing CLI commands; doctor is human-facing only.
+- No changes to other guide pages (using-ana-setup.mdx, using-ana-learn.mdx, etc.). These are agent workflow guides; doctor is a standalone diagnostic.
 
 ### Relevant Code Paths
 
@@ -271,6 +275,8 @@ Structured envelope following the `proof` command pattern:
 - `packages/cli/src/index.ts` — command registration, `commandsGroup('GETTING STARTED')` block
 - `website/scripts/extract-docs-data.ts` — `funcToFile` map (line 448-459), `extractCommands()` function, `buildCommandTree()` parser. The extraction script reads the actual CLI source to auto-generate commands.json. Doctor needs one map entry added.
 - `website/content/docs/guides/troubleshooting.mdx` — existing TroubleCards using `<TroubleCard title="...">` component. Doctor adds one new card and edits one existing card.
+- `website/content/docs/start.mdx` — the Quickstart guide. Step 2 (Initialize) and Updating section both reference `ana work status` for pipeline state. Doctor is the better command for "is my installation healthy?" post-init and post-update.
+- `README.md` — Quick Start (lines ~58-65) and Commands table (lines ~152-205). Both need a doctor entry.
 
 ### Patterns to Follow
 
