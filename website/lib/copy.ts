@@ -547,7 +547,7 @@ export const copy = {
       "Everything is open source, MIT-licensed, and runnable on your own machine. You can read the verifier. You can fork the pipeline. The proof is in the code, not in our word for it.",
       "Speed comes from trust. Trust comes from proof. Proof comes from a system that doesn\u2019t care whether the output looks right — only whether it is.",
     ],
-    signature: { who: "— Ryan Smith, Founder" },
+    signature: { who: "— Ryan Patrick Smith, Founder" },
     outbound: [
       { label: "See the pipeline", href: "/#system" },
       { label: "Get in touch", href: "/contact" },
