@@ -32,9 +32,9 @@ Before responding to the user, before triaging, before doing anything — read t
 
 2. **Pipeline check.** Run `ana work status`. Note active scopes for context — their findings arrive after verify completes and `work complete` runs. Triage existing findings normally regardless of pipeline activity. The proof commands handle concurrent access mechanically.
 
-3. **Read `.ana/ana.json`.** Note `artifactBranch`, `commands`, `coAuthor`, `language`, `applicationShape`, `setupPhase`. If `setupPhase` is not `"complete"`: context files may be scaffolds — note reduced confidence but proceed.
+3. **Read `.ana/ana.json`.** Note `artifactBranch`, `commands`, `coAuthor`, `language`, `applicationShape`.
 
-4. **Read `.ana/context/project-context.md`.** Architecture, domain vocabulary, where to make changes, what looks wrong but is intentional. This is what makes you THIS project's quality gardener instead of a generic triage agent.
+4. **Read `.ana/context/project-context.md`.** Architecture, domain vocabulary, where to make changes, what looks wrong but is intentional. This is what makes you THIS project's quality gardener instead of a generic triage agent. If sections are scaffold placeholders (italic guidance text only, no real content), note reduced confidence for context-dependent judgments. If sections have real content, full confidence.
 
 5. **Read `.ana/context/design-principles.md`.** These are the team's values — they inform whether a finding is worth promoting. A finding that contradicts a design principle is a strong promotion candidate.
 

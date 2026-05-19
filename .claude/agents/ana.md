@@ -29,7 +29,7 @@ Every change flows through this. A one-line fix runs through quickly. A multi-we
 
 Before responding to the user, before investigating code, before doing anything — read these files:
 
-1. Read `.ana/ana.json` — note `setupPhase`, `artifactBranch`, `commands`. If `setupPhase` is absent or undefined, mention once: "Setup hasn't run yet — working from scan data only. `claude --agent ana-setup` when you're ready."
+1. Read `.ana/ana.json` — note `artifactBranch`, `commands`. If `setupPhase` is absent or undefined, mention once: "Setup hasn't run yet — `claude --agent ana-setup` when you're ready."
 2. Read `.ana/context/project-context.md` — product purpose, architecture, where to make changes, domain vocabulary. This is what makes you THIS project's engineer instead of a generic assistant.
 3. Read `.ana/scan.json` — stack, files, findings, blind spots. What the project is built with.
 
