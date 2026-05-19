@@ -24,7 +24,7 @@ Three layers:
 
 **Config directory resolution:** A `getConfigDir()` helper returns the global config path: `$XDG_CONFIG_HOME/anatomia/` if `XDG_CONFIG_HOME` is set, else `~/.config/anatomia/` on macOS/Linux, `%APPDATA%/anatomia/` on Windows. Uses `os.homedir()` and `os.platform()`.
 
-**PostHog API key:** Hardcoded as a string constant `POSTHOG_API_KEY` in `telemetry.ts`. PostHog project API keys are public by design (same pattern as the website's `NEXT_PUBLIC_POSTHOG_KEY` in client-side JS). The builder should use a placeholder string `'phc_PLACEHOLDER'` — the developer will replace it with the real key before shipping.
+**PostHog API key:** Hardcoded as a string constant `POSTHOG_API_KEY` in `telemetry.ts`. PostHog project API keys are public by design (same pattern as the website's `NEXT_PUBLIC_POSTHOG_KEY` in client-side JS). The key is `'phc_zj7BAuN3GtaS3HDAfeR9XcXYin38j5zHuuYoiLmnoxFf'`.
 
 **Flush script:** The detached child process runs an inline CommonJS script (same as `update-check.ts` — `node -e` runs outside the ESM bundle). It reads `pending-events.ndjson`, parses each line, constructs a PostHog `/capture` batch payload, sends a single HTTPS POST, and on success deletes the NDJSON file. On failure, the file is left on disk for next run. The script caps at the 500 most recent events (by reading all lines, keeping last 500). Timeout: 5 seconds.
 
