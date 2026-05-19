@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A001-A005 tests verify data model, not terminal output — contract targets output.lines"
+    file: "packages/cli/tests/commands/doctor.test.ts"
+    line: 131
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A001", "A002", "A003", "A004", "A005"]
+
+  - category: test
+    summary: "A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408"
+    file: "packages/cli/tests/commands/doctor.test.ts"
+    line: 410
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently"
+    file: "packages/cli/src/commands/doctor.ts"
+    line: 153
+    severity: debt
+    suggested_action: scope
+    related_assertions: []
+
+  - category: test
+    summary: "No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach"
+    file: "packages/cli/tests/commands/doctor.test.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A018", "A019", "A025", "A026"]
+
+  - category: code
+    summary: "formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong"
+    file: "packages/cli/src/commands/doctor.ts"
+    line: 549
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Proof context: readAnaJson called twice in check.ts — doctor adds a third and fourth read of ana.json in separate dimension assessors"
+    severity: observation
+    suggested_action: monitor

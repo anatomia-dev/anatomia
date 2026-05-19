@@ -58,6 +58,8 @@ ana init commit
 
 This stages only infrastructure files (`.ana/`, `.claude/`, `CLAUDE.md`, `AGENTS.md`), commits with `--no-verify`, and pushes. Pipeline data and per-developer state are automatically excluded.
 
+Run `ana doctor` to verify the installation is healthy — it checks CLI version, scan freshness, context quality, skill enrichment, and proof chain status in one dashboard.
+
 ## Step 3: First pipeline run
 
 Describe a small change — a single-file fix or a feature you'd normally spend 30 minutes on.
@@ -106,7 +108,7 @@ ana init                      # refresh scan data + skill detection
 ana init commit               # persist the refresh
 ```
 
-Updating the CLI changes the binary only. Your agents, skills, context, and proof chain don't change until you run `ana init`. When you do, your rules, context files, and proof history are preserved — only machine-detected data refreshes. `ana work status` will tell you when your project was initialized with an older version.
+Updating the CLI changes the binary only. Your agents, skills, context, and proof chain don't change until you run `ana init`. When you do, your rules, context files, and proof history are preserved — only machine-detected data refreshes. Run `ana doctor` after updating to confirm everything is healthy — it checks all five dimensions in one command. `ana work status` will tell you when your project was initialized with an older version.
 
 <NextCards cards={[
   {

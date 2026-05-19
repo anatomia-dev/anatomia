@@ -60,6 +60,7 @@ Requires Node.js 22+. To update: `npm update -g anatomia-cli`
 ```bash
 ana init                      # generate context + agents
 ana init commit               # persist to git (so teammates get it too)
+ana doctor                    # verify installation is healthy
 claude --agent ana            # start with "hey Ana" — context loads first
 claude --agent ana-setup      # enrich with your team's knowledge (optional, recommended, ~10 min)
 ```
@@ -158,6 +159,7 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 | `ana scan [path]` | Detect stack, conventions, patterns. `--quick` for surface-only, `--json` for structured output |
 | `ana init` | Generate `.ana/` context and `.claude/` agent definitions. Re-run after CLI updates to refresh |
 | `ana init commit` | Commit infrastructure files to the artifact branch |
+| `ana doctor` | Check project health and configuration. `--json` for CI |
 | `ana config show` | Display current ana.json settings |
 
 ### Pipeline

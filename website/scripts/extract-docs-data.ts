@@ -456,6 +456,7 @@ function extractCommands(): CommandsData {
     Config: 'src/commands/config.ts',
     Proof: 'src/commands/proof.ts',
     Agents: 'src/commands/agents.ts',
+    Doctor: 'src/commands/doctor.ts',
   };
 
   // Assign registrations to groups

@@ -8,6 +8,12 @@ lastReviewed: "2026-05-16"
 
 Scan → init → setup → first pipeline run. Once you complete one end-to-end cycle, most of these go away.
 
+<TroubleCard title="How do I know if my installation is healthy?">
+
+Run `ana doctor`. It checks five dimensions — CLI version, scan freshness, context quality, skill enrichment, and proof chain health — and prints a single dashboard. Use `ana doctor --json` for CI or structured output. Fix any red (✗) items it surfaces before running the pipeline.
+
+</TroubleCard>
+
 <TroubleCard title="ana init failed">
 
 1. Run from your project root, not a subdirectory or a worktree
@@ -125,7 +131,7 @@ The pipeline creates PRs via `ana pr create`, which uses `gh` under the hood. If
 
 <TroubleCard title="Version mismatch warning">
 
-If `ana work status` shows a version mismatch between your CLI and the project's `anaVersion`, run `ana init` to update the project to your CLI version. This refreshes scan data and templates while preserving your context and proof chain.
+If `ana work status` or `ana doctor` shows a version mismatch between your CLI and the project's `anaVersion`, run `ana init` to update the project to your CLI version. This refreshes scan data and templates while preserving your context and proof chain.
 
 </TroubleCard>
 
