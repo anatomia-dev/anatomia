@@ -13,6 +13,7 @@ describe('ProjectCensus type shape', () => {
       deps: { next: '14.0.0', react: '18.2.0' },
       devDeps: { typescript: '5.3.0' },
       hasBin: false,
+      scripts: [],
     };
     const apiRoot: SourceRoot = {
       absolutePath: '/tmp/cal.com/apps/api',
@@ -23,6 +24,7 @@ describe('ProjectCensus type shape', () => {
       deps: { express: '4.18.0' },
       devDeps: { vitest: '1.0.0' },
       hasBin: false,
+      scripts: [],
     };
     const uiRoot: SourceRoot = {
       absolutePath: '/tmp/cal.com/packages/ui',
@@ -33,6 +35,7 @@ describe('ProjectCensus type shape', () => {
       deps: { react: '18.2.0' },
       devDeps: {},
       hasBin: false,
+      scripts: [],
     };
 
     return {
@@ -98,6 +101,7 @@ describe('ProjectCensus type shape', () => {
       deps: { next: '14.0.0' },
       devDeps: { vitest: '1.0.0' },
       hasBin: false,
+      scripts: [],
     };
 
     const census: ProjectCensus = {

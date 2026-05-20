@@ -338,6 +338,7 @@ describe('detectApplicationShape', () => {
         deps: {},
         devDeps: {},
         hasBin: true,
+        scripts: [],
       };
 
       // Runtime assertion that hasBin exists and is boolean

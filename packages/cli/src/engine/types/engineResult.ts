@@ -51,6 +51,37 @@ export interface ReadmeResult {
 }
 
 /**
+ * A detected development surface within a monorepo — a package that
+ * represents a deployable application or significant service. Surfaces are
+ * the "things you ship" as opposed to shared libraries and config packages.
+ */
+export interface Surface {
+  name: string;                        // derived from last path segment, normalized
+  path: string;                        // relative to project root
+  packageName: string | null;          // from package.json name field
+  language: string | null;             // display name ('TypeScript', 'JavaScript', or null)
+  framework: string | null;            // display name ('Next.js', 'NestJS', etc.) or null
+  testing: string[];                   // testing frameworks detected for this surface
+  sourceFiles: number;                 // source file count for this package
+}
+
+/**
+ * Enriched monorepo package descriptor — extends the original inline
+ * `{ name: string; path: string }` with per-package intelligence.
+ * Downstream consumers that only read `.name` and `.path` are unaffected.
+ */
+export interface EnrichedPackage {
+  name: string;
+  path: string;
+  language: string | null;
+  framework: string | null;
+  testing: string[];
+  hasBin: boolean;
+  scripts: string[];
+  sourceFiles: number;
+}
+
+/**
  * The unified scan result returned by `scanProject()` and consumed by every
  * display surface in the CLI (`ana scan` terminal output, `ana init` success
  * message, `CLAUDE.md`, `AGENTS.md`, and the Detected section of every
@@ -121,9 +152,10 @@ export interface EngineResult {
   monorepo: {
     isMonorepo: boolean;
     tool: string | null;
-    packages: Array<{ name: string; path: string }>;
+    packages: EnrichedPackage[];
     primaryPackage: { name: string; path: string } | null;
   };
+  surfaces: Surface[];
   externalServices: Array<{
     name: string;
     category: string;
@@ -348,6 +380,7 @@ export function createEmptyEngineResult(): EngineResult {
     commands: { build: null, test: null, lint: null, dev: null, packageManager: null, all: {} },
     git: { head: null, branch: null, commitCount: null, lastCommitAt: null, uncommittedChanges: false, contributorCount: null, defaultBranch: null, branches: null, commitFormat: null, branchPatterns: null, hooks: null, mergeStrategy: null, coAuthor: null, recentActivity: null },
     monorepo: { isMonorepo: false, tool: null, packages: [], primaryPackage: null },
+    surfaces: [],
     externalServices: [],
     schemas: {},
     secrets: { envFileExists: false, envExampleExists: false, gitignoreCoversEnv: false },

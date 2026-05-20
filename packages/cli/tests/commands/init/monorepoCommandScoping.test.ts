@@ -75,7 +75,7 @@ describe('createAnaJson monorepo command scoping', () => {
     result.monorepo = {
       isMonorepo: true,
       tool: pm,
-      packages: [{ name: '@myapp/cli', path: pkgPath }],
+      packages: [{ name: '@myapp/cli', path: pkgPath, language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
       primaryPackage: { name: '@myapp/cli', path: pkgPath },
     };
     return result;
@@ -296,7 +296,7 @@ describe('createAnaJson monorepo command scoping', () => {
       result.stack.testing = ['Vitest'];
       result.monorepo = {
         isMonorepo: true, tool: 'pnpm',
-        packages: [{ name: '@myapp/web', path: 'apps/web' }],
+        packages: [{ name: '@myapp/web', path: 'apps/web', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: '@myapp/web', path: 'apps/web' },
       };
 

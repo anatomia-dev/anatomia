@@ -15,6 +15,7 @@ function makeRoot(relativePath: string, fileCount: number, isPrimary = false): S
     deps: {},
     devDeps: {},
     hasBin: false,
+    scripts: [],
   };
 }
 
