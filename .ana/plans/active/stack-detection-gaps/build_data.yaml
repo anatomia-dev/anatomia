@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "Workspace label tests mirror scan-engine ternary indirectly — could diverge if ternary is refactored"
+    file: "packages/cli/tests/engine/census-detection.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Wildcard capitalization is naive for hyphenated provider names (e.g., some-provider → Some-provider)"
+    file: "packages/cli/src/engine/detectors/dependencies.ts"
+    severity: observation
+    suggested_action: monitor

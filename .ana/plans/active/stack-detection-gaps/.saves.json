@@ -24,5 +24,23 @@
   "spec": {
     "saved_at": "2026-05-20T00:45:23.026Z",
     "hash": "sha256:a5ffb6b185b4d5fe5d4af333205bad0c3225bc8c87447542b2811fde5c8fc7f1"
-  }
+  },
+  "build_started_at": "2026-05-20T00:49:27.385Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-20T00:57:08.307Z",
+    "hash": "sha256:f09a4e522aa7e88228f83fb6b20d30b3d267f2b5ad61895244cc35bfc7105449"
+  },
+  "build-data": {
+    "saved_at": "2026-05-20T00:57:08.308Z",
+    "hash": "sha256:56eee88a53c7959ca503ab081adca99db0df59fc765cc4ddb5c1fe92f138ebb1"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/dependencies.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/census-detection.test.ts",
+    "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts"
+  ],
+  "commit_hygiene": []
 }
