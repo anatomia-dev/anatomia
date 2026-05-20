@@ -1,0 +1,196 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Stack Detection Gaps (V2-Alpha Breadth Sweep)"
+
+assertions:
+  # Deployment platforms
+  - id: A001
+    says: "Cloudflare Workers projects are detected when wrangler.toml is present"
+    block: "detects Cloudflare Workers from wrangler.toml"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "Cloudflare Workers"
+
+  - id: A002
+    says: "Cloudflare Workers projects using the newer jsonc format are detected"
+    block: "detects Cloudflare Workers from wrangler.jsonc"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "Cloudflare Workers"
+
+  - id: A003
+    says: "Helm-based deployments are detected from Chart.yaml"
+    block: "detects Helm from Chart.yaml"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "Helm"
+
+  - id: A004
+    says: "Kubernetes deployments are detected from kustomization.yaml"
+    block: "detects Kubernetes from kustomization.yaml"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "Kubernetes"
+
+  - id: A005
+    says: "AWS CDK deployments are detected from cdk.json"
+    block: "detects AWS CDK from cdk.json"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "AWS CDK"
+
+  - id: A006
+    says: "Pulumi deployments are detected from Pulumi.yaml"
+    block: "detects Pulumi from Pulumi.yaml"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "Pulumi"
+
+  - id: A007
+    says: "Serverless Framework deployments are detected from serverless.yml"
+    block: "detects Serverless Framework from serverless.yml"
+    target: "deployment.platform"
+    matcher: "equals"
+    value: "Serverless Framework"
+
+  - id: A008
+    says: "Existing deployment platforms like Docker and Vercel still work"
+    block: "existing deployment platforms are unchanged"
+    target: "deployment.platforms"
+    matcher: "contains"
+    value: "Docker"
+
+  # CI systems
+  - id: A009
+    says: "CircleCI is detected as a CI system"
+    block: "detects CircleCI from .circleci/config.yml"
+    target: "ci.system"
+    matcher: "equals"
+    value: "CircleCI"
+
+  - id: A010
+    says: "Jenkins is detected as a CI system"
+    block: "detects Jenkins from Jenkinsfile"
+    target: "ci.system"
+    matcher: "equals"
+    value: "Jenkins"
+
+  - id: A011
+    says: "Bitbucket Pipelines is detected as a CI system"
+    block: "detects Bitbucket Pipelines from bitbucket-pipelines.yml"
+    target: "ci.system"
+    matcher: "equals"
+    value: "Bitbucket Pipelines"
+
+  - id: A012
+    says: "GitHub Actions detection still works after adding new CI systems"
+    block: "existing CI detection is unchanged"
+    target: "ci.system"
+    matcher: "equals"
+    value: "GitHub Actions"
+
+  # Nx workspace detection
+  - id: A013
+    says: "Nx monorepos are labeled as Nx instead of generic monorepo"
+    block: "detects Nx workspace from nx.json"
+    target: "stack.workspace"
+    matcher: "contains"
+    value: "Nx"
+
+  - id: A014
+    says: "Turborepo monorepos still show the Turborepo label"
+    block: "Turborepo detection unchanged"
+    target: "stack.workspace"
+    matcher: "contains"
+    value: "Turborepo"
+
+  - id: A015
+    says: "Turborepo wins when both turbo.json and nx.json exist"
+    block: "Turborepo takes precedence over Nx"
+    target: "stack.workspace"
+    matcher: "contains"
+    value: "Turborepo"
+
+  - id: A016
+    says: "Monorepos without Turbo or Nx show a generic workspace label"
+    block: "generic monorepo label when no orchestrator"
+    target: "stack.workspace"
+    matcher: "contains"
+    value: "monorepo"
+
+  # AI provider packages — explicit entries
+  - id: A017
+    says: "Groq AI provider is detected through the Vercel AI SDK"
+    block: "detects @ai-sdk/groq as Vercel AI (Groq)"
+    target: "service.name"
+    matcher: "equals"
+    value: "Vercel AI (Groq)"
+
+  - id: A018
+    says: "DeepSeek AI provider is detected through the Vercel AI SDK"
+    block: "detects @ai-sdk/deepseek as Vercel AI (DeepSeek)"
+    target: "service.name"
+    matcher: "equals"
+    value: "Vercel AI (DeepSeek)"
+
+  - id: A019
+    says: "xAI provider is detected through the Vercel AI SDK"
+    block: "detects @ai-sdk/xai as Vercel AI (xAI)"
+    target: "service.name"
+    matcher: "equals"
+    value: "Vercel AI (xAI)"
+
+  # AI provider packages — wildcard
+  - id: A020
+    says: "Unknown AI providers are automatically caught and labeled"
+    block: "wildcard catches unknown @ai-sdk provider"
+    target: "service.name"
+    matcher: "equals"
+    value: "Vercel AI (Newprovider)"
+
+  - id: A021
+    says: "Wildcard provider names are properly capitalized"
+    block: "wildcard capitalizes provider name"
+    target: "service.name"
+    matcher: "equals"
+    value: "Vercel AI (Newprovider)"
+
+  - id: A022
+    says: "Framework packages like @ai-sdk/react are not mistaken for AI providers"
+    block: "wildcard excludes non-provider @ai-sdk packages"
+    target: "services"
+    matcher: "not_contains"
+    value: "react"
+
+  - id: A023
+    says: "Utility packages like @ai-sdk/provider-utils are not mistaken for AI providers"
+    block: "wildcard excludes @ai-sdk/provider-utils"
+    target: "services"
+    matcher: "not_contains"
+    value: "provider-utils"
+
+  - id: A024
+    says: "Explicit AI provider entries are not duplicated by the wildcard"
+    block: "no duplicate entries for explicit providers"
+    target: "services.duplicateCount"
+    matcher: "equals"
+    value: 0
+
+  - id: A025
+    says: "Existing AI provider detection like Anthropic and OpenAI still works"
+    block: "existing AI provider detection unchanged"
+    target: "services"
+    matcher: "contains"
+    value: "Anthropic"
+
+file_changes:
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/dependencies.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/census-detection.test.ts"
+    action: create
+  - path: "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts"
+    action: modify
