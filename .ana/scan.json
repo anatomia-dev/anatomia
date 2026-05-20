@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-05-18T23:42:40.360Z",
+    "scannedAt": "2026-05-20T23:34:25.543Z",
     "depth": "deep"
   },
   "stack": {
@@ -41,10 +41,10 @@
     "vitest": "^4.1.5"
   },
   "files": {
-    "source": 251,
-    "test": 112,
+    "source": 253,
+    "test": 123,
     "config": 20,
-    "total": 383
+    "total": 396
   },
   "structure": [
     {
@@ -77,16 +77,16 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "282b86c0",
+    "head": "f306fc70",
     "branch": "main",
-    "commitCount": 2608,
-    "lastCommitAt": "2026-05-18T17:37:00-06:00",
-    "uncommittedChanges": false,
+    "commitCount": 2700,
+    "lastCommitAt": "2026-05-20T17:23:06-06:00",
+    "uncommittedChanges": true,
     "contributorCount": 3,
     "defaultBranch": "main",
     "branches": [
+      "feature/cli-telemetry",
       "feature/hero-wordmark",
-      "feature/monorepo-root-commands",
       "main"
     ],
     "commitFormat": {
@@ -121,26 +121,22 @@
       "highChurnFiles": [
         {
           "path": "packages/cli/src/commands/work.ts",
-          "commits": 44
+          "commits": 35
         },
         {
           "path": "packages/cli/tests/commands/work.test.ts",
-          "commits": 33
-        },
-        {
-          "path": "packages/cli/src/commands/artifact.ts",
-          "commits": 24
+          "commits": 27
         },
         {
           "path": "website/lib/copy.ts",
-          "commits": 22
+          "commits": 23
         },
         {
-          "path": "packages/cli/src/utils/proofSummary.ts",
+          "path": "packages/cli/src/commands/artifact.ts",
           "commits": 18
         },
         {
-          "path": "packages/cli/src/commands/proof.ts",
+          "path": "website/scripts/extract-docs-data.ts",
           "commits": 16
         },
         {
@@ -148,24 +144,28 @@
           "commits": 16
         },
         {
-          "path": "packages/cli/tests/utils/proofSummary.test.ts",
-          "commits": 16
-        },
-        {
-          "path": "website/scripts/extract-docs-data.ts",
+          "path": "packages/cli/src/commands/init/state.ts",
           "commits": 15
         },
         {
-          "path": "packages/cli/src/commands/init/state.ts",
+          "path": "packages/cli/src/utils/proofSummary.ts",
           "commits": 14
+        },
+        {
+          "path": "website/lib/proof-feed.ts",
+          "commits": 13
+        },
+        {
+          "path": "packages/cli/src/commands/proof.ts",
+          "commits": 12
         }
       ],
-      "activeContributors": 3,
+      "activeContributors": 2,
       "weeklyCommits": [
-        1003,
-        340,
-        390,
-        172
+        976,
+        336,
+        425,
+        237
       ]
     }
   },
@@ -175,11 +175,47 @@
     "packages": [
       {
         "name": "anatomia-cli",
-        "path": "packages/cli"
+        "path": "packages/cli",
+        "language": "TypeScript",
+        "framework": null,
+        "testing": [
+          "Vitest"
+        ],
+        "hasBin": true,
+        "scripts": [
+          "build",
+          "dev",
+          "test",
+          "typecheck",
+          "typecheck:tests",
+          "lint",
+          "lint:fix",
+          "prepublishOnly"
+        ],
+        "sourceFiles": 243
       },
       {
         "name": "anatomia-website",
-        "path": "website"
+        "path": "website",
+        "language": "TypeScript",
+        "framework": "Next.js",
+        "testing": [
+          "Vitest"
+        ],
+        "hasBin": false,
+        "scripts": [
+          "dev",
+          "prebuild",
+          "build",
+          "start",
+          "lint",
+          "typecheck",
+          "check",
+          "clean",
+          "smoke",
+          "postinstall"
+        ],
+        "sourceFiles": 136
       }
     ],
     "primaryPackage": {
@@ -187,6 +223,30 @@
       "path": "packages/cli"
     }
   },
+  "surfaces": [
+    {
+      "name": "cli",
+      "path": "packages/cli",
+      "packageName": "anatomia-cli",
+      "language": "TypeScript",
+      "framework": null,
+      "testing": [
+        "Vitest"
+      ],
+      "sourceFiles": 243
+    },
+    {
+      "name": "website",
+      "path": "website",
+      "packageName": "anatomia-website",
+      "language": "TypeScript",
+      "framework": "Next.js",
+      "testing": [
+        "Vitest"
+      ],
+      "sourceFiles": 136
+    }
+  ],
   "externalServices": [
     {
       "name": "PostHog",
@@ -265,7 +325,7 @@
         "vitest imports found"
       ]
     },
-    "sampledFiles": 253,
+    "sampledFiles": 255,
     "detectionTime": 1,
     "threshold": 0.7
   },
@@ -280,17 +340,17 @@
           "PascalCase": 0.6612903225806451,
           "kebab-case": 0.1774193548387097
         },
-        "sampleSize": 253
+        "sampleSize": 255
       },
       "functions": {
         "majority": "camelCase",
-        "confidence": 0.8352601156069365,
+        "confidence": 0.8414464534075105,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.8413391557496361,
-          "PascalCase": 0.1586608442503639
+          "camelCase": 0.8473389355742297,
+          "PascalCase": 0.15266106442577032
         },
-        "sampleSize": 730
+        "sampleSize": 757
       },
       "classes": {
         "majority": "PascalCase",
@@ -303,31 +363,31 @@
       },
       "variables": {
         "majority": "camelCase",
-        "confidence": 0.9048770656993148,
+        "confidence": 0.9045419553502695,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.9067043618739903,
-          "PascalCase": 0.012924071082390954,
-          "SCREAMING_SNAKE_CASE": 0.08037156704361874
+          "camelCase": 0.9062861550327805,
+          "PascalCase": 0.012340917855765523,
+          "SCREAMING_SNAKE_CASE": 0.08137292711145391
         },
-        "sampleSize": 4179
+        "sampleSize": 4368
       },
       "constants": {
         "majority": "SCREAMING_SNAKE_CASE",
-        "confidence": 0.9754901960784313,
+        "confidence": 0.9768518518518519,
         "mixed": false,
         "distribution": {
           "SCREAMING_SNAKE_CASE": 1
         },
-        "sampleSize": 199
+        "sampleSize": 211
       }
     },
     "imports": {
       "style": "mixed",
-      "confidence": 0.6466302367941712,
+      "confidence": 0.6548672566371682,
       "distribution": {
-        "absolute": 0.3533697632058288,
-        "relative": 0.6466302367941712
+        "absolute": 0.34513274336283184,
+        "relative": 0.6548672566371682
       },
       "aliasPattern": "@/"
     },
@@ -338,18 +398,18 @@
     },
     "codePatterns": {
       "jsExtensionImports": {
-        "count": 93,
-        "total": 95,
-        "ratio": 0.9789473684210527
+        "count": 117,
+        "total": 121,
+        "ratio": 0.9669421487603306
       },
       "nodePrefix": {
-        "count": 40,
-        "total": 40,
+        "count": 55,
+        "total": 55,
         "ratio": 1
       },
       "emptyCatches": {
         "empty": 0,
-        "commented": 69,
+        "commented": 61,
         "total": 152
       },
       "defaultExports": {
@@ -357,13 +417,13 @@
         "totalFiles": 30
       },
       "nullStyle": {
-        "nullCount": 100,
-        "optionalCount": 146,
+        "nullCount": 106,
+        "optionalCount": 121,
         "preference": "mixed"
       }
     },
-    "sampledFiles": 253,
-    "detectionTime": 389
+    "sampledFiles": 255,
+    "detectionTime": 464
   },
   "readme": {
     "description": "Anatomia is the engineering judgment your AI doesn't have. Four agents scope, plan, build, and verify every change. Contracts are sealed before code is written — typed assertions the verifier checks against the code, not Build's account of what it did. Every run produces a proof chain entry — what was asserted, what was found, what shipped. A fifth agent learns from that record and promotes what it finds to rules that shape future builds. Not opinion. Mechanical proof.",
@@ -376,56 +436,56 @@
       {
         "path": "README.md",
         "category": "project-docs",
-        "sizeBytes": 10417,
-        "lastModifiedDays": 0
+        "sizeBytes": 10555,
+        "lastModifiedDays": 1
       },
       {
         "path": "CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 418,
-        "lastModifiedDays": 3
+        "lastModifiedDays": 5
       },
       {
         "path": "SECURITY.md",
         "category": "guides",
         "sizeBytes": 1016,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 17
       },
       {
         "path": "CODE_OF_CONDUCT.md",
         "category": "guides",
         "sizeBytes": 5477,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 17
       },
       {
         "path": "CHANGELOG.md",
         "category": "changelog",
         "sizeBytes": 11624,
-        "lastModifiedDays": 0
+        "lastModifiedDays": 1
       },
       {
         "path": ".github/PULL_REQUEST_TEMPLATE.md",
         "category": "templates",
         "sizeBytes": 309,
-        "lastModifiedDays": 12
+        "lastModifiedDays": 14
       },
       {
         "path": ".github/ISSUE_TEMPLATE",
         "category": "templates",
         "sizeBytes": 0,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 17
       },
       {
         "path": "packages/cli/ARCHITECTURE.md",
         "category": "guides",
         "sizeBytes": 15017,
-        "lastModifiedDays": 3
+        "lastModifiedDays": 5
       },
       {
         "path": "packages/cli/CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 19216,
-        "lastModifiedDays": 3
+        "lastModifiedDays": 5
       }
     ],
     "docsDirectory": null,

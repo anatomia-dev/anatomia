@@ -8,13 +8,35 @@
     "build": "pnpm run build",
     "test": "pnpm run test -- --run",
     "lint": "(cd packages/cli && pnpm run lint)",
-    "dev": "pnpm run dev",
-    "buildPackage": "(cd packages/cli && pnpm run build)",
-    "testPackage": "(cd packages/cli && pnpm vitest run)"
+    "dev": "pnpm run dev"
+  },
+  "surfaces": {
+    "cli": {
+      "path": "packages/cli",
+      "language": "TypeScript",
+      "framework": null,
+      "commands": {
+        "build": "(cd 'packages/cli' && pnpm run build)",
+        "test": "(cd 'packages/cli' && pnpm vitest run)",
+        "lint": "(cd 'packages/cli' && pnpm run lint)",
+        "dev": null
+      }
+    },
+    "website": {
+      "path": "website",
+      "language": "TypeScript",
+      "framework": "Next.js",
+      "commands": {
+        "build": "(cd 'website' && pnpm run build)",
+        "test": "(cd 'website' && pnpm vitest run)",
+        "lint": "(cd 'website' && pnpm run lint)",
+        "dev": null
+      }
+    }
   },
   "coAuthor": "Ana <build@anatomia.dev>",
   "artifactBranch": "main",
   "branchPrefix": "feature/",
-  "lastScanAt": "2026-05-18T23:42:40.360Z",
+  "lastScanAt": "2026-05-20T23:34:25.543Z",
   "custom": {}
 }
