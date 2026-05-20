@@ -21,7 +21,7 @@ This scope teaches the scan to detect and report development surfaces. It adds a
 
 Add a pure function `detectSurfaces(census)` that classifies which workspace packages are significant development surfaces using three signals grounded in what the census already knows: bin presence with an active development workflow, the `apps/` directory convention, and application framework config files. Enrich every workspace package in scan.json with per-package language, framework, testing, scripts, and file count data — useful for agents and future ana.json population regardless of surface classification.
 
-The detection function lives alongside existing detectors (`dependencies.ts`, `commands.ts`, `git.ts`) and follows the same pattern: pure function, census as input, typed result as output. The census gets one new field (`scripts` on `SourceRoot`) and nine new framework hint entries to recognize NestJS, Nuxt, SvelteKit, Angular, Vue CLI, and missing extension variants for React Router and Astro.
+The detection function lives alongside existing detectors (`dependencies.ts`, `commands.ts`, `git.ts`) and follows the same pattern: pure function, census as input, typed result as output. The census gets one new field (`scripts` on `SourceRoot`) and nine new entries to `FRAMEWORK_HINTS` (nest-cli.json, nuxt.config.ts, nuxt.config.js, svelte.config.js, svelte.config.ts, angular.json, vue.config.js, react-router.config.js, astro.config.js) to recognize NestJS, Nuxt, SvelteKit, Angular, Vue CLI, and missing extension variants for React Router and Astro.
 
 ## Acceptance Criteria
 - AC1: For monorepo projects, scan.json contains a `surfaces` array where each entry has `name`, `path`, `packageName`, `language`, `framework`, `testing`, and `sourceFiles` fields.
@@ -36,6 +36,7 @@ The detection function lives alongside existing detectors (`dependencies.ts`, `c
 - AC10: The scan terminal output includes a "Surfaces" line for monorepos with detected surfaces, following the existing display format.
 - AC11: `SourceRoot` includes a `scripts: string[]` field (script keys from package.json). `FRAMEWORK_HINTS` includes 9 new entries: nest-cli.json, nuxt.config.ts, nuxt.config.js, svelte.config.js, svelte.config.ts, angular.json, vue.config.js, react-router.config.js, astro.config.js.
 - AC12: Adding a new framework: one entry in `FRAMEWORK_HINTS` + one entry in `STRONG_FRAMEWORK_CONFIGS`. Adjusting detection thresholds: one constant. A stranger can extend either without understanding the rest of the system.
+- AC13: Packages with fewer than 5 source files are excluded from surface consideration regardless of other signals. Packages whose last path segment exactly matches a known infrastructure pattern (tsconfig, eslint-config, prettier-config, tailwind-config, config-typescript, biome-config) are excluded. The root package (relativePath of `.` or `""`) is excluded. These pre-filters run before any signal evaluation.
 
 ## Edge Cases & Risks
 
