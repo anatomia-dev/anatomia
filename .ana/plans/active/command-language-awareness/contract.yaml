@@ -1,0 +1,221 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Command Detection Language Awareness"
+
+assertions:
+  # Layer 1 — stack.testing contamination fix
+  - id: A001
+    says: "A Ruby project with JS devDependencies only shows native testing frameworks"
+    block: "eliminates JS testing contamination for Ruby projects"
+    target: "result.stack.testing"
+    matcher: "contains"
+    value: "RSpec"
+
+  - id: A002
+    says: "JS testing frameworks are removed from Ruby project scan results"
+    block: "eliminates JS testing contamination for Ruby projects"
+    target: "result.stack.testing"
+    matcher: "not_contains"
+    value: "Vitest"
+
+  - id: A003
+    says: "Rust projects detect the built-in test runner"
+    block: "detects Cargo test for Rust projects"
+    target: "result.stack.testing"
+    matcher: "contains"
+    value: "Cargo test"
+
+  - id: A004
+    says: "Ruby projects detect RSpec when .rspec file exists"
+    block: "detectNonNodeTesting handles Ruby with .rspec"
+    target: "result.stack.testing"
+    matcher: "contains"
+    value: "RSpec"
+
+  - id: A005
+    says: "Ruby projects detect Minitest when test directory exists"
+    block: "detectNonNodeTesting handles Ruby with test directory"
+    target: "result.stack.testing"
+    matcher: "contains"
+    value: "Minitest"
+
+  # Layer 2 — JS command suppression
+  - id: A006
+    says: "Ruby projects do not get JavaScript build commands"
+    block: "suppresses JS commands for Ruby project"
+    target: "result.commands.build"
+    matcher: "equals"
+    value: null
+
+  - id: A007
+    says: "Ruby projects do not get JavaScript test commands from package.json"
+    block: "suppresses JS commands for Ruby project"
+    target: "result.commands.test"
+    matcher: "equals"
+    value: null
+
+  - id: A008
+    says: "Package.json scripts are still recorded for polyglot projects"
+    block: "preserves commands.all for polyglot projects"
+    target: "result.commands.all"
+    matcher: "exists"
+
+  - id: A009
+    says: "TypeScript projects still get all commands from package.json"
+    block: "TypeScript project commands are unaffected"
+    target: "result.commands.test"
+    matcher: "exists"
+
+  - id: A010
+    says: "TypeScript project build commands are unaffected"
+    block: "TypeScript project commands are unaffected"
+    target: "result.commands.build"
+    matcher: "exists"
+
+  # Layer 3 — Native commands
+  - id: A011
+    says: "Ruby projects with bin/rspec get a direct test command"
+    block: "builds native commands for Ruby with bin/rspec"
+    target: "commands.test"
+    matcher: "equals"
+    value: "bin/rspec"
+
+  - id: A012
+    says: "Ruby projects without bin/rspec fall back to bundle exec rspec"
+    block: "builds native commands for Ruby with bundle exec fallback"
+    target: "commands.test"
+    matcher: "equals"
+    value: "bundle exec rspec"
+
+  - id: A013
+    says: "Go projects get the standard test command"
+    block: "builds native commands for Go"
+    target: "commands.test"
+    matcher: "equals"
+    value: "go test ./..."
+
+  - id: A014
+    says: "Go projects get the standard build command"
+    block: "builds native commands for Go"
+    target: "commands.build"
+    matcher: "equals"
+    value: "go build ./..."
+
+  - id: A015
+    says: "Rust projects get all three standard commands"
+    block: "builds native commands for Rust"
+    target: "commands.test"
+    matcher: "equals"
+    value: "cargo test"
+
+  - id: A016
+    says: "Rust projects get the cargo build command"
+    block: "builds native commands for Rust"
+    target: "commands.build"
+    matcher: "equals"
+    value: "cargo build"
+
+  - id: A017
+    says: "Rust projects get the cargo clippy lint command"
+    block: "builds native commands for Rust"
+    target: "commands.lint"
+    matcher: "equals"
+    value: "cargo clippy"
+
+  - id: A018
+    says: "Python projects with pytest get the pytest command"
+    block: "builds native commands for Python with pytest"
+    target: "commands.test"
+    matcher: "equals"
+    value: "pytest"
+
+  - id: A019
+    says: "Ruby projects without any test framework get null test command"
+    block: "returns null for Ruby without test indicators"
+    target: "commands.test"
+    matcher: "equals"
+    value: null
+
+  - id: A020
+    says: "Rust projects with JS workspace packages do not get scoped JS build commands"
+    block: "suppresses scoped JS commands for non-Node monorepos"
+    target: "commands.buildPackage"
+    matcher: "equals"
+    value: null
+
+  # Worktree fix
+  - id: A021
+    says: "Build command display returns null when no build command is configured"
+    block: "getBuildCommandString returns null for missing build command"
+    target: "buildCommandString"
+    matcher: "equals"
+    value: null
+
+  # Re-init preservation
+  - id: A022
+    says: "User-configured native commands survive re-initialization"
+    block: "preserves user-set native commands on re-init"
+    target: "mergedCommands.test"
+    matcher: "equals"
+    value: "bundle exec rspec"
+
+  - id: A023
+    says: "Stale JavaScript commands are cleared for non-Node projects on re-init"
+    block: "clears stale JS commands on non-Node re-init"
+    target: "mergedCommands.test"
+    matcher: "not_equals"
+    value: "pnpm run test"
+
+  # Layer 4 — Init display + setup
+  - id: A024
+    says: "Non-Node projects with missing test command see setup listed first"
+    block: "init display shows setup-first for non-Node with null test"
+    target: "output"
+    matcher: "contains"
+    value: "Configure commands"
+
+  - id: A025
+    says: "Non-Node projects with missing test command do not see setup as optional"
+    block: "init display shows setup-first for non-Node with null test"
+    target: "output"
+    matcher: "not_contains"
+    value: "optional"
+
+  - id: A026
+    says: "TypeScript projects still see setup as optional"
+    block: "init display unchanged for TypeScript"
+    target: "output"
+    matcher: "contains"
+    value: "optional"
+
+  - id: A027
+    says: "Setup template surfaces null commands with a warning marker"
+    block: "setup template shows null commands with warning"
+    target: "templateContent"
+    matcher: "contains"
+    value: "⚠"
+
+  - id: A028
+    says: "Dogfood setup template matches the product template change"
+    block: "dogfood template matches product template"
+    target: "dogfoodContent"
+    matcher: "contains"
+    value: "⚠"
+
+file_changes:
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/commands.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/utils/worktree.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-setup.md"
+    action: modify
+  - path: ".claude/agents/ana-setup.md"
+    action: modify
+  - path: "packages/cli/tests/engine/scanProject.test.ts"
+    action: modify
+  - path: "packages/cli/tests/detectors/commands.test.ts"
+    action: create
