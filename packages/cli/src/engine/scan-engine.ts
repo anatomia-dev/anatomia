@@ -637,9 +637,9 @@ export async function scanProject(
     isMonorepo: census.layout === 'monorepo',
     tool: census.monorepoTool,
     packages: census.sourceRoots
-      .filter(r => r.relativePath !== '.')
+      .filter(r => r.relativePath !== '.' && r.relativePath !== '')
       .map(r => ({ name: r.packageName ?? r.relativePath, path: r.relativePath })),
-    primaryPackage: primaryRoot && primaryRoot.relativePath !== '.'
+    primaryPackage: primaryRoot && primaryRoot.relativePath !== '.' && primaryRoot.relativePath !== ''
       ? { name: primaryRoot.packageName ?? primaryRoot.relativePath, path: primaryRoot.relativePath }
       : null,
   };
