@@ -1,0 +1,47 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A017 value 'my-package' doesn't match test fixture normalization result 'my-packagejs'"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    line: 335
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A017"]
+  - category: test
+    summary: "A023 tests STRONG_FRAMEWORK_CONFIGS presence as proxy for FRAMEWORK_HINTS count — FRAMEWORK_HINTS is not exported"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    line: 451
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A023"]
+  - category: test
+    summary: "A021 tests data shape availability, not actual terminal output containing 'Surfaces' string"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    line: 593
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A021"]
+  - category: code
+    summary: "nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro'"
+    file: "packages/cli/src/utils/displayNames.ts"
+    line: 13
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 74
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization)"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 257
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "29 FRAMEWORK_HINTS entries vs spec's claim of 18+9=27 — 2 entries existed before this build (react-router.config.ts, astro.config.ts), making the true delta 11 new entries not 9"
+    file: "packages/cli/src/engine/census.ts"
+    line: 30
+    severity: observation
+    suggested_action: accept

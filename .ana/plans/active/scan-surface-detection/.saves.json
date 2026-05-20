@@ -24,5 +24,48 @@
   "spec": {
     "saved_at": "2026-05-20T20:26:07.142Z",
     "hash": "sha256:021e136ccf085dc8aa778e28bbfe0a53eea7558d884bbb06a1e427e7d608569a"
+  },
+  "build_started_at": "2026-05-20T20:27:47.237Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-20T20:40:17.190Z",
+    "hash": "sha256:eddeb74769ad7b44fdf05936bf441114d423356a927a74f9a80b58d182aa7589"
+  },
+  "build-data": {
+    "saved_at": "2026-05-20T20:40:17.192Z",
+    "hash": "sha256:8e988796c46a00534ae964de8d8cc90b5b0e574ca7480bce59a39bffd4ee4998"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/src/engine/types/census.ts",
+    "packages/cli/src/engine/types/engineResult.ts",
+    "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "packages/cli/tests/contract/analyzer-contract.test.ts",
+    "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+    "packages/cli/tests/engine/detectors/documentation.test.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts",
+    "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+    "packages/cli/tests/engine/types/census.test.ts",
+    "packages/cli/tests/scaffolds/all-scaffolds.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-20T20:40:48.170Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b67dc39a8d0e253adb51c4963cd81eb1ff32f7df6704dc609134cdf582e9c51d",
+    "run_at": "2026-05-20T20:46:05.990Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-20T20:46:06.032Z",
+    "hash": "sha256:6d9d71d05ca391c582214c27e6f166bde989b72e7a92e1b59dba3a87c17649dc"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-20T20:46:06.032Z",
+    "hash": "sha256:1c6f5cb864e17636f641f065151b5b9970dff83cac1a9777c38a8efbfc5ff20b"
   }
 }

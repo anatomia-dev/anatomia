@@ -148,7 +148,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       result.stack.testing = ['Vitest'];
       result.monorepo = {
         isMonorepo: true, tool: 'pnpm',
-        packages: [{ name: '@myapp/web', path: 'apps/web' }],
+        packages: [{ name: '@myapp/web', path: 'apps/web', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: '@myapp/web', path: 'apps/web' },
       };
 
@@ -169,7 +169,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       result.stack.testing = ['Jest'];
       result.monorepo = {
         isMonorepo: true, tool: 'yarn',
-        packages: [{ name: '@myapp/web', path: 'apps/web' }],
+        packages: [{ name: '@myapp/web', path: 'apps/web', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: '@myapp/web', path: 'apps/web' },
       };
 
@@ -190,7 +190,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       result.stack.testing = ['Playwright'];
       result.monorepo = {
         isMonorepo: true, tool: 'pnpm',
-        packages: [{ name: '@myapp/web', path: 'apps/web' }],
+        packages: [{ name: '@myapp/web', path: 'apps/web', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: '@myapp/web', path: 'apps/web' },
       };
 
@@ -211,7 +211,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       result.stack.testing = ['Vitest'];
       result.monorepo = {
         isMonorepo: true, tool: 'pnpm',
-        packages: [{ name: '@myapp/web', path: 'apps/web' }],
+        packages: [{ name: '@myapp/web', path: 'apps/web', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: '@myapp/web', path: 'apps/web' },
       };
 

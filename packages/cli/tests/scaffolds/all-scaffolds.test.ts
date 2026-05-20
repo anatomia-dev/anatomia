@@ -60,7 +60,7 @@ describe('scaffold generators (2 generators)', () => {
     it('includes monorepo info when detected', () => {
       const monoResult = {
         ...result,
-        monorepo: { isMonorepo: true, tool: 'pnpm', packages: [{ name: 'api', path: 'packages/api' }, { name: 'web', path: 'packages/web' }], primaryPackage: { name: 'api', path: 'packages/api' } },
+        monorepo: { isMonorepo: true, tool: 'pnpm', packages: [{ name: 'api', path: 'packages/api', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }, { name: 'web', path: 'packages/web', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }], primaryPackage: { name: 'api', path: 'packages/api' } },
       };
 
       const output = generateProjectContextScaffold(monoResult);
@@ -174,7 +174,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
       commands: { ...base.commands, build: 'pnpm run build', test: 'vitest', lint: 'pnpm run lint' },
@@ -198,7 +198,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
     };
@@ -217,7 +217,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
     };
@@ -237,7 +237,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
       commands: { ...base.commands, build: 'pnpm run build', test: 'vitest', lint: 'pnpm run lint' },
@@ -260,7 +260,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
       stack: { ...base.stack, testing: ['Vitest'] },
@@ -283,7 +283,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
     };
@@ -303,7 +303,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
     };
@@ -322,7 +322,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'cli-pkg', path: 'cli' }],
+        packages: [{ name: 'cli-pkg', path: 'cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'cli-pkg', path: 'cli' },
       },
     };
@@ -342,7 +342,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
       commands: { ...base.commands, build: 'pnpm run build', test: 'vitest' },
@@ -386,7 +386,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'pkg-a', path: 'packages/a' }, { name: 'pkg-b', path: 'packages/b' }],
+        packages: [{ name: 'pkg-a', path: 'packages/a', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }, { name: 'pkg-b', path: 'packages/b', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: null,
       },
       commands: { ...base.commands, build: 'pnpm run build', test: 'vitest' },
@@ -404,7 +404,7 @@ describe('generatePrimaryPackageAgentsMd', () => {
       monorepo: {
         isMonorepo: true,
         tool: 'pnpm',
-        packages: [{ name: 'anatomia-cli', path: 'packages/cli' }],
+        packages: [{ name: 'anatomia-cli', path: 'packages/cli', language: null, framework: null, testing: [], hasBin: false, scripts: [], sourceFiles: 0 }],
         primaryPackage: { name: 'anatomia-cli', path: 'packages/cli' },
       },
     };

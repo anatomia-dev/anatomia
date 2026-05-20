@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "formatHumanReadable not exported — surfaces display tested structurally, not via rendered output"
+    file: "packages/cli/src/commands/scan.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "EnrichedPackage type change required updating 7 test files with default field values"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept

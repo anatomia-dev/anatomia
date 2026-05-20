@@ -17,7 +17,7 @@ import { glob } from 'glob';
 
 /** Normalize a path to forward slashes for cross-platform consistency. */
 const toPosix = (p: string): string => p.replace(/\\/g, '/');
-import type { EngineResult } from './types/engineResult.js';
+import type { EngineResult, EnrichedPackage } from './types/engineResult.js';
 import { getPatternLibrary } from './types/patterns.js';
 import { detectFromDeps, detectServiceDeps, detectAiSdk, detectNonNodeAiSdk, TESTING_PACKAGES } from './detectors/dependencies.js';
 import { readPythonDependencies } from './parsers/python.js';
@@ -36,6 +36,7 @@ import { annotateServiceRoles } from './utils/serviceAnnotation.js';
 import { countFiles } from '../utils/fileCounts.js';
 import { buildCensus } from './census.js';
 import { generateFindings } from './findings/index.js';
+import { detectSurfaces, enrichPackages } from './detectors/surfaces.js';
 
 import { getLanguageDisplayName, getFrameworkDisplayName, getPatternDisplayName } from '../utils/displayNames.js';
 import { getProjectName } from '../utils/validators.js';
@@ -43,7 +44,7 @@ import { getProjectName } from '../utils/validators.js';
 interface MonorepoInfo {
   isMonorepo: boolean;
   tool: string | null;
-  packages: Array<{ name: string; path: string }>;
+  packages: EnrichedPackage[];
   primaryPackage: { name: string; path: string } | null;
 }
 
@@ -646,9 +647,7 @@ export async function scanProject(
   const mono: MonorepoInfo = {
     isMonorepo: census.layout === 'monorepo',
     tool: census.monorepoTool,
-    packages: census.sourceRoots
-      .filter(r => r.relativePath !== '.' && r.relativePath !== '')
-      .map(r => ({ name: r.packageName ?? r.relativePath, path: r.relativePath })),
+    packages: enrichPackages(census, census.rootDevDeps),
     primaryPackage: primaryRoot && primaryRoot.relativePath !== '.' && primaryRoot.relativePath !== ''
       ? { name: primaryRoot.packageName ?? primaryRoot.relativePath, path: primaryRoot.relativePath }
       : null,
@@ -977,6 +976,7 @@ export async function scanProject(
     commands: { ...commands, packageManager },
     git,
     monorepo: mono,
+    surfaces: detectSurfaces(census, census.rootDevDeps),
     externalServices: annotatedServices,
     schemas,
     secrets,
