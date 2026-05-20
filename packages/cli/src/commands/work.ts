@@ -1001,6 +1001,31 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 
+  // Derive surface from modules_touched path matching against ana.json surfaces
+  try {
+    const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
+    if (fs.existsSync(anaJsonPath) && modulesTouched.length > 0) {
+      const anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
+      const surfaces = anaContent.surfaces as Record<string, { path: string }> | undefined;
+      if (surfaces && Object.keys(surfaces).length > 0) {
+        const matchingSurfaces = new Set<string>();
+        for (const filePath of modulesTouched) {
+          for (const [surfaceName, surface] of Object.entries(surfaces)) {
+            // Use directory-boundary prefix matching to avoid false positives
+            // e.g., 'packages/cli/' should not match 'packages/cli-utils/foo.ts'
+            const surfacePrefix = surface.path.endsWith('/') ? surface.path : surface.path + '/';
+            if (filePath.startsWith(surfacePrefix) || filePath === surface.path) {
+              matchingSurfaces.add(surfaceName);
+            }
+          }
+        }
+        if (matchingSurfaces.size === 1) {
+          entry.surface = [...matchingSurfaces][0];
+        }
+      }
+    }
+  } catch { /* ana.json missing or malformed — skip surface derivation */ }
+
   // Populate phases from plan.md if available
   try {
     const planPath = path.join(completedPlanDir, 'plan.md');

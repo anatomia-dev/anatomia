@@ -64,6 +64,7 @@ export interface ProofChainEntry {
   modules_touched: string[];
   scope_summary?: string | undefined;
   kind?: 'feature' | 'fix' | 'chore' | 'milestone' | undefined;
+  surface?: string | undefined;
   findings: Array<{
     id: string;
     category: 'code' | 'test' | 'upstream';
