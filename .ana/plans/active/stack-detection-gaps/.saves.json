@@ -42,5 +42,20 @@
     "packages/cli/tests/engine/census-detection.test.ts",
     "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-20T00:57:36.114Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:3ddcfb06c7651eb9c0f8bb609944d5aa6e4136d79ba258faeb4320461854d4e5",
+    "run_at": "2026-05-20T01:01:38.984Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-20T01:01:39.026Z",
+    "hash": "sha256:2d81063c06ebbf2cd00e8636caf186377b8f482986337be83e7cb67ba764a535"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-20T01:01:39.026Z",
+    "hash": "sha256:67055e699364c90e067bcc0928725d600f0989668e0d7dd77d84108760fa3cc9"
+  }
 }
