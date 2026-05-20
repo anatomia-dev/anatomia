@@ -209,5 +209,5 @@ version = "0.1.0"
 ### Build Baseline
 - Current tests: 2524 passed, 2 skipped (109 test files)
 - Command used: `pnpm run test -- --run`
-- After build: expected ~2533 tests (9 new: AC1, AC3, AC5, AC6, AC9, AC10, AC11, AC12) in 109 test files
+- After build: expected ~2532 tests (8 new: AC1, AC3, AC5, AC6, AC9, AC10, AC11, AC12) in 109 test files
 - Regression focus: existing polyglot tests in `polyglot.test.ts` — all must pass unmodified
