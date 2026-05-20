@@ -152,11 +152,17 @@ export async function detectProjectType(
     const hasLockfile = indicators.length > 1; // More than just package.json
 
     // Tier 2: Workspaces field → definitively Node (monorepo root)
+    // Exception: Gemfile at root means Ruby with JS tooling workspaces (e.g., Mastodon).
+    // Fall through to competing manifest checks instead of early-returning.
     try {
       const pkgContent = await fs.readFile(path.join(rootPath, 'package.json'), 'utf-8');
       const pkg = JSON.parse(pkgContent) as Record<string, unknown>;
       if (pkg['workspaces'] !== undefined) {
-        return { type: 'node', confidence: 0.90, indicators };
+        if (await exists(path.join(rootPath, 'Gemfile'))) {
+          // Ruby project with JS workspaces — fall through to competing manifest checks
+        } else {
+          return { type: 'node', confidence: 0.90, indicators };
+        }
       }
     } catch {
       // Malformed package.json — continue with heuristic
