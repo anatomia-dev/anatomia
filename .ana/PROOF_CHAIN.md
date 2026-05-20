@@ -1,26 +1,22 @@
 # Proof Chain Dashboard
 
-128 runs · 92 active · 3 promoted · 654 closed
+129 runs · 97 active · 3 promoted · 656 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 7 |
+| packages/cli/src/commands/init/state.ts | 8 | 4 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
-| packages/cli/src/commands/init/state.ts | 5 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 92 total)
-
-### packages/cli/src/commands/config.ts
-
-- **test:** No dedicated test for empty-string buildPackage/testPackage rejection — verified by source inspection only — *Flip Monorepo Command Semantics*
+## Active Findings (30 shown of 97 total)
 
 ### packages/cli/src/commands/doctor.ts
 
@@ -29,13 +25,11 @@
 
 ### packages/cli/src/commands/init/state.ts
 
+- **test:** A020 has no tagged test — verified by source inspection only — *Command Detection Language Awareness*
+- **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
+- **code:** buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern — *Command Detection Language Awareness*
 - **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
 - **code:** pkg.path injected without sanitization in createAnaJson — pre-existing, unrelated to this build — *Re-init mechanical field refresh*
-- **code:** pkg.path injected without sanitization in new buildPackageCmd and testPackageCmd — same known risk as monorepo-build-scoping-C5 — *Flip Monorepo Command Semantics*
-
-### packages/cli/src/commands/proof.ts
-
-- **code:** commitAndPushProofChanges and pullBeforeRead exported from proof.ts instead of extracted to git-operations.ts — *Learn Session Memory*
 
 ### packages/cli/src/engine/analyzers/conventions/imports.ts
 
@@ -62,18 +56,18 @@
 
 - **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
-### packages/cli/src/utils/proofSummary.ts
+### packages/cli/src/engine/scan-engine.ts
 
-- **code:** formatRelativeTime doesn't handle invalid input — produces 'NaNw ago' for bad ISO strings — *Audit matrix orientation*
+- **code:** detectNonNodeTesting Ruby branch uses existsSync (synchronous) inside an async function — inconsistent with other branches that use async reads — *Command Detection Language Awareness*
+
+### packages/cli/src/utils/worktree.ts
+
+- **code:** getBuildCommandString exported solely for testing with @internal tag — follows project convention but increases public API surface — *Command Detection Language Awareness*
 
 ### packages/cli/tests/commands/doctor.test.ts
 
 - **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
 - **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
-
-### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
-
-- **test:** A007 tests null equality, not string equality — doesn't exercise the string-comparison branch — *Flip Monorepo Command Semantics*
 
 ### packages/cli/tests/engine/census-detection.test.ts
 
