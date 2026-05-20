@@ -34,6 +34,24 @@
 
 import { z } from 'zod';
 
+/**
+ * Per-surface command set — build/test/lint/dev scoped to one surface.
+ */
+const surfaceCommandsSchema = z.record(
+  z.string(),
+  z.string().nullable().catch(null),
+).optional().default({}).catch({});
+
+/**
+ * Single surface object — path, language, framework, and scoped commands.
+ */
+const surfaceObjectSchema = z.object({
+  path: z.string().catch(''),
+  language: z.string().nullable().catch(null),
+  framework: z.string().nullable().catch(null),
+  commands: surfaceCommandsSchema,
+}).catch({ path: '', language: null, framework: null, commands: {} });
+
 export const AnaJsonSchema = z
   .object({
     anaVersion: z.string().optional().default('0.0.0').catch('0.0.0'),
@@ -42,6 +60,7 @@ export const AnaJsonSchema = z
     framework: z.string().nullable().default(null).catch(null),
     packageManager: z.string().nullable().default(null).catch(null),
     commands: z.record(z.string(), z.unknown()).optional().catch(undefined),
+    surfaces: z.record(z.string(), surfaceObjectSchema).optional().default({}).catch({}),
     coAuthor: z.string().nullable().optional().catch(undefined),
     artifactBranch: z.string().optional().catch(undefined),
     branchPrefix: z
