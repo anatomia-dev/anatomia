@@ -34234,7 +34234,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-polyglot-rust-ts-ruby-C7",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Harmless defensive code: hasTauriWorkspaceDep catch block wraps a regex .test() call which cannot throw. Same pattern as rust-go-polyglot-detection-C4 (hasRustWorkspace). Two lines of unreachable code, zero behavioral impact. Not worth tracking as active finding.",
+          "closed_at": "2026-05-20T01:02:35.508Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,

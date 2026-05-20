@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-127 runs · 89 active · 3 promoted · 653 closed
+127 runs · 88 active · 3 promoted · 654 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 7 |
-| packages/cli/src/engine/detectors/projectType.ts | 9 | 3 |
+| packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/init/state.ts | 5 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 89 total)
+## Active Findings (30 shown of 88 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -48,7 +48,7 @@
 - **code:** indexOf('\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** hasTauriWorkspaceDep catch block unreachable — regex cannot throw, same pattern as rust-go-polyglot-detection-C4 — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** hasRustWorkspace catch block unreachable — regex cannot throw — *Rust/Go Polyglot Detection*
 
 ### packages/cli/src/engine/findings/rules/validation.ts
 
