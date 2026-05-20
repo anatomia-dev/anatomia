@@ -35137,6 +35137,368 @@
         "commit_count": 5,
         "base_commit": "689c6a09f422ff17957d44d5a81007399a66559d"
       }
+    },
+    {
+      "slug": "surface-awareness-schema",
+      "feature": "Surface Awareness Schema and Pipeline Integration",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 31,
+        "satisfied": 31,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Initializing a monorepo produces per-surface configuration with path, language, framework, and commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Each surface gets a scoped test command based on its detected testing framework",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each surface gets a scoped build command from its package.json scripts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Surface language is detected per surface, not inherited from root",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-package projects have no surfaces section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Fresh init no longer generates buildPackage in commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Fresh init no longer generates testPackage in commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Re-initializing preserves user-customized surface commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Re-initializing refreshes machine-managed surface fields from the scan",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Newly detected surfaces appear with default commands after re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Surfaces no longer detected are kept rather than silently deleted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Surface merge matches by path so renamed keys preserve tuned commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Setting a surface command is allowed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Setting a machine-managed surface field like path is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Deleting a whole surface entry removes it from the config",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Deleting a machine-managed surface field is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Config show displays surfaces with proper nesting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Scope validation accepts a valid Surface field value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Scope validation rejects an invalid Surface field value",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Proof chain entry records the surface when all files match one surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Proof chain entry has no surface when files span multiple surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Proof detail view shows the surface when present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Proof list view includes the surface column",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Init display shows surfaces after root commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Init display truncates at three surfaces with a more message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Surface with no test script gets a null test command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Blank surface commands are sanitized to null during merge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The Plan template resolves checkpoint commands from surfaces, not testPackage",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The Verify template reads checkpoint commands from the spec, not the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Surface path matching uses directory-boundary prefix, not substring",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The Zod schema parses surfaces with fail-soft defaults",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 20,
+        "met": 20
+      },
+      "timing": {
+        "total_minutes": 104,
+        "think": 2,
+        "plan": 13,
+        "build": 77,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:8bb88281f513a561c23670bd18f1ae1ae5c7659dc2a50a0ee4e883e6b791e177",
+        "contract": "sha256:5e2797185a09fd3836c81d8d16d3d82ebb037aac0c2e31afc8298cca18fe93a4",
+        "plan": "sha256:81723c4a0c6b715a34517cda8525493d86c64fe3a6cde9d53f960707981b2aa1",
+        "spec": "sha256:07bd4de5517adf83d2b1122845b345b4d0bbb92ea8261a71bbba05264715f066",
+        "build-report": "sha256:ffc8a0a06136390d75f5b3fc6781f82ee7c678a5546b08820fac28b92314d203",
+        "build-data": "sha256:a019de51205ca95d73ac30da25328f88cacb91b828f4178b7446c42805ff4fe4",
+        "verify-report": "sha256:8b54724284fe253c5fdd3882c23ad2e925da7ab25082bb620ab03ed7392d6d09",
+        "verify-data": "sha256:b9fbff742f10aa9e70df6d7fcae98587a97bc8fbda38328ae96c1e430865ffe8"
+      },
+      "completed_at": "2026-05-20T23:23:06.486Z",
+      "modules_touched": [
+        ".claude/agents/ana-plan.md",
+        ".claude/agents/ana-setup.md",
+        ".claude/agents/ana-verify.md",
+        ".claude/agents/ana.md",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/templates/.claude/agents/ana-plan.md",
+        "packages/cli/templates/.claude/agents/ana-setup.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/tests/commands/config.test.ts",
+        "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+        "packages/cli/tests/commands/proof-surface-derivation.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/scope-surface-validation.test.ts",
+        "packages/cli/tests/commands/template-surface-awareness.test.ts",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/start.mdx"
+      ],
+      "scope_summary": "Make surface awareness real end-to-end. The scan already detects surfaces (shipped, validated against 12 repos). This scope makes the system USE that intelligence: ana.json stores per-surface commands, the pipeline targets the right surface, and the proof chain records which surface each run verified. A developer scoping website work gets website test commands. A developer scoping CLI work gets CLI test commands. Cross-surface work falls back to root commands.",
+      "kind": "milestone",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it",
+          "file": "packages/cli/tests/commands/proof-surface-derivation.test.ts",
+          "anchor": null,
+          "line": 19,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A020",
+            "A021",
+            "A031"
+          ],
+          "id": "surface-awareness-schema-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 539,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A002",
+            "A003"
+          ],
+          "id": "surface-awareness-schema-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 515,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "surface-awareness-schema-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A019 scope rejection test depends on cwd-based findProjectRoot — fragile coupling between test isolation and global state",
+          "file": "packages/cli/tests/commands/scope-surface-validation.test.ts",
+          "anchor": null,
+          "line": 99,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A019"
+          ],
+          "id": "surface-awareness-schema-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "pkg.path injection without sanitization — pre-existing across monorepo-build-scoping-C5, flip-monorepo-commands-C4, and now surface generation",
+          "file": null,
+          "anchor": null,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "resolves": [],
+          "id": "surface-awareness-schema-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-20T23:23:06.486Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "displaySuccessMessage surface padding hardcoded at padEnd(9) — surface names longer than 8 chars will misalign",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 1023,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "surface-awareness-schema-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces",
+          "file": "packages/cli/src/commands/config.ts",
+          "anchor": null,
+          "line": 439,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "surface-awareness-schema-C7",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A028 Zod schema test — malformed entry defaults checked but no test for completely invalid surfaces value (e.g., surfaces: 42)",
+          "file": "packages/cli/tests/commands/template-surface-awareness.test.ts",
+          "anchor": null,
+          "line": 48,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A028"
+          ],
+          "id": "surface-awareness-schema-C8",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Surface path injected into shell commands without sanitization — inherits pre-existing pkg.path risk",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "severity": "risk",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Surface derivation logic duplicated between work.ts and test file — could drift silently",
+          "file": "packages/cli/tests/commands/proof-surface-derivation.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "mergeSurfaces console.warn on removed surfaces may be noisy for intentional removals",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-20T21:57:03.300Z",
+        "completed_at": "2026-05-20T23:23:06.480Z",
+        "commit_count": 9,
+        "base_commit": "c105452d8d55b105d8dd4b38aee6ae80f25c6ac0"
+      }
     }
   ],
   "schema": 1

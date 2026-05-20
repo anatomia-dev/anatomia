@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-130 runs · 103 active · 3 promoted · 657 closed
+131 runs · 110 active · 3 promoted · 658 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
+| packages/cli/src/commands/init/state.ts | 11 | 5 |
 | packages/cli/src/commands/work.ts | 9 | 7 |
-| packages/cli/src/commands/init/state.ts | 8 | 4 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
@@ -16,19 +16,20 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 103 total)
+## Active Findings (30 shown of 110 total)
 
-### packages/cli/src/commands/doctor.ts
+### packages/cli/src/commands/config.ts
 
-- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
-- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
+- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/init/state.ts
 
+- **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
+- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
+- **code:** displaySuccessMessage surface padding hardcoded at padEnd(9) — surface names longer than 8 chars will misalign — *Surface Awareness Schema and Pipeline Integration*
 - **test:** A020 has no tagged test — verified by source inspection only — *Command Detection Language Awareness*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 - **code:** buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern — *Command Detection Language Awareness*
-- **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
 
 ### packages/cli/src/engine/analyzers/conventions/imports.ts
 
@@ -58,7 +59,6 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
-- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
@@ -76,10 +76,17 @@
 
 - **code:** getBuildCommandString exported solely for testing with @internal tag — follows project convention but increases public API surface — *Command Detection Language Awareness*
 
-### packages/cli/tests/commands/doctor.test.ts
+### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
-- **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
-- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
+- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
+
+### packages/cli/tests/commands/scope-surface-validation.test.ts
+
+- **test:** A019 scope rejection test depends on cwd-based findProjectRoot — fragile coupling between test isolation and global state — *Surface Awareness Schema and Pipeline Integration*
+
+### packages/cli/tests/commands/template-surface-awareness.test.ts
+
+- **test:** A028 Zod schema test — malformed entry defaults checked but no test for completely invalid surfaces value (e.g., surfaces: 42) — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/engine/census-detection.test.ts
 
@@ -97,8 +104,4 @@
 
 - **test:** A023 tests STRONG_FRAMEWORK_CONFIGS presence as proxy for FRAMEWORK_HINTS count — FRAMEWORK_HINTS is not exported — *Scan Surface Detection*
 - **test:** A021 tests data shape availability, not actual terminal output containing 'Surfaces' string — *Scan Surface Detection*
-
-### packages/cli/tests/engine/findings/rules/validation.test.ts
-
-- **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
 
