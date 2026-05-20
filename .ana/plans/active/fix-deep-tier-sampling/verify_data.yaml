@@ -1,0 +1,40 @@
+schema: 1
+findings:
+  - category: code
+    summary: "VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate'"
+    file: "packages/cli/src/engine/findings/rules/validation.ts"
+    line: 52
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A008"]
+  - category: code
+    summary: "allocateBudget can return total exceeding budget when budget < non-empty bucket count"
+    file: "packages/cli/src/engine/sampling/proportionalSampler.ts"
+    line: 77
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A018"]
+  - category: code
+    summary: "classifyTSImport line 83 replace('/*', '') is dead code for new alias format"
+    file: "packages/cli/src/engine/analyzers/conventions/imports.ts"
+    line: 83
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A016"]
+  - category: test
+    summary: "No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context)"
+    file: "packages/cli/tests/engine/findings/rules/validation.test.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A008"]
+  - category: code
+    summary: "Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes"
+    file: "packages/cli/src/engine/findings/rules/validation.ts"
+    line: 34
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "A021 has no @ana tag in new test files — verified by source inspection only (comment-only change, appropriate)"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A021"]
