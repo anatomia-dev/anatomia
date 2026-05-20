@@ -457,4 +457,138 @@ describe('ana config', () => {
       expect(errorOutput).toContain('ana init');
     });
   });
+
+  // --- Surface config ---
+
+  describe('surface config', () => {
+    const CONFIG_WITH_SURFACES = {
+      ...TEST_CONFIG,
+      surfaces: {
+        cli: {
+          path: 'packages/cli',
+          language: 'TypeScript',
+          framework: null,
+          commands: {
+            build: "(cd 'packages/cli' && pnpm run build)",
+            test: "(cd 'packages/cli' && pnpm vitest run)",
+            lint: "(cd 'packages/cli' && pnpm run lint)",
+            dev: null,
+          },
+        },
+        web: {
+          path: 'apps/web',
+          language: 'TypeScript',
+          framework: 'Next.js',
+          commands: {
+            build: "(cd 'apps/web' && pnpm run build)",
+            test: null,
+            lint: "(cd 'apps/web' && pnpm run lint)",
+            dev: null,
+          },
+        },
+      },
+    };
+
+    // @ana A013
+    it('config set allows surface commands', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      process.exitCode = 0;
+      await runCommand(program, ['config', 'set', 'surfaces.cli.commands.test', 'my-custom-test']);
+
+      expect(process.exitCode).toBe(0);
+      const config = await readConfig();
+      const surfaces = config['surfaces'] as Record<string, Record<string, unknown>>;
+      const cliCmds = surfaces['cli']!['commands'] as Record<string, string | null>;
+      expect(cliCmds['test']).toBe('my-custom-test');
+    });
+
+    // @ana A014
+    it('config set rejects machine-managed surface fields', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      await runCommand(program, ['config', 'set', 'surfaces.cli.path', 'new/path']);
+
+      expect(process.exitCode).toBe(1);
+      const errorOutput = getErrorOutput();
+      expect(errorOutput).toContain('machine-managed');
+    });
+
+    it('config set rejects surfaces.*.language', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      await runCommand(program, ['config', 'set', 'surfaces.cli.language', 'JavaScript']);
+
+      expect(process.exitCode).toBe(1);
+    });
+
+    it('config set rejects surfaces.*.framework', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      await runCommand(program, ['config', 'set', 'surfaces.web.framework', 'Remix']);
+
+      expect(process.exitCode).toBe(1);
+    });
+
+    // @ana A015
+    it('config delete removes surface entry', async () => {
+      const configWithOldService = {
+        ...CONFIG_WITH_SURFACES,
+        surfaces: {
+          ...CONFIG_WITH_SURFACES.surfaces,
+          'old-service': {
+            path: 'packages/old-service',
+            language: 'TypeScript',
+            framework: null,
+            commands: { test: 'old-test' },
+          },
+        },
+      };
+      await writeConfig(configWithOldService);
+      const program = await createProgram();
+      process.exitCode = 0;
+      await runCommand(program, ['config', 'delete', 'surfaces.old-service']);
+
+      expect(process.exitCode).toBe(0);
+      const config = await readConfig();
+      const surfaces = config['surfaces'] as Record<string, unknown>;
+      expect(surfaces['old-service']).toBeUndefined();
+      // Other surfaces still exist
+      expect(surfaces['cli']).toBeDefined();
+    });
+
+    // @ana A016
+    it('config delete rejects machine-managed surface field', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      await runCommand(program, ['config', 'delete', 'surfaces.cli.path']);
+
+      expect(process.exitCode).toBe(1);
+      const errorOutput = getErrorOutput();
+      expect(errorOutput).toContain('machine-managed');
+    });
+
+    it('config delete returns error for non-existent field', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      await runCommand(program, ['config', 'delete', 'surfaces.nonexistent']);
+
+      expect(process.exitCode).toBe(1);
+      const errorOutput = getErrorOutput();
+      expect(errorOutput).toContain('does not exist');
+    });
+
+    // @ana A017
+    it('displayAll renders surfaces with three-level nesting', async () => {
+      await writeConfig(CONFIG_WITH_SURFACES);
+      const program = await createProgram();
+      await runCommand(program, ['config', 'show']);
+
+      const output = getOutput();
+      expect(output).toContain('surfaces:');
+      expect(output).toContain('cli:');
+      expect(output).toContain('commands:');
+      expect(output).toContain('packages/cli');
+    });
+  });
 });
