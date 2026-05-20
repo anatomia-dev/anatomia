@@ -202,6 +202,30 @@ assertions:
     matcher: "equals"
     value: null
 
+  # AC11: Plan template checkpoint resolution
+  - id: A029
+    says: "The Plan template resolves checkpoint commands from surfaces, not testPackage"
+    block: "ana-plan template references surfaces not testPackage"
+    target: "templateContent"
+    matcher: "not_contains"
+    value: "testPackage"
+
+  # AC12: Verify independence fix
+  - id: A030
+    says: "The Verify template reads checkpoint commands from the spec, not the build report"
+    block: "ana-verify template references spec not build report"
+    target: "templateContent"
+    matcher: "not_contains"
+    value: "build report's Verification Commands"
+
+  # Path boundary matching
+  - id: A031
+    says: "Surface path matching uses directory-boundary prefix, not substring"
+    block: "derives surface with correct path boundary matching"
+    target: "entry.surface"
+    matcher: "equals"
+    value: null
+
   # Zod schema
   - id: A028
     says: "The Zod schema parses surfaces with fail-soft defaults"
