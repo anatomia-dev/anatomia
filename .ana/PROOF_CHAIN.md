@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-127 runs · 90 active · 3 promoted · 652 closed
+127 runs · 89 active · 3 promoted · 653 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 90 total)
+## Active Findings (30 shown of 89 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -62,10 +62,10 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** formatRelativeTime doesn't handle invalid input — produces 'NaNw ago' for bad ISO strings — *Audit matrix orientation*
+- **code:** proofSummary.ts now ~2330 lines — past comfort threshold, growing — *Audit matrix orientation*
 
 ### packages/cli/tests/commands/doctor.test.ts
 
-- **test:** A001-A005 tests verify data model, not terminal output — contract targets output.lines — *ana doctor — unified project health diagnostic*
 - **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
 - **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
 

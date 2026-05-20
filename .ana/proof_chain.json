@@ -33634,7 +33634,10 @@
             "A005"
           ],
           "id": "add-doctor-command-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Valid testing strategy: tests verify the assessment data model (pass/fail/warn status) rather than terminal output strings. The data model IS what produces the output — if the model is correct, the output is correct. Model-level testing is more stable than string-matching formatted terminal output, which is brittle to formatting changes.",
+          "closed_at": "2026-05-20T00:58:59.730Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
