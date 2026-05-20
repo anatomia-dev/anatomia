@@ -61,5 +61,20 @@
     "website/content/docs/guides/troubleshooting.mdx",
     "website/content/docs/start.mdx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-20T23:15:15.181Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:5e2797185a09fd3836c81d8d16d3d82ebb037aac0c2e31afc8298cca18fe93a4",
+    "run_at": "2026-05-20T23:19:53.811Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-20T23:19:53.857Z",
+    "hash": "sha256:8b54724284fe253c5fdd3882c23ad2e925da7ab25082bb620ab03ed7392d6d09"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-20T23:19:53.857Z",
+    "hash": "sha256:b9fbff742f10aa9e70df6d7fcae98587a97bc8fbda38328ae96c1e430865ffe8"
+  }
 }
