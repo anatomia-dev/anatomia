@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "AC10 (scoped JS commands for Rust monorepo) lacks direct test — covered by language guard"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "AC11 (Skills Detected section) and AC20 (persist after setup) require E2E test coverage"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept

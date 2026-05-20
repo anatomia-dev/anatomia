@@ -36,5 +36,27 @@
         "hash": "sha256:2d27cf6abc2dc193430274f5f83a8796c897c93c7cd390dbf04f75a454be70e6"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-20T04:36:05.550Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-20T04:57:02.607Z",
+    "hash": "sha256:3bf209581d5667c2a52becee8c04920f7f7537c799ac2a290aa658c2c7e7c2a5"
+  },
+  "build-data": {
+    "saved_at": "2026-05-20T04:57:02.608Z",
+    "hash": "sha256:0286a0a4670e31a6adc52402db86be30ab23d8a31346e1dcb89e14fae07993b0"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-setup.md",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/engine/detectors/commands.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/src/utils/worktree.ts",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/tests/commands/init/nonNodeCommands.test.ts",
+    "packages/cli/tests/detectors/commands.test.ts",
+    "packages/cli/tests/engine/scanProject.test.ts"
+  ],
+  "commit_hygiene": []
 }
