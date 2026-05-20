@@ -94,7 +94,7 @@ scan.json stack.testing: ["Cargo test"]
 
 ### `packages/cli/src/engine/detectors/commands.ts` (modify)
 **What changes:** Add `projectType` parameter. Add early-return guard after the existing `packageManager === null` guard: if projectType is not `'node'` and not `'unknown'`, still read package.json to populate `result.all`, then return (named commands stay null).
-**Pattern to follow:** Existing `packageManager === null` guard at line 38.
+**Pattern to follow:** The new guard has a DIFFERENT shape from the existing `packageManager === null` guard. The packageManager guard returns immediately (before reading package.json). The new projectType guard must read package.json to populate `result.all` FIRST, then return without setting named commands. Place the guard AFTER the package.json read block (after `result.all = scripts`), not before it.
 **Why:** Prevents wrong JS commands from entering EngineResult. All consumers (skills.ts, init, agents) benefit automatically.
 
 ### `packages/cli/src/commands/init/state.ts` (modify)
@@ -103,9 +103,9 @@ scan.json stack.testing: ["Cargo test"]
 **Why:** Produces correct native commands for non-Node projects. Prevents Biome from getting JS scoped commands. Cleans stale JS commands on re-init. Guides non-Node users to setup when commands are missing.
 
 ### `packages/cli/src/utils/worktree.ts` (modify)
-**What changes:** `getBuildCommandString` returns `null` instead of `'pnpm run build'` when `commands.build` is not a string.
+**What changes:** `getBuildCommandString` returns `''` (empty string) instead of `'pnpm run build'` when `commands.build` is not a string. The callers at lines 588 and 591 are inside `buildSucceeded === true/false` branches — unreachable when `runBuildCommand` returned null. But TypeScript string interpolation of `null` produces the literal string `"null"`. Use `''` (empty string) as the fallback — it's a display function, empty string is semantically correct for "no command configured."
 **Pattern to follow:** `runBuildCommand` at lines 446-455 — already returns null for non-string commands.
-**Why:** Non-Node projects have `commands.build: null`. The fallback to `'pnpm run build'` is a lie. The display caller is unreachable when `runBuildCommand` returned null, so this is a correctness fix with no behavioral change.
+**Why:** Non-Node projects have `commands.build: null`. The fallback to `'pnpm run build'` is a lie. Empty string is honest and TypeScript-safe.
 
 ### `packages/cli/templates/.claude/agents/ana-setup.md` (modify)
 **What changes:** Change the config confirmation instruction from "skip null/empty fields" to surface null `commands.test` and `commands.build` with a ⚠ marker so the setup agent asks the user to configure them.
@@ -130,7 +130,7 @@ scan.json stack.testing: ["Cargo test"]
 - [ ] AC9: `commands.all` in scan.json still shows package.json scripts for polyglot projects.
 - [ ] AC10: A Rust project with JS workspace packages gets `buildPackage: null` — scoped JS commands suppressed.
 - [ ] AC11: Skills Detected section does NOT contain JS test commands for non-Node projects.
-- [ ] AC12: `getBuildCommandString` returns null for null build command — not `'pnpm run build'`.
+- [ ] AC12: `getBuildCommandString` returns `''` (empty string) for null build command — not `'pnpm run build'`.
 - [ ] AC13: A user who set `commands.test: 'bundle exec rspec'` via config has that command survive re-init.
 - [ ] AC14: `preserveUserState` clears stale JS commands matching `/(npm|yarn|pnpm|npx|bunx)\s/` on non-Node projects during re-init.
 - [ ] AC15: `stack.testing` for a Rust project shows `['Cargo test']`.
@@ -146,10 +146,10 @@ scan.json stack.testing: ["Cargo test"]
 
 ## Testing Strategy
 
-- **Unit tests (scan-engine integration):** Extend `scanProject.test.ts` with polyglot project fixtures. The existing Python/Go/Rust fixtures (lines 589-674) assert `commands.packageManager: null` and `commands.test: null` — update these to assert the NEW behavior (native commands populated, `stack.testing` correct). Add a polyglot Ruby fixture (Gemfile + package.json with vitest devDep + `.rspec`) to test contamination elimination.
+- **Unit tests (scan-engine integration):** Extend `scanProject.test.ts` with polyglot project fixtures. The existing Python/Go/Rust fixtures (lines 589-674) assert `commands.test: null` at the ENGINE level — these assertions are STILL CORRECT (the engine suppresses JS commands to null; native commands are set later in `createAnaJson`). Do NOT modify existing scanProject assertions. Add NEW polyglot fixtures (Ruby + package.json + yarn + `.rspec`) that test contamination elimination: `stack.testing` contains `['RSpec']` not `['Vitest']`, named commands are null, `commands.all` is populated. New state.ts tests cover the native command layer separately.
 - **Unit tests (commands detector):** New test file `tests/detectors/commands.test.ts`. Test `detectCommands` directly with projectType parameter: node project gets JS commands; ruby project with package.json gets null named commands but populated `all`; no-package-json project returns all-null.
 - **Unit tests (state.ts):** New test file `tests/commands/init/state.test.ts` or extend existing. Test `buildNonNodeCommands` directly: Ruby+RSpec with/without bin/rspec, Go, Rust, Python+pytest, unknown language. Test the `preserveUserState` JS command migration.
-- **Unit tests (worktree):** Test `getBuildCommandString` returns null when commands.build is null in ana.json.
+- **Unit tests (worktree):** Test `getBuildCommandString` returns `''` (empty string) when commands.build is null in ana.json.
 - **Edge cases:** Ruby without `.rspec` or `test/` → `commands.test: null`. TypeScript project → zero behavioral change. Polyglot project → `commands.all` populated but named commands null. Re-init with user-set native command → preserved. Re-init with stale JS command on non-Node → cleared.
 
 ## Dependencies
@@ -309,4 +309,4 @@ function getBuildCommandString(wtPath: string): string {
 - Current test files: 113 passed (113 total)
 - Command used: `pnpm run test -- --run`
 - After build: expected ~2610+ tests (new polyglot fixtures, commands detector tests, state tests, worktree test)
-- Regression focus: `tests/engine/scanProject.test.ts` (existing Python/Go/Rust fixtures assert `commands.test: null` — these need updating to match new native command behavior)
+- Regression focus: `tests/engine/scanProject.test.ts` — existing Python/Go/Rust fixtures assert `commands.test: null` at the ENGINE level. These are STILL CORRECT (engine suppresses JS commands to null; native commands are set in `createAnaJson`). Do NOT modify existing assertions. Add new polyglot fixtures instead.

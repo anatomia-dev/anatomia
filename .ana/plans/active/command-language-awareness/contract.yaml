@@ -3,7 +3,7 @@ sealed_by: "AnaPlan"
 feature: "Command Detection Language Awareness"
 
 assertions:
-  # Layer 1 — stack.testing contamination fix
+  # Layer 1 — stack.testing contamination fix (ENGINE level: EngineResult.stack.testing)
   - id: A001
     says: "A Ruby project with JS devDependencies only shows native testing frameworks"
     block: "eliminates JS testing contamination for Ruby projects"
@@ -26,113 +26,113 @@ assertions:
     value: "Cargo test"
 
   - id: A004
-    says: "Ruby projects detect RSpec when .rspec file exists"
-    block: "detectNonNodeTesting handles Ruby with .rspec"
-    target: "result.stack.testing"
-    matcher: "contains"
-    value: "RSpec"
-
-  - id: A005
     says: "Ruby projects detect Minitest when test directory exists"
     block: "detectNonNodeTesting handles Ruby with test directory"
     target: "result.stack.testing"
     matcher: "contains"
     value: "Minitest"
 
-  # Layer 2 — JS command suppression
-  - id: A006
+  # Layer 2 — JS command suppression (ENGINE level: EngineResult.commands)
+  - id: A005
     says: "Ruby projects do not get JavaScript build commands"
     block: "suppresses JS commands for Ruby project"
     target: "result.commands.build"
     matcher: "equals"
     value: null
 
-  - id: A007
+  - id: A006
     says: "Ruby projects do not get JavaScript test commands from package.json"
     block: "suppresses JS commands for Ruby project"
     target: "result.commands.test"
     matcher: "equals"
     value: null
 
-  - id: A008
+  - id: A007
     says: "Package.json scripts are still recorded for polyglot projects"
     block: "preserves commands.all for polyglot projects"
     target: "result.commands.all"
     matcher: "exists"
 
-  - id: A009
+  - id: A008
     says: "TypeScript projects still get all commands from package.json"
     block: "TypeScript project commands are unaffected"
     target: "result.commands.test"
     matcher: "exists"
 
-  - id: A010
+  - id: A009
     says: "TypeScript project build commands are unaffected"
     block: "TypeScript project commands are unaffected"
     target: "result.commands.build"
     matcher: "exists"
 
-  # Layer 3 — Native commands
-  - id: A011
+  # Layer 3 — Native commands (INIT level: ana.json commands after buildNonNodeCommands)
+  - id: A010
     says: "Ruby projects with bin/rspec get a direct test command"
     block: "builds native commands for Ruby with bin/rspec"
     target: "commands.test"
     matcher: "equals"
     value: "bin/rspec"
 
-  - id: A012
+  - id: A011
     says: "Ruby projects without bin/rspec fall back to bundle exec rspec"
     block: "builds native commands for Ruby with bundle exec fallback"
     target: "commands.test"
     matcher: "equals"
     value: "bundle exec rspec"
 
-  - id: A013
+  - id: A012
     says: "Go projects get the standard test command"
     block: "builds native commands for Go"
     target: "commands.test"
     matcher: "equals"
     value: "go test ./..."
 
-  - id: A014
+  - id: A013
     says: "Go projects get the standard build command"
     block: "builds native commands for Go"
     target: "commands.build"
     matcher: "equals"
     value: "go build ./..."
 
-  - id: A015
+  - id: A014
     says: "Rust projects get all three standard commands"
     block: "builds native commands for Rust"
     target: "commands.test"
     matcher: "equals"
     value: "cargo test"
 
-  - id: A016
+  - id: A015
     says: "Rust projects get the cargo build command"
     block: "builds native commands for Rust"
     target: "commands.build"
     matcher: "equals"
     value: "cargo build"
 
-  - id: A017
+  - id: A016
     says: "Rust projects get the cargo clippy lint command"
     block: "builds native commands for Rust"
     target: "commands.lint"
     matcher: "equals"
     value: "cargo clippy"
 
-  - id: A018
+  - id: A017
     says: "Python projects with pytest get the pytest command"
     block: "builds native commands for Python with pytest"
     target: "commands.test"
     matcher: "equals"
     value: "pytest"
 
-  - id: A019
+  - id: A018
     says: "Ruby projects without any test framework get null test command"
     block: "returns null for Ruby without test indicators"
     target: "commands.test"
+    matcher: "equals"
+    value: null
+
+  - id: A019
+    says: "Non-Node projects do not get a dev command"
+    block: "builds native commands without dev"
+    target: "commands.dev"
     matcher: "equals"
     value: null
 
@@ -145,11 +145,11 @@ assertions:
 
   # Worktree fix
   - id: A021
-    says: "Build command display returns null when no build command is configured"
-    block: "getBuildCommandString returns null for missing build command"
+    says: "Build command display returns empty string when no build command is configured"
+    block: "getBuildCommandString returns empty string for missing build command"
     target: "buildCommandString"
     matcher: "equals"
-    value: null
+    value: ""
 
   # Re-init preservation
   - id: A022
@@ -218,4 +218,6 @@ file_changes:
   - path: "packages/cli/tests/engine/scanProject.test.ts"
     action: modify
   - path: "packages/cli/tests/detectors/commands.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/init/nonNodeCommands.test.ts"
     action: create
