@@ -25,6 +25,14 @@ describe('Engine Interface Contract', () => {
       expect(result.files.total).toBe(0);
     });
 
+    // @ana A028
+    it('createEmptyEngineResult includes surfaces field', () => {
+      const result = createEmptyEngineResult();
+      expect(result).toHaveProperty('surfaces');
+      expect(result.surfaces).toEqual([]);
+      expect(Array.isArray(result.surfaces)).toBe(true);
+    });
+
     it('catches field renames at compile time', () => {
       const result: EngineResult = createEmptyEngineResult();
 
@@ -170,6 +178,7 @@ describe('Engine Interface Contract', () => {
         'technicalDebtMarkers',
         'inconsistencies',
         'conventionBreaks',
+        'surfaces',
         'aiReadinessScore',
       ];
 
