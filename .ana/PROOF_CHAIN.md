@@ -1,22 +1,22 @@
 # Proof Chain Dashboard
 
-126 runs · 84 active · 3 promoted · 651 closed
+127 runs · 90 active · 3 promoted · 652 closed
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 7 |
+| packages/cli/src/engine/detectors/projectType.ts | 9 | 3 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/init/state.ts | 5 | 3 |
-| packages/cli/src/engine/detectors/projectType.ts | 4 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 84 total)
+## Active Findings (30 shown of 90 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -44,10 +44,11 @@
 
 ### packages/cli/src/engine/detectors/projectType.ts
 
-- **code:** hasRustWorkspace catch block unreachable — regex cannot throw — *Rust/Go Polyglot Detection*
-- **code:** Priority ordering Python > Rust > Go in Tier 3 is implicit and untested — *Rust/Go Polyglot Detection*
-- **code:** Tier 4 no-lockfile + pyproject with no real deps returns 0.70 — same confidence as Tier 5 bare package.json, indistinguishable to downstream consumers — *Polyglot Language Detection*
-- **code:** nextSection search uses indexOf('\n[') which misses a section header at position 0 of the sliced block (no preceding newline) — *Polyglot Language Detection*
+- **code:** Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** indexOf('\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** hasTauriWorkspaceDep catch block unreachable — regex cannot throw, same pattern as rust-go-polyglot-detection-C4 — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/src/engine/findings/rules/validation.ts
 
@@ -61,7 +62,6 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** formatRelativeTime doesn't handle invalid input — produces 'NaNw ago' for bad ISO strings — *Audit matrix orientation*
-- **code:** proofSummary.ts now ~2330 lines — past comfort threshold, growing — *Audit matrix orientation*
 
 ### packages/cli/tests/commands/doctor.test.ts
 
@@ -79,7 +79,7 @@
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
-- **test:** A012 frameworkDeps test verifies detector-level cascade but not the actual scan-engine.ts ternary conditional — the ternary fix is tested structurally, not behaviorally — *Polyglot Language Detection*
+- **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
