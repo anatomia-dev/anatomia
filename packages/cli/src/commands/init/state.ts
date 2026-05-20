@@ -911,10 +911,22 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     console.log('');
   }
 
-  // Two-path next steps
+  // Two-path next steps — conditional on language and command detection.
+  // Non-Node with null test command: setup first (needs configuration).
+  // Non-Node with test populated: ana first, setup optional.
+  // TypeScript/Node: ana first, setup optional (original behavior).
+  const initLang = engineResult?.stack.language;
+  const initTestCmd = (anaConfig?.['commands'] as Record<string, unknown> | undefined)?.['test'];
+  const isNonNode = initLang && initLang !== 'TypeScript' && initLang !== 'Node.js';
+
   console.log('  Next:');
-  console.log(chalk.cyan('    claude --agent ana') + '          Start working (Ana knows your stack)');
-  console.log(chalk.cyan('    claude --agent ana-setup') + '    Enrich with your team\'s knowledge (optional, ~10 min)');
+  if (isNonNode && !initTestCmd) {
+    console.log(chalk.cyan('    claude --agent ana-setup') + '    Configure commands + enrich context (~10 min)');
+    console.log(chalk.cyan('    claude --agent ana') + '          Start working (after setup)');
+  } else {
+    console.log(chalk.cyan('    claude --agent ana') + '          Start working (Ana knows your stack)');
+    console.log(chalk.cyan('    claude --agent ana-setup') + '    Enrich with your team\'s knowledge (optional, ~10 min)');
+  }
 
   // Commit-readiness indicator
   const artifactBranch = anaConfig?.['artifactBranch'] as string ?? 'main';

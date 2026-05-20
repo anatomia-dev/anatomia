@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { buildNonNodeCommands, preserveUserState } from '../../../src/commands/init/state.js';
+import { buildNonNodeCommands, preserveUserState, displaySuccessMessage } from '../../../src/commands/init/state.js';
 import { getBuildCommandString } from '../../../src/utils/worktree.js';
+import { createEmptyEngineResult } from '../../../src/engine/types/engineResult.js';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -210,5 +211,80 @@ describe('getBuildCommandString()', () => {
 
   it('returns empty string when ana.json is missing', () => {
     expect(getBuildCommandString(join(tempDir, 'nonexistent'))).toBe('');
+  });
+});
+
+describe('displaySuccessMessage() — init display', () => {
+  let logOutput: string[];
+  const originalLog = console.log;
+
+  beforeEach(() => {
+    logOutput = [];
+    console.log = (...args: unknown[]) => {
+      logOutput.push(args.map(String).join(' '));
+    };
+  });
+
+  afterEach(() => {
+    console.log = originalLog;
+  });
+
+  function makeEngineResult(language: string) {
+    const result = createEmptyEngineResult();
+    result.stack.language = language;
+    result.overview.project = 'test-project';
+    return result;
+  }
+
+  // @ana A024, A025
+  it('non-Node with null test shows setup first without optional', () => {
+    const engine = makeEngineResult('Ruby');
+    const anaConfig = { commands: { test: null, build: null } };
+
+    displaySuccessMessage(engine, 'test-project', '1.2s', anaConfig);
+
+    const output = logOutput.join('\n');
+    expect(output).toContain('Configure commands');
+    expect(output).not.toMatch(/optional.*~10 min/);
+  });
+
+  // @ana A026
+  it('TypeScript project shows setup as optional', () => {
+    const engine = makeEngineResult('TypeScript');
+    const anaConfig = { commands: { test: 'pnpm run test', build: 'pnpm run build' } };
+
+    displaySuccessMessage(engine, 'test-project', '1.2s', anaConfig);
+
+    const output = logOutput.join('\n');
+    expect(output).toContain('optional');
+  });
+
+  it('non-Node with test populated shows setup as optional', () => {
+    const engine = makeEngineResult('Rust');
+    const anaConfig = { commands: { test: 'cargo test', build: 'cargo build' } };
+
+    displaySuccessMessage(engine, 'test-project', '1.2s', anaConfig);
+
+    const output = logOutput.join('\n');
+    expect(output).toContain('optional');
+  });
+});
+
+describe('setup template content', () => {
+  // @ana A027
+  it('product template surfaces null commands with ⚠ marker', async () => {
+    const content = await import('node:fs/promises').then(f =>
+      f.readFile(join(__dirname, '../../../templates/.claude/agents/ana-setup.md'), 'utf-8')
+    );
+    expect(content).toContain('⚠');
+    expect(content).toContain('needs configuration');
+  });
+
+  // @ana A028
+  it('dogfood template matches product template change', async () => {
+    const fs = await import('node:fs/promises');
+    const dogfood = await fs.readFile(join(__dirname, '../../../../../.claude/agents/ana-setup.md'), 'utf-8');
+    expect(dogfood).toContain('⚠');
+    expect(dogfood).toContain('needs configuration');
   });
 });
