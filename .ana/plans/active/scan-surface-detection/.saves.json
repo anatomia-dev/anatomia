@@ -52,5 +52,20 @@
     "packages/cli/tests/engine/types/census.test.ts",
     "packages/cli/tests/scaffolds/all-scaffolds.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-20T20:40:48.170Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b67dc39a8d0e253adb51c4963cd81eb1ff32f7df6704dc609134cdf582e9c51d",
+    "run_at": "2026-05-20T20:46:05.990Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-20T20:46:06.032Z",
+    "hash": "sha256:6d9d71d05ca391c582214c27e6f166bde989b72e7a92e1b59dba3a87c17649dc"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-20T20:46:06.032Z",
+    "hash": "sha256:1c6f5cb864e17636f641f065151b5b9970dff83cac1a9777c38a8efbfc5ff20b"
+  }
 }
