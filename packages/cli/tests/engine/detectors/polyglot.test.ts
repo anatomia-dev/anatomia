@@ -465,6 +465,152 @@ dependencies = ["fastapi", "uvicorn"]
     expect(result.confidence).toBe(0.90);
   });
 
+  // --- Tauri+TS polyglot detection ---
+
+  // @ana A001, A002, A003
+  it('detects Node for Tauri+TS monorepo with pnpm-workspace.yaml', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pnpm-lock.yaml'), '');
+    await fs.writeFile(path.join(dir, 'pnpm-workspace.yaml'), 'packages:\n  - "apps/*"\n');
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["apps/desktop/src-tauri"]
+
+[workspace.dependencies]
+tauri = { version = "2.5.0", features = ["devtools"] }
+tauri-build = "2.5.0"
+serde = { version = "1", features = ["derive"] }
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.85);
+    expect(result.indicators).toContain('pnpm-workspace.yaml');
+  });
+
+  // @ana A005, A006
+  it('detects Rust when tauri dep exists but no pnpm-workspace.yaml', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pnpm-lock.yaml'), '');
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["src-tauri"]
+
+[workspace.dependencies]
+tauri = "2.5.0"
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('rust');
+    expect(result.confidence).toBe(0.90);
+  });
+
+  // @ana A015, A016
+  it('detects Node for Tauri+TS monorepo without lockfile (Tier 4)', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pnpm-workspace.yaml'), 'packages:\n  - "apps/*"\n');
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["apps/desktop/src-tauri"]
+
+[workspace.dependencies]
+tauri = "2.5.0"
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.80);
+  });
+
+  // @ana A017
+  it('falls through to Rust when [workspace.dependencies] is malformed', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pnpm-lock.yaml'), '');
+    await fs.writeFile(path.join(dir, 'pnpm-workspace.yaml'), 'packages:\n  - "apps/*"\n');
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["crates/*"]
+
+[workspace.dependencies]
+!!!garbled content here = = = {}
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('rust');
+    expect(result.confidence).toBe(0.90);
+  });
+
+  // @ana A018, A019
+  it('detects tauri via [workspace.dependencies.tauri] sub-table format', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pnpm-lock.yaml'), '');
+    await fs.writeFile(path.join(dir, 'pnpm-workspace.yaml'), 'packages:\n  - "apps/*"\n');
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["apps/desktop/src-tauri"]
+
+[workspace.dependencies.tauri]
+version = "2.5.0"
+features = ["devtools"]
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('node');
+    expect(result.confidence).toBe(0.85);
+  });
+
+  // --- Ruby polyglot detection ---
+
+  // @ana A007, A008, A009
+  it('detects Ruby when Gemfile exists alongside package.json with lockfile', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(dir, 'Gemfile'), 'source "https://rubygems.org"\ngem "rails"\n');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('ruby');
+    expect(result.confidence).toBe(0.90);
+    expect(result.indicators).toContain('Gemfile');
+  });
+
+  // @ana A010, A011
+  it('detects Ruby when Gemfile exists alongside package.json without lockfile', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'Gemfile'), 'source "https://rubygems.org"\ngem "sinatra"\n');
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('ruby');
+    expect(result.confidence).toBe(0.85);
+  });
+
+  // @ana A014
+  it('Python wins over Rust when both compete alongside package.json', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pyproject.toml'), `[project]
+name = "ml-pipeline"
+dependencies = ["torch", "numpy"]
+`);
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["crates/*"]
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('python');
+    expect(result.confidence).toBe(0.90);
+  });
+
   it('Cargo.toml with [workspace.members] but no [workspace] stays Node', async () => {
     const dir = await createTempDir();
     await fs.writeFile(path.join(dir, 'package.json'), '{}');
