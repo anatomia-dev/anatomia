@@ -1,0 +1,210 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan Surface Detection"
+
+assertions:
+  # AC1: surfaces array structure (monorepo)
+  - id: A001
+    says: "Monorepo scans produce a surfaces array with all required fields"
+    block: "surfaces array contains required fields for monorepo"
+    target: "surface.keys"
+    matcher: "contains"
+    value: "name"
+  - id: A002
+    says: "Each surface reports the package name from package.json"
+    block: "surfaces array contains required fields for monorepo"
+    target: "surface.packageName"
+    matcher: "exists"
+  - id: A003
+    says: "Each surface reports its source file count"
+    block: "surfaces array contains required fields for monorepo"
+    target: "surface.sourceFiles"
+    matcher: "exists"
+
+  # AC2: enriched monorepo.packages
+  - id: A004
+    says: "Monorepo packages include per-package language detection"
+    block: "enriched monorepo packages have all new fields"
+    target: "enrichedPackage.language"
+    matcher: "exists"
+  - id: A005
+    says: "Monorepo packages include per-package testing detection"
+    block: "enriched monorepo packages have all new fields"
+    target: "enrichedPackage.testing"
+    matcher: "exists"
+  - id: A006
+    says: "Monorepo packages include script keys from package.json"
+    block: "enriched monorepo packages have all new fields"
+    target: "enrichedPackage.scripts"
+    matcher: "exists"
+  - id: A007
+    says: "Monorepo packages include the bin field indicator"
+    block: "enriched monorepo packages have all new fields"
+    target: "enrichedPackage.hasBin"
+    matcher: "exists"
+
+  # AC3: single-repo behavior
+  - id: A008
+    says: "Single-repo projects produce an empty surfaces array"
+    block: "single-repo returns empty surfaces"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # AC4: Signal 1 — bin + dev script
+  - id: A009
+    says: "A package with bin and a dev script is detected as a surface"
+    block: "signal 1 detects bin + dev packages"
+    target: "surfaces"
+    matcher: "contains"
+    value: "bin-dev-package"
+  - id: A010
+    says: "A package with bin but no dev script is not a surface"
+    block: "signal 1 rejects bin without dev"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # AC5: Signal 2 — apps/ with strong config or file count
+  - id: A011
+    says: "An apps/ package with many files is detected as a surface"
+    block: "signal 2 detects substantial apps/ packages"
+    target: "surfaces"
+    matcher: "contains"
+    value: "large-app"
+  - id: A012
+    says: "A small apps/ package without framework config is not a surface"
+    block: "signal 2 rejects small apps/ packages"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # AC6: Signal 3 — strong framework config anywhere
+  - id: A013
+    says: "A package with a strong framework config is detected regardless of location"
+    block: "signal 3 detects strong framework config"
+    target: "surfaces"
+    matcher: "contains"
+    value: "framework-package"
+
+  # AC7: per-surface language detection
+  - id: A014
+    says: "A package with a tsconfig is detected as TypeScript"
+    block: "language detection uses tsconfig as primary signal"
+    target: "surface.language"
+    matcher: "equals"
+    value: "TypeScript"
+  - id: A015
+    says: "A Node package without tsconfig is detected as JavaScript"
+    block: "language detection falls back to JavaScript for Node packages"
+    target: "surface.language"
+    matcher: "equals"
+    value: "JavaScript"
+  - id: A016
+    says: "A package with no deps and no tsconfig has null language"
+    block: "language detection returns null when no signal"
+    target: "surface.language"
+    matcher: "equals"
+    value: null
+
+  # AC8: name derivation
+  - id: A017
+    says: "Surface names are normalized from the last path segment"
+    block: "name derivation normalizes correctly"
+    target: "surface.name"
+    matcher: "equals"
+    value: "my-package"
+  - id: A018
+    says: "Colliding names get parent directory prepended for disambiguation"
+    block: "name derivation disambiguates collisions"
+    target: "surfaces[0].name"
+    matcher: "not_equals"
+    value: "surfaces[1].name"
+  - id: A019
+    says: "Version-like path segments get parent directory prepended"
+    block: "name derivation handles version strings"
+    target: "surface.name"
+    matcher: "contains"
+    value: "-"
+
+  # AC9: deterministic sort
+  - id: A020
+    says: "Surfaces are sorted alphabetically by path"
+    block: "surfaces are sorted by path"
+    target: "surfaces[0].path"
+    matcher: "contains"
+    value: "a"
+
+  # AC10: terminal display
+  - id: A021
+    says: "The scan terminal output shows detected surfaces for monorepos"
+    block: "terminal display includes surfaces line"
+    target: "output"
+    matcher: "contains"
+    value: "Surfaces"
+
+  # AC11: census additions
+  - id: A022
+    says: "SourceRoot includes script keys from package.json"
+    block: "SourceRoot has scripts field"
+    target: "sourceRoot.scripts"
+    matcher: "exists"
+  - id: A023
+    says: "New framework config files are recognized during census"
+    block: "FRAMEWORK_HINTS includes new entries"
+    target: "frameworkHintsCount"
+    matcher: "greater"
+    value: 18
+
+  # AC12: extensibility
+  - id: A024
+    says: "The strong framework config set is a simple data structure a stranger can extend"
+    block: "STRONG_FRAMEWORK_CONFIGS is extensible"
+    target: "strongConfigsType"
+    matcher: "equals"
+    value: "Set"
+
+  # AC13: pre-filters
+  - id: A025
+    says: "Packages with fewer than 5 source files are excluded from surfaces"
+    block: "pre-filter excludes small packages"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+  - id: A026
+    says: "Infrastructure packages are excluded from surfaces"
+    block: "pre-filter excludes infrastructure patterns"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+  - id: A027
+    says: "The root package is excluded from surface consideration"
+    block: "pre-filter excludes root package"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # createEmptyEngineResult completeness
+  - id: A028
+    says: "The empty engine result factory includes the surfaces field"
+    block: "createEmptyEngineResult includes surfaces"
+    target: "emptyResult.surfaces"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/engine/types/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/types/engineResult.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: create
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    action: create
+  - path: "packages/cli/tests/contract/analyzer-contract.test.ts"
+    action: modify
