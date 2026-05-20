@@ -203,11 +203,11 @@ version = "0.1.0"
 - After adding `hasTauriWorkspaceDep` helper + Tier 3/4 modifications: `(cd packages/cli && pnpm vitest run tests/engine/detectors/polyglot.test.ts)` — Expected: all existing tests pass
 - After adding Gemfile competing manifest + Ruby tiers: `(cd packages/cli && pnpm vitest run tests/engine/detectors/polyglot.test.ts)` — Expected: all existing tests pass
 - After adding all new tests: `(cd packages/cli && pnpm vitest run tests/engine/detectors/polyglot.test.ts)` — Expected: all tests pass including new ones
-- After all changes: `pnpm run test -- --run` — Expected: 2524+ tests pass
+- After all changes: `pnpm run test -- --run` — Expected: 2548+ tests pass
 - Lint: `(cd packages/cli && pnpm run lint)`
 
 ### Build Baseline
-- Current tests: 2524 passed, 2 skipped (109 test files)
+- Current tests: 2548 passed, 2 skipped (112 test files)
 - Command used: `pnpm run test -- --run`
-- After build: expected ~2532 tests (8 new: AC1, AC3, AC5, AC6, AC9, AC10, AC11, AC12) in 109 test files
+- After build: expected ~2556 tests (8 new: AC1, AC3, AC5, AC6, AC9, AC10, AC11, AC12) in 112 test files
 - Regression focus: existing polyglot tests in `polyglot.test.ts` — all must pass unmodified
