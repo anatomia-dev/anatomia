@@ -16,7 +16,7 @@ The backfill is the enabling move. 106 of 131 existing proof chain entries can h
 - **Files affected:**
   - `packages/cli/src/commands/work.ts` — extract surface derivation helper, add backfill migration loop
   - `packages/cli/src/commands/proof.ts` — add `--surface` option to health and audit subcommands
-  - `packages/cli/src/utils/proofSummary.ts` — add optional surface filter to `computeHealthReport` and audit filtering, add "By Surface" section to `generateDashboard`
+  - `packages/cli/src/utils/proofSummary.ts` — add `surface?: string` to `DashboardEntry` interface, add optional surface filter to `computeHealthReport` and audit filtering, add "By Surface" section to `generateDashboard`
   - `packages/cli/src/utils/scaffold-generators.ts` — add surface listing to Architecture section
   - `packages/cli/src/commands/doctor.ts` — add surface health check, drift detection, legacy field warning
   - `packages/cli/templates/.claude/agents/ana-learn.md` — add `surfaces` to startup, triage guidance, reference section
@@ -135,6 +135,6 @@ None — all resolved during investigation.
 - Doctor's `runDoctor` uses `Promise.all` for parallel dimension assessment. The surface assessment can read ana.json synchronously (it's already read by other assessors) — keep it simple.
 - The proof chain JSON write at `work.ts:1150` writes the entire chain. The backfill mutations are in-place on `chain.entries` — they're included in the write automatically.
 
-### Things to Investigate
-- Whether `DashboardEntry` needs a `surface` field or whether the dashboard function should accept a broader type that includes it. Design judgment: extending the interface is cleaner than a cast.
-- The exact validation logic for `--surface`: should it require ana.json to exist, or should it work without ana.json by treating any string as valid? Design judgment: validate against ana.json surfaces — this prevents typos and gives actionable error messages.
+### Resolved During Scoping
+- **DashboardEntry type:** Extend the interface with `surface?: string`. The entries passed to `generateDashboard` already carry the field (they come from `ProofChainEntry` which has `surface?: string` after stage 2) — the type just needs to declare what's already there. One-line type change, not a logic change.
+- **`--surface` validation:** Validate against ana.json surfaces. Read ana.json, check `surfaces` key exists and contains the named surface. If not found, print available surface names and exit non-zero. This prevents typos and gives actionable error messages. On single-package repos (no surfaces key), print "Surfaces are not configured" (AC4).
