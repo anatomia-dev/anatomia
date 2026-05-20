@@ -34263,6 +34263,253 @@
         "commit_count": 3,
         "base_commit": "e230feed8163d2b666366a6e2e5518c042b4b2ea"
       }
+    },
+    {
+      "slug": "stack-detection-gaps",
+      "feature": "Stack Detection Gaps (V2-Alpha Breadth Sweep)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 25,
+        "satisfied": 25,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Cloudflare Workers projects are detected when wrangler.toml is present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Cloudflare Workers projects using the newer jsonc format are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Helm-based deployments are detected from Chart.yaml",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Kubernetes deployments are detected from kustomization.yaml",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "AWS CDK deployments are detected from cdk.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Pulumi deployments are detected from Pulumi.yaml",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Serverless Framework deployments are detected from serverless.yml",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Existing deployment platforms like Docker and Vercel still work",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "CircleCI is detected as a CI system",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Jenkins is detected as a CI system",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Bitbucket Pipelines is detected as a CI system",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "GitHub Actions detection still works after adding new CI systems",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Nx monorepos are labeled as Nx instead of generic monorepo",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Turborepo monorepos still show the Turborepo label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Turborepo wins when both turbo.json and nx.json exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Monorepos without Turbo or Nx show a generic workspace label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Groq AI provider is detected through the Vercel AI SDK",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "DeepSeek AI provider is detected through the Vercel AI SDK",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "xAI provider is detected through the Vercel AI SDK",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Unknown AI providers are automatically caught and labeled",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Wildcard provider names are properly capitalized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Framework packages like @ai-sdk/react are not mistaken for AI providers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Utility packages like @ai-sdk/provider-utils are not mistaken for AI providers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Explicit AI provider entries are not duplicated by the wildcard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Existing AI provider detection like Anthropic and OpenAI still works",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 18,
+        "met": 18
+      },
+      "timing": {
+        "total_minutes": 82,
+        "think": 60,
+        "plan": 5,
+        "build": 8,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:72d37bf3436533cd5063a8e1477346ad3d3f0e215d0924e2d0531426fe69f15b",
+        "contract": "sha256:3ddcfb06c7651eb9c0f8bb609944d5aa6e4136d79ba258faeb4320461854d4e5",
+        "plan": "sha256:743d5e3b3bc53a6b1d553b0fe8ba89364c2b1ed0c27b0a6870e8d65f363b5b4e",
+        "spec": "sha256:a5ffb6b185b4d5fe5d4af333205bad0c3225bc8c87447542b2811fde5c8fc7f1",
+        "build-report": "sha256:f09a4e522aa7e88228f83fb6b20d30b3d267f2b5ad61895244cc35bfc7105449",
+        "build-data": "sha256:56eee88a53c7959ca503ab081adca99db0df59fc765cc4ddb5c1fe92f138ebb1",
+        "verify-report": "sha256:2d81063c06ebbf2cd00e8636caf186377b8f482986337be83e7cb67ba764a535",
+        "verify-data": "sha256:67055e699364c90e067bcc0928725d600f0989668e0d7dd77d84108760fa3cc9"
+      },
+      "completed_at": "2026-05-20T01:06:00.987Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/dependencies.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/census-detection.test.ts",
+        "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts"
+      ],
+      "scope_summary": "V2-Alpha testing across 20 real open-source repos revealed detection gaps in four areas: deployment platforms, CI systems, workspace tools, and Vercel AI provider packages. The core stack detection (language, framework, database, auth, testing) is strong. The gaps are in areas where the ecosystem moved in 2025-2026 and our detection maps haven't kept pace.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary",
+          "file": "packages/cli/tests/engine/census-detection.test.ts",
+          "anchor": null,
+          "line": 227,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A013",
+            "A014",
+            "A015",
+            "A016"
+          ],
+          "id": "stack-detection-gaps-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "@openrouter/ai-sdk-provider added to AI_PACKAGES but not in spec — over-building with zero test coverage",
+          "file": "packages/cli/src/engine/detectors/dependencies.ts",
+          "anchor": null,
+          "line": 124,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "stack-detection-gaps-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "AI_SDK_EXCLUSIONS set recreated on every detectServiceDeps call — could be module-level constant",
+          "file": "packages/cli/src/engine/detectors/dependencies.ts",
+          "anchor": null,
+          "line": 355,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "stack-detection-gaps-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar",
+          "file": "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "stack-detection-gaps-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Workspace label tests mirror scan-engine ternary indirectly — could diverge if ternary is refactored",
+          "file": "packages/cli/tests/engine/census-detection.test.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Wildcard capitalization is naive for hyphenated provider names (e.g., some-provider → Some-provider)",
+          "file": "packages/cli/src/engine/detectors/dependencies.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-20T00:49:27.385Z",
+        "completed_at": "2026-05-20T01:06:00.982Z",
+        "commit_count": 0,
+        "base_commit": "34924a886bc7fc6a72605846e3b56aad3ec84001"
+      }
     }
   ],
   "schema": 1

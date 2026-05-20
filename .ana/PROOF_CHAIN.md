@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-127 runs · 88 active · 3 promoted · 654 closed
+128 runs · 92 active · 3 promoted · 654 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 88 total)
+## Active Findings (30 shown of 92 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -36,11 +36,15 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** commitAndPushProofChanges and pullBeforeRead exported from proof.ts instead of extracted to git-operations.ts — *Learn Session Memory*
-- **code:** Duplicated zero-entry JSON payload — identical object literal at two call sites — *Audit matrix orientation*
 
 ### packages/cli/src/engine/analyzers/conventions/imports.ts
 
 - **code:** classifyTSImport line 83 replace('/*', '') is dead code for new alias format — *Fix Deep Tier Sampling & Finding Accuracy*
+
+### packages/cli/src/engine/detectors/dependencies.ts
+
+- **code:** @openrouter/ai-sdk-provider added to AI_PACKAGES but not in spec — over-building with zero test coverage — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+- **code:** AI_SDK_EXCLUSIONS set recreated on every detectServiceDeps call — could be module-level constant — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/src/engine/detectors/projectType.ts
 
@@ -48,7 +52,6 @@
 - **code:** indexOf('\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** hasRustWorkspace catch block unreachable — regex cannot throw — *Rust/Go Polyglot Detection*
 
 ### packages/cli/src/engine/findings/rules/validation.ts
 
@@ -62,7 +65,6 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** formatRelativeTime doesn't handle invalid input — produces 'NaNw ago' for bad ISO strings — *Audit matrix orientation*
-- **code:** proofSummary.ts now ~2330 lines — past comfort threshold, growing — *Audit matrix orientation*
 
 ### packages/cli/tests/commands/doctor.test.ts
 
@@ -73,9 +75,13 @@
 
 - **test:** A007 tests null equality, not string equality — doesn't exercise the string-comparison branch — *Flip Monorepo Command Semantics*
 
-### packages/cli/tests/commands/proof.test.ts
+### packages/cli/tests/engine/census-detection.test.ts
 
-- **test:** A008/A009 use toBeDefined() instead of specific values for stale_count and recent_entries — *Audit matrix orientation*
+- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
+### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
+
+- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
