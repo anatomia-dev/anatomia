@@ -34819,6 +34819,324 @@
         "commit_count": 6,
         "base_commit": "1149a7ad50b3271125348b54fea4c91668318593"
       }
+    },
+    {
+      "slug": "scan-surface-detection",
+      "feature": "Scan Surface Detection",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 28,
+        "satisfied": 28,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Monorepo scans produce a surfaces array with all required fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Each surface reports the package name from package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each surface reports its source file count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Monorepo packages include per-package language detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Monorepo packages include per-package testing detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Monorepo packages include script keys from package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Monorepo packages include the bin field indicator",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Single-repo projects produce an empty surfaces array",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A package with bin and a dev script is detected as a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A package with bin but no dev script is not a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "An apps/ package with many files is detected as a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A small apps/ package without framework config is not a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A package with a strong framework config is detected regardless of location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A package with a tsconfig is detected as TypeScript",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A Node package without tsconfig is detected as JavaScript",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A package with no deps and no tsconfig has null language",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Surface names are normalized from the last path segment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Colliding names get parent directory prepended for disambiguation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Version-like path segments get parent directory prepended",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Surfaces are sorted alphabetically by path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The scan terminal output shows detected surfaces for monorepos",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "SourceRoot includes script keys from package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "New framework config files are recognized during census",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The strong framework config set is a simple data structure a stranger can extend",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Packages with fewer than 5 source files are excluded from surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Infrastructure packages are excluded from surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The root package is excluded from surface consideration",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The empty engine result factory includes the surfaces field",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 32,
+        "think": 6,
+        "plan": 6,
+        "build": 12,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:162c4c7fa266518669870f6901d532ae3be7f19f75c25b53a79d35876c2cf0d3",
+        "contract": "sha256:b67dc39a8d0e253adb51c4963cd81eb1ff32f7df6704dc609134cdf582e9c51d",
+        "plan": "sha256:2751ca167ce195ed589798601ec9a5072787c3d9f6c2e5da6fea5c6e088f4f57",
+        "spec": "sha256:021e136ccf085dc8aa778e28bbfe0a53eea7558d884bbb06a1e427e7d608569a",
+        "build-report": "sha256:eddeb74769ad7b44fdf05936bf441114d423356a927a74f9a80b58d182aa7589",
+        "build-data": "sha256:8e988796c46a00534ae964de8d8cc90b5b0e574ca7480bce59a39bffd4ee4998",
+        "verify-report": "sha256:6d9d71d05ca391c582214c27e6f166bde989b72e7a92e1b59dba3a87c17649dc",
+        "verify-data": "sha256:1c6f5cb864e17636f641f065151b5b9970dff83cac1a9777c38a8efbfc5ff20b"
+      },
+      "completed_at": "2026-05-20T20:53:05.606Z",
+      "modules_touched": [
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/src/engine/types/census.ts",
+        "packages/cli/src/engine/types/engineResult.ts",
+        "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+        "packages/cli/tests/contract/analyzer-contract.test.ts",
+        "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+        "packages/cli/tests/engine/detectors/documentation.test.ts",
+        "packages/cli/tests/engine/detectors/surfaces.test.ts",
+        "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+        "packages/cli/tests/engine/types/census.test.ts",
+        "packages/cli/tests/scaffolds/all-scaffolds.test.ts"
+      ],
+      "scope_summary": "The scan reads every workspace package's dependencies, framework hints, tsconfigs, and bin fields — then merges it all into flat root-level fields (`allDeps`, `stack.framework`, `stack.testing`) and loses the per-package identity. A customer with a Next.js frontend and an Express API backend sees one detected framework, one testing framework, one set of commands. The second surface is invisible.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract A017 value 'my-package' doesn't match test fixture normalization result 'my-packagejs'",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "line": 335,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A017"
+          ],
+          "id": "scan-surface-detection-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-20T20:53:05.606Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A023 tests STRONG_FRAMEWORK_CONFIGS presence as proxy for FRAMEWORK_HINTS count — FRAMEWORK_HINTS is not exported",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "line": 451,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A023"
+          ],
+          "id": "scan-surface-detection-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A021 tests data shape availability, not actual terminal output containing 'Surfaces' string",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "line": 593,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "scan-surface-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro'",
+          "file": "packages/cli/src/utils/displayNames.ts",
+          "anchor": null,
+          "line": 13,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "scan-surface-detection-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 74,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "scan-surface-detection-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization)",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 257,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "scan-surface-detection-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "29 FRAMEWORK_HINTS entries vs spec's claim of 18+9=27 — 2 entries existed before this build (react-router.config.ts, astro.config.ts), making the true delta 11 new entries not 9",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 30,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "scan-surface-detection-C7",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "formatHumanReadable not exported — surfaces display tested structurally, not via rendered output",
+          "file": "packages/cli/src/commands/scan.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "EnrichedPackage type change required updating 7 test files with default field values",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-20T20:27:47.237Z",
+        "completed_at": "2026-05-20T20:53:05.600Z",
+        "commit_count": 5,
+        "base_commit": "689c6a09f422ff17957d44d5a81007399a66559d"
+      }
     }
   ],
   "schema": 1

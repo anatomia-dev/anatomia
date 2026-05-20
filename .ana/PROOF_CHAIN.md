@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-129 runs · 97 active · 3 promoted · 656 closed
+130 runs · 103 active · 3 promoted · 657 closed
 
 ## Hot Modules
 
@@ -16,7 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 97 total)
+## Active Findings (30 shown of 103 total)
 
 ### packages/cli/src/commands/doctor.ts
 
@@ -29,11 +29,14 @@
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 - **code:** buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern — *Command Detection Language Awareness*
 - **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
-- **code:** pkg.path injected without sanitization in createAnaJson — pre-existing, unrelated to this build — *Re-init mechanical field refresh*
 
 ### packages/cli/src/engine/analyzers/conventions/imports.ts
 
 - **code:** classifyTSImport line 83 replace('/*', '') is dead code for new alias format — *Fix Deep Tier Sampling & Finding Accuracy*
+
+### packages/cli/src/engine/census.ts
+
+- **code:** 29 FRAMEWORK_HINTS entries vs spec's claim of 18+9=27 — 2 entries existed before this build (react-router.config.ts, astro.config.ts), making the true delta 11 new entries not 9 — *Scan Surface Detection*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -47,6 +50,11 @@
 - **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
+### packages/cli/src/engine/detectors/surfaces.ts
+
+- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
+- **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
+
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
@@ -59,6 +67,10 @@
 ### packages/cli/src/engine/scan-engine.ts
 
 - **code:** detectNonNodeTesting Ruby branch uses existsSync (synchronous) inside an async function — inconsistent with other branches that use async reads — *Command Detection Language Awareness*
+
+### packages/cli/src/utils/displayNames.ts
+
+- **code:** nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro' — *Scan Surface Detection*
 
 ### packages/cli/src/utils/worktree.ts
 
@@ -81,18 +93,12 @@
 
 - **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
+### packages/cli/tests/engine/detectors/surfaces.test.ts
+
+- **test:** A023 tests STRONG_FRAMEWORK_CONFIGS presence as proxy for FRAMEWORK_HINTS count — FRAMEWORK_HINTS is not exported — *Scan Surface Detection*
+- **test:** A021 tests data shape availability, not actual terminal output containing 'Surfaces' string — *Scan Surface Detection*
+
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
 - **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### website/components/pricing/pricing.module.css
-
-- **code:** Error color hardcoded as #ff8a8a on highlighted card instead of CSS custom property — *Team edition waitlist form*
-
-### website/components/pricing/WaitlistForm.tsx
-
-- **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
-- **code:** Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read — *Team edition waitlist form*
-- **code:** Success message aria-live on freshly mounted element — screen readers may not announce dynamically inserted aria-live regions — *Team edition waitlist form*
-- **code:** No client-side rate limiting — user can spam submit after error state re-enables the button — *Team edition waitlist form*
 
