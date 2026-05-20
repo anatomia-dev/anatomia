@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-125 runs · 79 active · 3 promoted · 650 closed
+126 runs · 84 active · 3 promoted · 651 closed
 
 ## Hot Modules
 
@@ -16,11 +16,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 79 total)
-
-### packages/cli/src/commands/check.ts
-
-- **code:** Freshness section shows 'current' when scan data is unavailable (null result) — *Unified Staleness Awareness*
+## Active Findings (30 shown of 84 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -42,6 +38,10 @@
 - **code:** commitAndPushProofChanges and pullBeforeRead exported from proof.ts instead of extracted to git-operations.ts — *Learn Session Memory*
 - **code:** Duplicated zero-entry JSON payload — identical object literal at two call sites — *Audit matrix orientation*
 
+### packages/cli/src/engine/analyzers/conventions/imports.ts
+
+- **code:** classifyTSImport line 83 replace('/*', '') is dead code for new alias format — *Fix Deep Tier Sampling & Finding Accuracy*
+
 ### packages/cli/src/engine/detectors/projectType.ts
 
 - **code:** hasRustWorkspace catch block unreachable — regex cannot throw — *Rust/Go Polyglot Detection*
@@ -49,9 +49,14 @@
 - **code:** Tier 4 no-lockfile + pyproject with no real deps returns 0.70 — same confidence as Tier 5 bare package.json, indistinguishable to downstream consumers — *Polyglot Language Detection*
 - **code:** nextSection search uses indexOf('\n[') which misses a section header at position 0 of the sliced block (no preceding newline) — *Polyglot Language Detection*
 
-### packages/cli/src/engine/findings/rules/secrets.ts
+### packages/cli/src/engine/findings/rules/validation.ts
 
-- **code:** Single-angle pattern suppresses real passwords that happen to be lowercase words in angle brackets (e.g., <admin>, <token>) — *Fix Scanner Trust Output*
+- **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/utils/proofSummary.ts
 
@@ -76,17 +81,9 @@
 
 - **test:** A012 frameworkDeps test verifies detector-level cascade but not the actual scan-engine.ts ternary conditional — the ternary fix is tested structurally, not behaviorally — *Polyglot Language Detection*
 
-### packages/cli/tests/engine/findings/secrets.test.ts
+### packages/cli/tests/engine/findings/rules/validation.test.ts
 
-- **test:** A007 test asserts 'at least one critical' but doesn't verify BOTH passwords fire — url2 could silently pass — *Fix Scanner Trust Output*
-
-### packages/cli/tests/utils/scan-freshness.test.ts
-
-- **test:** No integration tests for output/JSON assertions — unit tests + source inspection chain only — *Unified Staleness Awareness*
-
-### website/app/docs/proof/[slug]/page.tsx
-
-- **code:** GitHub outage degrades valid new slugs to 404 — fetchProofChainEntry returns null on network failure, triggering notFound() — *Ship log proof linking*
+- **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### website/components/pricing/pricing.module.css
 

@@ -33729,6 +33729,280 @@
         "commit_count": 0,
         "base_commit": "2ca40401b9f38651a09bbb818256b8bf09dc1b59"
       }
+    },
+    {
+      "slug": "fix-deep-tier-sampling",
+      "feature": "Fix Deep Tier Sampling & Finding Accuracy",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 21,
+        "satisfied": 21,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The validation rule finds all API routes in a project, not just sampled ones",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Routes with validation library imports are correctly detected as validated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Both App Router and Pages Router API routes are discovered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Small projects with few API routes get info severity at most, not warn",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Projects with no API routes produce no validation finding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The validation finding title shows actual counts instead of saying sampled",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Partially validated projects include a limitation note about wrapper-based validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Routes importing schema or validate path patterns count as validated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Error boundaries are found regardless of directory depth",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Page count is accurate when no error boundaries exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Non-Next.js projects skip the error boundary check entirely",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "All path aliases from tsconfig are returned, not just the first one",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Aliases with tilde prefix are recognized as path aliases",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Aliases with hash prefix are recognized as path aliases",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Scoped npm packages like @nestjs are excluded from alias detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Imports using any configured alias are classified as absolute, not external",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Projects with no tsconfig paths get an empty alias list",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Deep files get sampled even when the budget is smaller than the total file count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The default sample budget is 750 files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "A project with all files at the same depth still samples correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The tree-sitter parse cost comment reflects actual measured performance",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 11
+      },
+      "timing": {
+        "total_minutes": 81,
+        "think": 25,
+        "plan": 12,
+        "build": 16,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:8e9fde00b1840d27d1b47bac4d94c2ced428731311abca7a53ca5ec5966930b3",
+        "contract": "sha256:6b208ad85ce65d17d9affa77831709eb506a7ee1fde4faaa7daf5f6170f5d775",
+        "plan": "sha256:2301478e0a2b541056292bf628e3bf4d7f1c4f7fabe03c76f8604297266bd65a",
+        "spec": "sha256:a4b70752b99629c44fe51d24dc8e94626c08e852e9c991961f25a337d9727acc",
+        "build-report": "sha256:e10288ebf6dbece7d8679cecfaba9e173b2af52a0d525adb4c9d4373ec7ef49e",
+        "build-data": "sha256:8a319c3c89d161106aa2e9f0ae920eee4b67717a13fa7c81578173d381665d1a",
+        "verify-report": "sha256:2a3b077acfa5b8cb040ba6b738ed2e7ad9a0db4da18b4903fa422054858e02c6",
+        "verify-data": "sha256:90bf37188cc61b73d06747df4220c94940d0db12a10ef66ccc21add4aa801c82"
+      },
+      "completed_at": "2026-05-20T00:09:12.150Z",
+      "modules_touched": [
+        "packages/cli/src/engine/analyzers/conventions/imports.ts",
+        "packages/cli/src/engine/analyzers/conventions/index.ts",
+        "packages/cli/src/engine/findings/rules/errorBoundaries.ts",
+        "packages/cli/src/engine/findings/rules/validation.ts",
+        "packages/cli/src/engine/parsers/treeSitter.ts",
+        "packages/cli/src/engine/sampling/proportionalSampler.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/analyzers/conventions/imports.test.ts",
+        "packages/cli/tests/engine/findings/errorBoundaries.test.ts",
+        "packages/cli/tests/engine/findings/rules/errorBoundaries.test.ts",
+        "packages/cli/tests/engine/findings/rules/validation.test.ts",
+        "packages/cli/tests/engine/findings/validation.test.ts",
+        "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+      ],
+      "scope_summary": "The deep tier's proportional sampler produces a depth-biased sample that systematically over-represents shallow files (config, types, barrel exports) and under-represents application code (API routes, services, domain logic). This bias causes the API validation finding to produce misleading results on real customer repos — \"1/1 sampled API routes have no input validation\" on Dub (which has 139 API routes, 76 with validation imports), \"12/12\" on Formbricks (which has 96 routes, 30+ with direct validation). The error-boundaries finding has the same sample-dependency problem. And the import convention classifier has a separate bug that misclassifies alias imports, producing wrong results for any project with multiple tsconfig path aliases.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate'",
+          "file": "packages/cli/src/engine/findings/rules/validation.ts",
+          "anchor": null,
+          "line": 52,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "fix-deep-tier-sampling-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "allocateBudget can return total exceeding budget when budget < non-empty bucket count",
+          "file": "packages/cli/src/engine/sampling/proportionalSampler.ts",
+          "anchor": null,
+          "line": 77,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A018"
+          ],
+          "id": "fix-deep-tier-sampling-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "classifyTSImport line 83 replace('/*', '') is dead code for new alias format",
+          "file": "packages/cli/src/engine/analyzers/conventions/imports.ts",
+          "anchor": null,
+          "line": 83,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A016"
+          ],
+          "id": "fix-deep-tier-sampling-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context)",
+          "file": "packages/cli/tests/engine/findings/rules/validation.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "fix-deep-tier-sampling-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes",
+          "file": "packages/cli/src/engine/findings/rules/validation.ts",
+          "anchor": null,
+          "line": 34,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-deep-tier-sampling-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A021 has no @ana tag in new test files — verified by source inspection only (comment-only change, appropriate)",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "fix-deep-tier-sampling-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-20T00:09:12.150Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "depthThenAlpha function is dead code after stratification rewrite",
+          "file": "packages/cli/src/engine/sampling/proportionalSampler.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "AC9 performance constraint not mechanically verified — requires integration test against large repo",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-19T23:40:48.952Z",
+        "completed_at": "2026-05-20T00:09:12.145Z",
+        "commit_count": 0,
+        "base_commit": "56e5b95f5c8ab21512828b14011a66bf39da03b8"
+      }
     }
   ],
   "schema": 1
