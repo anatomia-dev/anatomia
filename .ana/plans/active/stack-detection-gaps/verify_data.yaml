@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary"
+    file: "packages/cli/tests/engine/census-detection.test.ts"
+    line: 227
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A013", "A014", "A015", "A016"]
+  - category: code
+    summary: "@openrouter/ai-sdk-provider added to AI_PACKAGES but not in spec — over-building with zero test coverage"
+    file: "packages/cli/src/engine/detectors/dependencies.ts"
+    line: 124
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "AI_SDK_EXCLUSIONS set recreated on every detectServiceDeps call — could be module-level constant"
+    file: "packages/cli/src/engine/detectors/dependencies.ts"
+    line: 355
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar"
+    file: "packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts"
+    severity: observation
+    suggested_action: monitor

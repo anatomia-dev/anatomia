@@ -766,7 +766,9 @@ export async function scanProject(
     workspace: mono.isMonorepo
       ? (existsSync(path.join(rootPath, 'turbo.json'))
         ? `Turborepo (${mono.tool})`
-        : `${mono.tool} monorepo`)
+        : existsSync(path.join(rootPath, 'nx.json'))
+          ? `Nx (${mono.tool})`
+          : `${mono.tool} monorepo`)
       : null,
     aiSdk: detectAiSdk(allDeps),
     // uiSystem scoped to primary in monorepos (same rationale as framework —

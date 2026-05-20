@@ -114,6 +114,13 @@ export const AI_PACKAGES: Record<string, string> = {
   '@ai-sdk/cohere': 'Vercel AI (Cohere)',
   '@ai-sdk/togetherai': 'Vercel AI (Together)',
   '@ai-sdk/fireworks': 'Vercel AI (Fireworks)',
+  '@ai-sdk/groq': 'Vercel AI (Groq)',
+  '@ai-sdk/xai': 'Vercel AI (xAI)',
+  '@ai-sdk/deepseek': 'Vercel AI (DeepSeek)',
+  '@ai-sdk/perplexity': 'Vercel AI (Perplexity)',
+  '@ai-sdk/gateway': 'Vercel AI (Gateway)',
+  '@ai-sdk/mcp': 'Vercel AI (MCP)',
+  '@ai-sdk/openai-compatible': 'Vercel AI (OpenAI Compatible)',
   '@openrouter/ai-sdk-provider': 'Vercel AI (OpenRouter)',
   // Direct provider SDKs
   '@mistralai/mistralai': 'Mistral',
@@ -340,6 +347,28 @@ export function detectServiceDeps(
         seen.add(name);
         services.push({ name, category });
       }
+    }
+  }
+
+  // Wildcard catch for @ai-sdk/* provider packages not in the explicit map.
+  // Known non-provider packages (framework bindings, utilities) are excluded.
+  const AI_SDK_EXCLUSIONS = new Set([
+    'react', 'svelte', 'vue', 'solid', 'angular',
+    'provider', 'provider-utils', 'rsc', 'otel', 'codemod',
+    'devtools', 'test-server', 'valibot', 'workflow', 'core',
+    'open-responses', 'langchain', 'llamaindex', 'vercel',
+  ]);
+
+  for (const pkg of Object.keys(allDeps)) {
+    if (!pkg.startsWith('@ai-sdk/')) continue;
+    if (AI_PACKAGES[pkg]) continue; // Already handled by the map loop
+    const providerName = pkg.slice('@ai-sdk/'.length);
+    if (AI_SDK_EXCLUSIONS.has(providerName)) continue;
+    const capitalized = providerName.charAt(0).toUpperCase() + providerName.slice(1).toLowerCase();
+    const name = `Vercel AI (${capitalized})`;
+    if (!seen.has(name)) {
+      seen.add(name);
+      services.push({ name, category: 'ai' });
     }
   }
 

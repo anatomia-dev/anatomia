@@ -71,6 +71,15 @@ const DEPLOYMENT_CONFIGS: Record<string, string> = {
   'netlify.toml': 'Netlify',
   'app.yaml': 'Google Cloud',
   'firebase.json': 'Firebase',
+  'wrangler.toml': 'Cloudflare Workers',
+  'wrangler.json': 'Cloudflare Workers',
+  'wrangler.jsonc': 'Cloudflare Workers',
+  'Chart.yaml': 'Helm',
+  'kustomization.yaml': 'Kubernetes',
+  'cdk.json': 'AWS CDK',
+  'Pulumi.yaml': 'Pulumi',
+  'serverless.yml': 'Serverless Framework',
+  'serverless.yaml': 'Serverless Framework',
 };
 
 /** Source file extensions to count. */
@@ -277,7 +286,13 @@ function discoverSchemas(
   return entries;
 }
 
-function discoverDeployments(
+/**
+ * Discover deployment platform configs across all source roots.
+ * @param rootPath - Absolute path to the project root
+ * @param roots - Source root descriptors with absolute and relative paths
+ * @returns Array of deployment entries found
+ */
+export function discoverDeployments(
   rootPath: string,
   roots: Array<{ absolutePath: string; relativePath: string }>,
 ): DeploymentEntry[] {
@@ -297,7 +312,12 @@ function discoverDeployments(
   return entries;
 }
 
-function discoverCiWorkflows(rootPath: string): CiWorkflowEntry[] {
+/**
+ * Discover CI/CD workflow configurations at the project root.
+ * @param rootPath - Absolute path to the project root
+ * @returns Array of CI workflow entries found
+ */
+export function discoverCiWorkflows(rootPath: string): CiWorkflowEntry[] {
   const entries: CiWorkflowEntry[] = [];
 
   // GitHub Actions — at repo root, not per source root
@@ -318,6 +338,21 @@ function discoverCiWorkflows(rootPath: string): CiWorkflowEntry[] {
   // GitLab CI
   if (existsSync(path.join(rootPath, '.gitlab-ci.yml'))) {
     entries.push({ system: 'GitLab CI', workflowFiles: ['.gitlab-ci.yml'] });
+  }
+
+  // CircleCI
+  if (existsSync(path.join(rootPath, '.circleci/config.yml'))) {
+    entries.push({ system: 'CircleCI', workflowFiles: ['.circleci/config.yml'] });
+  }
+
+  // Jenkins
+  if (existsSync(path.join(rootPath, 'Jenkinsfile'))) {
+    entries.push({ system: 'Jenkins', workflowFiles: ['Jenkinsfile'] });
+  }
+
+  // Bitbucket Pipelines
+  if (existsSync(path.join(rootPath, 'bitbucket-pipelines.yml'))) {
+    entries.push({ system: 'Bitbucket Pipelines', workflowFiles: ['bitbucket-pipelines.yml'] });
   }
 
   return entries;
