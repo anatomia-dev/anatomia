@@ -60,10 +60,11 @@ interface MonorepoInfo {
  * Deep tier catches these via the pattern analyzer (inferPatterns); this
  * helper covers the surface-tier hole without requiring tree-sitter parsing.
  *
- * Rust: the standard library ships `cargo test` as built-in — there's no
- * dependency to detect. Tests are recognized by presence of test files,
- * not by a framework in Cargo.toml. We deliberately return [] for Rust and
- * let the file-count check decide whether the blind spot fires.
+ * Ruby: detect RSpec (`.rspec` file) and Minitest (`test/` directory).
+ * Both can coexist — return all detected.
+ *
+ * Rust: the standard library ships `cargo test` as built-in — always
+ * return `['Cargo test']` since every Rust project has it.
  */
 async function detectNonNodeTesting(
   rootPath: string,
@@ -84,6 +85,15 @@ async function detectNonNodeTesting(
       // convention that every Go project uses `go test`.
       const deps = await readGoDependencies(rootPath);
       return deps.length >= 0 ? ['Go testing'] : [];
+    }
+    if (projectType === 'ruby') {
+      const detected: string[] = [];
+      if (existsSync(path.join(rootPath, '.rspec'))) detected.push('RSpec');
+      if (existsSync(path.join(rootPath, 'test'))) detected.push('Minitest');
+      return detected;
+    }
+    if (projectType === 'rust') {
+      return ['Cargo test'];
     }
   } catch {
     // Parser failure — fall through silently. The blind spot still fires
@@ -832,6 +842,15 @@ export async function scanProject(
     }
   }
 
+  // Clear-and-rebuild stack.testing for non-Node projects. JS testing
+  // frameworks contaminate through multiple paths (detectFromDeps merges
+  // allDeps including JS workspace packages, rootDevDeps loop adds more).
+  // A single clear-and-rebuild after all enrichment covers all contamination.
+  if (projectTypeResult.type !== 'node' && projectTypeResult.type !== 'unknown') {
+    const freshTesting = await detectNonNodeTesting(rootPath, projectTypeResult.type);
+    stack.testing = freshTesting;
+  }
+
   // TypeScript override: ONLY upgrade Node.js → TypeScript
   // Don't override null (could be Python/Go project with tsconfig for tooling)
   if (stack.language === 'Node.js') {
@@ -859,7 +878,7 @@ export async function scanProject(
   const structureForOutput = extractStructureFromDirect(structure);
 
   // 8. Commands
-  const commands = await detectCommands(rootPath, packageManager);
+  const commands = await detectCommands(rootPath, packageManager, projectTypeResult.type);
 
   // 8b. README extraction
   const readme = await detectReadme(rootPath);
