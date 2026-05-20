@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "depthThenAlpha function is dead code after stratification rewrite"
+    file: "packages/cli/src/engine/sampling/proportionalSampler.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "AC9 performance constraint not mechanically verified — requires integration test against large repo"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept

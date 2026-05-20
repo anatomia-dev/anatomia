@@ -40,5 +40,46 @@
         "hash": "sha256:6a3ffcb4419da0feef5af05994d15f49590f523b1c48c55a57be9e059b36b1e9"
       }
     ]
+  },
+  "build_started_at": "2026-05-19T23:40:48.952Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-19T23:56:59.887Z",
+    "hash": "sha256:e10288ebf6dbece7d8679cecfaba9e173b2af52a0d525adb4c9d4373ec7ef49e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-19T23:56:59.888Z",
+    "hash": "sha256:8a319c3c89d161106aa2e9f0ae920eee4b67717a13fa7c81578173d381665d1a"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/analyzers/conventions/imports.ts",
+    "packages/cli/src/engine/analyzers/conventions/index.ts",
+    "packages/cli/src/engine/findings/rules/errorBoundaries.ts",
+    "packages/cli/src/engine/findings/rules/validation.ts",
+    "packages/cli/src/engine/parsers/treeSitter.ts",
+    "packages/cli/src/engine/sampling/proportionalSampler.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/analyzers/conventions/imports.test.ts",
+    "packages/cli/tests/engine/findings/errorBoundaries.test.ts",
+    "packages/cli/tests/engine/findings/rules/errorBoundaries.test.ts",
+    "packages/cli/tests/engine/findings/rules/validation.test.ts",
+    "packages/cli/tests/engine/findings/validation.test.ts",
+    "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-19T23:57:47.978Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:6b208ad85ce65d17d9affa77831709eb506a7ee1fde4faaa7daf5f6170f5d775",
+    "run_at": "2026-05-20T00:02:56.517Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-20T00:02:56.558Z",
+    "hash": "sha256:2a3b077acfa5b8cb040ba6b738ed2e7ad9a0db4da18b4903fa422054858e02c6"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-20T00:02:56.559Z",
+    "hash": "sha256:90bf37188cc61b73d06747df4220c94940d0db12a10ef66ccc21add4aa801c82"
   }
 }

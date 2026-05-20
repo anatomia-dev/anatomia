@@ -256,7 +256,9 @@ export async function detectProjectRoot(
   if (projectType === 'python') {
     return await parsePyprojectName(rootPath);
   } else if (projectType === 'node') {
-    return await parseTsconfigAlias(rootPath);
+    // Aliases are a separate concern — the convention orchestrator calls
+    // parseTsconfigAlias directly. This function is for project name/root.
+    return null;
   } else if (projectType === 'go') {
     return await parseGoModule(rootPath);
   }
@@ -302,21 +304,22 @@ async function parsePyprojectName(rootPath: string): Promise<string | null> {
 }
 
 /**
- * Parse path alias from tsconfig.json
+ * Extract all tsconfig path aliases from census tsconfig entries.
+ * Falls back to reading tsconfig.json from rootPath if no census entries provided.
  *
- * Extracts alias like @/* from compilerOptions.paths.
+ * A tsconfig paths key is considered an alias if it ends with `/*` AND is NOT
+ * a scoped npm package (where the `@scope` portion is longer than 2 chars).
+ * This catches `@/*`, `@/lib/*`, `~/lib/*`, `#imports/*`, `components/*`
+ * while excluding `@nestjs/*`, `@types/*`.
  *
  * @param rootPath - Project root
- * @returns Alias prefix (e.g., '@/') or null
- */
-/**
- * Extract tsconfig path alias from census tsconfig entries.
- * Falls back to reading tsconfig.json from rootPath if no census entries provided.
+ * @param tsconfigEntries - Census tsconfig entries (optional)
+ * @returns Array of alias prefixes (e.g., ['@/', '@/lib/', '~/']) or empty array
  */
 export async function parseTsconfigAlias(
   rootPath: string,
   tsconfigEntries?: import('../../types/census.js').TsconfigEntry[],
-): Promise<string | null> {
+): Promise<string[]> {
   // Use census entries if available
   let paths: Record<string, string[]> | null = null;
 
@@ -331,21 +334,25 @@ export async function parseTsconfigAlias(
       const result = getTsconfig(rootPath);
       paths = (result?.config.compilerOptions?.paths as Record<string, string[]>) ?? null;
     } catch {
-      return null;
+      return [];
     }
   }
 
-  if (!paths) return null;
+  if (!paths) return [];
 
-  // Look for @/* path alias patterns (not @scope/* package scopes)
+  // Filter for path aliases: ends with /* and is not a scoped npm package
   const aliasKeys = Object.keys(paths);
-  const alias = aliasKeys.find(key => {
-    if (!key.startsWith('@')) return false;
-    const scope = key.split('/')[0];
-    return scope !== undefined && scope.length <= 2; // @/ or @x = path alias, @scope = package
+  const aliases = aliasKeys.filter(key => {
+    if (!key.endsWith('/*')) return false;
+    // Exclude scoped npm packages: @scope/* where scope.length > 2
+    if (key.startsWith('@')) {
+      const scope = key.split('/')[0];
+      if (scope && scope.length > 2) return false; // @nestjs, @types, etc.
+    }
+    return true;
   });
 
-  return alias ? alias.replace('/*', '/') : null;
+  return aliases.map(a => a.replace('/*', '/'));
 }
 
 /**

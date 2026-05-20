@@ -91,8 +91,8 @@ export async function detectConventions(
 
     // Detect project root and tsconfig aliases for import classification
     const projectRoot = await detectProjectRoot(rootPath, projectType);
-    const tsconfigAlias = projectType === 'node' ? await parseTsconfigAlias(rootPath, options?.tsconfigEntries) : null;
-    const aliasPatterns = tsconfigAlias ? [`${tsconfigAlias}*`] : undefined;
+    const tsconfigAliases = projectType === 'node' ? await parseTsconfigAlias(rootPath, options?.tsconfigEntries) : [];
+    const aliasPatterns = tsconfigAliases.length > 0 ? tsconfigAliases : undefined;
 
     // Analyze import conventions (uses parsed imports)
     const imports = analyzeImportConvention(

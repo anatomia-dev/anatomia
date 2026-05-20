@@ -901,7 +901,7 @@ export async function parseFile(
     }
   }
 
-  // Cache miss - parse file (slow path: 50-150ms)
+  // Cache miss - parse file (~0.8ms/file amortized)
   const content = await readFile(filePath);
 
   // Get parser for language
