@@ -533,7 +533,13 @@ function validateVerifyReportFormat(filePath: string): string | null {
  * @param filePath - Path to scope.md
  * @returns Error message if invalid, null if valid
  */
-function validateScopeFormat(filePath: string): string | null {
+/**
+ * Validate scope format — checks required sections and field values.
+ *
+ * @param filePath - Path to scope.md file
+ * @returns Error message if invalid, null if valid
+ */
+export function validateScopeFormat(filePath: string): string | null {
   const content = fs.readFileSync(filePath, 'utf-8');
 
   // Check for at least 3 acceptance criteria
@@ -605,6 +611,30 @@ function validateScopeFormat(filePath: string): string | null {
   const multiValue = multiMatch[1].trim();
   if (!/^(yes|no)\b/i.test(multiValue)) {
     return `Multi-phase must start with one of: yes, no. Got: '${multiValue}'`;
+  }
+
+  // Check for Surface field (optional — single-package repos have no surfaces)
+  const surfaceMatch = content.match(/\*\*Surface:\*\*\s*(.+)/);
+  if (surfaceMatch && surfaceMatch[1]) {
+    const surfaceValue = surfaceMatch[1].trim().toLowerCase();
+    if (surfaceValue !== 'cross-surface') {
+      // Validate against ana.json surfaces if available
+      try {
+        const anaJsonPath = path.join(findProjectRoot(), '.ana', 'ana.json');
+        if (fs.existsSync(anaJsonPath)) {
+          const anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
+          const surfaces = anaContent.surfaces as Record<string, unknown> | undefined;
+          if (surfaces && Object.keys(surfaces).length > 0) {
+            const surfaceKeys = Object.keys(surfaces).map(k => k.toLowerCase());
+            if (!surfaceKeys.includes(surfaceValue)) {
+              return `Surface must be one of: ${Object.keys(surfaces).join(', ')}, or 'cross-surface'. Got: '${surfaceMatch[1].trim()}'`;
+            }
+          }
+        }
+      } catch {
+        // ana.json missing or malformed — skip validation gracefully
+      }
+    }
   }
 
   // Check for Approach section with content

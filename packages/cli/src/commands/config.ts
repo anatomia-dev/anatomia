@@ -48,6 +48,7 @@ const KNOWN_FIELDS = new Set([
   'framework',
   'packageManager',
   'commands',
+  'surfaces',
   'coAuthor',
   'artifactBranch',
   'branchPrefix',
@@ -163,6 +164,49 @@ function parseValue(raw: string): unknown {
 }
 
 /**
+ * Check if a field path refers to a machine-managed surface field.
+ * Machine-managed: surfaces.*.path, surfaces.*.language, surfaces.*.framework.
+ * User-owned: surfaces.*.commands.* (and the surface entry as a whole for delete).
+ *
+ * @param field - Dot-separated field path
+ * @returns true if machine-managed
+ */
+function isSurfaceMachineManaged(field: string): boolean {
+  const parts = field.split('.');
+  if (parts[0] !== 'surfaces' || parts.length < 3) return false;
+  const surfaceField = parts[2];
+  return surfaceField === 'path' || surfaceField === 'language' || surfaceField === 'framework';
+}
+
+/**
+ * Delete a value at a dot-separated path.
+ *
+ * @param obj - Object to modify (mutated in place)
+ * @param keyPath - Dot-separated key path (e.g., "surfaces.old-service")
+ * @returns true if the key existed and was deleted, false otherwise
+ */
+function deleteByPath(obj: Record<string, unknown>, keyPath: string): boolean {
+  const parts = keyPath.split('.');
+  let current: Record<string, unknown> = obj;
+
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i]!;
+    const existing = current[part];
+    if (existing === undefined || existing === null || typeof existing !== 'object' || Array.isArray(existing)) {
+      return false;
+    }
+    current = existing as Record<string, unknown>;
+  }
+
+  const lastKey = parts[parts.length - 1]!;
+  if (lastKey in current) {
+    delete current[lastKey];
+    return true;
+  }
+  return false;
+}
+
+/**
  * Format a config value for display (non-JSON mode).
  *
  * @param value - Value to format
@@ -195,7 +239,35 @@ function displayAll(config: Record<string, unknown>, json: boolean): void {
   for (const key of keys) {
     const value = config[key];
 
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    if (key === 'surfaces' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      // Three-level display for surfaces: surface → scalar fields + commands → command values
+      console.log(`${key}:`);
+      const surfaceEntries = Object.entries(value as Record<string, unknown>);
+      if (surfaceEntries.length === 0) {
+        console.log('  (empty)');
+      } else {
+        for (const [surfaceName, surfaceValue] of surfaceEntries) {
+          console.log(`  ${surfaceName}:`);
+          if (typeof surfaceValue === 'object' && surfaceValue !== null) {
+            const fields = Object.entries(surfaceValue as Record<string, unknown>);
+            const scalarFields = fields.filter(([, v]) => typeof v !== 'object' || v === null);
+            const objectFields = fields.filter(([, v]) => typeof v === 'object' && v !== null);
+            const maxFieldLen = Math.max(...fields.map(([k]) => k.length), 0);
+            for (const [fk, fv] of scalarFields) {
+              console.log(`    ${fk.padEnd(maxFieldLen)}  ${formatValue(fv)}`);
+            }
+            for (const [fk, fv] of objectFields) {
+              console.log(`    ${fk}:`);
+              const subEntries = Object.entries(fv as Record<string, unknown>);
+              const maxSubLen = Math.max(...subEntries.map(([k]) => k.length), 0);
+              for (const [sk, sv] of subEntries) {
+                console.log(`      ${sk.padEnd(maxSubLen)}  ${formatValue(sv)}`);
+              }
+            }
+          }
+        }
+      }
+    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       // One-level indented display for objects
       console.log(`${key}:`);
       const entries = Object.entries(value as Record<string, unknown>);
@@ -314,6 +386,16 @@ export function registerConfigCommand(program: Command): void {
           return;
         }
 
+        // Surface machine-managed guard: surfaces.*.path, surfaces.*.language,
+        // surfaces.*.framework are refreshed by `ana init`. Only commands are user-owned.
+        if (isSurfaceMachineManaged(field)) {
+          console.error(
+            chalk.red(`'${field}' is machine-managed (refreshed by 'ana init'). Use that command instead.`)
+          );
+          process.exitCode = 1;
+          return;
+        }
+
         // Unknown key warning
         if (!KNOWN_FIELDS.has(topLevelKey) && !field.startsWith('custom.') && topLevelKey !== 'custom') {
           console.error(
@@ -325,8 +407,9 @@ export function registerConfigCommand(program: Command): void {
         const value = parseValue(rawValue);
 
         // Reject empty strings for command fields — never a valid command
-        const COMMAND_FIELDS = ['commands.test', 'commands.build', 'commands.lint', 'commands.dev', 'commands.buildPackage', 'commands.testPackage'];
-        if (COMMAND_FIELDS.includes(field) && value === '') {
+        const COMMAND_FIELDS = ['commands.test', 'commands.build', 'commands.lint', 'commands.dev'];
+        const isSurfaceCommand = /^surfaces\.[^.]+\.commands\.[^.]+$/.test(field);
+        if ((COMMAND_FIELDS.includes(field) || isSurfaceCommand) && value === '') {
           console.error(chalk.red('Empty string is not a valid command. Provide a command or omit the field.'));
           console.error(chalk.gray(`  To unset: ana config set ${field} null`));
           process.exitCode = 1;
@@ -344,8 +427,53 @@ export function registerConfigCommand(program: Command): void {
       }
     });
 
+  const deleteCommand = new Command('delete')
+    .description('Delete a config field')
+    .argument('<field>', 'Field name (dot notation supported)')
+    .action((field: string) => {
+      try {
+        const root = resolveRoot();
+
+        // Check machine-managed blocklist
+        const topLevelKey = field.split('.')[0]!;
+        const managedBy = MACHINE_MANAGED_FIELDS[topLevelKey];
+        if (managedBy) {
+          console.error(
+            chalk.red(`'${topLevelKey}' is managed by '${managedBy}'. Use that command instead.`)
+          );
+          process.exitCode = 1;
+          return;
+        }
+
+        // Surface machine-managed guard
+        if (isSurfaceMachineManaged(field)) {
+          console.error(
+            chalk.red(`'${field}' is machine-managed (refreshed by 'ana init'). Use that command instead.`)
+          );
+          process.exitCode = 1;
+          return;
+        }
+
+        const config = readRawConfig(root);
+        const deleted = deleteByPath(config, field);
+        if (!deleted) {
+          console.error(chalk.red(`'${field}' does not exist.`));
+          process.exitCode = 1;
+          return;
+        }
+
+        writeRawConfig(root, config);
+        console.log(`Deleted ${field}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(chalk.red(msg));
+        process.exitCode = 1;
+      }
+    });
+
   configCommand.addCommand(showCommand, { isDefault: true });
   configCommand.addCommand(getCommand);
   configCommand.addCommand(setCommand);
+  configCommand.addCommand(deleteCommand);
   program.addCommand(configCommand);
 }

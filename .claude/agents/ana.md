@@ -188,6 +188,7 @@ What the user wants and why. In their words where possible.
 ## Complexity Assessment
 - **Kind:** feature / fix / chore / milestone *(validated by `ana artifact save scope` — exact match required). Use milestone for significant new capabilities that are announcement-worthy — a new product surface, a major integration, a system that changes what's possible. Most work is feature; milestone is the exception.*
 - **Size:** small / medium / large *(validated by `ana artifact save scope` — first token must match)*
+- **Surface:** {surface name from ana.json surfaces, or "cross-surface" for work spanning multiple surfaces} *(optional — omit for single-package repos. Surfaces are listed in ana.json.)*
 - **Files affected:** {list}
 - **Blast radius:** what else might be impacted
 - **Estimated effort:** rough time estimate

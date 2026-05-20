@@ -24,5 +24,57 @@
   "spec": {
     "saved_at": "2026-05-20T21:52:37.265Z",
     "hash": "sha256:07bd4de5517adf83d2b1122845b345b4d0bbb92ea8261a71bbba05264715f066"
+  },
+  "build_started_at": "2026-05-20T21:57:03.300Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-20T23:13:52.329Z",
+    "hash": "sha256:ffc8a0a06136390d75f5b3fc6781f82ee7c678a5546b08820fac28b92314d203"
+  },
+  "build-data": {
+    "saved_at": "2026-05-20T23:13:52.330Z",
+    "hash": "sha256:a019de51205ca95d73ac30da25328f88cacb91b828f4178b7446c42805ff4fe4"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-setup.md",
+    ".claude/agents/ana-verify.md",
+    ".claude/agents/ana.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "packages/cli/tests/commands/proof-surface-derivation.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/scope-surface-validation.test.ts",
+    "packages/cli/tests/commands/template-surface-awareness.test.ts",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/start.mdx"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-20T23:15:15.181Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:5e2797185a09fd3836c81d8d16d3d82ebb037aac0c2e31afc8298cca18fe93a4",
+    "run_at": "2026-05-20T23:19:53.811Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-20T23:19:53.857Z",
+    "hash": "sha256:8b54724284fe253c5fdd3882c23ad2e925da7ab25082bb620ab03ed7392d6d09"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-20T23:19:53.857Z",
+    "hash": "sha256:b9fbff742f10aa9e70df6d7fcae98587a97bc8fbda38328ae96c1e430865ffe8"
   }
 }

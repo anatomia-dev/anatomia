@@ -145,6 +145,11 @@ how Ana's pipeline integrates with your codebase:
     In your monorepo, this is the package the scan focuses on for
     convention and pattern detection.]
 
+  [If surfaces in ana.json:
+  Surfaces:
+    {name}              {surfaces.{name}.commands.test ?? '⚠ no test command'}
+    ...for each surface]
+
 Does this look right?
 ```
 

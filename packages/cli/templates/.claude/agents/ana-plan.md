@@ -417,7 +417,7 @@ Run `ana proof context {affected files}` for each file in the File Changes secti
 This delivers institutional memory to Build — awareness of known issues that could inform implementation decisions.
 
 ### Checkpoint Commands
-Use `commands.testPackage` (if present) as a starting point for per-file checkpoint commands, adapting for the scope's target package. Use `commands.test` for the final "after all changes" baseline.
+Read the scope's Surface field. If it names a surface, look up `surfaces.{name}.commands.test` from ana.json for per-file checkpoint commands. If no Surface field or "cross-surface", use `commands.test`. Use `commands.test` for the final "after all changes" baseline.
 
 - After {first file change}: `{focused test command for target package}` — Expected: {result}
 - After all changes: `{commands.test from ana.json}` — Expected: {test count} tests pass

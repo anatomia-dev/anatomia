@@ -1,0 +1,54 @@
+schema: 1
+findings:
+  - category: code
+    summary: "deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it"
+    file: "packages/cli/tests/commands/proof-surface-derivation.test.ts"
+    line: 19
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A020", "A021", "A031"]
+  - category: code
+    summary: "Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 539
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A002", "A003"]
+  - category: code
+    summary: "Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 515
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
+  - category: test
+    summary: "A019 scope rejection test depends on cwd-based findProjectRoot — fragile coupling between test isolation and global state"
+    file: "packages/cli/tests/commands/scope-surface-validation.test.ts"
+    line: 99
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A019"]
+  - category: upstream
+    summary: "pkg.path injection without sanitization — pre-existing across monorepo-build-scoping-C5, flip-monorepo-commands-C4, and now surface generation"
+    severity: risk
+    suggested_action: scope
+    resolves: []
+  - category: code
+    summary: "displaySuccessMessage surface padding hardcoded at padEnd(9) — surface names longer than 8 chars will misalign"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 1023
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces"
+    file: "packages/cli/src/commands/config.ts"
+    line: 439
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "A028 Zod schema test — malformed entry defaults checked but no test for completely invalid surfaces value (e.g., surfaces: 42)"
+    file: "packages/cli/tests/commands/template-surface-awareness.test.ts"
+    line: 48
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A028"]

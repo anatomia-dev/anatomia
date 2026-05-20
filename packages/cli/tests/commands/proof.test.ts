@@ -4908,4 +4908,45 @@ describe('ana proof', () => {
       expect(templateContent).toContain('Recent findings');
     });
   });
+
+  // ─── Surface Field Display Tests ──────────────────────────────────
+
+  // @ana A022
+  describe('formatHumanReadable shows surface field', () => {
+    it('shows surface when present in proof chain entry', async () => {
+      const entryWithSurface = {
+        ...sampleEntry,
+        surface: 'cli',
+        findings: [],
+        build_concerns: [],
+      };
+      await createProofChain([entryWithSurface]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['stripe-payments']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Surface:');
+      expect(stdout).toContain('cli');
+    });
+  });
+
+  // @ana A023
+  describe('formatListTable includes surface column', () => {
+    it('shows Surface column header in list view', async () => {
+      const entryWithSurface = {
+        ...sampleEntry,
+        surface: 'cli',
+        findings: [],
+        build_concerns: [],
+      };
+      await createProofChain([entryWithSurface]);
+      process.chdir(tempDir);
+
+      // proof with no slug shows the list view
+      const { stdout, exitCode } = runProof([]);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Surface');
+      expect(stdout).toContain('cli');
+    });
+  });
 });

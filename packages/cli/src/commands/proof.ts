@@ -260,6 +260,9 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
   // Result
   const resultColor = entry.result === 'PASS' ? chalk.green : chalk.red;
   lines.push(`  Result: ${resultColor(entry.result)}`);
+  if (entry.surface) {
+    lines.push(`  Surface: ${entry.surface}`);
+  }
 
   lines.push('');
 
@@ -593,8 +596,9 @@ function formatListTable(entries: ProofChainEntry[]): string {
   const slugCol = 'Slug'.padEnd(24);
   const resultCol = 'Result'.padEnd(9);
   const assertCol = 'Assertions'.padEnd(13);
+  const surfaceCol = 'Surface'.padEnd(12);
   const dateCol = 'Date';
-  lines.push(chalk.bold(`  ${slugCol}${resultCol}${assertCol}${dateCol}`));
+  lines.push(chalk.bold(`  ${slugCol}${resultCol}${assertCol}${surfaceCol}${dateCol}`));
 
   // Sort entries: most recent first, undefined completed_at pushed to end
   const sorted = [...entries].sort((a, b) => {
@@ -611,8 +615,9 @@ function formatListTable(entries: ProofChainEntry[]): string {
     const result = resultColor(resultPadded);
     const ratio = `${entry.contract.satisfied}/${entry.contract.total}`;
     const assertions = ratio.padEnd(13);
+    const surface = (entry.surface ?? '').padEnd(12);
     const date = entry.completed_at ? formatLocalDate(entry.completed_at) : '';
-    lines.push(`  ${slug}${result}${assertions}${date}`);
+    lines.push(`  ${slug}${result}${assertions}${surface}${date}`);
   }
 
   lines.push('');

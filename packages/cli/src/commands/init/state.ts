@@ -451,31 +451,14 @@ export async function createAnaJson(
   // Root test command: non-interactive, project-wide (no cd scoping).
   const testCmd = makeTestCommandNonInteractive(result.commands.test, result.stack.testing, result.commands.all?.['test']);
 
-  // Scoped test command for monorepo primary package.
-  let testPackageCmd: string | null = null;
-  if (testCmd && result.monorepo.isMonorepo && result.monorepo.primaryPackage) {
-    const pkg = result.monorepo.primaryPackage;
-    const pm = result.commands.packageManager || 'pnpm';
-
-    // Map detected testing framework to direct runner invocation
-    const directCmd = buildDirectTestCommand(result.stack.testing, pm);
-    if (directCmd) {
-      testPackageCmd = `(cd '${pkg.path}' && ${directCmd})`;
-    } else {
-      // Unknown framework — cd with root-derived command as fallback
-      testPackageCmd = `(cd '${pkg.path}' && ${testCmd})`;
-    }
-  }
-
   // Root build command: project-wide (no cd scoping).
   // Lint stays scoped — only build and test get flipped to project-wide.
   const buildCmd = result.commands.build || null;
   let lintCmd = result.commands.lint || null;
-  let buildPackageCmd: string | null = null;
 
   // Scoping block: read primary package's package.json for monorepo
-  // build/lint commands. Skip for non-Node languages — prevents JS
-  // buildPackage/lint commands from leaking into Rust/Ruby/Go projects.
+  // lint command. Skip for non-Node languages — prevents JS lint commands
+  // from leaking into Rust/Ruby/Go projects.
   const lang = result.stack.language;
   if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage
       && (!lang || lang === 'TypeScript' || lang === 'Node.js')) {
@@ -489,14 +472,6 @@ export async function createAnaJson(
       const pkgJson = JSON.parse(pkgContent);
       const scripts = pkgJson.scripts || {};
 
-      // Build: first match — same key order as detectCommands
-      for (const key of ['build', 'compile', 'tsc']) {
-        if (scripts[key]) {
-          buildPackageCmd = `(cd '${pkg.path}' && ${prefix} ${key})`;
-          break;
-        }
-      }
-
       // Lint: first match — same key order as detectCommands (stays scoped)
       for (const key of ['lint', 'eslint', 'biome']) {
         if (scripts[key]) {
@@ -509,20 +484,12 @@ export async function createAnaJson(
     }
   }
 
-  // Only write *Package keys when their value differs from the root command.
-  // Single-package projects and monorepos where root == scoped get no extra fields.
   const commands: Record<string, unknown> = {
     build: buildCmd,
     test: testCmd,
     lint: lintCmd,
     dev: result.commands.dev || null,
   };
-  if (buildPackageCmd && buildPackageCmd !== buildCmd) {
-    commands['buildPackage'] = buildPackageCmd;
-  }
-  if (testPackageCmd && testPackageCmd !== testCmd) {
-    commands['testPackage'] = testPackageCmd;
-  }
 
   // Non-Node native commands — replace engine-detected nulls with
   // high-confidence native commands (pytest, cargo test, go test, etc.)
@@ -534,6 +501,79 @@ export async function createAnaJson(
     // dev stays null for non-Node
   }
 
+  // Surface generation — per-surface commands from detected surfaces.
+  // Each surface gets scoped build/test/lint/dev commands derived from its
+  // package.json scripts. Single-package repos have no surfaces.
+  const surfaces: Record<string, unknown> = {};
+  if (cwd && result.surfaces && result.surfaces.length > 0) {
+    const pm = result.commands.packageManager || 'pnpm';
+    const prefix = pm === 'npm' ? 'npm run' : `${pm} run`;
+
+    for (const surface of result.surfaces) {
+      const surfaceLang = surface.language;
+      // Skip JS command generation for non-Node surfaces
+      if (surfaceLang && surfaceLang !== 'TypeScript' && surfaceLang !== 'JavaScript') {
+        surfaces[surface.name] = {
+          path: surface.path,
+          language: surfaceLang,
+          framework: surface.framework || null,
+          commands: { build: null, test: null, lint: null, dev: null },
+        };
+        continue;
+      }
+
+      let surfaceBuild: string | null = null;
+      let surfaceTest: string | null = null;
+      let surfaceLint: string | null = null;
+
+      // Read surface package.json for commands
+      try {
+        const pkgJsonPath = path.join(cwd, surface.path, 'package.json');
+        const pkgContent = await fs.readFile(pkgJsonPath, 'utf-8');
+        const pkgJson = JSON.parse(pkgContent);
+        const scripts = pkgJson.scripts || {};
+
+        // Build: first match
+        for (const key of ['build', 'compile', 'tsc']) {
+          if (scripts[key]) {
+            surfaceBuild = `(cd '${surface.path}' && ${prefix} ${key})`;
+            break;
+          }
+        }
+
+        // Test: prefer direct runner invocation
+        const directCmd = buildDirectTestCommand(surface.testing || result.stack.testing, pm);
+        if (directCmd) {
+          surfaceTest = `(cd '${surface.path}' && ${directCmd})`;
+        } else if (scripts['test']) {
+          surfaceTest = `(cd '${surface.path}' && ${prefix} test)`;
+        }
+
+        // Lint: first match
+        for (const key of ['lint', 'eslint', 'biome']) {
+          if (scripts[key]) {
+            surfaceLint = `(cd '${surface.path}' && ${prefix} ${key})`;
+            break;
+          }
+        }
+      } catch {
+        // Missing or malformed package.json — null commands
+      }
+
+      surfaces[surface.name] = {
+        path: surface.path,
+        language: surface.language || null,
+        framework: surface.framework || null,
+        commands: {
+          build: surfaceBuild,
+          test: surfaceTest,
+          lint: surfaceLint,
+          dev: null,
+        },
+      };
+    }
+  }
+
   const anaConfig: Record<string, unknown> = {
     anaVersion: cliVersion,
     name: result.overview.project,
@@ -541,6 +581,7 @@ export async function createAnaJson(
     framework: result.stack.framework || null,
     packageManager: result.commands.packageManager,
     commands,
+    ...(Object.keys(surfaces).length > 0 ? { surfaces } : {}),
     coAuthor: 'Ana <build@anatomia.dev>',
     artifactBranch: detectArtifactBranch(result),
     branchPrefix: 'feature/',
@@ -553,6 +594,82 @@ export async function createAnaJson(
 
   spinner.succeed('Created ana.json');
   return anaConfig;
+}
+
+/**
+ * Surface object as stored in ana.json.
+ */
+interface SurfaceEntry {
+  path: string;
+  language: string | null;
+  framework: string | null;
+  commands: Record<string, string | null>;
+}
+
+/**
+ * Merge existing user-tuned surfaces with freshly detected surfaces.
+ *
+ * Match by `path`, not key name — a renamed surface key preserves its tuned
+ * commands. Refreshes mechanical fields (path, language, framework) from the
+ * new scan. Preserves user-tuned commands. New surfaces get defaults. Removed
+ * surfaces stay with a logged warning.
+ *
+ * @param existing - User's current surfaces from ana.json
+ * @param fresh - Freshly detected surfaces from createAnaJson
+ * @returns Merged surfaces record
+ */
+export function mergeSurfaces(
+  existing: Record<string, SurfaceEntry>,
+  fresh: Record<string, SurfaceEntry>,
+): Record<string, SurfaceEntry> {
+  const merged: Record<string, SurfaceEntry> = {};
+
+  // Index existing surfaces by path for matching
+  const existingByPath = new Map<string, { key: string; entry: SurfaceEntry }>();
+  for (const [key, entry] of Object.entries(existing)) {
+    if (entry && entry.path) {
+      existingByPath.set(entry.path, { key, entry });
+    }
+  }
+
+  // Process fresh surfaces — match by path to preserve user commands
+  for (const [freshKey, freshEntry] of Object.entries(fresh)) {
+    const existingMatch = existingByPath.get(freshEntry.path);
+    if (existingMatch) {
+      // Matched — refresh mechanical fields, preserve user commands
+      const mergedCommands = { ...existingMatch.entry.commands };
+      // Sanitize blank strings in user commands
+      for (const [cmdKey, cmdVal] of Object.entries(mergedCommands)) {
+        if (cmdVal === '') {
+          mergedCommands[cmdKey] = freshEntry.commands[cmdKey] ?? null;
+        }
+      }
+      // Propagate new command keys from fresh without overwriting
+      for (const [cmdKey, cmdVal] of Object.entries(freshEntry.commands)) {
+        if (!(cmdKey in mergedCommands) && cmdVal != null && cmdVal !== '') {
+          mergedCommands[cmdKey] = cmdVal;
+        }
+      }
+      merged[freshKey] = {
+        path: freshEntry.path,
+        language: freshEntry.language,
+        framework: freshEntry.framework,
+        commands: mergedCommands,
+      };
+      existingByPath.delete(freshEntry.path);
+    } else {
+      // New surface — use fresh defaults
+      merged[freshKey] = { ...freshEntry };
+    }
+  }
+
+  // Keep removed surfaces (never silently delete user state)
+  for (const [, { key, entry }] of existingByPath) {
+    console.warn(`Surface '${key}' (${entry.path}) no longer detected — keeping existing configuration.`);
+    merged[key] = entry;
+  }
+
+  return merged;
 }
 
 /**
@@ -661,13 +778,20 @@ export async function preserveUserState(
       const mergedLang = newAnaConfig['language'] as string | undefined;
       if (mergedLang && mergedLang !== 'TypeScript' && mergedLang !== 'Node.js') {
         const jsCommandPattern = /(npm|yarn|pnpm|npx|bunx)\s/;
-        for (const key of ['test', 'build', 'lint', 'buildPackage', 'testPackage']) {
+        for (const key of ['test', 'build', 'lint']) {
           const val = mergedCommands[key];
           if (typeof val === 'string' && jsCommandPattern.test(val)) {
             mergedCommands[key] = freshCommands[key] ?? null;
           }
         }
       }
+    }
+
+    // Merge surfaces — preserve user-tuned commands, refresh mechanical fields
+    const existingSurfaces = ((merged as Record<string, unknown>)['surfaces'] ?? {}) as Record<string, SurfaceEntry>;
+    const freshSurfaces = (newAnaConfig['surfaces'] ?? {}) as Record<string, SurfaceEntry>;
+    if (Object.keys(freshSurfaces).length > 0 || Object.keys(existingSurfaces).length > 0) {
+      (merged as Record<string, unknown>)['surfaces'] = mergeSurfaces(existingSurfaces, freshSurfaces);
     }
 
     const newAnaJsonPath = path.join(tmpAnaPath, 'ana.json');
@@ -885,12 +1009,34 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
       console.log(`  ${chalk.bold('Build:')}    ${displayBuild}`);
     }
 
+    // Surfaces display — show per-surface test commands after root commands
+    const configSurfaces = anaConfig?.['surfaces'] as Record<string, SurfaceEntry> | undefined;
+    if (configSurfaces && Object.keys(configSurfaces).length > 0) {
+      console.log('');
+      console.log(`  ${chalk.bold('Surfaces:')}`);
+      const surfaceEntries = Object.entries(configSurfaces);
+      const MAX_SURFACE_DISPLAY = 3;
+      const displayEntries = surfaceEntries.slice(0, MAX_SURFACE_DISPLAY);
+      for (const [name, surface] of displayEntries) {
+        const testCmd2 = surface.commands?.['test'];
+        if (testCmd2) {
+          console.log(`    ${name.padEnd(9)}${testCmd2}`);
+        } else {
+          console.log(`    ${name.padEnd(9)}${chalk.yellow('⚠ no test command')}`);
+        }
+      }
+      if (surfaceEntries.length > MAX_SURFACE_DISPLAY) {
+        const remaining = surfaceEntries.length - MAX_SURFACE_DISPLAY;
+        console.log(chalk.gray(`    +${remaining} more. Run \`ana config show\` for all.`));
+      }
+    }
+
     // Suggest manual config when commands are null for non-Node projects
-    const lang = engineResult.stack.language;
-    if (lang && lang !== 'TypeScript' && lang !== 'Node.js') {
+    const displayLang = engineResult.stack.language;
+    if (displayLang && displayLang !== 'TypeScript' && displayLang !== 'Node.js') {
       const nullCmds = ['test', 'build', 'lint'].filter(k => !configCmds?.[k]);
       if (nullCmds.length > 0) {
-        const example = lang === 'Python' ? 'pytest' : lang === 'Go' ? 'go test ./...' : 'make test';
+        const example = displayLang === 'Python' ? 'pytest' : displayLang === 'Go' ? 'go test ./...' : 'make test';
         console.log(chalk.blue(`  ℹ No ${nullCmds.join('/')} commands detected. Set them manually:`));
         console.log(chalk.gray(`    ana config set commands.test "${example}"`));
       }
