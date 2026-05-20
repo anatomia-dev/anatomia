@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "hasTauriWorkspaceDep catch block unreachable — regex cannot throw, same pattern as hasRustWorkspace"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
