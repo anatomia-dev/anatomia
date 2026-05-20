@@ -1,0 +1,51 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 133
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "indexOf('\\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 60
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003", "A018"]
+
+  - category: code
+    summary: "Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 197
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003"]
+
+  - category: code
+    summary: "Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 208
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007"]
+
+  - category: test
+    summary: "Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling"
+    file: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    line: 35
+    severity: debt
+    suggested_action: scope
+
+  - category: upstream
+    summary: "No test for Gemfile + Cargo.toml [workspace] coexistence — Rust wins by code position but this priority is untested"
+    severity: observation
+    suggested_action: scope
+
+  - category: code
+    summary: "hasTauriWorkspaceDep catch block unreachable — regex cannot throw, same pattern as rust-go-polyglot-detection-C4"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    line: 67
+    severity: observation
+    suggested_action: accept
