@@ -1,0 +1,242 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Surface Awareness Schema and Pipeline Integration"
+
+assertions:
+  # AC1: Monorepo surface generation
+  - id: A001
+    says: "Initializing a monorepo produces per-surface configuration with path, language, framework, and commands"
+    block: "generates surfaces section for monorepo"
+    target: "anaJson.surfaces"
+    matcher: "exists"
+
+  - id: A002
+    says: "Each surface gets a scoped test command based on its detected testing framework"
+    block: "generates surfaces section for monorepo"
+    target: "surfaces.cli.commands.test"
+    matcher: "contains"
+    value: "cd '"
+
+  - id: A003
+    says: "Each surface gets a scoped build command from its package.json scripts"
+    block: "generates surfaces section for monorepo"
+    target: "surfaces.cli.commands.build"
+    matcher: "contains"
+    value: "cd '"
+
+  - id: A004
+    says: "Surface language is detected per surface, not inherited from root"
+    block: "generates surfaces section for monorepo"
+    target: "surfaces.cli.language"
+    matcher: "exists"
+
+  # AC2: Single-package repo
+  - id: A005
+    says: "Single-package projects have no surfaces section"
+    block: "does not generate surfaces for single-package repo"
+    target: "anaJson.surfaces"
+    matcher: "not_equals"
+    value: true
+
+  # AC6: buildPackage/testPackage retired
+  - id: A006
+    says: "Fresh init no longer generates buildPackage in commands"
+    block: "does not generate buildPackage or testPackage"
+    target: "commands.buildPackage"
+    matcher: "not_equals"
+    value: true
+
+  - id: A007
+    says: "Fresh init no longer generates testPackage in commands"
+    block: "does not generate buildPackage or testPackage"
+    target: "commands.testPackage"
+    matcher: "not_equals"
+    value: true
+
+  # AC3: Re-init preserves user-tuned surface commands
+  - id: A008
+    says: "Re-initializing preserves user-customized surface commands"
+    block: "mergeSurfaces preserves user-tuned commands"
+    target: "mergedSurfaces.cli.commands.test"
+    matcher: "equals"
+    value: "custom-user-test-command"
+
+  - id: A009
+    says: "Re-initializing refreshes machine-managed surface fields from the scan"
+    block: "mergeSurfaces refreshes mechanical fields"
+    target: "mergedSurfaces.cli.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+  # AC4: Re-init add/remove semantics
+  - id: A010
+    says: "Newly detected surfaces appear with default commands after re-init"
+    block: "mergeSurfaces adds newly detected surfaces"
+    target: "mergedSurfaces.new-surface"
+    matcher: "exists"
+
+  - id: A011
+    says: "Surfaces no longer detected are kept rather than silently deleted"
+    block: "mergeSurfaces keeps removed surfaces"
+    target: "mergedSurfaces.old-service"
+    matcher: "exists"
+
+  # AC5: Match by path not key
+  - id: A012
+    says: "Surface merge matches by path so renamed keys preserve tuned commands"
+    block: "mergeSurfaces matches by path not key name"
+    target: "mergedSurfaces.renamed-key.commands.test"
+    matcher: "equals"
+    value: "custom-test"
+
+  # AC7: config set surface guard
+  - id: A013
+    says: "Setting a surface command is allowed"
+    block: "config set allows surface commands"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A014
+    says: "Setting a machine-managed surface field like path is rejected"
+    block: "config set rejects machine-managed surface fields"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  # AC8: config delete
+  - id: A015
+    says: "Deleting a whole surface entry removes it from the config"
+    block: "config delete removes surface entry"
+    target: "config.surfaces.old-service"
+    matcher: "not_equals"
+    value: true
+
+  - id: A016
+    says: "Deleting a machine-managed surface field is rejected"
+    block: "config delete rejects machine-managed surface field"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  # AC9: config show display
+  - id: A017
+    says: "Config show displays surfaces with proper nesting"
+    block: "displayAll renders surfaces with three-level nesting"
+    target: "output"
+    matcher: "contains"
+    value: "commands:"
+
+  # AC10: Scope Surface field validation
+  - id: A018
+    says: "Scope validation accepts a valid Surface field value"
+    block: "validateScopeFormat accepts valid Surface field"
+    target: "result"
+    matcher: "equals"
+    value: null
+
+  - id: A019
+    says: "Scope validation rejects an invalid Surface field value"
+    block: "validateScopeFormat rejects invalid Surface field"
+    target: "result"
+    matcher: "contains"
+    value: "Surface"
+
+  # AC13: Proof chain surface field
+  - id: A020
+    says: "Proof chain entry records the surface when all files match one surface"
+    block: "derives surface from modules_touched single match"
+    target: "entry.surface"
+    matcher: "equals"
+    value: "cli"
+
+  - id: A021
+    says: "Proof chain entry has no surface when files span multiple surfaces"
+    block: "derives null surface from modules_touched multi match"
+    target: "entry.surface"
+    matcher: "not_equals"
+    value: true
+
+  # AC14: Proof display
+  - id: A022
+    says: "Proof detail view shows the surface when present"
+    block: "formatHumanReadable shows surface field"
+    target: "output"
+    matcher: "contains"
+    value: "Surface:"
+
+  - id: A023
+    says: "Proof list view includes the surface column"
+    block: "formatListTable includes surface column"
+    target: "output"
+    matcher: "contains"
+    value: "Surface"
+
+  # AC15: Init display
+  - id: A024
+    says: "Init display shows surfaces after root commands"
+    block: "displaySuccessMessage shows surfaces"
+    target: "output"
+    matcher: "contains"
+    value: "Surfaces:"
+
+  - id: A025
+    says: "Init display truncates at three surfaces with a more message"
+    block: "displaySuccessMessage truncates at 3 surfaces"
+    target: "output"
+    matcher: "contains"
+    value: "+2 more"
+
+  # Edge cases
+  - id: A026
+    says: "Surface with no test script gets a null test command"
+    block: "generates null test command for surface without test script"
+    target: "surfaces.web.commands.test"
+    matcher: "equals"
+    value: null
+
+  - id: A027
+    says: "Blank surface commands are sanitized to null during merge"
+    block: "mergeSurfaces sanitizes blank commands"
+    target: "mergedSurfaces.cli.commands.build"
+    matcher: "equals"
+    value: null
+
+  # Zod schema
+  - id: A028
+    says: "The Zod schema parses surfaces with fail-soft defaults"
+    block: "AnaJsonSchema parses surfaces with defaults"
+    target: "parsed.surfaces"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-setup.md"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    action: modify
