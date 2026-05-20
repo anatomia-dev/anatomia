@@ -40,6 +40,35 @@ function hasRustWorkspace(content: string): boolean {
 }
 
 /**
+ * Check if Cargo.toml content has a tauri dependency in [workspace.dependencies].
+ * Detects both inline format (`tauri = "2.5.0"`) and sub-table format
+ * (`[workspace.dependencies.tauri]`). Section-scoped to avoid matching
+ * workspace member paths like "apps/desktop/src-tauri".
+ */
+function hasTauriWorkspaceDep(content: string): boolean {
+  try {
+    // Check for sub-table header format: [workspace.dependencies.tauri]
+    if (/^\[workspace\.dependencies\.tauri\]\s*$/m.test(content)) {
+      return true;
+    }
+
+    // Check for inline format within [workspace.dependencies] section
+    const sectionMatch = content.match(/^\[workspace\.dependencies\]\s*$/m);
+    if (!sectionMatch) return false;
+
+    const sectionStart = sectionMatch.index! + sectionMatch[0].length;
+    const nextSection = content.indexOf('\n[', sectionStart);
+    const sectionBlock = nextSection === -1
+      ? content.slice(sectionStart)
+      : content.slice(sectionStart, nextSection);
+
+    return /^\s*tauri\s*=/m.test(sectionBlock);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Check if pyproject.toml content contains real Python project dependencies.
  * Detects PEP 621 `[project]` with non-empty `dependencies` array,
  * or Poetry `[tool.poetry.dependencies]` with package entries.
@@ -137,8 +166,10 @@ export async function detectProjectType(
     const hasPyproject = await exists(path.join(rootPath, 'pyproject.toml'));
     const hasCargo = await exists(path.join(rootPath, 'Cargo.toml'));
     const hasGoMod = await exists(path.join(rootPath, 'go.mod'));
+    const hasGemfile = await exists(path.join(rootPath, 'Gemfile'));
+    const hasPnpmWorkspace = await exists(path.join(rootPath, 'pnpm-workspace.yaml'));
 
-    if (hasLockfile && !hasPyproject && !hasCargo && !hasGoMod) {
+    if (hasLockfile && !hasPyproject && !hasCargo && !hasGoMod && !hasGemfile) {
       // Tier 1: package.json + lockfile + no competing manifest → Node 0.95 (fast path)
       return { type: 'node', confidence: 0.95, indicators };
     }
@@ -161,12 +192,23 @@ export async function detectProjectType(
       try {
         const cargoContent = await fs.readFile(path.join(rootPath, 'Cargo.toml'), 'utf-8');
         if (hasRustWorkspace(cargoContent)) {
+          // Tauri discriminator: Rust workspace with tauri dep + pnpm-workspace.yaml → Node
+          if (hasTauriWorkspaceDep(cargoContent) && hasPnpmWorkspace) {
+            indicators.push('pnpm-workspace.yaml');
+            return { type: 'node', confidence: 0.85, indicators };
+          }
           indicators.push('Cargo.toml');
           return { type: 'rust', confidence: 0.90, indicators };
         }
       } catch {
         // Unreadable Cargo.toml — fall through
       }
+    }
+
+    if (hasLockfile && hasGemfile) {
+      // Tier 3: package.json + lockfile + Gemfile → Ruby 0.90
+      indicators.push('Gemfile');
+      return { type: 'ruby', confidence: 0.90, indicators };
     }
 
     if (hasLockfile && hasGoMod) {
@@ -199,12 +241,23 @@ export async function detectProjectType(
       try {
         const cargoContent = await fs.readFile(path.join(rootPath, 'Cargo.toml'), 'utf-8');
         if (hasRustWorkspace(cargoContent)) {
+          // Tauri discriminator: Rust workspace with tauri dep + pnpm-workspace.yaml → Node
+          if (hasTauriWorkspaceDep(cargoContent) && hasPnpmWorkspace) {
+            indicators.push('pnpm-workspace.yaml');
+            return { type: 'node', confidence: 0.80, indicators };
+          }
           indicators.push('Cargo.toml');
           return { type: 'rust', confidence: 0.85, indicators };
         }
       } catch {
         // Unreadable Cargo.toml — fall through
       }
+    }
+
+    if (!hasLockfile && hasGemfile) {
+      // Tier 4: package.json + no lockfile + Gemfile → Ruby 0.85
+      indicators.push('Gemfile');
+      return { type: 'ruby', confidence: 0.85, indicators };
     }
 
     if (!hasLockfile && hasGoMod) {
