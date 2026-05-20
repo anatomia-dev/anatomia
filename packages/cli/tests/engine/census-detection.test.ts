@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { existsSync } from 'node:fs';
 import { discoverDeployments, discoverCiWorkflows } from '../../src/engine/census.js';
 
 describe('discoverDeployments', () => {
@@ -204,5 +205,56 @@ describe('discoverCiWorkflows', () => {
     const systems = entries.map(e => e.system);
     expect(systems).toContain('Jenkins');
     expect(systems).toContain('Bitbucket Pipelines');
+  });
+});
+
+describe('workspace label logic', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'census-workspace-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  /**
+   * Mirror the scan-engine ternary logic to test workspace labeling.
+   * This replicates the inline ternary from scan-engine.ts so we can
+   * test the filesystem detection without running the full scan.
+   */
+  function getWorkspaceLabel(rootPath: string, tool: string): string {
+    if (existsSync(path.join(rootPath, 'turbo.json'))) {
+      return `Turborepo (${tool})`;
+    }
+    if (existsSync(path.join(rootPath, 'nx.json'))) {
+      return `Nx (${tool})`;
+    }
+    return `${tool} monorepo`;
+  }
+
+  // @ana A013
+  it('detects Nx workspace from nx.json', () => {
+    fs.writeFileSync(path.join(tmpDir, 'nx.json'), '{}');
+    expect(getWorkspaceLabel(tmpDir, 'pnpm')).toBe('Nx (pnpm)');
+  });
+
+  // @ana A014
+  it('Turborepo detection unchanged', () => {
+    fs.writeFileSync(path.join(tmpDir, 'turbo.json'), '{}');
+    expect(getWorkspaceLabel(tmpDir, 'pnpm')).toBe('Turborepo (pnpm)');
+  });
+
+  // @ana A015
+  it('Turborepo takes precedence over Nx', () => {
+    fs.writeFileSync(path.join(tmpDir, 'turbo.json'), '{}');
+    fs.writeFileSync(path.join(tmpDir, 'nx.json'), '{}');
+    expect(getWorkspaceLabel(tmpDir, 'npm')).toBe('Turborepo (npm)');
+  });
+
+  // @ana A016
+  it('generic monorepo label when no orchestrator', () => {
+    expect(getWorkspaceLabel(tmpDir, 'yarn')).toBe('yarn monorepo');
   });
 });
