@@ -419,17 +419,18 @@ function installDependencies(wtPath: string): boolean {
 /**
  * Read the build command string from the worktree's ana.json.
  *
+ * @internal Exported for testing only
  * @param wtPath - Worktree path
- * @returns The build command string, or a fallback
+ * @returns The build command string, or empty string when not configured
  */
-function getBuildCommandString(wtPath: string): string {
+export function getBuildCommandString(wtPath: string): string {
   try {
     const raw = fs.readFileSync(path.join(wtPath, '.ana', 'ana.json'), 'utf-8');
     const config = JSON.parse(raw);
     const cmd = config?.commands?.build;
-    return typeof cmd === 'string' ? cmd : 'pnpm run build';
+    return typeof cmd === 'string' ? cmd : '';
   } catch {
-    return 'pnpm run build';
+    return '';
   }
 }
 

@@ -653,6 +653,21 @@ export async function preserveUserState(
           mergedCommands[key] = freshCommands[key];
         }
       }
+
+      // Clear stale JS commands for non-Node projects. Pre-fix installations
+      // may have saved JS commands (pnpm run test, npm run build) that are
+      // wrong for Ruby/Python/Go/Rust projects. Conservative regex — native
+      // commands like pytest, bundle exec rspec, cargo test never match.
+      const mergedLang = newAnaConfig['language'] as string | undefined;
+      if (mergedLang && mergedLang !== 'TypeScript' && mergedLang !== 'Node.js') {
+        const jsCommandPattern = /(npm|yarn|pnpm|npx|bunx)\s/;
+        for (const key of ['test', 'build', 'lint', 'buildPackage', 'testPackage']) {
+          const val = mergedCommands[key];
+          if (typeof val === 'string' && jsCommandPattern.test(val)) {
+            mergedCommands[key] = freshCommands[key] ?? null;
+          }
+        }
+      }
     }
 
     const newAnaJsonPath = path.join(tmpAnaPath, 'ana.json');
