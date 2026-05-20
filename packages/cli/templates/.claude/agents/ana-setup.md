@@ -148,7 +148,12 @@ how Ana's pipeline integrates with your codebase:
 Does this look right?
 ```
 
-Read each value from `.ana/ana.json` and `.ana/scan.json`. Show only what was detected — skip null/empty fields.
+Read each value from `.ana/ana.json` and `.ana/scan.json`. Show what was detected — skip empty string fields. For `commands.test` and `commands.build`, if the value is null, show it with a ⚠ marker so the user knows configuration is needed:
+
+```
+  ⚠ commands.test          null — needs configuration
+  ⚠ commands.build         null — needs configuration
+```
 
 **On "yes":** Check branch (below), then move to Step 3.
 **On correction:** Read `.ana/ana.json`, change the corrected field(s), write the file back, then read it again to confirm the change persisted. Only THEN acknowledge the correction. Never say "got it" before the file is written — a verbal acknowledgment without a filesystem write means the user believes the fix is saved when it isn't.

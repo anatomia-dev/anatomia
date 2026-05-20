@@ -8,6 +8,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import * as fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
@@ -269,6 +270,56 @@ export function buildDirectTestCommand(
 }
 
 /**
+ * Build native commands for non-Node projects.
+ *
+ * Returns high-confidence commands only — null for anything uncertain.
+ * Called from createAnaJson when language is not TypeScript/Node.js.
+ *
+ * @param language - Display name from stack.language (e.g. 'Ruby', 'Python', 'Go', 'Rust')
+ * @param testing - Detected testing frameworks from stack.testing
+ * @param rootPath - Project root (for file existence checks)
+ * @returns Commands object with test, build, lint, dev fields
+ */
+export function buildNonNodeCommands(
+  language: string,
+  testing: string[],
+  rootPath: string,
+): { test: string | null; build: string | null; lint: string | null; dev: string | null } {
+  const result = { test: null as string | null, build: null as string | null, lint: null as string | null, dev: null as string | null };
+
+  if (language === 'Python') {
+    if (testing.includes('pytest')) {
+      result.test = 'pytest';
+    }
+    return result;
+  }
+
+  if (language === 'Go') {
+    result.test = 'go test ./...';
+    result.build = 'go build ./...';
+    return result;
+  }
+
+  if (language === 'Ruby') {
+    if (testing.includes('RSpec')) {
+      result.test = existsSync(path.join(rootPath, 'bin', 'rspec'))
+        ? 'bin/rspec'
+        : 'bundle exec rspec';
+    }
+    return result;
+  }
+
+  if (language === 'Rust') {
+    result.test = 'cargo test';
+    result.build = 'cargo build';
+    result.lint = 'cargo clippy';
+    return result;
+  }
+
+  return result;
+}
+
+/**
  * Make a package.json `test` script safe to run in CI / pipeline contexts.
  *
  * Each framework that has a watch-mode default gets transformed:
@@ -422,7 +473,12 @@ export async function createAnaJson(
   let lintCmd = result.commands.lint || null;
   let buildPackageCmd: string | null = null;
 
-  if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage) {
+  // Scoping block: read primary package's package.json for monorepo
+  // build/lint commands. Skip for non-Node languages — prevents JS
+  // buildPackage/lint commands from leaking into Rust/Ruby/Go projects.
+  const lang = result.stack.language;
+  if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage
+      && (!lang || lang === 'TypeScript' || lang === 'Node.js')) {
     const pkg = result.monorepo.primaryPackage;
     const pm = result.commands.packageManager || 'pnpm';
     const prefix = pm === 'npm' ? 'npm run' : `${pm} run`;
@@ -466,6 +522,16 @@ export async function createAnaJson(
   }
   if (testPackageCmd && testPackageCmd !== testCmd) {
     commands['testPackage'] = testPackageCmd;
+  }
+
+  // Non-Node native commands — replace engine-detected nulls with
+  // high-confidence native commands (pytest, cargo test, go test, etc.)
+  if (lang && lang !== 'TypeScript' && lang !== 'Node.js' && cwd) {
+    const native = buildNonNodeCommands(lang, result.stack.testing, cwd);
+    if (native.test) commands['test'] = native.test;
+    if (native.build) commands['build'] = native.build;
+    if (native.lint) commands['lint'] = native.lint;
+    // dev stays null for non-Node
   }
 
   const anaConfig: Record<string, unknown> = {
@@ -585,6 +651,21 @@ export async function preserveUserState(
       for (const key of Object.keys(freshCommands)) {
         if (!(key in mergedCommands) && freshCommands[key] != null && freshCommands[key] !== '') {
           mergedCommands[key] = freshCommands[key];
+        }
+      }
+
+      // Clear stale JS commands for non-Node projects. Pre-fix installations
+      // may have saved JS commands (pnpm run test, npm run build) that are
+      // wrong for Ruby/Python/Go/Rust projects. Conservative regex — native
+      // commands like pytest, bundle exec rspec, cargo test never match.
+      const mergedLang = newAnaConfig['language'] as string | undefined;
+      if (mergedLang && mergedLang !== 'TypeScript' && mergedLang !== 'Node.js') {
+        const jsCommandPattern = /(npm|yarn|pnpm|npx|bunx)\s/;
+        for (const key of ['test', 'build', 'lint', 'buildPackage', 'testPackage']) {
+          const val = mergedCommands[key];
+          if (typeof val === 'string' && jsCommandPattern.test(val)) {
+            mergedCommands[key] = freshCommands[key] ?? null;
+          }
         }
       }
     }
@@ -830,10 +911,22 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     console.log('');
   }
 
-  // Two-path next steps
+  // Two-path next steps — conditional on language and command detection.
+  // Non-Node with null test command: setup first (needs configuration).
+  // Non-Node with test populated: ana first, setup optional.
+  // TypeScript/Node: ana first, setup optional (original behavior).
+  const initLang = engineResult?.stack.language;
+  const initTestCmd = (anaConfig?.['commands'] as Record<string, unknown> | undefined)?.['test'];
+  const isNonNode = initLang && initLang !== 'TypeScript' && initLang !== 'Node.js';
+
   console.log('  Next:');
-  console.log(chalk.cyan('    claude --agent ana') + '          Start working (Ana knows your stack)');
-  console.log(chalk.cyan('    claude --agent ana-setup') + '    Enrich with your team\'s knowledge (optional, ~10 min)');
+  if (isNonNode && !initTestCmd) {
+    console.log(chalk.cyan('    claude --agent ana-setup') + '    Configure commands + enrich context (~10 min)');
+    console.log(chalk.cyan('    claude --agent ana') + '          Start working (after setup)');
+  } else {
+    console.log(chalk.cyan('    claude --agent ana') + '          Start working (Ana knows your stack)');
+    console.log(chalk.cyan('    claude --agent ana-setup') + '    Enrich with your team\'s knowledge (optional, ~10 min)');
+  }
 
   // Commit-readiness indicator
   const artifactBranch = anaConfig?.['artifactBranch'] as string ?? 'main';

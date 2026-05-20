@@ -22,10 +22,21 @@ export interface DetectedCommands {
  * If packageManager is null (no lockfile found — typically a non-Node
  * project), returns all-null commands without attempting to read
  * package.json.
+ *
+ * If projectType is non-Node (not 'node' and not 'unknown'), still reads
+ * package.json to populate `result.all` (polyglot projects have JS tooling)
+ * but skips named command detection — JS build/test/lint commands are wrong
+ * for Ruby/Python/Go/Rust projects.
+ *
+ * @param cwd - Project root directory
+ * @param packageManager - Detected package manager or null
+ * @param projectType - Project type from detectProjectType (e.g. 'node', 'ruby', 'rust')
+ * @returns Detected commands with optional all scripts
  */
 export async function detectCommands(
   cwd: string,
-  packageManager: string | null
+  packageManager: string | null,
+  projectType?: string,
 ): Promise<DetectedCommands> {
   const result: DetectedCommands = {
     build: null,
@@ -45,6 +56,12 @@ export async function detectCommands(
     const scripts = pkg.scripts || {};
 
     result.all = scripts;
+
+    // Non-Node projects: preserve commands.all from package.json but skip
+    // named command detection — JS commands are wrong for these projects.
+    if (projectType && projectType !== 'node' && projectType !== 'unknown') {
+      return result;
+    }
 
     const prefix = packageManager === 'npm' ? 'npm run' : `${packageManager} run`;
 

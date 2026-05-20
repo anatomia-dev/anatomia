@@ -672,4 +672,93 @@ tokio = { version = "1", features = ["full"] }
     // Package manager must be null for non-Node
     expect(result.commands.packageManager).toBeNull();
   });
+
+  // ============================================================================
+  // Polyglot contamination elimination tests (Layer 1+2)
+  //
+  // These test the clear-and-rebuild of stack.testing for non-Node projects
+  // and the JS command suppression in detectCommands. Polyglot projects have
+  // a package.json (for JS tooling like yarn) alongside their native project
+  // files — the engine must suppress JS commands but preserve commands.all.
+  // ============================================================================
+
+  // @ana A001, A002, A005, A006, A007
+  it('Ruby project with JS devDeps: stack.testing shows RSpec, not JS frameworks', async () => {
+    await createFiles({
+      'Gemfile': 'source "https://rubygems.org"\ngem "rails"\n',
+      '.rspec': '--require spec_helper\n',
+      'spec/spec_helper.rb': '# spec helper',
+      'package.json': JSON.stringify({
+        name: 'ruby-project',
+        scripts: { build: 'webpack', test: 'jest', lint: 'eslint' },
+        devDependencies: { vitest: '^1.0', jest: '^29.0' },
+      }),
+      'yarn.lock': '# yarn lockfile v1\n',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.stack.language).toBe('Ruby');
+    // A001: RSpec detected
+    expect(result.stack.testing).toContain('RSpec');
+    // A002: JS testing frameworks eliminated
+    expect(result.stack.testing).not.toContain('Vitest');
+    expect(result.stack.testing).not.toContain('Jest');
+    // A005, A006: JS named commands suppressed
+    expect(result.commands.build).toBeNull();
+    expect(result.commands.test).toBeNull();
+    expect(result.commands.lint).toBeNull();
+    // A007: commands.all preserved from package.json
+    expect(result.commands.all).toBeDefined();
+    expect(result.commands.all['build']).toBe('webpack');
+  });
+
+  // @ana A003, A015
+  it('Rust project: stack.testing shows Cargo test', async () => {
+    await createFiles({
+      'Cargo.toml': `[package]\nname = "test-rs"\nversion = "0.1.0"\n`,
+      'src/main.rs': 'fn main() {}\n',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.stack.language).toBe('Rust');
+    // A003: Cargo test detected
+    expect(result.stack.testing).toContain('Cargo test');
+  });
+
+  // @ana A004
+  it('Ruby project with test/ directory: stack.testing shows Minitest', async () => {
+    await createFiles({
+      'Gemfile': 'source "https://rubygems.org"\ngem "rails"\n',
+      'test/test_helper.rb': '# test helper',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.stack.language).toBe('Ruby');
+    expect(result.stack.testing).toContain('Minitest');
+  });
+
+  // @ana A008, A009
+  it('TypeScript project: commands unaffected by non-Node suppression', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'ts-project',
+        scripts: { build: 'tsc', test: 'vitest run', lint: 'eslint' },
+        devDependencies: { typescript: '^5.0', vitest: '^1.0' },
+      }),
+      'tsconfig.json': '{}',
+      'pnpm-lock.yaml': '',
+      'src/index.ts': 'export {};',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.stack.language).toBe('TypeScript');
+    // A008: test command exists
+    expect(result.commands.test).toBeTruthy();
+    // A009: build command exists
+    expect(result.commands.build).toBeTruthy();
+  });
 });

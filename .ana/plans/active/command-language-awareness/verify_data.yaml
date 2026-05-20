@@ -1,0 +1,49 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A020 has no tagged test — verified by source inspection only"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 480
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A020"]
+
+  - category: upstream
+    summary: "AC11 (Skills Detected section) tests absence of something never present — skills manifest contains skill file names, not test commands"
+    severity: observation
+    suggested_action: accept
+    related_assertions: []
+
+  - category: code
+    summary: "displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 923
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 285
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "getBuildCommandString exported solely for testing with @internal tag — follows project convention but increases public API surface"
+    file: "packages/cli/src/utils/worktree.ts"
+    line: 426
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "worktree-build-step-C3 partially resolved — misleading fallback fixed but duplicate I/O pattern remains"
+    severity: observation
+    suggested_action: monitor
+    resolves: []
+
+  - category: code
+    summary: "detectNonNodeTesting Ruby branch uses existsSync (synchronous) inside an async function — inconsistent with other branches that use async reads"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 89
+    severity: observation
+    suggested_action: accept
