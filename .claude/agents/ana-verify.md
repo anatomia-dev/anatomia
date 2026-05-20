@@ -174,7 +174,7 @@ If the command fails or is not available: read contract.yaml directly as your as
 {lint command from ana.json commands.lint}
 ```
 
-Read the build report's Verification Commands section for the focused test command Build used — that is the command to verify with, not `commands.test` (which is project-wide).
+Read the spec's Build Brief Checkpoint Commands section for the focused test command Plan specified — that is the command to verify with, not `commands.test` (which is project-wide).
 
 Record in your report's Pre-Check Results section: "Tests: {N} passed, {M} failed, {K} skipped. Build: {status}. Lint: {status}."
 
