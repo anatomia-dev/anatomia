@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { detectAiSdk, detectNonNodeAiSdk } from '../../../src/engine/detectors/dependencies.js';
+import { detectAiSdk, detectNonNodeAiSdk, detectServiceDeps } from '../../../src/engine/detectors/dependencies.js';
 import { computeSkillManifest } from '../../../src/constants.js';
 import { createEmptyEngineResult } from '../../../src/engine/types/engineResult.js';
 
@@ -175,5 +175,99 @@ describe('computeSkillManifest with aiSdk', () => {
     const result = { ...createEmptyEngineResult(), stack: { ...createEmptyEngineResult().stack, framework: 'FastAPI' } };
     const skills = computeSkillManifest(result);
     expect(skills).toContain('api-patterns');
+  });
+});
+
+describe('detectServiceDeps — AI provider entries', () => {
+  // @ana A017
+  it('detects @ai-sdk/groq as Vercel AI (Groq)', () => {
+    const services = detectServiceDeps({ '@ai-sdk/groq': '1.0.0' });
+    expect(services).toContainEqual({ name: 'Vercel AI (Groq)', category: 'ai' });
+  });
+
+  // @ana A018
+  it('detects @ai-sdk/deepseek as Vercel AI (DeepSeek)', () => {
+    const services = detectServiceDeps({ '@ai-sdk/deepseek': '1.0.0' });
+    expect(services).toContainEqual({ name: 'Vercel AI (DeepSeek)', category: 'ai' });
+  });
+
+  // @ana A019
+  it('detects @ai-sdk/xai as Vercel AI (xAI)', () => {
+    const services = detectServiceDeps({ '@ai-sdk/xai': '1.0.0' });
+    expect(services).toContainEqual({ name: 'Vercel AI (xAI)', category: 'ai' });
+  });
+
+  // @ana A025
+  it('existing AI provider detection unchanged', () => {
+    const services = detectServiceDeps({
+      '@ai-sdk/anthropic': '1.0.0',
+      '@ai-sdk/openai': '1.0.0',
+    });
+    const names = services.map(s => s.name);
+    expect(names).toContain('Vercel AI (Anthropic)');
+    expect(names).toContain('Vercel AI (OpenAI)');
+  });
+});
+
+describe('detectServiceDeps — AI provider wildcard', () => {
+  // @ana A020, A021
+  it('wildcard catches unknown @ai-sdk provider with correct capitalization', () => {
+    const services = detectServiceDeps({ '@ai-sdk/newprovider': '1.0.0' });
+    expect(services).toContainEqual({ name: 'Vercel AI (Newprovider)', category: 'ai' });
+  });
+
+  // @ana A022
+  it('wildcard excludes non-provider @ai-sdk packages', () => {
+    const services = detectServiceDeps({
+      '@ai-sdk/react': '1.0.0',
+      '@ai-sdk/svelte': '1.0.0',
+      '@ai-sdk/vue': '1.0.0',
+    });
+    const names = services.map(s => s.name);
+    expect(names).not.toContain('Vercel AI (React)');
+    expect(names).not.toContain('Vercel AI (Svelte)');
+    expect(names).not.toContain('Vercel AI (Vue)');
+  });
+
+  // @ana A023
+  it('wildcard excludes @ai-sdk/provider-utils', () => {
+    const services = detectServiceDeps({ '@ai-sdk/provider-utils': '1.0.0' });
+    const names = services.map(s => s.name);
+    expect(names).not.toContain('Vercel AI (Provider-utils)');
+    expect(names).not.toContain('Vercel AI (provider-utils)');
+  });
+
+  it('wildcard excludes @ai-sdk/core', () => {
+    const services = detectServiceDeps({ '@ai-sdk/core': '1.0.0' });
+    const names = services.map(s => s.name);
+    // core is in the exclusion set, not treated as a provider
+    expect(names).not.toContain('Vercel AI (Core)');
+  });
+
+  // @ana A024
+  it('no duplicate entries for explicit providers', () => {
+    const services = detectServiceDeps({
+      '@ai-sdk/groq': '1.0.0',
+      '@ai-sdk/anthropic': '1.0.0',
+      '@ai-sdk/newprovider': '1.0.0',
+    });
+    const names = services.map(s => s.name);
+    // Each name appears exactly once
+    const uniqueNames = new Set(names);
+    expect(uniqueNames.size).toBe(names.length);
+  });
+
+  it('wildcard capitalizes multi-word provider correctly', () => {
+    const services = detectServiceDeps({ '@ai-sdk/someprovider': '1.0.0' });
+    expect(services).toContainEqual({ name: 'Vercel AI (Someprovider)', category: 'ai' });
+  });
+
+  it('explicit entry overrides wildcard casing', () => {
+    // @ai-sdk/xai has explicit entry with custom casing 'xAI'
+    const services = detectServiceDeps({ '@ai-sdk/xai': '1.0.0' });
+    expect(services).toContainEqual({ name: 'Vercel AI (xAI)', category: 'ai' });
+    // Should NOT also produce a wildcard "Vercel AI (Xai)"
+    const names = services.filter(s => s.name.includes('xAI') || s.name.includes('Xai'));
+    expect(names).toHaveLength(1);
   });
 });
