@@ -1,0 +1,143 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects"
+
+assertions:
+  - id: A001
+    says: "A Tauri monorepo with pnpm workspace detects as a TypeScript project"
+    block: "detects Node for Tauri+TS monorepo with pnpm-workspace.yaml"
+    target: "result.type"
+    matcher: "equals"
+    value: "node"
+
+  - id: A002
+    says: "Tauri monorepo detection has high but not maximum confidence"
+    block: "detects Node for Tauri+TS monorepo with pnpm-workspace.yaml"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.85
+
+  - id: A003
+    says: "Tauri monorepo detection includes the pnpm workspace file as evidence"
+    block: "detects Node for Tauri+TS monorepo with pnpm-workspace.yaml"
+    target: "result.indicators"
+    matcher: "contains"
+    value: "pnpm-workspace.yaml"
+
+  - id: A004
+    says: "A Rust workspace without Tauri still detects as Rust"
+    block: "detects Rust when Cargo.toml has [workspace] section (with lockfile)"
+    target: "result.type"
+    matcher: "equals"
+    value: "rust"
+
+  - id: A005
+    says: "A Tauri project without pnpm workspace correctly stays Rust"
+    block: "detects Rust when tauri dep exists but no pnpm-workspace.yaml"
+    target: "result.type"
+    matcher: "equals"
+    value: "rust"
+
+  - id: A006
+    says: "Pure Tauri desktop app keeps Rust confidence"
+    block: "detects Rust when tauri dep exists but no pnpm-workspace.yaml"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.90
+
+  - id: A007
+    says: "A Ruby on Rails project with package.json detects as Ruby"
+    block: "detects Ruby when Gemfile exists alongside package.json with lockfile"
+    target: "result.type"
+    matcher: "equals"
+    value: "ruby"
+
+  - id: A008
+    says: "Ruby detection with lockfile has high confidence"
+    block: "detects Ruby when Gemfile exists alongside package.json with lockfile"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.90
+
+  - id: A009
+    says: "Ruby detection includes Gemfile as evidence"
+    block: "detects Ruby when Gemfile exists alongside package.json with lockfile"
+    target: "result.indicators"
+    matcher: "contains"
+    value: "Gemfile"
+
+  - id: A010
+    says: "A Ruby project without a lockfile still detects as Ruby"
+    block: "detects Ruby when Gemfile exists alongside package.json without lockfile"
+    target: "result.type"
+    matcher: "equals"
+    value: "ruby"
+
+  - id: A011
+    says: "Ruby detection without lockfile has reduced confidence"
+    block: "detects Ruby when Gemfile exists alongside package.json without lockfile"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.85
+
+  - id: A012
+    says: "A plain Node project with lockfile still detects correctly"
+    block: "preserves Node detection with lockfile and no competing manifest"
+    target: "result.type"
+    matcher: "equals"
+    value: "node"
+
+  - id: A013
+    says: "Plain Node fast path confidence is unchanged"
+    block: "preserves Node detection with lockfile and no competing manifest"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.95
+
+  - id: A014
+    says: "When Python and Rust both compete, Python wins by priority"
+    block: "Python wins over Rust when both compete alongside package.json"
+    target: "result.type"
+    matcher: "equals"
+    value: "python"
+
+  - id: A015
+    says: "Tauri monorepo without lockfile detects as Node at lower confidence"
+    block: "detects Node for Tauri+TS monorepo without lockfile (Tier 4)"
+    target: "result.type"
+    matcher: "equals"
+    value: "node"
+
+  - id: A016
+    says: "Tier 4 Tauri detection has appropriately reduced confidence"
+    block: "detects Node for Tauri+TS monorepo without lockfile (Tier 4)"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.80
+
+  - id: A017
+    says: "Malformed Cargo.toml workspace dependencies fall through safely to Rust"
+    block: "falls through to Rust when [workspace.dependencies] is malformed"
+    target: "result.type"
+    matcher: "equals"
+    value: "rust"
+
+  - id: A018
+    says: "The sub-table TOML format for tauri dependency is correctly detected"
+    block: "detects tauri via [workspace.dependencies.tauri] sub-table format"
+    target: "result.type"
+    matcher: "equals"
+    value: "node"
+
+  - id: A019
+    says: "Sub-table format Tauri detection has same confidence as inline format"
+    block: "detects tauri via [workspace.dependencies.tauri] sub-table format"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.85
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/projectType.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    action: modify
