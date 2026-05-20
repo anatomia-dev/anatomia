@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Surface path injected into shell commands without sanitization — inherits pre-existing pkg.path risk"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: risk
+    suggested_action: scope
+  - summary: "Surface derivation logic duplicated between work.ts and test file — could drift silently"
+    file: "packages/cli/tests/commands/proof-surface-derivation.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "mergeSurfaces console.warn on removed surfaces may be noisy for intentional removals"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: observation
+    suggested_action: monitor

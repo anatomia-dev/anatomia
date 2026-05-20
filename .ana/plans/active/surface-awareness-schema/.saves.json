@@ -24,5 +24,42 @@
   "spec": {
     "saved_at": "2026-05-20T21:52:37.265Z",
     "hash": "sha256:07bd4de5517adf83d2b1122845b345b4d0bbb92ea8261a71bbba05264715f066"
-  }
+  },
+  "build_started_at": "2026-05-20T21:57:03.300Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-20T23:13:52.329Z",
+    "hash": "sha256:ffc8a0a06136390d75f5b3fc6781f82ee7c678a5546b08820fac28b92314d203"
+  },
+  "build-data": {
+    "saved_at": "2026-05-20T23:13:52.330Z",
+    "hash": "sha256:a019de51205ca95d73ac30da25328f88cacb91b828f4178b7446c42805ff4fe4"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-setup.md",
+    ".claude/agents/ana-verify.md",
+    ".claude/agents/ana.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "packages/cli/tests/commands/proof-surface-derivation.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/scope-surface-validation.test.ts",
+    "packages/cli/tests/commands/template-surface-awareness.test.ts",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/start.mdx"
+  ],
+  "commit_hygiene": []
 }
