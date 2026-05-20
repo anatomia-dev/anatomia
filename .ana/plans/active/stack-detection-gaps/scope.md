@@ -11,7 +11,7 @@ This is a breadth sweep — lots of small additions (1-3 lines each) to existing
 
 ## Complexity Assessment
 
-- **Kind:** feature
+- **Kind:** chore
 - **Size:** small — 4 files changed, ~50 lines added, all additions to existing maps/functions
 - **Files affected:**
   - `packages/cli/src/engine/census.ts` — add entries to DEPLOYMENT_CONFIGS map, add CI system checks to `discoverCiWorkflows`
@@ -31,7 +31,7 @@ Four independent additions to existing detection infrastructure, shipped togethe
 
 **3. Nx workspace detection.** Add `nx.json` check alongside `turbo.json` in scan-engine.ts workspace display. Currently: `turbo.json` exists → "Turborepo (pnpm)", else → "pnpm monorepo". New: `turbo.json` → "Turborepo (pnpm)", `nx.json` → "Nx (pnpm)", else → "pnpm monorepo". 3 of 20 test repos use Nx (Novu, Refine, Twenty).
 
-**4. @ai-sdk provider packages.** Two changes. First, add the 7 highest-priority missing providers to AI_PACKAGES: `@ai-sdk/groq`, `@ai-sdk/xai`, `@ai-sdk/deepseek`, `@ai-sdk/perplexity`, `@ai-sdk/gateway`, `@ai-sdk/mcp`, `@ai-sdk/openai-compatible`. These are the providers most likely to appear in our customers' repos (Groq, xAI, DeepSeek are growing fast; Gateway and MCP are Vercel infrastructure). Second, add a wildcard catch in `detectServiceDeps` for any `@ai-sdk/*` package not already in the map — display as "Vercel AI ({provider})" where {provider} is extracted from the package name. This catches the remaining 19 providers and any future additions without code changes. The wildcard excludes known non-provider packages (`react`, `svelte`, `vue`, `solid`, `angular`, `provider`, `provider-utils`, `rsc`, `otel`, `codemod`, `devtools`, `test-server`, `valibot`, `workflow`, `core`, `open-responses`).
+**4. @ai-sdk provider packages.** Two changes. First, add the 7 highest-priority missing providers to AI_PACKAGES: `@ai-sdk/groq`, `@ai-sdk/xai`, `@ai-sdk/deepseek`, `@ai-sdk/perplexity`, `@ai-sdk/gateway`, `@ai-sdk/mcp`, `@ai-sdk/openai-compatible`. These are the providers most likely to appear in our customers' repos (Groq, xAI, DeepSeek are growing fast; Gateway and MCP are Vercel infrastructure). Second, add a wildcard catch in `detectServiceDeps` for any `@ai-sdk/*` package not already in the map — display as "Vercel AI ({provider})" where {provider} is extracted from the package name. This catches the remaining 19 providers and any future additions without code changes. The wildcard excludes known non-provider packages (`react`, `svelte`, `vue`, `solid`, `angular`, `provider`, `provider-utils`, `rsc`, `otel`, `codemod`, `devtools`, `test-server`, `valibot`, `workflow`, `core`, `open-responses`). The wildcard checks each `@ai-sdk/*` dependency against `Object.keys(AI_PACKAGES)` before processing — packages with explicit map entries are skipped to prevent duplicates with different casing.
 
 ## Acceptance Criteria
 
@@ -49,6 +49,7 @@ Four independent additions to existing detection infrastructure, shipped togethe
 - AC12: `@ai-sdk/react` (a framework package, not a provider) is NOT caught by the wildcard
 - AC13: All existing deployment, CI, workspace, and AI provider detection continues to work (no regressions)
 - AC14: Scanning repos with `Chart.yaml`, `kustomization.yaml`, `cdk.json`, `Pulumi.yaml`, `serverless.yml` at source root detects the corresponding platform
+- AC15: Wildcard-generated display name has correct capitalization — `@ai-sdk/deepseek` produces "Vercel AI (Deepseek)" not "Vercel AI (deepseek)"
 
 ## Edge Cases & Risks
 
