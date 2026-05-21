@@ -40,8 +40,8 @@ No user-visible output changes. This is an internal correctness fix. The only ob
 
 ## Testing Strategy
 
-- **Unit tests:** Add one test to the existing `proportional-sampler.test.ts`. Create a temp directory with files at all 3 depth levels (reuse the directory structure pattern from the `includes files from all depth levels via stratification` test). Set budget to 2. Assert: total files ≤ 2, at least one shallow file present (shallow-priority).
-- **Edge cases:** budget=1 with 3 non-empty buckets (returns exactly 1 file, shallow). The test with budget=2 implicitly covers the "budget < bucket count" path. budget=0 returns empty (handled by remaining starting at 0).
+- **Unit tests:** Add two tests to the existing `proportional-sampler.test.ts`. Both create a temp directory with files at all 3 depth levels (reuse the directory structure pattern from the `includes files from all depth levels via stratification` test). First test: budget=2, assert total files = 2 and at least one shallow file present (shallow-priority). Second test: budget=1, assert total files = 1 (the most extreme case — only one bucket gets anything).
+- **Edge cases:** budget=0 returns empty (handled by remaining starting at 0 — covered by existing guard, no new test needed).
 - **Regression:** All 8 existing tests must pass unchanged.
 
 ## Dependencies
@@ -121,7 +121,7 @@ The test setup pattern from `proportional-sampler.test.ts` lines 144–180 (dept
 ### Checkpoint Commands
 
 - After modifying `proportionalSampler.ts`: `(cd packages/cli && pnpm vitest run tests/engine/sampling/)` — Expected: 8 tests pass (existing tests unaffected by the guard)
-- After adding the new test: `(cd packages/cli && pnpm vitest run tests/engine/sampling/)` — Expected: 9 tests pass
+- After adding the new tests: `(cd packages/cli && pnpm vitest run tests/engine/sampling/)` — Expected: 10 tests pass
 - After all changes: `pnpm run test -- --run` — Expected: all tests pass
 - Lint: `pnpm run lint`
 
@@ -129,5 +129,5 @@ The test setup pattern from `proportional-sampler.test.ts` lines 144–180 (dept
 
 - Current tests: 8 passed in 1 test file
 - Command used: `(cd packages/cli && pnpm vitest run tests/engine/sampling/)`
-- After build: expected 9 tests in 1 file
+- After build: expected 10 tests in 1 file
 - Regression focus: existing 8 sampler tests — the guard must not change behavior when budget ≥ bucket count
