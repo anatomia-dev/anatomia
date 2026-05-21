@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 110 active · 3 promoted · 670 closed
+133 runs · 109 active · 3 promoted · 671 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 73 | 2026-05-21 |
+| cli | 88 | 72 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -84,10 +84,6 @@
 
 - **code:** Redundant type annotation: surface?: string | undefined — the ? already implies | undefined — *Surface Awareness Bridge*
 
-### packages/cli/src/utils/worktree.ts
-
-- **code:** getBuildCommandString exported solely for testing with @internal tag — follows project convention but increases public API surface — *Command Detection Language Awareness*
-
 ### packages/cli/templates/.claude/agents/ana-learn.md
 
 - **test:** No tagged test for A018/A019 learn template assertions — verified by source inspection only — *Surface Awareness Bridge*
@@ -115,6 +111,10 @@
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
 - **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+
+### packages/cli/tests/engine/findings/rules/validation.test.ts
+
+- **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
