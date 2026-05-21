@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-138 runs · 106 active · 3 promoted · 699 closed
+139 runs · 108 active · 3 promoted · 701 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 92 | 70 | 2026-05-21 |
+| cli | 93 | 72 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -52,13 +52,15 @@
 ### packages/cli/src/engine/detectors/projectType.ts
 
 - **code:** Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 - **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
 ### packages/cli/src/utils/git-operations.ts
 
@@ -90,6 +92,10 @@
 ### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
 
 - **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
+### packages/cli/tests/engine/sampling/proportional-sampler.test.ts
+
+- **test:** Budget=1 test (A004) verifies count but not that the returned file is shallow. Iteration order guarantees shallow, but the test doesn't assert it. — *Fix sampler budget overflow*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 

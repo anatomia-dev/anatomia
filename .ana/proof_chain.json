@@ -37401,6 +37401,168 @@
         "base_commit": "a93d568e8a9c859fedf2ad61a13d79755c346ab5"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-sampler-budget-overflow",
+      "feature": "Fix sampler budget overflow",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The sampler never returns more files than the budget allows",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A budget of 2 with three depth levels returns at most 2 files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Shallow files get priority when the budget is too small for all depth levels",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A budget of 1 with three depth levels returns exactly 1 file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Existing sampler tests still pass after the fix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Proportional allocation across roots still works after the fix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Depth stratification still works after the fix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Budget cap is still enforced after the fix",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 7,
+        "met": 7
+      },
+      "timing": {
+        "total_minutes": 23,
+        "think": 2,
+        "plan": 2,
+        "build": 4,
+        "verify": 3
+      },
+      "hashes": {
+        "scope": "sha256:6d9f92a912b10c019706ca242a2a5684c4cfa4f6611a200e622581c0fe9ef2d8",
+        "contract": "sha256:f1cafedbb95a3850558b8c7d0c3aa19e1ae082160e358b3d2b07ef9061e377c3",
+        "plan": "sha256:b633237eeb707d9fb9307da4a24fb4a8f204ff30c9571c235c37a89d6a4ec1d0",
+        "spec": "sha256:32d33b7841c3a6df3583bb87ff4fc85b38c79c746ac0ff0ec334a204bbd6ca10",
+        "build-report": "sha256:5ca7accddd826456ba1cf0ea060d1d968d8cacb4e1df89b1587b86d0fa5efe31",
+        "build-data": "sha256:94bdbdc3b22262cba5b50b67b6848a6d9c33dd4c205b5574b0da98b44a6dbfc8",
+        "verify-report": "sha256:0af5ce7fd3e71971621c7018f7669d2183e34628366cd92bb927ff9141993453",
+        "verify-data": "sha256:b3dead10d8f3efb6c3d98677d8a4f6ed4185d6dbe1b7ee1f445e169863c5af4f"
+      },
+      "completed_at": "2026-05-21T03:59:36.598Z",
+      "modules_touched": [
+        "packages/cli/src/engine/sampling/proportionalSampler.ts",
+        "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+      ],
+      "scope_summary": "The `allocateBudget` function in the proportional sampler can allocate more files than the budget allows. When the budget is smaller than the number of non-empty depth buckets, the first-pass floor allocation exceeds the budget and `remaining` goes negative. The function's contract says \"budget\" and it should mean budget. Source: Learn Session 7, finding `fix-deep-tier-sampling-C2`.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "A001 says field ('never returns more than budget') doesn't match its matcher (not_equals 0 — just checks non-empty). Budget enforcement is actually verified by A002.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "fix-sampler-budget-overflow-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:59:36.598Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work.",
+          "file": "packages/cli/src/engine/sampling/proportionalSampler.ts",
+          "anchor": null,
+          "line": 140,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "fix-sampler-budget-overflow-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Budget=1 test (A004) verifies count but not that the returned file is shallow. Iteration order guarantees shallow, but the test doesn't assert it.",
+          "file": "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+          "anchor": null,
+          "line": 286,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "fix-sampler-budget-overflow-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof chain finding fix-deep-tier-sampling-C2 (allocateBudget can exceed budget) is directly resolved by the remaining > 0 guard at line 81.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "fix-deep-tier-sampling-C2"
+          ],
+          "id": "fix-sampler-budget-overflow-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:59:36.598Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T03:31:59.650Z",
+        "completed_at": "2026-05-21T03:59:36.594Z",
+        "commit_count": 0,
+        "base_commit": "35ba8fce4cd7838159bb5ff6c49838572689bd5c"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
