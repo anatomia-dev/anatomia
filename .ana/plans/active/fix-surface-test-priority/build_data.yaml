@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "makeTestCommand.test.ts had 2 assertions encoding the old broken behavior — updated alongside monorepoCommandScoping.test.ts but not listed in spec's File Changes"
+    file: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
