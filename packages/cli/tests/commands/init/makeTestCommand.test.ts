@@ -161,7 +161,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       // Surface test command instead of testPackage
       const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
       const webCmds = surfaces['web']!['commands'] as Record<string, string | null>;
-      expect(webCmds['test']).toBe("(cd 'apps/web' && pnpm vitest run)");
+      expect(webCmds['test']).toBe("(cd 'apps/web' && pnpm run test)");
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -187,7 +187,7 @@ describe('createAnaJson monorepo test command scoping', () => {
       expect(cmds['test']).toBe('yarn run test');
       const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
       const webCmds = surfaces['web']!['commands'] as Record<string, string | null>;
-      expect(webCmds['test']).toBe("(cd 'apps/web' && yarn jest --watchAll=false)");
+      expect(webCmds['test']).toBe("(cd 'apps/web' && yarn run test)");
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
