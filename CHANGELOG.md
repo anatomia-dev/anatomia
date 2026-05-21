@@ -19,7 +19,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Expanded platform detection** — Cloudflare Workers, Helm, Kubernetes, AWS CDK, Pulumi, Serverless Framework for deployment. CircleCI, Jenkins, Bitbucket Pipelines for CI.
 - **Expanded AI SDK detection** — 7 new Vercel AI provider packages + `@ai-sdk/*` wildcard catch.
 - **Depth-stratified file sampling** — replaces depth-first sort with 3-bucket allocation (shallow, mid, deep). Budget increased from 500 to 750 files.
-- **Proof chain migration markers** — one-shot migrations (surface backfill, lesson-to-closed) gated by `migrations` field so they skip after first run.
+- **Proof chain surface backfill** — one-time migration derives surface fields for historical entries, gated by a marker so it skips after first run.
 
 ### Fixed
 
