@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-132 runs · 110 active · 3 promoted · 665 closed
+132 runs · 109 active · 3 promoted · 666 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 76 | 2026-05-21 |
+| cli | 88 | 75 | 2026-05-21 |
 | website | 19 | 16 | 2026-05-18 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -53,10 +53,6 @@
 ### packages/cli/src/engine/analyzers/conventions/imports.ts
 
 - **code:** classifyTSImport line 83 replace('/*', '') is dead code for new alias format — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### packages/cli/src/engine/census.ts
-
-- **code:** 29 FRAMEWORK_HINTS entries vs spec's claim of 18+9=27 — 2 entries existed before this build (react-router.config.ts, astro.config.ts), making the true delta 11 new entries not 9 — *Scan Surface Detection*
 
 ### packages/cli/src/engine/detectors/projectType.ts
 
@@ -121,4 +117,8 @@
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
 - **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+
+### packages/cli/tests/engine/findings/rules/validation.test.ts
+
+- **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
 
