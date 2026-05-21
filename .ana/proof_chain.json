@@ -35158,7 +35158,10 @@
             "A023"
           ],
           "id": "scan-surface-detection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Valid proxy testing: FRAMEWORK_HINTS is not exported. Test uses STRONG_FRAMEWORK_CONFIGS (exported, related) as proxy to verify the detection data exists with correct shape. Alternative would be exporting FRAMEWORK_HINTS solely for test access — a valid choice per Rule 1, but the developer chose the proxy approach instead. Both are acceptable.",
+          "closed_at": "2026-05-21T01:18:39.626Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

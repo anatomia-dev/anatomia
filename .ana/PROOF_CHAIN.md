@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-132 runs · 112 active · 3 promoted · 663 closed
+132 runs · 111 active · 3 promoted · 664 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 78 | 2026-05-21 |
+| cli | 88 | 77 | 2026-05-21 |
 | website | 19 | 16 | 2026-05-18 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -69,6 +69,10 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/scan-engine.ts
 
@@ -116,6 +120,5 @@
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
-- **test:** A023 tests STRONG_FRAMEWORK_CONFIGS presence as proxy for FRAMEWORK_HINTS count — FRAMEWORK_HINTS is not exported — *Scan Surface Detection*
 - **test:** A021 tests data shape availability, not actual terminal output containing 'Surfaces' string — *Scan Surface Detection*
 
