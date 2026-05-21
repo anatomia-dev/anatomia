@@ -140,4 +140,5 @@ export interface BuildMeta {
   version: string;
   commitSha: string;
   buildTimestamp: string;
+  testCount: number;
 }
