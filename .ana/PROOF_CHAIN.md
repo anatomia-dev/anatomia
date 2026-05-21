@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-135 runs · 106 active · 3 promoted · 684 closed
+135 runs · 105 active · 3 promoted · 685 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 25 | 17 | 2026-05-20 |
+| Unscoped | 25 | 16 | 2026-05-20 |
 | cli | 89 | 69 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 105 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -73,14 +73,11 @@
 ### packages/cli/tests/commands/doctor.test.ts
 
 - **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
+- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
-
-### packages/cli/tests/commands/scope-surface-validation.test.ts
-
-- **test:** A019 scope rejection test depends on cwd-based findProjectRoot — fragile coupling between test isolation and global state — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/commands/work.test.ts
 

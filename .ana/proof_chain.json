@@ -35556,7 +35556,10 @@
             "A019"
           ],
           "id": "surface-awareness-schema-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Established CLI testing pattern — process.chdir with try/finally guard at scope-surface-validation.test.ts:100-108. Same pattern used throughout work.test.ts, init.test.ts, and other CLI tests. The finally block mitigates cwd pollution risk. Accepted as the codebase's standard approach to testing cwd-dependent CLI behavior.",
+          "closed_at": "2026-05-21T02:41:17.221Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
