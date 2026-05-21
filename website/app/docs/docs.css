@@ -587,6 +587,10 @@
   .docs-exp-tbl th:first-child {
     background: var(--bg-elev);
   }
+  /* Hide Surface column on tablet — info is in the inline stage badge */
+  .docs-exp-surface {
+    display: none !important;
+  }
 }
 
 /* ≤880px: hide sidebar, show hamburger, collapse navbar, stack grids */
@@ -733,9 +737,14 @@
     font-size: 12px !important;
   }
 
-  /* Proof explorer: stack filter chips more aggressively */
+  /* Proof explorer: compact filters on mobile */
   .docs-exp-filters {
-    font-size: 11px !important;
+    font-size: 10px !important;
+    gap: 4px !important;
+  }
+  .docs-exp-filters select {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
   }
 
   /* Proof detail: compress meta */
