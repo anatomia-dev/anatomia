@@ -1,0 +1,218 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Surface Awareness Bridge"
+
+assertions:
+  # AC1: Health --surface filtering
+  - id: A001
+    says: "Health report for a specific surface only includes data from that surface"
+    block: "health --surface filters entries before computation"
+    target: "healthReport.runs"
+    matcher: "equals"
+    value: 2
+
+  - id: A002
+    says: "Health report excludes entries from other surfaces"
+    block: "health --surface filters entries before computation"
+    target: "healthReport.hot_modules"
+    matcher: "exists"
+
+  # AC2: Audit --surface filtering
+  - id: A003
+    says: "Audit for a specific surface only shows findings from that surface"
+    block: "audit --surface filters findings by entry surface"
+    target: "filteredFindings.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A004
+    says: "Audit excludes findings from entries belonging to other surfaces"
+    block: "audit --surface filters findings by entry surface"
+    target: "excludedSurfacePresent"
+    matcher: "equals"
+    value: false
+
+  # AC3: Invalid surface name
+  - id: A005
+    says: "An unknown surface name produces an error with available surface names"
+    block: "invalid surface name shows error with available surfaces"
+    target: "errorMessage"
+    matcher: "contains"
+    value: "Unknown surface"
+
+  - id: A006
+    says: "An unknown surface name exits with a non-zero code"
+    block: "invalid surface name shows error with available surfaces"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  # AC4: No surfaces configured
+  - id: A007
+    says: "Using --surface on a project without surfaces says they are not configured"
+    block: "no surfaces configured shows not-configured message"
+    target: "message"
+    matcher: "contains"
+    value: "not configured"
+
+  # AC5: Dashboard By Surface section
+  - id: A008
+    says: "The dashboard shows a By Surface section when entries have surface data"
+    block: "dashboard By Surface section renders when surfaces exist"
+    target: "dashboard"
+    matcher: "contains"
+    value: "## By Surface"
+
+  - id: A009
+    says: "The By Surface section shows run count per surface"
+    block: "dashboard By Surface section renders when surfaces exist"
+    target: "dashboard"
+    matcher: "contains"
+    value: "cli"
+
+  - id: A010
+    says: "The dashboard has no By Surface section when no entries have surface data"
+    block: "dashboard By Surface section absent when no surfaces"
+    target: "dashboard"
+    matcher: "not_contains"
+    value: "## By Surface"
+
+  # AC6: Unscoped grouping
+  - id: A011
+    says: "Entries without a surface are grouped as Unscoped in the dashboard"
+    block: "null surface entries grouped as Unscoped"
+    target: "dashboard"
+    matcher: "contains"
+    value: "Unscoped"
+
+  # AC7: Scaffold surface line for monorepo
+  - id: A012
+    says: "Monorepo scaffolds include detected surface names with paths"
+    block: "scaffold includes surfaces for monorepo"
+    target: "scaffold"
+    matcher: "contains"
+    value: "Detected surfaces"
+
+  # AC8: No scaffold surface line for single-package
+  - id: A013
+    says: "Single-package projects have no surface mention in the scaffold"
+    block: "scaffold excludes surfaces for single-package"
+    target: "scaffold"
+    matcher: "not_contains"
+    value: "Detected surfaces"
+
+  # AC9: Doctor surface health
+  - id: A014
+    says: "Doctor reports the number of configured surfaces"
+    block: "doctor surfaces dimension reports count"
+    target: "dimensions.surfaces.count"
+    matcher: "equals"
+    value: 2
+
+  - id: A015
+    says: "Doctor warns when a surface has no test command"
+    block: "doctor surfaces dimension warns on missing test command"
+    target: "dimensions.surfaces.status"
+    matcher: "equals"
+    value: "warn"
+
+  # AC10: Doctor scan-to-ana.json drift
+  - id: A016
+    says: "Doctor detects when scan and ana.json have different surface counts"
+    block: "doctor surfaces dimension detects drift"
+    target: "dimensions.surfaces.drift"
+    matcher: "equals"
+    value: true
+
+  # AC11: Doctor legacy field warning
+  - id: A017
+    says: "Doctor warns when legacy buildPackage or testPackage keys exist"
+    block: "doctor surfaces dimension warns on legacy fields"
+    target: "dimensions.surfaces.legacy_fields"
+    matcher: "exists"
+
+  # AC12-13: Learn template
+  - id: A018
+    says: "Learn template startup instructions mention surfaces"
+    block: "learn template includes surfaces in startup"
+    target: "templateContent"
+    matcher: "contains"
+    value: "surfaces"
+
+  - id: A019
+    says: "Learn template reference section includes the --surface flag"
+    block: "learn template reference includes --surface"
+    target: "templateContent"
+    matcher: "contains"
+    value: "--surface"
+
+  # AC14: Backfill populates surface
+  - id: A020
+    says: "Existing entries without surface get their surface derived from modules_touched"
+    block: "backfill derives surface from modules_touched"
+    target: "backfilledEntry.surface"
+    matcher: "equals"
+    value: "cli"
+
+  # AC15: Backfill is self-completing
+  - id: A021
+    says: "After backfill runs once, running it again changes nothing"
+    block: "backfill is idempotent after first run"
+    target: "secondRunChanges"
+    matcher: "equals"
+    value: 0
+
+  # AC16: Cross-surface entries stay null
+  - id: A022
+    says: "Entries touching multiple surfaces keep their surface undefined"
+    block: "cross-surface entries remain without surface"
+    target: "crossSurfaceEntry.surface"
+    matcher: "equals"
+    value: undefined
+
+  # AC17: No-modules entries untouched
+  - id: A023
+    says: "Entries without modules_touched are not modified by the backfill"
+    block: "entries without modules_touched are not modified"
+    target: "noModulesEntry.surface"
+    matcher: "equals"
+    value: undefined
+
+  # Audit --surface with --matrix
+  - id: A024
+    says: "Audit matrix mode respects the --surface filter"
+    block: "audit --matrix --surface filters entries before matrix computation"
+    target: "matrixTotalActive"
+    matcher: "exists"
+
+  # Surface derivation helper extraction
+  - id: A025
+    says: "The extracted surface derivation helper produces the same result as the original inline code"
+    block: "surface derivation helper matches original behavior"
+    target: "helperResult"
+    matcher: "equals"
+    value: "cli"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/utils/scaffold-generators.ts"
+    action: modify
+  - path: "packages/cli/src/commands/doctor.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-learn.md"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/doctor.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/scaffold-generators.test.ts"
+    action: create
