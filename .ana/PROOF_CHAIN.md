@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 105 active · 3 promoted · 675 closed
+133 runs · 104 active · 3 promoted · 676 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 68 | 2026-05-21 |
+| cli | 88 | 67 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -33,6 +33,7 @@
 ### packages/cli/src/commands/doctor.ts
 
 - **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
+- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -72,10 +73,6 @@
 ### packages/cli/src/utils/displayNames.ts
 
 - **code:** nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro' — *Scan Surface Detection*
-
-### packages/cli/templates/.claude/agents/ana-learn.md
-
-- **test:** No tagged test for A018/A019 learn template assertions — verified by source inspection only — *Surface Awareness Bridge*
 
 ### packages/cli/tests/commands/doctor.test.ts
 
