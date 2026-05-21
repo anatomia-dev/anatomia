@@ -22,7 +22,7 @@ Learn reads the proof chain, checks staleness, and presents the orientation — 
 - **Highest-impact** — 3 risk/scope findings to review. These may need engineering work.
 - **Recent findings** — 9 new findings from the last 3 proofs.
 
-Learn recommends based on the data: high stale count suggests cleanup first, risk findings suggest highest-impact. You pick the focus or redirect. Nothing executes without your sign-off.
+Learn recommends based on the data: high stale count suggests cleanup first, risk findings suggest highest-impact. You pick the focus or redirect. Nothing executes without your sign-off. (For monorepos, `proof health --surface cli` and `proof audit --surface cli` scope triage to a single surface.)
 
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The "anything you've noticed?" prompt isn't rhetorical. If you say "auth calls are slow" or "why does this pattern keep appearing," Learn traces it: missing skill rule? Curation gap where Plan doesn't load the skill? A bug that needs its own scope? Observations can surface at any point, not just at session start.</p>
 
