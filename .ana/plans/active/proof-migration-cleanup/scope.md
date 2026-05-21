@@ -21,7 +21,7 @@ Clean up pre-surface-era code that's now inconsistent or dead. Three items share
   - `packages/cli/src/utils/proofSummary.ts` — DashboardEntry: remove redundant `| undefined` (~1 line)
   - `packages/cli/src/commands/init/state.ts` — createAnaJson: remove lint scoping override (~4 lines removed, 2 comment lines updated)
   - `packages/cli/tests/commands/work.test.ts` — new tests for migration marker behavior (~10-15 lines)
-  - `packages/cli/tests/commands/init.test.ts` — update any tests asserting scoped root lint for monorepos
+  - `packages/cli/tests/commands/init/monorepoCommandScoping.test.ts` — update assertions expecting scoped root lint to expect project-wide lint (7+ assertions across multiple test cases)
 - **Blast radius:** Two distinct areas. (1) `writeProofChain` runs on every `ana work complete` and writes the entire proof chain to disk. Getting this wrong means corrupting the proof chain, losing findings, or breaking the pipeline's completion flow. However, the changes are deletions and guards — no new logic paths. The function's output shape is unchanged. All consumers of `proof_chain.json` use `JSON.parse` without schema validation, so the additive `migrations` field won't break readers. (2) `createAnaJson` runs on every `ana init`. The lint change affects what root `commands.lint` value new installations and re-inits get. Existing ana.json files preserve user-owned `commands` on re-init (via `preserveUserState`), so only fresh inits or users who haven't customized their commands are affected. Per-surface lint commands are unaffected.
 - **Estimated effort:** 1 pipeline cycle
 - **Multi-phase:** no
@@ -47,6 +47,7 @@ Two independent cleanups, same disease — pre-surface code that's now wrong or 
 - AC9: The `resolveFindingPaths` loop over existing entries (work.ts:1092-1096) is NOT touched — it's still doing active work (10 findings with basename-only paths).
 - AC10: Root `commands.lint` in `createAnaJson` (state.ts) uses the project-wide command from `result.commands.lint` — no longer overwritten with the primary package's scoped lint. Per-surface `surfaces.{name}.commands.lint` is unchanged.
 - AC11: The comment at state.ts:455 is updated to reflect that lint is now project-wide too, matching build and test.
+- AC12: The monorepo lint scoping block (state.ts:463-485) is removed entirely — not just the lint lines. Stage 2 already removed buildPackage generation from this block; lint was its last remaining purpose. After removing the lint override, the block is an empty if/try/catch that reads a package.json and does nothing with it.
 
 ## Edge Cases & Risks
 
@@ -128,4 +129,4 @@ None — all questions from the REQ were resolved during investigation.
 ### Things to Investigate
 
 - Decide where in the write sequence to set `chain.migrations.lesson_to_closed = true`. Options: alongside `chain.schema = 1` (line 1189), or inside the migration marker block with surface_backfill. The former is cleaner — both markers are set in the same place near the write.
-- Check whether any init tests assert that root lint for monorepos should be the scoped primary-package command. If so, update to expect the project-wide command.
+- `monorepoCommandScoping.test.ts` has 7+ assertions expecting scoped root lint (e.g., `expect(cmds['lint']).toBe("(cd 'packages/cli' && pnpm run lint)")`). These need updating to expect the project-wide command. `init.test.ts` line 100 passes through `engineResult.commands.lint || null` and is already correct.
