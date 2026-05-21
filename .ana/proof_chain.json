@@ -37155,7 +37155,10 @@
             "A006"
           ],
           "id": "command-duplication-cleanup-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "EMPTY_AUDIT_MATRIX at proof.ts:145 is only used in JSON.stringify(wrapJsonResponse('proof audit', EMPTY_AUDIT_MATRIX, ...)) — a read-only pipeline. wrapJsonResponse creates a new wrapper object. No call site mutates the constant. Theoretical mutability concern with zero practical risk.",
+          "closed_at": "2026-05-21T04:11:11.500Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

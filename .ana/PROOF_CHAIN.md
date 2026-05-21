@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 99 active · 3 promoted · 714 closed
+140 runs · 98 active · 3 promoted · 715 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 65 | 2026-05-21 |
+| cli | 94 | 64 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/commands/init/state.ts | 7 | 5 |
 | packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
-| packages/cli/src/commands/proof.ts | 4 | 3 |
+| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 99 total)
+## Active Findings (30 shown of 98 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -39,7 +39,6 @@
 
 ### packages/cli/src/commands/proof.ts
 
-- **code:** EMPTY_AUDIT_MATRIX is a mutable shared object — not frozen, callees could theoretically mutate it — *Command File Duplication Cleanup*
 - **code:** proof.ts imports pullBeforeRead and commitAndPushProofChanges from git-operations.ts but only uses them as pass-through calls — no local usage justifies the import beyond maintaining the existing call sites — *Command File Duplication Cleanup*
 
 ### packages/cli/src/commands/work.ts
@@ -99,6 +98,10 @@
 
 - **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
 - **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
+
+### packages/cli/tests/engine/findings/rules/validation.test.ts
+
+- **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 
