@@ -1,21 +1,21 @@
 # Proof Chain Dashboard
 
-140 runs · 91 active · 3 promoted · 722 closed
+140 runs · 90 active · 3 promoted · 723 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 57 | 2026-05-21 |
+| cli | 94 | 56 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/commands/work.ts | 7 | 5 |
+| packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 | packages/cli/src/utils/proofSummary.ts | 3 | 2 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 91 total)
+## Active Findings (30 shown of 90 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -76,10 +76,6 @@
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change — *Pre-surface behavior cleanup*
-
 ### packages/cli/tests/engine/census-detection.test.ts
 
 - **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
@@ -105,6 +101,10 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/pricing/pricing.module.css
+
+- **code:** Error color hardcoded as #ff8a8a on highlighted card instead of CSS custom property — *Team edition waitlist form*
 
 ### website/components/pricing/WaitlistForm.tsx
 
