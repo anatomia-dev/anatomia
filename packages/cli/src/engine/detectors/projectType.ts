@@ -130,7 +130,11 @@ function hasPythonProjectDeps(content: string): boolean {
  * Detect project type from dependency files
  *
  * Uses a tiered heuristic for package.json repos to disambiguate polyglot projects.
+ * Polyglot tier priority (package.json branch): Python → Rust → Ruby → Go.
  * Falls through to Python → Go → Rust → Ruby → PHP for non-package.json repos.
+ * The two orders differ intentionally: the polyglot path uses content checks
+ * (e.g., real dependencies, [workspace] sections) while the fallthrough path
+ * uses existence checks on manifest files.
  * @param rootPath
  */
 export async function detectProjectType(
@@ -200,6 +204,7 @@ export async function detectProjectType(
         if (hasRustWorkspace(cargoContent)) {
           // Tauri discriminator: Rust workspace with tauri dep + pnpm-workspace.yaml → Node
           if (hasTauriWorkspaceDep(cargoContent) && hasPnpmWorkspace) {
+            indicators.push('Cargo.toml');
             indicators.push('pnpm-workspace.yaml');
             return { type: 'node', confidence: 0.85, indicators };
           }
@@ -249,6 +254,7 @@ export async function detectProjectType(
         if (hasRustWorkspace(cargoContent)) {
           // Tauri discriminator: Rust workspace with tauri dep + pnpm-workspace.yaml → Node
           if (hasTauriWorkspaceDep(cargoContent) && hasPnpmWorkspace) {
+            indicators.push('Cargo.toml');
             indicators.push('pnpm-workspace.yaml');
             return { type: 'node', confidence: 0.80, indicators };
           }

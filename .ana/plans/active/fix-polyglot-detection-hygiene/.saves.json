@@ -18,5 +18,35 @@
   "spec": {
     "saved_at": "2026-05-21T03:27:02.374Z",
     "hash": "sha256:073ef34a4bd4bb560ed14a98bc99b3960ec4b11dd96455be109d2ba396104039"
+  },
+  "build_started_at": "2026-05-21T03:32:52.001Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T03:36:10.486Z",
+    "hash": "sha256:e0bcf9399efea203a0e8202a99a936b0415896db4610649bcf81e490aafcfc8f"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T03:36:10.487Z",
+    "hash": "sha256:19bb6d94b642e6cd0cb68d58c140689614d8dee640d3c4245d4fce21a3f66c71"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/detectors/projectType.ts",
+    "packages/cli/tests/engine/detectors/polyglot.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T03:40:31.539Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:5171150faf4c3cc85677d21c13b0c9f856dd4c70220f4106561e3ada099ed0ed",
+    "run_at": "2026-05-21T03:44:10.231Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T03:44:10.268Z",
+    "hash": "sha256:119f6290647c2307eb24f7fd912db770c9d42d17774327cf62eb6a8da145ea28"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T03:44:10.269Z",
+    "hash": "sha256:9f54a4e731a88cdb96dc14aa01d081d4998757042121360e8953b0760b02a8db"
   }
 }
