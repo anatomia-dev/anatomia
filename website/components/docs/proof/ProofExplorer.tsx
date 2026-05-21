@@ -248,6 +248,20 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
                         color: "var(--ink-60)",
                         letterSpacing: "0.02em",
                       }}>{e.stage.toLowerCase()}</span>
+                      {e.surface && (
+                        <span style={{
+                          display: "inline-block",
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "10px",
+                          padding: "2px 6px",
+                          borderRadius: "3px",
+                          border: "1px solid var(--hairline)",
+                          color: "var(--ink-60)",
+                          letterSpacing: "0.02em",
+                        }}>
+                          {e.surface}
+                        </span>
+                      )}
                       {e.rejectionCycles > 0 && (
                         <span style={{
                           display: "inline-block",
