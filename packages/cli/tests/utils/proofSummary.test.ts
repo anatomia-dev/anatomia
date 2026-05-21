@@ -2417,21 +2417,6 @@ describe('computeChainHealth', () => {
     expect(health.findings.promoted).toBe(1);
   });
 
-  // @ana A010, A011
-  it('counts old lesson data as closed for backward compatibility', () => {
-    const chain = {
-      entries: [{
-        findings: [
-          { status: 'lesson', severity: 'observation', suggested_action: 'monitor' },
-        ],
-      }],
-    };
-    const health = computeChainHealth(chain);
-    expect(health.findings.closed).toBe(1);
-    expect(health.findings.active).toBe(0);
-    expect(health.findings.total).toBe(1);
-    expect((health.findings as Record<string, unknown>)['lesson']).toBeUndefined();
-  });
 });
 
 describe('computeHealthReport', () => {

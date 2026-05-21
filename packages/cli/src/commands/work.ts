@@ -1177,7 +1177,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
 
   chain.entries.push(entry);
   chain.schema = 1;
-  chain.migrations = { ...chain.migrations, surface_backfill: true, lesson_to_closed: true };
+  chain.migrations = { ...chain.migrations, surface_backfill: true };
   await fsPromises.writeFile(chainPath, JSON.stringify(chain, null, 2));
 
   // 2. Regenerate PROOF_CHAIN.md as quality dashboard

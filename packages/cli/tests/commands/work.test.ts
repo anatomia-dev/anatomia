@@ -5974,7 +5974,6 @@ file_changes:
 
     expect(chain.migrations).toBeDefined();
     expect(chain.migrations.surface_backfill).toBe(true);
-    expect(chain.migrations.lesson_to_closed).toBe(true);
     // Old entry without surface gets backfilled
     expect(chain.entries[0].surface).toBe('cli');
   });
@@ -6007,9 +6006,8 @@ file_changes:
 
     // Entry without surface should remain unchanged — backfill was skipped
     expect(chain.entries[0].surface).toBeUndefined();
-    // Migration markers still present
+    // Migration marker still present
     expect(chain.migrations.surface_backfill).toBe(true);
-    expect(chain.migrations.lesson_to_closed).toBe(true);
   });
 
   // @ana A021

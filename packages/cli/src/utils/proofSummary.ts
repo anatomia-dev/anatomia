@@ -1416,7 +1416,6 @@ export function computeChainHealth(chain: { entries: Array<{ findings?: Array<{ 
       total++;
       switch (f.status) {
         case 'active': active++; break;
-        case 'lesson': closed++; break; // backward compat: pre-migration data
         case 'promoted': promoted++; break;
         case 'closed': closed++; break;
         default: active++; break; // undefined = active
