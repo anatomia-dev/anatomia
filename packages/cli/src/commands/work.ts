@@ -1047,7 +1047,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
     }
   } catch { /* ana.json missing or malformed — skip surface derivation */ }
 
-  if (anaSurfaces && Object.keys(anaSurfaces).length > 0) {
+  if (anaSurfaces) {
     const derived = deriveSurface(modulesTouched, anaSurfaces);
     if (derived) {
       entry.surface = derived;
@@ -1096,7 +1096,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
   }
 
   // Backfill migration: derive surface for existing entries without one
-  if (anaSurfaces && Object.keys(anaSurfaces).length > 0) {
+  if (anaSurfaces && !chain.migrations?.['surface_backfill']) {
     for (const existing of chain.entries) {
       if (!existing.surface && existing.modules_touched?.length) {
         const derived = deriveSurface(existing.modules_touched, anaSurfaces);
@@ -1127,16 +1127,6 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
 
   for (const chainEntry of allEntries) {
     for (const finding of chainEntry.findings || []) {
-      // Backfill migration: convert legacy lesson findings to closed
-      if ((finding.status as string) === 'lesson') {
-        finding.status = 'closed';
-        if (!finding.closed_reason) {
-          finding.closed_reason = 'upstream';
-          finding.closed_by = 'mechanical';
-          finding.closed_at = chainEntry.completed_at || new Date().toISOString();
-        }
-      }
-
       // Skip already-closed findings
       if (finding.status === 'closed') continue;
 
@@ -1187,6 +1177,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
 
   chain.entries.push(entry);
   chain.schema = 1;
+  chain.migrations = { ...chain.migrations, surface_backfill: true, lesson_to_closed: true };
   await fsPromises.writeFile(chainPath, JSON.stringify(chain, null, 2));
 
   // 2. Regenerate PROOF_CHAIN.md as quality dashboard
