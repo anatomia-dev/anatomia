@@ -35927,6 +35927,329 @@
         "base_commit": "4253015837ebf85ffae82f780e27d957c517faf0"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "website-test-suite",
+      "feature": "Website Test Suite",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 36,
+        "satisfied": 36,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The website package has a test script that runs vitest without watch mode",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Running website tests produces at least 38 passing tests",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The root test command runs both CLI and website tests without hanging",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Proof stats correctly count entries, assertions, findings, and rejection cycles",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Proof stats returns zeros when there are no proof entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Only entries with at least one rejection cycle are counted as rejections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Median timing computation filters out zero-valued stages before calculating",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A timing stage where all entries have zero returns zero median",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Median timings return zeros when there are no proof entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Building docs stat values produces all nine expected keys as strings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "DocsStat tags in text are replaced with their computed values",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Unrecognized DocsStat keys are left unchanged in the output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Import and export lines are removed from MDX source",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Block components like Callout have their tags removed but children preserved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Full-strip components like PipelineDiagram are removed entirely including children",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "DocsStat tags are resolved to computed values before stripping",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Proof entries data file contains an array of entries with required fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Skill templates data file contains an array with name and description fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Build metadata file contains version, commit SHA, and timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Commands data file includes groups array and total command count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Data integrity tests are skipped gracefully when data directory does not exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Splitting a headline with emphasis markers produces segments with em flags",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A headline with no emphasis markers produces a single plain segment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Emphasis at the start of a string is correctly parsed as the first segment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "A timestamp from 30 seconds ago formats as seconds with 's ago' suffix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "A timestamp at exactly now formats as '1s ago' not '0s ago'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "A future timestamp is clamped to '1s ago' instead of showing negative time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "A timestamp from 90 seconds ago formats as minutes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "A timestamp from 2 hours ago formats as hours",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "A timestamp from 48 hours ago formats as days",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The copy catalog has all 20 expected top-level sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "Navigation links array has 4 entries each with label and href",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "Footer has 3 columns each with a title and non-empty links array",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "Every footer link has a non-empty label and href",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Hero call-to-action has label, command, and href fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A036",
+          "says": "No production source files were modified — only test files and package.json",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 14,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 62,
+        "think": 4,
+        "plan": 6,
+        "build": 5,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:8700057bc68c574fcf22f5d4a149e86bf8dcba31d6ac86910681b0907c302c29",
+        "contract": "sha256:525f09d93f786fec28baeb2405543a98533e191afecae8448c286504b459be20",
+        "plan": "sha256:a319cbd9f11efa1f2f846d3d8336f5041a4c406e60ee836845f82c28b6aa3792",
+        "spec": "sha256:65e6e48b5d42f2b34c05479404aee98e10d6d8f68f5d1dbb0c19f694bda40226",
+        "build-report": "sha256:ea20738f3b9d4030f31c857d591dd591b8e39097d1d40f31dcfdb18c5396527e",
+        "build-data": "sha256:56be6f95fcefae8023954aba48d1abdc2ed3ff95eef5db64441ed17206d2b16a",
+        "verify-report": "sha256:ce7d88f23e51b9214528b86951ed4461bccd9c249b74bd19955d9c53026b8c82",
+        "verify-data": "sha256:a632195cdc3a40c625aa55fcf74c4eb5a708e5a08786aa8cde459779450da453"
+      },
+      "completed_at": "2026-05-21T01:21:18.042Z",
+      "modules_touched": [
+        "website/lib/__tests__/copy.test.ts",
+        "website/lib/__tests__/docs-data/data-integrity.test.ts",
+        "website/lib/__tests__/docs-data/docs-stat-values.test.ts",
+        "website/lib/__tests__/docs-data/proofs.test.ts",
+        "website/lib/__tests__/docs-data/strip-jsx.test.ts",
+        "website/lib/__tests__/format.test.ts",
+        "website/lib/__tests__/proof-feed.test.ts",
+        "website/package.json"
+      ],
+      "scope_summary": "Make the website a real testable surface. Add a test script and 30-40 tests across 7 new files covering the data layer computation functions, pure utilities, and structural integrity. After this ships, `(cd website && pnpm vitest run)` runs 38-48 meaningful tests instead of 8 marketing-stats tests. Pipeline verification of website changes becomes real verification, not theater.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted",
+          "file": "website/lib/__tests__/docs-data/data-integrity.test.ts",
+          "anchor": null,
+          "line": 85,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "website-test-suite-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "toContain('2') is fragile — digit could match unrelated content if fixture input changes",
+          "file": "website/lib/__tests__/docs-data/strip-jsx.test.ts",
+          "anchor": null,
+          "line": 138,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A016"
+          ],
+          "id": "website-test-suite-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "3 extra tests beyond spec (JSX comments, self-closing components, odd-vs-even median) — harmless over-building",
+          "file": "website/lib/__tests__/docs-data/strip-jsx.test.ts",
+          "anchor": null,
+          "line": 69,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "website-test-suite-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Pre-existing lint warnings in Hero.tsx — formatAge imported but unused, latest assigned but unused",
+          "file": "website/components/hero/Hero.tsx",
+          "anchor": null,
+          "line": 3,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "website-test-suite-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T01:21:18.043Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof context findings still active — VERSION_FALLBACK single-shot, hardcoded version, dead /#pipeline link, non-clickable row copy",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "website-test-suite-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T01:21:18.043Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Spec references strip-jsx.ts but actual file is stripJsx.ts — import path adapted",
+          "file": "website/lib/__tests__/docs-data/strip-jsx.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Data-integrity tests skip without prebuild — by design but may confuse local-only test runs",
+          "file": "website/lib/__tests__/docs-data/data-integrity.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T00:59:53.547Z",
+        "completed_at": "2026-05-21T01:21:18.037Z",
+        "commit_count": 0,
+        "base_commit": "d67e151d17cba531ef83889bd816c9d51827b3f5"
+      },
+      "surface": "website"
     }
   ],
   "schema": 1
