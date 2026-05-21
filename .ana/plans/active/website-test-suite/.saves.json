@@ -24,5 +24,41 @@
         "hash": "sha256:750477c6850ae512bbd1e53ee967670a1dcb7cb709c6d35b2c51a3d7f2f52b81"
       }
     ]
+  },
+  "build_started_at": "2026-05-21T00:59:53.547Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T01:05:02.089Z",
+    "hash": "sha256:ea20738f3b9d4030f31c857d591dd591b8e39097d1d40f31dcfdb18c5396527e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T01:05:02.090Z",
+    "hash": "sha256:56be6f95fcefae8023954aba48d1abdc2ed3ff95eef5db64441ed17206d2b16a"
+  },
+  "modules_touched": [
+    "website/lib/__tests__/copy.test.ts",
+    "website/lib/__tests__/docs-data/data-integrity.test.ts",
+    "website/lib/__tests__/docs-data/docs-stat-values.test.ts",
+    "website/lib/__tests__/docs-data/proofs.test.ts",
+    "website/lib/__tests__/docs-data/strip-jsx.test.ts",
+    "website/lib/__tests__/format.test.ts",
+    "website/lib/__tests__/proof-feed.test.ts",
+    "website/package.json"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T01:07:41.972Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:525f09d93f786fec28baeb2405543a98533e191afecae8448c286504b459be20",
+    "run_at": "2026-05-21T01:12:17.192Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T01:12:17.232Z",
+    "hash": "sha256:ce7d88f23e51b9214528b86951ed4461bccd9c249b74bd19955d9c53026b8c82"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T01:12:17.232Z",
+    "hash": "sha256:a632195cdc3a40c625aa55fcf74c4eb5a708e5a08786aa8cde459779450da453"
   }
 }

@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted"
+    file: "website/lib/__tests__/docs-data/data-integrity.test.ts"
+    line: 85
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A021"]
+  - category: test
+    summary: "toContain('2') is fragile — digit could match unrelated content if fixture input changes"
+    file: "website/lib/__tests__/docs-data/strip-jsx.test.ts"
+    line: 138
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A016"]
+  - category: code
+    summary: "3 extra tests beyond spec (JSX comments, self-closing components, odd-vs-even median) — harmless over-building"
+    file: "website/lib/__tests__/docs-data/strip-jsx.test.ts"
+    line: 69
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Pre-existing lint warnings in Hero.tsx — formatAge imported but unused, latest assigned but unused"
+    file: "website/components/hero/Hero.tsx"
+    line: 3
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Proof context findings still active — VERSION_FALLBACK single-shot, hardcoded version, dead /#pipeline link, non-clickable row copy"
+    severity: observation
+    suggested_action: monitor
