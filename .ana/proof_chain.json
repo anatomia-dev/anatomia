@@ -29857,7 +29857,10 @@
             "A028"
           ],
           "id": "remove-lesson-status-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Resolved — the lesson→closed mutation code was removed by proof-migration-cleanup scope (commit 9967deea) as dead code. The finding requested a behavioral test for mutation that no longer exists. The migration marker is still set unconditionally at work.ts:1180 as a no-op flag. proofSummary.ts:1419 retains backward-compat counting. No behavioral gap remains — the behavior was intentionally deleted.",
+          "closed_at": "2026-05-21T04:07:57.324Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
