@@ -1,30 +1,30 @@
 # Proof Chain Dashboard
 
-133 runs · 103 active · 3 promoted · 677 closed
+134 runs · 106 active · 3 promoted · 680 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 66 | 2026-05-21 |
+| cli | 89 | 69 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 10 | 8 |
+| packages/cli/src/commands/work.ts | 12 | 9 |
+| packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/commands/init/state.ts | 8 | 5 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
-| packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 103 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -33,17 +33,17 @@
 ### packages/cli/src/commands/doctor.ts
 
 - **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
-- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
-- **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread — *Pre-surface behavior cleanup*
+- **code:** Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release — *Pre-surface behavior cleanup*
 - **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
 
 ### packages/cli/src/engine/analyzers/conventions/imports.ts
@@ -74,7 +74,6 @@
 ### packages/cli/tests/commands/doctor.test.ts
 
 - **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
-- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
@@ -86,6 +85,7 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
+- **test:** Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change — *Pre-surface behavior cleanup*
 - **test:** A021 idempotency test checks pure function determinism, not backfill loop guard — *Surface Awareness Bridge*
 
 ### packages/cli/tests/engine/census-detection.test.ts

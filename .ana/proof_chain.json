@@ -36277,7 +36277,248 @@
         "base_commit": "d67e151d17cba531ef83889bd816c9d51827b3f5"
       },
       "surface": "website"
+    },
+    {
+      "slug": "proof-migration-cleanup",
+      "feature": "Pre-surface behavior cleanup",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 14,
+        "unsatisfied": 0,
+        "deviated": 1
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Proof chain gains a migrations field after work complete runs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Surface backfill marker is set to true after backfill runs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Lesson-to-closed marker is set to true",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Surface backfill loop is skipped when marker is already present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Entries without surface remain unchanged when backfill is skipped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Lesson migration code is removed from the maintenance loop",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The lesson backward-compat line in computeChainHealth is preserved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Outer surface guard uses simplified check instead of Object.keys length",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "ProofChain interface includes migrations field",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "DashboardEntry surface field uses clean optional syntax",
+          "status": "DEVIATED",
+          "deviation": "Did not change `surface?: string | undefined` to `surface?: string`"
+        },
+        {
+          "id": "A011",
+          "says": "Root lint command is project-wide in monorepo init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Monorepo lint scoping block is removed from createAnaJson",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Per-surface lint commands are unaffected by the root lint change",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The resolveFindingPaths loop is not modified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Old proof chains without migrations field are handled gracefully",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 66,
+        "think": 26,
+        "plan": 9,
+        "build": 18,
+        "verify": 8
+      },
+      "hashes": {
+        "scope": "sha256:606e503bf2613b505ccb6b93740e4cf481cea823f72ddcb4aca96120b1c5c5d0",
+        "contract": "sha256:4ede6d351999cee4101e07f893f1c7da85dfdd7867b7c6e14747a55136e881e6",
+        "plan": "sha256:f82670a63e4b97fd1ed7e7fab0407b826f6944bd490f19f59a0f7d74015c2d03",
+        "spec": "sha256:8e18af60e79bbf281f59902319cac54f720a97fb4e920e33e3e59a271b28ddee",
+        "build-report": "sha256:d51fa1ff71174838a03d1b81e81fda8feb036c09e94696645fb7ae8d146e5ded",
+        "build-data": "sha256:062f5b76a06c02d949d0d784972e74c837f721859f2f490b42d202f257f46f7a",
+        "verify-report": "sha256:ce65c5d97505642f09d2abd53456a5a8949d8f08b60e8a407c09aad276b9fad6",
+        "verify-data": "sha256:9d9a46e58adc4b3a4c864a5a07b6a7f288ccefd3bf693f3fa77d9e5b2e185fa6"
+      },
+      "completed_at": "2026-05-21T02:28:58.553Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "Clean up pre-surface-era code that's now inconsistent or dead. Three items share one disease: code written before surfaces existed that hasn't been updated to reflect the surface-aware world.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract A010 spec error — assumes ?:  implies | undefined but exactOptionalPropertyTypes: true makes them distinct. Proposed change would break compilation.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "proof-migration-cleanup-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T02:28:58.553Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 5858,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "proof-migration-cleanup-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1099,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "proof-migration-cleanup-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "surface-awareness-bridge-C4 directly resolved — backfill now gated by migration marker, no longer O(n) on every work complete",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [
+            "surface-awareness-bridge-C4"
+          ],
+          "id": "proof-migration-cleanup-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T02:28:58.553Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "remove-lesson-status-C1 directly resolved — migration marker behavior now has dedicated tests",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [
+            "remove-lesson-status-C1"
+          ],
+          "id": "proof-migration-cleanup-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T02:28:58.553Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1180,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "proof-migration-cleanup-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A006 contract matcher not_contains 'lesson' is overly broad — lesson_to_closed marker name contains 'lesson' by spec design",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "A010 DashboardEntry surface type change incompatible with exactOptionalPropertyTypes — left unchanged",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T02:04:14.964Z",
+        "completed_at": "2026-05-21T02:28:58.547Z",
+        "commit_count": 0,
+        "base_commit": "fc00965f18c25b54b505a6f517e33844ce7f04dd"
+      },
+      "surface": "cli"
     }
   ],
-  "schema": 1
+  "schema": 1,
+  "migrations": {
+    "surface_backfill": true,
+    "lesson_to_closed": true
+  }
 }
