@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-132 runs · 115 active · 3 promoted · 660 closed
+132 runs · 114 active · 3 promoted · 661 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 20 | 2026-05-20 |
-| cli | 88 | 79 | 2026-05-21 |
+| cli | 88 | 78 | 2026-05-21 |
 | website | 19 | 16 | 2026-05-18 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 115 total)
+## Active Findings (30 shown of 114 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -55,15 +55,12 @@
 
 - **code:** 29 FRAMEWORK_HINTS entries vs spec's claim of 18+9=27 — 2 entries existed before this build (react-router.config.ts, astro.config.ts), making the true delta 11 new entries not 9 — *Scan Surface Detection*
 
-### packages/cli/src/engine/detectors/dependencies.ts
-
-- **code:** AI_SDK_EXCLUSIONS set recreated on every detectServiceDeps call — could be module-level constant — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
 ### packages/cli/src/engine/detectors/projectType.ts
 
 - **code:** Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** indexOf('\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
