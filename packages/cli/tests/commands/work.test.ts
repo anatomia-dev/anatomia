@@ -5845,14 +5845,6 @@ describe('deriveSurface', () => {
     expect(result).toBeUndefined();
   });
 
-  // @ana A021
-  it('is idempotent — already-derived entries produce the same result', () => {
-    const first = deriveSurface(['packages/cli/src/foo.ts'], surfaces);
-    const second = deriveSurface(['packages/cli/src/foo.ts'], surfaces);
-    expect(first).toBe('cli');
-    expect(second).toBe('cli');
-    // No state mutation — same inputs always produce same output
-  });
 });
 
 describe('migration markers', () => {
@@ -6018,5 +6010,37 @@ file_changes:
     // Migration markers still present
     expect(chain.migrations.surface_backfill).toBe(true);
     expect(chain.migrations.lesson_to_closed).toBe(true);
+  });
+
+  // @ana A021
+  it('preserves existing surface during backfill — does not overwrite', async () => {
+    await createProofProjectWithChain('preserve-surface-test', {
+      entries: [{
+        slug: 'has-surface',
+        feature: 'Has Surface',
+        result: 'PASS',
+        completed_at: '2026-03-01T00:00:00.000Z',
+        surface: 'website',
+        modules_touched: ['packages/cli/src/foo.ts'],
+        findings: [],
+        build_concerns: [],
+        assertions: [],
+        acceptance_criteria: [],
+        hashes: {},
+        author: { name: 'Test', email: 'test@test.com' },
+        rejection_cycles: 0,
+        previous_failures: [],
+      }],
+    });
+
+    await completeWork('preserve-surface-test');
+
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+
+    // Entry with existing surface 'website' should NOT be overwritten to 'cli'
+    // even though modules_touched derives to 'cli' via surfaces config
+    expect(chain.entries[0].surface).toBe('website');
+    expect(chain.migrations.surface_backfill).toBe(true);
   });
 });
