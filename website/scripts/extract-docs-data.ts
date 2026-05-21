@@ -195,6 +195,7 @@ function extractProofEntries(): ProofEntry[] {
       findingCount: findings.length,
       rejectionCycles: entry.rejection_cycles ?? 0,
       completedAt: entry.completed_at || '',
+      surface: entry.surface || null,
       scopeSummary: entry.scope_summary || null,
       modulesTouched: entry.modules_touched || [],
       assertions,
