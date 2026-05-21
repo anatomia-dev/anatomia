@@ -1,0 +1,64 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix sampler budget overflow"
+
+assertions:
+  - id: A001
+    says: "The sampler never returns more files than the budget allows"
+    block: "respects budget when budget is smaller than depth bucket count"
+    target: "files.length"
+    matcher: "not_equals"
+    value: 0
+
+  - id: A002
+    says: "A budget of 2 with three depth levels returns at most 2 files"
+    block: "respects budget when budget is smaller than depth bucket count"
+    target: "files.length"
+    matcher: "equals"
+    value: 2
+
+  - id: A003
+    says: "Shallow files get priority when the budget is too small for all depth levels"
+    block: "respects budget when budget is smaller than depth bucket count"
+    target: "hasShallowFile"
+    matcher: "truthy"
+
+  - id: A004
+    says: "A budget of 1 with three depth levels returns exactly 1 file"
+    block: "budget of 1 with all depth levels populated returns single file"
+    target: "files.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A005
+    says: "Existing sampler tests still pass after the fix"
+    block: "samples from single-repo project"
+    target: "files.length"
+    matcher: "equals"
+    value: 10
+
+  - id: A006
+    says: "Proportional allocation across roots still works after the fix"
+    block: "allocates proportionally across source roots"
+    target: "webFiles.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A007
+    says: "Depth stratification still works after the fix"
+    block: "includes files from all depth levels via stratification"
+    target: "hasDeepFiles"
+    matcher: "truthy"
+
+  - id: A008
+    says: "Budget cap is still enforced after the fix"
+    block: "respects budget cap"
+    target: "files.length"
+    matcher: "equals"
+    value: 10
+
+file_changes:
+  - path: "packages/cli/src/engine/sampling/proportionalSampler.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+    action: modify
