@@ -47,5 +47,20 @@
     "packages/cli/src/commands/work.ts",
     "packages/cli/src/utils/git-operations.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T03:41:29.001Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:493324dfc0c776533a1e78b731eb028aba414d97e1b165621ec528a5f97f423b",
+    "run_at": "2026-05-21T03:45:36.309Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T03:45:36.350Z",
+    "hash": "sha256:31a6e4addcdf5e0822fe12cb813d92aafe11218b716e0d4545ad3e9d54cc9c37"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T03:45:36.350Z",
+    "hash": "sha256:93017ae4c2ae904df434a5b81c7a1530d062ae0270fddf7d46e31416423a768d"
+  }
 }
