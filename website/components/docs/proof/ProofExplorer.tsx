@@ -55,31 +55,30 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   // Compute stage and surface options — each narrows based on the other's selection.
-  // If the current selection is no longer available after narrowing, reset to "All".
+  // When the other filter narrows the pool, a stale selection falls back to "All"
+  // via the effective* values (no setState during render).
   const stageOptions = useMemo(() => {
     const pool = surfaceFilter === "All" ? entries : entries.filter((e) => e.surface === surfaceFilter);
-    const stages = new Set(pool.map((e) => e.stage));
-    const opts = ["All", ...Array.from(stages).sort()];
-    if (stageFilter !== "All" && !stages.has(stageFilter)) setStageFilter("All");
-    return opts;
-  }, [entries, surfaceFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+    return ["All", ...Array.from(new Set(pool.map((e) => e.stage))).sort()];
+  }, [entries, surfaceFilter]);
 
   const surfaceOptions = useMemo(() => {
     const pool = stageFilter === "All" ? entries : entries.filter((e) => e.stage === stageFilter);
-    const surfaces = new Set(pool.map((e) => e.surface).filter(Boolean) as string[]);
-    const opts = ["All", ...Array.from(surfaces).sort()];
-    if (surfaceFilter !== "All" && !surfaces.has(surfaceFilter)) setSurfaceFilter("All");
-    return opts;
-  }, [entries, stageFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+    return ["All", ...Array.from(new Set(pool.map((e) => e.surface).filter(Boolean) as string[])).sort()];
+  }, [entries, stageFilter]);
+
+  // Derive effective filter values — reset to "All" if current selection is no longer available
+  const effectiveStage = stageOptions.includes(stageFilter) ? stageFilter : "All";
+  const effectiveSurface = surfaceOptions.includes(surfaceFilter) ? surfaceFilter : "All";
 
   // Filter
   const filtered = useMemo(() => {
     let result = [...entries];
-    if (stageFilter !== "All") {
-      result = result.filter((e) => e.stage === stageFilter);
+    if (effectiveStage !== "All") {
+      result = result.filter((e) => e.stage === effectiveStage);
     }
-    if (surfaceFilter !== "All") {
-      result = result.filter((e) => e.surface === surfaceFilter);
+    if (effectiveSurface !== "All") {
+      result = result.filter((e) => e.surface === effectiveSurface);
     }
     if (findingsFilter === ">=5") {
       result = result.filter((e) => e.findingCount >= 5);
@@ -92,7 +91,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
       result = result.filter((e) => e.rejectionCycles >= 1);
     }
     return result;
-  }, [entries, stageFilter, surfaceFilter, findingsFilter, cyclesFilter]);
+  }, [entries, effectiveStage, effectiveSurface, findingsFilter, cyclesFilter]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -183,7 +182,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
             fontSize: "10px",
           }}>Stage</span>
           <select
-            value={stageFilter}
+            value={effectiveStage}
             onChange={(ev) => setStageFilter(ev.target.value)}
             style={{
               fontFamily: "var(--font-mono)",
@@ -207,7 +206,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
             fontSize: "10px",
           }}>Surface</span>
           <select
-            value={surfaceFilter}
+            value={effectiveSurface}
             onChange={(ev) => setSurfaceFilter(ev.target.value)}
             style={{
               fontFamily: "var(--font-mono)",
