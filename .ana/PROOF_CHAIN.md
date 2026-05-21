@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-132 runs · 111 active · 3 promoted · 664 closed
+132 runs · 110 active · 3 promoted · 665 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 77 | 2026-05-21 |
+| cli | 88 | 76 | 2026-05-21 |
 | website | 19 | 16 | 2026-05-18 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -49,6 +49,10 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
+
+### packages/cli/src/engine/analyzers/conventions/imports.ts
+
+- **code:** classifyTSImport line 83 replace('/*', '') is dead code for new alias format — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/census.ts
 
@@ -117,8 +121,4 @@
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
 - **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-
-### packages/cli/tests/engine/detectors/surfaces.test.ts
-
-- **test:** A021 tests data shape availability, not actual terminal output containing 'Surfaces' string — *Scan Surface Detection*
 
