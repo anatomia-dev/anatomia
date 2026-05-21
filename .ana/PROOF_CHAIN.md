@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-137 runs · 101 active · 3 promoted · 698 closed
+138 runs · 106 active · 3 promoted · 699 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 91 | 65 | 2026-05-21 |
+| cli | 92 | 70 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -16,15 +16,15 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 9 |
 | packages/cli/tests/commands/work.test.ts | 9 | 8 |
-| packages/cli/src/commands/init/state.ts | 5 | 4 |
+| packages/cli/src/commands/init/state.ts | 7 | 5 |
+| packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
 | packages/cli/src/engine/detectors/projectType.ts | 4 | 2 |
-| packages/cli/src/commands/proof.ts | 4 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 101 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -32,6 +32,8 @@
 
 ### packages/cli/src/commands/init/state.ts
 
+- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
+- **code:** surface.path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
@@ -58,22 +60,18 @@
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 - **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
-### packages/cli/src/engine/findings/rules/validation.ts
-
-- **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
-- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### packages/cli/src/engine/sampling/proportionalSampler.ts
-
-- **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
-
 ### packages/cli/src/utils/git-operations.ts
 
 - **code:** Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive) — 10+ verify cycles old, not introduced by this build — *Command File Duplication Cleanup*
 
-### packages/cli/tests/commands/doctor.test.ts
+### packages/cli/tests/commands/init/makeTestCommand.test.ts
 
-- **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
+- **code:** File not in contract file_changes was modified — makeTestCommand.test.ts assertions updated to match new behavior — *Fix per-surface test command priority*
+
+### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
+
+- **test:** A006 empty-string assertion uses toContain('run test') — weaker than other assertions that use toBe for exact match — *Fix per-surface test command priority*
+- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
@@ -92,10 +90,6 @@
 ### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
 
 - **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
-### packages/cli/tests/engine/findings/rules/validation.test.ts
-
-- **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 

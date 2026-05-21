@@ -37200,6 +37200,207 @@
         "base_commit": "adca73fde86290d865bde088022ddc88af83689d"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-surface-test-priority",
+      "feature": "Fix per-surface test command priority",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Surfaces with a test script use the developer's script instead of a direct runner command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Complex test scripts with setup steps are preserved, not overridden",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Surfaces without a test script fall back to direct framework invocation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Surfaces with neither test script nor detected framework get no test command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Bun workspaces use the correct bun run prefix for script passthrough",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "An empty test script is treated as present and uses script passthrough",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Root-level test commands are not affected by this change",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Build commands still use script passthrough as before",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Existing merge behavior preserves user-customized test commands on re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The web surface with no test script and empty testing array gets null",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 38,
+        "think": 7,
+        "plan": 3,
+        "build": 6,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:598fb8b9d551f7bd86877e0abd790d2afb2b8c4d19241e19bb02e16ed9d5a0c0",
+        "contract": "sha256:de80e2fcca47ea395dad28e07a525f2aa73efe81b2e09b85b6ec9f43cd772a3a",
+        "plan": "sha256:015b79fab2abc0b1b93b8d8a26b284bf5e000d8f788984d0ef42d5978603b6f1",
+        "spec": "sha256:8f16d434919f25a8f1815362c328fa735ab7c17484f53fd322259e3f236addab",
+        "build-report": "sha256:2a965d663ea8a4e2277077293b37f86e82f51a68e2452175582baeb44b30048d",
+        "build-data": "sha256:87c1adaf9a56fdc407ad57427b5e07f4424423725cb89ca6e60da3b7afa22f99",
+        "verify-report": "sha256:1f952e7744374f35be0127112660e5de445941449559f5142dec0bc60e21c827",
+        "verify-data": "sha256:ee7e927c99347633956264696a17861d7df9e77beec155e910b90b393808a4a0"
+      },
+      "completed_at": "2026-05-21T03:55:29.759Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+      ],
+      "scope_summary": "Per-surface test commands in `createAnaJson` use direct runner invocation (`pnpm vitest run`) instead of the developer's actual test script (`pnpm run test`). This skips setup steps like `prisma:generate`, `dotenv`, `cross-env`, and build prerequisites. R3 pre-launch testing found 12 of 29 surfaces (41%) across 17 real repos produce mismatched commands; 8 would cause test failures on the first pipeline run. The fix: invert the priority so script passthrough comes first, with direct invocation as fallback for surfaces that lack a test script.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 518,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "fix-surface-test-priority-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "File not in contract file_changes was modified — makeTestCommand.test.ts assertions updated to match new behavior",
+          "file": "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "fix-surface-test-priority-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "surface.path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 519,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [],
+          "id": "fix-surface-test-priority-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A006 empty-string assertion uses toContain('run test') — weaker than other assertions that use toBe for exact match",
+          "file": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "anchor": null,
+          "line": 397,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "fix-surface-test-priority-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt",
+          "file": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-surface-test-priority-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A006 uses 'contains' matcher while all other assertions use 'equals' — inconsistency may hide a test-command suffix mismatch",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "fix-surface-test-priority-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:55:29.759Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "makeTestCommand.test.ts had 2 assertions encoding the old broken behavior — updated alongside monorepoCommandScoping.test.ts but not listed in spec's File Changes",
+          "file": "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T03:21:13.313Z",
+        "completed_at": "2026-05-21T03:55:29.754Z",
+        "commit_count": 0,
+        "base_commit": "a93d568e8a9c859fedf2ad61a13d79755c346ab5"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
