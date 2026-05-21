@@ -1,21 +1,21 @@
 # Proof Chain Dashboard
 
-135 runs · 96 active · 3 promoted · 694 closed
+136 runs · 98 active · 3 promoted · 696 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 89 | 60 | 2026-05-21 |
+| cli | 90 | 62 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 11 | 8 |
-| packages/cli/tests/commands/work.test.ts | 8 | 7 |
+| packages/cli/src/commands/work.ts | 12 | 9 |
+| packages/cli/tests/commands/work.test.ts | 9 | 8 |
 | packages/cli/src/commands/init/state.ts | 5 | 4 |
 | packages/cli/src/engine/detectors/projectType.ts | 4 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 96 total)
+## Active Findings (30 shown of 98 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -42,6 +42,7 @@
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 - **code:** Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread — *Pre-surface behavior cleanup*
 - **code:** Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release — *Pre-surface behavior cleanup*
 - **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
@@ -77,6 +78,7 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
+- **test:** New backfill guard test doesn't verify the negative case — no test for what happens if surface is removed from the guard condition — *Fix test behavioral coverage gaps*
 - **test:** Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change — *Pre-surface behavior cleanup*
 - **test:** A021 idempotency test checks pure function determinism, not backfill loop guard — *Surface Awareness Bridge*
 
@@ -100,11 +102,6 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/pricing/WaitlistForm.tsx
-
-- **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
-- **code:** Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read — *Team edition waitlist form*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

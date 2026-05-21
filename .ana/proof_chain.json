@@ -36813,6 +36813,182 @@
         "base_commit": "bd56605d3dd75f2bf492316449c6d0f3eadd27e0"
       },
       "surface": "website"
+    },
+    {
+      "slug": "fix-test-behavioral-coverage",
+      "feature": "Fix test behavioral coverage gaps",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The dead ternary line is removed from the doctor scaffold test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The doctor test still verifies deployment is listed as a scaffold default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The doctor test still verifies troubleshooting is listed as a scaffold default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "An entry with an existing surface is not overwritten during backfill",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The backfill guard test uses a surface mismatch to prove the guard works",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The backfill guard test does not skip the backfill loop via migration marker",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The replacement test carries the A021 contract tag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The trivial deriveSurface idempotency test is removed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "All existing tests still pass after the changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The test count stays the same — one removed, one added",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 28,
+        "think": 4,
+        "plan": 6,
+        "build": 5,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:25f3647eb8f0700712328c63d8bd7afe2385f9af4cdec79b1a5984fd4a99a171",
+        "contract": "sha256:1f32c2f4922e281085cb6b16d8743d453f73e956c2d91ea7017997c1de8a365d",
+        "plan": "sha256:534b3ea105671db07f89dc2d2eed71b290ac7b09cea435e6ec2e0a4647e0acb7",
+        "spec": "sha256:fab8cee104766def7842fe1a7be5dfc2be1691af6c4886281d7294e983f287f4",
+        "build-report": "sha256:d38a921e89aab06aabc003fa61b1315e5220175ef3d8626ccbfd858788ccf1b7",
+        "build-data": "sha256:875737dc24d0f962b188fda490f4c5a3b8c1d80d38b63dd3e89c5cd3fc43bb65",
+        "verify-report": "sha256:39a86d0815c2280cbdcbe38cff4b58592fa88ba87772091b96619ef1effc87ad",
+        "verify-data": "sha256:f442747e420e1c705158c98dcbc7f27d673672ca9559213a7f8b449145fb2952"
+      },
+      "completed_at": "2026-05-21T03:47:47.376Z",
+      "modules_touched": [
+        "packages/cli/tests/commands/doctor.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "Two tests pass but don't prove what they claim. One has dead logic that duplicates another assertion. One tests a trivially true property of a pure function instead of the actual behavioral guard it's named after. These create false confidence — the test suite reports green but the claimed behavior is unexercised. Fix both so the assertions match their intent.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1101,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "fix-test-behavioral-coverage-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "New backfill guard test doesn't verify the negative case — no test for what happens if surface is removed from the guard condition",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 6016,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004",
+            "A005"
+          ],
+          "id": "fix-test-behavioral-coverage-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof context finding surface-awareness-bridge-C1 directly resolved by this build — trivial idempotency test replaced with behavioral backfill guard test",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "surface-awareness-bridge-C1"
+          ],
+          "id": "fix-test-behavioral-coverage-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:47:47.376Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof context finding add-doctor-command-C2 directly resolved by this build — dead ternary logic removed from A022 test",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "add-doctor-command-C2"
+          ],
+          "id": "fix-test-behavioral-coverage-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:47:47.376Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T03:30:47.670Z",
+        "completed_at": "2026-05-21T03:47:47.370Z",
+        "commit_count": 0,
+        "base_commit": "d3c636e7013e0b61c4dfa28433ba4c0bb7fc81ca"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
