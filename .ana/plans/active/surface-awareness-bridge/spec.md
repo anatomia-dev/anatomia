@@ -337,10 +337,10 @@ No active proof findings for scaffold-generators.ts or ana-learn.md.
 
 ### Checkpoint Commands
 
-- After `work.ts` changes: `(cd packages/cli && pnpm vitest run tests/commands/work.test.ts --run)` — Expected: existing tests pass + new backfill tests pass
-- After `proof.ts` changes: `(cd packages/cli && pnpm vitest run tests/commands/proof.test.ts --run)` — Expected: existing tests pass + new surface filter tests pass
-- After `proofSummary.ts` changes: `(cd packages/cli && pnpm vitest run tests/utils/proofSummary.test.ts --run)` — Expected: existing tests pass + new dashboard section tests pass
-- After `doctor.ts` changes: `(cd packages/cli && pnpm vitest run tests/commands/doctor.test.ts --run)` — Expected: existing tests pass + new surface dimension tests pass
+- After `work.ts` changes: `(cd packages/cli && pnpm vitest run tests/commands/work.test.ts)` — Expected: existing tests pass + new backfill tests pass
+- After `proof.ts` changes: `(cd packages/cli && pnpm vitest run tests/commands/proof.test.ts)` — Expected: existing tests pass + new surface filter tests pass
+- After `proofSummary.ts` changes: `(cd packages/cli && pnpm vitest run tests/utils/proofSummary.test.ts)` — Expected: existing tests pass + new dashboard section tests pass
+- After `doctor.ts` changes: `(cd packages/cli && pnpm vitest run tests/commands/doctor.test.ts)` — Expected: existing tests pass + new surface dimension tests pass
 - After all changes: `pnpm run test -- --run` — Expected: all tests pass
 - Lint: `(cd packages/cli && pnpm run lint)`
 

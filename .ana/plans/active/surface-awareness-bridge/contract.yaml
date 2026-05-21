@@ -162,21 +162,21 @@ assertions:
     matcher: "equals"
     value: 0
 
-  # AC16: Cross-surface entries stay null
+  # AC16: Cross-surface entries stay null — test asserts surface property is absent/undefined on the entry object
   - id: A022
     says: "Entries touching multiple surfaces keep their surface undefined"
     block: "cross-surface entries remain without surface"
-    target: "crossSurfaceEntry.surface"
+    target: "crossSurfaceEntry.hasOwnProperty_surface"
     matcher: "equals"
-    value: undefined
+    value: false
 
-  # AC17: No-modules entries untouched
+  # AC17: No-modules entries untouched — test asserts surface property is absent/undefined on the entry object
   - id: A023
     says: "Entries without modules_touched are not modified by the backfill"
     block: "entries without modules_touched are not modified"
-    target: "noModulesEntry.surface"
+    target: "noModulesEntry.hasOwnProperty_surface"
     matcher: "equals"
-    value: undefined
+    value: false
 
   # Audit --surface with --matrix
   - id: A024
