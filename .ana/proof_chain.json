@@ -22141,7 +22141,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "kind-aware-branch-prefixes-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by command-duplication-cleanup scope — inline runGit(['rev-parse', '--abbrev-ref', 'HEAD']) at work.ts:1930 replaced with getCurrentBranch() ?? '(unknown)' at line 1926. getCurrentBranch is already imported at line 22 and used at 4 other call sites. Verified: no more inline branch-reading.",
+          "closed_at": "2026-05-21T04:07:23.234Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
