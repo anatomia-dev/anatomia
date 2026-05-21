@@ -30,5 +30,22 @@
         "hash": "sha256:4daa34a9dc9525404b561cc2cd3d2465be5f38239f39d8da682372e65bfd3893"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-21T03:30:29.434Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T03:39:00.886Z",
+    "hash": "sha256:6c22e72228c7ae2ee2186774466f192d137af8053f87d6ca83a6659e0cc8ac1f"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T03:39:00.887Z",
+    "hash": "sha256:cd2f6ca57b50a5197230c798923d13cbf41e528148ae29ee02dc06f138d04394"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/learn.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/utils/git-operations.ts"
+  ],
+  "commit_hygiene": []
 }
