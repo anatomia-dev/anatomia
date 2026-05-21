@@ -37373,7 +37373,10 @@
           "suggested_action": "monitor",
           "related_assertions": [],
           "id": "fix-surface-test-priority-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Known pkg.path sanitization family — surface.path injected into shell command with single quotes at state.ts:519. Same disease as monorepo-build-scoping-C5 which tracks the root cause.",
+          "closed_at": "2026-05-21T04:11:39.524Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

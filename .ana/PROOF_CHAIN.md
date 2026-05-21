@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 96 active · 3 promoted · 717 closed
+140 runs · 95 active · 3 promoted · 718 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 62 | 2026-05-21 |
+| cli | 94 | 61 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -16,7 +16,7 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 6 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
-| packages/cli/src/commands/init/state.ts | 7 | 5 |
+| packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 96 total)
+## Active Findings (30 shown of 95 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -37,7 +37,6 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-- **code:** surface.path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
@@ -65,6 +64,10 @@
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
+
+### packages/cli/tests/commands/doctor.test.ts
+
+- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/init/makeTestCommand.test.ts
 
