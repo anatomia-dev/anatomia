@@ -39,5 +39,20 @@
     "packages/cli/src/engine/sampling/proportionalSampler.ts",
     "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T03:39:16.708Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f1cafedbb95a3850558b8c7d0c3aa19e1ae082160e358b3d2b07ef9061e377c3",
+    "run_at": "2026-05-21T03:41:52.775Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T03:41:52.811Z",
+    "hash": "sha256:0af5ce7fd3e71971621c7018f7669d2183e34628366cd92bb927ff9141993453"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T03:41:52.811Z",
+    "hash": "sha256:b3dead10d8f3efb6c3d98677d8a4f6ed4185d6dbe1b7ee1f445e169863c5af4f"
+  }
 }
