@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-05-21T02:33:35.764Z",
+    "scannedAt": "2026-05-21T04:06:55.755Z",
     "depth": "deep"
   },
   "stack": {
@@ -77,11 +77,11 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "0ecc66ea",
+    "head": "c7702d72",
     "branch": "main",
-    "commitCount": 2778,
-    "lastCommitAt": "2026-05-20T20:32:21-06:00",
-    "uncommittedChanges": false,
+    "commitCount": 2852,
+    "lastCommitAt": "2026-05-20T22:06:47-06:00",
+    "uncommittedChanges": true,
     "contributorCount": 3,
     "defaultBranch": "main",
     "branches": [
@@ -121,11 +121,11 @@
       "highChurnFiles": [
         {
           "path": "packages/cli/src/commands/work.ts",
-          "commits": 37
+          "commits": 38
         },
         {
           "path": "packages/cli/tests/commands/work.test.ts",
-          "commits": 29
+          "commits": 30
         },
         {
           "path": "website/lib/copy.ts",
@@ -133,15 +133,15 @@
         },
         {
           "path": "website/scripts/extract-docs-data.ts",
+          "commits": 18
+        },
+        {
+          "path": "packages/cli/src/commands/init/state.ts",
           "commits": 17
         },
         {
           "path": "packages/cli/src/commands/artifact.ts",
           "commits": 17
-        },
-        {
-          "path": "packages/cli/src/commands/init/state.ts",
-          "commits": 16
         },
         {
           "path": "packages/cli/src/utils/proofSummary.ts",
@@ -152,20 +152,20 @@
           "commits": 15
         },
         {
-          "path": "packages/cli/tests/utils/proofSummary.test.ts",
-          "commits": 13
+          "path": "packages/cli/src/commands/proof.ts",
+          "commits": 14
         },
         {
-          "path": "packages/cli/src/commands/proof.ts",
+          "path": "packages/cli/tests/utils/proofSummary.test.ts",
           "commits": 13
         }
       ],
       "activeContributors": 2,
       "weeklyCommits": [
-        998,
-        380,
-        409,
-        261
+        1034,
+        418,
+        405,
+        265
       ]
     }
   },
@@ -345,13 +345,13 @@
       },
       "functions": {
         "majority": "camelCase",
-        "confidence": 0.8421052631578947,
+        "confidence": 0.8425414364640884,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.8479776847977685,
-          "PascalCase": 0.15202231520223153
+          "camelCase": 0.8484005563282336,
+          "PascalCase": 0.15159944367176634
         },
-        "sampleSize": 760
+        "sampleSize": 763
       },
       "classes": {
         "majority": "PascalCase",
@@ -364,31 +364,31 @@
       },
       "variables": {
         "majority": "camelCase",
-        "confidence": 0.9051625239005736,
+        "confidence": 0.9044707680550248,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.906896551724138,
-          "PascalCase": 0.012260536398467433,
-          "SCREAMING_SNAKE_CASE": 0.08084291187739463
+          "camelCase": 0.9062021439509954,
+          "PascalCase": 0.01225114854517611,
+          "SCREAMING_SNAKE_CASE": 0.08154670750382849
         },
-        "sampleSize": 4390
+        "sampleSize": 4397
       },
       "constants": {
         "majority": "SCREAMING_SNAKE_CASE",
-        "confidence": 0.9768518518518519,
+        "confidence": 0.9770642201834863,
         "mixed": false,
         "distribution": {
           "SCREAMING_SNAKE_CASE": 1
         },
-        "sampleSize": 211
+        "sampleSize": 213
       }
     },
     "imports": {
       "style": "mixed",
-      "confidence": 0.6548672566371682,
+      "confidence": 0.6530973451327433,
       "distribution": {
-        "absolute": 0.34513274336283184,
-        "relative": 0.6548672566371682
+        "absolute": 0.34690265486725663,
+        "relative": 0.6530973451327433
       },
       "aliasPattern": "@/"
     },
@@ -399,13 +399,13 @@
     },
     "codePatterns": {
       "jsExtensionImports": {
-        "count": 117,
-        "total": 121,
-        "ratio": 0.9669421487603306
+        "count": 116,
+        "total": 120,
+        "ratio": 0.9666666666666667
       },
       "nodePrefix": {
-        "count": 55,
-        "total": 55,
+        "count": 54,
+        "total": 54,
         "ratio": 1
       },
       "emptyCatches": {
@@ -424,7 +424,7 @@
       }
     },
     "sampledFiles": 255,
-    "detectionTime": 410
+    "detectionTime": 412
   },
   "readme": {
     "description": "Anatomia is the engineering judgment your AI doesn't have. Four agents scope, plan, build, and verify every change. Contracts are sealed before code is written — typed assertions the verifier checks against the code, not Build's account of what it did. Every run produces a proof chain entry — what was asserted, what was found, what shipped. A fifth agent learns from that record and promotes what it finds to rules that shape future builds. Not opinion. Mechanical proof.",
