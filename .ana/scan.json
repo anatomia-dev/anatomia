@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-05-20T23:34:25.543Z",
+    "scannedAt": "2026-05-21T02:33:35.764Z",
     "depth": "deep"
   },
   "stack": {
@@ -42,9 +42,9 @@
   },
   "files": {
     "source": 253,
-    "test": 123,
+    "test": 131,
     "config": 20,
-    "total": 396
+    "total": 404
   },
   "structure": [
     {
@@ -77,11 +77,11 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "f306fc70",
+    "head": "0ecc66ea",
     "branch": "main",
-    "commitCount": 2700,
-    "lastCommitAt": "2026-05-20T17:23:06-06:00",
-    "uncommittedChanges": true,
+    "commitCount": 2778,
+    "lastCommitAt": "2026-05-20T20:32:21-06:00",
+    "uncommittedChanges": false,
     "contributorCount": 3,
     "defaultBranch": "main",
     "branches": [
@@ -121,51 +121,51 @@
       "highChurnFiles": [
         {
           "path": "packages/cli/src/commands/work.ts",
-          "commits": 35
+          "commits": 37
         },
         {
           "path": "packages/cli/tests/commands/work.test.ts",
-          "commits": 27
+          "commits": 29
         },
         {
           "path": "website/lib/copy.ts",
-          "commits": 23
-        },
-        {
-          "path": "packages/cli/src/commands/artifact.ts",
-          "commits": 18
+          "commits": 22
         },
         {
           "path": "website/scripts/extract-docs-data.ts",
-          "commits": 16
+          "commits": 17
         },
         {
-          "path": "website/components/proof-feed/ProofFeed.tsx",
-          "commits": 16
+          "path": "packages/cli/src/commands/artifact.ts",
+          "commits": 17
         },
         {
           "path": "packages/cli/src/commands/init/state.ts",
-          "commits": 15
+          "commits": 16
         },
         {
           "path": "packages/cli/src/utils/proofSummary.ts",
-          "commits": 14
+          "commits": 15
         },
         {
-          "path": "website/lib/proof-feed.ts",
+          "path": "website/components/proof-feed/ProofFeed.tsx",
+          "commits": 15
+        },
+        {
+          "path": "packages/cli/tests/utils/proofSummary.test.ts",
           "commits": 13
         },
         {
           "path": "packages/cli/src/commands/proof.ts",
-          "commits": 12
+          "commits": 13
         }
       ],
       "activeContributors": 2,
       "weeklyCommits": [
-        976,
-        336,
-        425,
-        237
+        998,
+        380,
+        409,
+        261
       ]
     }
   },
@@ -192,7 +192,7 @@
           "lint:fix",
           "prepublishOnly"
         ],
-        "sourceFiles": 243
+        "sourceFiles": 244
       },
       {
         "name": "anatomia-website",
@@ -209,13 +209,14 @@
           "build",
           "start",
           "lint",
+          "test",
           "typecheck",
           "check",
           "clean",
           "smoke",
           "postinstall"
         ],
-        "sourceFiles": 136
+        "sourceFiles": 143
       }
     ],
     "primaryPackage": {
@@ -233,7 +234,7 @@
       "testing": [
         "Vitest"
       ],
-      "sourceFiles": 243
+      "sourceFiles": 244
     },
     {
       "name": "website",
@@ -244,7 +245,7 @@
       "testing": [
         "Vitest"
       ],
-      "sourceFiles": 136
+      "sourceFiles": 143
     }
   ],
   "externalServices": [
@@ -344,13 +345,13 @@
       },
       "functions": {
         "majority": "camelCase",
-        "confidence": 0.8414464534075105,
+        "confidence": 0.8421052631578947,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.8473389355742297,
-          "PascalCase": 0.15266106442577032
+          "camelCase": 0.8479776847977685,
+          "PascalCase": 0.15202231520223153
         },
-        "sampleSize": 757
+        "sampleSize": 760
       },
       "classes": {
         "majority": "PascalCase",
@@ -363,14 +364,14 @@
       },
       "variables": {
         "majority": "camelCase",
-        "confidence": 0.9045419553502695,
+        "confidence": 0.9051625239005736,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.9062861550327805,
-          "PascalCase": 0.012340917855765523,
-          "SCREAMING_SNAKE_CASE": 0.08137292711145391
+          "camelCase": 0.906896551724138,
+          "PascalCase": 0.012260536398467433,
+          "SCREAMING_SNAKE_CASE": 0.08084291187739463
         },
-        "sampleSize": 4368
+        "sampleSize": 4390
       },
       "constants": {
         "majority": "SCREAMING_SNAKE_CASE",
@@ -410,20 +411,20 @@
       "emptyCatches": {
         "empty": 0,
         "commented": 61,
-        "total": 152
+        "total": 154
       },
       "defaultExports": {
         "count": 3,
         "totalFiles": 30
       },
       "nullStyle": {
-        "nullCount": 106,
-        "optionalCount": 121,
+        "nullCount": 109,
+        "optionalCount": 126,
         "preference": "mixed"
       }
     },
     "sampledFiles": 255,
-    "detectionTime": 464
+    "detectionTime": 410
   },
   "readme": {
     "description": "Anatomia is the engineering judgment your AI doesn't have. Four agents scope, plan, build, and verify every change. Contracts are sealed before code is written — typed assertions the verifier checks against the code, not Build's account of what it did. Every run produces a proof chain entry — what was asserted, what was found, what shipped. A fifth agent learns from that record and promotes what it finds to rules that shape future builds. Not opinion. Mechanical proof.",
@@ -436,8 +437,8 @@
       {
         "path": "README.md",
         "category": "project-docs",
-        "sizeBytes": 10555,
-        "lastModifiedDays": 1
+        "sizeBytes": 10736,
+        "lastModifiedDays": 0
       },
       {
         "path": "CONTRIBUTING.md",
@@ -461,13 +462,13 @@
         "path": "CHANGELOG.md",
         "category": "changelog",
         "sizeBytes": 11624,
-        "lastModifiedDays": 1
+        "lastModifiedDays": 2
       },
       {
         "path": ".github/PULL_REQUEST_TEMPLATE.md",
         "category": "templates",
         "sizeBytes": 309,
-        "lastModifiedDays": 14
+        "lastModifiedDays": 15
       },
       {
         "path": ".github/ISSUE_TEMPLATE",
