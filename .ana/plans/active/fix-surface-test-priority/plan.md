@@ -4,5 +4,5 @@
 
 ## Phases
 
-- [ ] Invert per-surface test command priority to prefer script passthrough
+- [x] Invert per-surface test command priority to prefer script passthrough
   - Spec: spec.md

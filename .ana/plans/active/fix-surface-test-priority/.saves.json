@@ -24,5 +24,36 @@
         "hash": "sha256:9395d098dc2b3d95cae2e2d5d311a93b924fcd2bf8ec9b840ea7fe7acef65225"
       }
     ]
+  },
+  "build_started_at": "2026-05-21T03:21:13.313Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T03:27:05.308Z",
+    "hash": "sha256:2a965d663ea8a4e2277077293b37f86e82f51a68e2452175582baeb44b30048d"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T03:27:05.308Z",
+    "hash": "sha256:87c1adaf9a56fdc407ad57427b5e07f4424423725cb89ca6e60da3b7afa22f99"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/tests/commands/init/makeTestCommand.test.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T03:37:41.784Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:de80e2fcca47ea395dad28e07a525f2aa73efe81b2e09b85b6ec9f43cd772a3a",
+    "run_at": "2026-05-21T03:41:46.331Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T03:41:46.368Z",
+    "hash": "sha256:1f952e7744374f35be0127112660e5de445941449559f5142dec0bc60e21c827"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T03:41:46.368Z",
+    "hash": "sha256:ee7e927c99347633956264696a17861d7df9e77beec155e910b90b393808a4a0"
   }
 }
