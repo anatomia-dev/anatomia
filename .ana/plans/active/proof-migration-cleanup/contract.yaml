@@ -1,0 +1,119 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Pre-surface behavior cleanup"
+
+assertions:
+  - id: A001
+    says: "Proof chain gains a migrations field after work complete runs"
+    block: "writes migration markers to proof chain"
+    target: "chain.migrations"
+    matcher: "exists"
+
+  - id: A002
+    says: "Surface backfill marker is set to true after backfill runs"
+    block: "writes migration markers to proof chain"
+    target: "chain.migrations.surface_backfill"
+    matcher: "equals"
+    value: true
+
+  - id: A003
+    says: "Lesson-to-closed marker is set to true"
+    block: "writes migration markers to proof chain"
+    target: "chain.migrations.lesson_to_closed"
+    matcher: "equals"
+    value: true
+
+  - id: A004
+    says: "Surface backfill loop is skipped when marker is already present"
+    block: "skips backfill when marker is present"
+    target: "entry.surface"
+    matcher: "not_equals"
+    value: "cli"
+
+  - id: A005
+    says: "Entries without surface remain unchanged when backfill is skipped"
+    block: "skips backfill when marker is present"
+    target: "existingEntry.surface"
+    matcher: "equals"
+    value: undefined
+
+  - id: A006
+    says: "Lesson migration code is removed from the maintenance loop"
+    block: "lesson migration code removed"
+    target: "workTsContent"
+    matcher: "not_contains"
+    value: "lesson"
+
+  - id: A007
+    says: "The lesson backward-compat line in computeChainHealth is preserved"
+    block: "lesson backward compat preserved"
+    target: "proofSummaryContent"
+    matcher: "contains"
+    value: "case 'lesson'"
+
+  - id: A008
+    says: "Outer surface guard uses simplified check instead of Object.keys length"
+    block: "outer guards simplified"
+    target: "newEntryGuard"
+    matcher: "not_contains"
+    value: "Object.keys(anaSurfaces).length"
+
+  - id: A009
+    says: "ProofChain interface includes migrations field"
+    block: "type definition updated"
+    target: "ProofChain.migrations"
+    matcher: "exists"
+
+  - id: A010
+    says: "DashboardEntry surface field uses clean optional syntax"
+    block: "type annotation cleaned"
+    target: "DashboardEntry.surface"
+    matcher: "not_contains"
+    value: "| undefined"
+
+  - id: A011
+    says: "Root lint command is project-wide in monorepo init"
+    block: "lint is project-wide in monorepo"
+    target: "commands.lint"
+    matcher: "equals"
+    value: "pnpm run lint"
+
+  - id: A012
+    says: "Monorepo lint scoping block is removed from createAnaJson"
+    block: "lint scoping block removed"
+    target: "stateTsContent"
+    matcher: "not_contains"
+    value: "stays scoped"
+
+  - id: A013
+    says: "Per-surface lint commands are unaffected by the root lint change"
+    block: "per-surface lint unchanged"
+    target: "surfaces.cli.commands.lint"
+    matcher: "exists"
+
+  - id: A014
+    says: "The resolveFindingPaths loop is not modified"
+    block: "resolveFindingPaths untouched"
+    target: "workTsContent"
+    matcher: "contains"
+    value: "resolveFindingPaths(existing.findings"
+
+  - id: A015
+    says: "Old proof chains without migrations field are handled gracefully"
+    block: "backward compat for missing migrations"
+    target: "chain.migrations?.surface_backfill"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    action: modify

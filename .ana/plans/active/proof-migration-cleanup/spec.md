@@ -1,0 +1,214 @@
+# Spec: Pre-surface behavior cleanup
+
+**Created by:** AnaPlan
+**Date:** 2026-05-20
+**Scope:** .ana/plans/active/proof-migration-cleanup/scope.md
+
+## Approach
+
+Two independent cleanups sharing one disease: code written before surfaces existed that hasn't been updated to reflect the surface-aware world.
+
+**Proof chain migrations:** The surface backfill loop (work.ts:1098-1107) currently iterates every chain entry on every `ana work complete`. Gate it with a `chain.migrations.surface_backfill` marker — check the marker before entering the loop, set it after. When the marker is present, skip entirely. The lesson-to-closed migration (work.ts:1130-1138) is deleted outright — `lesson` is not in the status union type, cannot be produced by current code, and `computeChainHealth` already handles it as a counting safety net. The `lesson_to_closed` marker is written immediately alongside the backfill marker since there's no code left to run.
+
+Both migration markers are set near `chain.schema = 1` (line 1189), following the existing pattern of setting chain-level metadata on every write.
+
+The outer `Object.keys(anaSurfaces).length > 0` guards at both call sites (new-entry derivation at line 1050 and backfill loop at line 1099) are simplified to `if (anaSurfaces)` — `deriveSurface` already handles empty surfaces internally (returns `undefined` when `Object.keys(surfaces).length === 0`).
+
+**Lint scoping:** Remove the monorepo lint override in `createAnaJson` (state.ts:463-485) that overwrites root `commands.lint` with the primary package's scoped command. Root lint should be project-wide, matching how root build and test already work. After removing the lint override, the entire scoping block is dead code — it reads a package.json and does nothing with the result. Delete the whole `if/try/catch`. Update the comment at line 455 to reflect that lint is now project-wide too.
+
+## Output Mockups
+
+No user-visible output changes. The migration markers appear in `proof_chain.json`:
+
+```json
+{
+  "schema": 1,
+  "migrations": {
+    "surface_backfill": true,
+    "lesson_to_closed": true
+  },
+  "entries": [...]
+}
+```
+
+Root `commands.lint` in `ana.json` for a monorepo init changes from scoped:
+```json
+"lint": "(cd 'packages/cli' && pnpm run lint)"
+```
+to project-wide:
+```json
+"lint": "pnpm run lint"
+```
+
+## File Changes
+
+### `packages/cli/src/commands/work.ts` (modify)
+**What changes:** Three changes in `writeProofChain`:
+1. Simplify the outer guard at line 1050 from `if (anaSurfaces && Object.keys(anaSurfaces).length > 0)` to `if (anaSurfaces)`.
+2. Gate the surface backfill loop (lines 1098-1107) with a `chain.migrations?.surface_backfill` check. If the marker is present, skip the loop. Simplify the outer guard from `Object.keys(anaSurfaces).length > 0` to just `anaSurfaces`. After the loop runs, the marker is set near the chain write (see point 3).
+3. Delete lines 1130-1138 (the lesson-to-closed migration inside the maintenance loop). Set both migration markers (`surface_backfill` and `lesson_to_closed`) near line 1189 where `chain.schema = 1` is set: `chain.migrations = { ...chain.migrations, surface_backfill: true, lesson_to_closed: true }`.
+**Pattern to follow:** `chain.schema = 1` at line 1189 — existing pattern of setting chain-level metadata before the write.
+**Why:** The backfill loop is O(n) on every `work complete` with no short-circuit after the first fully-backfilled run (proof finding `surface-awareness-bridge-C4`). The lesson migration is dead code — `lesson` cannot be produced by current code.
+
+### `packages/cli/src/types/proof.ts` (modify)
+**What changes:** Add `migrations?: Record<string, boolean>` to the `ProofChain` interface (alongside the existing `schema?: number` field).
+**Pattern to follow:** The existing `schema?: number` optional field on the same interface.
+**Why:** Type-safe access to `chain.migrations` without casts.
+
+### `packages/cli/src/utils/proofSummary.ts` (modify)
+**What changes:** Change `surface?: string | undefined` to `surface?: string` in the `DashboardEntry` interface (line 462). The `| undefined` is redundant with `?:`.
+**Pattern to follow:** Every other optional field in the same interface uses `?:` without `| undefined`.
+**Why:** Cosmetic type annotation fix — `?:` already implies `| undefined`.
+
+### `packages/cli/src/commands/init/state.ts` (modify)
+**What changes:** Two changes:
+1. Update the comment at line 455 from "Lint stays scoped — only build and test get flipped to project-wide." to reflect that all three (build, test, lint) are now project-wide.
+2. Delete the entire scoping block at lines 463-485 (the `if (cwd && result.monorepo.isMonorepo ...)` block). After removing the lint override, this block reads a package.json and does nothing with the result.
+**Pattern to follow:** `buildCmd` at line 456 — uses `result.commands.build` directly without scoping override.
+**Why:** Root lint should be project-wide, matching build and test. Per-surface lint commands (generated by the surface block at lines 504-575) provide scoped coverage.
+
+### `packages/cli/tests/commands/work.test.ts` (modify)
+**What changes:** Add two new test cases in the `deriveSurface` describe block (or a new `migration markers` describe block nearby):
+1. A test that creates a chain without `migrations`, runs the backfill-relevant code path, and verifies `chain.migrations.surface_backfill` is `true` afterward.
+2. A test that creates a chain with `migrations: { surface_backfill: true }` and verifies the backfill loop is skipped (entries without surface remain unchanged).
+**Pattern to follow:** The existing `deriveSurface` tests at line 5792 — they import from the module, create test data inline, and assert results.
+**Why:** Directly addresses proof finding `(remove-lesson-status-C1)` — migration behavior was untested.
+
+### `packages/cli/tests/commands/init/monorepoCommandScoping.test.ts` (modify)
+**What changes:** Three changes:
+1. Rename the test at line 182 from `'keeps lint scoped in monorepo (not flipped)'` to reflect that lint is now project-wide (e.g., `'keeps lint project-wide in monorepo (matches build and test)'`). Update the assertion at line 194 from `expect(cmds['lint']).toBe("(cd 'packages/cli' && pnpm run lint)")` to expect the project-wide lint value (whatever `result.commands.lint` resolves to — check `makeMonorepoResult` to see what it provides).
+2. Update the `freshConfig` lint value at line 569 from the scoped command to the project-wide command.
+3. Update the `freshConfig` lint value at line 645 from the scoped command to the project-wide command.
+**Pattern to follow:** The existing test assertions for `build` and `test` in the same file — they expect project-wide commands.
+**Why:** Tests must match the new behavior.
+
+## Acceptance Criteria
+
+- [ ] AC1: `proof_chain.json` gains a top-level `migrations` field (`Record<string, boolean>`) after the first `work complete` on this code. Old proof chains without the field are handled via optional chaining.
+- [ ] AC2: The surface backfill loop is skipped entirely when `chain.migrations.surface_backfill` is `true`.
+- [ ] AC3: The lesson-to-closed migration code (6 lines inside the findings loop) is removed. The surrounding loop (staleness checks, anchor-absent auto-closing, file-moved detection) is untouched.
+- [ ] AC4: The outer `Object.keys(anaSurfaces).length > 0` guards at both call sites are simplified to `if (anaSurfaces)`.
+- [ ] AC5: `ProofChain` interface in `types/proof.ts` includes `migrations?: Record<string, boolean>`.
+- [ ] AC6: `DashboardEntry.surface` in `proofSummary.ts` changes from `surface?: string | undefined` to `surface?: string`.
+- [ ] AC7: The `case 'lesson'` backward-compat line in `computeChainHealth` (proofSummary.ts:1419) is preserved.
+- [ ] AC8: Existing tests pass unchanged. New tests verify: (a) migration marker is written after backfill runs, (b) backfill loop is skipped when marker is present.
+- [ ] AC9: The `resolveFindingPaths` loop (work.ts:1092-1096) is NOT touched.
+- [ ] AC10: Root `commands.lint` in `createAnaJson` uses the project-wide command — no longer overwritten with the primary package's scoped lint.
+- [ ] AC11: The comment at state.ts:455 is updated to reflect that lint is now project-wide too.
+- [ ] AC12: The monorepo lint scoping block (state.ts:463-485) is removed entirely.
+- [ ] Tests pass with `pnpm run test -- --run`
+- [ ] No build errors
+
+## Testing Strategy
+
+- **Unit tests:** Two new tests for migration marker behavior in work.test.ts. Follow the existing `deriveSurface` test pattern — import from module, create test data, assert results. The tests need to exercise `writeProofChain` or a testable subset. Since `writeProofChain` is a private function, the tests should go through the module's exports or test the observable behavior (chain JSON content after a complete cycle).
+- **Existing tests:** All 2711 existing tests pass unchanged. The `monorepoCommandScoping` test at line 182 is updated to expect project-wide lint.
+- **Edge cases:** Old proof chains without `migrations` field — handled via optional chaining. Empty surfaces object — `deriveSurface` handles internally.
+
+## Dependencies
+
+None — all changes are to existing files.
+
+## Constraints
+
+- Do NOT touch the maintenance loop (lines 1128-1183) beyond removing lines 1130-1138.
+- Do NOT touch the `resolveFindingPaths` loop (lines 1092-1096).
+- Do NOT remove `case 'lesson'` from `computeChainHealth` (proofSummary.ts:1419).
+- Migration markers use `Record<string, boolean>` — extensible for future migrations without type changes.
+
+## Gotchas
+
+- `writeProofChain` is not exported — it's called internally by `completeWork`. New tests need to exercise the observable behavior through the module's public API, or test via the chain JSON output. Check how existing proof chain tests in work.test.ts set up their test harness — they may use a helper that invokes the complete flow.
+- The `makeMonorepoResult` helper in `monorepoCommandScoping.test.ts` sets `primaryPackage: null` (line 76), so the scoping block never fires for most test cases. The test at line 182 explicitly sets `primaryPackage` to trigger the scoping path — after removing the block, this test verifies the scoped command is no longer produced.
+- When updating the `preserveUserState` fixtures (lines 569, 645), check what `makeMonorepoResult` produces for `result.commands.lint` to use the correct project-wide value. The fixture's `freshConfig` should match what `createAnaJson` would actually produce.
+
+## Build Brief
+
+### Rules That Apply
+- All imports use `.js` extensions and `node:` prefix for built-ins.
+- Use `import type` for type-only imports, separate from value imports.
+- Use `| null` for fields that were checked and found empty. Reserve `?:` for fields that may not have been checked.
+- Prefer early returns over nested conditionals.
+- Explicit return types on all exported functions.
+- Always use `--run` with `pnpm test` to avoid watch mode hang.
+
+### Pattern Extracts
+
+Chain-level metadata pattern (work.ts:1188-1190):
+```typescript
+  chain.entries.push(entry);
+  chain.schema = 1;
+  await fsPromises.writeFile(chainPath, JSON.stringify(chain, null, 2));
+```
+
+Surface backfill loop to gate (work.ts:1098-1108):
+```typescript
+  // Backfill migration: derive surface for existing entries without one
+  if (anaSurfaces && Object.keys(anaSurfaces).length > 0) {
+    for (const existing of chain.entries) {
+      if (!existing.surface && existing.modules_touched?.length) {
+        const derived = deriveSurface(existing.modules_touched, anaSurfaces);
+        if (derived) {
+          existing.surface = derived;
+        }
+      }
+    }
+  }
+```
+
+Lesson migration to delete (work.ts:1130-1138):
+```typescript
+      // Backfill migration: convert legacy lesson findings to closed
+      if ((finding.status as string) === 'lesson') {
+        finding.status = 'closed';
+        if (!finding.closed_reason) {
+          finding.closed_reason = 'upstream';
+          finding.closed_by = 'mechanical';
+          finding.closed_at = chainEntry.completed_at || new Date().toISOString();
+        }
+      }
+```
+
+Lint scoping block to delete (state.ts:463-485):
+```typescript
+  if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage
+      && (!lang || lang === 'TypeScript' || lang === 'Node.js')) {
+    const pkg = result.monorepo.primaryPackage;
+    const pm = result.commands.packageManager || 'pnpm';
+    const prefix = pm === 'npm' ? 'npm run' : `${pm} run`;
+
+    try {
+      const pkgJsonPath = path.join(cwd, pkg.path, 'package.json');
+      const pkgContent = await fs.readFile(pkgJsonPath, 'utf-8');
+      const pkgJson = JSON.parse(pkgContent);
+      const scripts = pkgJson.scripts || {};
+
+      // Lint: first match — same key order as detectCommands (stays scoped)
+      for (const key of ['lint', 'eslint', 'biome']) {
+        if (scripts[key]) {
+          lintCmd = `(cd '${pkg.path}' && ${prefix} ${key})`;
+          break;
+        }
+      }
+    } catch {
+      // Missing or malformed package.json — keep root commands
+    }
+  }
+```
+
+### Proof Context
+- `(surface-awareness-bridge-C4)` — Backfill iterates all chain.entries on every work complete with no short-circuit. **Directly resolved by this spec** via migration marker gate.
+- `(remove-lesson-status-C1)` — Backfill migration logic has no dedicated test. **Directly resolved by this spec** via new test cases.
+
+### Checkpoint Commands
+- After work.ts changes: `(cd 'packages/cli' && pnpm vitest run src/commands/work)` — Expected: existing work tests pass
+- After state.ts changes: `(cd 'packages/cli' && pnpm vitest run tests/commands/init/monorepoCommandScoping)` — Expected: updated test passes
+- After all changes: `pnpm run test -- --run` — Expected: 2713+ tests pass (2711 existing + 2 new)
+- Lint: `pnpm run lint`
+
+### Build Baseline
+- Current tests: 2711 passed, 2 skipped
+- Current test files: 120
+- Command used: `pnpm run test -- --run`
+- After build: expected 2713+ tests in 120 files
+- Regression focus: `work.test.ts`, `monorepoCommandScoping.test.ts`
