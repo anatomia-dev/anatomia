@@ -1,0 +1,212 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Comprehensive Documentation Update for Surface Awareness"
+
+assertions:
+  # AC1: ProofEntry type and extract script
+  - id: A001
+    says: "Proof entries include the surface field in the website data pipeline"
+    block: "ProofEntry type includes surface field"
+    target: "ProofEntry.surface"
+    matcher: "exists"
+
+  - id: A002
+    says: "Proof entries without a surface render null instead of undefined"
+    block: "extract script maps surface with null default"
+    target: "mappedEntry.surface"
+    matcher: "not_equals"
+    value: "undefined"
+
+  # AC2: ProofHero surface label
+  - id: A003
+    says: "Proof detail pages show which surface was verified"
+    block: "ProofHero renders surface label last in metadata row"
+    target: "metadataRow.lastChild"
+    matcher: "contains"
+    value: "surface"
+
+  - id: A004
+    says: "Proof entries without a surface do not show a surface label"
+    block: "ProofHero omits surface label when surface is null"
+    target: "metadataRow.surfaceSpan"
+    matcher: "not_equals"
+    value: "rendered"
+
+  # AC3: ProofExplorer surface badge
+  - id: A005
+    says: "Proof explorer rows show the surface as an inline badge"
+    block: "ProofExplorer renders surface badge per row"
+    target: "explorerRow.surfaceBadge"
+    matcher: "exists"
+
+  - id: A006
+    says: "Surface badges match the existing stage badge styling"
+    block: "ProofExplorer surface badge uses 10px mono styling"
+    target: "surfaceBadge.fontSize"
+    matcher: "equals"
+    value: "10px"
+
+  - id: A007
+    says: "Proof entries without a surface do not show a surface badge"
+    block: "ProofExplorer omits surface badge when surface is null"
+    target: "explorerRow.surfaceBadge"
+    matcher: "not_equals"
+    value: "rendered"
+
+  # AC4: Quickstart commands callout
+  - id: A008
+    says: "Quickstart explains how to override detected commands in three lines"
+    block: "start.mdx commands callout simplified"
+    target: "commandsCallout.content"
+    matcher: "contains"
+    value: "Override any command"
+
+  - id: A009
+    says: "Quickstart links to the configurability guide for monorepo details"
+    block: "start.mdx commands callout links to configurability"
+    target: "commandsCallout.content"
+    matcher: "contains"
+    value: "/docs/guides/configurability"
+
+  # AC5: Quickstart external services callout
+  - id: A010
+    says: "Quickstart warns about starting external services before the pipeline"
+    block: "start.mdx external services callout exists"
+    target: "externalServicesCallout"
+    matcher: "exists"
+
+  - id: A011
+    says: "External services callout mentions database and Docker"
+    block: "start.mdx external services callout content"
+    target: "externalServicesCallout.content"
+    matcher: "contains"
+    value: "database"
+
+  # AC6: Troubleshooting card rewrite
+  - id: A012
+    says: "Tests-fail troubleshooting card lists database first as the most common cause"
+    block: "troubleshooting card ranks database first"
+    target: "testsFailCard.firstCause"
+    matcher: "contains"
+    value: "database"
+
+  - id: A013
+    says: "Tests-fail card cross-references the monorepo card without quoting its title"
+    block: "troubleshooting card cross-references monorepo card"
+    target: "testsFailCard.content"
+    matcher: "contains"
+    value: "monorepo troubleshooting card above"
+
+  - id: A014
+    says: "Tests-fail card includes five ranked causes"
+    block: "troubleshooting card has five causes"
+    target: "testsFailCard.causeCount"
+    matcher: "equals"
+    value: 5
+
+  # AC7: Troubleshooting best practices
+  - id: A015
+    says: "Best practices section includes guidance to start with small changes"
+    block: "best practices adds start small bullet"
+    target: "bestPractices.content"
+    matcher: "contains"
+    value: "Start small"
+
+  - id: A016
+    says: "Best practices section includes guidance to check test commands"
+    block: "best practices adds check test command bullet"
+    target: "bestPractices.content"
+    matcher: "contains"
+    value: "test command"
+
+  # AC8: README config delete
+  - id: A017
+    says: "README documents the config delete command"
+    block: "README commands table includes config delete"
+    target: "readmeCommandsTable"
+    matcher: "contains"
+    value: "config delete"
+
+  # AC9: README monorepo sentence
+  - id: A018
+    says: "README mentions monorepo surface detection during init"
+    block: "README init section mentions surfaces"
+    target: "readmeInitSection"
+    matcher: "contains"
+    value: "surface"
+
+  # AC10: Reading-a-proof surface mention
+  - id: A019
+    says: "Reading-a-proof guide explains the surface label for monorepo projects"
+    block: "reading-a-proof mentions surface after hero grid"
+    target: "readingProofContent"
+    matcher: "contains"
+    value: "surface"
+
+  # AC11: Using-ana-learn --surface flag
+  - id: A020
+    says: "Ana-learn guide mentions the surface flag for scoped triage"
+    block: "using-ana-learn mentions --surface flag"
+    target: "anaLearnContent"
+    matcher: "contains"
+    value: "--surface"
+
+  # AC12: Configurability guide updates
+  - id: A021
+    says: "Configurability guide documents the config delete command"
+    block: "configurability mentions config delete"
+    target: "configurabilityContent"
+    matcher: "contains"
+    value: "config delete"
+
+  - id: A022
+    says: "Configurability guide shows per-surface command override syntax"
+    block: "configurability shows per-surface override"
+    target: "configurabilityContent"
+    matcher: "contains"
+    value: "surfaces."
+
+  # AC13: No changes to unaffected pages
+  - id: A023
+    says: "Pipeline, toolbelt, and context concept pages are not modified"
+    block: "concept pages unchanged"
+    target: "conceptPages.modified"
+    matcher: "equals"
+    value: false
+
+  # AC14-15: Build and test integrity
+  - id: A024
+    says: "Website builds without errors after all changes"
+    block: "website build succeeds"
+    target: "websiteBuild.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A025
+    says: "All existing tests continue to pass"
+    block: "test suite passes"
+    target: "testSuite.passed"
+    matcher: "equals"
+    value: true
+
+file_changes:
+  - path: "website/lib/docs-data/types.ts"
+    action: modify
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/components/docs/proof/ProofHero.tsx"
+    action: modify
+  - path: "website/components/docs/proof/ProofExplorer.tsx"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/content/docs/guides/reading-a-proof.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: "README.md"
+    action: modify
