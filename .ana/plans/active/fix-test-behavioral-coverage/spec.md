@@ -12,7 +12,7 @@ Two independent test-only fixes. No production code changes. Same disease — as
 
 **Finding 2 — work.test.ts lines 5848-5855:** Replace the trivial `deriveSurface` idempotency test with a meaningful backfill guard test. `deriveSurface` is a pure function — calling it twice with the same inputs proves nothing beyond determinism, which is trivially true for any function without side effects. The real idempotency concern is the backfill loop guard at work.ts:1101: `if (!existing.surface && existing.modules_touched?.length)`. This guard prevents overwriting an entry's existing surface during backfill, and it has zero test coverage.
 
-The replacement test belongs in the `migration markers` describe block (work.test.ts:5858), not the `deriveSurface` block. It tests backfill behavior, not the pure function. The `deriveSurface` block retains 4 tests covering its actual contract (cli path, website path, cross-surface, directory-boundary matching).
+The replacement test belongs in the `migration markers` describe block (work.test.ts:5858), not the `deriveSurface` block. It tests backfill behavior, not the pure function. The `deriveSurface` block retains 6 tests covering its actual contract.
 
 ## Output Mockups
 

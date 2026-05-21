@@ -69,9 +69,9 @@ assertions:
   - id: A010
     says: "The test count stays the same — one removed, one added"
     block: "full test suite"
-    target: "tests-passed"
+    target: "tests-passed-delta"
     matcher: "equals"
-    value: 2713
+    value: 0
 
 file_changes:
   - path: "packages/cli/tests/commands/doctor.test.ts"
