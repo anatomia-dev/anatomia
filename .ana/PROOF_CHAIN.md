@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-132 runs · 114 active · 3 promoted · 661 closed
+132 runs · 113 active · 3 promoted · 662 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 25 | 20 | 2026-05-20 |
+| Unscoped | 25 | 19 | 2026-05-20 |
 | cli | 88 | 78 | 2026-05-21 |
 | website | 19 | 16 | 2026-05-18 |
 
@@ -14,8 +14,8 @@
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/init/state.ts | 11 | 5 |
 | packages/cli/src/commands/work.ts | 10 | 8 |
+| packages/cli/src/commands/init/state.ts | 10 | 5 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/utils/proofSummary.ts | 4 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 114 total)
+## Active Findings (30 shown of 113 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -38,7 +38,6 @@
 
 - **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
-- **code:** displaySuccessMessage surface padding hardcoded at padEnd(9) — surface names longer than 8 chars will misalign — *Surface Awareness Schema and Pipeline Integration*
 - **test:** A020 has no tagged test — verified by source inspection only — *Command Detection Language Awareness*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 - **code:** buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern — *Command Detection Language Awareness*
@@ -110,6 +109,10 @@
 ### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
 
 - **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
+### packages/cli/tests/engine/detectors/polyglot.test.ts
+
+- **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
