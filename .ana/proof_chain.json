@@ -32077,7 +32077,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "rust-go-polyglot-detection-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-polyglot-detection-hygiene scope — priority ordering test added at polyglot.test.ts:615. Creates project with all four competing manifests (pyproject.toml + Cargo.toml + Gemfile + go.mod) and asserts Python wins. Second test at line 641 removes Python and asserts Rust wins. Cascade order is now regression-tested.",
+          "closed_at": "2026-05-21T04:06:57.044Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
