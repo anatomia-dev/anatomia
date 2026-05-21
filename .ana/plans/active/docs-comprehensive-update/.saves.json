@@ -41,5 +41,20 @@
     "website/lib/docs-data/types.ts",
     "website/scripts/extract-docs-data.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T02:24:01.941Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ade40088f9be4b72b6b5dbe86bc232b28948e321e061fc5875078f0e15ddc448",
+    "run_at": "2026-05-21T02:28:18.674Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T02:28:18.714Z",
+    "hash": "sha256:e39050fc10b7c699d9dce25e91999079db81ebcb544b21b76fa42dd5985e7855"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T02:28:18.714Z",
+    "hash": "sha256:119e84f91db41be2321e4a833041f548e6046897087056058b1aca06908c06ac"
+  }
 }
