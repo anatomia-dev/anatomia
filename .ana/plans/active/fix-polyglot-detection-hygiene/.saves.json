@@ -18,5 +18,20 @@
   "spec": {
     "saved_at": "2026-05-21T03:27:02.374Z",
     "hash": "sha256:073ef34a4bd4bb560ed14a98bc99b3960ec4b11dd96455be109d2ba396104039"
-  }
+  },
+  "build_started_at": "2026-05-21T03:32:52.001Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T03:36:10.486Z",
+    "hash": "sha256:e0bcf9399efea203a0e8202a99a936b0415896db4610649bcf81e490aafcfc8f"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T03:36:10.487Z",
+    "hash": "sha256:19bb6d94b642e6cd0cb68d58c140689614d8dee640d3c4245d4fce21a3f66c71"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/detectors/projectType.ts",
+    "packages/cli/tests/engine/detectors/polyglot.test.ts"
+  ],
+  "commit_hygiene": []
 }
