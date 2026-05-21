@@ -1,20 +1,20 @@
 # Proof Chain Dashboard
 
-140 runs · 93 active · 3 promoted · 720 closed
+140 runs · 92 active · 3 promoted · 721 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 59 | 2026-05-21 |
+| cli | 94 | 58 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 9 | 6 |
+| packages/cli/src/commands/work.ts | 8 | 6 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 93 total)
+## Active Findings (30 shown of 92 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -44,7 +44,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
-- **code:** Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread — *Pre-surface behavior cleanup*
 - **code:** Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release — *Pre-surface behavior cleanup*
 - **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
 
@@ -111,6 +110,7 @@
 ### website/components/pricing/WaitlistForm.tsx
 
 - **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
+- **code:** Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read — *Team edition waitlist form*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
