@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 98 active · 3 promoted · 715 closed
+140 runs · 97 active · 3 promoted · 716 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 64 | 2026-05-21 |
+| cli | 94 | 63 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 98 total)
+## Active Findings (30 shown of 97 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -36,10 +36,6 @@
 - **code:** surface.path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
-
-### packages/cli/src/commands/proof.ts
-
-- **code:** proof.ts imports pullBeforeRead and commitAndPushProofChanges from git-operations.ts but only uses them as pass-through calls — no local usage justifies the import beyond maintaining the existing call sites — *Command File Duplication Cleanup*
 
 ### packages/cli/src/commands/work.ts
 
@@ -60,6 +56,7 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
