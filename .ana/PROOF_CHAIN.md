@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-140 runs · 105 active · 3 promoted · 708 closed
+140 runs · 104 active · 3 promoted · 709 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 25 | 16 | 2026-05-20 |
+| Unscoped | 25 | 15 | 2026-05-20 |
 | cli | 94 | 69 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/config.ts
 
