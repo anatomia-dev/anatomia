@@ -17,7 +17,7 @@ const FRAMEWORK_DISPLAY_NAMES: Record<string, string> = {
   // 'remix' is legacy Remix installations. Same framework going forward;
   // we report the name that matches the installed packages.
   'react-router': 'React Router', remix: 'Remix',
-  hono: 'Hono',
+  nuxt: 'Nuxt', astro: 'Astro', hono: 'Hono',
   fastapi: 'FastAPI', django: 'Django', flask: 'Flask', rails: 'Rails',
   sinatra: 'Sinatra', gin: 'Gin', echo: 'Echo', fiber: 'Fiber',
   actix: 'Actix', rocket: 'Rocket', spring: 'Spring',
