@@ -611,6 +611,54 @@ members = ["crates/*"]
     expect(result.confidence).toBe(0.90);
   });
 
+  // @ana A005, A006
+  it('Python wins when all four competing manifests are present', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(dir, 'pyproject.toml'), `[project]
+name = "ml-pipeline"
+dependencies = ["fastapi", "uvicorn"]
+`);
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["crates/*"]
+`);
+    await fs.writeFile(path.join(dir, 'Gemfile'), `source "https://rubygems.org"
+gem "rails"
+`);
+    await fs.writeFile(path.join(dir, 'go.mod'), `module example.com/app
+
+go 1.21
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('python');
+    expect(result.confidence).toBe(0.90);
+  });
+
+  // @ana A007, A008
+  it('Rust wins when Python is absent but three competitors remain', async () => {
+    const dir = await createTempDir();
+    await fs.writeFile(path.join(dir, 'package.json'), '{}');
+    await fs.writeFile(path.join(dir, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(dir, 'Cargo.toml'), `[workspace]
+members = ["crates/*"]
+`);
+    await fs.writeFile(path.join(dir, 'Gemfile'), `source "https://rubygems.org"
+gem "rails"
+`);
+    await fs.writeFile(path.join(dir, 'go.mod'), `module example.com/app
+
+go 1.21
+`);
+
+    const result = await detectProjectType(dir);
+
+    expect(result.type).toBe('rust');
+    expect(result.confidence).toBe(0.90);
+  });
+
   it('Cargo.toml with [workspace.members] but no [workspace] stays Node', async () => {
     const dir = await createTempDir();
     await fs.writeFile(path.join(dir, 'package.json'), '{}');
