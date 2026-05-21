@@ -37553,7 +37553,10 @@
             "A004"
           ],
           "id": "fix-sampler-budget-overflow-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Budget=1 test verifies the contract: exactly 1 file returned, count doesn't exceed budget. Which specific file is returned depends on glob ordering and bucket iteration — an implementation detail, not a behavioral guarantee. The test is correct for what it asserts.",
+          "closed_at": "2026-05-21T04:10:46.968Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

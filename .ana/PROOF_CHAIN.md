@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 101 active · 3 promoted · 712 closed
+140 runs · 100 active · 3 promoted · 713 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 67 | 2026-05-21 |
+| cli | 94 | 66 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 101 total)
+## Active Findings (30 shown of 100 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -48,6 +48,10 @@
 - **code:** Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread — *Pre-surface behavior cleanup*
 - **code:** Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release — *Pre-surface behavior cleanup*
 - **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
+
+### packages/cli/src/engine/detectors/projectType.ts
+
+- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -92,10 +96,6 @@
 
 - **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
 - **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
-
-### packages/cli/tests/engine/sampling/proportional-sampler.test.ts
-
-- **test:** Budget=1 test (A004) verifies count but not that the returned file is shallow. Iteration order guarantees shallow, but the test doesn't assert it. — *Fix sampler budget overflow*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 
