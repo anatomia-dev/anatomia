@@ -1,21 +1,21 @@
 # Proof Chain Dashboard
 
-140 runs · 90 active · 3 promoted · 723 closed
+140 runs · 89 active · 3 promoted · 724 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 56 | 2026-05-21 |
+| cli | 94 | 55 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 7 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
+| packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 | packages/cli/src/utils/proofSummary.ts | 3 | 2 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 90 total)
+## Active Findings (30 shown of 89 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -44,7 +44,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
-- **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
 
 ### packages/cli/src/engine/detectors/projectType.ts
 
@@ -111,6 +110,7 @@
 - **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
 - **code:** Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read — *Team edition waitlist form*
 - **code:** Success message aria-live on freshly mounted element — screen readers may not announce dynamically inserted aria-live regions — *Team edition waitlist form*
+- **code:** No client-side rate limiting — user can spam submit after error state re-enables the button — *Team edition waitlist form*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
