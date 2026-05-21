@@ -43,21 +43,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [1.1.1] - 2026-05-18
 
-### Fixed
-- Scan branch detection: local-only branches no longer appear in scan.json; bot branches (dependabot, renovate) filtered from branch pattern analysis
-- Monorepo build/lint scoping: `ana init` now scopes build and lint commands to the primary package, matching the existing test command scoping
-- Sanitize blank command strings on re-init: if `commands.test/build/lint` is `""`, replaced with fresh scan detection value instead of preserving the blank forever
-- `ana config set` rejects empty strings for command fields — was a silent footgun that corrupted ana.json
-- AI SDK detection priority: meta-frameworks (Vercel AI) detected before raw providers (Anthropic/OpenAI), preventing mis-detection
-- Polyglot regex: handle PEP 508 extras brackets in Python dependency parsing
-- npm runner mapping: fix `buildDirectTestCommand` for npm-based projects
-- Secret validator: template placeholder patterns no longer trigger false positive secret findings
-- Filter placeholder GitHub tokens with low entropy — reduces false positive secret findings
-- First-user display polish: blind spots count, `.git` root detection messaging, init config display
-- PR multi-remote failure: parse origin URL and pass `--repo` to all `gh` calls (pr list, pr create, pr view) — fixes failure when multiple remotes exist (fork setups)
-- Flip monorepo command semantics: `build`/`test` are now project-wide commands, `buildPackage`/`testPackage` target the primary package — fixes confusion where root commands ran package-scoped
-- scan-freshness tests: clear CI env var in beforeEach so tests pass in GitHub Actions
-
 ### Added
 - **Unified staleness awareness** — `work status` warns when scan is temporally stale (>7 days AND >50 commits). `setup check` gains Freshness section. Ana template instructs verbatim relay of ℹ notification lines.
 - **Re-init mechanical field refresh** — `ana init` now refreshes `name`, `language`, `framework`, `packageManager` from the fresh scan instead of preserving stale values
@@ -73,6 +58,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - `printVersionNotifications` renamed to `printNotifications` — now handles version, mismatch, and staleness notifications
 - Ana agent template: explicit instruction to relay ℹ notification lines verbatim (both product and dogfood templates)
 - Setup template: `ana init commit` moved from inline prose to dedicated bash code block — reduces agent hallucination surface
+
+### Fixed
+- Scan branch detection: local-only branches no longer appear in scan.json; bot branches (dependabot, renovate) filtered from branch pattern analysis
+- Monorepo build/lint scoping: `ana init` now scopes build and lint commands to the primary package, matching the existing test command scoping
+- Sanitize blank command strings on re-init: if `commands.test/build/lint` is `""`, replaced with fresh scan detection value instead of preserving the blank forever
+- `ana config set` rejects empty strings for command fields — was a silent footgun that corrupted ana.json
+- AI SDK detection priority: meta-frameworks (Vercel AI) detected before raw providers (Anthropic/OpenAI), preventing mis-detection
+- Polyglot regex: handle PEP 508 extras brackets in Python dependency parsing
+- npm runner mapping: fix `buildDirectTestCommand` for npm-based projects
+- Secret validator: template placeholder patterns no longer trigger false positive secret findings
+- Filter placeholder GitHub tokens with low entropy — reduces false positive secret findings
+- First-user display polish: blind spots count, `.git` root detection messaging, init config display
+- PR multi-remote failure: parse origin URL and pass `--repo` to all `gh` calls (pr list, pr create, pr view) — fixes failure when multiple remotes exist (fork setups)
+- Flip monorepo command semantics: `build`/`test` are now project-wide commands, `buildPackage`/`testPackage` target the primary package — fixes confusion where root commands ran package-scoped
+- scan-freshness tests: clear CI env var in beforeEach so tests pass in GitHub Actions
 
 ## [1.1.0] - 2026-05-15
 
@@ -140,6 +140,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [1.0.2] - 2026-05-05
 
+### Added
+- `ana proof lesson` command — record findings as institutional lessons (verified but not actionable)
+- Audit headline now shows actionable vs monitoring split (e.g., "24 actionable, 48 monitoring")
+
 ### Fixed
 - Fix parseACResults regex — scope to AC Walkthrough section only, preventing false PASS/FAIL matches from Findings bullets (3/44 proof chain entries had inflated counts)
 - Normalize staleness detector confidence by file touch frequency — reduces false positives from 78% to ~40% on hot files
@@ -149,10 +153,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Extract shared exitError factory across close/promote/strengthen subcommands
 - Extract and apply summary truncation helper consistently
 - Fix Learn template — remove "pre-classified for closure" language that caused batch-closing
-
-### Added
-- `ana proof lesson` command — record findings as institutional lessons (verified but not actionable)
-- Audit headline now shows actionable vs monitoring split (e.g., "24 actionable, 48 monitoring")
 
 ## [1.0.1] - 2026-05-04
 
