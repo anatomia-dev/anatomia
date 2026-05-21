@@ -514,12 +514,14 @@ export async function createAnaJson(
           }
         }
 
-        // Test: prefer direct runner invocation
-        const directCmd = buildDirectTestCommand(surface.testing || result.stack.testing, pm);
-        if (directCmd) {
-          surfaceTest = `(cd '${surface.path}' && ${directCmd})`;
-        } else if (scripts['test']) {
+        // Test: prefer script passthrough, fall back to direct runner
+        if (scripts['test'] !== undefined) {
           surfaceTest = `(cd '${surface.path}' && ${prefix} test)`;
+        } else {
+          const directCmd = buildDirectTestCommand(surface.testing || result.stack.testing, pm);
+          if (directCmd) {
+            surfaceTest = `(cd '${surface.path}' && ${directCmd})`;
+          }
         }
 
         // Lint: first match

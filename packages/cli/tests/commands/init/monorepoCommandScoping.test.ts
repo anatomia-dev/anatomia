@@ -118,9 +118,8 @@ describe('createAnaJson surface command generation', () => {
       const cliCmds = surfaces['cli']!['commands'] as Record<string, string | null>;
       const webCmds = surfaces['web']!['commands'] as Record<string, string | null>;
 
-      // A002: scoped test command
-      expect(cliCmds['test']).toContain("cd '");
-      expect(cliCmds['test']).toContain('vitest run');
+      // A001: scoped test command uses script passthrough
+      expect(cliCmds['test']).toBe("(cd 'packages/cli' && pnpm run test)");
 
       // A003: scoped build command
       expect(cliCmds['build']).toContain("cd '");
@@ -313,6 +312,89 @@ describe('createAnaJson surface command generation', () => {
       const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
       const cliCmds = surfaces['cli']!['commands'] as Record<string, string | null>;
       expect(cliCmds['build']).toBe("(cd 'packages/cli' && npm run build)");
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A002
+  it('complex script passthrough preserves developer setup steps', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
+    try {
+      await setupPackage(cwdDir, 'packages/api', { build: 'tsc', test: 'prisma:generate && vitest' });
+      const result = makeMonorepoResult({
+        surfaces: [{ name: 'api', path: 'packages/api', testing: ['Vitest'] }],
+      });
+
+      await createAnaJson(tmpDir, result, cwdDir);
+      const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
+      const apiCmds = surfaces['api']!['commands'] as Record<string, string | null>;
+      expect(apiCmds['test']).toBe("(cd 'packages/api' && pnpm run test)");
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A003
+  it('fallback to direct invocation when no test script exists', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
+    try {
+      await setupPackage(cwdDir, 'packages/api', { build: 'tsc' });
+      const result = makeMonorepoResult({
+        surfaces: [{ name: 'api', path: 'packages/api', testing: ['Vitest'] }],
+      });
+
+      await createAnaJson(tmpDir, result, cwdDir);
+      const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
+      const apiCmds = surfaces['api']!['commands'] as Record<string, string | null>;
+      expect(apiCmds['test']).toBe("(cd 'packages/api' && pnpm vitest run)");
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A005
+  it('bun package manager uses bun run prefix', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
+    try {
+      await setupPackage(cwdDir, 'packages/lib', { test: 'bun test --exit' });
+      const result = makeMonorepoResult({
+        pm: 'bun',
+        build: 'bun run build',
+        lint: 'bun run lint',
+        surfaces: [{ name: 'lib', path: 'packages/lib', testing: [] }],
+      });
+
+      await createAnaJson(tmpDir, result, cwdDir);
+      const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
+      const libCmds = surfaces['lib']!['commands'] as Record<string, string | null>;
+      expect(libCmds['test']).toBe("(cd 'packages/lib' && bun run test)");
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A006
+  it('empty-string test script uses script passthrough', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
+    try {
+      await setupPackage(cwdDir, 'services/svc', { test: '' });
+      const result = makeMonorepoResult({
+        surfaces: [{ name: 'svc', path: 'services/svc', testing: ['Vitest'] }],
+      });
+
+      await createAnaJson(tmpDir, result, cwdDir);
+      const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
+      const svcCmds = surfaces['svc']!['commands'] as Record<string, string | null>;
+      expect(svcCmds['test']).toContain('run test');
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
