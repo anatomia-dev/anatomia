@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-135 runs · 105 active · 3 promoted · 685 closed
+135 runs · 104 active · 3 promoted · 686 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 89 | 69 | 2026-05-21 |
+| cli | 89 | 68 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -16,15 +16,15 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 9 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
-| packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/src/commands/init/state.ts | 7 | 5 |
+| packages/cli/src/engine/detectors/projectType.ts | 7 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -33,6 +33,7 @@
 ### packages/cli/src/commands/doctor.ts
 
 - **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
+- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -52,7 +53,6 @@
 ### packages/cli/src/engine/detectors/projectType.ts
 
 - **code:** Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** indexOf('\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
