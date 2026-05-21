@@ -46,6 +46,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
 
   // Filter state
   const [stageFilter, setStageFilter] = useState<string>("All");
+  const [surfaceFilter, setSurfaceFilter] = useState<string>("All");
   const [findingsFilter, setFindingsFilter] = useState<string | null>(null);
   const [cyclesFilter, setCyclesFilter] = useState<string | null>(null);
 
@@ -53,10 +54,15 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
   const [sortKey, setSortKey] = useState<SortKey>("completed");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // Compute stage chips from data
-  const stageChips = useMemo(() => {
+  // Compute stage and surface options from data
+  const stageOptions = useMemo(() => {
     const stages = new Set(entries.map((e) => e.stage));
     return ["All", ...Array.from(stages).sort()];
+  }, [entries]);
+
+  const surfaceOptions = useMemo(() => {
+    const surfaces = new Set(entries.map((e) => e.surface).filter(Boolean) as string[]);
+    return ["All", ...Array.from(surfaces).sort()];
   }, [entries]);
 
   // Filter
@@ -64,6 +70,9 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
     let result = [...entries];
     if (stageFilter !== "All") {
       result = result.filter((e) => e.stage === stageFilter);
+    }
+    if (surfaceFilter !== "All") {
+      result = result.filter((e) => e.surface === surfaceFilter);
     }
     if (findingsFilter === ">=5") {
       result = result.filter((e) => e.findingCount >= 5);
@@ -76,7 +85,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
       result = result.filter((e) => e.rejectionCycles >= 1);
     }
     return result;
-  }, [entries, stageFilter, findingsFilter, cyclesFilter]);
+  }, [entries, stageFilter, surfaceFilter, findingsFilter, cyclesFilter]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -161,14 +170,51 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
         }}>
           <span style={{
             color: "var(--ink-40)",
-            marginRight: "6px",
+            marginRight: "4px",
             textTransform: "uppercase",
             letterSpacing: "0.06em",
             fontSize: "10px",
           }}>Stage</span>
-          {stageChips.map((s) =>
-            chip(s, stageFilter === s, () => setStageFilter(s))
-          )}
+          <select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "11px",
+              padding: "3px 6px",
+              border: "1px solid var(--border)",
+              borderRadius: "3px",
+              background: "transparent",
+              color: "var(--ink-80)",
+              cursor: "pointer",
+            }}
+          >
+            {stageOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <span style={{ width: "10px" }} />
+          <span style={{
+            color: "var(--ink-40)",
+            marginRight: "4px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            fontSize: "10px",
+          }}>Surface</span>
+          <select
+            value={surfaceFilter}
+            onChange={(e) => setSurfaceFilter(e.target.value)}
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "11px",
+              padding: "3px 6px",
+              border: "1px solid var(--border)",
+              borderRadius: "3px",
+              background: "transparent",
+              color: "var(--ink-80)",
+              cursor: "pointer",
+            }}
+          >
+            {surfaceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
           <span style={{ width: "14px" }} />
           <span style={{
             color: "var(--ink-40)",
@@ -208,7 +254,7 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
           <thead>
             <tr>
               <th style={{ ...thBase, textAlign: "left" }}>Proof</th>
-              <th style={{ ...thBase, textAlign: "left" }}>Stage</th>
+              <th style={{ ...thBase, textAlign: "left" }}>Surface</th>
               <th onClick={() => handleSort("assertions")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Assertions{sortArrow("assertions")}</th>
               <th onClick={() => handleSort("findings")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Findings{sortArrow("findings")}</th>
               <th onClick={() => handleSort("duration")} className="docs-exp-th-sort" style={{ ...thBase, ...thSortable, textAlign: "right" }}>Duration{sortArrow("duration")}</th>
@@ -238,21 +284,16 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
                   <div style={{ color: "var(--ink)", fontWeight: 500, fontSize: "13.5px" }}>
                     {e.feature}
                     <span style={{ display: "inline-flex", gap: "4px", marginLeft: "8px" }}>
-                      {e.surface && (
-                        <span style={{
-                          display: "inline-block",
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "10px",
-                          padding: "2px 6px",
-                          borderRadius: "3px",
-                          border: "1px solid var(--hairline)",
-                          background: "var(--ink-05, rgba(0,0,0,0.04))",
-                          color: "var(--ink-50)",
-                          letterSpacing: "0.02em",
-                        }}>
-                          {e.surface}
-                        </span>
-                      )}
+                      <span style={{
+                        display: "inline-block",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        padding: "2px 6px",
+                        borderRadius: "3px",
+                        border: "1px solid var(--hairline)",
+                        color: "var(--ink-60)",
+                        letterSpacing: "0.02em",
+                      }}>{e.stage.toLowerCase()}</span>
                       {e.rejectionCycles > 0 && (
                         <span style={{
                           display: "inline-block",
@@ -271,16 +312,21 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
                   </div>
                 </td>
                 <td style={{ padding: "13px 16px", verticalAlign: "middle" }}>
-                  <span style={{
-                    display: "inline-block",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "10px",
-                    padding: "2px 6px",
-                    borderRadius: "3px",
-                    border: "1px solid var(--hairline)",
-                    color: "var(--ink-60)",
-                    letterSpacing: "0.02em",
-                  }}>{e.stage}</span>
+                  {e.surface ? (
+                    <span style={{
+                      display: "inline-block",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "10px",
+                      padding: "2px 6px",
+                      borderRadius: "3px",
+                      border: "1px solid var(--hairline)",
+                      background: "var(--ink-05, rgba(0,0,0,0.04))",
+                      color: "var(--ink-50)",
+                      letterSpacing: "0.02em",
+                    }}>{e.surface}</span>
+                  ) : (
+                    <span style={{ color: "var(--ink-30)", fontFamily: "var(--font-mono)", fontSize: "10px" }}>—</span>
+                  )}
                 </td>
                 <td style={{
                   padding: "13px 16px",
