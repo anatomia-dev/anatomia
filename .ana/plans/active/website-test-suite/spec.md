@@ -140,7 +140,7 @@ Test matrix:
 
 ## Acceptance Criteria
 
-- [x] AC1: `website/package.json` has `"test": "vitest run"` script
+- [ ] AC1: `website/package.json` has `"test": "vitest run"` script
 - [ ] AC2: `cd website && pnpm vitest run` passes with 38+ tests (8 existing + 30+ new)
 - [ ] AC3: `pnpm run test -- --run` (root) runs both CLI and website tests without hanging
 - [ ] AC4: proofs.test.ts tests `getProofStats` and `getMedianTimings` computation logic with mocked `node:fs`
