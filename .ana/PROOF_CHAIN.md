@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 106 active · 3 promoted · 674 closed
+133 runs · 105 active · 3 promoted · 675 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 69 | 2026-05-21 |
+| cli | 88 | 68 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 105 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -39,10 +39,6 @@
 - **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
-
-### packages/cli/src/commands/proof.ts
-
-- **code:** Surface validation reads ana.json from disk on every --surface invocation — consistent with existing patterns but adds to file I/O per command — *Surface Awareness Bridge*
 
 ### packages/cli/src/commands/work.ts
 
@@ -84,6 +80,7 @@
 ### packages/cli/tests/commands/doctor.test.ts
 
 - **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
+- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 

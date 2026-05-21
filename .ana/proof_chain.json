@@ -35884,7 +35884,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "surface-awareness-bridge-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Consistent with established patterns: every proof command reads ana.json per invocation (branch checks, coAuthor, etc.). One additional readFileSync for surface validation follows the same convention. ana.json is a small file, read is nanoseconds. Verify classified as accept.",
+          "closed_at": "2026-05-21T01:32:38.916Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
