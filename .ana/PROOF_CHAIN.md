@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 112 active · 3 promoted · 668 closed
+133 runs · 111 active · 3 promoted · 669 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 75 | 2026-05-21 |
+| cli | 88 | 74 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -15,7 +15,7 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 10 | 8 |
-| packages/cli/src/commands/init/state.ts | 10 | 5 |
+| packages/cli/src/commands/init/state.ts | 9 | 5 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/utils/proofSummary.ts | 4 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -38,7 +38,6 @@
 
 - **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
-- **test:** A020 has no tagged test — verified by source inspection only — *Command Detection Language Awareness*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 - **code:** buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern — *Command Detection Language Awareness*
 
@@ -65,6 +64,10 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/scan-engine.ts
 
