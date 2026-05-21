@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 94 active · 3 promoted · 719 closed
+140 runs · 93 active · 3 promoted · 720 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 60 | 2026-05-21 |
+| cli | 94 | 59 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/src/commands/work.ts | 9 | 6 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
+| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 94 total)
+## Active Findings (30 shown of 93 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -72,7 +72,6 @@
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
-- **test:** A006 empty-string assertion uses toContain('run test') — weaker than other assertions that use toBe for exact match — *Fix per-surface test command priority*
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
@@ -108,6 +107,10 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/pricing/WaitlistForm.tsx
+
+- **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
