@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 102 active · 3 promoted · 711 closed
+140 runs · 101 active · 3 promoted · 712 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 68 | 2026-05-21 |
+| cli | 94 | 67 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 102 total)
+## Active Findings (30 shown of 101 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -48,10 +48,6 @@
 - **code:** Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread — *Pre-surface behavior cleanup*
 - **code:** Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release — *Pre-surface behavior cleanup*
 - **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
-
-### packages/cli/src/engine/detectors/projectType.ts
-
-- **code:** hasTauriWorkspaceDep catch block unreachable — regex-based function cannot throw — *Polyglot detection hygiene*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -87,6 +83,10 @@
 ### packages/cli/tests/engine/census-detection.test.ts
 
 - **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
+### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
+
+- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
