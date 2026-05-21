@@ -1,20 +1,20 @@
 # Proof Chain Dashboard
 
-140 runs · 107 active · 3 promoted · 706 closed
+140 runs · 106 active · 3 promoted · 707 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 94 | 71 | 2026-05-21 |
+| cli | 94 | 70 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 12 | 9 |
+| packages/cli/src/commands/work.ts | 11 | 8 |
 | packages/cli/tests/commands/work.test.ts | 9 | 8 |
 | packages/cli/src/commands/init/state.ts | 7 | 5 |
 | packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 

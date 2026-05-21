@@ -29351,7 +29351,10 @@
             "A012"
           ],
           "id": "upstream-finding-resolution-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by command-duplication-cleanup scope — resolves counting extracted to single computation at work.ts:1825-1828, used by both JSON branch (line 1857) and console branch (line 1882). Verified: resolvesClaimsCount computed once, no duplicate loop.",
+          "closed_at": "2026-05-21T04:07:12.822Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
