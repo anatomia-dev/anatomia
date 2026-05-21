@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 109 active · 3 promoted · 671 closed
+133 runs · 108 active · 3 promoted · 672 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 72 | 2026-05-21 |
+| cli | 88 | 71 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -67,14 +67,11 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### packages/cli/src/engine/scan-engine.ts
-
-- **code:** detectNonNodeTesting Ruby branch uses existsSync (synchronous) inside an async function — inconsistent with other branches that use async reads — *Command Detection Language Awareness*
 
 ### packages/cli/src/utils/displayNames.ts
 
