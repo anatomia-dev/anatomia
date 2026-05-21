@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { geistSans, geistMono, fraunces } from "./fonts";
+import { Analytics } from "@vercel/analytics/next";
 import { AnalyticsProvider } from "@/lib/analytics";
 import "./globals.css";
 
@@ -60,6 +61,7 @@ export default function RootLayout({
         </a>
         {children}
         <AnalyticsProvider />
+        <Analytics />
       </body>
     </html>
   );
