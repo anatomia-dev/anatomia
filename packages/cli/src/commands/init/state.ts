@@ -452,37 +452,10 @@ export async function createAnaJson(
   const testCmd = makeTestCommandNonInteractive(result.commands.test, result.stack.testing, result.commands.all?.['test']);
 
   // Root build command: project-wide (no cd scoping).
-  // Lint stays scoped — only build and test get flipped to project-wide.
+  // All three (build, test, lint) are project-wide. Per-surface commands provide scoped coverage.
   const buildCmd = result.commands.build || null;
-  let lintCmd = result.commands.lint || null;
-
-  // Scoping block: read primary package's package.json for monorepo
-  // lint command. Skip for non-Node languages — prevents JS lint commands
-  // from leaking into Rust/Ruby/Go projects.
+  const lintCmd = result.commands.lint || null;
   const lang = result.stack.language;
-  if (cwd && result.monorepo.isMonorepo && result.monorepo.primaryPackage
-      && (!lang || lang === 'TypeScript' || lang === 'Node.js')) {
-    const pkg = result.monorepo.primaryPackage;
-    const pm = result.commands.packageManager || 'pnpm';
-    const prefix = pm === 'npm' ? 'npm run' : `${pm} run`;
-
-    try {
-      const pkgJsonPath = path.join(cwd, pkg.path, 'package.json');
-      const pkgContent = await fs.readFile(pkgJsonPath, 'utf-8');
-      const pkgJson = JSON.parse(pkgContent);
-      const scripts = pkgJson.scripts || {};
-
-      // Lint: first match — same key order as detectCommands (stays scoped)
-      for (const key of ['lint', 'eslint', 'biome']) {
-        if (scripts[key]) {
-          lintCmd = `(cd '${pkg.path}' && ${prefix} ${key})`;
-          break;
-        }
-      }
-    } catch {
-      // Missing or malformed package.json — keep root commands
-    }
-  }
 
   const commands: Record<string, unknown> = {
     build: buildCmd,
