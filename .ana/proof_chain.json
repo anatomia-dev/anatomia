@@ -35582,7 +35582,10 @@
             "A028"
           ],
           "id": "surface-awareness-schema-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Tests Zod internals: z.array(SurfaceSchema) mechanically rejects non-array inputs (surfaces: 42 → Zod type error). Testing this verifies Zod's .array() type guard, not our schema definition. The tests DO cover malformed array entries (wrong shape, missing fields) — that's where our Zod schema matters. Verify classified as accept.",
+          "closed_at": "2026-05-21T01:15:49.155Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,

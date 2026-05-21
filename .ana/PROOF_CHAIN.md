@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-132 runs · 113 active · 3 promoted · 662 closed
+132 runs · 112 active · 3 promoted · 663 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 25 | 19 | 2026-05-20 |
+| Unscoped | 25 | 18 | 2026-05-20 |
 | cli | 88 | 78 | 2026-05-21 |
 | website | 19 | 16 | 2026-05-18 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 113 total)
+## Active Findings (30 shown of 112 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -66,6 +66,10 @@
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 - **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
+### packages/cli/src/engine/findings/rules/validation.ts
+
+- **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+
 ### packages/cli/src/engine/scan-engine.ts
 
 - **code:** detectNonNodeTesting Ruby branch uses existsSync (synchronous) inside an async function — inconsistent with other branches that use async reads — *Command Detection Language Awareness*
@@ -93,10 +97,6 @@
 ### packages/cli/tests/commands/scope-surface-validation.test.ts
 
 - **test:** A019 scope rejection test depends on cwd-based findProjectRoot — fragile coupling between test isolation and global state — *Surface Awareness Schema and Pipeline Integration*
-
-### packages/cli/tests/commands/template-surface-awareness.test.ts
-
-- **test:** A028 Zod schema test — malformed entry defaults checked but no test for completely invalid surfaces value (e.g., surfaces: 42) — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/commands/work.test.ts
 
