@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-136 runs · 98 active · 3 promoted · 696 closed
+137 runs · 101 active · 3 promoted · 698 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 90 | 62 | 2026-05-21 |
+| cli | 91 | 65 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -18,27 +18,27 @@
 | packages/cli/tests/commands/work.test.ts | 9 | 8 |
 | packages/cli/src/commands/init/state.ts | 5 | 4 |
 | packages/cli/src/engine/detectors/projectType.ts | 4 | 2 |
-| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
+| packages/cli/src/commands/proof.ts | 4 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 98 total)
+## Active Findings (30 shown of 101 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
 
-### packages/cli/src/commands/doctor.ts
-
-- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
-- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
-
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
+
+### packages/cli/src/commands/proof.ts
+
+- **code:** EMPTY_AUDIT_MATRIX is a mutable shared object — not frozen, callees could theoretically mutate it — *Command File Duplication Cleanup*
+- **code:** proof.ts imports pullBeforeRead and commitAndPushProofChanges from git-operations.ts but only uses them as pass-through calls — no local usage justifies the import beyond maintaining the existing call sites — *Command File Duplication Cleanup*
 
 ### packages/cli/src/commands/work.ts
 
@@ -67,10 +67,13 @@
 
 - **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
+### packages/cli/src/utils/git-operations.ts
+
+- **code:** Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive) — 10+ verify cycles old, not introduced by this build — *Command File Duplication Cleanup*
+
 ### packages/cli/tests/commands/doctor.test.ts
 
 - **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
-- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 

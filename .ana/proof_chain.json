@@ -36989,6 +36989,217 @@
         "base_commit": "d3c636e7013e0b61c4dfa28433ba4c0bb7fc81ca"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "command-duplication-cleanup",
+      "feature": "Command File Duplication Cleanup",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 15,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Resolves counting runs once before the output branch, not duplicated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "JSON output includes resolves_claims when upstream findings resolve prior issues",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Console output shows resolution claim count when upstream findings resolve prior issues",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The startWork resume path reads the branch name using getCurrentBranch",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Empty audit matrix values are defined once as a shared constant",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Both empty audit paths use the shared constant instead of inline objects",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "pullBeforeRead is exported from the git utilities module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "commitAndPushProofChanges is exported from the git utilities module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "proof.ts no longer defines pullBeforeRead or commitAndPushProofChanges",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "learn.ts imports git functions from the utilities module, not from proof",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "learn.ts does not import anything from proof.ts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "All existing tests pass and the count is unchanged from baseline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "isTimestampRecent remains as its own function in work.ts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The spawnSync import is removed from proof.ts since no code there uses it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "No new lint violations are introduced by the refactoring",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 32,
+        "think": 4,
+        "plan": 6,
+        "build": 9,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:d7ac9c2fd734aec5c84645a709474d090722660471482143fe2e0ff38131083c",
+        "contract": "sha256:493324dfc0c776533a1e78b731eb028aba414d97e1b165621ec528a5f97f423b",
+        "plan": "sha256:6608a8705453a08d603139036e8254c2f825a2fd839b2265b7605a62aa7754ea",
+        "spec": "sha256:403cebe21b5ffc530015976ac65ec593632ed24a72ba07a3cc1d85b82a87b65f",
+        "build-report": "sha256:6c22e72228c7ae2ee2186774466f192d137af8053f87d6ca83a6659e0cc8ac1f",
+        "build-data": "sha256:cd2f6ca57b50a5197230c798923d13cbf41e528148ae29ee02dc06f138d04394",
+        "verify-report": "sha256:31a6e4addcdf5e0822fe12cb813d92aafe11218b716e0d4545ad3e9d54cc9c37",
+        "verify-data": "sha256:93017ae4c2ae904df434a5b81c7a1530d062ae0270fddf7d46e31416423a768d"
+      },
+      "completed_at": "2026-05-21T03:51:22.782Z",
+      "modules_touched": [
+        "packages/cli/src/commands/learn.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/utils/git-operations.ts"
+      ],
+      "scope_summary": "Clean up duplicated and misplaced logic in work.ts and proof.ts — the two largest command files (~2500 and ~2400 lines). Four extractions plus one module move. All pure refactors, zero behavior changes.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "EMPTY_AUDIT_MATRIX is a mutable shared object — not frozen, callees could theoretically mutate it",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 145,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "command-duplication-cleanup-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "proof.ts imports pullBeforeRead and commitAndPushProofChanges from git-operations.ts but only uses them as pass-through calls — no local usage justifies the import beyond maintaining the existing call sites",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 29,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "command-duplication-cleanup-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof context finding upstream-finding-resolution-C1 (duplicated resolves counting) is now resolved by this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [
+            "upstream-finding-resolution-C1"
+          ],
+          "id": "command-duplication-cleanup-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:51:22.783Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof context finding kind-aware-branch-prefixes-C6 (HEAD-reading duplication) is now resolved by this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [
+            "kind-aware-branch-prefixes-C6"
+          ],
+          "id": "command-duplication-cleanup-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T03:51:22.783Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive) — 10+ verify cycles old, not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "anchor": null,
+          "line": 198,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "command-duplication-cleanup-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing unused eslint-disable directive at git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T03:30:29.434Z",
+        "completed_at": "2026-05-21T03:51:22.778Z",
+        "commit_count": 0,
+        "base_commit": "adca73fde86290d865bde088022ddc88af83689d"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
