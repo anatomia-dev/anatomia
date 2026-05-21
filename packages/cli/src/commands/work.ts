@@ -1821,7 +1821,15 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
 
   const healthChange = detectHealthChange(mainChain);
 
-  // 14. Print summary or JSON output
+  // 14. Count resolution claims once — used by both JSON and console output
+  let resolvesClaimsCount = 0;
+  for (const f of proof.findings) {
+    if (f.category === 'upstream' && f.resolves && f.resolves.length > 0) {
+      resolvesClaimsCount += f.resolves.length;
+    }
+  }
+
+  // 15. Print summary or JSON output
   if (options?.json) {
     const jsonResults = {
       slug,
@@ -1846,12 +1854,6 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
             : null,
       },
     };
-    let resolvesClaimsCount = 0;
-    for (const f of proof.findings) {
-      if (f.category === 'upstream' && f.resolves && f.resolves.length > 0) {
-        resolvesClaimsCount += f.resolves.length;
-      }
-    }
     if (resolvesClaimsCount > 0) {
       (jsonResults as Record<string, unknown>)['resolves_claims'] = resolvesClaimsCount;
     }
@@ -1877,14 +1879,8 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     }
 
     // Fifth line: resolution claims summary (only when upstream findings have resolves)
-    let resolvesCount = 0;
-    for (const f of proof.findings) {
-      if (f.category === 'upstream' && f.resolves && f.resolves.length > 0) {
-        resolvesCount += f.resolves.length;
-      }
-    }
-    if (resolvesCount > 0) {
-      console.log(chalk.gray(`  Verify claims ${resolvesCount} finding${resolvesCount !== 1 ? 's' : ''} resolved — review with \`ana proof stale\``));
+    if (resolvesClaimsCount > 0) {
+      console.log(chalk.gray(`  Verify claims ${resolvesClaimsCount} finding${resolvesClaimsCount !== 1 ? 's' : ''} resolved — review with \`ana proof stale\``));
     }
   }
 }
@@ -1927,8 +1923,7 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
       // Resume: print path
       const wtPath = process.cwd();
       // Read branch name from git HEAD — prefix-independent
-      const headResult = runGit(['rev-parse', '--abbrev-ref', 'HEAD']);
-      const branchName = headResult.exitCode === 0 ? headResult.stdout : `(unknown)`;
+      const branchName = getCurrentBranch() ?? '(unknown)';
       let commitCount = 0;
       try {
         const result = runGit(['rev-list', '--count', `${artifactBranch}..HEAD`]);
