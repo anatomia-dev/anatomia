@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-135 runs · 104 active · 3 promoted · 686 closed
+135 runs · 103 active · 3 promoted · 687 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 89 | 68 | 2026-05-21 |
+| cli | 89 | 67 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 104 total)
+## Active Findings (30 shown of 103 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -39,6 +39,7 @@
 
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
+- **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
 
 ### packages/cli/src/commands/work.ts
 
@@ -91,10 +92,6 @@
 ### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
 
 - **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
-### packages/cli/tests/engine/detectors/polyglot.test.ts
-
-- **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 

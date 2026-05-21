@@ -34315,7 +34315,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "fix-polyglot-rust-ts-ruby-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Systemic tag collision — contract IDs A001-A019 reused across multiple contracts in polyglot.test.ts. Same systemic pattern documented across the proof chain. Tags are cosmetic identifiers; the tests themselves are correct and independent.",
+          "closed_at": "2026-05-21T02:41:37.125Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
