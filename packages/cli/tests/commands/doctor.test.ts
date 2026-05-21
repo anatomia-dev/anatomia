@@ -427,7 +427,6 @@ describe('skills dimension', () => {
     // deployment and troubleshooting have 0 detected + 0 rules
     expect(results.dimensions.skills.scaffold_defaults).toContain('deployment');
     expect(results.dimensions.skills.scaffold_defaults).toContain('troubleshooting');
-    expect(results.dimensions.skills.scaffold_defaults.join(', ')).toContain('still scaffold'.split(' ')[0] ? 'deployment' : '');
   });
 });
 

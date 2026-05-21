@@ -1,0 +1,28 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1101
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A004"]
+  - category: test
+    summary: "New backfill guard test doesn't verify the negative case — no test for what happens if surface is removed from the guard condition"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 6016
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004", "A005"]
+  - category: upstream
+    summary: "Proof context finding surface-awareness-bridge-C1 directly resolved by this build — trivial idempotency test replaced with behavioral backfill guard test"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "surface-awareness-bridge-C1"
+  - category: upstream
+    summary: "Proof context finding add-doctor-command-C2 directly resolved by this build — dead ternary logic removed from A022 test"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "add-doctor-command-C2"
