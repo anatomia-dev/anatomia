@@ -33453,7 +33453,10 @@
             "A004"
           ],
           "id": "reinit-field-refresh-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Theoretical — newAnaConfig is created by createAnaJson at state.ts:550-563 which explicitly sets anaVersion, name, language, framework, packageManager, and lastScanAt with null fallbacks. The merge override at lines 716-723 can never receive undefined for these keys. The assumption holds by construction.",
+          "closed_at": "2026-05-21T02:41:57.724Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

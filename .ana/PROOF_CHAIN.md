@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-135 runs · 102 active · 3 promoted · 688 closed
+135 runs · 101 active · 3 promoted · 689 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 89 | 66 | 2026-05-21 |
+| cli | 89 | 65 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -16,7 +16,7 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 9 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
-| packages/cli/src/commands/init/state.ts | 7 | 5 |
+| packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/src/engine/detectors/projectType.ts | 6 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 102 total)
+## Active Findings (30 shown of 101 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -39,7 +39,7 @@
 
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
-- **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
+- **code:** pkg.path injected without sanitization in createAnaJson — pre-existing, unrelated to this build — *Re-init mechanical field refresh*
 
 ### packages/cli/src/commands/work.ts
 
