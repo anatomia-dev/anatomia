@@ -1,0 +1,280 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Website Test Suite"
+
+assertions:
+  # AC1: package.json test script
+  - id: A001
+    says: "The website package has a test script that runs vitest without watch mode"
+    block: "package.json test script"
+    target: "scripts.test"
+    matcher: "equals"
+    value: "vitest run"
+
+  # AC2: total test count
+  - id: A002
+    says: "Running website tests produces at least 38 passing tests"
+    block: "test suite runs successfully"
+    target: "testCount"
+    matcher: "greater"
+    value: 37
+
+  # AC3: root test command works
+  - id: A003
+    says: "The root test command runs both CLI and website tests without hanging"
+    block: "root test command"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  # AC4: proofs.test.ts — getProofStats
+  - id: A004
+    says: "Proof stats correctly count entries, assertions, findings, and rejection cycles"
+    block: "getProofStats computes correct totals"
+    target: "stats.entries"
+    matcher: "greater"
+    value: 0
+
+  - id: A005
+    says: "Proof stats returns zeros when there are no proof entries"
+    block: "getProofStats with empty dataset"
+    target: "stats.entries"
+    matcher: "equals"
+    value: 0
+
+  - id: A006
+    says: "Only entries with at least one rejection cycle are counted as rejections"
+    block: "getProofStats counts rejections correctly"
+    target: "stats.rejections"
+    matcher: "equals"
+    value: 1
+
+  # AC4: proofs.test.ts — getMedianTimings
+  - id: A007
+    says: "Median timing computation filters out zero-valued stages before calculating"
+    block: "getMedianTimings filters zeros"
+    target: "medians.think"
+    matcher: "greater"
+    value: 0
+
+  - id: A008
+    says: "A timing stage where all entries have zero returns zero median"
+    block: "getMedianTimings all-zero stage"
+    target: "medians.verify"
+    matcher: "equals"
+    value: 0
+
+  - id: A009
+    says: "Median timings return zeros when there are no proof entries"
+    block: "getMedianTimings with empty dataset"
+    target: "medians.think"
+    matcher: "equals"
+    value: 0
+
+  # AC5: docs-stat-values.test.ts
+  - id: A010
+    says: "Building docs stat values produces all nine expected keys as strings"
+    block: "buildDocsStatValues returns all 9 keys"
+    target: "keyCount"
+    matcher: "equals"
+    value: 9
+
+  - id: A011
+    says: "DocsStat tags in text are replaced with their computed values"
+    block: "resolveDocsStatTags replaces known keys"
+    target: "result"
+    matcher: "contains"
+    value: "42"
+
+  - id: A012
+    says: "Unrecognized DocsStat keys are left unchanged in the output"
+    block: "resolveDocsStatTags leaves unknown keys"
+    target: "result"
+    matcher: "contains"
+    value: "<DocsStat"
+
+  # AC6: strip-jsx.test.ts
+  - id: A013
+    says: "Import and export lines are removed from MDX source"
+    block: "stripJsx removes import/export lines"
+    target: "result"
+    matcher: "not_contains"
+    value: "import"
+
+  - id: A014
+    says: "Block components like Callout have their tags removed but children preserved"
+    block: "stripJsx preserves blockComponent children"
+    target: "result"
+    matcher: "contains"
+    value: "inner content"
+
+  - id: A015
+    says: "Full-strip components like PipelineDiagram are removed entirely including children"
+    block: "stripJsx removes stripFull components"
+    target: "result"
+    matcher: "not_contains"
+    value: "PipelineDiagram"
+
+  - id: A016
+    says: "DocsStat tags are resolved to computed values before stripping"
+    block: "stripJsx resolves DocsStat values"
+    target: "result"
+    matcher: "contains"
+    value: "2"
+
+  # AC7: data-integrity.test.ts
+  - id: A017
+    says: "Proof entries data file contains an array of entries with required fields"
+    block: "proof-entries.json has valid shape"
+    target: "firstEntry.slug"
+    matcher: "exists"
+
+  - id: A018
+    says: "Skill templates data file contains an array with name and description fields"
+    block: "skill-templates.json has valid shape"
+    target: "firstEntry.name"
+    matcher: "exists"
+
+  - id: A019
+    says: "Build metadata file contains version, commit SHA, and timestamp"
+    block: "build-meta.json has valid shape"
+    target: "data.version"
+    matcher: "exists"
+
+  - id: A020
+    says: "Commands data file includes groups array and total command count"
+    block: "commands.json has valid shape"
+    target: "data.totalCommands"
+    matcher: "greater"
+    value: 0
+
+  - id: A021
+    says: "Data integrity tests are skipped gracefully when data directory does not exist"
+    block: "describe.skipIf skips on fresh clone"
+    target: "skipBehavior"
+    matcher: "truthy"
+
+  # AC8: format.test.ts
+  - id: A022
+    says: "Splitting a headline with emphasis markers produces segments with em flags"
+    block: "splitHeadline parses emphasis"
+    target: "segments[1].em"
+    matcher: "equals"
+    value: true
+
+  - id: A023
+    says: "A headline with no emphasis markers produces a single plain segment"
+    block: "splitHeadline with no emphasis"
+    target: "segments.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A024
+    says: "Emphasis at the start of a string is correctly parsed as the first segment"
+    block: "splitHeadline emphasis at start"
+    target: "segments[0].em"
+    matcher: "equals"
+    value: true
+
+  # AC9: proof-feed.test.ts
+  - id: A025
+    says: "A timestamp from 30 seconds ago formats as seconds with 's ago' suffix"
+    block: "formatAge seconds threshold"
+    target: "result"
+    matcher: "equals"
+    value: "30s ago"
+
+  - id: A026
+    says: "A timestamp at exactly now formats as '1s ago' not '0s ago'"
+    block: "formatAge zero-second clamp"
+    target: "result"
+    matcher: "equals"
+    value: "1s ago"
+
+  - id: A027
+    says: "A future timestamp is clamped to '1s ago' instead of showing negative time"
+    block: "formatAge future timestamp clamp"
+    target: "result"
+    matcher: "equals"
+    value: "1s ago"
+
+  - id: A028
+    says: "A timestamp from 90 seconds ago formats as minutes"
+    block: "formatAge minutes threshold"
+    target: "result"
+    matcher: "equals"
+    value: "1m ago"
+
+  - id: A029
+    says: "A timestamp from 2 hours ago formats as hours"
+    block: "formatAge hours threshold"
+    target: "result"
+    matcher: "equals"
+    value: "2h ago"
+
+  - id: A030
+    says: "A timestamp from 48 hours ago formats as days"
+    block: "formatAge days threshold"
+    target: "result"
+    matcher: "equals"
+    value: "2d ago"
+
+  # AC10: copy.test.ts
+  - id: A031
+    says: "The copy catalog has all 20 expected top-level sections"
+    block: "copy has 20 top-level sections"
+    target: "sectionCount"
+    matcher: "equals"
+    value: 20
+
+  - id: A032
+    says: "Navigation links array has 4 entries each with label and href"
+    block: "nav.links structure"
+    target: "nav.links.length"
+    matcher: "equals"
+    value: 4
+
+  - id: A033
+    says: "Footer has 3 columns each with a title and non-empty links array"
+    block: "footer.columns structure"
+    target: "footer.columns.length"
+    matcher: "equals"
+    value: 3
+
+  - id: A034
+    says: "Every footer link has a non-empty label and href"
+    block: "footer links are complete"
+    target: "allLinksValid"
+    matcher: "truthy"
+
+  - id: A035
+    says: "Hero call-to-action has label, command, and href fields"
+    block: "hero.ctas.primary structure"
+    target: "hero.ctas.primary.label"
+    matcher: "exists"
+
+  # AC11: zero production code changes
+  - id: A036
+    says: "No production source files were modified — only test files and package.json"
+    block: "no production code changes"
+    target: "productionFilesChanged"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "website/package.json"
+    action: modify
+  - path: "website/lib/__tests__/docs-data/proofs.test.ts"
+    action: create
+  - path: "website/lib/__tests__/docs-data/docs-stat-values.test.ts"
+    action: create
+  - path: "website/lib/__tests__/docs-data/strip-jsx.test.ts"
+    action: create
+  - path: "website/lib/__tests__/docs-data/data-integrity.test.ts"
+    action: create
+  - path: "website/lib/__tests__/format.test.ts"
+    action: create
+  - path: "website/lib/__tests__/proof-feed.test.ts"
+    action: create
+  - path: "website/lib/__tests__/copy.test.ts"
+    action: create
