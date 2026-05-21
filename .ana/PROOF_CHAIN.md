@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 104 active · 3 promoted · 709 closed
+140 runs · 103 active · 3 promoted · 710 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 15 | 2026-05-20 |
-| cli | 94 | 69 | 2026-05-21 |
+| cli | 94 | 68 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -15,7 +15,7 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 10 | 7 |
-| packages/cli/tests/commands/work.test.ts | 9 | 8 |
+| packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/commands/init/state.ts | 7 | 5 |
 | packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
 | packages/cli/src/commands/proof.ts | 4 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 104 total)
+## Active Findings (30 shown of 103 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -83,7 +83,10 @@
 
 - **test:** New backfill guard test doesn't verify the negative case — no test for what happens if surface is removed from the guard condition — *Fix test behavioral coverage gaps*
 - **test:** Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change — *Pre-surface behavior cleanup*
-- **test:** A021 idempotency test checks pure function determinism, not backfill loop guard — *Surface Awareness Bridge*
+
+### packages/cli/tests/engine/census-detection.test.ts
+
+- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
