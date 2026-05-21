@@ -256,7 +256,8 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
                           padding: "2px 6px",
                           borderRadius: "3px",
                           border: "1px solid var(--hairline)",
-                          color: "var(--ink-60)",
+                          background: "var(--ink-05, rgba(0,0,0,0.04))",
+                          color: "var(--ink-50)",
                           letterSpacing: "0.02em",
                         }}>
                           {e.surface}
