@@ -264,7 +264,7 @@
 }
 .proofRow {
   display: grid;
-  grid-template-columns: 86px auto minmax(0, 1fr) 78px 84px;
+  grid-template-columns: 86px 84px minmax(0, 1fr) 78px 84px;
   gap: 18px;
   align-items: center;
   padding: 18px 4px;
