@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "validateSurface reads ana.json independently from chain reading — double read in same process"
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "makeHealthEntry helper duplicated across proof.test.ts describe blocks due to scoping"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept

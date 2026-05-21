@@ -47,6 +47,31 @@ function formatLocalDate(iso: string): string {
 import { isWorktreeDirectory } from '../utils/worktree.js';
 
 /**
+ * Validate a surface name against ana.json surfaces configuration.
+ *
+ * @param projectRoot - Absolute path to the project root
+ * @param surfaceName - The surface name to validate
+ * @returns Validation result with available surfaces
+ */
+function validateSurface(projectRoot: string, surfaceName: string): { valid: boolean; available: string[]; configured: boolean } {
+  try {
+    const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
+    if (!fs.existsSync(anaJsonPath)) {
+      return { valid: false, available: [], configured: false };
+    }
+    const anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
+    const surfaces = anaContent.surfaces as Record<string, unknown> | undefined;
+    if (!surfaces || Object.keys(surfaces).length === 0) {
+      return { valid: false, available: [], configured: false };
+    }
+    const available = Object.keys(surfaces);
+    return { valid: available.includes(surfaceName), available, configured: true };
+  } catch {
+    return { valid: false, available: [], configured: false };
+  }
+}
+
+/**
  * Box-drawing characters for terminal output
  * Compatible across iTerm, Terminal.app, VS Code terminal, Windows Terminal
  */
@@ -1588,9 +1613,10 @@ export function registerProofCommand(program: Command): void {
     .option('--severity <values>', 'Filter by severity (comma-separated: risk,debt,observation,unclassified)')
     .option('--entry <slug>', 'Filter to findings from a specific pipeline run')
     .option('--matrix', 'Show orientation summary instead of file-grouped findings')
+    .option('--surface <name>', 'Filter to findings from entries belonging to a specific surface')
     .option('--new', 'Filter to findings from entries completed after the last learn session')
     .option('--since <date>', 'Filter to findings from entries completed after ISO date')
-    .action(async (options: { json?: boolean; full?: boolean; severity?: string; entry?: string; matrix?: boolean; new?: boolean; since?: string }) => {
+    .action(async (options: { json?: boolean; full?: boolean; severity?: string; entry?: string; matrix?: boolean; new?: boolean; since?: string; surface?: string }) => {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
       const parentOpts = proofCommand.opts();
@@ -1601,6 +1627,21 @@ export function registerProofCommand(program: Command): void {
         console.log('The --full flag is designed for agent consumption. Use with --json:');
         console.log('  ana proof audit --json --full');
         return;
+      }
+
+      // Validate --surface flag early
+      if (options.surface) {
+        const surfaceCheck = validateSurface(proofRoot, options.surface);
+        if (!surfaceCheck.configured) {
+          console.error('Surfaces are not configured. Add surfaces to ana.json with `ana init`.');
+          process.exit(1);
+          return;
+        }
+        if (!surfaceCheck.valid) {
+          console.error(`Error: Unknown surface "${options.surface}". Available surfaces: ${surfaceCheck.available.join(', ')}`);
+          process.exit(1);
+          return;
+        }
       }
 
       // Read chain (no branch check — audit is read-only)
@@ -1644,6 +1685,11 @@ export function registerProofCommand(program: Command): void {
 
       // --matrix: orientation mode — early return before filters and file I/O
       if (options.matrix) {
+        // Apply --surface filter to entries before matrix computation
+        if (options.surface) {
+          chain = { ...chain, entries: chain.entries.filter(e => e.surface === options.surface) };
+        }
+
         // Handle empty entries array
         if (chain.entries.length === 0) {
           if (useJson) {
@@ -1839,6 +1885,7 @@ export function registerProofCommand(program: Command): void {
         related_assertions?: string[];
         entry_slug: string;
         entry_feature: string;
+        entry_surface?: string;
       }> = [];
 
       for (const entry of chain.entries) {
@@ -1876,6 +1923,7 @@ export function registerProofCommand(program: Command): void {
             entry_slug: entry.slug,
             entry_feature: entry.feature,
           };
+          if (entry.surface) auditFinding.entry_surface = entry.surface;
           if (finding.line !== undefined) auditFinding.line = finding.line;
           if (finding.related_assertions !== undefined) auditFinding.related_assertions = finding.related_assertions;
           activeFindings.push(auditFinding);
@@ -1898,6 +1946,11 @@ export function registerProofCommand(program: Command): void {
       if (options.entry) {
         const entrySlug = options.entry;
         activeFindings = activeFindings.filter(f => f.entry_slug === entrySlug);
+      }
+
+      // Apply --surface filter (post-collection, before grouping)
+      if (options.surface) {
+        activeFindings = activeFindings.filter(f => f.entry_surface === options.surface);
       }
 
       // Apply --new / --since filter (post-collection, before grouping)
@@ -2131,11 +2184,27 @@ export function registerProofCommand(program: Command): void {
   const healthCommand = new Command('health')
     .description('Display proof chain health dashboard')
     .option('--json', 'Output JSON format')
-    .action(async (options: { json?: boolean }) => {
+    .option('--surface <name>', 'Filter to entries belonging to a specific surface')
+    .action(async (options: { json?: boolean; surface?: string }) => {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
       const parentOpts = proofCommand.opts();
       const useJson = options.json || parentOpts['json'];
+
+      // Validate --surface flag early
+      if (options.surface) {
+        const surfaceCheck = validateSurface(proofRoot, options.surface);
+        if (!surfaceCheck.configured) {
+          console.error('Surfaces are not configured. Add surfaces to ana.json with `ana init`.');
+          process.exit(1);
+          return;
+        }
+        if (!surfaceCheck.valid) {
+          console.error(`Error: Unknown surface "${options.surface}". Available surfaces: ${surfaceCheck.available.join(', ')}`);
+          process.exit(1);
+          return;
+        }
+      }
 
       // Read chain (no branch check — health is read-only)
       if (!fs.existsSync(proofChainPath)) {
@@ -2161,6 +2230,11 @@ export function registerProofCommand(program: Command): void {
         console.error(chalk.red('Error: Failed to parse proof_chain.json'));
         process.exit(1);
         return;
+      }
+
+      // Apply --surface filter before computation
+      if (options.surface) {
+        chain = { ...chain, entries: chain.entries.filter(e => e.surface === options.surface) };
       }
 
       const report = computeHealthReport(chain);

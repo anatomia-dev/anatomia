@@ -459,6 +459,7 @@ interface DashboardEntry {
   slug: string;
   feature: string;
   completed_at: string;
+  surface?: string | undefined;
   findings?: Array<{ id: string; category: string; summary: string; file: string | null; anchor: string | null; status?: string }>;
 }
 
@@ -481,6 +482,35 @@ export function generateDashboard(entries: DashboardEntry[], stats: { runs: numb
 
   // Summary line
   md += `${stats.runs} runs · ${stats.active} active · ${stats.promoted} promoted · ${stats.closed} closed\n\n`;
+
+  // By Surface section — only when at least one entry has a defined surface
+  const hasSurfaces = entries.some(e => e.surface !== undefined);
+  if (hasSurfaces) {
+    const surfaceMap = new Map<string, { runs: number; active: number; latest: string }>();
+    for (const entry of entries) {
+      const surfaceKey = entry.surface ?? 'Unscoped';
+      const existing = surfaceMap.get(surfaceKey) || { runs: 0, active: 0, latest: '' };
+      existing.runs++;
+      if (entry.completed_at > existing.latest) {
+        existing.latest = entry.completed_at;
+      }
+      for (const finding of entry.findings ?? []) {
+        if (!finding.status || finding.status === 'active') {
+          existing.active++;
+        }
+      }
+      surfaceMap.set(surfaceKey, existing);
+    }
+
+    md += '## By Surface\n\n';
+    md += '| Surface | Runs | Active | Latest |\n';
+    md += '|---------|------|--------|--------|\n';
+    for (const [surface, data] of surfaceMap) {
+      const latestDate = data.latest ? data.latest.slice(0, 10) : '—';
+      md += `| ${surface} | ${data.runs} | ${data.active} | ${latestDate} |\n`;
+    }
+    md += '\n';
+  }
 
   // Hot Modules: files with active findings from 2+ distinct entries
   const fileEntryMap = new Map<string, Set<string>>();

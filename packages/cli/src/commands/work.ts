@@ -907,6 +907,42 @@ function guardFailResult(result: string, context?: string): void {
 /**
  * Write a proof chain entry for a completed work item and regenerate the dashboard.
  *
+ * Derive surface from modules_touched path matching against ana.json surfaces.
+ *
+ * Returns the surface name when exactly one surface matches the given modules.
+ * Cross-surface entries (modules spanning multiple surfaces) return undefined.
+ *
+ * @param modulesTouched - List of file paths touched by the entry
+ * @param surfaces - Record of surface names to surface config with path
+ * @returns The matching surface name, or undefined
+ */
+export function deriveSurface(
+  modulesTouched: string[],
+  surfaces: Record<string, { path: string }>,
+): string | undefined {
+  if (modulesTouched.length === 0 || Object.keys(surfaces).length === 0) {
+    return undefined;
+  }
+  const matchingSurfaces = new Set<string>();
+  for (const filePath of modulesTouched) {
+    for (const [surfaceName, surface] of Object.entries(surfaces)) {
+      // Use directory-boundary prefix matching to avoid false positives
+      // e.g., 'packages/cli/' should not match 'packages/cli-utils/foo.ts'
+      const surfacePrefix = surface.path.endsWith('/') ? surface.path : surface.path + '/';
+      if (filePath.startsWith(surfacePrefix) || filePath === surface.path) {
+        matchingSurfaces.add(surfaceName);
+      }
+    }
+  }
+  if (matchingSurfaces.size === 1) {
+    return [...matchingSurfaces][0];
+  }
+  return undefined;
+}
+
+/**
+ * Write a new entry to the proof chain, run backfill migrations, and generate the dashboard.
+ *
  * @param slug - Work item slug
  * @param proof - Proof summary data
  * @param projectRoot - Project root directory
@@ -1002,29 +1038,21 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
   };
 
   // Derive surface from modules_touched path matching against ana.json surfaces
+  let anaSurfaces: Record<string, { path: string }> | undefined;
   try {
     const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
-    if (fs.existsSync(anaJsonPath) && modulesTouched.length > 0) {
+    if (fs.existsSync(anaJsonPath)) {
       const anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
-      const surfaces = anaContent.surfaces as Record<string, { path: string }> | undefined;
-      if (surfaces && Object.keys(surfaces).length > 0) {
-        const matchingSurfaces = new Set<string>();
-        for (const filePath of modulesTouched) {
-          for (const [surfaceName, surface] of Object.entries(surfaces)) {
-            // Use directory-boundary prefix matching to avoid false positives
-            // e.g., 'packages/cli/' should not match 'packages/cli-utils/foo.ts'
-            const surfacePrefix = surface.path.endsWith('/') ? surface.path : surface.path + '/';
-            if (filePath.startsWith(surfacePrefix) || filePath === surface.path) {
-              matchingSurfaces.add(surfaceName);
-            }
-          }
-        }
-        if (matchingSurfaces.size === 1) {
-          entry.surface = [...matchingSurfaces][0];
-        }
-      }
+      anaSurfaces = anaContent.surfaces as Record<string, { path: string }> | undefined;
     }
   } catch { /* ana.json missing or malformed — skip surface derivation */ }
+
+  if (anaSurfaces && Object.keys(anaSurfaces).length > 0) {
+    const derived = deriveSurface(modulesTouched, anaSurfaces);
+    if (derived) {
+      entry.surface = derived;
+    }
+  }
 
   // Populate phases from plan.md if available
   try {
@@ -1065,6 +1093,18 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
   for (const existing of chain.entries) {
     resolveFindingPaths(existing.findings || [], existing.modules_touched || [], projectRoot, globCache);
     resolveFindingPaths(existing.build_concerns || [], existing.modules_touched || [], projectRoot, globCache);
+  }
+
+  // Backfill migration: derive surface for existing entries without one
+  if (anaSurfaces && Object.keys(anaSurfaces).length > 0) {
+    for (const existing of chain.entries) {
+      if (!existing.surface && existing.modules_touched?.length) {
+        const derived = deriveSurface(existing.modules_touched, anaSurfaces);
+        if (derived) {
+          existing.surface = derived;
+        }
+      }
+    }
   }
 
   // Staleness checks — run after path resolution and status assignment

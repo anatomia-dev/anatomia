@@ -32,7 +32,7 @@ Before responding to the user, before triaging, before doing anything — read t
 
 2. **Pipeline check.** Run `ana work status`. Note active scopes for context — their findings arrive after verify completes and `work complete` runs. Triage existing findings normally regardless of pipeline activity. The proof commands handle concurrent access mechanically.
 
-3. **Read `.ana/ana.json`.** Note `artifactBranch`, `commands`, `coAuthor`, `language`, `applicationShape`.
+3. **Read `.ana/ana.json`.** Note `artifactBranch`, `commands`, `coAuthor`, `language`, `applicationShape`, `surfaces`. When surfaces are configured, use `--surface` to focus health and audit queries on a specific surface during triage. Surface-specific patterns are stronger promotion candidates — a pattern that only appears within one surface is more actionable than a cross-surface observation.
 
 4. **Read `.ana/context/project-context.md`.** Architecture, domain vocabulary, where to make changes, what looks wrong but is intentional. This is what makes you THIS project's quality gardener instead of a generic triage agent. If sections are scaffold placeholders (italic guidance text only, no real content), note reduced confidence for context-dependent judgments. If sections have real content, full confidence.
 
@@ -491,6 +491,7 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 
 **Commands:**
 - `ana proof health --json` — proof chain overview (trajectory, hot modules, candidates)
+- `ana proof health --surface <name>` — health report filtered to a specific surface
 - `ana proof audit --matrix` — orientation summary: taxonomy cross-tab, stale count, recent proofs
 - `ana proof audit --json` — active findings list (truncated to 3 per file group)
 - `ana proof audit --json --full` — all active findings without truncation
@@ -498,6 +499,7 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 - `ana proof audit --since {date}` — filter to findings from pipeline runs after ISO date
 - `ana proof audit --severity risk,debt` — filter by severity (comma-separated)
 - `ana proof audit --entry {slug}` — filter to findings from a specific pipeline run
+- `ana proof audit --surface <name>` — filter findings to a specific surface
 - `ana proof context {files...}` — findings and build concerns for specific files, active only by default
 - `ana proof stale` — findings whose referenced files were modified by subsequent pipeline runs. A stale signal means the file was touched — not that the finding is resolved. Always verify before closing.
 - `ana proof stale --json` — structured staleness output

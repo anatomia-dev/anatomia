@@ -5788,3 +5788,69 @@ describe('concurrency guards', () => {
     expect(startMatch![0]).toContain('--force');
   });
 });
+
+describe('deriveSurface', () => {
+  let deriveSurface: typeof import('../../src/commands/work.js').deriveSurface;
+
+  beforeEach(async () => {
+    const mod = await import('../../src/commands/work.js');
+    deriveSurface = mod.deriveSurface;
+  });
+
+  const surfaces = {
+    cli: { path: 'packages/cli' },
+    website: { path: 'website' },
+  };
+
+  // @ana A025
+  it('derives surface when all modules match one surface', () => {
+    const result = deriveSurface(
+      ['packages/cli/src/commands/work.ts', 'packages/cli/src/utils/proof.ts'],
+      surfaces,
+    );
+    expect(result).toBe('cli');
+  });
+
+  // @ana A020
+  it('derives surface from modules_touched for backfill scenario', () => {
+    const result = deriveSurface(['packages/cli/src/foo.ts'], surfaces);
+    expect(result).toBe('cli');
+  });
+
+  // @ana A022
+  it('returns undefined for cross-surface entries', () => {
+    const result = deriveSurface(
+      ['packages/cli/src/foo.ts', 'website/src/page.ts'],
+      surfaces,
+    );
+    expect(result).toBeUndefined();
+  });
+
+  // @ana A023
+  it('returns undefined when modules_touched is empty', () => {
+    const result = deriveSurface([], surfaces);
+    expect(result).toBeUndefined();
+  });
+
+  it('returns undefined when no surfaces configured', () => {
+    const result = deriveSurface(['packages/cli/src/foo.ts'], {});
+    expect(result).toBeUndefined();
+  });
+
+  it('uses directory-boundary matching to avoid false positives', () => {
+    const result = deriveSurface(
+      ['packages/cli-utils/src/foo.ts'],
+      surfaces,
+    );
+    expect(result).toBeUndefined();
+  });
+
+  // @ana A021
+  it('is idempotent — already-derived entries produce the same result', () => {
+    const first = deriveSurface(['packages/cli/src/foo.ts'], surfaces);
+    const second = deriveSurface(['packages/cli/src/foo.ts'], surfaces);
+    expect(first).toBe('cli');
+    expect(second).toBe('cli');
+    // No state mutation — same inputs always produce same output
+  });
+});

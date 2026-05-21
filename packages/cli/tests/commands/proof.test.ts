@@ -4949,4 +4949,164 @@ describe('ana proof', () => {
       expect(stdout).toContain('cli');
     });
   });
+
+  describe('ana proof health --surface', () => {
+    function makeHealthEntry(opts: {
+      slug: string;
+      risks?: number;
+      debts?: number;
+      observations?: number;
+      file?: string;
+      action?: string;
+    }): Record<string, unknown> {
+      const findings = [];
+      const file = opts.file ?? 'src/test.ts';
+      const action = opts.action ?? 'scope';
+      for (let i = 0; i < (opts.risks ?? 0); i++) {
+        findings.push({ id: `F${findings.length + 1}`, category: 'code', summary: `risk ${i}`, file, anchor: null, severity: 'risk', suggested_action: action, status: 'active' });
+      }
+      for (let i = 0; i < (opts.debts ?? 0); i++) {
+        findings.push({ id: `F${findings.length + 1}`, category: 'code', summary: `debt ${i}`, file, anchor: null, severity: 'debt', suggested_action: action, status: 'active' });
+      }
+      for (let i = 0; i < (opts.observations ?? 0); i++) {
+        findings.push({ id: `F${findings.length + 1}`, category: 'code', summary: `obs ${i}`, file, anchor: null, severity: 'observation', suggested_action: action, status: 'active' });
+      }
+      return {
+        slug: opts.slug, feature: `Feature ${opts.slug}`, result: 'PASS',
+        author: { name: 'Dev', email: 'dev@test.com' },
+        contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+        assertions: [{ id: 'A001', says: 'Works', status: 'SATISFIED' }],
+        acceptance_criteria: { total: 1, met: 1 },
+        timing: { total_minutes: 10 },
+        hashes: { scope: 'sha256:aaa', contract: 'sha256:bbb' },
+        completed_at: '2026-04-01T00:00:00Z',
+        modules_touched: [], findings, build_concerns: [],
+      };
+    }
+
+    // @ana A001, A002
+    it('filters entries to the specified surface', async () => {
+      const entries = [
+        { ...makeHealthEntry({ slug: 'cli-1', risks: 2, file: 'packages/cli/src/a.ts' }), surface: 'cli' },
+        { ...makeHealthEntry({ slug: 'cli-2', risks: 1, file: 'packages/cli/src/b.ts' }), surface: 'cli' },
+        { ...makeHealthEntry({ slug: 'web-1', risks: 3, file: 'website/src/page.ts' }), surface: 'website' },
+      ];
+      await createProofChain(entries);
+      // Add surfaces to ana.json
+      const anaJson = JSON.parse(await fs.readFile(path.join(tempDir, '.ana', 'ana.json'), 'utf-8'));
+      anaJson.surfaces = { cli: { path: 'packages/cli' }, website: { path: 'website' } };
+      await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), JSON.stringify(anaJson));
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['health', '--surface', 'cli', '--json']);
+      expect(exitCode).toBe(0);
+      const output = JSON.parse(stdout);
+      expect(output.results.runs).toBe(2);
+      expect(output.results.hot_modules).toBeDefined();
+    });
+
+    // @ana A005, A006
+    it('shows error for unknown surface name', async () => {
+      await createProofChain([makeHealthEntry({ slug: 'cli-1' })]);
+      const anaJson = JSON.parse(await fs.readFile(path.join(tempDir, '.ana', 'ana.json'), 'utf-8'));
+      anaJson.surfaces = { cli: { path: 'packages/cli' }, website: { path: 'website' } };
+      await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), JSON.stringify(anaJson));
+      process.chdir(tempDir);
+
+      const { stderr, exitCode } = runProof(['health', '--surface', 'foo']);
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain('Unknown surface');
+      expect(stderr).toContain('cli');
+      expect(stderr).toContain('website');
+    });
+
+    // @ana A007
+    it('shows not-configured message when no surfaces in ana.json', async () => {
+      await createProofChain([makeHealthEntry({ slug: 'cli-1' })]);
+      process.chdir(tempDir);
+
+      const { stderr, exitCode } = runProof(['health', '--surface', 'cli']);
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain('not configured');
+    });
+  });
+
+  describe('ana proof audit --surface', () => {
+    function makeHealthEntry(opts: {
+      slug: string;
+      risks?: number;
+      file?: string;
+    }): Record<string, unknown> {
+      const findings = [];
+      const file = opts.file ?? 'src/test.ts';
+      for (let i = 0; i < (opts.risks ?? 0); i++) {
+        findings.push({ id: `F${findings.length + 1}`, category: 'code', summary: `risk ${i}`, file, anchor: null, severity: 'risk', suggested_action: 'scope', status: 'active' });
+      }
+      return {
+        slug: opts.slug, feature: `Feature ${opts.slug}`, result: 'PASS',
+        author: { name: 'Dev', email: 'dev@test.com' },
+        contract: { total: 1, covered: 1, uncovered: 0, satisfied: 1, unsatisfied: 0, deviated: 0 },
+        assertions: [{ id: 'A001', says: 'Works', status: 'SATISFIED' }],
+        acceptance_criteria: { total: 1, met: 1 },
+        timing: { total_minutes: 10 },
+        hashes: { scope: 'sha256:aaa', contract: 'sha256:bbb' },
+        completed_at: '2026-04-01T00:00:00Z',
+        modules_touched: [], findings, build_concerns: [],
+      };
+    }
+
+    // @ana A003, A004
+    it('filters active findings to specified surface', async () => {
+      const entries = [
+        {
+          ...makeHealthEntry({ slug: 'cli-1', risks: 2, file: 'packages/cli/src/a.ts' }),
+          surface: 'cli',
+        },
+        {
+          ...makeHealthEntry({ slug: 'web-1', risks: 3, file: 'website/src/page.ts' }),
+          surface: 'website',
+        },
+      ];
+      await createProofChain(entries);
+      const anaJson = JSON.parse(await fs.readFile(path.join(tempDir, '.ana', 'ana.json'), 'utf-8'));
+      anaJson.surfaces = { cli: { path: 'packages/cli' }, website: { path: 'website' } };
+      await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), JSON.stringify(anaJson));
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['audit', '--surface', 'cli', '--json']);
+      expect(exitCode).toBe(0);
+      const output = JSON.parse(stdout);
+      // Should only show cli findings (2 risks), not website (3 risks)
+      expect(output.results.total_active).toBe(2);
+      // Verify no website files appear in by_file groups
+      const fileKeys = output.results.by_file.map((g: { file: string }) => g.file);
+      expect(fileKeys).not.toContain('website/src/page.ts');
+    });
+
+    // @ana A024
+    it('filters matrix mode by surface', async () => {
+      const entries = [
+        {
+          ...makeHealthEntry({ slug: 'cli-1', risks: 2 }),
+          surface: 'cli',
+        },
+        {
+          ...makeHealthEntry({ slug: 'web-1', risks: 5 }),
+          surface: 'website',
+        },
+      ];
+      await createProofChain(entries);
+      const anaJson = JSON.parse(await fs.readFile(path.join(tempDir, '.ana', 'ana.json'), 'utf-8'));
+      anaJson.surfaces = { cli: { path: 'packages/cli' }, website: { path: 'website' } };
+      await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), JSON.stringify(anaJson));
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['audit', '--matrix', '--surface', 'cli', '--json']);
+      expect(exitCode).toBe(0);
+      const output = JSON.parse(stdout);
+      expect(output.results.total_active).toBeDefined();
+      // Should only count cli findings (2 risks), not website (5 risks)
+      expect(output.results.total_active).toBe(2);
+    });
+  });
 });

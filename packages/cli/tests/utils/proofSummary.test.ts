@@ -1797,6 +1797,45 @@ describe('generateDashboard', () => {
     expect(md).toContain('## Promoted Rules');
     expect(md).toContain('*No promoted rules yet.*');
   });
+
+  // @ana A008, A009
+  it('renders By Surface section when entries have surface data', () => {
+    const entries = [
+      { slug: 'feat-1', feature: 'F1', completed_at: '2026-04-01T00:00:00Z', surface: 'cli', findings: [
+        { id: 'c1', category: 'code', summary: 'Issue', file: 'src/a.ts', anchor: null, status: 'active' },
+      ]},
+      { slug: 'feat-2', feature: 'F2', completed_at: '2026-04-02T00:00:00Z', surface: 'cli', findings: [] },
+      { slug: 'feat-3', feature: 'F3', completed_at: '2026-04-03T00:00:00Z', surface: 'website', findings: [] },
+    ];
+    const md = generateDashboard(entries, { runs: 3, active: 1, promoted: 0, closed: 0 });
+    expect(md).toContain('## By Surface');
+    expect(md).toContain('cli');
+    expect(md).toContain('website');
+    // cli has 2 runs
+    expect(md).toContain('| cli | 2 | 1 |');
+    // website has 1 run
+    expect(md).toContain('| website | 1 | 0 |');
+  });
+
+  // @ana A010
+  it('does not render By Surface section when no entries have surface data', () => {
+    const entries = [
+      { slug: 'feat-1', feature: 'F1', completed_at: '2026-04-01T00:00:00Z', findings: [] },
+    ];
+    const md = generateDashboard(entries, { runs: 1, active: 0, promoted: 0, closed: 0 });
+    expect(md).not.toContain('## By Surface');
+  });
+
+  // @ana A011
+  it('groups entries without surface as Unscoped', () => {
+    const entries = [
+      { slug: 'feat-1', feature: 'F1', completed_at: '2026-04-01T00:00:00Z', surface: 'cli', findings: [] },
+      { slug: 'feat-2', feature: 'F2', completed_at: '2026-04-02T00:00:00Z', findings: [] },
+    ];
+    const md = generateDashboard(entries, { runs: 2, active: 0, promoted: 0, closed: 0 });
+    expect(md).toContain('## By Surface');
+    expect(md).toContain('Unscoped');
+  });
 });
 
 // @ana A022
