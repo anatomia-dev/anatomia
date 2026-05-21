@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 97 active · 3 promoted · 716 closed
+140 runs · 96 active · 3 promoted · 717 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 63 | 2026-05-21 |
+| cli | 94 | 62 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,11 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 97 total)
+## Active Findings (30 shown of 96 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
+
+### packages/cli/src/commands/doctor.ts
+
+- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -61,10 +65,6 @@
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
-
-### packages/cli/src/utils/git-operations.ts
-
-- **code:** Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive) — 10+ verify cycles old, not introduced by this build — *Command File Duplication Cleanup*
 
 ### packages/cli/tests/commands/init/makeTestCommand.test.ts
 
