@@ -61,5 +61,20 @@
     "packages/cli/tests/utils/proofSummary.test.ts",
     "packages/cli/tests/utils/scaffold-generators.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T00:39:53.852Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:db111f789f87526ceae52f4c3d171c4793e2c12bfff530484cf9271bb772c101",
+    "run_at": "2026-05-21T00:46:44.612Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T00:46:44.656Z",
+    "hash": "sha256:b0d92b56caffcb0c6d83dcdb8babc4d6434924f49286e06070862618dffdbe28"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T00:46:44.656Z",
+    "hash": "sha256:a24196da773381b3b12a147a8cdccc1a55636fe9471ad4f264402be26047013b"
+  }
 }
