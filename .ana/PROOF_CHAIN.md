@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 104 active · 3 promoted · 676 closed
+133 runs · 103 active · 3 promoted · 677 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 67 | 2026-05-21 |
+| cli | 88 | 66 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 104 total)
+## Active Findings (30 shown of 103 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -40,6 +40,7 @@
 - **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
+- **code:** Merge override assumes newAnaConfig always contains all four keys — undefined would silently drop the field from JSON output — *Re-init mechanical field refresh*
 
 ### packages/cli/src/commands/work.ts
 
@@ -69,10 +70,6 @@
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### packages/cli/src/utils/displayNames.ts
-
-- **code:** nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro' — *Scan Surface Detection*
 
 ### packages/cli/tests/commands/doctor.test.ts
 
