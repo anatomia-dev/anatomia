@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 95 active · 3 promoted · 718 closed
+140 runs · 94 active · 3 promoted · 719 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 61 | 2026-05-21 |
+| cli | 94 | 60 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 95 total)
+## Active Findings (30 shown of 94 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -33,6 +33,7 @@
 ### packages/cli/src/commands/doctor.ts
 
 - **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
+- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -68,10 +69,6 @@
 ### packages/cli/tests/commands/doctor.test.ts
 
 - **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
-
-### packages/cli/tests/commands/init/makeTestCommand.test.ts
-
-- **code:** File not in contract file_changes was modified — makeTestCommand.test.ts assertions updated to match new behavior — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
