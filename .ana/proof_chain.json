@@ -31833,7 +31833,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "polyglot-language-detection-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Self-correcting edge case — indexOf('\\n[') at projectType.ts:84 and :110 (hasPythonProjectDeps) could miss a section header at position 0 of the sliced block, but that only occurs when the matched section is empty (next header immediately follows). Empty section means no deps found, so the function correctly returns false. Same pattern and reasoning as fix-polyglot-rust-ts-ruby-C2 closed this session.",
+          "closed_at": "2026-05-21T02:52:22.952Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
