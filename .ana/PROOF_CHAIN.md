@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-134 runs · 106 active · 3 promoted · 680 closed
+135 runs · 109 active · 3 promoted · 681 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
 | cli | 89 | 69 | 2026-05-21 |
-| website | 20 | 19 | 2026-05-21 |
+| website | 21 | 22 | 2026-05-21 |
 
 ## Hot Modules
 
@@ -24,15 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
-
-### packages/cli/src/commands/doctor.ts
-
-- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -65,15 +61,10 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
-- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### packages/cli/tests/commands/doctor.test.ts
-
-- **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
@@ -103,6 +94,15 @@
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
 - **test:** No test exercises VALIDATION_PATH_PATTERNS false positive boundary (e.g., import containing 'schema' in a non-validation context) — *Fix Deep Tier Sampling & Finding Accuracy*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/docs/proof/ProofHero.tsx
+
+- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

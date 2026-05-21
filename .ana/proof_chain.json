@@ -36514,6 +36514,266 @@
         "base_commit": "fc00965f18c25b54b505a6f517e33844ce7f04dd"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "docs-comprehensive-update",
+      "feature": "Comprehensive Documentation Update for Surface Awareness",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 25,
+        "satisfied": 25,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Proof entries include the surface field in the website data pipeline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Proof entries without a surface render null instead of undefined",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Proof detail pages show which surface was verified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Proof entries without a surface do not show a surface label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Proof explorer rows show the surface as an inline badge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Surface badges match the existing stage badge styling",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Proof entries without a surface do not show a surface badge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Quickstart explains how to override detected commands in three lines",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Quickstart links to the configurability guide for monorepo details",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Quickstart warns about starting external services before the pipeline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "External services callout mentions database and Docker",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Tests-fail troubleshooting card lists database first as the most common cause",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Tests-fail card cross-references the monorepo card without quoting its title",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Tests-fail card includes five ranked causes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Best practices section includes guidance to start with small changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Best practices section includes guidance to check test commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "README documents the config delete command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "README mentions monorepo surface detection during init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Reading-a-proof guide explains the surface label for monorepo projects",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Ana-learn guide mentions the surface flag for scoped triage",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Configurability guide documents the config delete command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Configurability guide shows per-surface command override syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Pipeline, toolbelt, and context concept pages are not modified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Website builds without errors after all changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "All existing tests continue to pass",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 15
+      },
+      "timing": {
+        "total_minutes": 71,
+        "think": 10,
+        "plan": 8,
+        "build": 5,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:28f651f3944bb723628534c0b32efb9ccaa9555a67be372e12722d248c945f52",
+        "contract": "sha256:ade40088f9be4b72b6b5dbe86bc232b28948e321e061fc5875078f0e15ddc448",
+        "plan": "sha256:56747c9a4d8d49a07116c2c01add25016e17e6d3c617b9a787a1e02157052c63",
+        "spec": "sha256:f4f06533a7dcc9477c67433f0a87aba74dcb83601ea6e089b68646e601825d53",
+        "build-report": "sha256:b6bfb816b2b4a879f704fdd27c7af19b3a703df7f1da85335d50e0d04631eee4",
+        "build-data": "sha256:faf299dd5b2cdb4d9ae4a936682e1f73fae2e8ff31dac57acec6d89df1b7da6b",
+        "verify-report": "sha256:e39050fc10b7c699d9dce25e91999079db81ebcb544b21b76fa42dd5985e7855",
+        "verify-data": "sha256:119e84f91db41be2321e4a833041f548e6046897087056058b1aca06908c06ac"
+      },
+      "completed_at": "2026-05-21T02:32:21.388Z",
+      "modules_touched": [
+        "README.md",
+        "website/components/docs/proof/ProofExplorer.tsx",
+        "website/components/docs/proof/ProofHero.tsx",
+        "website/content/docs/guides/configurability.mdx",
+        "website/content/docs/guides/reading-a-proof.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx",
+        "website/content/docs/start.mdx",
+        "website/lib/docs-data/types.ts",
+        "website/scripts/extract-docs-data.ts"
+      ],
+      "scope_summary": "Surface awareness shipped across three stages but the documentation doesn't reflect it. The proof data pipeline strips the `surface` field, so the website's proof pages can't display it even though the proof chain has it (88 cli, 19 website, 25 unscoped). The quickstart leads with monorepo complexity that confuses simple-app users. The troubleshooting card for \"tests fail\" is ordered wrong — surface config first, database not running last. The README is missing `config delete` and any mention of surfaces. Several guide and concept pages need minor corrections to stay accurate.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Badge style object duplicated three times in ProofExplorer inline badge container",
+          "file": "website/components/docs/proof/ProofExplorer.tsx",
+          "anchor": null,
+          "line": 252,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "docs-comprehensive-update-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "formatDuration duplicated in ProofHero — known across 4 files per proof context",
+          "file": "website/components/docs/proof/ProofHero.tsx",
+          "anchor": null,
+          "line": 3,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "docs-comprehensive-update-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested",
+          "file": "website/components/docs/proof/ProofHero.tsx",
+          "anchor": null,
+          "line": 90,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003",
+            "A004",
+            "A005",
+            "A007"
+          ],
+          "id": "docs-comprehensive-update-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec AC2-AC15 checkboxes remain unchecked in spec.md — Plan wrote them as unchecked, Build didn't update them",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-comprehensive-update-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T02:32:21.388Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Start small best practice bullet overlaps with quickstart line 65 guidance — intentional per spec but verifier may flag",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T02:17:00.312Z",
+        "completed_at": "2026-05-21T02:32:21.382Z",
+        "commit_count": 0,
+        "base_commit": "bd56605d3dd75f2bf492316449c6d0f3eadd27e0"
+      },
+      "surface": "website"
     }
   ],
   "schema": 1,
