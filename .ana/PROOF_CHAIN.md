@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-135 runs · 108 active · 3 promoted · 682 closed
+135 runs · 107 active · 3 promoted · 683 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
 | cli | 89 | 69 | 2026-05-21 |
-| website | 21 | 21 | 2026-05-21 |
+| website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -67,6 +67,10 @@
 
 - **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
+### packages/cli/tests/commands/doctor.test.ts
+
+- **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
+
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
@@ -108,8 +112,4 @@
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
 - **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
-
-### website/lib/__tests__/docs-data/strip-jsx.test.ts
-
-- **code:** 3 extra tests beyond spec (JSX comments, self-closing components, odd-vs-even median) — harmless over-building — *Website Test Suite*
 
