@@ -7,6 +7,40 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-05-21
+
+### Added
+
+- **Surface awareness for monorepos** — scan detects development surfaces (apps, packages) automatically using a three-signal heuristic. Each surface gets its own `path`, `language`, `framework`, and scoped `build`/`test`/`lint` commands in `ana.json`. Pipeline agents target the correct surface. Validated across 25 real-world repos.
+- **Per-surface proof chain tracking** — each pipeline run records which surface was verified. `ana proof health --surface cli` and `ana proof audit --surface cli` filter by surface. Dashboard shows per-surface run counts and findings.
+- **`ana doctor`** — unified project health diagnostic. Checks CLI version, scan freshness, context quality, skill enrichment, proof chain health, and surface configuration. `--json` flag for CI.
+- **`ana config delete`** — remove config fields. Blocks deletion of machine-managed surface fields (path, language, framework).
+- **Nx workspace detection** — monorepos with `nx.json` show "Nx (pnpm)" or "Nx (yarn)" instead of generic labels.
+- **Expanded platform detection** — Cloudflare Workers, Helm, Kubernetes, AWS CDK, Pulumi, Serverless Framework for deployment. CircleCI, Jenkins, Bitbucket Pipelines for CI.
+- **Expanded AI SDK detection** — 7 new Vercel AI provider packages + `@ai-sdk/*` wildcard catch.
+- **Depth-stratified file sampling** — replaces depth-first sort with 3-bucket allocation (shallow, mid, deep). Budget increased from 500 to 750 files.
+- **Proof chain migration markers** — one-shot migrations (surface backfill, lesson-to-closed) gated by `migrations` field so they skip after first run.
+
+### Fixed
+
+- **Per-surface test commands use developer's script** — surface test commands now prefer `pnpm run test` (script passthrough) over `pnpm vitest run` (direct invocation), preserving setup steps like `prisma:generate`, `dotenv`, `cross-env`. Falls back to direct invocation only when no test script exists. Previously 41% of surfaces produced commands that would skip setup and fail.
+- **Validation finding accuracy** — rewired to own glob with honest denominators (e.g., "185/464 API routes have no validation imports"). Previously sampled a subset and extrapolated.
+- **Error boundary finding accuracy** — rewired to own glob with exact page counts regardless of directory depth.
+- **Import alias classifier** — returns all tsconfig aliases, not just the first. Fixes misclassification of 574 imports on projects with multiple path aliases.
+- **Tauri+TS monorepos detect as TypeScript** — Cargo.toml with tauri workspace dep + pnpm-workspace.yaml correctly classified as Node, not Rust.
+- **Ruby projects with package.json or yarn workspaces detect as Ruby** — Gemfile added to competing manifest checks. Mastodon-style projects correctly classified.
+- **Non-Node projects get native commands** — Ruby, Python, Go, Rust projects no longer get JavaScript test commands.
+- **Root lint now project-wide** — was scoped to primary package while build and test were already project-wide. Now consistent.
+- **Sampler budget overflow** — `allocateBudget` could exceed budget when fewer files than depth categories. Fixed with remaining-count guard.
+- **AnaVerify independence** — Verify reads checkpoint commands from the spec, not the build report. Fixes a contradiction in the agent template.
+
+### Changed
+
+- `buildPackage`/`testPackage` retired — replaced by per-surface commands in `surfaces` section. Old values preserved via `.passthrough()` for existing installations.
+- `monorepo.packages` type changed from `{ name, path }[]` to enriched objects with per-package `language`, `framework`, `testing`, `hasBin`, `scripts`, and `sourceFiles`.
+- Root `commands.lint` now project-wide for monorepos (was scoped to primary package only).
+- `pullBeforeRead` and `commitAndPushProofChanges` moved from `proof.ts` to `git-operations.ts`.
+
 ## [1.1.1] - 2026-05-18
 
 ### Fixed
@@ -191,7 +225,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/anatomia-dev/anatomia/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/anatomia-dev/anatomia/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/anatomia-dev/anatomia/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/anatomia-dev/anatomia/compare/v1.0.1...v1.0.2
