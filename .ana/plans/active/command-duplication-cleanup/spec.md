@@ -151,5 +151,5 @@ import { readArtifactBranch, getCurrentBranch, readCoAuthor } from '../utils/git
 - Current tests: 2713 passed, 2 skipped
 - Current test files: 120
 - Command used: `(cd 'packages/cli' && pnpm vitest run)`
-- After build: 2713 passed, 2 skipped, 120 test files (no new tests — pure refactor)
+- After build: same count as baseline (no new tests, no removed tests — pure refactor). Record the baseline before making changes; assert the count is unchanged after.
 - Regression focus: `tests/commands/work.test.ts`, `tests/commands/proof.test.ts`, `tests/utils/git-operations.test.ts`

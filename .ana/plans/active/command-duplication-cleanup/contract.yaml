@@ -77,11 +77,11 @@ assertions:
     value: "from './proof.js'"
 
   - id: A012
-    says: "All existing tests pass without any test file modifications"
-    block: "full test suite passes unchanged"
+    says: "All existing tests pass and the count is unchanged from baseline"
+    block: "test count equals pre-build baseline"
     target: "testResults.passed"
     matcher: "equals"
-    value: 2713
+    value: "baseline"
 
   - id: A013
     says: "isTimestampRecent remains as its own function in work.ts"
