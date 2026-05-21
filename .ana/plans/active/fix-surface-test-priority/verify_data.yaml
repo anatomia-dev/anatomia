@@ -1,0 +1,44 @@
+schema: 1
+findings:
+  - category: code
+    summary: "scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 518
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A006"]
+
+  - category: code
+    summary: "File not in contract file_changes was modified — makeTestCommand.test.ts assertions updated to match new behavior"
+    file: "packages/cli/tests/commands/init/makeTestCommand.test.ts"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A001"]
+
+  - category: code
+    summary: "surface.path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 519
+    severity: risk
+    suggested_action: monitor
+    related_assertions: []
+
+  - category: test
+    summary: "A006 empty-string assertion uses toContain('run test') — weaker than other assertions that use toBe for exact match"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    line: 397
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A006"]
+
+  - category: test
+    summary: "Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt"
+    file: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Contract A006 uses 'contains' matcher while all other assertions use 'equals' — inconsistency may hide a test-command suffix mismatch"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A006"]
