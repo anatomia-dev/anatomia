@@ -1,0 +1,73 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Polyglot detection hygiene"
+
+assertions:
+  - id: A001
+    says: "The polyglot detector documents both priority orders so developers know the cascade"
+    block: "docstring documents polyglot tier priority"
+    target: "docstring.content"
+    matcher: "contains"
+    value: "Python → Rust → Ruby → Go"
+
+  - id: A002
+    says: "The docstring explains why the two priority orders differ"
+    block: "docstring documents polyglot tier priority"
+    target: "docstring.content"
+    matcher: "contains"
+    value: "intentional"
+
+  - id: A003
+    says: "Tauri projects with a lockfile show Cargo.toml in their indicators"
+    block: "Tauri Tier 3 includes Cargo.toml in indicators"
+    target: "result.indicators"
+    matcher: "contains"
+    value: "Cargo.toml"
+
+  - id: A004
+    says: "Tauri projects without a lockfile show Cargo.toml in their indicators"
+    block: "Tauri Tier 4 includes Cargo.toml in indicators"
+    target: "result.indicators"
+    matcher: "contains"
+    value: "Cargo.toml"
+
+  - id: A005
+    says: "Python wins when all four competing languages are present"
+    block: "all four manifests present — Python wins"
+    target: "result.type"
+    matcher: "equals"
+    value: "python"
+
+  - id: A006
+    says: "Python detection returns high confidence in a four-way competition"
+    block: "all four manifests present — Python wins"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.90
+
+  - id: A007
+    says: "Rust wins when Python is absent but three competitors remain"
+    block: "three manifests without Python — Rust wins"
+    target: "result.type"
+    matcher: "equals"
+    value: "rust"
+
+  - id: A008
+    says: "Rust detection returns high confidence when Python is absent"
+    block: "three manifests without Python — Rust wins"
+    target: "result.confidence"
+    matcher: "equals"
+    value: 0.90
+
+  - id: A009
+    says: "Existing polyglot tests are not broken by the changes"
+    block: "existing tests pass unchanged"
+    target: "testSuite.polyglot.failures"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/projectType.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    action: modify
