@@ -14,8 +14,7 @@ import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { findProjectRoot } from '../utils/validators.js';
-import { readArtifactBranch, getCurrentBranch, readCoAuthor } from '../utils/git-operations.js';
-import { commitAndPushProofChanges, pullBeforeRead } from './proof.js';
+import { readArtifactBranch, getCurrentBranch, readCoAuthor, commitAndPushProofChanges, pullBeforeRead } from '../utils/git-operations.js';
 import { wrapJsonResponse } from '../utils/proofSummary.js';
 import { isWorktreeDirectory } from '../utils/worktree.js';
 

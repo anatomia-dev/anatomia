@@ -21,13 +21,12 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain } from '../types/proof.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import { getProofContext, wrapJsonResponse, wrapJsonError, generateDashboard, computeChainHealth, computeHealthReport, computeFirstPassRate, computeStaleness, computeResolutionClaims, truncateSummary, findFindingById, formatRelativeTime, MIN_ENTRIES_FOR_TREND } from '../utils/proofSummary.js';
 import type { ProofContextResult } from '../utils/proofSummary.js';
-import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
+import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit, pullBeforeRead, commitAndPushProofChanges } from '../utils/git-operations.js';
 
 /**
  * Format an ISO timestamp as a local-timezone YYYY-MM-DD date string.
@@ -141,85 +140,20 @@ function createExitError(opts: {
 }
 
 /**
- * Pull latest changes before reading the proof chain.
- *
- * Checks for remotes and pulls with rebase. On conflict, exits with error.
- * On network failure, warns and continues with local data.
- *
- * @param proofRoot - Project root directory
+ * Empty audit matrix payload for early-return paths where no proof data exists.
  */
-export function pullBeforeRead(proofRoot: string): void {
-  const remotes = runGit(['remote'], { cwd: proofRoot }).stdout;
-  if (remotes) {
-    const pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: proofRoot });
-    if (pullResult.exitCode !== 0) {
-      const errorMessage = pullResult.stderr;
-      if (errorMessage.includes('conflict') || errorMessage.includes('Cannot rebase')) {
-        runGit(['rebase', '--abort'], { cwd: proofRoot });
-        console.error(chalk.red('Error: Pull failed due to conflicts. Resolve conflicts and try again.'));
-        process.exit(1);
-      }
-      console.error(chalk.yellow('⚠ Warning: Pull failed. Continuing with local data.'));
-    }
-  }
-}
-
-/**
- * Commit proof chain changes and push with one retry on failure.
- *
- * Uses spawnSync for commit (captures stderr for error messages) and
- * runGit for push (returns exitCode/stderr). On push failure: pulls
- * with rebase and retries once. On rebase conflict, aborts the rebase
- * and warns. On second push failure, warns.
- *
- * @param options - Commit and push options
- * @param options.proofRoot - Project root directory
- * @param options.files - Files to stage (relative paths)
- * @param options.message - Commit message (without co-author trailer)
- * @param options.coAuthor - Co-author trailer string
- */
-export function commitAndPushProofChanges(options: {
-  proofRoot: string;
-  files: string[];
-  message: string;
-  coAuthor: string;
-}): void {
-  // Stage and commit
-  runGit(['add', ...options.files], { cwd: options.proofRoot });
-  const commitMessage = `${options.message}\n\nCo-authored-by: ${options.coAuthor}`;
-  const commitResult = spawnSync('git', ['commit', '-m', commitMessage, '--', ...options.files], { stdio: 'pipe', cwd: options.proofRoot });
-  if (commitResult.status !== 0) {
-    const stderr = commitResult.stderr?.toString() || 'Commit failed';
-    console.error(chalk.red(`Error: Failed to commit. Changes NOT saved to git.`));
-    console.error(chalk.dim(stderr));
-    process.exit(1);
-  }
-
-  // Push with one retry
-  const pushResult = runGit(['push'], { cwd: options.proofRoot });
-  if (pushResult.exitCode === 0) return;
-
-  // Push failed — pull --rebase and retry
-  const pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: options.proofRoot });
-  if (pullResult.exitCode !== 0) {
-    const pullStderr = pullResult.stderr;
-    if (pullStderr.includes('conflict') || pullStderr.includes('Cannot rebase') || pullStderr.includes('CONFLICT')) {
-      // Abort the rebase to clean up
-      runGit(['rebase', '--abort'], { cwd: options.proofRoot });
-      console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
-      return;
-    }
-    // Pull failed (network, auth, or other) — can't retry
-    console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
-    return;
-  }
-
-  // Retry push after successful pull
-  const retryResult = runGit(['push'], { cwd: options.proofRoot });
-  if (retryResult.exitCode !== 0) {
-    console.error(chalk.yellow('  Committed locally. Push failed after retry — run `git push`'));
-  }
-}
+const EMPTY_AUDIT_MATRIX = {
+  total_active: 0,
+  actionable_count: 0,
+  monitoring_count: 0,
+  by_severity: { risk: 0, debt: 0, observation: 0, unclassified: 0 },
+  by_action: { promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 },
+  by_severity_action: {},
+  recent_entries: [],
+  stale_count: 0,
+  stale_high: 0,
+  stale_medium: 0,
+};
 
 // @ana A005, A006
 /**
@@ -1648,18 +1582,7 @@ export function registerProofCommand(program: Command): void {
       if (!fs.existsSync(proofChainPath)) {
         if (options.matrix) {
           if (useJson) {
-            console.log(JSON.stringify(wrapJsonResponse('proof audit', {
-              total_active: 0,
-              actionable_count: 0,
-              monitoring_count: 0,
-              by_severity: { risk: 0, debt: 0, observation: 0, unclassified: 0 },
-              by_action: { promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 },
-              by_severity_action: {},
-              recent_entries: [],
-              stale_count: 0,
-              stale_high: 0,
-              stale_medium: 0,
-            }, { entries: [] }), null, 2));
+            console.log(JSON.stringify(wrapJsonResponse('proof audit', EMPTY_AUDIT_MATRIX, { entries: [] }), null, 2));
           } else {
             console.log('\nProof Orientation: no proof chain data');
             console.log('  Run pipeline cycles to generate proof data.');
@@ -1693,18 +1616,7 @@ export function registerProofCommand(program: Command): void {
         // Handle empty entries array
         if (chain.entries.length === 0) {
           if (useJson) {
-            console.log(JSON.stringify(wrapJsonResponse('proof audit', {
-              total_active: 0,
-              actionable_count: 0,
-              monitoring_count: 0,
-              by_severity: { risk: 0, debt: 0, observation: 0, unclassified: 0 },
-              by_action: { promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 },
-              by_severity_action: {},
-              recent_entries: [],
-              stale_count: 0,
-              stale_high: 0,
-              stale_medium: 0,
-            }, chain), null, 2));
+            console.log(JSON.stringify(wrapJsonResponse('proof audit', EMPTY_AUDIT_MATRIX, chain), null, 2));
           } else {
             console.log('\nProof Orientation: no proof chain data');
             console.log('  Run pipeline cycles to generate proof data.');
