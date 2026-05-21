@@ -73,9 +73,12 @@ function allocateBudget(buckets: DepthBucket[], budget: number): number[] {
   const allocations = buckets.map(() => 0);
   let remaining = budget;
 
-  // First pass: assign floor of 1 to each non-empty bucket
+  // First pass: assign floor of 1 to each non-empty bucket.
+  // Guard: stop when budget is exhausted. Because buckets are ordered
+  // [shallow, mid, deep], small budgets favor shallower files — this is
+  // intentional (shallow files are higher-signal for project structure).
   for (const [i, bucket] of buckets.entries()) {
-    if (bucket.files.length > 0) {
+    if (bucket.files.length > 0 && remaining > 0) {
       allocations[i] = 1;
       remaining--;
     }

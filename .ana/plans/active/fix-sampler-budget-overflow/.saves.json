@@ -24,5 +24,35 @@
         "hash": "sha256:fa92cdd09e3af32a63312e16f7e2241fce79c3e7d4ad83c12d900f819796ddd5"
       }
     ]
+  },
+  "build_started_at": "2026-05-21T03:31:59.650Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T03:35:47.543Z",
+    "hash": "sha256:5ca7accddd826456ba1cf0ea060d1d968d8cacb4e1df89b1587b86d0fa5efe31"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T03:35:47.544Z",
+    "hash": "sha256:94bdbdc3b22262cba5b50b67b6848a6d9c33dd4c205b5574b0da98b44a6dbfc8"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/sampling/proportionalSampler.ts",
+    "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T03:39:16.708Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f1cafedbb95a3850558b8c7d0c3aa19e1ae082160e358b3d2b07ef9061e377c3",
+    "run_at": "2026-05-21T03:41:52.775Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T03:41:52.811Z",
+    "hash": "sha256:0af5ce7fd3e71971621c7018f7669d2183e34628366cd92bb927ff9141993453"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T03:41:52.811Z",
+    "hash": "sha256:b3dead10d8f3efb6c3d98677d8a4f6ed4185d6dbe1b7ee1f445e169863c5af4f"
   }
 }

@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "A001 says field ('never returns more than budget') doesn't match its matcher (not_equals 0 — just checks non-empty). Budget enforcement is actually verified by A002."
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
+  - category: code
+    summary: "Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work."
+    file: "packages/cli/src/engine/sampling/proportionalSampler.ts"
+    line: 140
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "Budget=1 test (A004) verifies count but not that the returned file is shallow. Iteration order guarantees shallow, but the test doesn't assert it."
+    file: "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+    line: 286
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A004"]
+  - category: upstream
+    summary: "Proof chain finding fix-deep-tier-sampling-C2 (allocateBudget can exceed budget) is directly resolved by the remaining > 0 guard at line 81."
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "fix-deep-tier-sampling-C2"

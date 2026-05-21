@@ -221,6 +221,74 @@ describe('Proportional sampler', () => {
     }
   });
 
+  // @ana A001, A002, A003
+  it('respects budget when budget is smaller than depth bucket count', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
+    try {
+      // Create files at all 3 depth levels
+      // Shallow (depth ≤ 2): 5 files
+      fs.mkdirSync(path.join(tmpDir, 'src'), { recursive: true });
+      for (let i = 0; i < 5; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', `shallow${i}.ts`), '// shallow');
+      }
+      // Mid (depth 3-5): 5 files
+      fs.mkdirSync(path.join(tmpDir, 'src', 'features', 'auth'), { recursive: true });
+      for (let i = 0; i < 5; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'features', 'auth', `mid${i}.ts`), '// mid');
+      }
+      // Deep (depth 6+): 5 files
+      fs.mkdirSync(path.join(tmpDir, 'src', 'features', 'auth', 'providers', 'oauth', 'google'), { recursive: true });
+      for (let i = 0; i < 5; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'features', 'auth', 'providers', 'oauth', 'google', `deep${i}.ts`), '// deep');
+      }
+
+      const root = makeRoot('.', 15, true);
+      root.absolutePath = tmpDir;
+      const census = makeCensus(tmpDir, [root]);
+
+      // Budget of 2 — smaller than 3 non-empty buckets
+      const files = await sampleFilesProportional(census, 2);
+      expect(files.length).not.toBe(0);
+      expect(files.length).toBe(2);
+
+      // Shallow files get priority due to bucket iteration order
+      const hasShallowFile = files.some(f => f.includes('shallow'));
+      expect(hasShallowFile).toBe(true);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A004
+  it('budget of 1 with all depth levels populated returns single file', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
+    try {
+      // Create files at all 3 depth levels
+      fs.mkdirSync(path.join(tmpDir, 'src'), { recursive: true });
+      for (let i = 0; i < 3; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', `shallow${i}.ts`), '// shallow');
+      }
+      fs.mkdirSync(path.join(tmpDir, 'src', 'features', 'auth'), { recursive: true });
+      for (let i = 0; i < 3; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'features', 'auth', `mid${i}.ts`), '// mid');
+      }
+      fs.mkdirSync(path.join(tmpDir, 'src', 'features', 'auth', 'providers', 'oauth', 'google'), { recursive: true });
+      for (let i = 0; i < 3; i++) {
+        fs.writeFileSync(path.join(tmpDir, 'src', 'features', 'auth', 'providers', 'oauth', 'google', `deep${i}.ts`), '// deep');
+      }
+
+      const root = makeRoot('.', 9, true);
+      root.absolutePath = tmpDir;
+      const census = makeCensus(tmpDir, [root]);
+
+      // Budget of 1 — most extreme case
+      const files = await sampleFilesProportional(census, 1);
+      expect(files.length).toBe(1);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
   it('empty depth buckets do not break allocation', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sampler-'));
     try {
