@@ -30,5 +30,20 @@
         "hash": "sha256:e87b3451bf4a00f2ed1b43fc14d8a628a982e0c2b8212d9ed4f6bc4e40aa7e83"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-21T03:30:47.670Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T03:36:11.868Z",
+    "hash": "sha256:d38a921e89aab06aabc003fa61b1315e5220175ef3d8626ccbfd858788ccf1b7"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T03:36:11.869Z",
+    "hash": "sha256:875737dc24d0f962b188fda490f4c5a3b8c1d80d38b63dd3e89c5cd3fc43bb65"
+  },
+  "modules_touched": [
+    "packages/cli/tests/commands/doctor.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "commit_hygiene": []
 }
