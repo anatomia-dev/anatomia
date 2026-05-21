@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml"
+    file: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    line: 489
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003", "A004"]
+  - category: test
+    summary: "Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence"
+    file: "packages/cli/tests/engine/detectors/polyglot.test.ts"
+    line: 511
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A004"]
+  - category: upstream
+    summary: "Ruby detection is existence-only — Gemfile with only dev gems still triggers Ruby detection"
+    severity: observation
+    suggested_action: monitor
+    resolves: []
+  - category: code
+    summary: "hasTauriWorkspaceDep catch block unreachable — regex-based function cannot throw"
+    file: "packages/cli/src/engine/detectors/projectType.ts"
+    severity: observation
+    suggested_action: accept
