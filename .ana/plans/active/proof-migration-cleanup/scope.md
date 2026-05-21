@@ -1,11 +1,14 @@
-# Scope: Proof chain migration loop cleanup
+# Scope: Pre-surface behavior cleanup
 
 **Created by:** Ana
 **Date:** 2026-05-20
 
 ## Intent
 
-Remove dead migration code from `writeProofChain` — the function that runs on every `ana work complete` and writes the entire proof chain to disk. Two one-shot migrations (surface backfill and lesson-to-closed conversion) have completed their work across 132 pipeline runs but still iterate every entry on every completion. Gate the backfill with a migration marker so it never runs again, delete the lesson check entirely, and remove the redundant outer guards that duplicate what `deriveSurface` already handles internally.
+Clean up pre-surface-era code that's now inconsistent or dead. Three items share one disease: code written before surfaces existed that hasn't been updated to reflect the surface-aware world.
+
+1. **Migration loops in writeProofChain** — two completed one-shot migrations (surface backfill, lesson-to-closed) still iterate every entry on every `ana work complete`. Gate the backfill with a migration marker, delete the lesson check entirely, remove redundant outer guards.
+2. **Lint scoping in createAnaJson** — root `commands.lint` is overwritten with the primary package's scoped lint command, while root `commands.build` and `commands.test` correctly stay project-wide. Every monorepo customer gets this inconsistency on `ana init`. Per-surface lint commands already provide scoped coverage — root lint should be project-wide, matching build and test.
 
 ## Complexity Assessment
 
@@ -16,14 +19,20 @@ Remove dead migration code from `writeProofChain` — the function that runs on 
   - `packages/cli/src/commands/work.ts` — writeProofChain: migration marker gate, lesson check removal, outer guard simplification (~20 lines changed)
   - `packages/cli/src/types/proof.ts` — ProofChain interface: add `migrations` field (~1 line)
   - `packages/cli/src/utils/proofSummary.ts` — DashboardEntry: remove redundant `| undefined` (~1 line)
+  - `packages/cli/src/commands/init/state.ts` — createAnaJson: remove lint scoping override (~4 lines removed, 2 comment lines updated)
   - `packages/cli/tests/commands/work.test.ts` — new tests for migration marker behavior (~10-15 lines)
-- **Blast radius:** `writeProofChain` runs on every `ana work complete` and writes the entire proof chain to disk. Getting this wrong means corrupting the proof chain, losing findings, or breaking the pipeline's completion flow. However, the changes are deletions and guards — no new logic paths. The function's output shape is unchanged. All consumers of `proof_chain.json` use `JSON.parse` without schema validation, so the additive `migrations` field won't break readers.
+  - `packages/cli/tests/commands/init.test.ts` — update any tests asserting scoped root lint for monorepos
+- **Blast radius:** Two distinct areas. (1) `writeProofChain` runs on every `ana work complete` and writes the entire proof chain to disk. Getting this wrong means corrupting the proof chain, losing findings, or breaking the pipeline's completion flow. However, the changes are deletions and guards — no new logic paths. The function's output shape is unchanged. All consumers of `proof_chain.json` use `JSON.parse` without schema validation, so the additive `migrations` field won't break readers. (2) `createAnaJson` runs on every `ana init`. The lint change affects what root `commands.lint` value new installations and re-inits get. Existing ana.json files preserve user-owned `commands` on re-init (via `preserveUserState`), so only fresh inits or users who haven't customized their commands are affected. Per-surface lint commands are unaffected.
 - **Estimated effort:** 1 pipeline cycle
 - **Multi-phase:** no
 
 ## Approach
 
-Convert permanent migration loops into versioned one-shot migrations gated by markers. The surface backfill loop gets a `migrations.surface_backfill` marker — it runs one final time (finding nothing), sets the marker, and never runs again. The lesson-to-closed check is deleted outright since `lesson` is not a valid status in the type system and cannot be produced by current code. Redundant outer guards that duplicate `deriveSurface`'s internal defenses are simplified. A cosmetic type annotation fix in `proofSummary.ts` removes a redundant `| undefined`.
+Two independent cleanups, same disease — pre-surface code that's now wrong or dead.
+
+**Proof chain migrations:** Convert permanent migration loops into versioned one-shot migrations gated by markers. The surface backfill loop gets a `migrations.surface_backfill` marker — it runs one final time (finding nothing), sets the marker, and never runs again. The lesson-to-closed check is deleted outright since `lesson` is not a valid status in the type system and cannot be produced by current code. Redundant outer guards that duplicate `deriveSurface`'s internal defenses are simplified. A cosmetic type annotation fix in `proofSummary.ts` removes a redundant `| undefined`.
+
+**Lint scoping:** Remove the monorepo lint override in `createAnaJson` that overwrites root `commands.lint` with the primary package's scoped command. Root lint should be project-wide (detected from root `package.json` scripts, typically `pnpm run lint` → Turborepo), matching how root build and test already work. Per-surface lint commands (generated by the surface block) provide scoped coverage.
 
 ## Acceptance Criteria
 
@@ -36,6 +45,8 @@ Convert permanent migration loops into versioned one-shot migrations gated by ma
 - AC7: The `case 'lesson'` backward-compat line in `computeChainHealth` (proofSummary.ts:1419) is preserved. It's the last safety net for any hypothetical proof chain restored from pre-migration backup.
 - AC8: Existing tests pass unchanged. New tests verify: (a) migration marker is written after backfill runs, (b) backfill loop is skipped when marker is present.
 - AC9: The `resolveFindingPaths` loop over existing entries (work.ts:1092-1096) is NOT touched — it's still doing active work (10 findings with basename-only paths).
+- AC10: Root `commands.lint` in `createAnaJson` (state.ts) uses the project-wide command from `result.commands.lint` — no longer overwritten with the primary package's scoped lint. Per-surface `surfaces.{name}.commands.lint` is unchanged.
+- AC11: The comment at state.ts:455 is updated to reflect that lint is now project-wide too, matching build and test.
 
 ## Edge Cases & Risks
 
@@ -43,6 +54,8 @@ Convert permanent migration loops into versioned one-shot migrations gated by ma
 - **New surface added to ana.json after marker is set:** Old entries for the new surface path won't get backfilled because the migration is marked complete. This is a behavior change from today, where the backfill runs continuously. Accepted tradeoff — surfaces are defined at init time and rarely change, new entries already derive surface on creation, and the alternative (continuous derivation) is what we're eliminating.
 - **Restored old proof_chain.json with lesson-status findings:** The migration code is gone, so those findings stay as `lesson` forever. `computeChainHealth` counts them as closed (line 1419). They won't appear in active-finding lists. Ghost findings — counted but never displayed or acted on. Acceptable for a scenario requiring a time machine.
 - **Restored proof_chain.json with markers but stale data:** Can't happen naturally — markers are only written alongside the migration running. If someone hand-edits the JSON to add markers without backfilling, they get what they deserve.
+- **Monorepo without root lint script:** After removing the scoping block, `lintCmd` stays `null` (no fallback to primary package). This matches how build and test already behave — if the root package.json has no build script, root build is `null`. Per-surface lint commands still work. The sniper and shotgun customers both use Turborepo-style root scripts, so this is the expected case. Monorepos without root lint scripts and without Turborepo are an edge case where per-surface lint provides coverage.
+- **Re-init on existing installation:** `preserveUserState` preserves user-owned `commands` (including lint) on re-init. Only fresh inits or users who delete their ana.json get the new behavior. Existing customers who manually fixed their root lint (like us) are unaffected.
 
 ## Rejected Approaches
 
@@ -50,6 +63,7 @@ Convert permanent migration loops into versioned one-shot migrations gated by ma
 - **Add a migration marker for `resolveFindingPaths`.** Still doing active work (10 basename-only paths). Idempotent and cheap (string checks, no I/O for already-resolved paths). Not a migration — it's ongoing maintenance.
 - **Typed migration object instead of `Record<string, boolean>`.** A typed `{ lesson_to_closed?: boolean; surface_backfill?: boolean }` is more precise but requires a type change for every future migration. `Record<string, boolean>` is extensible — new migrations just add a key.
 - **Remove `case 'lesson'` from `computeChainHealth` too.** It's one line with zero runtime cost that handles the time-machine edge case. Removing it saves nothing and removes the last safety net.
+- **Keep the lint scoping block but make it conditional.** Could check whether a root lint script exists before falling back to the scoped version. Adds complexity for an edge case (monorepo without root lint script and without Turborepo) that per-surface lint already covers. Build and test don't have this fallback — lint shouldn't either.
 
 ## Open Questions
 
@@ -61,6 +75,7 @@ None — all questions from the REQ were resolved during investigation.
 
 - `writeProofChain` (work.ts:952-1216) follows a clear pipeline: read chain → build entry → derive surface → resolve paths → run migrations → run maintenance → write chain. Migrations are interleaved with maintenance, not isolated. The migration marker approach isolates them.
 - `deriveSurface` (work.ts:919-941) is fully defensive — handles empty modules, empty surfaces, cross-surface, and single-surface. The outer guards at call sites are pure redundancy.
+- `createAnaJson` (state.ts:450-590) has three command blocks: root commands (lines 451-457), monorepo scoping override (lines 463-485), and surface generation (lines 504-575). Root build and test have no scoping override — only lint does. The surface block generates per-surface lint/build/test independently.
 
 ### Constraints Discovered
 
@@ -70,6 +85,8 @@ None — all questions from the REQ were resolved during investigation.
 - [OBSERVED] 10 findings with basename-only paths — `resolveFindingPaths` is still active.
 - [OBSERVED] `computeChainHealth` (proofSummary.ts:1419) has `case 'lesson': closed++` backward-compat — not addressed by REQ, must be preserved.
 - [OBSERVED] REQ §2 code snippet keeps `Object.keys().length > 0` inside the migration block, contradicting §3 which says to simplify. §3 is correct.
+- [OBSERVED] Lint scoping override (state.ts:474-481) overwrites `lintCmd` with primary package's scoped lint. `buildCmd` (line 456) and `testCmd` (line 452) have no equivalent override — lint is the only inconsistent one.
+- [OBSERVED] Root `result.commands.lint` from `detectCommands` (commands.ts:84-85) reads root `package.json` scripts for `lint`/`eslint`/`biome`. For Turborepo monorepos, root `pnpm run lint` delegates project-wide. This is the correct project-wide value that the scoping block overwrites.
 
 ### Test Infrastructure
 
@@ -91,6 +108,9 @@ None — all questions from the REQ were resolved during investigation.
 - `packages/cli/src/types/proof.ts:26-29` — `ProofChain` interface to extend
 - `packages/cli/src/utils/proofSummary.ts:1417-1422` — `computeChainHealth` switch with `case 'lesson'` to preserve
 - `packages/cli/src/utils/proofSummary.ts:458-464` — `DashboardEntry` with redundant type annotation
+- `packages/cli/src/commands/init/state.ts:451-485` — root command detection and monorepo scoping block (lint override at 474-481)
+- `packages/cli/src/commands/init/state.ts:504-575` — surface generation block with per-surface lint (lines 552-558)
+- `packages/cli/src/engine/detectors/commands.ts:83-86` — root lint detection from package.json scripts
 
 ### Patterns to Follow
 
@@ -103,7 +123,9 @@ None — all questions from the REQ were resolved during investigation.
 - Do NOT touch the maintenance loop (1128-1183) beyond removing lines 1130-1138. The anchor-absent checks, file-moved detection, and staleness handling are essential live operations.
 - Do NOT touch the `resolveFindingPaths` loop (1092-1096). Still doing active work.
 - The `lesson_to_closed` marker should be written immediately (not gated by a "run one more time" check) since the migration code is being deleted, not gated.
+- The lint scoping block (state.ts:463-485) also reads the primary package's package.json for reasons beyond lint — but currently lint is the ONLY command it overrides. After removing the lint override, check whether the entire scoping block can be removed or if anything else depends on it. As of now, the block's only effect is the lint override, so removing the lint lines leaves an empty try/catch that should be deleted entirely.
 
 ### Things to Investigate
 
 - Decide where in the write sequence to set `chain.migrations.lesson_to_closed = true`. Options: alongside `chain.schema = 1` (line 1189), or inside the migration marker block with surface_backfill. The former is cleaner — both markers are set in the same place near the write.
+- Check whether any init tests assert that root lint for monorepos should be the scoped primary-package command. If so, update to expect the project-wide command.
