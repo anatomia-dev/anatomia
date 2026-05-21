@@ -1709,7 +1709,8 @@
           "closed_at": "2026-04-24T00:10:33.977Z"
         }
       ],
-      "scope_summary": "File association for callouts is derived from summary text via regex (`extractFileRefs`) every time the renderer groups callouts for Active Issues. The parser sees the full callout context but throws away file information. The renderer re-derives it. Downstream features (proof file queries, proof learn matching, resolution detection) would all need the same regex inference."
+      "scope_summary": "File association for callouts is derived from summary text via regex (`extractFileRefs`) every time the renderer groups callouts for Active Issues. The parser sees the full callout context but throws away file information. The renderer re-derives it. Downstream features (proof file queries, proof learn matching, resolution detection) would all need the same regex inference.",
+      "surface": "cli"
     },
     {
       "slug": "fix-prisma-schema-detection",
@@ -1896,7 +1897,8 @@
           "closed_at": "2026-04-24T04:32:53.640Z"
         }
       ],
-      "scope_summary": "Census breaks on first Prisma schema match per root, starving scan-engine's best-match scorer. Three bugs share one disease: census assumes every Prisma project has exactly one `schema.prisma` at a hardcoded path. This breaks dual-candidate roots, multi-file schemas (`prismaSchemaFolder`, GA since Prisma 5.15), and provider detection in split-file layouts."
+      "scope_summary": "Census breaks on first Prisma schema match per root, starving scan-engine's best-match scorer. Three bugs share one disease: census assumes every Prisma project has exactly one `schema.prisma` at a hardcoded path. This breaks dual-candidate roots, multi-file schemas (`prismaSchemaFolder`, GA since Prisma 5.15), and provider detection in split-file layouts.",
+      "surface": "cli"
     },
     {
       "slug": "fix-drizzle-schema-detection",
@@ -2129,7 +2131,8 @@
           "closed_at": "2026-04-24T05:59:11.072Z"
         }
       ],
-      "scope_summary": "Drizzle schema detection is a stub — census checks the migrations directory, scan-engine globs inside it, model counting and provider detection are absent, no blind spot fires, and census results are ignored by the scorer. A project using Drizzle gets no model count, no provider, wrong schema path, and no warning when the schema is missing. This is the same class of disease that was just fixed for Prisma (see proof chain: \"Fix Prisma schema detection bugs\"), applied to the second most popular TypeScript ORM."
+      "scope_summary": "Drizzle schema detection is a stub — census checks the migrations directory, scan-engine globs inside it, model counting and provider detection are absent, no blind spot fires, and census results are ignored by the scorer. A project using Drizzle gets no model count, no provider, wrong schema path, and no warning when the schema is missing. This is the same class of disease that was just fixed for Prisma (see proof chain: \"Fix Prisma schema detection bugs\"), applied to the second most popular TypeScript ORM.",
+      "surface": "cli"
     },
     {
       "slug": "configurable-branch-prefix",
@@ -2299,7 +2302,8 @@
       "previous_failures": [],
       "build_concerns": [],
       "findings": [],
-      "scope_summary": "The pipeline hardcodes `feature/` as the branch prefix across ~36 source and template references. Any team using a different branch convention (`dev/`, `task/`, `issue/`, bare slugs) gets broken pipeline status, incorrect validation warnings, and wrong agent instructions on first use. The user wants `branchPrefix` in `ana.json` so the prefix is configured once and read everywhere."
+      "scope_summary": "The pipeline hardcodes `feature/` as the branch prefix across ~36 source and template references. Any team using a different branch convention (`dev/`, `task/`, `issue/`, bare slugs) gets broken pipeline status, incorrect validation warnings, and wrong agent instructions on first use. The user wants `branchPrefix` in `ana.json` so the prefix is configured once and read everywhere.",
+      "surface": "cli"
     },
     {
       "slug": "proof-context-query",
@@ -2608,7 +2612,8 @@
           "closed_at": "2026-04-25T01:05:28.608Z"
         }
       ],
-      "scope_summary": "The proof chain stores rich intelligence — 49 callouts with file references, categories, code anchors, and full-text observations from every pipeline cycle. But there is no way to ask \"what does the system know about THIS file?\" Agents read PROOF_CHAIN.md — a flat list of 20 items about all files — and hope they notice what's relevant. The data is organized temporally (which feature produced it) when every consumer needs it organized spatially (which file is it about)."
+      "scope_summary": "The proof chain stores rich intelligence — 49 callouts with file references, categories, code anchors, and full-text observations from every pipeline cycle. But there is no way to ask \"what does the system know about THIS file?\" Agents read PROOF_CHAIN.md — a flat list of 20 items about all files — and hope they notice what's relevant. The data is organized temporally (which feature produced it) when every consumer needs it organized spatially (which file is it about).",
+      "surface": "cli"
     },
     {
       "slug": "proof-chain-targeted-queries",
@@ -2752,7 +2757,8 @@
           "closed_at": "2026-04-25T06:29:26.320Z"
         }
       ],
-      "scope_summary": "Pipeline agents currently read all of PROOF_CHAIN.md (170+ lines, 58 active issues) and manually filter to relevant modules. This is the exact task agents do poorly. The `ana proof context {files}` command already exists and solves the filtering problem mechanically. Replace the full-file reads with targeted queries in the two agents that are primary proof chain consumers (Ana and Verify), and remove the reads entirely from the two agents that receive proof context through document flow (Plan and Build)."
+      "scope_summary": "Pipeline agents currently read all of PROOF_CHAIN.md (170+ lines, 58 active issues) and manually filter to relevant modules. This is the exact task agents do poorly. The `ana proof context {files}` command already exists and solves the filtering problem mechanically. Replace the full-file reads with targeted queries in the two agents that are primary proof chain consumers (Ana and Verify), and remove the reads entirely from the two agents that receive proof context through document flow (Plan and Build).",
+      "surface": "cli"
     },
     {
       "slug": "proof-chain-health-signal",
@@ -2901,7 +2907,8 @@
           "closed_at": "2026-04-26T03:10:57.958Z"
         }
       ],
-      "scope_summary": "The proof chain is write-only at the moment of writing. `ana work complete` says \"Proof saved to chain.\" — a write confirmation that tells the developer what the system did, not what they have. After 14 pipeline runs and 62 callouts, the developer has no signal that institutional memory is accumulating. The completion moment, when they just contributed fresh intelligence, gives them nothing back."
+      "scope_summary": "The proof chain is write-only at the moment of writing. `ana work complete` says \"Proof saved to chain.\" — a write confirmation that tells the developer what the system did, not what they have. After 14 pipeline runs and 62 callouts, the developer has no signal that institutional memory is accumulating. The completion moment, when they just contributed fresh intelligence, gives them nothing back.",
+      "surface": "cli"
     },
     {
       "slug": "seal-hash-simplification",
@@ -3076,7 +3083,8 @@
           "closed_at": "2026-04-26T04:29:13.409Z"
         }
       ],
-      "scope_summary": "Simplify the contract seal system from git-commit-based verification to content-hash-based verification. This eliminates the post-commit `.saves.json` fixup that makes the file permanently dirty and blocks branch switches on every pipeline run."
+      "scope_summary": "Simplify the contract seal system from git-commit-based verification to content-hash-based verification. This eliminates the post-commit `.saves.json` fixup that makes the file permanently dirty and blocks branch switches on every pipeline run.",
+      "surface": "cli"
     },
     {
       "slug": "clear-the-deck",
@@ -3371,7 +3379,8 @@
           "closed_by": "mechanical"
         }
       ],
-      "scope_summary": "The proof chain identified bugs in its own codebase. We're fixing them. 6 of 7 items trace directly to proof chain callouts or the deep strategic audit. The 7th (the `custom` namespace) ships a configurability gate that prevents future foreclosure."
+      "scope_summary": "The proof chain identified bugs in its own codebase. We're fixing them. 6 of 7 items trace directly to proof chain callouts or the deep strategic audit. The 7th (the `custom` namespace) ships a configurability gate that prevents future foreclosure.",
+      "surface": "cli"
     },
     {
       "slug": "clear-the-deck-2",
@@ -3610,7 +3619,8 @@
           "closed_by": "human"
         }
       ],
-      "scope_summary": "Continuation of Clear the Deck. Phase 1 fixed 7 items identified by the proof chain — types, ESLint, dead tests, save-all parity, custom namespace. Phase 2 cleans the next layer: agent templates running at 20% context capacity, a callout file resolution gap that affects customer repos, missing test coverage for proof chain accumulation, and small corrections across the pipeline."
+      "scope_summary": "Continuation of Clear the Deck. Phase 1 fixed 7 items identified by the proof chain — types, ESLint, dead tests, save-all parity, custom namespace. Phase 2 cleans the next layer: agent templates running at 20% context capacity, a callout file resolution gap that affects customer repos, missing test coverage for proof chain accumulation, and small corrections across the pipeline.",
+      "surface": "cli"
     },
     {
       "slug": "findings-lifecycle-foundation",
@@ -4105,7 +4115,8 @@
       ],
       "rejection_cycles": 0,
       "previous_failures": [],
-      "build_concerns": []
+      "build_concerns": [],
+      "surface": "cli"
     },
     {
       "slug": "fix-proof-chain-mechanical-accuracy",
@@ -4335,7 +4346,8 @@
           "summary": "Glob performance on large projects. The `globResultCache` prevents repeated glob calls for the same basename, but the first glob for each unique basename traverses the filesystem. For projects with many findings referencing different basenames, this could add latency. The existing `resolveFindingPaths` already does glob calls, so this is consistent with existing performance characteristics. Verified complete by second pass.",
           "file": null
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "structured-findings-companion",
@@ -4696,7 +4708,8 @@
           "summary": "saveAllArtifacts build companion discovery (AC9) not directly tested — uses identical code path as verify companion which is tested",
           "file": null
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "clean-ground",
@@ -4894,7 +4907,8 @@
           "summary": "14 pre-existing lint warnings in unrelated test files (no-explicit-any)",
           "file": null
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "close-the-loop",
@@ -5185,7 +5199,8 @@
           "summary": "Anchor stripping regex can false-positive on common-word anchors",
           "file": "packages/cli/src/commands/proof.ts"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "harden-git-commit-calls",
@@ -5379,7 +5394,8 @@
           "summary": "Recovery path duplicates finding-count logic from computeChainHealth",
           "file": "packages/cli/src/commands/work.ts"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "finding-enrichment-schema",
@@ -5802,7 +5818,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "diff-scoped-tag-search",
@@ -6021,7 +6038,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "work-complete-json-proof-card",
@@ -6307,7 +6325,8 @@
           "severity": "debt",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "proof-health-v1",
@@ -6673,7 +6692,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "proof-promote",
@@ -6968,7 +6988,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "ana-learn-v1",
@@ -7205,7 +7226,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "delete-backward-compat",
@@ -7440,7 +7462,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "harden-hot-files",
@@ -7646,7 +7669,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "proof-command-ux",
@@ -7890,7 +7914,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "remove-tag-coverage",
@@ -8137,7 +8162,8 @@
           "severity": "debt",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "learn-v3-cli-commands",
@@ -8635,7 +8661,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "health-display-polish",
@@ -8928,7 +8955,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "clean-proofsummary",
@@ -9148,7 +9176,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "sharpen-agent-templates",
@@ -9375,7 +9404,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "fix-type-lies",
@@ -9597,7 +9627,8 @@
           "severity": "debt",
           "suggested_action": "scope"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "proof-health-v2",
@@ -10058,7 +10089,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "strengthen-weak-test-assertions",
@@ -10324,7 +10356,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "audit-json-severity-summary",
@@ -10545,7 +10578,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "learn-template-session-fixes",
@@ -10709,7 +10743,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "fix-ci-failures",
@@ -10945,7 +10980,8 @@
           "severity": "debt",
           "suggested_action": "scope"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "learn-severity-triage",
@@ -11175,7 +11211,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "v1-documentation-overhaul",
@@ -11539,7 +11576,8 @@
           "severity": "debt",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "v1-code-changes",
@@ -11785,7 +11823,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "v1-release-prep",
@@ -12087,7 +12126,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "security-hardening",
@@ -12466,7 +12506,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "proof-intelligence-hardening",
@@ -12956,7 +12997,8 @@
           "severity": "debt",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "proof-system-near-term",
@@ -13286,7 +13328,8 @@
           "severity": "observation",
           "suggested_action": "monitor"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "cli-ux-polish",
@@ -13514,7 +13557,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "code-comment-cleanup",
@@ -13860,7 +13904,8 @@
           "severity": "observation",
           "suggested_action": "accept"
         }
-      ]
+      ],
+      "surface": "cli"
     },
     {
       "slug": "worktree-isolation",
@@ -14325,7 +14370,8 @@
         "created_at": "2026-05-06T08:00:37.276Z",
         "completed_at": "2026-05-06T10:21:53.858Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "non-main-artifact-branch-tests",
@@ -15039,7 +15085,8 @@
         "created_at": "2026-05-06T18:57:17.465Z",
         "completed_at": "2026-05-06T20:09:59.797Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "website-lift",
@@ -15716,7 +15763,8 @@
         "created_at": "2026-05-07T06:44:40.636Z",
         "completed_at": "2026-05-07T06:55:20.145Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "website-visual-fidelity",
@@ -16037,7 +16085,8 @@
         "created_at": "2026-05-07T07:14:17.403Z",
         "completed_at": "2026-05-07T07:32:07.747Z",
         "commit_count": 0
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "website-dead-links",
@@ -16389,7 +16438,8 @@
         "created_at": "2026-05-07T07:21:30.798Z",
         "completed_at": "2026-05-07T07:37:51.555Z",
         "commit_count": 0
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "website-production-infra",
@@ -16739,7 +16789,8 @@
         "created_at": "2026-05-07T07:58:31.926Z",
         "completed_at": "2026-05-07T17:15:20.360Z",
         "commit_count": 6
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "phase-timing-fix",
@@ -16993,7 +17044,8 @@
         "created_at": "2026-05-07T07:59:49.423Z",
         "completed_at": "2026-05-07T17:17:26.867Z",
         "commit_count": 4
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "website-direct-polish",
@@ -17292,7 +17344,8 @@
         "completed_at": "2026-05-07T18:08:18.490Z",
         "commit_count": 8
       },
-      "kind": "chore"
+      "kind": "chore",
+      "surface": "website"
     },
     {
       "slug": "ship-log-polish",
@@ -17913,7 +17966,8 @@
         "completed_at": "2026-05-08T01:46:47.003Z",
         "commit_count": 0
       },
-      "kind": "chore"
+      "kind": "chore",
+      "surface": "cli"
     },
     {
       "slug": "website-nav-copy-polish",
@@ -18197,7 +18251,8 @@
         "completed_at": "2026-05-08T04:44:27.588Z",
         "commit_count": 5
       },
-      "kind": "fix"
+      "kind": "fix",
+      "surface": "website"
     },
     {
       "slug": "worktree-artifact-cleanup",
@@ -18447,7 +18502,8 @@
         "completed_at": "2026-05-08T04:47:42.433Z",
         "commit_count": 0
       },
-      "kind": "fix"
+      "kind": "fix",
+      "surface": "cli"
     },
     {
       "slug": "ci-artifact-path-ignore",
@@ -18864,7 +18920,8 @@
         "created_at": "2026-05-08T18:27:55.038Z",
         "completed_at": "2026-05-08T18:58:30.145Z",
         "commit_count": 7
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "scope-validation-integrity",
@@ -19137,7 +19194,8 @@
         "created_at": "2026-05-08T18:44:43.921Z",
         "completed_at": "2026-05-08T20:41:48.376Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "commit-work-start-timestamps",
@@ -19355,7 +19413,8 @@
         "created_at": "2026-05-09T01:07:07.747Z",
         "completed_at": "2026-05-09T02:22:41.837Z",
         "commit_count": 4
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "work-complete-merge",
@@ -19654,7 +19713,8 @@
         "created_at": "2026-05-09T19:39:21.328Z",
         "completed_at": "2026-05-09T20:38:06.449Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "section4-system-bento",
@@ -20030,7 +20090,8 @@
         "created_at": "2026-05-09T20:30:43.621Z",
         "completed_at": "2026-05-09T20:48:04.337Z",
         "commit_count": 0
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "scoped-cli-commits",
@@ -20601,7 +20662,8 @@
         "created_at": "2026-05-10T20:05:32.140Z",
         "completed_at": "2026-05-10T20:40:37.560Z",
         "commit_count": 8
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "version-awareness",
@@ -20897,7 +20959,8 @@
         "created_at": "2026-05-10T22:19:30.057Z",
         "completed_at": "2026-05-10T22:58:56.415Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "configurability-improvements",
@@ -21273,7 +21336,8 @@
         "created_at": "2026-05-12T07:57:13.120Z",
         "completed_at": "2026-05-12T08:10:49.375Z",
         "commit_count": 0
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-cycle-stage-detection",
@@ -21540,7 +21604,8 @@
         "created_at": "2026-05-12T08:21:40.477Z",
         "completed_at": "2026-05-12T09:05:28.325Z",
         "commit_count": 8
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "add-milestone-kind",
@@ -22148,7 +22213,8 @@
         "created_at": "2026-05-12T09:59:02.774Z",
         "completed_at": "2026-05-12T16:55:20.670Z",
         "commit_count": 5
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "worktree-freshness-detection",
@@ -22428,7 +22494,8 @@
         "completed_at": "2026-05-12T17:38:24.390Z",
         "commit_count": 6,
         "base_commit": "b122c50526607eb775d1563da64fff4f892aeee6"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-worktree-branch-parsing",
@@ -22623,7 +22690,8 @@
         "completed_at": "2026-05-12T20:23:06.250Z",
         "commit_count": 4,
         "base_commit": "b2e65b6b141b1d53a7a9b4e20cd8da7c817dcc18"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "hygiene-debt-cleanup",
@@ -22870,7 +22938,8 @@
         "completed_at": "2026-05-12T20:57:58.022Z",
         "commit_count": 8,
         "base_commit": "5564e528295c8a539e4a34b6e3a823373e6e3a03"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "docs-infrastructure",
@@ -23140,7 +23209,8 @@
         "completed_at": "2026-05-12T21:25:20.063Z",
         "commit_count": 0,
         "base_commit": "dcee329940126c349f66d965c41300e12c62a48d"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "docs-data-pipeline",
@@ -23483,7 +23553,8 @@
         "completed_at": "2026-05-12T22:39:42.965Z",
         "commit_count": 10,
         "base_commit": "5c948786763a65f39f37b4cc2821bee8f9db87b0"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "docs-shell",
@@ -23886,7 +23957,8 @@
         "completed_at": "2026-05-12T23:29:33.469Z",
         "commit_count": 6,
         "base_commit": "fa2c803128c752aa7d2875a59b8467876e3c7455"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "content-pages",
@@ -24502,7 +24574,8 @@
         "commit_count": 68,
         "base_commit": "1e49f6d8d74320c130026bbb98fd674e4d62bc6d"
       },
-      "phases": 3
+      "phases": 3,
+      "surface": "website"
     },
     {
       "slug": "dynamic-pages",
@@ -25114,7 +25187,8 @@
         "commit_count": 0,
         "base_commit": "40516692073f4c3aadd6db2b6b3c0a6c69299a0f"
       },
-      "phases": 2
+      "phases": 2,
+      "surface": "website"
     },
     {
       "slug": "fix-timing-accuracy",
@@ -25377,7 +25451,8 @@
         "completed_at": "2026-05-14T03:31:59.292Z",
         "commit_count": 0,
         "base_commit": "1bf2899ea7d60688ffde80cb2692ac3f5c7e4208"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "docs-search-polish",
@@ -25804,7 +25879,8 @@
         "completed_at": "2026-05-14T03:52:55.024Z",
         "commit_count": 0,
         "base_commit": "50e9d05f7ca7ce30f1007a3d697798498a23958c"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "capture-think-time",
@@ -26090,7 +26166,8 @@
         "commit_count": 0,
         "base_commit": "6522f286a79c0f39d57f65267c353074eeef972f"
       },
-      "phases": 2
+      "phases": 2,
+      "surface": "cli"
     },
     {
       "slug": "gantt-multi-phase",
@@ -26748,7 +26825,8 @@
         "completed_at": "2026-05-14T07:40:19.419Z",
         "commit_count": 3,
         "base_commit": "ba37e5f61e983c66df7a79eff64b5a46e4fbd115"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "worktree-build-step",
@@ -26986,7 +27064,8 @@
         "completed_at": "2026-05-14T07:55:44.331Z",
         "commit_count": 4,
         "base_commit": "1dce7f5ccfcbe2279c00dbe9195f5eda8987f248"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-merge-json-pollution",
@@ -27152,7 +27231,8 @@
         "completed_at": "2026-05-15T01:45:14.854Z",
         "commit_count": 0,
         "base_commit": "b1e4385e96f8327181c75e423a534357a457794a"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "init-commit",
@@ -27607,7 +27687,8 @@
         "completed_at": "2026-05-15T02:10:43.409Z",
         "commit_count": 3,
         "base_commit": "11abad9acab9051f1405390790fa821108c7311c"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "work-ts-branch-coverage",
@@ -27783,7 +27864,8 @@
         "completed_at": "2026-05-15T03:18:47.273Z",
         "commit_count": 3,
         "base_commit": "8adfb1a09f14de0ae4fb33de37b5dd8ef00191ca"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "findings-expand-collapse",
@@ -27955,7 +28037,8 @@
         "completed_at": "2026-05-15T03:31:52.170Z",
         "commit_count": 3,
         "base_commit": "362187befdd7cde4377c5a941ea8138c5cbab383"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "docs-links-init-setup",
@@ -28385,7 +28468,8 @@
         "completed_at": "2026-05-15T06:22:49.986Z",
         "commit_count": 0,
         "base_commit": "7ce3596c588dc1851757ab82820bb063b16ab2c2"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "bump-node-minimum-22",
@@ -28822,7 +28906,8 @@
         "created_at": "2026-05-15T06:55:24.701Z",
         "completed_at": "2026-05-15T15:54:12.927Z",
         "commit_count": 0
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "fix-prebuild-source-mutation",
@@ -29083,7 +29168,8 @@
         "created_at": "2026-05-15T16:41:24.496Z",
         "completed_at": "2026-05-15T17:25:24.044Z",
         "commit_count": 0
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "upstream-finding-resolution",
@@ -29336,7 +29422,8 @@
         "completed_at": "2026-05-15T17:47:49.997Z",
         "commit_count": 0,
         "base_commit": "d7714fafb957fc0e4c0d6308e20fcaf09b2220a5"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-work-saves-compat",
@@ -29544,7 +29631,8 @@
         "completed_at": "2026-05-15T18:13:06.755Z",
         "commit_count": 0,
         "base_commit": "72186019c2f9977e054fd3d9b329e616cfb8ac62"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "remove-lesson-status",
@@ -30133,7 +30221,8 @@
         "completed_at": "2026-05-15T19:18:01.470Z",
         "commit_count": 0,
         "base_commit": "f0e37ec5aa3cfb6cfc6713bc229a8199f5ed3f35"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "monorepo-build-scoping",
@@ -30321,7 +30410,8 @@
         "completed_at": "2026-05-16T17:01:19.236Z",
         "commit_count": 0,
         "base_commit": "41d384046a258e610cac10c58b3f7a0fe330a788"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-scan-branch-detection",
@@ -30484,7 +30574,8 @@
         "completed_at": "2026-05-16T17:04:26.986Z",
         "commit_count": 0,
         "base_commit": "b6d3cfb29b419a9c6f15b8056640eeb7ca5b17b8"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "dynamic-marketing-stats",
@@ -30726,7 +30817,8 @@
         "completed_at": "2026-05-16T17:08:17.193Z",
         "commit_count": 0,
         "base_commit": "d4e45a9352e36a408aff41fcb48dbaddf353f029"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "ship-log-proof-links",
@@ -30922,7 +31014,8 @@
         "completed_at": "2026-05-16T22:42:29.507Z",
         "commit_count": 0,
         "base_commit": "a3b0bb47e64644167d8a74b2da7630a5ced31d34"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "unified-staleness-awareness",
@@ -31158,7 +31251,8 @@
         "completed_at": "2026-05-17T03:18:18.016Z",
         "commit_count": 6,
         "base_commit": "ecaf649421eb440141eadae08c15fd132b166e06"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-scanner-trust-output",
@@ -31322,7 +31416,8 @@
         "completed_at": "2026-05-17T05:52:41.389Z",
         "commit_count": 0,
         "base_commit": "16a10ebd29851018881d171c2b782efe5286d5b9"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "non-node-scan-enrichment",
@@ -31553,7 +31648,8 @@
         "completed_at": "2026-05-17T06:08:55.574Z",
         "commit_count": 0,
         "base_commit": "249f8cc4a3395582256080d0d4f4b82d3a6bc943"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "polyglot-language-detection",
@@ -31766,7 +31862,8 @@
         "completed_at": "2026-05-17T06:36:09.584Z",
         "commit_count": 0,
         "base_commit": "9386717ee82a97fae4d1ae450995dc5d4157e882"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "rust-go-polyglot-detection",
@@ -32006,7 +32103,8 @@
         "completed_at": "2026-05-17T17:24:53.225Z",
         "commit_count": 0,
         "base_commit": "f79ba254dbcbaee68c350f8b299a9c778692b3e0"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "audit-matrix-orientation",
@@ -32324,7 +32422,8 @@
         "completed_at": "2026-05-17T19:17:47.869Z",
         "commit_count": 6,
         "base_commit": "08165f3f05e579ca981db408b7970f33a68e095d"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "flip-monorepo-commands",
@@ -33206,7 +33305,8 @@
         "completed_at": "2026-05-18T05:58:11.224Z",
         "commit_count": 7,
         "base_commit": "6a1ae5fc7ffbb55bf9fe74afc15080fd97284c0c"
-      }
+      },
+      "surface": "website"
     },
     {
       "slug": "reinit-field-refresh",
@@ -33380,7 +33480,8 @@
         "completed_at": "2026-05-18T18:33:57.452Z",
         "commit_count": 5,
         "base_commit": "ff1b21303e0207c940160443ba3b2d25fa223d01"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "add-doctor-command",
@@ -34005,7 +34106,8 @@
         "completed_at": "2026-05-20T00:09:12.145Z",
         "commit_count": 0,
         "base_commit": "56e5b95f5c8ab21512828b14011a66bf39da03b8"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "fix-polyglot-rust-ts-ruby",
@@ -34262,7 +34364,8 @@
         "completed_at": "2026-05-20T00:37:38.648Z",
         "commit_count": 3,
         "base_commit": "e230feed8163d2b666366a6e2e5518c042b4b2ea"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "stack-detection-gaps",
@@ -34509,7 +34612,8 @@
         "completed_at": "2026-05-20T01:06:00.982Z",
         "commit_count": 0,
         "base_commit": "34924a886bc7fc6a72605846e3b56aad3ec84001"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "command-language-awareness",
@@ -34818,7 +34922,8 @@
         "completed_at": "2026-05-20T05:10:05.487Z",
         "commit_count": 6,
         "base_commit": "1149a7ad50b3271125348b54fea4c91668318593"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "scan-surface-detection",
@@ -35136,7 +35241,8 @@
         "completed_at": "2026-05-20T20:53:05.600Z",
         "commit_count": 5,
         "base_commit": "689c6a09f422ff17957d44d5a81007399a66559d"
-      }
+      },
+      "surface": "cli"
     },
     {
       "slug": "surface-awareness-schema",
@@ -35499,6 +35605,307 @@
         "commit_count": 9,
         "base_commit": "c105452d8d55b105d8dd4b38aee6ae80f25c6ac0"
       }
+    },
+    {
+      "slug": "surface-awareness-bridge",
+      "feature": "Surface Awareness Bridge",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 25,
+        "satisfied": 25,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Health report for a specific surface only includes data from that surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Health report excludes entries from other surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Audit for a specific surface only shows findings from that surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Audit excludes findings from entries belonging to other surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "An unknown surface name produces an error with available surface names",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "An unknown surface name exits with a non-zero code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Using --surface on a project without surfaces says they are not configured",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The dashboard shows a By Surface section when entries have surface data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The By Surface section shows run count per surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The dashboard has no By Surface section when no entries have surface data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Entries without a surface are grouped as Unscoped in the dashboard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Monorepo scaffolds include detected surface names with paths",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Single-package projects have no surface mention in the scaffold",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Doctor reports the number of configured surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Doctor warns when a surface has no test command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Doctor detects when scan and ana.json have different surface counts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Doctor warns when legacy buildPackage or testPackage keys exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Learn template startup instructions mention surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Learn template reference section includes the --surface flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Existing entries without surface get their surface derived from modules_touched",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "After backfill runs once, running it again changes nothing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Entries touching multiple surfaces keep their surface undefined",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Entries without modules_touched are not modified by the backfill",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Audit matrix mode respects the --surface filter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The extracted surface derivation helper produces the same result as the original inline code",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 63,
+        "think": 10,
+        "plan": 9,
+        "build": 23,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:adec39d426be0e16cfd2dccfe09b0fd34b9fae648ce5ed09756b6be6c98bc56c",
+        "contract": "sha256:db111f789f87526ceae52f4c3d171c4793e2c12bfff530484cf9271bb772c101",
+        "plan": "sha256:fddb46174c91c9387c38b9c890d2049772d03ade6de0514730328537d9e2a464",
+        "spec": "sha256:1127b8a4cc9b91b56a97282adf8b0d9e751af3d5624d81e51348ae55e502ebe0",
+        "build-report": "sha256:8dcc2b6b06c8ff158986bdc6d7c5a4df2ea6bb174ea902dced403033d5d2aab0",
+        "build-data": "sha256:3159b50c5f58506b0a157580101c657ee7741e560b29af355dcfa6533df060ad",
+        "verify-report": "sha256:b0d92b56caffcb0c6d83dcdb8babc4d6434924f49286e06070862618dffdbe28",
+        "verify-data": "sha256:a24196da773381b3b12a147a8cdccc1a55636fe9471ad4f264402be26047013b"
+      },
+      "completed_at": "2026-05-21T00:55:08.678Z",
+      "modules_touched": [
+        ".claude/agents/ana-learn.md",
+        "packages/cli/src/commands/doctor.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/src/utils/scaffold-generators.ts",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/tests/commands/doctor.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts",
+        "packages/cli/tests/utils/scaffold-generators.test.ts"
+      ],
+      "scope_summary": "Make surface awareness visible and queryable beyond the pipeline. Stages 1 and 2 shipped surface detection (scan) and pipeline integration (ana.json schema, scope/plan/build/verify surface flow, proof chain surface field). But the rest of the system — proof chain queries, the quality dashboard, scaffold generators, diagnostics, and the Learn agent — doesn't expose surface knowledge yet. The system can USE surfaces but can't SHOW or QUERY them outside the pipeline flow.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A021 idempotency test checks pure function determinism, not backfill loop guard",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 5848,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "surface-awareness-bridge-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "assessSurfaces reads ana.json independently — adds to known duplicate-read pattern (add-doctor-command-C3)",
+          "file": "packages/cli/src/commands/doctor.ts",
+          "anchor": null,
+          "line": 375,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A014"
+          ],
+          "id": "surface-awareness-bridge-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Redundant type annotation: surface?: string | undefined — the ? already implies | undefined",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 462,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "surface-awareness-bridge-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1098,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "surface-awareness-bridge-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Surface validation reads ana.json from disk on every --surface invocation — consistent with existing patterns but adds to file I/O per command",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 57,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "surface-awareness-bridge-C5",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No tagged test for A018/A019 learn template assertions — verified by source inspection only",
+          "file": "packages/cli/templates/.claude/agents/ana-learn.md",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A018",
+            "A019"
+          ],
+          "id": "surface-awareness-bridge-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Doctor ana.json read count is now 4 across dimension assessors — prior finding add-doctor-command-C3 noted 2",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [],
+          "id": "surface-awareness-bridge-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-21T00:55:08.678Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "validateSurface reads ana.json independently from chain reading — double read in same process",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "makeHealthEntry helper duplicated across proof.test.ts describe blocks due to scoping",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-21T00:13:00.310Z",
+        "completed_at": "2026-05-21T00:55:08.672Z",
+        "commit_count": 0,
+        "base_commit": "4253015837ebf85ffae82f780e27d957c517faf0"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1

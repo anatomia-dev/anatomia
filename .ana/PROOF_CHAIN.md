@@ -1,26 +1,38 @@
 # Proof Chain Dashboard
 
-131 runs · 110 active · 3 promoted · 658 closed
+132 runs · 116 active · 3 promoted · 659 closed
+
+## By Surface
+
+| Surface | Runs | Active | Latest |
+|---------|------|--------|--------|
+| Unscoped | 25 | 20 | 2026-05-20 |
+| cli | 88 | 80 | 2026-05-21 |
+| website | 19 | 16 | 2026-05-18 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/init/state.ts | 11 | 5 |
-| packages/cli/src/commands/work.ts | 9 | 7 |
+| packages/cli/src/commands/work.ts | 10 | 8 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
-| packages/cli/tests/commands/work.test.ts | 6 | 5 |
-| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
+| packages/cli/tests/commands/work.test.ts | 7 | 6 |
+| packages/cli/src/utils/proofSummary.ts | 4 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 116 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
+
+### packages/cli/src/commands/doctor.ts
+
+- **code:** assessSurfaces reads ana.json independently — adds to known duplicate-read pattern (add-doctor-command-C3) — *Surface Awareness Bridge*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -31,9 +43,13 @@
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 - **code:** buildNonNodeCommands returns early per-language without fallthrough — adding a new language requires a new if-block, no extensibility pattern — *Command Detection Language Awareness*
 
-### packages/cli/src/engine/analyzers/conventions/imports.ts
+### packages/cli/src/commands/proof.ts
 
-- **code:** classifyTSImport line 83 replace('/*', '') is dead code for new alias format — *Fix Deep Tier Sampling & Finding Accuracy*
+- **code:** Surface validation reads ana.json from disk on every --surface invocation — consistent with existing patterns but adds to file I/O per command — *Surface Awareness Bridge*
+
+### packages/cli/src/commands/work.ts
+
+- **code:** Backfill iterates all chain.entries on every work complete — O(n) with no short-circuit after first fully-backfilled run — *Surface Awareness Bridge*
 
 ### packages/cli/src/engine/census.ts
 
@@ -48,21 +64,11 @@
 
 - **code:** Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 - **code:** indexOf('\n[') section boundary misses header at position 0 of sliced block — inherited from hasPythonProjectDeps pattern — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** Tauri discriminator omits Cargo.toml from indicators — downstream consumers can't tell Rust is present — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 - **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
-
-### packages/cli/src/engine/findings/rules/validation.ts
-
-- **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
-
-### packages/cli/src/engine/sampling/proportionalSampler.ts
-
-- **code:** allocateBudget can return total exceeding budget when budget < non-empty bucket count — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/scan-engine.ts
 
@@ -72,9 +78,17 @@
 
 - **code:** nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro' — *Scan Surface Detection*
 
+### packages/cli/src/utils/proofSummary.ts
+
+- **code:** Redundant type annotation: surface?: string | undefined — the ? already implies | undefined — *Surface Awareness Bridge*
+
 ### packages/cli/src/utils/worktree.ts
 
 - **code:** getBuildCommandString exported solely for testing with @internal tag — follows project convention but increases public API surface — *Command Detection Language Awareness*
+
+### packages/cli/templates/.claude/agents/ana-learn.md
+
+- **test:** No tagged test for A018/A019 learn template assertions — verified by source inspection only — *Surface Awareness Bridge*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
@@ -88,6 +102,10 @@
 
 - **test:** A028 Zod schema test — malformed entry defaults checked but no test for completely invalid surfaces value (e.g., surfaces: 42) — *Surface Awareness Schema and Pipeline Integration*
 
+### packages/cli/tests/commands/work.test.ts
+
+- **test:** A021 idempotency test checks pure function determinism, not backfill loop guard — *Surface Awareness Bridge*
+
 ### packages/cli/tests/engine/census-detection.test.ts
 
 - **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
@@ -95,10 +113,6 @@
 ### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
 
 - **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
-### packages/cli/tests/engine/detectors/polyglot.test.ts
-
-- **test:** Tag collision — @ana IDs A001-A019 used by both old contracts and this contract in same file, creating ambiguity for tooling — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
