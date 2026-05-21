@@ -1,0 +1,79 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix per-surface test command priority"
+
+assertions:
+  - id: A001
+    says: "Surfaces with a test script use the developer's script instead of a direct runner command"
+    block: "script passthrough takes priority over direct invocation"
+    target: "cliCmds.test"
+    matcher: "equals"
+    value: "(cd 'packages/cli' && pnpm run test)"
+
+  - id: A002
+    says: "Complex test scripts with setup steps are preserved, not overridden"
+    block: "complex script passthrough preserves developer setup steps"
+    target: "apiCmds.test"
+    matcher: "equals"
+    value: "(cd 'packages/api' && pnpm run test)"
+
+  - id: A003
+    says: "Surfaces without a test script fall back to direct framework invocation"
+    block: "fallback to direct invocation when no test script exists"
+    target: "apiCmds.test"
+    matcher: "equals"
+    value: "(cd 'packages/api' && pnpm vitest run)"
+
+  - id: A004
+    says: "Surfaces with neither test script nor detected framework get no test command"
+    block: "null test command for surface without test script or framework"
+    target: "webCmds.test"
+    matcher: "equals"
+    value: null
+
+  - id: A005
+    says: "Bun workspaces use the correct bun run prefix for script passthrough"
+    block: "bun package manager uses bun run prefix"
+    target: "libCmds.test"
+    matcher: "equals"
+    value: "(cd 'packages/lib' && bun run test)"
+
+  - id: A006
+    says: "An empty test script is treated as present and uses script passthrough"
+    block: "empty-string test script uses script passthrough"
+    target: "svcCmds.test"
+    matcher: "contains"
+    value: "run test"
+
+  - id: A007
+    says: "Root-level test commands are not affected by this change"
+    block: "root command generation unchanged"
+    target: "commands.test"
+    matcher: "exists"
+
+  - id: A008
+    says: "Build commands still use script passthrough as before"
+    block: "generates surfaces section for monorepo"
+    target: "cliCmds.build"
+    matcher: "equals"
+    value: "(cd 'packages/cli' && pnpm run build)"
+
+  - id: A009
+    says: "Existing merge behavior preserves user-customized test commands on re-init"
+    block: "mergeSurfaces preserves user-tuned commands"
+    target: "merged.cli.commands.test"
+    matcher: "equals"
+    value: "custom-user-test-command"
+
+  - id: A010
+    says: "The web surface with no test script and empty testing array gets null"
+    block: "generates surfaces section for monorepo"
+    target: "webCmds.test"
+    matcher: "equals"
+    value: null
+
+file_changes:
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    action: modify
