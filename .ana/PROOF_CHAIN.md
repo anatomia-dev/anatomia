@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-135 runs · 107 active · 3 promoted · 683 closed
+135 runs · 106 active · 3 promoted · 684 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 25 | 18 | 2026-05-20 |
+| Unscoped | 25 | 17 | 2026-05-20 |
 | cli | 89 | 69 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
@@ -16,23 +16,26 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 9 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
-| packages/cli/src/commands/init/state.ts | 8 | 5 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
+| packages/cli/src/commands/init/state.ts | 7 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
 
+### packages/cli/src/commands/doctor.ts
+
+- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
+
 ### packages/cli/src/commands/init/state.ts
 
-- **code:** Surface path injected into shell command without sanitization — paths with spaces or special chars produce broken subshell — *Surface Awareness Schema and Pipeline Integration*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 - **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
