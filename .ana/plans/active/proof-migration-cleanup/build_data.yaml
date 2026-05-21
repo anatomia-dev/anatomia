@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "A006 contract matcher not_contains 'lesson' is overly broad — lesson_to_closed marker name contains 'lesson' by spec design"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "A010 DashboardEntry surface type change incompatible with exactOptionalPropertyTypes — left unchanged"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: monitor

@@ -25,6 +25,7 @@ import type { ProofSummary } from '../utils/proofSummary.js';
  */
 export interface ProofChain {
   schema?: number;
+  migrations?: Record<string, boolean>;
   entries: ProofChainEntry[];
 }
 

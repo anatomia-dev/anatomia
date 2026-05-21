@@ -32,5 +32,50 @@
   "spec": {
     "saved_at": "2026-05-21T01:55:03.910Z",
     "hash": "sha256:8e18af60e79bbf281f59902319cac54f720a97fb4e920e33e3e59a271b28ddee"
+  },
+  "build_started_at": "2026-05-21T02:04:14.964Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T02:13:18.522Z",
+    "hash": "sha256:d51fa1ff71174838a03d1b81e81fda8feb036c09e94696645fb7ae8d146e5ded"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T02:13:18.523Z",
+    "hash": "sha256:062f5b76a06c02d949d0d784972e74c837f721859f2f490b42d202f257f46f7a"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T02:16:06.503Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:4ede6d351999cee4101e07f893f1c7da85dfdd7867b7c6e14747a55136e881e6",
+    "run_at": "2026-05-21T02:25:10.147Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T02:25:10.202Z",
+    "hash": "sha256:ce65c5d97505642f09d2abd53456a5a8949d8f08b60e8a407c09aad276b9fad6",
+    "history": [
+      {
+        "saved_at": "2026-05-21T02:21:24.676Z",
+        "hash": "sha256:3035608426c3e040ab19146929e20d59f808d0006904c2cd6dc21b876d3e0736"
+      }
+    ]
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T02:25:10.202Z",
+    "hash": "sha256:9d9a46e58adc4b3a4c864a5a07b6a7f288ccefd3bf693f3fa77d9e5b2e185fa6",
+    "history": [
+      {
+        "saved_at": "2026-05-21T02:21:24.677Z",
+        "hash": "sha256:d9d485362ab767b50ea2191c5e224585bef8e25312f3c6fde09f41d58ab338fc"
+      }
+    ]
   }
 }

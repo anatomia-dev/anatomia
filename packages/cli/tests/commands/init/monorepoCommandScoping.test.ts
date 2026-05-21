@@ -179,7 +179,7 @@ describe('createAnaJson surface command generation', () => {
     }
   });
 
-  it('keeps lint scoped in monorepo (not flipped)', async () => {
+  it('keeps lint project-wide in monorepo (matches build and test)', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
     const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
     try {
@@ -191,7 +191,7 @@ describe('createAnaJson surface command generation', () => {
 
       await createAnaJson(tmpDir, result, cwdDir);
       const cmds = (await readAnaJson(tmpDir))['commands'] as Record<string, string | null>;
-      expect(cmds['lint']).toBe("(cd 'packages/cli' && pnpm run lint)");
+      expect(cmds['lint']).toBe('pnpm run lint');
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
       await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -566,7 +566,7 @@ describe('mergeSurfaces', () => {
         commands: {
           build: 'pnpm run build',
           test: 'pnpm run test -- --run',
-          lint: "(cd 'packages/cli' && pnpm run lint)",
+          lint: 'pnpm run lint',
           dev: 'pnpm run dev',
         },
         surfaces: {
@@ -642,7 +642,7 @@ describe('mergeSurfaces', () => {
         commands: {
           build: 'pnpm run build',
           test: 'pnpm run test -- --run',
-          lint: "(cd 'packages/cli' && pnpm run lint)",
+          lint: 'pnpm run lint',
           dev: 'pnpm run dev',
         },
       };

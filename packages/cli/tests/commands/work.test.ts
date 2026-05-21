@@ -5854,3 +5854,169 @@ describe('deriveSurface', () => {
     // No state mutation — same inputs always produce same output
   });
 });
+
+describe('migration markers', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'migration-test-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  async function createProofProjectWithChain(slug: string, chain: Record<string, unknown>): Promise<void> {
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({
+        artifactBranch: 'main',
+        surfaces: { cli: { path: 'packages/cli' } },
+      }),
+      'utf-8',
+    );
+    await fs.writeFile(
+      path.join(anaDir, 'proof_chain.json'),
+      JSON.stringify(chain),
+      'utf-8',
+    );
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+
+    const slugPath = path.join(anaDir, 'plans', 'active', slug);
+    await fs.mkdir(slugPath, { recursive: true });
+
+    await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope: Migration Test', 'utf-8');
+    await fs.writeFile(
+      path.join(slugPath, 'plan.md'),
+      '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md',
+      'utf-8',
+    );
+    await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec', 'utf-8');
+    await fs.writeFile(
+      path.join(slugPath, 'contract.yaml'),
+      `version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Migration Test"
+
+assertions:
+  - id: A001
+    says: "Test assertion"
+    block: "test"
+    target: "result"
+    matcher: "equals"
+    value: true
+
+file_changes:
+  - path: "src/test.ts"
+    action: create
+`,
+      'utf-8',
+    );
+    await fs.writeFile(
+      path.join(slugPath, '.saves.json'),
+      JSON.stringify({
+        scope: { saved_at: '2026-04-01T10:00:00.000Z', commit: 'abc123', hash: 'sha256:scope123' },
+        contract: { saved_at: '2026-04-01T10:30:00.000Z', commit: 'def456', hash: 'sha256:contract456' },
+        'build-report': { saved_at: '2026-04-01T11:00:00.000Z', commit: 'ghi789', hash: 'sha256:build789' },
+        'verify-report': { saved_at: '2026-04-01T11:30:00.000Z', commit: 'jkl012', hash: 'sha256:verify012' },
+        'pre-check': { seal: 'INTACT', seal_hash: 'sha256:contract456', run_at: '2026-04-01T10:35:00.000Z' },
+      }),
+      'utf-8',
+    );
+
+    execSync('git add -A && git commit -m "add planning"', { cwd: tempDir, stdio: 'ignore' });
+    execSync(`git checkout -b feature/${slug}`, { cwd: tempDir, stdio: 'ignore' });
+
+    await fs.writeFile(
+      path.join(slugPath, 'build_report.md'),
+      '# Build Report\n\n## What Was Built\n- src/test.ts (created)\n\n## PR Summary\n- Test\n\n## Deviations from Contract\n\nNone.\n\n## Test Results\nTests: 1 passed\n',
+      'utf-8',
+    );
+    await fs.writeFile(
+      path.join(slugPath, 'verify_report.md'),
+      '# Verify Report\n\n**Result:** PASS\n\n## Contract Compliance\n| ID | Says | Status | Evidence |\n|----|------|--------|----------|\n| A001 | Test assertion | ✅ SATISFIED | test |\n\n## AC Walkthrough\n- ✅ PASS Test\n\n## Verdict\n**Shippable:** YES\n',
+      'utf-8',
+    );
+
+    execSync('git add -A && git commit -m "add reports"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+    execSync(`git merge --no-ff feature/${slug} -m "merge"`, { cwd: tempDir, stdio: 'ignore' });
+  }
+
+  // @ana A001, A002, A003, A015
+  it('writes migration markers after backfill runs', async () => {
+    await createProofProjectWithChain('migration-test', {
+      entries: [{
+        slug: 'old-entry',
+        feature: 'Old Entry',
+        result: 'PASS',
+        completed_at: '2026-03-01T00:00:00.000Z',
+        modules_touched: ['packages/cli/src/foo.ts'],
+        findings: [],
+        build_concerns: [],
+        assertions: [],
+        acceptance_criteria: [],
+        hashes: {},
+        author: { name: 'Test', email: 'test@test.com' },
+        rejection_cycles: 0,
+        previous_failures: [],
+      }],
+    });
+
+    await completeWork('migration-test');
+
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+
+    expect(chain.migrations).toBeDefined();
+    expect(chain.migrations.surface_backfill).toBe(true);
+    expect(chain.migrations.lesson_to_closed).toBe(true);
+    // Old entry without surface gets backfilled
+    expect(chain.entries[0].surface).toBe('cli');
+  });
+
+  // @ana A004, A005
+  it('skips backfill loop when migration marker is already present', async () => {
+    await createProofProjectWithChain('skip-backfill-test', {
+      migrations: { surface_backfill: true },
+      entries: [{
+        slug: 'old-entry',
+        feature: 'Old Entry',
+        result: 'PASS',
+        completed_at: '2026-03-01T00:00:00.000Z',
+        modules_touched: ['packages/cli/src/foo.ts'],
+        findings: [],
+        build_concerns: [],
+        assertions: [],
+        acceptance_criteria: [],
+        hashes: {},
+        author: { name: 'Test', email: 'test@test.com' },
+        rejection_cycles: 0,
+        previous_failures: [],
+      }],
+    });
+
+    await completeWork('skip-backfill-test');
+
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+
+    // Entry without surface should remain unchanged — backfill was skipped
+    expect(chain.entries[0].surface).toBeUndefined();
+    // Migration markers still present
+    expect(chain.migrations.surface_backfill).toBe(true);
+    expect(chain.migrations.lesson_to_closed).toBe(true);
+  });
+});

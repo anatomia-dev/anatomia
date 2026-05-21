@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A010 spec error — assumes ?:  implies | undefined but exactOptionalPropertyTypes: true makes them distinct. Proposed change would break compilation."
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010"]
+  - category: test
+    summary: "Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 5858
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Bracket notation inconsistency: backfill guard uses chain.migrations?.['surface_backfill'] but marker is set with dot notation via spread"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1099
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "surface-awareness-bridge-C4 directly resolved — backfill now gated by migration marker, no longer O(n) on every work complete"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "surface-awareness-bridge-C4"
+  - category: upstream
+    summary: "remove-lesson-status-C1 directly resolved — migration marker behavior now has dedicated tests"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "remove-lesson-status-C1"
+  - category: code
+    summary: "Migration markers always set both values unconditionally — lesson_to_closed is set even though no lesson migration code runs. Correct per spec but semantically the marker claims work that was already completed in a prior release"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1180
+    severity: observation
+    suggested_action: accept
