@@ -1,20 +1,20 @@
 # Proof Chain Dashboard
 
-135 runs · 99 active · 3 promoted · 691 closed
+135 runs · 98 active · 3 promoted · 692 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 89 | 63 | 2026-05-21 |
+| cli | 89 | 62 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 12 | 9 |
+| packages/cli/src/commands/work.ts | 11 | 8 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/engine/detectors/projectType.ts | 6 | 3 |
 | packages/cli/src/commands/init/state.ts | 5 | 4 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 99 total)
+## Active Findings (30 shown of 98 total)
 
 ### packages/cli/src/commands/config.ts
 
