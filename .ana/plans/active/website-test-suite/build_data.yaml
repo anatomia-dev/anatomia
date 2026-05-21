@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "Spec references strip-jsx.ts but actual file is stripJsx.ts — import path adapted"
+    file: "website/lib/__tests__/docs-data/strip-jsx.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Data-integrity tests skip without prebuild — by design but may confuse local-only test runs"
+    file: "website/lib/__tests__/docs-data/data-integrity.test.ts"
+    severity: observation
+    suggested_action: monitor
