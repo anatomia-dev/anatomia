@@ -7,7 +7,7 @@
   "commands": {
     "build": "pnpm run build",
     "test": "pnpm run test -- --run",
-    "lint": "(cd packages/cli && pnpm run lint)",
+    "lint": "pnpm run lint",
     "dev": "pnpm run dev"
   },
   "surfaces": {
