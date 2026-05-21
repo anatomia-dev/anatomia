@@ -34317,7 +34317,10 @@
             "A003"
           ],
           "id": "fix-polyglot-rust-ts-ruby-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-polyglot-detection-hygiene scope — indicators.push('Cargo.toml') added before pnpm-workspace.yaml push in both Tauri paths: Tier 3 at projectType.ts:207 and Tier 4 at projectType.ts:257. Verified both lines present.",
+          "closed_at": "2026-05-21T04:06:47.919Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
