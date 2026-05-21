@@ -45,5 +45,20 @@
     "packages/cli/tests/commands/doctor.test.ts",
     "packages/cli/tests/commands/work.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T03:38:12.533Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:1f32c2f4922e281085cb6b16d8743d453f73e956c2d91ea7017997c1de8a365d",
+    "run_at": "2026-05-21T03:42:49.461Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T03:42:49.498Z",
+    "hash": "sha256:39a86d0815c2280cbdcbe38cff4b58592fa88ba87772091b96619ef1effc87ad"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T03:42:49.499Z",
+    "hash": "sha256:f442747e420e1c705158c98dcbc7f27d673672ca9559213a7f8b449145fb2952"
+  }
 }
