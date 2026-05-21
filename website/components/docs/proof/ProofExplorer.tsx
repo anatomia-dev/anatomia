@@ -238,16 +238,6 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
                   <div style={{ color: "var(--ink)", fontWeight: 500, fontSize: "13.5px" }}>
                     {e.feature}
                     <span style={{ display: "inline-flex", gap: "4px", marginLeft: "8px" }}>
-                      <span style={{
-                        display: "inline-block",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        padding: "2px 6px",
-                        borderRadius: "3px",
-                        border: "1px solid var(--hairline)",
-                        color: "var(--ink-60)",
-                        letterSpacing: "0.02em",
-                      }}>{e.stage.toLowerCase()}</span>
                       {e.surface && (
                         <span style={{
                           display: "inline-block",
