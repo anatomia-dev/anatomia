@@ -34039,7 +34039,10 @@
             "A018"
           ],
           "id": "fix-deep-tier-sampling-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-sampler-budget-overflow scope — remaining > 0 guard added at proportionalSampler.ts:81. Verified: first-pass loop now stops when budget is exhausted. Buckets ordered [shallow, mid, deep] so small budgets favor shallower files intentionally.",
+          "closed_at": "2026-05-21T04:06:30.810Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
