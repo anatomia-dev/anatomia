@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: code
+    summary: "EMPTY_AUDIT_MATRIX is a mutable shared object — not frozen, callees could theoretically mutate it"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 145
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A005", "A006"]
+  - category: code
+    summary: "proof.ts imports pullBeforeRead and commitAndPushProofChanges from git-operations.ts but only uses them as pass-through calls — no local usage justifies the import beyond maintaining the existing call sites"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 29
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Proof context finding upstream-finding-resolution-C1 (duplicated resolves counting) is now resolved by this build"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "upstream-finding-resolution-C1"
+  - category: upstream
+    summary: "Proof context finding kind-aware-branch-prefixes-C6 (HEAD-reading duplication) is now resolved by this build"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "kind-aware-branch-prefixes-C6"
+  - category: code
+    summary: "Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive) — 10+ verify cycles old, not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: debt
+    suggested_action: scope
