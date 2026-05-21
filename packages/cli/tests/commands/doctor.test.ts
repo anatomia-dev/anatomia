@@ -539,4 +539,79 @@ describe('edge cases', () => {
     expect(results.dimensions.proof_chain.status).toBe('warn');
     expect(results.dimensions.proof_chain.runs).toBe(0);
   });
+
+  // @ana A014
+  it('reports count of configured surfaces', async () => {
+    await createMinimalProject(tmpDir, {
+      anaJson: {
+        surfaces: {
+          cli: { path: 'packages/cli', commands: { test: 'pnpm vitest run', build: null, lint: null, dev: null } },
+          website: { path: 'website', commands: { test: 'pnpm vitest run', build: null, lint: null, dev: null } },
+        },
+      },
+    });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.surfaces.count).toBe(2);
+    expect(results.dimensions.surfaces.status).toBe('pass');
+  });
+
+  // @ana A015
+  it('warns when a surface has no test command', async () => {
+    await createMinimalProject(tmpDir, {
+      anaJson: {
+        surfaces: {
+          cli: { path: 'packages/cli', commands: { test: 'pnpm vitest run', build: null, lint: null, dev: null } },
+          website: { path: 'website', commands: { test: null, build: null, lint: null, dev: null } },
+        },
+      },
+    });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.surfaces.status).toBe('warn');
+    expect(results.dimensions.surfaces.missing_test).toContain('website');
+  });
+
+  // @ana A016
+  it('detects scan-to-ana.json surface drift', async () => {
+    await createMinimalProject(tmpDir, {
+      anaJson: {
+        surfaces: {
+          cli: { path: 'packages/cli', commands: { test: 'pnpm vitest run', build: null, lint: null, dev: null } },
+          website: { path: 'website', commands: { test: 'pnpm vitest run', build: null, lint: null, dev: null } },
+        },
+      },
+      scanJson: {
+        schemaVersion: '1.0',
+        overview: { scannedAt: new Date().toISOString(), depth: 'deep' },
+        stack: { testing: ['Vitest'] },
+        git: { head: 'abc1234' },
+        surfaces: [
+          { name: 'cli', path: 'packages/cli' },
+          { name: 'website', path: 'website' },
+          { name: 'docs', path: 'docs' },
+        ],
+      },
+    });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.surfaces.drift).toBe(true);
+  });
+
+  // @ana A017
+  it('warns when legacy buildPackage or testPackage keys exist', async () => {
+    await createMinimalProject(tmpDir, {
+      anaJson: {
+        buildPackage: 'packages/cli',
+        testPackage: 'packages/cli',
+      },
+    });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.surfaces.legacy_fields).toContain('buildPackage');
+    expect(results.dimensions.surfaces.legacy_fields).toContain('testPackage');
+  });
+
+  it('no surfaces configured skips gracefully', async () => {
+    await createMinimalProject(tmpDir);
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.surfaces.count).toBe(0);
+    expect(results.dimensions.surfaces.status).toBe('pass');
+  });
 });

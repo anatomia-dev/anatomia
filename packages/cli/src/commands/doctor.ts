@@ -83,6 +83,15 @@ interface ProofChainDimension {
   trend: string;
 }
 
+interface SurfacesDimension {
+  status: DimensionStatus;
+  count: number;
+  missing_test: string[];
+  drift: boolean;
+  drift_scan_count: number | null;
+  legacy_fields: string[];
+}
+
 interface StaleWorkItem {
   slug: string;
   days_stalled: number;
@@ -95,6 +104,7 @@ interface DoctorDimensions {
   context: ContextDimension;
   skills: SkillsDimension;
   proof_chain: ProofChainDimension;
+  surfaces: SurfacesDimension;
 }
 
 interface DoctorResults {
@@ -346,6 +356,70 @@ function assessProofChain(projectRoot: string): ProofChainDimension {
 }
 
 /**
+ * Assess surfaces dimension.
+ *
+ * Checks: surface count and test commands, scan-vs-ana.json drift,
+ * and legacy buildPackage/testPackage keys.
+ *
+ * @param projectRoot - Absolute path to the project root
+ * @returns Surfaces dimension result
+ */
+function assessSurfaces(projectRoot: string): SurfacesDimension {
+  const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
+  const scanJsonPath = path.join(projectRoot, '.ana', 'scan.json');
+
+  let anaContent: Record<string, unknown> = {};
+  try {
+    anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
+  } catch {
+    return { status: 'pass', count: 0, missing_test: [], drift: false, drift_scan_count: null, legacy_fields: [] };
+  }
+
+  const surfaces = anaContent['surfaces'] as Record<string, { commands?: { test?: string | null } }> | undefined;
+  const surfaceCount = surfaces ? Object.keys(surfaces).length : 0;
+
+  // Check for missing test commands
+  const missingTest: string[] = [];
+  if (surfaces) {
+    for (const [name, config] of Object.entries(surfaces)) {
+      if (!config.commands?.test) {
+        missingTest.push(name);
+      }
+    }
+  }
+
+  // Check scan-vs-ana.json drift
+  let drift = false;
+  let driftScanCount: number | null = null;
+  try {
+    if (fs.existsSync(scanJsonPath)) {
+      const scanContent = JSON.parse(fs.readFileSync(scanJsonPath, 'utf-8'));
+      const scanSurfaces = scanContent.surfaces as unknown[] | undefined;
+      if (scanSurfaces) {
+        driftScanCount = scanSurfaces.length;
+        drift = scanSurfaces.length !== surfaceCount;
+      }
+    }
+  } catch { /* scan.json missing or malformed */ }
+
+  // Check for legacy fields
+  const legacyFields: string[] = [];
+  if ('buildPackage' in anaContent) legacyFields.push('buildPackage');
+  if ('testPackage' in anaContent) legacyFields.push('testPackage');
+
+  const hasWarnings = missingTest.length > 0 || drift || legacyFields.length > 0;
+
+  return {
+    status: surfaceCount === 0 ? 'pass' : (hasWarnings ? 'warn' : 'pass'),
+    count: surfaceCount,
+    missing_test: missingTest,
+    drift,
+    drift_scan_count: driftScanCount,
+    legacy_fields: legacyFields,
+  };
+}
+
+/**
  * Detect stale work items.
  *
  * Reads `.saves.json` files under `.ana/plans/active/` to find the most recent
@@ -531,6 +605,27 @@ function formatTerminalOutput(results: DoctorResults): string {
     lines.push(`  ${chalk.green('✓')} Proof chain — ${d.proof_chain.runs} runs${findingsPart}${riskPart}${trendPart}`);
   }
 
+  // Surfaces
+  if (d.surfaces.count > 0) {
+    const warnings: string[] = [];
+    if (d.surfaces.missing_test.length > 0) {
+      warnings.push(`${d.surfaces.missing_test.join(', ')} has no test command`);
+    }
+    if (d.surfaces.drift) {
+      warnings.push(`scan detected ${d.surfaces.drift_scan_count} surfaces, ana.json has ${d.surfaces.count}. Run \`ana init\` to sync`);
+    }
+    if (warnings.length > 0) {
+      lines.push(`  ${chalk.yellow('○')} Surfaces — ${d.surfaces.count} configured (${warnings.join('; ')})`);
+    } else {
+      lines.push(`  ${chalk.green('✓')} Surfaces — ${d.surfaces.count} configured`);
+    }
+  }
+
+  // Legacy field warnings
+  if (d.surfaces.legacy_fields.length > 0) {
+    lines.push(`  ${chalk.yellow('⚠')} Legacy fields: ${d.surfaces.legacy_fields.join(', ')} — remove with \`ana config delete\``);
+  }
+
   // Stale work items
   for (const item of results.stale_work) {
     lines.push('');
@@ -588,6 +683,7 @@ export async function runDoctor(projectRoot: string): Promise<DoctorResults> {
   ]);
 
   const proofChain = assessProofChain(projectRoot);
+  const surfaces = assessSurfaces(projectRoot);
   const staleWork = detectStaleWork(projectRoot);
   const maturity = classifyMaturity(proofChain, context);
 
@@ -604,6 +700,7 @@ export async function runDoctor(projectRoot: string): Promise<DoctorResults> {
       context,
       skills,
       proof_chain: proofChain,
+      surfaces,
     },
     stale_work: staleWork,
     overall: hasRed ? 'fail' : 'pass',
