@@ -72,10 +72,11 @@ FAIL means Verify found issues — this is the pipeline working as designed. <Do
 
 <TroubleCard title="Tests fail in pipeline but pass locally">
 
-1. Check the detected commands: `ana config show` — look at `commands.test` (project-wide) and `surfaces.{name}.commands.test` (per-surface)
-2. In monorepos, init may target the wrong surface or produce an invalid invocation
-3. Override: `ana config set commands.test "your-command"` for project-wide, or `ana config set surfaces.{name}.commands.test "your-command"` for a specific surface
-4. Common fixes: `pnpm --filter web test`, `npx vitest run`, `npm run test:unit`
+1. **Database or service not running.** Pipeline agents run your test command exactly as configured. If tests need PostgreSQL, Redis, or Docker — start them first.
+2. **Missing environment variables.** `.env` files aren&apos;t loaded automatically in all test runners. Check that CI-required vars are set in your shell.
+3. **Wrong test command detected.** Run `ana config show` — check `commands.test` (project-wide) and `surfaces.{name}.commands.test` (per-surface). Override: `ana config set commands.test "your-command"`.
+4. **Prisma client not generated.** If using Prisma, run `npx prisma generate` before the pipeline. Some test setups require this explicitly.
+5. **Monorepo surface mismatch.** Init may target the wrong package. See the monorepo troubleshooting card above for per-surface command overrides.
 
 </TroubleCard>
 
@@ -143,6 +144,8 @@ If `ana work status` or `ana doctor` shows a version mismatch between your CLI a
 - **Don't edit `proof_chain.json` by hand.** Use `ana proof close`, `ana proof promote`, `ana proof strengthen`. Manual edits can corrupt the chain — `ana proof health` reports incorrect trajectories, `ana proof audit` may skip entries. If the chain is corrupted, restore from git: `git checkout -- .ana/proof_chain.json`
 - **Re-init instead of deleting.** `ana init` refreshes scan data and templates while preserving your context, skills, proof chain, and config. Deleting `.ana/` loses proof history permanently.
 - **Pipeline runs can't break your code.** Build works in a git worktree — the main branch is untouched until you merge a PR. The worst a bad pipeline run produces is a PR you reject.
+- **Start small.** Your first pipeline run should be a single-file fix or a feature you&apos;d normally spend 30 minutes on. Complex multi-file changes are better after you&apos;ve seen one full cycle succeed.
+- **Check your test command first.** Most pipeline failures trace back to the detected test command. Run `ana config show` and verify `commands.test` before investigating further.
 
 Still stuck? [help@anatomia.dev](mailto:help@anatomia.dev) — include your CLI version (`ana --version`) and the proof slug if applicable.
 

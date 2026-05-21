@@ -84,7 +84,7 @@ If Anatomia created your `CLAUDE.md` (check git blame), remove that too. If you 
 
 ### Scan + init
 
-`ana scan` reads your project and detects framework, database, auth, testing, services, conventions, and patterns. Re-running `ana init` refreshes scan data without overwriting your edits.
+`ana scan` reads your project and detects framework, database, auth, testing, services, conventions, and patterns. In monorepos, scan identifies each surface (package or app) and detects per-surface commands. Re-running `ana init` refreshes scan data without overwriting your edits.
 
 `ana init` writes that intelligence to files agents read:
 
@@ -161,6 +161,7 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 | `ana init commit` | Commit infrastructure files to the artifact branch |
 | `ana doctor` | Check project health and configuration. `--json` for CI |
 | `ana config show` | Display current ana.json settings |
+| `ana config delete <field>` | Remove a config field, reverting to detected default |
 
 ### Pipeline
 

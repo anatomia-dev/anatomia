@@ -42,6 +42,7 @@ export interface ProofEntry {
   findingCount: number;
   rejectionCycles: number;
   completedAt: string;
+  surface?: string | null;
   scopeSummary: string | null;
   modulesTouched: string[];
   assertions: ProofAssertion[];

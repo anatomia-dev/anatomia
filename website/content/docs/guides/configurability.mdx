@@ -22,7 +22,7 @@ Settings the CLI manages for you. Change them with commands or `ana.json` edits 
 </div>
 <div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
 <div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Build / test / lint commands</div>
-<div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>Every agent reads these. Init detects them; you override.</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>Every agent reads these. Init detects them; you override. For monorepos, override per surface: <code>ana config set surfaces.cli.commands.test &quot;your-command&quot;</code></div>
 <div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set commands.test "pnpm test -- --run"</div>
 </div>
 <div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
@@ -31,6 +31,8 @@ Settings the CLI manages for you. Change them with commands or `ana.json` edits 
 <div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set custom.teamId "anatomia"</div>
 </div>
 </div>
+
+Remove any field with `ana config delete <field>` — useful for clearing overrides and reverting to detected defaults.
 
 ### What ana.json looks like
 

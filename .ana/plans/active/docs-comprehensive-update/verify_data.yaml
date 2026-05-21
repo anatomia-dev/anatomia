@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Badge style object duplicated three times in ProofExplorer inline badge container"
+    file: "website/components/docs/proof/ProofExplorer.tsx"
+    line: 252
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A005", "A006"]
+  - category: code
+    summary: "formatDuration duplicated in ProofHero — known across 4 files per proof context"
+    file: "website/components/docs/proof/ProofHero.tsx"
+    line: 3
+    severity: debt
+    suggested_action: monitor
+  - category: test
+    summary: "No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested"
+    file: "website/components/docs/proof/ProofHero.tsx"
+    line: 90
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003", "A004", "A005", "A007"]
+  - category: upstream
+    summary: "Spec AC2-AC15 checkboxes remain unchecked in spec.md — Plan wrote them as unchecked, Build didn't update them"
+    severity: observation
+    suggested_action: accept

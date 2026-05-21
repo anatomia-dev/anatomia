@@ -87,6 +87,9 @@ export function ProofHero({ entry, className }: ProofHeroProps) {
         <span><b style={{ color: "var(--ink)", fontWeight: 500 }}>duration</b> {formatDuration(entry.duration)}</span>
         <span><b style={{ color: "var(--ink)", fontWeight: 500 }}>rejection cycles</b> {entry.rejectionCycles}</span>
         <span><b style={{ color: "var(--ink)", fontWeight: 500 }}>shipped</b> {formatDate(entry.completedAt)}</span>
+        {entry.surface && (
+          <span><b style={{ color: "var(--ink)", fontWeight: 500 }}>surface</b> {entry.surface}</span>
+        )}
       </div>
     </div>
   );

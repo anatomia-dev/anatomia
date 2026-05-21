@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Start small best practice bullet overlaps with quickstart line 65 guidance — intentional per spec but verifier may flag"
+    severity: observation
+    suggested_action: accept
