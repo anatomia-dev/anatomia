@@ -1,0 +1,80 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix test behavioral coverage gaps"
+
+assertions:
+  - id: A001
+    says: "The dead ternary line is removed from the doctor scaffold test"
+    block: "names scaffold-default skills when not all enriched"
+    target: "doctor.test.ts:A022-block-line-count"
+    matcher: "equals"
+    value: 2
+
+  - id: A002
+    says: "The doctor test still verifies deployment is listed as a scaffold default"
+    block: "names scaffold-default skills when not all enriched"
+    target: "results.dimensions.skills.scaffold_defaults"
+    matcher: "contains"
+    value: "deployment"
+
+  - id: A003
+    says: "The doctor test still verifies troubleshooting is listed as a scaffold default"
+    block: "names scaffold-default skills when not all enriched"
+    target: "results.dimensions.skills.scaffold_defaults"
+    matcher: "contains"
+    value: "troubleshooting"
+
+  - id: A004
+    says: "An entry with an existing surface is not overwritten during backfill"
+    block: "preserves existing surface during backfill — does not overwrite"
+    target: "chain.entries[0].surface"
+    matcher: "equals"
+    value: "website"
+
+  - id: A005
+    says: "The backfill guard test uses a surface mismatch to prove the guard works"
+    block: "preserves existing surface during backfill — does not overwrite"
+    target: "entry.modules_touched[0]"
+    matcher: "contains"
+    value: "packages/cli"
+
+  - id: A006
+    says: "The backfill guard test does not skip the backfill loop via migration marker"
+    block: "preserves existing surface during backfill — does not overwrite"
+    target: "fixture.migrations.surface_backfill"
+    matcher: "not_equals"
+    value: true
+
+  - id: A007
+    says: "The replacement test carries the A021 contract tag"
+    block: "preserves existing surface during backfill — does not overwrite"
+    target: "test-comment"
+    matcher: "contains"
+    value: "A021"
+
+  - id: A008
+    says: "The trivial deriveSurface idempotency test is removed"
+    block: "deriveSurface test block"
+    target: "idempotency-test-exists"
+    matcher: "equals"
+    value: false
+
+  - id: A009
+    says: "All existing tests still pass after the changes"
+    block: "full test suite"
+    target: "test-result"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A010
+    says: "The test count stays the same — one removed, one added"
+    block: "full test suite"
+    target: "tests-passed"
+    matcher: "equals"
+    value: 2713
+
+file_changes:
+  - path: "packages/cli/tests/commands/doctor.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
