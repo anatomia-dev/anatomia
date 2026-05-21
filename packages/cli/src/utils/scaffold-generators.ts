@@ -116,6 +116,15 @@ export function generateProjectContextScaffold(result: EngineResult): string {
     }
     s += '\n';
   }
+  if (result.surfaces?.length > 0) {
+    const surfaceList = result.surfaces.map(sf => {
+      const parts = [sf.path];
+      if (sf.language) parts.push(sf.language);
+      if (sf.framework) parts.push(sf.framework);
+      return `${sf.name} (${parts.join(', ')})`;
+    }).join(', ');
+    s += `**Detected surfaces:** ${surfaceList}\n`;
+  }
   if (result.structure.length > 0) {
     const dirCount = result.structure.length;
     const topDirs = result.structure.slice(0, 8).map(e => e.path).join(', ');
