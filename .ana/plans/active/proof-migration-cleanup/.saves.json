@@ -56,14 +56,26 @@
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:4ede6d351999cee4101e07f893f1c7da85dfdd7867b7c6e14747a55136e881e6",
-    "run_at": "2026-05-21T02:21:24.629Z"
+    "run_at": "2026-05-21T02:25:10.147Z"
   },
   "verify-report": {
-    "saved_at": "2026-05-21T02:21:24.676Z",
-    "hash": "sha256:3035608426c3e040ab19146929e20d59f808d0006904c2cd6dc21b876d3e0736"
+    "saved_at": "2026-05-21T02:25:10.202Z",
+    "hash": "sha256:ce65c5d97505642f09d2abd53456a5a8949d8f08b60e8a407c09aad276b9fad6",
+    "history": [
+      {
+        "saved_at": "2026-05-21T02:21:24.676Z",
+        "hash": "sha256:3035608426c3e040ab19146929e20d59f808d0006904c2cd6dc21b876d3e0736"
+      }
+    ]
   },
   "verify-data": {
-    "saved_at": "2026-05-21T02:21:24.677Z",
-    "hash": "sha256:d9d485362ab767b50ea2191c5e224585bef8e25312f3c6fde09f41d58ab338fc"
+    "saved_at": "2026-05-21T02:25:10.202Z",
+    "hash": "sha256:9d9a46e58adc4b3a4c864a5a07b6a7f288ccefd3bf693f3fa77d9e5b2e185fa6",
+    "history": [
+      {
+        "saved_at": "2026-05-21T02:21:24.677Z",
+        "hash": "sha256:d9d485362ab767b50ea2191c5e224585bef8e25312f3c6fde09f41d58ab338fc"
+      }
+    ]
   }
 }

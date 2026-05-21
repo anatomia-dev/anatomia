@@ -1,9 +1,11 @@
 schema: 1
 findings:
-  - category: upstream
-    summary: "Contract A010 spec error — assumes ?:  implies | undefined but exactOptionalPropertyTypes: true makes them distinct. Proposed change would break compilation."
-    severity: observation
-    suggested_action: accept
+  - category: code
+    summary: "DashboardEntry.surface still uses redundant '| undefined' — AC6/A010 not implemented"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 462
+    severity: debt
+    suggested_action: scope
     related_assertions: ["A010"]
   - category: test
     summary: "Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change"
