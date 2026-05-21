@@ -1,0 +1,114 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Command File Duplication Cleanup"
+
+assertions:
+  - id: A001
+    says: "Resolves counting runs once before the output branch, not duplicated"
+    block: "resolves counting is hoisted above JSON/console branch"
+    target: "work.ts.completeWork.resolvesCountingLoops"
+    matcher: "equals"
+    value: 1
+
+  - id: A002
+    says: "JSON output includes resolves_claims when upstream findings resolve prior issues"
+    block: "completeWork JSON output contains resolves_claims"
+    target: "jsonOutput.resolves_claims"
+    matcher: "exists"
+
+  - id: A003
+    says: "Console output shows resolution claim count when upstream findings resolve prior issues"
+    block: "completeWork console output contains resolves message"
+    target: "consoleOutput"
+    matcher: "contains"
+    value: "Verify claims"
+
+  - id: A004
+    says: "The startWork resume path reads the branch name using getCurrentBranch"
+    block: "startWork resume path uses getCurrentBranch"
+    target: "work.ts.startWork.branchRead"
+    matcher: "not_contains"
+    value: "runGit(['rev-parse', '--abbrev-ref', 'HEAD'])"
+
+  - id: A005
+    says: "Empty audit matrix values are defined once as a shared constant"
+    block: "empty audit matrix is a named constant"
+    target: "proof.ts.EMPTY_AUDIT_MATRIX"
+    matcher: "exists"
+
+  - id: A006
+    says: "Both empty audit paths use the shared constant instead of inline objects"
+    block: "both audit early-return paths reference EMPTY_AUDIT_MATRIX"
+    target: "proof.ts.auditEmptyPaths.useConstant"
+    matcher: "equals"
+    value: 2
+
+  - id: A007
+    says: "pullBeforeRead is exported from the git utilities module"
+    block: "pullBeforeRead exported from git-operations.ts"
+    target: "git-operations.ts.exports.pullBeforeRead"
+    matcher: "exists"
+
+  - id: A008
+    says: "commitAndPushProofChanges is exported from the git utilities module"
+    block: "commitAndPushProofChanges exported from git-operations.ts"
+    target: "git-operations.ts.exports.commitAndPushProofChanges"
+    matcher: "exists"
+
+  - id: A009
+    says: "proof.ts no longer defines pullBeforeRead or commitAndPushProofChanges"
+    block: "proof.ts does not define moved functions"
+    target: "proof.ts.functionDefinitions"
+    matcher: "not_contains"
+    value: "export function pullBeforeRead"
+
+  - id: A010
+    says: "learn.ts imports git functions from the utilities module, not from proof"
+    block: "learn.ts imports from git-operations.ts"
+    target: "learn.ts.importSource"
+    matcher: "contains"
+    value: "../utils/git-operations.js"
+
+  - id: A011
+    says: "learn.ts does not import anything from proof.ts"
+    block: "learn.ts has no proof.ts import for moved functions"
+    target: "learn.ts.imports"
+    matcher: "not_contains"
+    value: "from './proof.js'"
+
+  - id: A012
+    says: "All existing tests pass without any test file modifications"
+    block: "full test suite passes unchanged"
+    target: "testResults.passed"
+    matcher: "equals"
+    value: 2713
+
+  - id: A013
+    says: "isTimestampRecent remains as its own function in work.ts"
+    block: "isTimestampRecent is unchanged in work.ts"
+    target: "work.ts.functions.isTimestampRecent"
+    matcher: "exists"
+
+  - id: A014
+    says: "The spawnSync import is removed from proof.ts since no code there uses it"
+    block: "proof.ts no longer imports spawnSync"
+    target: "proof.ts.imports"
+    matcher: "not_contains"
+    value: "spawnSync"
+
+  - id: A015
+    says: "No new lint violations are introduced by the refactoring"
+    block: "lint passes cleanly"
+    target: "lintResult.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/git-operations.ts"
+    action: modify
+  - path: "packages/cli/src/commands/learn.ts"
+    action: modify
