@@ -18,5 +18,28 @@
   "spec": {
     "saved_at": "2026-05-21T01:44:48.941Z",
     "hash": "sha256:f4f06533a7dcc9477c67433f0a87aba74dcb83601ea6e089b68646e601825d53"
-  }
+  },
+  "build_started_at": "2026-05-21T02:17:00.312Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-21T02:21:46.117Z",
+    "hash": "sha256:b6bfb816b2b4a879f704fdd27c7af19b3a703df7f1da85335d50e0d04631eee4"
+  },
+  "build-data": {
+    "saved_at": "2026-05-21T02:21:46.118Z",
+    "hash": "sha256:faf299dd5b2cdb4d9ae4a936682e1f73fae2e8ff31dac57acec6d89df1b7da6b"
+  },
+  "modules_touched": [
+    "README.md",
+    "website/components/docs/proof/ProofExplorer.tsx",
+    "website/components/docs/proof/ProofHero.tsx",
+    "website/content/docs/guides/configurability.mdx",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/start.mdx",
+    "website/lib/docs-data/types.ts",
+    "website/scripts/extract-docs-data.ts"
+  ],
+  "commit_hygiene": []
 }
