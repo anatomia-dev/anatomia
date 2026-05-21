@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { getMarketingTestCount } from "@/lib/marketing-stats";
 import styles from "./about.module.css";
 
 const GENESIS = new Date("2026-03-19T00:00:00Z");
@@ -60,6 +61,7 @@ const PRINCIPLES = [
 export async function About() {
   const days = daysSinceGenesis();
   const credits = computeCredits();
+  const testCount = getMarketingTestCount();
 
   // Proof count — same data source and fetch pattern as the ship log (proof-feed.ts)
   let proofCount = 124;
@@ -159,7 +161,7 @@ export async function About() {
                 <span className={styles.statLabel}>verified runs</span>
               </div>
               <div className={styles.stat}>
-                <span className={styles.statValue}>2,400+</span>
+                <span className={styles.statValue}>{testCount}</span>
                 <span className={styles.statLabel}>tests</span>
               </div>
               <div className={styles.stat}>

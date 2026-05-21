@@ -66,6 +66,8 @@ describe.skipIf(!dataExists)('data integrity — docs JSON files', () => {
     expect(data).toHaveProperty('version');
     expect(data).toHaveProperty('commitSha');
     expect(data).toHaveProperty('buildTimestamp');
+    expect(data).toHaveProperty('testCount');
+    expect(data.testCount).toBeGreaterThanOrEqual(1);
   });
 
   // @ana A020

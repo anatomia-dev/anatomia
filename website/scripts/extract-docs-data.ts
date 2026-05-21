@@ -689,6 +689,36 @@ function extractContextFiles(): ContextFile[] {
 // 7. Build meta extraction
 // ---------------------------------------------------------------------------
 
+/**
+ * Count test cases across all workspace surfaces by scanning for
+ * `it('...'` and `test('...'` patterns in test files.
+ * Excludes node_modules. Matches within ~1% of actual vitest count.
+ */
+function countTests(): number {
+  const testPattern = /^\s*(it|test)\(\s*['"`]/;
+  const dirs = ['packages', 'website', 'tests'].map(d => path.join(MONOREPO_ROOT, d));
+  let count = 0;
+
+  function walk(dir: string): void {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (/\.(test|spec)\.(ts|tsx)$/.test(entry.name)) {
+        const content = fs.readFileSync(full, 'utf-8');
+        for (const line of content.split('\n')) {
+          if (testPattern.test(line)) count++;
+        }
+      }
+    }
+  }
+
+  for (const dir of dirs) walk(dir);
+  return count;
+}
+
 function extractBuildMeta(): BuildMeta {
   const cliPkg = JSON.parse(fs.readFileSync(path.join(CLI_PKG, 'package.json'), 'utf-8'));
   const version = cliPkg.version;
@@ -706,6 +736,7 @@ function extractBuildMeta(): BuildMeta {
     version,
     commitSha,
     buildTimestamp: new Date().toISOString(),
+    testCount: countTests(),
   };
 }
 

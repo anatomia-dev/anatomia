@@ -264,7 +264,7 @@
 }
 .proofRow {
   display: grid;
-  grid-template-columns: 86px 62px minmax(0, 1fr) 78px 84px;
+  grid-template-columns: 86px 84px minmax(0, 1fr) 78px 84px;
   gap: 18px;
   align-items: center;
   padding: 18px 4px;
@@ -292,6 +292,8 @@
   padding: 3px 7px;
   border-radius: 3px;
   text-align: center;
+  white-space: nowrap;
+  width: fit-content;
 }
 .kindMilestone { background: color-mix(in oklch, oklch(0.75 0.15 85) 18%, transparent); color: oklch(0.45 0.12 85); }
 :global([data-theme="dark"]) .kindMilestone { color: oklch(0.75 0.15 85); }

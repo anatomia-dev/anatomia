@@ -6,7 +6,7 @@ vi.mock('@/lib/docs-data', () => ({
   getBuildMeta: vi.fn(),
 }));
 
-import { getMarketingCommandCount, getMarketingVersion } from '../marketing-stats';
+import { getMarketingCommandCount, getMarketingVersion, getMarketingTestCount } from '../marketing-stats';
 import { getCommandCount, getBuildMeta } from '@/lib/docs-data';
 
 const mockGetCommandCount = vi.mocked(getCommandCount);
@@ -54,6 +54,7 @@ describe('getMarketingVersion', () => {
       version: '1.0.2',
       commitSha: 'abc1234',
       buildTimestamp: '2026-05-16T00:00:00Z',
+      testCount: 2744,
     });
     expect(getMarketingVersion()).toBe('v1.0.2');
   });
@@ -78,8 +79,48 @@ describe('getMarketingVersion', () => {
       version: undefined as unknown as string,
       commitSha: 'abc1234',
       buildTimestamp: '2026-05-16T00:00:00Z',
+      testCount: 2744,
     });
     // Missing version falls back to hardcoded default
     expect(getMarketingVersion()).toBe('v1.1.0');
+  });
+});
+
+describe('getMarketingTestCount', () => {
+  it('returns rounded-down count with + suffix', () => {
+    mockGetBuildMeta.mockReturnValue({
+      version: '1.0.2',
+      commitSha: 'abc1234',
+      buildTimestamp: '2026-05-16T00:00:00Z',
+      testCount: 2744,
+    });
+    expect(getMarketingTestCount()).toBe('2,700+');
+  });
+
+  it('rounds down to nearest 100', () => {
+    mockGetBuildMeta.mockReturnValue({
+      version: '1.0.2',
+      commitSha: 'abc1234',
+      buildTimestamp: '2026-05-16T00:00:00Z',
+      testCount: 3150,
+    });
+    expect(getMarketingTestCount()).toBe('3,100+');
+  });
+
+  it('returns fallback when file missing', () => {
+    mockGetBuildMeta.mockImplementation(() => {
+      throw new Error('ENOENT: no such file or directory');
+    });
+    expect(getMarketingTestCount()).toBe('2,700+');
+  });
+
+  it('returns fallback when testCount is 0', () => {
+    mockGetBuildMeta.mockReturnValue({
+      version: '1.0.2',
+      commitSha: 'abc1234',
+      buildTimestamp: '2026-05-16T00:00:00Z',
+      testCount: 0,
+    });
+    expect(getMarketingTestCount()).toBe('2,700+');
   });
 });
