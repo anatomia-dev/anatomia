@@ -66,7 +66,7 @@ Surface with no test script but Vitest detected (fallback, unchanged):
 - **Unit tests:** Four new tests in `monorepoCommandScoping.test.ts` using existing `setupPackage` and `makeMonorepoResult` helpers:
   1. Complex script passthrough — surface with `test: "prisma:generate && vitest"`, Vitest detected. Assert command is `(cd '...' && pnpm run test)`.
   2. Fallback to direct invocation — surface with no test script, `testing: ['Vitest']`. Assert command is `(cd '...' && pnpm vitest run)`.
-  3. Bun package manager — surface with `test: "bun:test"`, pm `bun`. Assert command is `(cd '...' && bun run test)`.
+  3. Bun package manager — surface with `test: "bun test --exit"`, pm `bun`. Assert command is `(cd '...' && bun run test)`.
   4. Empty-string test script — surface with `test: ""`, Vitest detected. Assert command is `(cd '...' && pnpm run test)` (truthy empty string takes the script passthrough path).
 - **Existing test update:** A002 assertion changes from `toContain('vitest run')` to `toBe("(cd 'packages/cli' && pnpm run test)")`.
 - **Regression:** A026 (no test script, `testing: []`) continues to pass unchanged — returns `null`.
