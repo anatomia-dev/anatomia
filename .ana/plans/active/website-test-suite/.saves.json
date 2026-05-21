@@ -45,5 +45,20 @@
     "website/lib/__tests__/proof-feed.test.ts",
     "website/package.json"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-21T01:07:41.972Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:525f09d93f786fec28baeb2405543a98533e191afecae8448c286504b459be20",
+    "run_at": "2026-05-21T01:12:17.192Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-21T01:12:17.232Z",
+    "hash": "sha256:ce7d88f23e51b9214528b86951ed4461bccd9c249b74bd19955d9c53026b8c82"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-21T01:12:17.232Z",
+    "hash": "sha256:a632195cdc3a40c625aa55fcf74c4eb5a708e5a08786aa8cde459779450da453"
+  }
 }
