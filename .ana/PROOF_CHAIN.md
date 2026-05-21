@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 100 active · 3 promoted · 713 closed
+140 runs · 99 active · 3 promoted · 714 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 66 | 2026-05-21 |
+| cli | 94 | 65 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -15,7 +15,7 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 9 | 6 |
-| packages/cli/tests/commands/work.test.ts | 8 | 7 |
+| packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/commands/init/state.ts | 7 | 5 |
 | packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
 | packages/cli/src/commands/proof.ts | 4 | 3 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 100 total)
+## Active Findings (30 shown of 99 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -58,6 +58,10 @@
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 - **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
+### packages/cli/src/engine/findings/rules/validation.ts
+
+- **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
@@ -81,7 +85,6 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
-- **test:** New backfill guard test doesn't verify the negative case — no test for what happens if surface is removed from the guard condition — *Fix test behavioral coverage gaps*
 - **test:** Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change — *Pre-surface behavior cleanup*
 
 ### packages/cli/tests/engine/census-detection.test.ts
