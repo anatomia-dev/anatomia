@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 107 active · 3 promoted · 673 closed
+133 runs · 106 active · 3 promoted · 674 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 70 | 2026-05-21 |
+| cli | 88 | 69 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -18,17 +18,21 @@
 | packages/cli/src/commands/init/state.ts | 8 | 5 |
 | packages/cli/src/engine/detectors/projectType.ts | 8 | 3 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
-| packages/cli/src/utils/proofSummary.ts | 4 | 3 |
+| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
+
+### packages/cli/src/commands/doctor.ts
+
+- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -72,10 +76,6 @@
 ### packages/cli/src/utils/displayNames.ts
 
 - **code:** nuxt and astro missing from FRAMEWORK_DISPLAY_NAMES — surfaces display lowercase keys instead of 'Nuxt'/'Astro' — *Scan Surface Detection*
-
-### packages/cli/src/utils/proofSummary.ts
-
-- **code:** Redundant type annotation: surface?: string | undefined — the ? already implies | undefined — *Surface Awareness Bridge*
 
 ### packages/cli/templates/.claude/agents/ana-learn.md
 
