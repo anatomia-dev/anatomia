@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-139 runs · 108 active · 3 promoted · 701 closed
+140 runs · 111 active · 3 promoted · 702 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 16 | 2026-05-20 |
-| cli | 93 | 72 | 2026-05-21 |
+| cli | 94 | 75 | 2026-05-21 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/src/commands/work.ts | 12 | 9 |
 | packages/cli/tests/commands/work.test.ts | 9 | 8 |
 | packages/cli/src/commands/init/state.ts | 7 | 5 |
+| packages/cli/src/engine/detectors/projectType.ts | 5 | 3 |
 | packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 3 |
-| packages/cli/src/engine/detectors/projectType.ts | 4 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -51,7 +51,7 @@
 
 ### packages/cli/src/engine/detectors/projectType.ts
 
-- **code:** Stale docstring — says 'Python → Go → Rust → Ruby → PHP' but polyglot tier order is Python → Rust → Ruby → Go — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
+- **code:** hasTauriWorkspaceDep catch block unreachable — regex-based function cannot throw — *Polyglot detection hygiene*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -85,13 +85,10 @@
 - **test:** Migration marker tests use heavyweight completeWork integration path — each test creates a full git repo, plan artifacts, and runs the complete flow for a 4-line code change — *Pre-surface behavior cleanup*
 - **test:** A021 idempotency test checks pure function determinism, not backfill loop guard — *Surface Awareness Bridge*
 
-### packages/cli/tests/engine/census-detection.test.ts
+### packages/cli/tests/engine/detectors/polyglot.test.ts
 
-- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
-### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
-
-- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+- **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
+- **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
 
 ### packages/cli/tests/engine/sampling/proportional-sampler.test.ts
 
