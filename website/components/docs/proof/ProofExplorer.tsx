@@ -54,16 +54,23 @@ export function ProofExplorer({ entries, stats, className }: ProofExplorerProps)
   const [sortKey, setSortKey] = useState<SortKey>("completed");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // Compute stage and surface options from data
+  // Compute stage and surface options — each narrows based on the other's selection.
+  // If the current selection is no longer available, reset to "All".
   const stageOptions = useMemo(() => {
-    const stages = new Set(entries.map((e) => e.stage));
-    return ["All", ...Array.from(stages).sort()];
-  }, [entries]);
+    const pool = surfaceFilter === "All" ? entries : entries.filter((e) => e.surface === surfaceFilter);
+    const stages = new Set(pool.map((e) => e.stage));
+    const opts = ["All", ...Array.from(stages).sort()];
+    if (stageFilter !== "All" && !stages.has(stageFilter)) setStageFilter("All");
+    return opts;
+  }, [entries, surfaceFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const surfaceOptions = useMemo(() => {
-    const surfaces = new Set(entries.map((e) => e.surface).filter(Boolean) as string[]);
-    return ["All", ...Array.from(surfaces).sort()];
-  }, [entries]);
+    const pool = stageFilter === "All" ? entries : entries.filter((e) => e.stage === stageFilter);
+    const surfaces = new Set(pool.map((e) => e.surface).filter(Boolean) as string[]);
+    const opts = ["All", ...Array.from(surfaces).sort()];
+    if (surfaceFilter !== "All" && !surfaces.has(surfaceFilter)) setSurfaceFilter("All");
+    return opts;
+  }, [entries, stageFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter
   const filtered = useMemo(() => {
