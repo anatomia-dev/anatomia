@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-135 runs · 109 active · 3 promoted · 681 closed
+135 runs · 108 active · 3 promoted · 682 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
 | cli | 89 | 69 | 2026-05-21 |
-| website | 21 | 22 | 2026-05-21 |
+| website | 21 | 21 | 2026-05-21 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -61,6 +61,7 @@
 ### packages/cli/src/engine/findings/rules/validation.ts
 
 - **code:** VALIDATION_PATH_PATTERNS check can false-positive on non-validation imports containing 'schema' or 'validate' — *Fix Deep Tier Sampling & Finding Accuracy*
+- **code:** Validation rule reads all route files synchronously via readFileSync — established pattern (matches secrets.ts) but could be noticeable at 500+ routes — *Fix Deep Tier Sampling & Finding Accuracy*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
@@ -110,6 +111,5 @@
 
 ### website/lib/__tests__/docs-data/strip-jsx.test.ts
 
-- **test:** toContain('2') is fragile — digit could match unrelated content if fixture input changes — *Website Test Suite*
 - **code:** 3 extra tests beyond spec (JSX comments, self-closing components, odd-vs-even median) — harmless over-building — *Website Test Suite*
 
