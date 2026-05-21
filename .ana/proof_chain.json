@@ -35845,7 +35845,10 @@
             "A014"
           ],
           "id": "surface-awareness-bridge-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Known pattern: ana.json duplicate reads already tracked by add-doctor-command-C3 (debt/scope, kept active). This finding adds another instance (assessSurfaces) of the same disease. The pattern is documented and the fix is the same — pass parsed config as parameter. Verify classified as accept.",
+          "closed_at": "2026-05-21T01:31:25.650Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

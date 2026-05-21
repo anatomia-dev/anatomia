@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-133 runs · 108 active · 3 promoted · 672 closed
+133 runs · 107 active · 3 promoted · 673 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 18 | 2026-05-20 |
-| cli | 88 | 71 | 2026-05-21 |
+| cli | 88 | 70 | 2026-05-21 |
 | website | 20 | 19 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,15 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
-
-### packages/cli/src/commands/doctor.ts
-
-- **code:** assessSurfaces reads ana.json independently — adds to known duplicate-read pattern (add-doctor-command-C3) — *Surface Awareness Bridge*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -84,6 +80,10 @@
 ### packages/cli/templates/.claude/agents/ana-learn.md
 
 - **test:** No tagged test for A018/A019 learn template assertions — verified by source inspection only — *Surface Awareness Bridge*
+
+### packages/cli/tests/commands/doctor.test.ts
+
+- **test:** A022 test line 410 contains dead logic — 'still scaffold'.split(' ')[0] ternary always evaluates to truthy branch, duplicating line 408 — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
 
