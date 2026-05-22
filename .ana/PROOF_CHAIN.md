@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 102 active · 3 promoted · 743 closed
+148 runs · 106 active · 3 promoted · 744 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 68 | 2026-05-22 |
+| cli | 102 | 72 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 102 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -34,7 +34,6 @@
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
-- **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
 ### packages/cli/src/commands/work.ts
 
@@ -52,11 +51,11 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
-- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
-- **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
 
+- **code:** Strategy execution order in pyproject.ts is 1,2,5,3,4 — Strategy 5 (dependency-groups → dev) placed between Strategy 2 and 3, breaking numeric sequence — *Separate Python production deps from dev deps*
+- **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break `]\s*$` anchor — still present from prior cycle — *Separate Python production deps from dev deps*
 - **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break \]\s*$ anchor — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
@@ -65,6 +64,7 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
+- **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
@@ -79,10 +79,6 @@
 
 - **test:** A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered — *Scan Surface Display*
 - **test:** A003-A006 test asserts surface names exist in block but not framework, language, or testing values — *Scan Surface Display*
-
-### packages/cli/tests/engine/census-detection.test.ts
-
-- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/census-primary.test.ts
 
@@ -104,6 +100,7 @@
 
 ### packages/cli/tests/engine/parsers/python.test.ts
 
+- **test:** A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect. — *Separate Python production deps from dev deps*
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### website/components/docs/proof/ProofExplorer.tsx

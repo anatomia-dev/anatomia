@@ -39443,6 +39443,248 @@
         "base_commit": "91af007e14918a80c7eabb8ed874d327364e1588"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-python-dep-separation",
+      "feature": "Separate Python production deps from dev deps",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 19,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "PEP 621 production dependencies land in the production bucket",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "PEP 735 dependency-groups land in the dev bucket, not production",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "PEP 735 dependencies never contaminate the production list",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Optional dependencies are production extras, not dev",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Poetry main dependencies land in production",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Poetry group dependencies land in production (deferred split)",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The combined reader provides both production and all-deps views",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "All-deps includes both production and dev dependencies",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Flask in dev dependency-groups does not contaminate framework detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Flask correctly appears in the dev bucket when in dependency-groups",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "SQLAlchemy in dev dependency-groups does not contaminate database detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "SQLAlchemy correctly appears in the dev bucket when in dependency-groups",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "pytest in dependency-groups is still detected for testing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "FastAPI in production dependencies still produces correct framework detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Directories named testing are excluded from surface detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The optional-dependencies docstring no longer calls them devDependencies",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Empty dependency-groups returns empty dev array",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Invalid TOML returns empty production and dev arrays",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A dependency-group named 'dependencies' is handled without crashing",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 41,
+        "think": 6,
+        "plan": 6,
+        "build": 8,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:0f87aa0e213e3b47696b6cc619bf0adf059a5a461b361dca2614eb5d5255a50e",
+        "contract": "sha256:ed8c7fe47c207733dd9c5e735a864ebd2e57266b50613dc8dfac00f731fe669f",
+        "plan": "sha256:3923e75bd8db7214b8405c14e16113098b12f186b52f050773a2b002ffdaf27a",
+        "spec": "sha256:5cd3ea6f8ce2ad0e0c475963966d8370c5d9443f8f2f46b9c1d60469e7dc783a",
+        "build-report": "sha256:3c6e6ff018ceb8f893c89b4c0a902e0c324f97a01e52a360bae3223b47f2bf0d",
+        "build-data": "sha256:90d66986a418bc5b36337270094f3510138d906d65221fecde54a9ff69fc0e9e",
+        "verify-report": "sha256:4790b4636d8e69b0dbde960f896112f240c7fde2d96d58172ca07f39309ea51e",
+        "verify-data": "sha256:0beecdef314ca81f4d44f471870f4fe8bb1e19cf7f84c583fca581ef2af8cc55"
+      },
+      "completed_at": "2026-05-22T10:38:20.106Z",
+      "modules_touched": [
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/src/engine/parsers/python.ts",
+        "packages/cli/src/engine/parsers/python/pyproject.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/integration/edge-cases.test.ts",
+        "packages/cli/tests/engine/parsers/python.test.ts"
+      ],
+      "scope_summary": "The PEP 735 `[dependency-groups]` parser fix (PR #199) reads all dependency groups into a flat list that feeds framework, database, and auth detection. Test dependencies from `[dependency-groups]` contaminate stack identity: fastapi shows `framework=Flask` + `auth=JWT`, pydantic shows `database=SQLAlchemy`, reflex shows `framework=FastAPI` (all from dev deps, none production). This is a regression — we made Python scanning worse in an attempt to make it better. Must ship before 1.1.3 bump.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 76,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "fix-python-dep-separation-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Strategy execution order in pyproject.ts is 1,2,5,3,4 — Strategy 5 (dependency-groups → dev) placed between Strategy 2 and 3, breaking numeric sequence",
+          "file": "packages/cli/src/engine/parsers/python/pyproject.ts",
+          "anchor": null,
+          "line": 82,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-python-dep-separation-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec predicted Strategy 1 cross-match for dependency-group named 'dependencies' but match() returns only first occurrence — no cross-match occurs. Spec Gotchas section is inaccurate.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-python-dep-separation-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T10:38:20.107Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "TOML inline comments after closing bracket (e.g., `] # end`) would break `]\\s*$` anchor — still present from prior cycle",
+          "file": "packages/cli/src/engine/parsers/python/pyproject.ts",
+          "anchor": null,
+          "line": 54,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "fix-python-dep-separation-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect.",
+          "file": "packages/cli/tests/engine/parsers/python.test.ts",
+          "anchor": null,
+          "line": 289,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "fix-python-dep-separation-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "edge-cases.test.ts not listed in spec File Changes but required updating due to breaking return type change",
+          "file": "packages/cli/tests/engine/integration/edge-cases.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pipfile dev separation deferred — [dev-packages] still merges into production",
+          "file": "packages/cli/src/engine/parsers/python/Pipfile.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T09:56:37.200Z",
+        "completed_at": "2026-05-22T10:38:20.101Z",
+        "commit_count": 0,
+        "base_commit": "7d5ca8acbd9e5550efdcae26e5639e62a08d8443"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
