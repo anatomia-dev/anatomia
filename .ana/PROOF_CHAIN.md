@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 115 active · 3 promoted · 730 closed
+147 runs · 114 active · 3 promoted · 731 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 81 | 2026-05-22 |
+| cli | 101 | 80 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/src/engine/detectors/git.ts | 4 | 3 |
-| packages/cli/src/engine/detectors/surfaces.ts | 4 | 2 |
+| packages/cli/src/engine/census.ts | 4 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 115 total)
+## Active Findings (30 shown of 114 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -48,7 +48,6 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
-- **code:** isNonProductPath returns true for empty string segments from trailing slashes — 'examples/'.split('/') produces ['examples', ''], and '' does not match EXCLUDED_SEGMENTS, so it still works, but edge is unguarded — *Fix False Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
 
@@ -63,6 +62,10 @@
 ### packages/cli/src/engine/scan-engine.ts
 
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
+
+### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
+
+- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/scan.test.ts
 
