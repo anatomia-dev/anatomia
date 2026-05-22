@@ -23,6 +23,7 @@ import type {
   DeploymentEntry,
   CiWorkflowEntry,
 } from './types/census.js';
+import { isNonProductPath } from './detectors/surfaces.js';
 
 // ── Config file patterns ───────────────────────────────────────────────
 
@@ -103,27 +104,119 @@ const EXCLUDE_DIRS = new Set(['node_modules', 'dist', '.next', 'build', '.git', 
 
 // ── Primary source root selection ──────────────────────────────────────
 
+/** Identity words for scoped+identity-word tier (Policy 2, tier 3). */
+const IDENTITY_WORDS = new Set(['core', 'server']);
+
+/** Minimum absolute file count for a name-matched package to pass the guard. */
+const NAME_MATCH_MIN_FILES = 10;
+
+/** Minimum ratio of name-matched package files to the largest candidate's files. */
+const NAME_MATCH_MIN_RATIO = 0.05;
+
 /**
- * Select the primary source root using the locked policy:
- * 1. First root under `apps/` with framework evidence
- * 2. First root with the most files
- * 3. rootPath itself (fallback)
+ * Extract scope and bare name from an npm package name.
+ * @param packageName - e.g. "@medusajs/medusa" or "payload"
+ * @returns Object with scope (empty string for unscoped) and bare name
  */
-function selectPrimary(
+function parsePackageName(packageName: string): { scope: string; bare: string } {
+  if (packageName.startsWith('@')) {
+    const slashIdx = packageName.indexOf('/');
+    if (slashIdx >= 0) {
+      return {
+        scope: packageName.slice(1, slashIdx),
+        bare: packageName.slice(slashIdx + 1),
+      };
+    }
+  }
+  return { scope: '', bare: packageName };
+}
+
+/**
+ * Select the primary source root using a 4-policy chain. First match wins:
+ *
+ * - Policy 0: Filter non-product paths (examples/, test/, templates/, etc.)
+ * - Policy 1: Largest apps/ root with framework evidence
+ * - Policy 2: Name match against project directory name (4 tiers)
+ * - Policy 3: Most files (fallback)
+ *
+ * @param roots - All source roots in the monorepo
+ * @param frameworkHints - Framework evidence discovered during census
+ * @param projectDirName - The repo directory name (path.basename of root), used for name matching
+ * @returns The relativePath of the selected primary source root
+ */
+export function selectPrimary(
   roots: SourceRoot[],
   frameworkHints: FrameworkHintEntry[],
+  projectDirName: string,
 ): string {
+  // Policy 0: Filter non-product paths. If all excluded, fall back to unfiltered.
+  const filtered = roots.filter(r => !isNonProductPath(r.relativePath));
+  const viable = filtered.length > 0 ? filtered : roots;
+
   // Policy 1: largest apps/ root with framework evidence (by file count).
   // Sort descending so the biggest app wins, not the first alphabetically.
   // Cal.com: apps/web (1646 files) beats apps/docs (7 files).
   const hintPaths = new Set(frameworkHints.map(h => h.sourceRootPath));
-  const appsWithFramework = roots
+  const appsWithFramework = viable
     .filter(r => r.relativePath.startsWith('apps/') && hintPaths.has(r.relativePath))
     .sort((a, b) => b.fileCount - a.fileCount);
   if (appsWithFramework.length > 0) return appsWithFramework[0]!.relativePath;
 
-  // Policy 2: root with most files
-  const sorted = [...roots].sort((a, b) => b.fileCount - a.fileCount);
+  // Policy 2: Name match against projectDirName with tiered priority.
+  // Root packages (relativePath '.') excluded from name-match as defense-in-depth.
+  if (projectDirName) {
+    const dirLower = projectDirName.toLowerCase();
+    const maxFileCount = Math.max(...viable.map(r => r.fileCount), 0);
+
+    // Candidates: non-root viable packages with a package name
+    const nameMatchCandidates = viable.filter(
+      r => r.relativePath !== '.' && r.packageName != null,
+    );
+
+    // Score each candidate by tier (lower = higher priority)
+    const scored: Array<{ root: SourceRoot; tier: number }> = [];
+    for (const root of nameMatchCandidates) {
+      const { scope, bare } = parsePackageName(root.packageName!);
+      const bareLower = bare.toLowerCase();
+      const scopeLower = scope.toLowerCase();
+
+      // Tier 1: exact name — package name equals directory name
+      if (bareLower === dirLower && scopeLower === '') {
+        scored.push({ root, tier: 1 });
+        continue;
+      }
+      // Tier 2: scoped + exact — bare name of scoped package equals directory name
+      if (bareLower === dirLower && scopeLower !== '') {
+        scored.push({ root, tier: 2 });
+        continue;
+      }
+      // Tier 3: scoped + identity word — bare is {core, server} AND scope contains dir name
+      if (IDENTITY_WORDS.has(bareLower) && scopeLower.includes(dirLower)) {
+        scored.push({ root, tier: 3 });
+        continue;
+      }
+      // Tier 4: scoped + self-named — bare name equals scope's bare name
+      if (scopeLower !== '' && bareLower === scopeLower) {
+        scored.push({ root, tier: 4 });
+        continue;
+      }
+    }
+
+    if (scored.length > 0) {
+      // Sort by tier ascending, then by file count descending (tiebreaker within tier)
+      scored.sort((a, b) => a.tier - b.tier || b.root.fileCount - a.root.fileCount);
+      const best = scored[0]!;
+
+      // Guard: matched package must have >= 10 files AND >= 5% of largest viable candidate
+      if (best.root.fileCount >= NAME_MATCH_MIN_FILES
+          && best.root.fileCount >= maxFileCount * NAME_MATCH_MIN_RATIO) {
+        return best.root.relativePath;
+      }
+    }
+  }
+
+  // Policy 3: most files (operates on filtered candidates, not original list)
+  const sorted = [...viable].sort((a, b) => b.fileCount - a.fileCount);
   if (sorted.length > 0) return sorted[0]!.relativePath;
 
   // Fallback
@@ -475,7 +568,7 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
   if (isSingleRepo) {
     primarySourceRoot = '.';
   } else {
-    primarySourceRoot = selectPrimary(sourceRoots, frameworkHints);
+    primarySourceRoot = selectPrimary(sourceRoots, frameworkHints, path.basename(normalizedRoot));
     // Set isPrimary on the selected root
     for (const root of sourceRoots) {
       root.isPrimary = root.relativePath === primarySourceRoot;
