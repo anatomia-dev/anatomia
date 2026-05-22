@@ -16,7 +16,7 @@ This is Priority #3 from R5 comprehensive validation (70 repos tested). The requ
 - **Size:** medium — new policy logic in one function, caller signature change, unit tests
 - **Surface:** cli
 - **Files affected:** `src/engine/census.ts` (selectPrimary function + caller), test files for census/primary selection
-- **Blast radius:** Every monorepo scan where Policy 1 (apps/ + framework) doesn't fire. 8 repos change primary (7 improve, 1 already correct but confirmed). All Policy 1 repos verified unaffected. Shape detection cascades for 2 repos (strapi, payload) — acknowledged and owned below.
+- **Blast radius:** Every monorepo scan where Policy 1 (apps/ + framework) doesn't fire. 7 repos change primary (all improve), 1 unchanged (scalar — guard blocks correctly). All Policy 1 repos verified unaffected. Shape detection cascades for 2 repos (strapi, payload) — acknowledged and owned below.
 - **Estimated effort:** 1–2 pipeline cycles
 - **Multi-phase:** no
 
@@ -113,7 +113,7 @@ None — all open questions from the requirements file were resolved during inve
 - `census.ts:429-444` — sourceRoots construction from @manypkg packages
 - `census.ts:478` — selectPrimary call site (needs projectDirName parameter)
 - `census.ts:496` — primaryDeps derivation (downstream consumer, unchanged)
-- `src/engine/surfaces.ts` or wherever Issue #1 exports `isNonProductPath` — Policy 0 dependency
+- `src/engine/detectors/surfaces.ts` or wherever Issue #1 exports `isNonProductPath` — Policy 0 dependency
 
 ### Patterns to Follow
 - selectPrimary is a pure function — keep it pure. No filesystem access, no async.
