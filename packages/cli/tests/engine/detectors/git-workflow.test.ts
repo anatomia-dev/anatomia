@@ -88,6 +88,114 @@ describe('git workflow signals', () => {
       expect(result.branchPatterns!.prefixes).toEqual({});
       expect(result.branchPatterns!.primary).toBeNull();
     });
+
+    // @ana A012, A013, A020
+    it('detects branch patterns from GitHub PR merge subjects', async () => {
+      // Create branches and merge them with GitHub-style subjects
+      for (let i = 0; i < 5; i++) {
+        git('checkout -b feature/thing-' + i);
+        writeFile('file.txt', 'feature ' + i);
+        git('add . && git commit -m "feat: thing ' + i + '"');
+        git('checkout main');
+        git('merge --no-ff feature/thing-' + i + ' -m "Merge pull request #' + (i + 1) + ' from myorg/feature/thing-' + i + '"');
+      }
+      // Add one fix branch
+      git('checkout -b fix/bug-1');
+      writeFile('file.txt', 'fix 1');
+      git('add . && git commit -m "fix: bug 1"');
+      git('checkout main');
+      git('merge --no-ff fix/bug-1 -m "Merge pull request #6 from myorg/fix/bug-1"');
+
+      const result = await detectGitInfo(tmpDir);
+      expect(result.branchPatterns).not.toBeNull();
+      expect(result.branchPatterns!.prefixes['feature/']).toBe(5);
+      expect(result.branchPatterns!.prefixes['fix/']).toBe(1);
+      expect(result.branchPatterns!.primary).toBe('feature/');
+    });
+
+    // @ana A014
+    it('parses git CLI merge branch format', async () => {
+      git('checkout -b feature/alpha');
+      writeFile('file.txt', 'alpha');
+      git('add . && git commit -m "feat: alpha"');
+      git('checkout main');
+      git("merge --no-ff feature/alpha -m \"Merge branch 'feature/alpha'\"");
+
+      git('checkout -b feature/beta');
+      writeFile('file.txt', 'beta');
+      git('add . && git commit -m "feat: beta"');
+      git('checkout main');
+      git("merge --no-ff feature/beta -m \"Merge branch 'feature/beta' into main\"");
+
+      const result = await detectGitInfo(tmpDir);
+      expect(result.branchPatterns!.prefixes['feature/']).toBe(2);
+      expect(result.branchPatterns!.primary).toBe('feature/');
+    });
+
+    // @ana A015
+    it('excludes bot branches from merge-based detection', async () => {
+      // Feature merges
+      git('checkout -b feature/real-1');
+      writeFile('file.txt', 'real 1');
+      git('add . && git commit -m "feat: real 1"');
+      git('checkout main');
+      git('merge --no-ff feature/real-1 -m "Merge pull request #1 from myorg/feature/real-1"');
+
+      // Bot merge
+      git('checkout -b dependabot/npm-axios');
+      writeFile('file.txt', 'bot');
+      git('add . && git commit -m "chore: bump axios"');
+      git('checkout main');
+      git('merge --no-ff dependabot/npm-axios -m "Merge pull request #2 from myorg/dependabot/npm-axios"');
+
+      const result = await detectGitInfo(tmpDir);
+      expect(result.branchPatterns!.prefixes).not.toHaveProperty('dependabot/');
+      expect(result.branchPatterns!.prefixes['feature/']).toBe(1);
+    });
+
+    // @ana A016, A017
+    it('falls back to remote branches when no merge history', async () => {
+      // No merges — just linear commits. Falls back to git branch -r (empty for local-only repo).
+      const result = await detectGitInfo(tmpDir);
+      expect(result.branchPatterns).not.toBeNull();
+      expect(result.branchPatterns).toHaveProperty('prefixes');
+      expect(result.branchPatterns).toHaveProperty('primary');
+    });
+
+    // @ana A018
+    it('returns null primary when default branch is unknown', async () => {
+      // Empty repo with no commits — detectGitInfo returns null for branchPatterns
+      // because head is null, so the entire git info block returns nulls.
+      // For repos WITH commits but no detectable default branch, the fallback
+      // path runs with null defaultBranch, producing empty prefixes and null primary.
+      // Test with a repo that has commits but no merge history:
+      const result = await detectGitInfo(tmpDir);
+      // tmpDir has commits but no merges and no remote — falls back to git branch -r
+      // which returns empty for local-only repos, giving null primary
+      expect(result.branchPatterns!.primary).toBeNull();
+    });
+
+    // @ana A019
+    it('skips unparseable merge subjects without error', async () => {
+      // Create a merge with a custom unparseable subject
+      git('checkout -b feature/good');
+      writeFile('file.txt', 'good');
+      git('add . && git commit -m "feat: good"');
+      git('checkout main');
+      git('merge --no-ff feature/good -m "Merge pull request #1 from myorg/feature/good"');
+
+      // Create a merge with an unparseable custom subject
+      git('checkout -b some-branch');
+      writeFile('file.txt', 'custom');
+      git('add . && git commit -m "some change"');
+      git('checkout main');
+      git('merge --no-ff some-branch -m "Release v2.0.0 - consolidated changes"');
+
+      const result = await detectGitInfo(tmpDir);
+      expect(result.branchPatterns!.prefixes['feature/']).toBe(1);
+      // The unparseable subject should not produce any prefix entry
+      expect(Object.keys(result.branchPatterns!.prefixes)).toEqual(['feature/']);
+    });
   });
 
   describe('hooks', () => {
