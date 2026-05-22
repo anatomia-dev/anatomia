@@ -36,5 +36,22 @@
         "hash": "sha256:845e86c3dc6e5089c97578096a1086a1bb9eacb970d085e320112addf82949b2"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-22T06:25:08.258Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T06:30:24.622Z",
+    "hash": "sha256:03be07cd7c88ebd0cc34222edf0c4f4d5e65a7c1d711219e074be1a61a477661"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T06:30:24.623Z",
+    "hash": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts"
+  ],
+  "commit_hygiene": []
 }
