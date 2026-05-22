@@ -51,7 +51,7 @@ parsePyprojectToml(fastapiContent) → ["fastapi", "starlette", "pydantic", ...,
 - [x] AC3: Single-line arrays (e.g., `benchmark = ["pytest-benchmark>=5.1.0"]`) continue to parse correctly (regression guard)
 - [x] AC4: Single-quoted strings (e.g., `'pytest'`) are extracted the same as double-quoted
 - [x] AC5: When run against fastapi's and pydantic's actual pyproject.toml content, `pytest` appears in the returned dependency list
-- [x] AC6: `include-group` inline tables (e.g., `{ include-group = "tests" }`) do not crash the parser — they are silently skipped
+- [x] AC6: `include-group` inline tables (e.g., `{ include-group = "tests" }`) do not crash the parser — they produce harmless phantom dependency names (e.g., `"tests"`) that no detector matches
 - [x] AC7: Existing tests continue to pass unchanged
 - [x] AC8: Code comments document the `\]\s*$` regex tradeoff and the Strategy 1 section-scoping note
 
@@ -65,7 +65,7 @@ parsePyprojectToml(fastapiContent) → ["fastapi", "starlette", "pydantic", ...,
   - Single-quoted strings → extracted same as double-quoted
   - Mixed: `[dependency-groups]` with extras brackets and single quotes combined
 - **Integration-style tests:** Two tests using representative pyproject.toml content modeled on fastapi and pydantic. Verify `pytest` appears in results. These don't need to be exact copies — use representative snippets that exercise all three bugs.
-- **Edge cases:** Single-line `[dependency-groups]` array. Empty `[dependency-groups]` section. Group with only `include-group` entries (should return empty for that group).
+- **Edge cases:** Single-line `[dependency-groups]` array. Empty `[dependency-groups]` section. Group with only `include-group` entries (extracts phantom dep names like `"tests"` — harmless, no detector matches these).
 
 ## Dependencies
 

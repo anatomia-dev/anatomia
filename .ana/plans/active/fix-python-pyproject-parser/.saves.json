@@ -8,15 +8,27 @@
   "plan_started_at": "2026-05-22T08:09:39.719Z",
   "plan_agent": "ana-plan",
   "contract": {
-    "saved_at": "2026-05-22T08:13:08.445Z",
-    "hash": "sha256:ab494749b4d6a5c4008459d3b4d4c520a0abab561e0594d1c45a5092c14ed715"
+    "saved_at": "2026-05-22T08:14:56.537Z",
+    "hash": "sha256:ab31cb0ac791fe72b796c6c5d5f9c093bd054e7a385274b334651cd946c9d91b",
+    "history": [
+      {
+        "saved_at": "2026-05-22T08:13:08.445Z",
+        "hash": "sha256:ab494749b4d6a5c4008459d3b4d4c520a0abab561e0594d1c45a5092c14ed715"
+      }
+    ]
   },
   "plan": {
     "saved_at": "2026-05-22T08:13:08.446Z",
     "hash": "sha256:e704dfa4ba7c2e98da4bc7fc4595fe9fbd3649ae4fdb40c604c292b15efc8321"
   },
   "spec": {
-    "saved_at": "2026-05-22T08:13:08.446Z",
-    "hash": "sha256:85dbb486409d22749829a45bc7c5e07b870c85bb2cacc18538b9181bcee0ef2d"
+    "saved_at": "2026-05-22T08:14:56.538Z",
+    "hash": "sha256:90a5a66ff58c4feb4995eb51849fdd71051cd37f6512fded901e85c612cb309c",
+    "history": [
+      {
+        "saved_at": "2026-05-22T08:13:08.446Z",
+        "hash": "sha256:85dbb486409d22749829a45bc7c5e07b870c85bb2cacc18538b9181bcee0ef2d"
+      }
+    ]
   }
 }

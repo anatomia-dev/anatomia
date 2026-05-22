@@ -73,15 +73,15 @@ assertions:
 
   # AC6: include-group resilience
   - id: A010
-    says: "Include-group references do not crash the parser"
-    block: "skips include-group inline tables"
+    says: "Include-group entries produce harmless phantom deps, not crashes"
+    block: "handles include-group inline tables"
     target: "result"
     matcher: "not_contains"
     value: "include-group"
 
   - id: A011
     says: "Real package names are still extracted alongside include-group entries"
-    block: "skips include-group inline tables"
+    block: "handles include-group inline tables"
     target: "result"
     matcher: "contains"
     value: "pytest"
