@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 110 active · 3 promoted · 755 closed
+151 runs · 109 active · 3 promoted · 756 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 76 | 2026-05-22 |
+| cli | 105 | 75 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,11 +24,10 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
-- **code:** hasOpposingStageAdvanced exported but not imported outside artifact.ts — wider public surface than needed — *Fix False Rejection Archives on Same-Session Re-Saves*
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
 ### packages/cli/src/commands/init/state.ts
@@ -115,4 +114,8 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/lib/__tests__/docs-data/data-integrity.test.ts
+
+- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
