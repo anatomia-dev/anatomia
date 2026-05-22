@@ -45,17 +45,21 @@ framework: Svelte     ← correct
 ### packages/cli/src/engine/detectors/dependencies.ts (modify)
 **What changes:** Add 9 entries to DATABASE_PACKAGES, 1 entry to PAYMENT_PACKAGES.
 **Pattern to follow:** Existing entries in each Record — `'package-name': 'Display Name'` format with comment-group headers.
-**Why:** Projects using Kysely, MikroORM, slonik, mongodb, postgres.js, sqlite3, mssql, or @vercel/postgres currently show `database: null`. Projects with only `@stripe/react-stripe-js` (no server-side stripe) would show `payments: null`.
+**Why:** Projects using Kysely, MikroORM, slonik, mongodb, postgres.js, sqlite3, mssql, or @vercel/postgres currently show `database: null`. @vercel/postgres follows the BaaS naming convention (provider name, not database engine name) consistent with Neon, PlanetScale, Supabase. Projects with only `@stripe/react-stripe-js` (no server-side stripe) would show `payments: null`.
 
 DATABASE_PACKAGES additions — insert after `'knex': 'Knex'` (end of ORM section):
 ```
 'kysely': 'Kysely', '@mikro-orm/core': 'MikroORM',
 ```
 
+Insert after `'firebase-admin': 'Firebase'` (end of BaaS section):
+```
+'@vercel/postgres': 'Vercel Postgres',
+```
+
 Insert after `'@libsql/client': 'Turso'` (end of raw drivers section):
 ```
 'slonik': 'PostgreSQL', '@silverhand/slonik': 'PostgreSQL',
-'@vercel/postgres': 'PostgreSQL',
 'mongodb': 'MongoDB',
 'postgres': 'PostgreSQL',
 'sqlite3': 'SQLite', 'mssql': 'SQL Server',

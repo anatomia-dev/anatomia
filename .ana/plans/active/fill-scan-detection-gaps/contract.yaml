@@ -33,11 +33,11 @@ assertions:
     value: "PostgreSQL"
 
   - id: A005
-    says: "Vercel Postgres projects are detected as using PostgreSQL"
+    says: "Vercel Postgres projects are detected as using Vercel Postgres"
     block: "DATABASE_PACKAGES contains @vercel/postgres"
     target: "DATABASE_PACKAGES['@vercel/postgres']"
     matcher: "equals"
-    value: "PostgreSQL"
+    value: "Vercel Postgres"
 
   - id: A006
     says: "MongoDB native driver projects are detected as using MongoDB"
