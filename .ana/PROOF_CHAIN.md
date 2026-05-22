@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-141 runs · 93 active · 3 promoted · 725 closed
+142 runs · 97 active · 3 promoted · 725 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 95 | 59 | 2026-05-22 |
+| cli | 96 | 63 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,16 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 93 total)
+## Active Findings (30 shown of 97 total)
 
 ### packages/cli/src/commands/config.ts
 
 - **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
-
-### packages/cli/src/commands/doctor.ts
-
-- **code:** ana.json read twice — assessScanFreshness and assessContext both parse .ana/ana.json independently — *ana doctor — unified project health diagnostic*
-- **code:** formatFooter redCount only counts cli_version and scan_freshness — if fail status were ever added to context/skills/proof_chain, the count would be wrong — *ana doctor — unified project health diagnostic*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -44,6 +39,10 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
+
+### packages/cli/src/engine/detectors/applicationShape.ts
+
+- **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/src/engine/detectors/projectType.ts
 
@@ -66,10 +65,6 @@
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
-### packages/cli/tests/commands/doctor.test.ts
-
-- **test:** No tests for guard clauses (A018/A019 no-ana guard, A025/A026 worktree guard) — these are in the command handler and require subprocess testing to reach — *ana doctor — unified project health diagnostic*
-
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Contract file_changes lists state.test.ts but tests were written in monorepoCommandScoping.test.ts — file mismatch between contract and implementation — *Fix False Surface Detection*
@@ -86,6 +81,12 @@
 ### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
 
 - **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
+### packages/cli/tests/engine/detectors/applicationShape.test.ts
+
+- **test:** Stale @ana tags from prior contract create proof chain ambiguity — 20 duplicate tags with colliding IDs — *Fix Application Shape Detection Priority Chain*
+- **test:** @ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64) — *Fix Application Shape Detection Priority Chain*
+- **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
@@ -104,10 +105,6 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/pricing/WaitlistForm.tsx
-
-- **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

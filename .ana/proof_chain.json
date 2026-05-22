@@ -38049,6 +38049,228 @@
         "base_commit": "bfe2d19ab031e26d76530f9bbf5c0301b3c57c90"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-shape-detection-priority",
+      "feature": "Fix Application Shape Detection Priority Chain",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 18,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A data platform with Express and MCP SDK is classified as an API server, not an MCP server",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A dedicated MCP server without any framework is still classified as MCP server",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A Next.js app with MCP SDK is classified as a web app, not an MCP server",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A Next.js observability platform with LangChain is classified as a web app, not an AI agent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "An Express API with LangChain is classified as an API server, not an AI agent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A standalone LangChain project without a framework is still classified as an AI agent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A NestJS platform with yargs in deps is classified as an API server, not a CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A Next.js app with commander in deps is classified as a web app, not a CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A library with arg in devDeps is classified as a library, not a CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A project with only commander in deps and no other signals is classified as unknown",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A server tool with both a bin field and Express is classified as an API server",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A CLI tool with bin field and commander but no framework is still classified as CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A NestJS app with Angular frontend deps is classified as full-stack",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A Next.js app without special deps is classified as a web app",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Non-Node projects still use the framework lookup table unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A project with both bin field and library markers is classified as CLI, not library",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The browser dependency alias list is a named constant, not an inline array",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The CLI dependency constant and fallback step have been fully removed",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 93,
+        "think": 59,
+        "plan": 14,
+        "build": 6,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:8971b1eb1f2038e8a724b0d76cbc83fc060576154c36125fd794b9f5a20a2679",
+        "contract": "sha256:1ac14f0643c633c842740026b6ce2b3363d9018822fc372285972d6308a19d56",
+        "plan": "sha256:cec3080549cbd0e7aa460fc7e3890a2e44db6fdd9c02ad5af7ef8caaff1c0df2",
+        "spec": "sha256:6602125f5ec4e5fb83b090aec47c8622410b62bc6c6a1e2628f149261141eabb",
+        "build-report": "sha256:ae82c234a05199b867f9413d074ce76b5df6e5b249ddc86c2eb32333fbc6ad55",
+        "build-data": "sha256:a2bc338459dbf41784d4f093d6aeea40a91f72add3af49421300b002b85d3cf3",
+        "verify-report": "sha256:5f41b7e5141467a13c73530b7ebf5cd33782a512c8136a41fcc19200ecf0171f",
+        "verify-data": "sha256:998e2af1dc9adc5e2bd1d206b3ef0c0f5608571abd6ff37f1e3f90c2d2ae4d42"
+      },
+      "completed_at": "2026-05-22T07:12:51.465Z",
+      "modules_touched": [
+        "packages/cli/src/engine/detectors/applicationShape.ts",
+        "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+      ],
+      "scope_summary": "The application shape priority chain lets dependency-based signals (MCP SDK, LangChain, CLI deps like yargs/arg) override framework-based identity, producing wrong shapes for projects whose primary identity is determined by their framework. This is #2 priority from R5 comprehensive validation (70 repos tested). 8 repos misclassified: 6 false \"cli\", 2 false \"mcp-server.\" This fix addresses 5 directly; the remaining 3 need upstream fixes in primary selection (Issue #3) and framework detection (Issue #8).",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Stale @ana tags from prior contract create proof chain ambiguity — 20 duplicate tags with colliding IDs",
+          "file": "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004",
+            "A005"
+          ],
+          "id": "fix-shape-detection-priority-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64)",
+          "file": "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+          "anchor": null,
+          "line": 319,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "fix-shape-detection-priority-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync",
+          "file": "packages/cli/src/engine/detectors/applicationShape.ts",
+          "anchor": null,
+          "line": 107,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-shape-detection-priority-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack)",
+          "file": "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "fix-shape-detection-priority-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Duplicate test coverage for bin + library markers (old A013 and new A016 blocks)",
+          "file": "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Old @ana tags from previous spec reuse A001-A018 ID space with different meanings",
+          "file": "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning: unused eslint-disable directive in git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T06:30:43.460Z",
+        "completed_at": "2026-05-22T07:12:51.459Z",
+        "commit_count": 0,
+        "base_commit": "7f409efad32e4a8e7fc4a52ff5d7a3d969006b5e"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
