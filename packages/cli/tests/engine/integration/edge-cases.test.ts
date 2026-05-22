@@ -35,8 +35,8 @@ describe('Edge Case Integration Tests', () => {
       await fs.mkdir(projectDir);
       await fs.writeFile(path.join(projectDir, 'requirements.txt'), 'pytest==7.4.0\nblack==23.0.0\nmypy==1.5.0\n');
 
-      const deps = await readPythonDependencies(projectDir);
-      const result = detectFramework(deps, 'python');
+      const pythonDeps = await readPythonDependencies(projectDir);
+      const result = detectFramework(pythonDeps.production, 'python');
 
       expect(result.framework).toBe(null);
       expect(result.confidence).toBe(0.0);
@@ -48,8 +48,8 @@ describe('Edge Case Integration Tests', () => {
       await fs.mkdir(projectDir);
       await fs.writeFile(path.join(projectDir, 'requirements.txt'), 'flask==2.3.0\nfastapi==0.100.0\nuvicorn==0.23.0\n');
 
-      const deps = await readPythonDependencies(projectDir);
-      const result = detectFramework(deps, 'python');
+      const pythonDeps = await readPythonDependencies(projectDir);
+      const result = detectFramework(pythonDeps.production, 'python');
 
       // FastAPI has higher priority in detection order
       expect(result.framework).toBe('fastapi');
@@ -62,9 +62,9 @@ describe('Edge Case Integration Tests', () => {
       await fs.writeFile(path.join(projectDir, 'requirements.txt'), 'django==4.2.0\ndjangorestframework==3.14.0\n');
       await fs.writeFile(path.join(projectDir, 'manage.py'), '#!/usr/bin/env python\nimport os\nimport sys\n');
 
-      const deps = await readPythonDependencies(projectDir);
+      const pythonDeps = await readPythonDependencies(projectDir);
       const hints: FrameworkHintEntry[] = [hint('django', 'manage.py')];
-      const result = detectFramework(deps, 'python', hints);
+      const result = detectFramework(pythonDeps.production, 'python', hints);
 
       expect(result.framework).toBe('django-drf');
       expect(result.confidence).toBeGreaterThan(0);
@@ -84,9 +84,9 @@ describe('Edge Case Integration Tests', () => {
         await fs.writeFile(path.join(srcDir, `module_${i}.py`), '# module\n');
       }
 
-      const deps = await readPythonDependencies(projectDir);
+      const pythonDeps = await readPythonDependencies(projectDir);
       const startTime = Date.now();
-      const result = detectFramework(deps, 'python');
+      const result = detectFramework(pythonDeps.production, 'python');
       const duration = Date.now() - startTime;
 
       expect(result.framework).toBe('fastapi');
@@ -98,11 +98,11 @@ describe('Edge Case Integration Tests', () => {
       await fs.mkdir(spacedDir);
       await fs.writeFile(path.join(spacedDir, 'requirements.txt'), 'flask==2.3.0\nsqlalchemy==2.0.0\n');
 
-      const deps = await readPythonDependencies(spacedDir);
-      expect(deps).toContain('flask');
-      expect(deps).toContain('sqlalchemy');
+      const pythonDeps = await readPythonDependencies(spacedDir);
+      expect(pythonDeps.production).toContain('flask');
+      expect(pythonDeps.production).toContain('sqlalchemy');
 
-      const result = detectFramework(deps, 'python');
+      const result = detectFramework(pythonDeps.production, 'python');
       expect(result.framework).toBe('flask');
     });
   });

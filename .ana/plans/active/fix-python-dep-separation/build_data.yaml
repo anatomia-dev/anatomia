@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "edge-cases.test.ts not listed in spec File Changes but required updating due to breaking return type change"
+    file: "packages/cli/tests/engine/integration/edge-cases.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pipfile dev separation deferred — [dev-packages] still merges into production"
+    file: "packages/cli/src/engine/parsers/python/Pipfile.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor

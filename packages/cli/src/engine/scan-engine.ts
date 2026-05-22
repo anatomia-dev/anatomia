@@ -73,10 +73,10 @@ async function detectNonNodeTesting(
 ): Promise<string[]> {
   try {
     if (projectType === 'python') {
-      const deps = await readPythonDependencies(rootPath);
+      const pythonResult = await readPythonDependencies(rootPath);
       const detected: string[] = [];
-      if (deps.includes('pytest')) detected.push('pytest');
-      if (deps.includes('unittest')) detected.push('unittest');
+      if (pythonResult.all.includes('pytest')) detected.push('pytest');
+      if (pythonResult.all.includes('unittest')) detected.push('unittest');
       return detected;
     }
     if (projectType === 'go') {
@@ -669,7 +669,10 @@ export async function scanProject(
   let deps = Object.keys(census.allDeps);
   try {
     const pt = projectTypeResult.type;
-    if (pt === 'python') deps = await readPythonDependencies(rootPath);
+    if (pt === 'python') {
+      const pythonDeps = await readPythonDependencies(rootPath);
+      deps = pythonDeps.production;
+    }
     else if (pt === 'go') deps = await readGoDependencies(rootPath);
     else if (pt === 'rust') {
       const { readRustDependencies } = await import('./parsers/rust.js');

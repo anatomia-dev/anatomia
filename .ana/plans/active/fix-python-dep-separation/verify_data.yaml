@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: code
+    summary: "readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 76
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A013"]
+  - category: code
+    summary: "Strategy execution order in pyproject.ts is 1,2,5,3,4 — Strategy 5 (dependency-groups → dev) placed between Strategy 2 and 3, breaking numeric sequence"
+    file: "packages/cli/src/engine/parsers/python/pyproject.ts"
+    line: 82
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Spec predicted Strategy 1 cross-match for dependency-group named 'dependencies' but match() returns only first occurrence — no cross-match occurs. Spec Gotchas section is inaccurate."
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "TOML inline comments after closing bracket (e.g., `] # end`) would break `]\\s*$` anchor — still present from prior cycle"
+    file: "packages/cli/src/engine/parsers/python/pyproject.ts"
+    line: 54
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A001"]
+  - category: test
+    summary: "A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect."
+    file: "packages/cli/tests/engine/parsers/python.test.ts"
+    line: 289
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A013"]

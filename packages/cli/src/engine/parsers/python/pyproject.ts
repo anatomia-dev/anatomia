@@ -11,7 +11,7 @@
  * Handles:
  * - PEP 621: [project] dependencies = ["package>=version"]
  * - PEP 621: [project.optional-dependencies] <group> = ["package>=version"]
- *   (dev/test/docs dependency groups — Python's equivalent of devDependencies)
+ *   (production extras — what users install with `pip install package[extra]`)
  * - Poetry: [tool.poetry.dependencies] package = "^version"
  * - Poetry: [tool.poetry.group.*.dependencies] package = "^version"
  *
@@ -21,10 +21,12 @@
  * `test = [...]` gets zero testing detection and a false missing-tests
  * blind spot.
  *
- * @param content
+ * @param content - Raw pyproject.toml file content
+ * @returns Object with `production` and `dev` dependency arrays
  */
-export function parsePyprojectToml(content: string): string[] {
-  const deps: string[] = [];
+export function parsePyprojectToml(content: string): { production: string[]; dev: string[] } {
+  const production: string[] = [];
+  const dev: string[] = [];
 
   // Helper: extract package names from an array body like
   //   "pytest>=7.0", "httpx[cli] >= 0.25", "fastapi"
@@ -51,7 +53,7 @@ export function parsePyprojectToml(content: string): string[] {
   // Tradeoff: a proper TOML parser is the right next step if more edge cases surface.
   const pep621Match = content.match(/^\s*dependencies\s*=\s*\[([\s\S]*?)\]\s*$/m);
   if (pep621Match && pep621Match[1]) {
-    deps.push(...extractFromArray(pep621Match[1]));
+    production.push(...extractFromArray(pep621Match[1]));
   }
 
   // Strategy 2: PEP 621 [project.optional-dependencies]
@@ -72,7 +74,7 @@ export function parsePyprojectToml(content: string): string[] {
     );
     for (const match of groupMatches) {
       if (match[1]) {
-        deps.push(...extractFromArray(match[1]));
+        production.push(...extractFromArray(match[1]));
       }
     }
   }
@@ -95,7 +97,7 @@ export function parsePyprojectToml(content: string): string[] {
     );
     for (const match of groupMatches) {
       if (match[1]) {
-        deps.push(...extractFromArray(match[1]));
+        dev.push(...extractFromArray(match[1]));
       }
     }
   }
@@ -110,7 +112,7 @@ export function parsePyprojectToml(content: string): string[] {
       const pkg = match[1]?.toLowerCase();
       // Skip Python version line
       if (pkg && pkg !== 'python') {
-        deps.push(pkg);
+        production.push(pkg);
       }
     }
   }
@@ -128,11 +130,14 @@ export function parsePyprojectToml(content: string): string[] {
       for (const match of pkgMatches) {
         const pkg = match[1]?.toLowerCase();
         if (pkg) {
-          deps.push(pkg);
+          production.push(pkg);
         }
       }
     }
   }
 
-  return Array.from(new Set(deps));
+  return {
+    production: Array.from(new Set(production)),
+    dev: Array.from(new Set(dev)),
+  };
 }
