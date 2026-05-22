@@ -1,0 +1,145 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix False Rejection Archives on Same-Session Re-Saves"
+
+assertions:
+  # AC1: Same-session re-save of verify-report — no false archives
+  - id: A001
+    says: "Re-saving a verify report without a new build does not create archive files"
+    block: "same-session verify re-save does not archive report"
+    target: "archiveFiles.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A002
+    says: "Re-saving a verify report without a new build does not archive companion data"
+    block: "same-session verify re-save does not archive companion"
+    target: "companionArchiveFiles.length"
+    matcher: "equals"
+    value: 0
+
+  # AC2: Same-session re-save — no false history entries
+  - id: A003
+    says: "Re-saving a verify report without a new build does not add a history entry"
+    block: "same-session verify re-save does not create history entry"
+    target: "saves.verify-report.history"
+    matcher: "exists"
+    value: false
+
+  # AC3: Same criteria for build-report
+  - id: A004
+    says: "Re-saving a build report without a new verification does not create archive files"
+    block: "same-session build re-save does not archive report"
+    target: "archiveFiles.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A005
+    says: "Re-saving a build report without a new verification does not add a history entry"
+    block: "same-session build re-save does not create history entry"
+    target: "saves.build-report.history"
+    matcher: "exists"
+    value: false
+
+  # AC4: Genuine rejection cycles preserved
+  - id: A006
+    says: "A real rejection cycle still creates archive files"
+    block: "genuine rejection creates archive"
+    target: "archiveFiles.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A007
+    says: "A real rejection cycle still records history in the saves file"
+    block: "genuine rejection creates history entry"
+    target: "saves.verify-report.history.length"
+    matcher: "greater"
+    value: 0
+
+  # AC5: Multi-phase opposing key lookup
+  - id: A008
+    says: "Phase-numbered verify report checks the matching phase build report"
+    block: "multi-phase opposing key derives correctly"
+    target: "opposingKey"
+    matcher: "equals"
+    value: "build-report-2"
+
+  - id: A009
+    says: "Phase-numbered build report checks the matching phase verify report"
+    block: "multi-phase opposing key derives correctly for build"
+    target: "opposingKey"
+    matcher: "equals"
+    value: "verify-report-3"
+
+  # AC6: Content-based rejection detection in timing
+  - id: A010
+    says: "Timing uses verify report content to detect rejection cycles"
+    block: "content-based rejection detection activates timing reconstruction"
+    target: "timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A011
+    says: "History arrays without rejection content use the simple timing path"
+    block: "false history does not activate rejection timing"
+    target: "timing.build"
+    matcher: "equals"
+    value: 60
+
+  - id: A012
+    says: "Missing verify report file falls back to simple timing"
+    block: "missing verify report uses fallback timing"
+    target: "timing.build"
+    matcher: "exists"
+
+  # AC7: Companion gating follows parent
+  - id: A013
+    says: "Companion data files are not archived when the parent report gate blocks"
+    block: "companion follows parent gate on same-session re-save"
+    target: "companionArchiveFiles.length"
+    matcher: "equals"
+    value: 0
+
+  # AC8: First-time saves unaffected
+  - id: A014
+    says: "First-time saves work without archive or history"
+    block: "first save with no prior entry works normally"
+    target: "archiveFiles.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A015
+    says: "First-time saves do not crash when saves file is missing"
+    block: "first save with no saves.json works normally"
+    target: "saveSucceeded"
+    matcher: "truthy"
+
+  # Existing behavior preserved
+  - id: A016
+    says: "Existing archive tests still pass after adding the gate"
+    block: "archives previous verify_report.md on save"
+    target: "archiveExists"
+    matcher: "truthy"
+
+  - id: A017
+    says: "Round number incrementing still works"
+    block: "increments round number when _r1 already exists"
+    target: "archiveCount"
+    matcher: "equals"
+    value: 2
+
+  - id: A018
+    says: "Content-based detection works for multi-phase verify reports"
+    block: "multi-phase verify report with rejection content activates rejection timing"
+    target: "timing.build"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
