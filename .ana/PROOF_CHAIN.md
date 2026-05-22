@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 112 active · 3 promoted · 753 closed
+151 runs · 111 active · 3 promoted · 754 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 78 | 2026-05-22 |
+| cli | 105 | 77 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/src/engine/detectors/surfaces.ts | 4 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
+| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -52,7 +52,6 @@
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
-- **code:** 'testing' removed from EXCLUDED_SEGMENTS — pre-existing branch change, not from this build, but reduces surface filtering coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
@@ -112,4 +111,8 @@
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/docs/proof/ProofHero.tsx
+
+- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 
