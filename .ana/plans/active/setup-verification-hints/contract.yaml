@@ -1,0 +1,195 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Setup Verification Hints"
+
+assertions:
+  # ── Forward capture in detectFromDeps ──────────────────────────────
+
+  - id: A001
+    says: "Database detection captures the triggering npm package name"
+    block: "detectFromDeps forward capture"
+    target: "depResult.databasePkg"
+    matcher: "equals"
+    value: "prisma"
+
+  - id: A002
+    says: "Auth detection captures the triggering npm package name"
+    block: "detectFromDeps forward capture"
+    target: "depResult.authPkg"
+    matcher: "equals"
+    value: "next-auth"
+
+  - id: A003
+    says: "Payment detection captures the triggering npm package name"
+    block: "detectFromDeps forward capture"
+    target: "depResult.paymentsPkg"
+    matcher: "equals"
+    value: "stripe"
+
+  - id: A004
+    says: "Package name fields are null when no detection occurs"
+    block: "detectFromDeps forward capture"
+    target: "depResult.databasePkg"
+    matcher: "equals"
+    value: null
+
+  # ── findStackProvenance — single-repo ──────────────────────────────
+
+  - id: A005
+    says: "Single-repo projects always produce empty provenance"
+    block: "findStackProvenance single-repo"
+    target: "provenance"
+    matcher: "equals"
+    value: "{}"
+
+  # ── findStackProvenance — monorepo primary ─────────────────────────
+
+  - id: A006
+    says: "Detection from the primary package produces empty provenance"
+    block: "findStackProvenance monorepo primary detection"
+    target: "provenance"
+    matcher: "equals"
+    value: "{}"
+
+  # ── findStackProvenance — monorepo non-primary ─────────────────────
+
+  - id: A007
+    says: "Detection from a non-primary package records the source path"
+    block: "findStackProvenance monorepo non-primary detection"
+    target: "provenance.database"
+    matcher: "equals"
+    value: "packages/other"
+
+  - id: A008
+    says: "Provenance checks devDeps, not just production deps"
+    block: "findStackProvenance devDeps detection"
+    target: "provenance.database"
+    matcher: "exists"
+
+  - id: A009
+    says: "AI SDK detection from a non-primary package is flagged"
+    block: "findStackProvenance aiSdk non-primary"
+    target: "provenance.aiSdk"
+    matcher: "exists"
+
+  - id: A010
+    says: "Null dep result fields produce no provenance entry"
+    block: "findStackProvenance null dep fields"
+    target: "provenance"
+    matcher: "equals"
+    value: "{}"
+
+  - id: A011
+    says: "Null aiSdk parameter produces no aiSdk provenance"
+    block: "findStackProvenance aiSdk null"
+    target: "provenance.aiSdk"
+    matcher: "not_equals"
+    value: "exists"
+
+  # ── findStackProvenance — field coverage ───────────────────────────
+
+  - id: A012
+    says: "Provenance checks database, auth, payments, and aiSdk"
+    block: "findStackProvenance field coverage"
+    target: "provenanceKeys"
+    matcher: "contains"
+    value: "database"
+
+  - id: A013
+    says: "Provenance does not check testing or framework"
+    block: "findStackProvenance field coverage"
+    target: "provenanceKeys"
+    matcher: "not_contains"
+    value: "testing"
+
+  # ── EngineResult integration ───────────────────────────────────────
+
+  - id: A014
+    says: "scan.json includes stackProvenance as a top-level field"
+    block: "EngineResult has stackProvenance"
+    target: "expectedKeys"
+    matcher: "contains"
+    value: "stackProvenance"
+
+  - id: A015
+    says: "Empty engine result initializes stackProvenance to empty object"
+    block: "createEmptyEngineResult includes stackProvenance"
+    target: "emptyResult.stackProvenance"
+    matcher: "equals"
+    value: "{}"
+
+  # ── Setup template — surface gap check ─────────────────────────────
+
+  - id: A016
+    says: "Setup template instructs surface gap check after showing surfaces"
+    block: "ana-setup.md surface gap instructions"
+    target: "templateContent"
+    matcher: "contains"
+    value: "monorepo.packages"
+
+  - id: A017
+    says: "Surface gap check requires dev script and 15+ source files"
+    block: "ana-setup.md surface gap criteria"
+    target: "templateContent"
+    matcher: "contains"
+    value: "15"
+
+  - id: A018
+    says: "Surface gap results are capped at 5 suggestions"
+    block: "ana-setup.md surface gap cap"
+    target: "templateContent"
+    matcher: "contains"
+    value: "5"
+
+  - id: A019
+    says: "Surface gap excludes non-product paths like examples and fixtures"
+    block: "ana-setup.md surface gap exclusions"
+    target: "templateContent"
+    matcher: "contains"
+    value: "examples"
+
+  # ── Setup template — provenance notes ──────────────────────────────
+
+  - id: A020
+    says: "Setup template shows provenance notes when non-primary detections exist"
+    block: "ana-setup.md provenance notes"
+    target: "templateContent"
+    matcher: "contains"
+    value: "stackProvenance"
+
+  - id: A021
+    says: "Provenance notes use the informational marker not a warning"
+    block: "ana-setup.md provenance marker"
+    target: "templateContent"
+    matcher: "contains"
+    value: "ⓘ"
+
+  # ── Setup template — surface addition ──────────────────────────────
+
+  - id: A022
+    says: "Setup template includes instructions for adding surfaces to ana.json"
+    block: "ana-setup.md surface addition"
+    target: "templateContent"
+    matcher: "contains"
+    value: "dev: null"
+
+  - id: A023
+    says: "Surface commands use the cd-and-run pattern"
+    block: "ana-setup.md surface command pattern"
+    target: "templateContent"
+    matcher: "contains"
+    value: "(cd '"
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/dependencies.ts"
+    action: modify
+  - path: "packages/cli/src/engine/types/engineResult.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/dependencies.test.ts"
+    action: modify
+  - path: "packages/cli/tests/contract/analyzer-contract.test.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-setup.md"
+    action: modify
