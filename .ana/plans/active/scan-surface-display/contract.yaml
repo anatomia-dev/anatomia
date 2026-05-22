@@ -1,0 +1,151 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan Surface Display"
+
+assertions:
+  # --- Surfaces section rendering ---
+  - id: A001
+    says: "Monorepos with detected surfaces show a dedicated Surfaces section in terminal output"
+    block: "renders Surfaces section for monorepos"
+    target: "output"
+    matcher: "contains"
+    value: "Surfaces"
+
+  - id: A002
+    says: "The Surfaces section header has a divider matching its name length"
+    block: "renders Surfaces section for monorepos"
+    target: "output"
+    matcher: "contains"
+    value: "────────"
+
+  - id: A003
+    says: "Each surface line shows the surface name"
+    block: "renders surface name on its own line"
+    target: "surfaceLine"
+    matcher: "contains"
+    value: "cli"
+
+  - id: A004
+    says: "Each surface line shows the framework when available"
+    block: "renders framework for surface with framework"
+    target: "surfaceLine"
+    matcher: "contains"
+    value: "Next.js"
+
+  - id: A005
+    says: "Surfaces without a framework show the language instead"
+    block: "renders language fallback when no framework"
+    target: "surfaceLine"
+    matcher: "contains"
+    value: "TypeScript"
+
+  - id: A006
+    says: "Each surface line shows the primary testing framework"
+    block: "renders testing framework for surface"
+    target: "surfaceLine"
+    matcher: "contains"
+    value: "Vitest"
+
+  - id: A007
+    says: "Surfaces with no testing framework show identity only"
+    block: "renders surface with no testing"
+    target: "surfaceLine"
+    matcher: "not_contains"
+    value: " · "
+
+  - id: A008
+    says: "More than four surfaces triggers an overflow indicator"
+    block: "renders overflow for 5+ surfaces"
+    target: "output"
+    matcher: "contains"
+    value: "(+1 more)"
+
+  - id: A009
+    says: "Exactly four surfaces shows no overflow"
+    block: "renders no overflow for 4 surfaces"
+    target: "output"
+    matcher: "not_contains"
+    value: "(+"
+
+  - id: A010
+    says: "Single-repo projects show no Surfaces section"
+    block: "omits Surfaces section for single repos"
+    target: "output"
+    matcher: "not_contains"
+    value: "Surfaces"
+
+  - id: A011
+    says: "The Workspace line no longer includes an inline Surfaces sub-item"
+    block: "removes inline Surfaces from Workspace"
+    target: "workspaceLine"
+    matcher: "not_contains"
+    value: "Surfaces"
+
+  # --- Branch pattern detection ---
+  - id: A012
+    says: "Branch pattern detection reads merge commit history instead of live branches"
+    block: "detects branch patterns from merge history"
+    target: "branchPatterns.primary"
+    matcher: "exists"
+
+  - id: A013
+    says: "GitHub PR merge subjects produce correct prefix counts"
+    block: "parses GitHub PR merge format"
+    target: "branchPatterns.prefixes"
+    matcher: "contains"
+    value: "feature/"
+
+  - id: A014
+    says: "Git CLI merge subjects are also parsed for branch names"
+    block: "parses git merge branch format"
+    target: "branchPatterns.prefixes"
+    matcher: "contains"
+    value: "feature/"
+
+  - id: A015
+    says: "Bot branch prefixes are excluded from merge-based detection"
+    block: "excludes bot branches from merge detection"
+    target: "branchPatterns.prefixes"
+    matcher: "not_contains"
+    value: "dependabot/"
+
+  - id: A016
+    says: "Repos with no merge history fall back to remote branch detection"
+    block: "falls back to remote branches when no merges"
+    target: "branchPatterns"
+    matcher: "exists"
+
+  - id: A017
+    says: "The return type shape is unchanged after the data source switch"
+    block: "preserves return type shape"
+    target: "branchPatterns.prefixes"
+    matcher: "exists"
+
+  - id: A018
+    says: "When default branch is unknown, detection falls back gracefully"
+    block: "falls back when no default branch"
+    target: "branchPatterns.primary"
+    matcher: "equals"
+    value: null
+
+  - id: A019
+    says: "Unparseable merge subjects are skipped without error"
+    block: "skips unparseable merge subjects"
+    target: "branchPatterns.prefixes"
+    matcher: "not_contains"
+    value: "unparseable"
+
+  - id: A020
+    says: "The most frequently merged prefix becomes the primary"
+    block: "selects primary from merge frequency"
+    target: "branchPatterns.primary"
+    matcher: "equals"
+    value: "feature/"
+
+file_changes:
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/git.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/git-workflow.test.ts"
+    action: modify
