@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 113 active · 3 promoted · 732 closed
+147 runs · 112 active · 3 promoted · 733 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 79 | 2026-05-22 |
+| cli | 101 | 78 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/src/engine/detectors/git.ts | 4 | 3 |
 | packages/cli/src/engine/census.ts | 4 | 2 |
+| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 113 total)
+## Active Findings (30 shown of 112 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -44,10 +44,6 @@
 ### packages/cli/src/engine/detectors/applicationShape.ts
 
 - **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
-
-### packages/cli/src/engine/detectors/git.ts
-
-- **code:** defaultBranch interpolated unsanitized into git exec — consistent with existing detectMergeStrategy pattern — *Scan Surface Display*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -106,4 +102,8 @@
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 - **test:** No test for empty string or malformed TOML in dependency-groups — only empty section tested — *Fix Python pyproject.toml parser — 3 bugs*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
