@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Stale @ana tags from prior contract create proof chain ambiguity — 20 duplicate tags with colliding IDs"
+    file: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001", "A002", "A003", "A004", "A005"]
+  - category: test
+    summary: "@ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64)"
+    file: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    line: 319
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003"]
+  - category: code
+    summary: "BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync"
+    file: "packages/cli/src/engine/detectors/applicationShape.ts"
+    line: 107
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack)"
+    file: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
