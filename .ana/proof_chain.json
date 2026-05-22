@@ -39925,6 +39925,236 @@
         "base_commit": "25f7e4abf75029840c32af05d341df8136168bbc"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-false-rejection-archive",
+      "feature": "Fix False Rejection Archives on Same-Session Re-Saves",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 18,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Re-saving a verify report without a new build does not create archive files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Re-saving a verify report without a new build does not archive companion data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Re-saving a verify report without a new build does not add a history entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Re-saving a build report without a new verification does not create archive files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Re-saving a build report without a new verification does not add a history entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A real rejection cycle still creates archive files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A real rejection cycle still records history in the saves file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Phase-numbered verify report checks the matching phase build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Phase-numbered build report checks the matching phase verify report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Timing uses verify report content to detect rejection cycles",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "History arrays without rejection content use the simple timing path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Missing verify report file falls back to simple timing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Companion data files are not archived when the parent report gate blocks",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "First-time saves work without archive or history",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "First-time saves do not crash when saves file is missing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Existing archive tests still pass after adding the gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Round number incrementing still works",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Content-based detection works for multi-phase verify reports",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 11
+      },
+      "timing": {
+        "total_minutes": 585,
+        "think": 20,
+        "plan": 7,
+        "build": 543,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:3ff5e6f9f0ea8ec40d9dc4f22413acf71be9f596b9abef73f8cdf571d4d4c23d",
+        "contract": "sha256:e33b83a2e87290f7aadf5bfcfb2e910b51d984bb4b74fee8eb8f6195a881ccfd",
+        "plan": "sha256:ad928fab69eff6863cd730c1a1d42990b40347e53379cb232699c8a22be4e30e",
+        "spec": "sha256:3d1314822f83a15510ec602d8b5342907e951c21b39e44088414e5fa33125fd6",
+        "build-report": "sha256:ca5e2b141909426ff7585edf59e57e952e7eb09ee30eeb72ea9d328ea34364db",
+        "build-data": "sha256:b975546174afdfe9ea6c996ef7a91ad009ea3eed723265a3b842cef6c95dcf27",
+        "verify-report": "sha256:93f0b866f310a7885bf345d33431ff63ba4bbfa7b42c0969837952c60632df0a",
+        "verify-data": "sha256:e1e7ddfee3062c182bb2568c473d4d8f804e99967671f8279460fba3cad5a0e6"
+      },
+      "completed_at": "2026-05-22T20:18:49.222Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "When an agent saves an artifact, notices a validation warning or content issue, edits, and re-saves within the same session, the system creates false `_r` archive files and false `.saves.json` history entries — signals that mean \"rejection cycle happened\" when no rejection occurred. Today this produces noise (false `_r1` files in git, misleading history arrays) but no data corruption, because the timing consumer (`hasRejectionHistory`) checks only `build-report` and `verify-report` history, and the observed trigger was on `verify-data` only. But if the verify report content itself changes on a same-session re-save, the false history entry on `verify-report` activates the rejection-cycle timing reconstruction path, producing phantom build/verify segments from timestamps seconds apart — corrupting the proof chain entry's timing data.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "writeSaveMetadata companion gate is a no-op — isArchivableType regex doesn't match data keys",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 2008,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "fix-false-rejection-archive-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "hasOpposingStageAdvanced exported but not imported outside artifact.ts — wider public surface than needed",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 1188,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-false-rejection-archive-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 1195,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "fix-false-rejection-archive-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "proofSummary.ts now ~2370 lines — continues growing past comfort threshold",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [],
+          "id": "fix-false-rejection-archive-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T20:18:49.222Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A012 and A018 use toBeDefined() — contract-aligned (matcher: exists) but weaker than asserting specific fallback value",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 4620,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-false-rejection-archive-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "writeOpposingSaves test helper duplicates opposing-key derivation logic",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Content-based detection reads verify report files on every computeTiming call",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A018 multi-phase rejection test uses hybrid unnumbered/numbered setup",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T10:59:14.581Z",
+        "completed_at": "2026-05-22T20:18:49.216Z",
+        "commit_count": 0,
+        "base_commit": "6ab94d10e716631c0a5f0241cb22178aa320b138"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-149 runs · 108 active · 3 promoted · 749 closed
+150 runs · 112 active · 3 promoted · 750 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 103 | 74 | 2026-05-22 |
+| cli | 104 | 78 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,13 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 112 total)
+
+### packages/cli/src/commands/artifact.ts
+
+- **code:** writeSaveMetadata companion gate is a no-op — isArchivableType regex doesn't match data keys — *Fix False Rejection Archives on Same-Session Re-Saves*
+- **code:** hasOpposingStageAdvanced exported but not imported outside artifact.ts — wider public surface than needed — *Fix False Rejection Archives on Same-Session Re-Saves*
+- **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -68,10 +74,6 @@
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
-### packages/cli/tests/commands/proof-surface-derivation.test.ts
-
-- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
-
 ### packages/cli/tests/commands/scan.test.ts
 
 - **test:** A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered — *Scan Surface Display*
@@ -100,16 +102,11 @@
 - **test:** A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect. — *Separate Python production deps from dev deps*
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
+### packages/cli/tests/utils/proofSummary.test.ts
+
+- **test:** A012 and A018 use toBeDefined() — contract-aligned (matcher: exists) but weaker than asserting specific fallback value — *Fix False Rejection Archives on Same-Session Re-Saves*
+
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/docs/proof/ProofHero.tsx
-
-- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
-- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/lib/__tests__/docs-data/data-integrity.test.ts
-
-- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
