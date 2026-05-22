@@ -38,25 +38,29 @@ const FRAMEWORK_HINTS: Array<{ pattern: string; framework: string; check: 'file'
   // Remix / React Router v7
   { pattern: 'remix.config.js', framework: 'remix', check: 'file' },
   { pattern: 'remix.config.ts', framework: 'remix', check: 'file' },
+  { pattern: 'remix.config.mjs', framework: 'remix', check: 'file' },
   { pattern: 'react-router.config.ts', framework: 'react-router', check: 'file' },
+  { pattern: 'react-router.config.js', framework: 'react-router', check: 'file' },
+  { pattern: 'react-router.config.mjs', framework: 'react-router', check: 'file' },
   // Astro
   { pattern: 'astro.config.mjs', framework: 'astro', check: 'file' },
   { pattern: 'astro.config.ts', framework: 'astro', check: 'file' },
   // NestJS
   { pattern: 'nest-cli.json', framework: 'nestjs', check: 'file' },
   { pattern: 'src/main.ts', framework: 'nestjs', check: 'file' },
+  // SvelteKit (before Nuxt — Svelte wins tiebreak when both configs exist)
+  { pattern: 'svelte.config.js', framework: 'svelte', check: 'file' },
+  { pattern: 'svelte.config.ts', framework: 'svelte', check: 'file' },
+  { pattern: 'svelte.config.mjs', framework: 'svelte', check: 'file' },
   // Nuxt
   { pattern: 'nuxt.config.ts', framework: 'nuxt', check: 'file' },
   { pattern: 'nuxt.config.js', framework: 'nuxt', check: 'file' },
-  // SvelteKit
-  { pattern: 'svelte.config.js', framework: 'svelte', check: 'file' },
-  { pattern: 'svelte.config.ts', framework: 'svelte', check: 'file' },
+  { pattern: 'nuxt.config.mjs', framework: 'nuxt', check: 'file' },
   // Angular
   { pattern: 'angular.json', framework: 'angular', check: 'file' },
   // Vue CLI
   { pattern: 'vue.config.js', framework: 'vue', check: 'file' },
-  // React Router v7
-  { pattern: 'react-router.config.js', framework: 'react-router', check: 'file' },
+  { pattern: 'vue.config.mjs', framework: 'vue', check: 'file' },
   // Astro
   { pattern: 'astro.config.js', framework: 'astro', check: 'file' },
   // Express (entry points that signal Express usage)

@@ -457,11 +457,12 @@ describe('FRAMEWORK_HINTS includes new entries', () => {
     // Instead, verify STRONG_FRAMEWORK_CONFIGS covers the new config files.
     const newConfigs = [
       'nest-cli.json',
-      'nuxt.config.ts', 'nuxt.config.js',
-      'svelte.config.js', 'svelte.config.ts',
+      'nuxt.config.ts', 'nuxt.config.js', 'nuxt.config.mjs',
+      'svelte.config.js', 'svelte.config.ts', 'svelte.config.mjs',
       'angular.json',
-      'vue.config.js',
-      'react-router.config.js',
+      'vue.config.js', 'vue.config.mjs',
+      'remix.config.mjs',
+      'react-router.config.js', 'react-router.config.mjs',
       'astro.config.js',
     ];
     for (const config of newConfigs) {
@@ -470,6 +471,53 @@ describe('FRAMEWORK_HINTS includes new entries', () => {
     // Total FRAMEWORK_HINTS count verified at > 18 through the fact that
     // census.ts has 27 entries (18 original + 9 new). Count verified via grep.
     expect(STRONG_FRAMEWORK_CONFIGS.size).toBeGreaterThan(15);
+  });
+});
+
+// ── .mjs STRONG_FRAMEWORK_CONFIGS membership ─────────────────────────
+
+// @ana A015, A016, A017, A018, A019
+describe('STRONG_FRAMEWORK_CONFIGS contains .mjs variants', () => {
+  it('has svelte.config.mjs', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('svelte.config.mjs')).toBe(true);
+  });
+  it('has nuxt.config.mjs', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('nuxt.config.mjs')).toBe(true);
+  });
+  it('has remix.config.mjs', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('remix.config.mjs')).toBe(true);
+  });
+  it('has react-router.config.mjs', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('react-router.config.mjs')).toBe(true);
+  });
+  it('has vue.config.mjs', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('vue.config.mjs')).toBe(true);
+  });
+});
+
+// ── Svelte/Nuxt ordering ─────────────────────────────────────────────
+
+// @ana A020
+describe('Svelte wins over Nuxt when both configs exist in same surface', () => {
+  it('detects Svelte, not Nuxt, when both svelte.config.mjs and nuxt.config.js exist', () => {
+    const root = makeRoot({
+      relativePath: 'apps/web',
+      fileCount: 100,
+      scripts: ['build', 'dev'],
+    });
+    // Census with both framework hints for the same source root.
+    // FRAMEWORK_HINTS iteration order determines the winner —
+    // Svelte appears before Nuxt, so Svelte wins.
+    const census = makeCensus({
+      roots: [root],
+      frameworkHints: [
+        { framework: 'svelte', sourceRootPath: 'apps/web', path: 'apps/web/svelte.config.mjs' },
+        { framework: 'nuxt', sourceRootPath: 'apps/web', path: 'apps/web/nuxt.config.js' },
+      ],
+    });
+    const surfaces = detectSurfaces(census, {});
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.framework!.toLowerCase()).toContain('svelte');
   });
 });
 
