@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 107 active · 3 promoted · 738 closed
+147 runs · 106 active · 3 promoted · 739 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 73 | 2026-05-22 |
+| cli | 101 | 72 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
+
+### packages/cli/src/commands/config.ts
+
+- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -83,10 +87,6 @@
 
 - **test:** @ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64) — *Fix Application Shape Detection Priority Chain*
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
-
-### packages/cli/tests/engine/detectors/detection-overrides.test.ts
-
-- **test:** Only server/ and web/ subdirectories exercised — frontend/ and backend/ untested — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 

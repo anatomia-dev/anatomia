@@ -38944,7 +38944,10 @@
             "A008"
           ],
           "id": "fix-typescript-language-detection-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Detection mechanism is .some() over a 4-element literal array. Testing server/ and web/ verifies the mechanism works — all 4 entries use identical existsSync(path.join(rootPath, dir, 'tsconfig.json')). Untested entries (frontend/, backend/) use the same code path. Missing an entry requires a deliberate array edit, not an accidental regression.",
+          "closed_at": "2026-05-22T08:42:43.220Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
