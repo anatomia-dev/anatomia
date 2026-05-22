@@ -57,12 +57,6 @@
   },
   "verify-data": {
     "saved_at": "2026-05-22T10:14:32.731Z",
-    "hash": "sha256:0beecdef314ca81f4d44f471870f4fe8bb1e19cf7f84c583fca581ef2af8cc55",
-    "history": [
-      {
-        "saved_at": "2026-05-22T10:14:19.752Z",
-        "hash": "sha256:f62d99c83ee4a7938eff74655c5717c2d9adf05efdd00692376576c6273e8e5b"
-      }
-    ]
+    "hash": "sha256:0beecdef314ca81f4d44f471870f4fe8bb1e19cf7f84c583fca581ef2af8cc55"
   }
 }
