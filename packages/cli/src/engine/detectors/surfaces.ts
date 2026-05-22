@@ -62,7 +62,7 @@ const EXCLUDED_SEGMENTS = new Set([
   'example-apps',
   'templates', 'template',
   'e2e',
-  'test', 'tests',
+  'test', 'tests', 'testing',
   'fixtures', 'fixture',
   'playground', 'playgrounds',
   'sandbox',
