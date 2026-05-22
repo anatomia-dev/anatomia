@@ -42,9 +42,18 @@ interface SaveMetadata {
  * @param slugDir - Path to the slug directory
  * @param artifactType - The artifact type key (e.g., 'scope', 'spec', 'contract')
  * @param content - The artifact content for hashing
+ * @param options - Optional gating configuration
+ * @param options.gateOnStageTransition - When provided for archivable types, history push is skipped if opposing stage has not advanced
+ * @param options.gateOnStageTransition.slugDir - Path to the slug directory for gate check
+ * @param options.gateOnStageTransition.artifactType - Artifact type for gate check
  * @returns true if metadata was written, false if skipped (hash unchanged)
  */
-export function writeSaveMetadata(slugDir: string, artifactType: string, content: string): boolean {
+export function writeSaveMetadata(
+  slugDir: string,
+  artifactType: string,
+  content: string,
+  options?: { gateOnStageTransition?: { slugDir: string; artifactType: string } },
+): boolean {
   const savesPath = path.join(slugDir, '.saves.json');
 
   // Read existing .saves.json or start fresh
@@ -68,10 +77,25 @@ export function writeSaveMetadata(slugDir: string, artifactType: string, content
     return false;
   }
 
-  // Preserve previous timestamp and hash in history before overwriting
-  if (existing && existing.saved_at && existing.hash) {
-    const historyEntry = { saved_at: existing.saved_at, hash: existing.hash };
-    const history = existing.history ?? [];
+  // Determine whether history should be preserved for this write.
+  // For archivable types (build-report, verify-report variants), gate history on
+  // stage transition — same-session corrections update timestamp/hash but skip history.
+  const isArchivableType = /^(verify-report|build-report)(-\d+)?$/.test(artifactType);
+  const shouldPreserveHistory = (() => {
+    if (!existing?.saved_at || !existing?.hash) return false;
+    if (!isArchivableType) return true;
+    if (options?.gateOnStageTransition) {
+      return hasOpposingStageAdvanced(
+        options.gateOnStageTransition.slugDir,
+        options.gateOnStageTransition.artifactType,
+      );
+    }
+    return true;
+  })();
+
+  if (shouldPreserveHistory) {
+    const historyEntry = { saved_at: existing!.saved_at, hash: existing!.hash };
+    const history = existing!.history ?? [];
     history.push(historyEntry);
     saves[artifactType] = {
       saved_at: new Date().toISOString(),
@@ -79,7 +103,7 @@ export function writeSaveMetadata(slugDir: string, artifactType: string, content
       history,
     };
   } else {
-    // First write — no history to preserve
+    // First write or gated same-session correction — no history entry
     saves[artifactType] = {
       saved_at: new Date().toISOString(),
       hash: fullHash,
@@ -1123,6 +1147,76 @@ function deriveCompanionKey(artifactType: string): string | null {
 }
 
 /**
+ * Derive the opposing report key for stage-transition gating.
+ *
+ * Phase-aware: "verify-report-2" → "build-report-2", "build-report" → "verify-report".
+ * Also accepts companion keys: "verify-data-2" → derives parent "verify-report-2" → "build-report-2".
+ *
+ * @param artifactType - Full artifact type string (e.g., "build-report-1", "verify-data-2")
+ * @returns Phase-aware opposing report key, or null if not a report/companion type
+ */
+export function deriveOpposingReportKey(artifactType: string): string | null {
+  // Try report key directly
+  const reportMatch = artifactType.match(/^(verify-report|build-report)(-\d+)?$/);
+  if (reportMatch) {
+    const base = reportMatch[1] === 'verify-report' ? 'build-report' : 'verify-report';
+    const suffix = reportMatch[2] ?? '';
+    return `${base}${suffix}`;
+  }
+
+  // Try companion key — derive parent report, then get its opposite
+  const companionMatch = artifactType.match(/^(verify-data|build-data)(-\d+)?$/);
+  if (companionMatch) {
+    const parentBase = companionMatch[1] === 'verify-data' ? 'verify-report' : 'build-report';
+    const suffix = companionMatch[2] ?? '';
+    const parentKey = `${parentBase}${suffix}`;
+    return deriveOpposingReportKey(parentKey);
+  }
+
+  return null;
+}
+
+/**
+ * Check whether the opposing pipeline stage has advanced since the current artifact's
+ * last save. A stage advancement means a genuine rejection cycle occurred — the other
+ * side responded. Without advancement, a re-save is a same-session correction.
+ *
+ * @param slugDir - Path to the slug directory containing .saves.json
+ * @param artifactType - The artifact type being saved (e.g., "verify-report", "build-data-2")
+ * @returns true if the opposing stage has a more recent timestamp, meaning archiving should proceed
+ */
+export function hasOpposingStageAdvanced(slugDir: string, artifactType: string): boolean {
+  const opposingKey = deriveOpposingReportKey(artifactType);
+  if (!opposingKey) return false;
+
+  const savesPath = path.join(slugDir, '.saves.json');
+  if (!fs.existsSync(savesPath)) return false;
+
+  let saves: Record<string, SaveMetadata>;
+  try {
+    saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
+  } catch {
+    return false;
+  }
+
+  // Derive the report key for the current artifact (companion → parent report)
+  const companionMatch = artifactType.match(/^(verify-data|build-data)(-\d+)?$/);
+  const currentReportKey = companionMatch
+    ? `${companionMatch[1] === 'verify-data' ? 'verify-report' : 'build-report'}${companionMatch[2] ?? ''}`
+    : artifactType;
+
+  const currentEntry = saves[currentReportKey];
+  const opposingEntry = saves[opposingKey];
+
+  if (!currentEntry?.saved_at || !opposingEntry?.saved_at) return false;
+
+  const currentTime = new Date(currentEntry.saved_at).getTime();
+  const opposingTime = new Date(opposingEntry.saved_at).getTime();
+
+  return opposingTime > currentTime;
+}
+
+/**
  * Validate that we're on the correct branch for this artifact type
  *
  * @param typeInfo - Parsed artifact type information
@@ -1248,8 +1342,10 @@ export function saveArtifact(type: string, slug: string): void {
   const isArchivable = typeInfo.baseType === 'verify-report' || typeInfo.baseType === 'build-report';
   if (isArchivable) {
     const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
-    const archivePath = archivePreviousVersion(projectRoot, relFilePath, slugDir);
-    if (archivePath) archiveRelPaths.push(archivePath);
+    if (hasOpposingStageAdvanced(slugDir, typeInfo.artifactType)) {
+      const archivePath = archivePreviousVersion(projectRoot, relFilePath, slugDir);
+      if (archivePath) archiveRelPaths.push(archivePath);
+    }
   }
 
   // 6b. Verify file exists — auto-move from main tree if needed (Layer 1)
@@ -1411,11 +1507,13 @@ export function saveArtifact(type: string, slug: string): void {
     const warningInfo = result.warnings.length > 0 ? `, ${result.warnings.length} warnings` : '';
     console.log(chalk.green(`✓ ${companionFileName} validated (${findingCount} ${typeInfo.baseType === 'verify-report' ? 'findings' : 'concerns'}${warningInfo})`));
 
-    // Archive companion if it has a committed version
-    if (isArchivable && relCompanionPath) {
+    // Archive companion if it has a committed version and opposing stage advanced
+    if (isArchivable && relCompanionPath && companionKey) {
       const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
-      const companionArchivePath = archivePreviousVersion(projectRoot, relCompanionPath, slugDir);
-      if (companionArchivePath) archiveRelPaths.push(companionArchivePath);
+      if (hasOpposingStageAdvanced(slugDir, companionKey)) {
+        const companionArchivePath = archivePreviousVersion(projectRoot, relCompanionPath, slugDir);
+        if (companionArchivePath) archiveRelPaths.push(companionArchivePath);
+      }
     }
   }
 
@@ -1481,12 +1579,18 @@ export function saveArtifact(type: string, slug: string): void {
   // produce no .saves.json diff, so the check still works correctly.
   const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
   const artifactContent = fs.readFileSync(filePath, 'utf-8');
-  writeSaveMetadata(slugDir, typeInfo.artifactType, artifactContent);
+  const stageGate = isArchivable
+    ? { gateOnStageTransition: { slugDir, artifactType: typeInfo.artifactType } }
+    : undefined;
+  writeSaveMetadata(slugDir, typeInfo.artifactType, artifactContent, stageGate);
 
   // Write companion hash alongside report hash
   if (companionPath && companionKey && fs.existsSync(companionPath)) {
     const companionContent = fs.readFileSync(companionPath, 'utf-8');
-    writeSaveMetadata(slugDir, companionKey, companionContent);
+    const companionGate = isArchivable
+      ? { gateOnStageTransition: { slugDir, artifactType: companionKey } }
+      : undefined;
+    writeSaveMetadata(slugDir, companionKey, companionContent, companionGate);
   }
 
   // Capture modules_touched at build-report time (when the feature branch
@@ -1789,18 +1893,22 @@ export function saveAllArtifacts(slug: string): void {
     runCommitHygieneChecks(projectRoot, planDir);
   }
 
-  // 3d. Archive previous versions for archivable artifacts and companions
+  // 3d. Archive previous versions for archivable artifacts and companions (gated on stage transition)
   const archiveRelPaths: string[] = [];
   for (const artifact of artifacts) {
     if (artifact.typeInfo.baseType === 'verify-report' || artifact.typeInfo.baseType === 'build-report') {
-      const relPath = path.relative(projectRoot, artifact.path);
-      const ap = archivePreviousVersion(projectRoot, relPath, planDir);
-      if (ap) archiveRelPaths.push(ap);
+      if (hasOpposingStageAdvanced(planDir, artifact.typeInfo.artifactType)) {
+        const relPath = path.relative(projectRoot, artifact.path);
+        const ap = archivePreviousVersion(projectRoot, relPath, planDir);
+        if (ap) archiveRelPaths.push(ap);
+      }
     }
   }
   for (const companion of companions) {
-    const ap = archivePreviousVersion(projectRoot, companion.relPath, planDir);
-    if (ap) archiveRelPaths.push(ap);
+    if (hasOpposingStageAdvanced(planDir, companion.key)) {
+      const ap = archivePreviousVersion(projectRoot, companion.relPath, planDir);
+      if (ap) archiveRelPaths.push(ap);
+    }
   }
 
   // 4. Validate branch — planning artifacts must be on artifact branch
@@ -1887,13 +1995,18 @@ export function saveAllArtifacts(slug: string): void {
   // With idempotent writeSaveMetadata, unchanged artifacts produce no .saves.json diff.
   for (const artifact of artifacts) {
     const content = fs.readFileSync(artifact.path, 'utf-8');
-    writeSaveMetadata(planDir, artifact.typeInfo.artifactType, content);
+    const isArtifactArchivable = artifact.typeInfo.baseType === 'verify-report' || artifact.typeInfo.baseType === 'build-report';
+    const gate = isArtifactArchivable
+      ? { gateOnStageTransition: { slugDir: planDir, artifactType: artifact.typeInfo.artifactType } }
+      : undefined;
+    writeSaveMetadata(planDir, artifact.typeInfo.artifactType, content, gate);
   }
 
   // Write companion hashes alongside report hashes
   for (const companion of companions) {
     const content = fs.readFileSync(companion.absPath, 'utf-8');
-    writeSaveMetadata(planDir, companion.key, content);
+    const companionGate = { gateOnStageTransition: { slugDir: planDir, artifactType: companion.key } };
+    writeSaveMetadata(planDir, companion.key, content, companionGate);
   }
   const savesPathAll = path.join(planDir, '.saves.json');
   if (fs.existsSync(savesPathAll)) {
