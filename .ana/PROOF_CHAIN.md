@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 113 active · 3 promoted · 752 closed
+151 runs · 112 active · 3 promoted · 753 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 79 | 2026-05-22 |
+| cli | 105 | 78 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 113 total)
+## Active Findings (30 shown of 112 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -99,7 +99,6 @@
 
 ### packages/cli/tests/engine/parsers/python.test.ts
 
-- **test:** A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect. — *Separate Python production deps from dev deps*
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### packages/cli/tests/engine/scanProject.test.ts
@@ -109,4 +108,8 @@
 ### packages/cli/tests/utils/proofSummary.test.ts
 
 - **test:** A012 and A018 use toBeDefined() — contract-aligned (matcher: exists) but weaker than asserting specific fallback value — *Fix False Rejection Archives on Same-Session Re-Saves*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
