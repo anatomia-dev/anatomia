@@ -63,7 +63,7 @@ After re-init:
 
 ## Acceptance Criteria
 
-- [ ] AC1: Repos with false surfaces produce correct surface counts — non-product paths (examples/, templates/, e2e/, test/, fixtures/, playground/, sandbox/, demos/, starter/, samples/, boilerplate/, reference/) excluded from detection
+- [ ] AC1: Repos with false surfaces produce correct surface counts — non-product paths (examples/, example/, example-apps/, templates/, template/, e2e/, test/, tests/, fixtures/, fixture/, playground/, playgrounds/, sandbox/, demos/, demo/, starters/, starter/, samples/, sample/, boilerplate/, references/, reference/) excluded from detection. The authoritative set is 22 entries.
 - [ ] AC2: Repos with legitimate surfaces are unaffected — `apps/web`, `packages/cli`, `web/`, `plugins/` paths pass through
 - [ ] AC3: Library repos correctly get zero surfaces when all detected surfaces were from non-product paths
 - [ ] AC4: Re-init on a repo with false surfaces in ana.json silently drops them — no console.warn for non-product paths

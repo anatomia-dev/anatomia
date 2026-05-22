@@ -169,11 +169,18 @@ assertions:
 
   # --- Full exclusion vocabulary ---
   - id: A023
-    says: "All 26 non-product segment names are in the exclusion set"
+    says: "All 22 non-product segment names are in the exclusion set"
     block: "exclusion vocabulary is complete"
     target: "excludedSegmentCount"
     matcher: "equals"
-    value: 26
+    value: 22
+
+  - id: A024
+    says: "Packages under example-apps/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
 
 file_changes:
   - path: "packages/cli/src/engine/detectors/surfaces.ts"
