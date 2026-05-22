@@ -30,5 +30,35 @@
         "hash": "sha256:01ce930c2ed0ec9ae7f44963d4b9fe88a1afe4b3a7868883d2f56bbf8d1e6eea"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T06:30:43.460Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T06:36:55.358Z",
+    "hash": "sha256:ae82c234a05199b867f9413d074ce76b5df6e5b249ddc86c2eb32333fbc6ad55"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T06:36:55.359Z",
+    "hash": "sha256:a2bc338459dbf41784d4f093d6aeea40a91f72add3af49421300b002b85d3cf3"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/detectors/applicationShape.ts",
+    "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T06:39:10.987Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:1ac14f0643c633c842740026b6ce2b3363d9018822fc372285972d6308a19d56",
+    "run_at": "2026-05-22T06:43:50.076Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T06:43:50.114Z",
+    "hash": "sha256:5f41b7e5141467a13c73530b7ebf5cd33782a512c8136a41fcc19200ecf0171f"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T06:43:50.114Z",
+    "hash": "sha256:998e2af1dc9adc5e2bd1d206b3ef0c0f5608571abd6ff37f1e3f90c2d2ae4d42"
   }
 }

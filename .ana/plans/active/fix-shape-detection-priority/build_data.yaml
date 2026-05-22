@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Duplicate test coverage for bin + library markers (old A013 and new A016 blocks)"
+    file: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Old @ana tags from previous spec reuse A001-A018 ID space with different meanings"
+    file: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning: unused eslint-disable directive in git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept

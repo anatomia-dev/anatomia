@@ -70,18 +70,48 @@ describe('detectApplicationShape', () => {
       expect(result.shape).toBe('web-app');
     });
 
-    it('mcp-server still wins when no browser framework (pure MCP server)', () => {
+    // @ana A001
+    it('MCP + server framework → api-server (directus scenario)', () => {
+      // Express is identity; MCP SDK is capability
       const result = detectApplicationShape(makeInput({
         deps: ['@modelcontextprotocol/sdk', 'express'],
         frameworkName: 'express',
       }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    // @ana A002
+    it('pure MCP server (no framework) → mcp-server', () => {
+      const result = detectApplicationShape(makeInput({
+        deps: ['@modelcontextprotocol/sdk'],
+      }));
       expect(result.shape).toBe('mcp-server');
     });
 
-    it('ai-agent wins over api-server', () => {
+    // @ana A005
+    it('ai-agent + server framework → api-server', () => {
+      // Express is identity; LangChain is capability
       const result = detectApplicationShape(makeInput({
         deps: ['langchain', 'express'],
         frameworkName: 'express',
+      }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    // @ana A004
+    it('ai-agent + browser framework → web-app (langfuse scenario)', () => {
+      // Next.js is identity; LangChain is capability
+      const result = detectApplicationShape(makeInput({
+        deps: ['@langchain/core', 'next', 'react'],
+        frameworkName: 'nextjs',
+      }));
+      expect(result.shape).toBe('web-app');
+    });
+
+    // @ana A006
+    it('ai-agent without framework → ai-agent (unchanged)', () => {
+      const result = detectApplicationShape(makeInput({
+        deps: ['langchain'],
       }));
       expect(result.shape).toBe('ai-agent');
     });
@@ -117,26 +147,26 @@ describe('detectApplicationShape', () => {
     });
   });
 
-  // @ana A006
-  describe('classifies project with CLI dependency as cli', () => {
-    it('returns cli for commander', () => {
+  // @ana A010
+  describe('CLI dep alone → unknown (step removed)', () => {
+    it('returns unknown for commander alone', () => {
       const result = detectApplicationShape(makeInput({ deps: ['commander'] }));
-      expect(result.shape).toBe('cli');
+      expect(result.shape).toBe('unknown');
     });
 
-    it('returns cli for yargs', () => {
+    it('returns unknown for yargs alone', () => {
       const result = detectApplicationShape(makeInput({ deps: ['yargs'] }));
-      expect(result.shape).toBe('cli');
+      expect(result.shape).toBe('unknown');
     });
 
-    it('returns cli for meow', () => {
+    it('returns unknown for meow alone', () => {
       const result = detectApplicationShape(makeInput({ deps: ['meow'] }));
-      expect(result.shape).toBe('cli');
+      expect(result.shape).toBe('unknown');
     });
 
-    it('returns cli for cac', () => {
+    it('returns unknown for cac alone', () => {
       const result = detectApplicationShape(makeInput({ deps: ['cac'] }));
-      expect(result.shape).toBe('cli');
+      expect(result.shape).toBe('unknown');
     });
   });
 
@@ -268,16 +298,21 @@ describe('detectApplicationShape', () => {
     });
   });
 
-  // @ana A014
-  describe('CLI dep wins over main/exports', () => {
-    it('returns cli when commander dep and hasMain', () => {
+  // @ana A009
+  describe('library markers + CLI dep → library (CLI dep fallback removed)', () => {
+    it('returns library when commander dep and hasMain', () => {
       const result = detectApplicationShape(makeInput({ deps: ['commander'], hasMain: true }));
-      expect(result.shape).toBe('cli');
+      expect(result.shape).toBe('library');
     });
 
-    it('returns cli when yargs dep and hasExports', () => {
+    it('returns library when yargs dep and hasExports', () => {
       const result = detectApplicationShape(makeInput({ deps: ['yargs'], hasExports: true }));
-      expect(result.shape).toBe('cli');
+      expect(result.shape).toBe('library');
+    });
+
+    it('returns library when arg dep and hasExports (hono scenario)', () => {
+      const result = detectApplicationShape(makeInput({ deps: ['arg'], hasExports: true }));
+      expect(result.shape).toBe('library');
     });
   });
 
@@ -458,6 +493,130 @@ describe('detectApplicationShape', () => {
         deps: ['express'],
       }));
       expect(result.shape).not.toBe('unknown');
+    });
+  });
+
+  // @ana A007
+  describe('framework beats CLI deps', () => {
+    it('NestJS + yargs → api-server (novu scenario)', () => {
+      const result = detectApplicationShape(makeInput({
+        frameworkName: 'nestjs',
+        deps: ['@nestjs/core', 'yargs'],
+      }));
+      expect(result.shape).toBe('api-server');
+    });
+
+    // @ana A008
+    it('Next.js + commander → web-app', () => {
+      const result = detectApplicationShape(makeInput({
+        frameworkName: 'nextjs',
+        deps: ['next', 'react', 'commander'],
+      }));
+      expect(result.shape).toBe('web-app');
+    });
+
+    it('Express + bin → api-server (framework wins over bin)', () => {
+      const result = detectApplicationShape(makeInput({
+        frameworkName: 'express',
+        deps: ['express'],
+        hasBin: true,
+      }));
+      expect(result.shape).toBe('api-server');
+    });
+  });
+
+  // @ana A011
+  describe('bin + server framework → api-server (framework wins)', () => {
+    // Design decision: framework is identity. A project with Express and a bin
+    // field is "an API server that also ships a CLI entry point" — the server
+    // framework defines what the project IS. The bin field is checked after
+    // framework classification, so framework always wins.
+    it('returns api-server for bin + express', () => {
+      const result = detectApplicationShape(makeInput({
+        frameworkName: 'express',
+        deps: ['express'],
+        hasBin: true,
+      }));
+      expect(result.shape).toBe('api-server');
+    });
+  });
+
+  // @ana A012
+  describe('bin + CLI dep, no framework → cli (Anatomia scenario)', () => {
+    it('classifies Anatomia-like project as cli', () => {
+      const result = detectApplicationShape(makeInput({
+        hasBin: true,
+        hasExports: true,
+        frameworkName: null,
+        deps: ['commander', 'chalk', 'ora'],
+      }));
+      expect(result.shape).toBe('cli');
+    });
+  });
+
+  // @ana A013
+  describe('server framework + browser deps → full-stack (ghostfolio scenario)', () => {
+    it('NestJS + @angular/core → full-stack', () => {
+      const result = detectApplicationShape(makeInput({
+        frameworkName: 'nestjs',
+        deps: ['@nestjs/core', '@angular/core'],
+      }));
+      expect(result.shape).toBe('full-stack');
+    });
+  });
+
+  // @ana A014
+  describe('browser framework alone → web-app', () => {
+    it('Next.js without special deps → web-app (dub/inbox-zero scenario)', () => {
+      const result = detectApplicationShape(makeInput({
+        frameworkName: 'nextjs',
+        deps: ['next', 'react'],
+      }));
+      expect(result.shape).toBe('web-app');
+    });
+  });
+
+  // @ana A015
+  describe('non-Node projects use FRAMEWORK_TO_SHAPE lookup unchanged', () => {
+    it('Python + fastapi → api-server', () => {
+      const result = detectApplicationShape(makeInput({
+        projectType: 'python',
+        frameworkName: 'fastapi',
+      }));
+      expect(result.shape).toBe('api-server');
+    });
+  });
+
+  // @ana A016
+  describe('bin + library markers → cli (bin wins)', () => {
+    it('returns cli when hasBin and hasMain', () => {
+      const result = detectApplicationShape(makeInput({ hasBin: true, hasMain: true }));
+      expect(result.shape).toBe('cli');
+    });
+
+    it('returns cli when hasBin and hasExports', () => {
+      const result = detectApplicationShape(makeInput({ hasBin: true, hasExports: true }));
+      expect(result.shape).toBe('cli');
+    });
+  });
+
+  // @ana A017
+  describe('BROWSER_DEP_ALIASES is a module-level constant', () => {
+    it('source contains BROWSER_DEP_ALIASES', async () => {
+      const detectorSource = await import('node:fs/promises').then(fs =>
+        fs.readFile(new URL('../../../src/engine/detectors/applicationShape.ts', import.meta.url), 'utf-8')
+      );
+      expect(detectorSource).toContain('BROWSER_DEP_ALIASES');
+    });
+  });
+
+  // @ana A018
+  describe('CLI_DEPS constant and usage removed', () => {
+    it('source does not contain CLI_DEPS', async () => {
+      const detectorSource = await import('node:fs/promises').then(fs =>
+        fs.readFile(new URL('../../../src/engine/detectors/applicationShape.ts', import.meta.url), 'utf-8')
+      );
+      expect(detectorSource).not.toContain('CLI_DEPS');
     });
   });
 
