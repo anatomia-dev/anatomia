@@ -39,10 +39,10 @@ assertions:
     value: 0
 
   - id: A006
-    says: "Files without a lastReviewed field are skipped without error"
-    block: "staleness check skips files without lastReviewed"
-    target: "result.skippedFile"
-    matcher: "truthy"
+    says: "Files where git returns no date fall back to buildTimestamp"
+    block: "shallow clone fallback uses buildTimestamp"
+    target: "result.fallbackDate"
+    matcher: "exists"
 
   - id: A007
     says: "The staleness threshold is 60 days"
@@ -52,34 +52,54 @@ assertions:
     value: "60"
 
   - id: A008
-    says: "All concept pages have today's review date"
-    block: "MDX files have updated lastReviewed dates"
-    target: "frontmatter.lastReviewed"
-    matcher: "equals"
-    value: "2026-05-22"
+    says: "page-dates.json is generated with slug-to-date entries"
+    block: "page dates extraction produces valid output"
+    target: "file.pageDatesJson"
+    matcher: "exists"
 
   - id: A009
-    says: "All guide pages have today's review date"
-    block: "MDX files have updated lastReviewed dates"
-    target: "frontmatter.lastReviewed"
-    matcher: "equals"
-    value: "2026-05-22"
+    says: "page-dates.json keys are slug paths without .mdx extension"
+    block: "page dates extraction produces valid output"
+    target: "pageDates.keys"
+    matcher: "not_contains"
+    value: ".mdx"
 
   - id: A010
-    says: "The start page has today's review date"
-    block: "MDX files have updated lastReviewed dates"
-    target: "frontmatter.lastReviewed"
-    matcher: "equals"
-    value: "2026-05-22"
+    says: "page-dates.json values are YYYY-MM-DD date strings"
+    block: "page dates extraction produces valid output"
+    target: "pageDates.valueFormat"
+    matcher: "contains"
+    value: "-"
 
   - id: A011
+    says: "lastReviewed is removed from all MDX frontmatter"
+    block: "MDX files no longer contain lastReviewed"
+    target: "mdxFiles.lastReviewed"
+    matcher: "equals"
+    value: 0
+
+  - id: A012
+    says: "The slug page reads dates from getPageDate, not frontmatter"
+    block: "slug page uses git-derived dates"
+    target: "source.slugPage"
+    matcher: "contains"
+    value: "getPageDate"
+
+  - id: A013
+    says: "The slug page no longer reads lastReviewed from page data"
+    block: "slug page uses git-derived dates"
+    target: "source.slugPage"
+    matcher: "not_contains"
+    value: "page.data.lastReviewed"
+
+  - id: A014
     says: "The staleness check does not fail the build"
     block: "staleness check is a warning, not a build failure"
     target: "source.extractDocsData.checkStaleDocs"
     matcher: "not_contains"
     value: "process.exit"
 
-  - id: A012
+  - id: A015
     says: "The website build succeeds with all changes applied"
     block: "website build passes"
     target: "build.exitCode"
@@ -90,6 +110,14 @@ file_changes:
   - path: "website/app/docs/reference/cli/page.tsx"
     action: modify
   - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/lib/docs-data/pageDates.ts"
+    action: create
+  - path: "website/lib/docs-data/index.ts"
+    action: modify
+  - path: "website/app/docs/[...slug]/page.tsx"
+    action: modify
+  - path: "website/source.config.ts"
     action: modify
   - path: "website/content/docs/start.mdx"
     action: modify
