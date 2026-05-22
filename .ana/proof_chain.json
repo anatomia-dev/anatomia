@@ -40155,6 +40155,153 @@
         "base_commit": "6ab94d10e716631c0a5f0241cb22178aa320b138"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-schema-glob-fallback",
+      "feature": "Filter non-product paths from schema glob fallbacks",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The scan engine imports the non-product path filter from the surfaces module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A Prisma schema in an e2e directory is not detected as a real schema",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A missing Prisma schema triggers the expected blind spot warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A Drizzle schema in an examples directory is not detected as a real schema",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A missing Drizzle schema triggers the expected blind spot warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A real Prisma schema in a product path is still detected normally",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A real Prisma schema in a monorepo sub-package is still detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Existing test suite passes without regressions",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 561,
+        "think": 541,
+        "plan": 6,
+        "build": 3,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:99068a823ca9937d54dd3a7766db89845c15bdf38c6e56c713281496778435f3",
+        "contract": "sha256:78ef566c0890e96192b975997230163aa84326eaadf8a7852c6201d5cc0e6d63",
+        "plan": "sha256:c8a8d1f7fc42da5e7a2bc4ab42dbb474bdc8a886d51ca6ff54078e51d83055a6",
+        "spec": "sha256:b97a48ee867209b1dbe59f0fe9e1c7c1bf576c495467cba8301ed3693cd4d008",
+        "build-report": "sha256:6213e53dbafe5a795cd3170e4188e2b2cfab6b1439400ea813b6c43b9014aaf0",
+        "build-data": "sha256:875737dc24d0f962b188fda490f4c5a3b8c1d80d38b63dd3e89c5cd3fc43bb65",
+        "verify-report": "sha256:737f85c6e97262aa67597d80519aee17d3c46ddb157a50bea9f2da43f6eedd03",
+        "verify-data": "sha256:457942e326b31b80efa940a0f6f6dd147869377c4573694c6aacab6843fb14db"
+      },
+      "completed_at": "2026-05-22T20:28:47.172Z",
+      "modules_touched": [
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/scanProject.test.ts"
+      ],
+      "scope_summary": "The census-level schema filter shipped in scan-quality-polish correctly skips non-product roots (e2e, examples, test fixtures). But the glob fallback in `detectSchemas` bypasses census entirely and rediscovers those same schemas directly. The result: repos like highlight still report false Prisma detection from `e2e/nextjs/prisma/schema.prisma`, and repos like trpc/electric could report false Drizzle from `examples/` directories. Close the gap by applying the same `isNonProductPath` filter to glob fallback results.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Multi-file Prisma fallback path (trailing-slash directories) not exercised by non-product exclusion test",
+          "file": "packages/cli/tests/engine/scanProject.test.ts",
+          "anchor": null,
+          "line": 240,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "fix-schema-glob-fallback-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Filter also applies to census-sourced paths — harmless no-op but undocumented defense-in-depth",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 304,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-schema-glob-fallback-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A006/A007 have no @ana tags — regression assertions rely on pre-existing tests from other builds",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A006",
+            "A007"
+          ],
+          "id": "fix-schema-glob-fallback-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T20:28:47.172Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T20:14:40.702Z",
+        "completed_at": "2026-05-22T20:28:47.167Z",
+        "commit_count": 0,
+        "base_commit": "18157a4e8677c6fcac8f97fb6e96c087220d6223"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

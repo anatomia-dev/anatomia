@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-150 runs · 112 active · 3 promoted · 750 closed
+151 runs · 114 active · 3 promoted · 751 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 104 | 78 | 2026-05-22 |
+| cli | 105 | 80 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 114 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -35,10 +35,6 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-
-### packages/cli/src/commands/work.ts
-
-- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -67,6 +63,7 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
+- **code:** Filter also applies to census-sourced paths — harmless no-op but undocumented defense-in-depth — *Filter non-product paths from schema glob fallbacks*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
@@ -102,11 +99,11 @@
 - **test:** A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect. — *Separate Python production deps from dev deps*
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
+### packages/cli/tests/engine/scanProject.test.ts
+
+- **test:** Multi-file Prisma fallback path (trailing-slash directories) not exercised by non-product exclusion test — *Filter non-product paths from schema glob fallbacks*
+
 ### packages/cli/tests/utils/proofSummary.test.ts
 
 - **test:** A012 and A018 use toBeDefined() — contract-aligned (matcher: exists) but weaker than asserting specific fallback value — *Fix False Rejection Archives on Same-Session Re-Saves*
-
-### website/components/docs/proof/ProofExplorer.tsx
-
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
