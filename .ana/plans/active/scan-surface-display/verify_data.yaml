@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1094
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A007"]
+  - category: test
+    summary: "A003-A006 test asserts surface names exist in block but not framework, language, or testing values"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1080
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003", "A004", "A005", "A006"]
+  - category: upstream
+    summary: "detectBranchPatterns primary path partially addresses duplicate git branch -r calls — fallback still uses it"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: []
+    resolves:
+      - "fix-scan-branch-detection-C3"
+  - category: code
+    summary: "defaultBranch interpolated unsanitized into git exec — consistent with existing detectMergeStrategy pattern"
+    file: "packages/cli/src/engine/detectors/git.ts"
+    line: 187
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A012"]

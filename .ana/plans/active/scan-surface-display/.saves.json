@@ -51,5 +51,20 @@
     "packages/cli/tests/commands/scan.test.ts",
     "packages/cli/tests/engine/detectors/git-workflow.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:13:42.197Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:8bcd1a818841b00abb42b79244be3341a107e02c6c904a9fa8e1bb94ba71bbdd",
+    "run_at": "2026-05-22T07:19:24.405Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:19:24.441Z",
+    "hash": "sha256:4f22ae14c1384e2e528fa62a9e91f6ed9917874e8acd8082577eaf79a98a5260"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:19:24.441Z",
+    "hash": "sha256:4f1e4bc2a83e9ec2270f86e3f5919dae098941f843178735e5a1fab0b8b15a79"
+  }
 }
