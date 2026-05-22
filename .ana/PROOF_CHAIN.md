@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 112 active · 3 promoted · 733 closed
+147 runs · 111 active · 3 promoted · 734 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 78 | 2026-05-22 |
+| cli | 101 | 77 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -74,7 +74,6 @@
 
 ### packages/cli/tests/engine/census-primary.test.ts
 
-- **test:** A007 tiebreaker test uses toContain('larger') — would pass if result were 'larger-thing' or any string containing 'larger' — *Fix Primary Package Selection in Monorepos*
 - **test:** A026 caller test doesn't verify actual call site — it only shows selectPrimary accepts 3 args. Caller verified by source inspection (census.ts:571). — *Fix Primary Package Selection in Monorepos*
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
@@ -106,4 +105,8 @@
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/docs/proof/ProofHero.tsx
+
+- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 

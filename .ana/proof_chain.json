@@ -38714,7 +38714,10 @@
             "A007"
           ],
           "id": "fix-primary-selection-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Controlled fixture — only two roots: packages/small and packages/larger. No string in the fixture contains 'larger' other than the intended path. toContain is unambiguous within this test data. Fragility requires simultaneous fixture change to introduce an ambiguous path.",
+          "closed_at": "2026-05-22T08:41:35.708Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
