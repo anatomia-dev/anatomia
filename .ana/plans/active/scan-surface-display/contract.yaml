@@ -149,3 +149,5 @@ file_changes:
     action: modify
   - path: "packages/cli/tests/engine/detectors/git-workflow.test.ts"
     action: modify
+  - path: "packages/cli/tests/commands/scan.test.ts"
+    action: modify
