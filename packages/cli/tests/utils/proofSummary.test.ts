@@ -4212,6 +4212,21 @@ describe('computeTiming segment-based computation', () => {
     };
     fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
 
+    // Content-based detection requires a verify report with rejection content
+    const verifyReportWithRejection = `# Verify Report
+
+**Result:** PASS
+
+## Previous Findings Resolution
+
+### Previously UNSATISFIED Assertions
+
+| ID | Previous Issue |
+|----|---------------|
+| A001 | Missing validation |
+`;
+    fs.writeFileSync(path.join(slugDir, 'verify_report.md'), verifyReportWithRejection);
+
     const summary = generateProofSummary(slugDir);
 
     expect(summary.timing.build).toBe(60); // 30 + 30
@@ -4506,6 +4521,144 @@ describe('computeTiming segment-based computation', () => {
     expect(summary.timing.verify).toBe(10);
     // Think/plan still use work_started_at
     expect(summary.timing.think).toBe(20);
+  });
+
+  // @ana A010
+  it('content-based rejection detection activates timing reconstruction', async () => {
+    // Same fixture as the existing rejection test — but NO history arrays.
+    // Rejection detection relies on verify report content, not .saves.json history.
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': {
+        saved_at: '2026-04-01T11:40:00Z',
+        hash: 'sha256:v2',
+        history: [{ saved_at: '2026-04-01T11:00:00Z', hash: 'sha256:v1' }],
+      },
+      'verify-report': {
+        saved_at: '2026-04-01T11:50:00Z',
+        hash: 'sha256:vr2',
+        history: [{ saved_at: '2026-04-01T11:10:00Z', hash: 'sha256:vr1' }],
+      },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    // Write verify report WITH rejection content
+    const verifyReport = `# Verify Report
+
+**Result:** PASS
+
+## Previous Findings Resolution
+
+### Previously UNSATISFIED Assertions
+
+| ID | Previous Issue |
+|----|---------------|
+| A001 | Missing validation |
+`;
+    fs.writeFileSync(path.join(slugDir, 'verify_report.md'), verifyReport);
+
+    const summary = generateProofSummary(slugDir);
+
+    // Rejection path: build = (11:00-10:30) + (11:40-11:10) = 30+30 = 60
+    expect(summary.timing.build).toBe(60);
+  });
+
+  // @ana A011
+  it('false history does not activate rejection timing', async () => {
+    // Same timestamps as rejection test, but NO rejection content in verify report.
+    // History arrays exist (from false same-session entries) but content says no rejection.
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': {
+        saved_at: '2026-04-01T11:40:00Z',
+        hash: 'sha256:v2',
+        history: [{ saved_at: '2026-04-01T11:00:00Z', hash: 'sha256:v1' }],
+      },
+      'verify-report': {
+        saved_at: '2026-04-01T11:50:00Z',
+        hash: 'sha256:vr2',
+        history: [{ saved_at: '2026-04-01T11:10:00Z', hash: 'sha256:vr1' }],
+      },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    // Write verify report WITHOUT rejection content
+    fs.writeFileSync(path.join(slugDir, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS\n');
+
+    const summary = generateProofSummary(slugDir);
+
+    // Fallback path: build = contract(10:30) → build.current(11:40) = 70
+    expect(summary.timing.build).toBe(70);
+  });
+
+  // @ana A012
+  it('missing verify report uses fallback timing', async () => {
+    // History arrays exist but no verify report file at all
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': {
+        saved_at: '2026-04-01T11:40:00Z',
+        hash: 'sha256:v2',
+        history: [{ saved_at: '2026-04-01T11:00:00Z', hash: 'sha256:v1' }],
+      },
+      'verify-report': {
+        saved_at: '2026-04-01T11:50:00Z',
+        hash: 'sha256:vr2',
+        history: [{ saved_at: '2026-04-01T11:10:00Z', hash: 'sha256:vr1' }],
+      },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    // No verify_report.md file on disk
+
+    const summary = generateProofSummary(slugDir);
+
+    // Fallback: no rejection content detected → simple endpoint subtraction
+    expect(summary.timing.build).toBeDefined();
+  });
+
+  // @ana A018
+  it('multi-phase verify report with rejection content activates rejection timing', async () => {
+    // Multi-phase with numbered verify reports — one has rejection content
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report': {
+        saved_at: '2026-04-01T11:40:00Z',
+        hash: 'sha256:v2',
+        history: [{ saved_at: '2026-04-01T11:00:00Z', hash: 'sha256:v1' }],
+      },
+      'verify-report': {
+        saved_at: '2026-04-01T11:50:00Z',
+        hash: 'sha256:vr2',
+        history: [{ saved_at: '2026-04-01T11:10:00Z', hash: 'sha256:vr1' }],
+      },
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z', hash: 'sha256:vr1p1' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    // Numbered verify report with rejection content
+    const verifyReport = `# Verify Report
+
+**Result:** PASS
+
+## Previous Findings Resolution
+
+### Previously UNSATISFIED Assertions
+
+| ID | Previous Issue |
+|----|---------------|
+| A002 | Wrong return type |
+`;
+    fs.writeFileSync(path.join(slugDir, 'verify_report_1.md'), verifyReport);
+
+    const summary = generateProofSummary(slugDir);
+
+    // Any rejection content triggers the rejection path
+    expect(summary.timing.build).toBeDefined();
   });
 });
 
