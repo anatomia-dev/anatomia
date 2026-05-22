@@ -40344,6 +40344,240 @@
         "base_commit": "18157a4e8677c6fcac8f97fb6e96c087220d6223"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-docs-date-freshness",
+      "feature": "Fix AnaDocs date freshness",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 15,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The CLI reference page shows a build-derived date, not a hardcoded one",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The CLI reference page derives the date from buildTimestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Stale docs trigger a warning with the file path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Stale docs warning includes the age in days",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Fresh docs produce no staleness warnings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Files where git returns no date fall back to buildTimestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The staleness threshold is 60 days",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "page-dates.json is generated with slug-to-date entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "page-dates.json keys are slug paths without .mdx extension",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "page-dates.json values are YYYY-MM-DD date strings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "lastReviewed is removed from all MDX frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The slug page reads dates from getPageDate, not frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The slug page no longer reads lastReviewed from page data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The staleness check does not fail the build",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The website build succeeds with all changes applied",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 36,
+        "think": 4,
+        "plan": 6,
+        "build": 7,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:3a2025df8c4d2c2dd28178c5c59308241b38b725cadc53389259d1e4b6aa3089",
+        "contract": "sha256:4b1f1a5d7326e3c4040e234f1f103d915c20211d0f6b4ed0edb5f524e74cde92",
+        "plan": "sha256:80562c54668276a1a3f66f1439ef2f4e133da0fffe3674344e4e9e33dccb7ec3",
+        "spec": "sha256:8eae47afd8b87eb02b2642c856c56f717432d2323af0ceea1af74cfcfac2e8fe",
+        "build-report": "sha256:81fe74cd753e205d9625517182ac3f48feb384e8f7c07887a59c74dee1c535ec",
+        "build-data": "sha256:9d65fd013d94c796834e11aee0f79f7b0b7916fec58af2ebe05303cbb1886c36",
+        "verify-report": "sha256:408e79e88e3c47f56b28158f11dee59a34eb47c92e438df92b60c8fc416225cb",
+        "verify-data": "sha256:1a916f303020888c09f1e3b990d27bb50a92607fe47cb1958701b09bf33f681b"
+      },
+      "completed_at": "2026-05-22T21:49:07.742Z",
+      "modules_touched": [
+        "website/app/docs/[...slug]/page.tsx",
+        "website/app/docs/reference/cli/page.tsx",
+        "website/content/docs/concepts/artifacts.mdx",
+        "website/content/docs/concepts/context.mdx",
+        "website/content/docs/concepts/contract.mdx",
+        "website/content/docs/concepts/findings.mdx",
+        "website/content/docs/concepts/pipeline.mdx",
+        "website/content/docs/concepts/skills.mdx",
+        "website/content/docs/concepts/toolbelt.mdx",
+        "website/content/docs/guides/configurability.mdx",
+        "website/content/docs/guides/reading-a-proof.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx",
+        "website/content/docs/guides/using-ana-setup.mdx",
+        "website/content/docs/guides/verifying-changes.mdx",
+        "website/content/docs/start.mdx",
+        "website/lib/__tests__/docs-data/page-dates.test.ts",
+        "website/lib/__tests__/docs-data/staleness.test.ts",
+        "website/lib/docs-data/index.ts",
+        "website/lib/docs-data/pageDates.ts",
+        "website/scripts/extract-docs-data.ts",
+        "website/source.config.ts"
+      ],
+      "scope_summary": "Fix stale \"Last reviewed\" dates across AnaDocs. The CLI reference page hardcodes a date when `buildTimestamp` is already available. MDX content pages have intentionally manual `lastReviewed` dates with no mechanism to notice when they go stale. Reset all 14 MDX dates to today since all content was reviewed during the R5/R6 validation pass.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Staleness tests replicate checkStaleDocs rather than testing the actual function",
+          "file": "website/lib/__tests__/docs-data/staleness.test.ts",
+          "anchor": null,
+          "line": 18,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A003",
+            "A004",
+            "A005",
+            "A007"
+          ],
+          "id": "fix-docs-date-freshness-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "All page-dates.json entries show today's date because MDX files were modified in this branch",
+          "file": "website/data/docs/page-dates.json",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-docs-date-freshness-C2",
+          "status": "closed",
+          "closed_reason": "file removed",
+          "closed_at": "2026-05-22T21:49:07.816Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Date.now() in checkStaleDocs makes staleness non-deterministic in tests",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 1087,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-docs-date-freshness-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof chain finding dynamic-pages-C1 (hardcoded date in CLI reference) is resolved by this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "dynamic-pages-C1"
+          ],
+          "id": "fix-docs-date-freshness-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T21:49:07.742Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "pageDates.ts missing JSDoc on exported getPageDate function",
+          "file": "website/lib/docs-data/pageDates.ts",
+          "anchor": null,
+          "line": 19,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-docs-date-freshness-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "checkStaleDocs logic replicated in test file rather than exported from script",
+          "file": "website/lib/__tests__/docs-data/staleness.test.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warnings in Hero.tsx (formatAge, latest unused)",
+          "file": "website/components/hero/Hero.tsx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T21:28:15.288Z",
+        "completed_at": "2026-05-22T21:49:07.736Z",
+        "commit_count": 0,
+        "base_commit": "d790eedcc65c0d92f55baa62d7f3dd973fcd7070"
+      },
+      "surface": "website"
     }
   ],
   "schema": 1,

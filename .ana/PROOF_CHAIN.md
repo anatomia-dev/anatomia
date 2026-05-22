@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-151 runs · 100 active · 3 promoted · 765 closed
+152 runs · 103 active · 3 promoted · 767 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
 | cli | 105 | 66 | 2026-05-22 |
-| website | 21 | 20 | 2026-05-21 |
+| website | 22 | 23 | 2026-05-22 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 100 total)
+## Active Findings (30 shown of 103 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -54,10 +54,6 @@
 
 - **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
 
-### packages/cli/src/engine/detectors/projectType.ts
-
-- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
@@ -80,17 +76,9 @@
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
-### packages/cli/tests/engine/census-detection.test.ts
-
-- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
-
-### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
-
-- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
@@ -121,4 +109,16 @@
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
 - **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
+
+### website/lib/__tests__/docs-data/staleness.test.ts
+
+- **test:** Staleness tests replicate checkStaleDocs rather than testing the actual function — *Fix AnaDocs date freshness*
+
+### website/lib/docs-data/pageDates.ts
+
+- **code:** pageDates.ts missing JSDoc on exported getPageDate function — *Fix AnaDocs date freshness*
+
+### website/scripts/extract-docs-data.ts
+
+- **code:** Date.now() in checkStaleDocs makes staleness non-deterministic in tests — *Fix AnaDocs date freshness*
 
