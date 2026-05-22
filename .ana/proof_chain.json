@@ -38006,7 +38006,10 @@
             "A022"
           ],
           "id": "fix-false-surface-detection-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Build placed tests in monorepoCommandScoping.test.ts — the appropriate existing file for monorepo surface filtering tests. Contract's file_changes listing state.test.ts was guidance, not a constraint. Same pattern as fix-surface-test-priority-C2 closed this session.",
+          "closed_at": "2026-05-22T08:40:32.384Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 116 active · 3 promoted · 729 closed
+147 runs · 115 active · 3 promoted · 730 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 82 | 2026-05-22 |
+| cli | 101 | 81 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -18,13 +18,17 @@
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/src/engine/detectors/git.ts | 4 | 3 |
-| packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 4 |
+| packages/cli/src/engine/detectors/surfaces.ts | 4 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 116 total)
+## Active Findings (30 shown of 115 total)
+
+### packages/cli/src/commands/init/state.ts
+
+- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/engine/census.ts
 
@@ -59,10 +63,6 @@
 ### packages/cli/src/engine/scan-engine.ts
 
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
-
-### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
-
-- **test:** Contract file_changes lists state.test.ts but tests were written in monorepoCommandScoping.test.ts — file mismatch between contract and implementation — *Fix False Surface Detection*
 
 ### packages/cli/tests/commands/scan.test.ts
 
