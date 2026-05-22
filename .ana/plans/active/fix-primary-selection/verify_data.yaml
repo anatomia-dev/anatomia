@@ -1,0 +1,40 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A007 tiebreaker test uses toContain('larger') — would pass if result were 'larger-thing' or any string containing 'larger'"
+    file: "packages/cli/tests/engine/census-primary.test.ts"
+    line: 110
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A007"]
+  - category: test
+    summary: "A026 caller test doesn't verify actual call site — it only shows selectPrimary accepts 3 args. Caller verified by source inspection (census.ts:571)."
+    file: "packages/cli/tests/engine/census-primary.test.ts"
+    line: 378
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A026"]
+  - category: code
+    summary: "Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories."
+    file: "packages/cli/src/engine/census.ts"
+    line: 199
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005"]
+  - category: code
+    summary: "parsePackageName is a private helper but has no guard for empty-string input — returns { scope: '', bare: '' }. Harmless because nameMatchCandidates filters null packageName, but empty-string packageName would pass the filter and produce an empty bare match."
+    file: "packages/cli/src/engine/census.ts"
+    line: 121
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match?"
+    file: "packages/cli/tests/engine/census-primary.test.ts"
+    severity: debt
+    suggested_action: scope
+  - category: code
+    summary: "IDENTITY_WORDS.has(bareLower) checks case-insensitively via bareLower, but the Set contains lowercase strings — this is correct but implicit. No comment documenting the case-insensitive intent."
+    file: "packages/cli/src/engine/census.ts"
+    line: 194
+    severity: observation
+    suggested_action: accept
