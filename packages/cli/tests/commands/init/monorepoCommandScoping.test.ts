@@ -685,6 +685,147 @@ describe('mergeSurfaces', () => {
     }
   });
 
+  // @ana A016, A017
+  it('silently drops non-product orphaned surfaces', () => {
+    const existing = {
+      'next-app': {
+        path: 'examples/next-app',
+        language: 'TypeScript',
+        framework: 'Next.js',
+        commands: { test: 'custom-test' },
+      },
+    };
+    const fresh = {};
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const merged = mergeSurfaces(existing, fresh);
+    // Non-product path silently dropped
+    expect(Object.values(merged).some(s => s.path === 'examples/next-app')).toBe(false);
+    // No warning logged for non-product surfaces
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  // @ana A018, A019
+  it('keeps legitimate orphaned surfaces with warning', () => {
+    const existing = {
+      legacy: {
+        path: 'apps/legacy',
+        language: 'TypeScript',
+        framework: null,
+        commands: { test: 'custom-test' },
+      },
+    };
+    const fresh = {};
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const merged = mergeSurfaces(existing, fresh);
+    // Legitimate product path kept
+    expect(Object.values(merged).some(s => s.path === 'apps/legacy')).toBe(true);
+    // Warning logged
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('legacy'));
+    warnSpy.mockRestore();
+  });
+
+  // @ana A021, A022
+  it('handles mixed orphaned surfaces — drops false, keeps legitimate', () => {
+    const existing = {
+      'examples-app': {
+        path: 'examples/next-app',
+        language: 'TypeScript',
+        framework: 'Next.js',
+        commands: { test: 'test-cmd' },
+      },
+      legacy: {
+        path: 'apps/legacy',
+        language: 'TypeScript',
+        framework: null,
+        commands: { test: 'legacy-test' },
+      },
+    };
+    const fresh = {};
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const merged = mergeSurfaces(existing, fresh);
+    // False surface dropped
+    expect(Object.keys(merged)).not.toContain('examples-app');
+    // Legitimate surface kept
+    expect(Object.keys(merged)).toContain('legacy');
+    // Only one warning (for the kept surface)
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    warnSpy.mockRestore();
+  });
+
+  // @ana A020
+  it('empty merge result allows surfaces key omission', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const existingAnaPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-existing-'));
+    try {
+      const existingConfig = {
+        anaVersion: '1.0.0',
+        name: 'test-project',
+        language: 'TypeScript',
+        framework: null,
+        packageManager: 'pnpm',
+        commands: {
+          build: 'pnpm run build',
+          test: 'pnpm vitest run',
+          lint: 'pnpm run lint',
+          dev: 'pnpm run dev',
+        },
+        surfaces: {
+          'next-app': {
+            path: 'examples/next-app',
+            language: 'TypeScript',
+            framework: 'Next.js',
+            commands: { test: 'test-cmd' },
+          },
+        },
+        coAuthor: 'Ana <build@anatomia.dev>',
+        artifactBranch: 'main',
+        branchPrefix: 'feature/',
+        setupPhase: 'complete',
+        lastScanAt: '2026-01-01T00:00:00.000Z',
+        custom: {},
+      };
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify(existingConfig, null, 2),
+        'utf-8',
+      );
+
+      const freshConfig: Record<string, unknown> = {
+        anaVersion: '1.1.0',
+        lastScanAt: '2026-05-17T00:00:00.000Z',
+        name: 'test-project',
+        language: 'TypeScript',
+        framework: null,
+        packageManager: 'pnpm',
+        commands: {
+          build: 'pnpm run build',
+          test: 'pnpm run test -- --run',
+          lint: 'pnpm run lint',
+          dev: 'pnpm run dev',
+        },
+        // No surfaces in fresh config
+      };
+
+      await fs.writeFile(
+        path.join(tmpDir, 'ana.json'),
+        JSON.stringify(freshConfig, null, 2),
+        'utf-8',
+      );
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const merged = await preserveUserState(existingAnaPath, tmpDir, freshConfig);
+      expect(merged).not.toBeNull();
+      // surfaces key should be omitted (not empty object)
+      expect(merged!['surfaces']).toBeUndefined();
+      warnSpy.mockRestore();
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(existingAnaPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
   it('does not overwrite existing command keys on re-init', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
     const existingAnaPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-existing-'));

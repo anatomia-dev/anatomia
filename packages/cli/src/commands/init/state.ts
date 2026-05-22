@@ -19,6 +19,7 @@ import { matchGotchas } from '../../utils/gotchas.js';
 import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
 import { getCurrentBranch } from '../../utils/git-operations.js';
+import { isNonProductPath } from '../../engine/detectors/surfaces.js';
 
 /**
  * Prompt user for confirmation
@@ -638,8 +639,11 @@ export function mergeSurfaces(
     }
   }
 
-  // Keep removed surfaces (never silently delete user state)
+  // Selectively handle orphaned surfaces:
+  // - Non-product paths (examples, templates, fixtures, etc.) are silently dropped
+  // - Legitimate product paths are kept with a warning
   for (const [, { key, entry }] of existingByPath) {
+    if (isNonProductPath(entry.path)) continue;
     console.warn(`Surface '${key}' (${entry.path}) no longer detected — keeping existing configuration.`);
     merged[key] = entry;
   }
@@ -766,7 +770,12 @@ export async function preserveUserState(
     const existingSurfaces = ((merged as Record<string, unknown>)['surfaces'] ?? {}) as Record<string, SurfaceEntry>;
     const freshSurfaces = (newAnaConfig['surfaces'] ?? {}) as Record<string, SurfaceEntry>;
     if (Object.keys(freshSurfaces).length > 0 || Object.keys(existingSurfaces).length > 0) {
-      (merged as Record<string, unknown>)['surfaces'] = mergeSurfaces(existingSurfaces, freshSurfaces);
+      const mergedSurfaces = mergeSurfaces(existingSurfaces, freshSurfaces);
+      if (Object.keys(mergedSurfaces).length > 0) {
+        (merged as Record<string, unknown>)['surfaces'] = mergedSurfaces;
+      } else {
+        delete (merged as Record<string, unknown>)['surfaces'];
+      }
     }
 
     const newAnaJsonPath = path.join(tmpAnaPath, 'ana.json');

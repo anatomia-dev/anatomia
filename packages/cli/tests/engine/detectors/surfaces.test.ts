@@ -9,6 +9,7 @@ import { describe, it, expect } from 'vitest';
 import {
   detectSurfaces,
   enrichPackages,
+  isNonProductPath,
   STRONG_FRAMEWORK_CONFIGS,
   INFRA_PATTERNS,
   MIN_SOURCE_FILES,
@@ -584,6 +585,341 @@ describe('pre-filter excludes root package', () => {
     const surfaces = detectSurfaces(census, {});
 
     expect(surfaces).toHaveLength(0);
+  });
+});
+
+// ── Pre-filter: non-product paths ────────────────────────────────────
+
+// @ana A001
+describe('pre-filter excludes examples/ packages', () => {
+  it('excludes package under examples/', () => {
+    const root = makeRoot({
+      relativePath: 'examples/next-app',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'examples/next-app',
+      path: 'examples/next-app/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A002
+describe('pre-filter excludes templates/ packages', () => {
+  it('excludes package under templates/', () => {
+    const root = makeRoot({
+      relativePath: 'templates/starter',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'templates/starter',
+      path: 'templates/starter/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A003
+describe('pre-filter excludes e2e/ packages', () => {
+  it('excludes package under e2e/', () => {
+    const root = makeRoot({
+      relativePath: 'e2e/integration',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A004
+describe('pre-filter excludes test/ packages', () => {
+  it('excludes package under test/', () => {
+    const root = makeRoot({
+      relativePath: 'test/helpers',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A005
+describe('pre-filter excludes playground/ packages', () => {
+  it('excludes package under playground/', () => {
+    const root = makeRoot({
+      relativePath: 'playground/demo',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'playground/demo',
+      path: 'playground/demo/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A006
+describe('pre-filter excludes sandbox/ packages', () => {
+  it('excludes package under sandbox/', () => {
+    const root = makeRoot({
+      relativePath: 'sandbox/experiment',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A007
+describe('pre-filter excludes fixtures/ packages', () => {
+  it('excludes package under fixtures/', () => {
+    const root = makeRoot({
+      relativePath: 'fixtures/mock-app',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'fixtures/mock-app',
+      path: 'fixtures/mock-app/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A024
+describe('pre-filter excludes example-apps/ packages', () => {
+  it('excludes package under example-apps/', () => {
+    const root = makeRoot({
+      relativePath: 'example-apps/remix-app',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'remix',
+      sourceRootPath: 'example-apps/remix-app',
+      path: 'example-apps/remix-app/remix.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A008
+describe('pre-filter excludes -e2e suffix packages', () => {
+  it('excludes package ending with -e2e', () => {
+    const root = makeRoot({
+      relativePath: 'apps/gauzy-e2e',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'apps/gauzy-e2e',
+      path: 'apps/gauzy-e2e/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A009
+describe('pre-filter preserves compound non-product names', () => {
+  it('does NOT exclude packages/test-utils (compound name)', () => {
+    const root = makeRoot({
+      relativePath: 'packages/test-utils',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+  });
+
+  // @ana A010
+  it('does NOT exclude packages/demo-app (compound name)', () => {
+    const root = makeRoot({
+      relativePath: 'packages/demo-app',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+  });
+});
+
+// @ana A011
+describe('pre-filter handles case variations', () => {
+  it('excludes Examples/ (case-insensitive)', () => {
+    const root = makeRoot({
+      relativePath: 'Examples/next-app',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'Examples/next-app',
+      path: 'Examples/next-app/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+
+  it('excludes TEMPLATES/ (case-insensitive)', () => {
+    const root = makeRoot({
+      relativePath: 'TEMPLATES/starter',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'TEMPLATES/starter',
+      path: 'TEMPLATES/starter/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A012
+describe('pre-filter checks all path segments', () => {
+  it('excludes packages/examples/next-app (mid-path excluded segment)', () => {
+    const root = makeRoot({
+      relativePath: 'packages/examples/next-app',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'packages/examples/next-app',
+      path: 'packages/examples/next-app/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A013
+describe('pre-filter does not affect legitimate surfaces', () => {
+  it('apps/web is still detected as a surface', () => {
+    const root = makeRoot({
+      relativePath: 'apps/web',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'apps/web',
+      path: 'apps/web/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces.length).toBeGreaterThan(0);
+  });
+
+  // @ana A014
+  it('packages/cli with bin+dev is still detected', () => {
+    const root = makeRoot({
+      relativePath: 'packages/cli',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces.length).toBeGreaterThan(0);
+  });
+});
+
+// @ana A015
+describe('isNonProductPath is exported and usable', () => {
+  it('isNonProductPath is a function', () => {
+    expect(typeof isNonProductPath).toBe('function');
+  });
+
+  it('returns true for non-product paths', () => {
+    expect(isNonProductPath('examples/next-app')).toBe(true);
+    expect(isNonProductPath('templates/starter')).toBe(true);
+    expect(isNonProductPath('e2e/integration')).toBe(true);
+  });
+
+  it('returns false for product paths', () => {
+    expect(isNonProductPath('apps/web')).toBe(false);
+    expect(isNonProductPath('packages/cli')).toBe(false);
+    expect(isNonProductPath('packages/test-utils')).toBe(false);
+  });
+
+  it('handles -e2e suffix', () => {
+    expect(isNonProductPath('apps/gauzy-e2e')).toBe(true);
+  });
+
+  it('is case-insensitive', () => {
+    expect(isNonProductPath('Examples/app')).toBe(true);
+    expect(isNonProductPath('TEMPLATES/app')).toBe(true);
+  });
+});
+
+// @ana A023
+describe('exclusion vocabulary is complete', () => {
+  it('contains all 22 non-product segment names', () => {
+    const expectedSegments = [
+      'examples', 'example',
+      'example-apps',
+      'templates', 'template',
+      'e2e',
+      'test', 'tests',
+      'fixtures', 'fixture',
+      'playground', 'playgrounds',
+      'sandbox',
+      'demos', 'demo',
+      'starters', 'starter',
+      'samples', 'sample',
+      'boilerplate',
+      'references', 'reference',
+    ];
+    // Verify all expected segments are excluded
+    for (const segment of expectedSegments) {
+      expect(isNonProductPath(segment)).toBe(true);
+    }
+    expect(expectedSegments).toHaveLength(22);
   });
 });
 
