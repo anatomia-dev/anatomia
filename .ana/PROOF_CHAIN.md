@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 111 active · 3 promoted · 754 closed
+151 runs · 110 active · 3 promoted · 755 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 77 | 2026-05-22 |
+| cli | 105 | 76 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,11 +24,10 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/artifact.ts
 
-- **code:** writeSaveMetadata companion gate is a no-op — isArchivableType regex doesn't match data keys — *Fix False Rejection Archives on Same-Session Re-Saves*
 - **code:** hasOpposingStageAdvanced exported but not imported outside artifact.ts — wider public surface than needed — *Fix False Rejection Archives on Same-Session Re-Saves*
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
@@ -115,4 +114,5 @@
 ### website/components/docs/proof/ProofHero.tsx
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 

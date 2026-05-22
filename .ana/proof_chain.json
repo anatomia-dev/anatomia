@@ -40084,7 +40084,10 @@
             "A013"
           ],
           "id": "fix-false-rejection-archive-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Confirmed dead code path — companion keys (verify-data, build-data) don't match isArchivableType regex at artifact.ts:83 (only verify-report|build-report match). For non-archivable types, shouldPreserveHistory returns true at line 86 before reaching the gateOnStageTransition check at line 87. The gate option at line 2008 is set but never evaluated. Produces correct behavior (preserve history) — the dead option is harmless.",
+          "closed_at": "2026-05-22T20:34:11.806Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
