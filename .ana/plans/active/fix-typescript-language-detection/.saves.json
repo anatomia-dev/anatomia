@@ -51,5 +51,20 @@
     "packages/cli/src/engine/scan-engine.ts",
     "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:33:32.868Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ad0231a7e0a60451d34a3a9fa30a9d2ce957c1691672ae730bcfee851e82d49d",
+    "run_at": "2026-05-22T07:37:41.055Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:37:41.090Z",
+    "hash": "sha256:b3110f9cf2d6148a7e7601938687bf580fcc82538cf1bf9b1580e2c29740f798"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:37:41.091Z",
+    "hash": "sha256:6911be84f3ba56ef758d9f4669f88935ce8165da5a836a87a1d2c8e6e90f3582"
+  }
 }
