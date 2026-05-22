@@ -36,5 +36,38 @@
         "hash": "sha256:e8d72168d9c6dd9da77b7210c04b3eac32a6cdbdedab05eb131f76a415f6f874"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T07:46:47.627Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T07:52:23.262Z",
+    "hash": "sha256:18045f79967ae61b1576b9d41e6acab188801e7b94b0ce3d7e551f0c95dec0ef"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T07:52:23.263Z",
+    "hash": "sha256:b72810e7b480694b29594b86fe74b781f4b9a8738f5679c8091581d9abbd6a8e"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/dependencies.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/tests/engine/detectors/dependencies.test.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:53:51.579Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:d76bd2582ce022e4d99a397e47f3155756edb059d437ac27351d7f5713b802fc",
+    "run_at": "2026-05-22T07:58:09.214Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:58:09.256Z",
+    "hash": "sha256:2376d0b9787a7a6cbded1b115eaea3e7c2c70da7b65799b3564e74e45c7a1ad7"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:58:09.256Z",
+    "hash": "sha256:980b2d76e8f8fae3f29c49e33529d64ee629e386e05dfea077720f67f0a8b62d"
   }
 }

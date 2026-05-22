@@ -29,12 +29,12 @@ import { getFrameworkDisplayName } from '../../utils/displayNames.js';
 export const STRONG_FRAMEWORK_CONFIGS = new Set([
   'next.config.ts', 'next.config.js', 'next.config.mjs',
   'nest-cli.json',
-  'nuxt.config.ts', 'nuxt.config.js',
-  'svelte.config.js', 'svelte.config.ts',
+  'nuxt.config.ts', 'nuxt.config.js', 'nuxt.config.mjs',
+  'svelte.config.js', 'svelte.config.ts', 'svelte.config.mjs',
   'angular.json',
-  'vue.config.js',
-  'remix.config.js', 'remix.config.ts',
-  'react-router.config.ts', 'react-router.config.js',
+  'vue.config.js', 'vue.config.mjs',
+  'remix.config.js', 'remix.config.ts', 'remix.config.mjs',
+  'react-router.config.ts', 'react-router.config.js', 'react-router.config.mjs',
   'astro.config.mjs', 'astro.config.ts', 'astro.config.js',
 ]);
 
