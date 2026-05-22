@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 105 active · 3 promoted · 740 closed
+147 runs · 104 active · 3 promoted · 741 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 71 | 2026-05-22 |
+| cli | 101 | 70 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -52,10 +52,10 @@
 
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
+- **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
 
-- **code:** Strategy numbering gap — 1, 2, 5, 3, 4 — from inserting PEP 735 before Poetry strategies — *Fix Python pyproject.toml parser — 3 bugs*
 - **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break \]\s*$ anchor — *Fix Python pyproject.toml parser — 3 bugs*
 - **code:** Windows \r\n line endings could leave \r in captured content — $  matches before \n only — *Fix Python pyproject.toml parser — 3 bugs*
 

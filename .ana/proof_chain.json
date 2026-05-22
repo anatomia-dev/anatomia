@@ -39363,7 +39363,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "fix-python-pyproject-parser-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Cosmetic comment numbering — strategies labeled 1, 2, 5, 3, 4 due to PEP 735 insertion between strategies 2 and 3. Each strategy has a descriptive name (PEP 621, PEP 735, Poetry). The numbers are labels, not execution order. Renumbering would touch every strategy comment for zero behavior change.",
+          "closed_at": "2026-05-22T08:43:11.273Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
