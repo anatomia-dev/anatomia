@@ -39380,7 +39380,10 @@
             "A003"
           ],
           "id": "fix-python-pyproject-parser-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in commit e6b1aa09 — same fix as fix-python-dep-separation-C4. Original observation that ] # end would break \\]\\s*$ anchor. Regex now \\]\\s*(?:#.*)?$ across all three strategies. The code comment at line 51 previously said 'a proper TOML parser is the right next step if more edge cases surface' — the edge case surfaced twice and was fixed with a regex refinement, no full parser needed.",
+          "closed_at": "2026-05-22T20:46:33.310Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
