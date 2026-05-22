@@ -7,7 +7,9 @@ import {
   DATABASE_PACKAGES,
   PAYMENT_PACKAGES,
   detectFromDeps,
+  findStackProvenance,
 } from '../../../src/engine/detectors/dependencies.js';
+import type { SourceRoot, ProjectCensus } from '../../../src/engine/types/census.js';
 
 // ── Part A: DATABASE_PACKAGES membership ─────────────────────────────
 
@@ -123,5 +125,214 @@ describe('existing entries unchanged', () => {
   // @ana A024
   it('stripe still maps to Stripe', () => {
     expect(PAYMENT_PACKAGES['stripe']).toBe('Stripe');
+  });
+});
+
+// ── Forward capture in detectFromDeps ───────────────────────────────
+
+describe('detectFromDeps forward capture', () => {
+  // @ana A001
+  it('captures the triggering database package name', () => {
+    const result = detectFromDeps({ 'prisma': '1' });
+    expect(result.databasePkg).toBe('prisma');
+  });
+
+  // @ana A002
+  it('captures the triggering auth package name', () => {
+    const result = detectFromDeps({ 'next-auth': '1' });
+    expect(result.authPkg).toBe('next-auth');
+  });
+
+  // @ana A003
+  it('captures the triggering payments package name', () => {
+    const result = detectFromDeps({ 'stripe': '1' });
+    expect(result.paymentsPkg).toBe('stripe');
+  });
+
+  // @ana A004
+  it('package name fields are null when no detection occurs', () => {
+    const result = detectFromDeps({});
+    expect(result.databasePkg).toBeNull();
+    expect(result.authPkg).toBeNull();
+    expect(result.paymentsPkg).toBeNull();
+  });
+});
+
+// ── findStackProvenance ─────────────────────────────────────────────
+
+function makeRoot(overrides: Partial<SourceRoot> & { relativePath: string }): SourceRoot {
+  return {
+    absolutePath: `/tmp/project/${overrides.relativePath}`,
+    relativePath: overrides.relativePath,
+    packageName: overrides.packageName ?? overrides.relativePath.split('/').pop() ?? null,
+    fileCount: overrides.fileCount ?? 100,
+    isPrimary: overrides.isPrimary ?? false,
+    deps: overrides.deps ?? {},
+    devDeps: overrides.devDeps ?? {},
+    hasBin: overrides.hasBin ?? false,
+    scripts: overrides.scripts ?? [],
+  };
+}
+
+function makeCensus(roots: SourceRoot[]): ProjectCensus {
+  return {
+    rootPath: '/tmp/project',
+    projectName: 'test-project',
+    layout: roots.length > 1 ? 'monorepo' : 'single-repo',
+    monorepoTool: roots.length > 1 ? 'pnpm' : null,
+    sourceRoots: roots,
+    primarySourceRoot: roots.find(r => r.isPrimary)?.relativePath ?? '.',
+    allDeps: {},
+    deps: {},
+    devDeps: {},
+    rootDevDeps: {},
+    primaryDeps: {},
+    configs: {
+      frameworkHints: [],
+      tsconfigs: [],
+      schemas: [],
+      deployments: [],
+      ciWorkflows: [],
+    },
+    builtAt: '2026-05-22T00:00:00.000Z',
+    buildDurationMs: 1,
+  };
+}
+
+// @ana A005
+describe('findStackProvenance single-repo', () => {
+  it('single-repo projects always produce empty provenance', () => {
+    const root = makeRoot({ relativePath: '.', isPrimary: true, deps: { 'prisma': '1' } });
+    const census = makeCensus([root]);
+    const depResult = detectFromDeps({ 'prisma': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(Object.keys(provenance).length).toBe(0);
+  });
+});
+
+// @ana A006
+describe('findStackProvenance monorepo primary detection', () => {
+  it('detection from the primary package produces empty provenance', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: { 'prisma': '1' } });
+    const other = makeRoot({ relativePath: 'packages/other', deps: {} });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({ 'prisma': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(provenance).toEqual({});
+  });
+});
+
+// @ana A007
+describe('findStackProvenance monorepo non-primary detection', () => {
+  it('detection from a non-primary package records the source path', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const other = makeRoot({ relativePath: 'packages/other', deps: { 'prisma': '1' } });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({ 'prisma': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(provenance.database).toBe('packages/other');
+  });
+});
+
+// @ana A008
+describe('findStackProvenance devDeps detection', () => {
+  it('provenance checks devDeps, not just production deps', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const other = makeRoot({ relativePath: 'packages/db', devDeps: { 'prisma': '1' } });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({ 'prisma': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(provenance.database).toBeDefined();
+    expect(provenance.database).toBe('packages/db');
+  });
+});
+
+// @ana A009
+describe('findStackProvenance aiSdk non-primary', () => {
+  it('AI SDK detection from a non-primary package is flagged', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const aiPkg = makeRoot({ relativePath: 'packages/ai', deps: { 'ai': '1' } });
+    const census = makeCensus([primary, aiPkg]);
+    const depResult = detectFromDeps({});
+    const provenance = findStackProvenance(census, depResult, 'Vercel AI');
+    expect(provenance.aiSdk).toBeDefined();
+    expect(provenance.aiSdk).toBe('packages/ai');
+  });
+});
+
+// @ana A010
+describe('findStackProvenance null dep fields', () => {
+  it('null dep result fields produce no provenance entry', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const other = makeRoot({ relativePath: 'packages/other', deps: { 'prisma': '1' } });
+    const census = makeCensus([primary, other]);
+    // depResult with all null pkg fields (no detection)
+    const depResult = detectFromDeps({});
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(Object.keys(provenance).length).toBe(0);
+  });
+});
+
+// @ana A011
+describe('findStackProvenance aiSdk null', () => {
+  it('null aiSdk parameter produces no aiSdk provenance', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const other = makeRoot({ relativePath: 'packages/ai', deps: { 'ai': '1' } });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({});
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(Object.keys(provenance)).not.toContain('aiSdk');
+  });
+});
+
+// @ana A012, A013
+describe('findStackProvenance field coverage', () => {
+  it('provenance checks database, auth, payments, and aiSdk', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const other = makeRoot({
+      relativePath: 'packages/other',
+      deps: { 'prisma': '1', 'next-auth': '1', 'stripe': '1', '@anthropic-ai/sdk': '1' },
+    });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({ 'prisma': '1', 'next-auth': '1', 'stripe': '1' });
+    const provenance = findStackProvenance(census, depResult, 'Anthropic');
+    const keys = Object.keys(provenance);
+    expect(keys).toContain('database');
+    expect(keys).toContain('auth');
+    expect(keys).toContain('payments');
+    expect(keys).toContain('aiSdk');
+  });
+
+  it('provenance does not check testing or framework', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const other = makeRoot({
+      relativePath: 'packages/other',
+      deps: { 'prisma': '1', 'vitest': '1' },
+    });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({ 'prisma': '1', 'vitest': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    const keys = Object.keys(provenance);
+    expect(keys).not.toContain('testing');
+    expect(keys).not.toContain('framework');
+  });
+
+  it('multiple non-primary roots — first match wins', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, deps: {} });
+    const first = makeRoot({ relativePath: 'packages/first', deps: { 'prisma': '1' } });
+    const second = makeRoot({ relativePath: 'packages/second', deps: { 'prisma': '1' } });
+    const census = makeCensus([primary, first, second]);
+    const depResult = detectFromDeps({ 'prisma': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(provenance.database).toBe('packages/first');
+  });
+
+  it('primary root devDeps prevents provenance entry', () => {
+    const primary = makeRoot({ relativePath: 'packages/app', isPrimary: true, devDeps: { 'prisma': '1' } });
+    const other = makeRoot({ relativePath: 'packages/other', deps: { 'prisma': '1' } });
+    const census = makeCensus([primary, other]);
+    const depResult = detectFromDeps({ 'prisma': '1' });
+    const provenance = findStackProvenance(census, depResult, null);
+    expect(provenance).toEqual({});
   });
 });

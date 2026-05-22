@@ -271,6 +271,12 @@ export interface DependencyDetectionResult {
    */
   testing: string[];
   payments: string | null;
+  /** The npm package name that triggered database detection, or null if none. */
+  databasePkg: string | null;
+  /** The npm package name that triggered auth detection, or null if none. */
+  authPkg: string | null;
+  /** The npm package name that triggered payments detection, or null if none. */
+  paymentsPkg: string | null;
 }
 
 /**
@@ -302,13 +308,16 @@ export function detectFromDeps(
     auth: null,
     testing: [],
     payments: null,
+    databasePkg: null,
+    authPkg: null,
+    paymentsPkg: null,
   };
 
   for (const [pkg, name] of Object.entries(DATABASE_PACKAGES)) {
-    if (allDeps[pkg]) { result.database = name; break; }
+    if (allDeps[pkg]) { result.database = name; result.databasePkg = pkg; break; }
   }
   for (const [pkg, name] of Object.entries(AUTH_PACKAGES)) {
-    if (allDeps[pkg]) { result.auth = name; break; }
+    if (allDeps[pkg]) { result.auth = name; result.authPkg = pkg; break; }
   }
   // Testing: collect every match, dedup by display name via Set. The order
   // of TESTING_PACKAGES decides iteration order; the Set preserves insertion
@@ -322,10 +331,88 @@ export function detectFromDeps(
   }
   result.testing = Array.from(testingSeen);
   for (const [pkg, name] of Object.entries(PAYMENT_PACKAGES)) {
-    if (allDeps[pkg]) { result.payments = name; break; }
+    if (allDeps[pkg]) { result.payments = name; result.paymentsPkg = pkg; break; }
   }
 
   return result;
+}
+
+/**
+ * Provenance record mapping stack fields to the source root that contributed
+ * each detection. Empty when all detections came from the primary package
+ * (or for single-repo projects).
+ */
+export type StackProvenance = Partial<Record<'database' | 'auth' | 'payments' | 'aiSdk', string>>;
+
+/**
+ * Determine which source root contributed each dependency-based stack detection.
+ *
+ * For each of `database`, `auth`, `payments`, and `aiSdk`: if the triggering
+ * package exists in the primary root's deps/devDeps, no entry is recorded.
+ * If it exists only in a non-primary root, the root's relativePath is recorded.
+ *
+ * Single-repo projects (one root) always produce `{}`.
+ * Fields where `depResult` has no detection (null) are skipped.
+ * `aiSdk` null parameter produces no aiSdk provenance.
+ *
+ * @param census - Project census with source roots
+ * @param depResult - Result from detectFromDeps with forward-captured package names
+ * @param aiSdk - The Node-detected AI SDK display name (from detectAiSdk), or null
+ * @returns Provenance record — empty object when all detections are primary
+ */
+export function findStackProvenance(
+  census: import('../types/census.js').ProjectCensus,
+  depResult: DependencyDetectionResult,
+  aiSdk: string | null,
+): StackProvenance {
+  // Single-repo: only one root, provenance is meaningless
+  if (census.sourceRoots.length <= 1) return {};
+
+  const primaryRoot = census.sourceRoots.find(r => r.isPrimary);
+  const nonPrimaryRoots = census.sourceRoots.filter(r => !r.isPrimary);
+  const provenance: StackProvenance = {};
+
+  // Check database, auth, payments via forward-captured package names
+  const fields: Array<{ key: 'database' | 'auth' | 'payments'; pkg: string | null }> = [
+    { key: 'database', pkg: depResult.databasePkg },
+    { key: 'auth', pkg: depResult.authPkg },
+    { key: 'payments', pkg: depResult.paymentsPkg },
+  ];
+
+  for (const { key, pkg } of fields) {
+    if (!pkg) continue;
+
+    // Check if primary root has this package
+    if (primaryRoot && (primaryRoot.deps[pkg] || primaryRoot.devDeps[pkg])) continue;
+
+    // Find which non-primary root has it
+    const source = nonPrimaryRoots.find(r => r.deps[pkg] || r.devDeps[pkg]);
+    if (source) {
+      provenance[key] = source.relativePath;
+    }
+  }
+
+  // AI SDK provenance: filter AI_SDK_PACKAGES to entries matching the detected
+  // display name, then check if ANY of those packages exist in roots
+  if (aiSdk) {
+    const matchingPkgs = AI_SDK_PACKAGES.filter(([, name]) => name === aiSdk).map(([pkg]) => pkg);
+
+    // Check if primary root has any of the matching packages
+    const inPrimary = primaryRoot && matchingPkgs.some(pkg =>
+      primaryRoot.deps[pkg] || primaryRoot.devDeps[pkg]
+    );
+
+    if (!inPrimary) {
+      const source = nonPrimaryRoots.find(r =>
+        matchingPkgs.some(pkg => r.deps[pkg] || r.devDeps[pkg])
+      );
+      if (source) {
+        provenance.aiSdk = source.relativePath;
+      }
+    }
+  }
+
+  return provenance;
 }
 
 
