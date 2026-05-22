@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Test file JSDoc still says 'three signals' instead of 'four signals'"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    line: 3
+    severity: debt
+    suggested_action: accept
+  - category: code
+    summary: "Signal 4 checks fileCount before deps — minor perf preference but Object.keys().some() runs even when fileCount is sufficient"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 320
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "No test for package with server dep but NO scripts at all (empty scripts array)"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A012"]
+  - category: test
+    summary: "No test for multiple packages where one is caught by Signal 3 and another by Signal 4 in the same census"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Contract A013 matcher 'exists' for a code comment is not mechanically verifiable via test — requires source inspection"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A013"]
