@@ -1,0 +1,207 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Primary Package Selection in Monorepos"
+
+assertions:
+  # Policy 2 tier matching
+  - id: A001
+    says: "A package whose name exactly matches the repo directory is selected as primary"
+    block: "exact name match selects primary"
+    target: "result"
+    matcher: "equals"
+    value: "packages/medusa"
+
+  - id: A002
+    says: "A scoped package whose bare name matches the repo directory is selected"
+    block: "scoped exact match selects primary"
+    target: "result"
+    matcher: "equals"
+    value: "packages/medusa"
+
+  - id: A003
+    says: "A scoped package with identity word 'core' whose scope matches the directory is selected"
+    block: "scoped identity word core selects primary"
+    target: "result"
+    matcher: "equals"
+    value: "packages/core"
+
+  - id: A004
+    says: "A scoped package with identity word 'server' whose scope matches the directory is selected"
+    block: "scoped identity word server selects primary"
+    target: "result"
+    matcher: "equals"
+    value: "packages/server"
+
+  - id: A005
+    says: "A scoped self-named package whose bare name equals the scope is selected"
+    block: "scoped self-named match selects primary"
+    target: "result"
+    matcher: "equals"
+    value: "packages/core/strapi"
+
+  - id: A006
+    says: "Higher-priority tiers win over lower-priority tiers"
+    block: "tier priority is respected"
+    target: "result"
+    matcher: "equals"
+    value: "packages/exact"
+
+  - id: A007
+    says: "When multiple packages match the same tier, the one with more files wins"
+    block: "file count tiebreaker within tier"
+    target: "result"
+    matcher: "contains"
+    value: "larger"
+
+  # File-count guard
+  - id: A008
+    says: "A name-matched package with fewer than 10 files is rejected by the guard"
+    block: "absolute file count guard blocks tiny packages"
+    target: "result"
+    matcher: "not_equals"
+    value: "packages/core"
+
+  - id: A009
+    says: "A name-matched package with less than 5% of the largest candidate's files is rejected"
+    block: "relative file count guard blocks small packages"
+    target: "result"
+    matcher: "not_equals"
+    value: "packages/core"
+
+  # Policy 0 non-product filtering
+  - id: A010
+    says: "Packages in example directories are excluded from primary selection"
+    block: "non-product paths are excluded from candidates"
+    target: "result"
+    matcher: "not_contains"
+    value: "examples/"
+
+  - id: A011
+    says: "When all candidates are non-product paths, the original unfiltered list is used as fallback"
+    block: "Policy 0 falls back to unfiltered when all excluded"
+    target: "result"
+    matcher: "exists"
+
+  # Policy 1 unchanged
+  - id: A012
+    says: "Apps directory packages with framework evidence still win over name matches"
+    block: "Policy 1 still takes priority over name match"
+    target: "result"
+    matcher: "contains"
+    value: "apps/"
+
+  # Policy 3 narrowed
+  - id: A013
+    says: "The most-files fallback uses only product-path candidates"
+    block: "Policy 3 uses filtered candidates"
+    target: "result"
+    matcher: "not_contains"
+    value: "examples/"
+
+  # Root exclusion
+  - id: A014
+    says: "The root package is not eligible for name-based matching"
+    block: "root package excluded from Policy 2"
+    target: "result"
+    matcher: "not_equals"
+    value: "."
+
+  - id: A015
+    says: "The root package can still win via the most-files fallback"
+    block: "root package eligible for Policy 3"
+    target: "result"
+    matcher: "equals"
+    value: "."
+
+  # Regression: 8 affected repos
+  - id: A016
+    says: "Logto scan selects packages/core as the primary package"
+    block: "logto selects packages/core"
+    target: "result"
+    matcher: "equals"
+    value: "packages/core"
+
+  - id: A017
+    says: "Medusa scan selects packages/medusa as the primary package"
+    block: "medusa selects packages/medusa"
+    target: "result"
+    matcher: "equals"
+    value: "packages/medusa"
+
+  - id: A018
+    says: "tRPC scan selects packages/server as the primary package"
+    block: "trpc selects packages/server"
+    target: "result"
+    matcher: "equals"
+    value: "packages/server"
+
+  - id: A019
+    says: "Payload scan selects packages/payload as the primary package"
+    block: "payload selects packages/payload"
+    target: "result"
+    matcher: "equals"
+    value: "packages/payload"
+
+  - id: A020
+    says: "Strapi scan selects packages/core/strapi as the primary package"
+    block: "strapi selects packages/core/strapi"
+    target: "result"
+    matcher: "equals"
+    value: "packages/core/strapi"
+
+  - id: A021
+    says: "Vercel AI scan selects packages/ai as the primary package"
+    block: "vercel-ai selects packages/ai"
+    target: "result"
+    matcher: "equals"
+    value: "packages/ai"
+
+  - id: A022
+    says: "n8n scan selects packages/cli as the primary package"
+    block: "n8n selects packages/cli"
+    target: "result"
+    matcher: "equals"
+    value: "packages/cli"
+
+  - id: A023
+    says: "Scalar scan is unchanged because the guard blocks the tiny core package"
+    block: "scalar unchanged by guard"
+    target: "result"
+    matcher: "not_equals"
+    value: "packages/oas-utils"
+
+  # Regression: directus guard
+  - id: A024
+    says: "Directus wrapper package is blocked by the guard and api wins via most files"
+    block: "directus wrapper blocked by guard"
+    target: "result"
+    matcher: "equals"
+    value: "api"
+
+  # Regression: anatomia self-scan
+  - id: A025
+    says: "Anatomia self-scan is unchanged because anatomia-cli does not match directory name anatomia"
+    block: "anatomia self-scan unchanged"
+    target: "result"
+    matcher: "equals"
+    value: "packages/cli"
+
+  # Caller passes correct parameter
+  - id: A026
+    says: "The caller passes the repo directory name, not the package.json name"
+    block: "caller passes path.basename(normalizedRoot)"
+    target: "callerArg"
+    matcher: "exists"
+
+  # Export
+  - id: A027
+    says: "selectPrimary is exported for unit testing"
+    block: "selectPrimary is exported"
+    target: "selectPrimary"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/census-primary.test.ts"
+    action: create
