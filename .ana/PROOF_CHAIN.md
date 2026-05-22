@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 103 active · 3 promoted · 742 closed
+147 runs · 102 active · 3 promoted · 743 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 69 | 2026-05-22 |
+| cli | 101 | 68 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 103 total)
+## Active Findings (30 shown of 102 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -80,6 +80,10 @@
 - **test:** A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered — *Scan Surface Display*
 - **test:** A003-A006 test asserts surface names exist in block but not framework, language, or testing values — *Scan Surface Display*
 
+### packages/cli/tests/engine/census-detection.test.ts
+
+- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
@@ -101,7 +105,6 @@
 ### packages/cli/tests/engine/parsers/python.test.ts
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
-- **test:** No test for empty string or malformed TOML in dependency-groups — only empty section tested — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 
