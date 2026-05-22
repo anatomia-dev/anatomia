@@ -1,0 +1,20 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Multi-file Prisma fallback path (trailing-slash directories) not exercised by non-product exclusion test"
+    file: "packages/cli/tests/engine/scanProject.test.ts"
+    line: 240
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A002"]
+  - category: code
+    summary: "Filter also applies to census-sourced paths — harmless no-op but undocumented defense-in-depth"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 304
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Contract A006/A007 have no @ana tags — regression assertions rely on pre-existing tests from other builds"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A006", "A007"]
