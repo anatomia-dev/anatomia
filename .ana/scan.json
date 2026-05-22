@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-05-21T04:06:55.755Z",
+    "scannedAt": "2026-05-22T03:04:17.481Z",
     "depth": "deep"
   },
   "stack": {
@@ -77,16 +77,19 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "c7702d72",
+    "head": "b60ad4ec",
     "branch": "main",
-    "commitCount": 2852,
-    "lastCommitAt": "2026-05-20T22:06:47-06:00",
-    "uncommittedChanges": true,
+    "commitCount": 2880,
+    "lastCommitAt": "2026-05-21T12:12:05-06:00",
+    "uncommittedChanges": false,
     "contributorCount": 3,
     "defaultBranch": "main",
     "branches": [
       "feature/cli-telemetry",
       "feature/hero-wordmark",
+      "fix/proof-explorer-layout",
+      "fix/proof-explorer-surface-badge-styling",
+      "fix/remove-lesson-migration-artifacts",
       "main"
     ],
     "commitFormat": {
@@ -96,9 +99,10 @@
     },
     "branchPatterns": {
       "prefixes": {
-        "feature/": 2
+        "feature/": 2,
+        "fix/": 3
       },
-      "primary": "feature/"
+      "primary": "fix/"
     },
     "hooks": {
       "preCommit": {
@@ -121,18 +125,18 @@
       "highChurnFiles": [
         {
           "path": "packages/cli/src/commands/work.ts",
-          "commits": 38
+          "commits": 34
         },
         {
           "path": "packages/cli/tests/commands/work.test.ts",
-          "commits": 30
-        },
-        {
-          "path": "website/lib/copy.ts",
-          "commits": 22
+          "commits": 28
         },
         {
           "path": "website/scripts/extract-docs-data.ts",
+          "commits": 18
+        },
+        {
+          "path": "website/lib/copy.ts",
           "commits": 18
         },
         {
@@ -145,27 +149,27 @@
         },
         {
           "path": "packages/cli/src/utils/proofSummary.ts",
-          "commits": 15
-        },
-        {
-          "path": "website/components/proof-feed/ProofFeed.tsx",
-          "commits": 15
-        },
-        {
-          "path": "packages/cli/src/commands/proof.ts",
           "commits": 14
         },
         {
-          "path": "packages/cli/tests/utils/proofSummary.test.ts",
+          "path": "packages/cli/src/commands/proof.ts",
           "commits": 13
+        },
+        {
+          "path": "website/components/proof-feed/ProofFeed.tsx",
+          "commits": 13
+        },
+        {
+          "path": "packages/cli/tests/utils/proofSummary.test.ts",
+          "commits": 11
         }
       ],
       "activeContributors": 2,
       "weeklyCommits": [
-        1034,
-        418,
-        405,
-        265
+        735,
+        671,
+        414,
+        303
       ]
     }
   },
@@ -249,6 +253,13 @@
     }
   ],
   "externalServices": [
+    {
+      "name": "Vercel",
+      "category": "hosting",
+      "source": "dependency",
+      "configFound": false,
+      "stackRoles": []
+    },
     {
       "name": "PostHog",
       "category": "analytics",
@@ -364,14 +375,14 @@
       },
       "variables": {
         "majority": "camelCase",
-        "confidence": 0.9044707680550248,
+        "confidence": 0.9045801526717557,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.9062021439509954,
-          "PascalCase": 0.01225114854517611,
-          "SCREAMING_SNAKE_CASE": 0.08154670750382849
+          "camelCase": 0.9063097514340345,
+          "PascalCase": 0.012237093690248566,
+          "SCREAMING_SNAKE_CASE": 0.08145315487571701
         },
-        "sampleSize": 4397
+        "sampleSize": 4401
       },
       "constants": {
         "majority": "SCREAMING_SNAKE_CASE",
@@ -424,7 +435,7 @@
       }
     },
     "sampledFiles": 255,
-    "detectionTime": 412
+    "detectionTime": 399
   },
   "readme": {
     "description": "Anatomia is the engineering judgment your AI doesn't have. Four agents scope, plan, build, and verify every change. Contracts are sealed before code is written — typed assertions the verifier checks against the code, not Build's account of what it did. Every run produces a proof chain entry — what was asserted, what was found, what shipped. A fifth agent learns from that record and promotes what it finds to rules that shape future builds. Not opinion. Mechanical proof.",
@@ -438,55 +449,55 @@
         "path": "README.md",
         "category": "project-docs",
         "sizeBytes": 10736,
-        "lastModifiedDays": 0
+        "lastModifiedDays": 1
       },
       {
         "path": "CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 418,
-        "lastModifiedDays": 5
+        "lastModifiedDays": 6
       },
       {
         "path": "SECURITY.md",
         "category": "guides",
         "sizeBytes": 1016,
-        "lastModifiedDays": 17
+        "lastModifiedDays": 18
       },
       {
         "path": "CODE_OF_CONDUCT.md",
         "category": "guides",
         "sizeBytes": 5477,
-        "lastModifiedDays": 17
+        "lastModifiedDays": 18
       },
       {
         "path": "CHANGELOG.md",
         "category": "changelog",
-        "sizeBytes": 11624,
-        "lastModifiedDays": 2
+        "sizeBytes": 15451,
+        "lastModifiedDays": 0
       },
       {
         "path": ".github/PULL_REQUEST_TEMPLATE.md",
         "category": "templates",
         "sizeBytes": 309,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 16
       },
       {
         "path": ".github/ISSUE_TEMPLATE",
         "category": "templates",
         "sizeBytes": 0,
-        "lastModifiedDays": 17
+        "lastModifiedDays": 18
       },
       {
         "path": "packages/cli/ARCHITECTURE.md",
         "category": "guides",
         "sizeBytes": 15017,
-        "lastModifiedDays": 5
+        "lastModifiedDays": 6
       },
       {
         "path": "packages/cli/CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 19216,
-        "lastModifiedDays": 5
+        "lastModifiedDays": 6
       }
     ],
     "docsDirectory": null,

@@ -1,5 +1,5 @@
 {
-  "anaVersion": "1.1.1",
+  "anaVersion": "1.1.2",
   "name": "anatomia-workspace",
   "language": "TypeScript",
   "framework": null,
@@ -37,6 +37,6 @@
   "coAuthor": "Ana <build@anatomia.dev>",
   "artifactBranch": "main",
   "branchPrefix": "feature/",
-  "lastScanAt": "2026-05-21T04:06:55.755Z",
+  "lastScanAt": "2026-05-22T03:04:17.481Z",
   "custom": {}
 }
