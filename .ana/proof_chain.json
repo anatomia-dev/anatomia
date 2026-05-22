@@ -38209,7 +38209,10 @@
             "A005"
           ],
           "id": "fix-shape-detection-priority-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Systemic tag collision — 20 duplicate @ana IDs from prior contracts in applicationShape.test.ts. Same established pattern documented and closed across the proof chain.",
+          "closed_at": "2026-05-22T08:41:03.828Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

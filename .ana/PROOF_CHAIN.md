@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 114 active · 3 promoted · 731 closed
+147 runs · 113 active · 3 promoted · 732 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 80 | 2026-05-22 |
+| cli | 101 | 79 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,11 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 114 total)
+## Active Findings (30 shown of 113 total)
 
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
+
+### packages/cli/src/commands/work.ts
+
+- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -80,7 +84,6 @@
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
-- **test:** Stale @ana tags from prior contract create proof chain ambiguity — 20 duplicate tags with colliding IDs — *Fix Application Shape Detection Priority Chain*
 - **test:** @ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64) — *Fix Application Shape Detection Priority Chain*
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
 
