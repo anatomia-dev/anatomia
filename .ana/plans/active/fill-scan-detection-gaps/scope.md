@@ -24,7 +24,7 @@ The database dependency map, framework hint patterns, and payment package table 
 
 Fill vocabulary gaps in three lookup tables and fix one array ordering issue. All changes are additive entries — no detection logic changes.
 
-**Part A — Database drivers (10 entries):** Add Kysely, MikroORM, slonik, @silverhand/slonik, @vercel/postgres, mongodb, postgres (postgres.js), sqlite3, and mssql to DATABASE_PACKAGES. Place ORMs (Kysely, MikroORM) after existing ORMs so they lose to Prisma/Drizzle/TypeORM when both are present. Place raw drivers (postgres, slonik, @silverhand/slonik, mongodb, sqlite3, mssql) after existing raw drivers. Ordering preserves the "ORM wins over driver" invariant.
+**Part A — Database drivers (9 entries):** Add Kysely, MikroORM, slonik, @silverhand/slonik, @vercel/postgres, mongodb, postgres (postgres.js), sqlite3, and mssql to DATABASE_PACKAGES. Place ORMs (Kysely, MikroORM) after existing ORMs so they lose to Prisma/Drizzle/TypeORM when both are present. Place raw drivers (postgres, slonik, @silverhand/slonik, mongodb, sqlite3, mssql) after existing raw drivers. Ordering preserves the "ORM wins over driver" invariant.
 
 **Part B — Framework config variants (5 .mjs entries):** Add svelte.config.mjs, nuxt.config.mjs, remix.config.mjs, react-router.config.mjs, vue.config.mjs to both FRAMEWORK_HINTS and STRONG_FRAMEWORK_CONFIGS. Achieves parity with existing .ts/.js variants. Defensive — only svelte.config.mjs has evidence today (budibase), but all frameworks support .mjs configs.
 
@@ -33,7 +33,7 @@ Fill vocabulary gaps in three lookup tables and fix one array ordering issue. Al
 **Part D — Payment package (1 entry):** Add @stripe/react-stripe-js to PAYMENT_PACKAGES. Defensive addition — all 8 repos with this package are already detected via server-side stripe, but this catches the theoretical frontend-only-Stripe-in-monorepo case.
 
 ## Acceptance Criteria
-- AC1: DATABASE_PACKAGES contains all 10 new entries (kysely, @mikro-orm/core, slonik, @silverhand/slonik, @vercel/postgres, mongodb, postgres, sqlite3, mssql) with correct display names
+- AC1: DATABASE_PACKAGES contains all 9 new entries (kysely, @mikro-orm/core, slonik, @silverhand/slonik, @vercel/postgres, mongodb, postgres, sqlite3, mssql) with correct display names
 - AC2: ORMs (Kysely, MikroORM) appear before raw drivers in DATABASE_PACKAGES iteration order
 - AC3: FRAMEWORK_HINTS contains .mjs variants for svelte, nuxt, remix, react-router, vue
 - AC4: STRONG_FRAMEWORK_CONFIGS contains the same 5 .mjs variants
