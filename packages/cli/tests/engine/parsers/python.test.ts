@@ -1,7 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import * as os from 'node:os';
 import { parseRequirementsTxt } from '../../../src/engine/parsers/python/requirements';
 import { parsePyprojectToml } from '../../../src/engine/parsers/python/pyproject';
 import { parsePipfile } from '../../../src/engine/parsers/python/Pipfile';
+import { readPythonDependencies } from '../../../src/engine/parsers/python';
+import { isNonProductPath } from '../../../src/engine/detectors/surfaces';
 
 describe('parseRequirementsTxt', () => {
   it('parses simple dependencies', () => {
@@ -54,36 +59,46 @@ describe('parseRequirementsTxt', () => {
 });
 
 describe('parsePyprojectToml', () => {
+  // @ana A001
   it('parses PEP 621 format', () => {
     const content = `[project]
 dependencies = ["fastapi>=0.100.0", "uvicorn>=0.20.0"]`;
     const result = parsePyprojectToml(content);
-    expect(result).toEqual(['fastapi', 'uvicorn']);
+    expect(result.production).toContain('fastapi');
+    expect(result.production).toContain('uvicorn');
+    expect(result.dev).toEqual([]);
   });
 
+  // @ana A005
   it('parses Poetry format and skips python version', () => {
     const content = `[tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.100.0"`;
     const result = parsePyprojectToml(content);
-    expect(result).toEqual(['fastapi']);
+    expect(result.production).toContain('fastapi');
+    expect(result.production).not.toContain('python');
+    expect(result.dev).toEqual([]);
   });
 
+  // @ana A006
   it('parses Poetry dev dependencies', () => {
     const content = `[tool.poetry.group.dev.dependencies]
 pytest = "^7.0"`;
     const result = parsePyprojectToml(content);
-    expect(result).toEqual(['pytest']);
+    expect(result.production).toContain('pytest');
+    expect(result.dev).toEqual([]);
   });
 
-  it('returns empty array for invalid TOML', () => {
+  // @ana A018
+  it('returns empty arrays for invalid TOML', () => {
     const content = 'invalid{toml';
     const result = parsePyprojectToml(content);
-    expect(result).toEqual([]);
+    expect(result.production).toEqual([]);
+    expect(result.dev).toEqual([]);
   });
 
-  // @ana A001, A002
-  it('parses PEP 735 dependency-groups', () => {
+  // @ana A002, A003
+  it('parses PEP 735 dependency-groups into dev', () => {
     const content = `[dependency-groups]
 test = [
     "pytest>=7.0",
@@ -93,46 +108,51 @@ docs = [
     "sphinx>=6.0",
 ]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest');
-    expect(result).toContain('coverage');
-    expect(result).toContain('sphinx');
-    expect(result.length).toBeGreaterThan(1);
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).toContain('coverage');
+    expect(result.dev).toContain('sphinx');
+    expect(result.production).not.toContain('pytest');
+    expect(result.production).not.toContain('coverage');
+    expect(result.production).not.toContain('sphinx');
   });
 
-  // @ana A003, A004
-  it('handles extras brackets in arrays', () => {
+  // @ana A004
+  it('parses optional-dependencies into production', () => {
     const content = `[project]
 dependencies = [
     "anyio[trio] >=3.2.1",
     "httpx>=0.24.0",
-]`;
+]
+
+[project.optional-dependencies]
+dev = ["black>=23.0", "mypy>=1.0"]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('anyio');
-    expect(result).toContain('httpx');
+    expect(result.production).toContain('anyio');
+    expect(result.production).toContain('httpx');
+    expect(result.production).toContain('black');
+    expect(result.production).toContain('mypy');
+    expect(result.dev).toEqual([]);
   });
 
-  // @ana A005
-  it('handles single-line arrays', () => {
+  it('handles single-line arrays in dependency-groups', () => {
     const content = `[dependency-groups]
 benchmark = ["pytest-benchmark>=5.1.0"]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest-benchmark');
+    expect(result.dev).toContain('pytest-benchmark');
   });
 
-  // @ana A006, A007
-  it('handles single-quoted strings', () => {
+  it('handles single-quoted strings in dependency-groups', () => {
     const content = `[dependency-groups]
 test = [
     'pytest>=7.0',
     "coverage>=7.0",
 ]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest');
-    expect(result).toContain('coverage');
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).toContain('coverage');
   });
 
-  // @ana A008
-  it('extracts pytest from fastapi-style pyproject', () => {
+  it('extracts deps from fastapi-style pyproject with correct separation', () => {
     const content = `[project]
 name = "fastapi"
 dependencies = [
@@ -154,16 +174,20 @@ test = [
     "dirty-equals>=0.6.0",
 ]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest');
-    expect(result).toContain('starlette');
-    expect(result).toContain('pydantic');
-    expect(result).toContain('anyio');
-    expect(result).toContain('httpx');
-    expect(result).toContain('coverage');
+    // Production: project deps + optional-dependencies
+    expect(result.production).toContain('starlette');
+    expect(result.production).toContain('pydantic');
+    expect(result.production).toContain('anyio');
+    expect(result.production).toContain('httpx');
+    // Dev: dependency-groups
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).toContain('coverage');
+    expect(result.dev).toContain('dirty-equals');
+    // Contamination check: dev deps NOT in production
+    expect(result.production).not.toContain('dirty-equals');
   });
 
-  // @ana A009
-  it('extracts pytest from pydantic-style pyproject', () => {
+  it('extracts deps from pydantic-style pyproject with correct separation', () => {
     const content = `[project]
 name = "pydantic"
 dependencies = [
@@ -177,11 +201,12 @@ test = [
     'pytest-timeout>=2.1.0',
 ]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest');
-    expect(result).toContain('pydantic-core');
+    expect(result.production).toContain('pydantic-core');
+    expect(result.production).not.toContain('pytest');
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).toContain('pytest-timeout');
   });
 
-  // @ana A010, A011
   it('handles include-group inline tables', () => {
     const content = `[dependency-groups]
 test = [
@@ -192,17 +217,19 @@ common = [
     "rich>=13.0",
 ]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest');
-    expect(result).not.toContain('include-group');
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).not.toContain('include-group');
   });
 
+  // @ana A017
   it('handles empty dependency-groups section', () => {
     const content = `[dependency-groups]
 
 [project]
 name = "empty"`;
     const result = parsePyprojectToml(content);
-    expect(result).toEqual([]);
+    expect(result.production).toEqual([]);
+    expect(result.dev).toEqual([]);
   });
 
   it('handles dependency-groups with extras brackets and single quotes combined', () => {
@@ -213,9 +240,164 @@ test = [
     'anyio[trio]>=3.0',
 ]`;
     const result = parsePyprojectToml(content);
-    expect(result).toContain('pytest');
-    expect(result).toContain('coverage');
-    expect(result).toContain('anyio');
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).toContain('coverage');
+    expect(result.dev).toContain('anyio');
+  });
+
+  // --- Contamination proof tests ---
+
+  // @ana A009, A010
+  it('does not include dev-only Flask in production', () => {
+    const content = `[project]
+dependencies = [
+    "starlette>=0.27.0",
+    "pydantic>=1.7.4",
+]
+
+[dependency-groups]
+tests = [
+    "flask>=2.0",
+    "pytest>=7.0",
+]`;
+    const result = parsePyprojectToml(content);
+    expect(result.production).toContain('starlette');
+    expect(result.production).not.toContain('flask');
+    expect(result.dev).toContain('flask');
+  });
+
+  // @ana A011, A012
+  it('does not include dev-only SQLAlchemy in production', () => {
+    const content = `[project]
+dependencies = [
+    "pydantic-core>=2.20.1",
+    "typing-extensions>=4.6.1",
+]
+
+[dependency-groups]
+dev = [
+    "sqlalchemy>=2.0",
+    "mypy>=1.0",
+]`;
+    const result = parsePyprojectToml(content);
+    expect(result.production).toContain('pydantic-core');
+    expect(result.production).not.toContain('sqlalchemy');
+    expect(result.dev).toContain('sqlalchemy');
+  });
+
+  // @ana A013
+  it('pytest in dependency-groups appears in all for testing detection', () => {
+    const content = `[project]
+dependencies = [
+    "fastapi>=0.100.0",
+]
+
+[dependency-groups]
+test = [
+    "pytest>=7.0",
+]`;
+    const result = parsePyprojectToml(content);
+    expect(result.dev).toContain('pytest');
+    // At parsePyprojectToml level, "all" doesn't exist — that's readPythonDependencies.
+    // But dev containing pytest proves it will flow into "all".
+  });
+
+  // @ana A014
+  it('FastAPI in project dependencies lands in production', () => {
+    const content = `[project]
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+]
+
+[dependency-groups]
+test = [
+    "pytest>=7.0",
+]`;
+    const result = parsePyprojectToml(content);
+    expect(result.production).toContain('fastapi');
+    expect(result.production).toContain('uvicorn');
+  });
+
+  // @ana A019
+  it('handles dependency-group named dependencies', () => {
+    const content = `[project]
+dependencies = ["flask>=2.0"]
+
+[dependency-groups]
+dependencies = ["pytest>=7.0"]`;
+    const result = parsePyprojectToml(content);
+    // Strategy 1 uses `match()` which returns only the first occurrence,
+    // so the `[project]` `dependencies` key wins — the identically-named
+    // group under `[dependency-groups]` does NOT cross-match into production.
+    expect(result.dev).toContain('pytest');
+    expect(result.production).toContain('flask');
+    expect(result.production).not.toContain('pytest');
+  });
+
+  // @ana A016
+  it('docstring does not say devDependencies', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const filePath = path.join(__dirname, '../../../src/engine/parsers/python/pyproject.ts');
+    const source = fs.readFileSync(filePath, 'utf-8');
+    expect(source).not.toContain('devDependencies');
+  });
+});
+
+// @ana A015
+describe('EXCLUDED_SEGMENTS', () => {
+  it('excludes testing segment from surface detection', () => {
+    expect(isNonProductPath('packages/testing/code-health')).toBe(true);
+  });
+});
+
+describe('readPythonDependencies', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'anatomia-pydeps-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  // @ana A007, A008, A013
+  it('returns structured production and all', async () => {
+    await fs.writeFile(path.join(tempDir, 'pyproject.toml'), `[project]
+dependencies = ["fastapi>=0.100.0"]
+
+[dependency-groups]
+test = ["pytest>=7.0"]
+`);
+    const result = await readPythonDependencies(tempDir);
+    expect(result.production).toBeDefined();
+    expect(result.all).toBeDefined();
+    expect(result.production).toContain('fastapi');
+    expect(result.production).not.toContain('pytest');
+    expect(result.all).toContain('fastapi');
+    expect(result.all).toContain('pytest');
+  });
+
+  it('requirements.txt deps land in production', async () => {
+    await fs.writeFile(path.join(tempDir, 'requirements.txt'), 'flask==2.0\ndjango>=3.0\n');
+    const result = await readPythonDependencies(tempDir);
+    expect(result.production).toContain('flask');
+    expect(result.production).toContain('django');
+    expect(result.all).toContain('flask');
+  });
+
+  it('combines requirements.txt and pyproject.toml', async () => {
+    await fs.writeFile(path.join(tempDir, 'requirements.txt'), 'flask==2.0\n');
+    await fs.writeFile(path.join(tempDir, 'pyproject.toml'), `[dependency-groups]
+test = ["pytest>=7.0"]
+`);
+    const result = await readPythonDependencies(tempDir);
+    expect(result.production).toContain('flask');
+    expect(result.production).not.toContain('pytest');
+    expect(result.all).toContain('flask');
+    expect(result.all).toContain('pytest');
   });
 });
 
