@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-143 runs · 100 active · 3 promoted · 726 closed
+144 runs · 106 active · 3 promoted · 726 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 97 | 66 | 2026-05-22 |
+| cli | 98 | 72 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 100 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -34,11 +34,16 @@
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
-- **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
+
+### packages/cli/src/engine/census.ts
+
+- **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
+- **code:** parsePackageName is a private helper but has no guard for empty-string input — returns { scope: '', bare: '' }. Harmless because nameMatchCandidates filters null packageName, but empty-string packageName would pass the filter and produce an empty bare match. — *Fix Primary Package Selection in Monorepos*
+- **code:** IDENTITY_WORDS.has(bareLower) checks case-insensitively via bareLower, but the Set contains lowercase strings — this is correct but implicit. No comment documenting the case-insensitive intent. — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/src/engine/detectors/applicationShape.ts
 
@@ -48,17 +53,11 @@
 
 - **code:** defaultBranch interpolated unsanitized into git exec — consistent with existing detectMergeStrategy pattern — *Scan Surface Display*
 
-### packages/cli/src/engine/detectors/projectType.ts
-
-- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
-
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** Double path split — detectSurfaces splits relativePath at line 268, then isNonProductPath splits it again at line 85 — *Fix False Surface Detection*
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
 - **code:** isNonProductPath returns true for empty string segments from trailing slashes — 'examples/'.split('/') produces ['examples', ''], and '' does not match EXCLUDED_SEGMENTS, so it still works, but edge is unguarded — *Fix False Surface Detection*
-- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
-- **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
@@ -78,13 +77,11 @@
 - **test:** A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered — *Scan Surface Display*
 - **test:** A003-A006 test asserts surface names exist in block but not framework, language, or testing values — *Scan Surface Display*
 
-### packages/cli/tests/engine/census-detection.test.ts
+### packages/cli/tests/engine/census-primary.test.ts
 
-- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
-### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
-
-- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+- **test:** A007 tiebreaker test uses toContain('larger') — would pass if result were 'larger-thing' or any string containing 'larger' — *Fix Primary Package Selection in Monorepos*
+- **test:** A026 caller test doesn't verify actual call site — it only shows selectPrimary accepts 3 args. Caller verified by source inspection (census.ts:571). — *Fix Primary Package Selection in Monorepos*
+- **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 

@@ -38506,6 +38506,286 @@
         "base_commit": "3a1edb4919685ce7be43797ed9b96fc44e2cc939"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-primary-selection",
+      "feature": "Fix Primary Package Selection in Monorepos",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 27,
+        "satisfied": 27,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A package whose name exactly matches the repo directory is selected as primary",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A scoped package whose bare name matches the repo directory is selected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A scoped package with identity word 'core' whose scope matches the directory is selected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A scoped package with identity word 'server' whose scope matches the directory is selected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A scoped self-named package whose bare name equals the scope is selected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Higher-priority tiers win over lower-priority tiers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "When multiple packages match the same tier, the one with more files wins",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A name-matched package with fewer than 10 files is rejected by the guard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A name-matched package with less than 5% of the largest candidate's files is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Packages in example directories are excluded from primary selection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "When all candidates are non-product paths, the original unfiltered list is used as fallback",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Apps directory packages with framework evidence still win over name matches",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The most-files fallback uses only product-path candidates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The root package is not eligible for name-based matching",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The root package can still win via the most-files fallback",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Logto scan selects packages/core as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Medusa scan selects packages/medusa as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "tRPC scan selects packages/server as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Payload scan selects packages/payload as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Strapi scan selects packages/core/strapi as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Vercel AI scan selects packages/ai as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "n8n scan selects packages/cli as the primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Scalar scan is unchanged because the guard blocks the tiny core package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Directus wrapper package is blocked by the guard and api wins via most files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Anatomia self-scan is unchanged because anatomia-cli does not match directory name anatomia",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The caller passes the repo directory name, not the package.json name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "selectPrimary is exported for unit testing",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 1,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 84,
+        "think": 28,
+        "plan": 18,
+        "build": 6,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:dc146d74f36b101a4d4201933c89ba6468c2d19e1ee968c5f0875b2f098672a5",
+        "contract": "sha256:45188d7f874f2c383bb0b5ebffc5dd6d7af345f792a3eb5df144bfa39976bc54",
+        "plan": "sha256:a98d577337eada9fbd266db51e48b345ea2c455ee1bf0f7adfcd7552c4c0fcfc",
+        "spec": "sha256:499b3796fd3b3bed13007bf4eafa4cb755992de5269b8c8469ab385a3b68d214",
+        "build-report": "sha256:07a49df75a5f081d61da64f81267be936038d9b7318ecedb463cc06b9b09aefc",
+        "build-data": "sha256:958045e8ead3878c9996f7a0a9b9b904086a71b1a2b3c172ebdeabeaec3d90d5",
+        "verify-report": "sha256:0d41c8d37cb5dc26c29dc1556fac1d3b5823351b22f410bc0308966b658da61e",
+        "verify-data": "sha256:1d7999cb3ac0d9da25f92d0d794cb9b3fa71be67dbdfe54b0acd6a625bb0731c"
+      },
+      "completed_at": "2026-05-22T07:36:19.538Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/tests/engine/census-primary.test.ts"
+      ],
+      "scope_summary": "The primary package heuristic picks the package with the most files when no `apps/` directory with framework evidence exists. For library and platform monorepos, the biggest package is often the admin dashboard, test suite, i18n data, or example app — not the core product. This cascades to wrong framework detection, wrong shape, wrong UI system, and wrong version display.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A007 tiebreaker test uses toContain('larger') — would pass if result were 'larger-thing' or any string containing 'larger'",
+          "file": "packages/cli/tests/engine/census-primary.test.ts",
+          "anchor": null,
+          "line": 110,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "fix-primary-selection-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A026 caller test doesn't verify actual call site — it only shows selectPrimary accepts 3 args. Caller verified by source inspection (census.ts:571).",
+          "file": "packages/cli/tests/engine/census-primary.test.ts",
+          "anchor": null,
+          "line": 378,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A026"
+          ],
+          "id": "fix-primary-selection-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories.",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 199,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "fix-primary-selection-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "parsePackageName is a private helper but has no guard for empty-string input — returns { scope: '', bare: '' }. Harmless because nameMatchCandidates filters null packageName, but empty-string packageName would pass the filter and produce an empty bare match.",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 121,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-primary-selection-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match?",
+          "file": "packages/cli/tests/engine/census-primary.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "fix-primary-selection-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "IDENTITY_WORDS.has(bareLower) checks case-insensitively via bareLower, but the Set contains lowercase strings — this is correct but implicit. No comment documenting the case-insensitive intent.",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 194,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-primary-selection-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "A014 contract assertion not_equals '.' is structurally awkward — Policy 3 can select root independently of Policy 2 exclusion, requiring indirect test design",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T07:14:16.107Z",
+        "completed_at": "2026-05-22T07:36:19.532Z",
+        "commit_count": 0,
+        "base_commit": "26e355daa30f89ae76a7dbfe5b659497458cf830"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
