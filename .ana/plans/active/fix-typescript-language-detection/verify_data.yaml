@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Hardcoded subdirectory list inline in 900+ line function"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 865
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A002", "A008"]
+  - category: test
+    summary: "A003 asserts not-TypeScript but not what language IS — weaker than necessary"
+    file: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    line: 121
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A003"]
+  - category: test
+    summary: "Only server/ and web/ subdirectories exercised — frontend/ and backend/ untested"
+    file: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    line: 98
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A002", "A008"]
+  - category: upstream
+    summary: "AC1-3 reference real repos (budibase, infisical, tooljet) but are only verifiable by proxy through unit test fixtures"
+    severity: observation
+    suggested_action: accept

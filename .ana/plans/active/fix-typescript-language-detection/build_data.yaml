@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Baseline test count discrepancy: spec says 2762 but worktree shows 2780 — tests added between spec creation and worktree creation"
+    severity: observation
+    suggested_action: accept

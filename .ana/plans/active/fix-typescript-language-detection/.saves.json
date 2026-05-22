@@ -36,5 +36,35 @@
         "hash": "sha256:5ee7c0fe2259d2bb673ea96b1b13e1b64890bb5819ffbbabf102ea3aa27d8136"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T07:27:20.131Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T07:30:49.860Z",
+    "hash": "sha256:ee2c6d605aaa993591aee85d455ce835f70d2a84849f8a3623b35e04424f94b9"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T07:30:49.861Z",
+    "hash": "sha256:c8173bb7cd4cd62690f9577f3aa412fbdee91fde2a845e30b4a8387f96f59610"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:33:32.868Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ad0231a7e0a60451d34a3a9fa30a9d2ce957c1691672ae730bcfee851e82d49d",
+    "run_at": "2026-05-22T07:37:41.055Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:37:41.090Z",
+    "hash": "sha256:b3110f9cf2d6148a7e7601938687bf580fcc82538cf1bf9b1580e2c29740f798"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:37:41.091Z",
+    "hash": "sha256:6911be84f3ba56ef758d9f4669f88935ce8165da5a836a87a1d2c8e6e90f3582"
   }
 }

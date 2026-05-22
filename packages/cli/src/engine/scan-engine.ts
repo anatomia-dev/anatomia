@@ -854,9 +854,21 @@ export async function scanProject(
   // Don't override null (could be Python/Go project with tsconfig for tooling)
   if (stack.language === 'Node.js') {
     const hasTsConfig = existsSync(path.join(rootPath, 'tsconfig.json'));
-    const hasTsDep = allDeps['typescript'] !== undefined;
+    const hasTsDep = allDeps['typescript'] !== undefined || census.rootDevDeps['typescript'] !== undefined;
     if (hasTsConfig || hasTsDep) {
       stack.language = 'TypeScript';
+    }
+
+    // Tier 3: subdirectory tsconfig — covers projects like infisical, tooljet
+    // where tsconfig.json lives in frontend/, backend/, server/, or web/
+    if (!hasTsConfig && !hasTsDep) {
+      const tsSubdirs = ['frontend', 'backend', 'server', 'web'];
+      const hasSubdirTsConfig = tsSubdirs.some(dir =>
+        existsSync(path.join(rootPath, dir, 'tsconfig.json'))
+      );
+      if (hasSubdirTsConfig) {
+        stack.language = 'TypeScript';
+      }
     }
   }
 
