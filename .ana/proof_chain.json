@@ -39641,7 +39641,10 @@
             "A001"
           ],
           "id": "fix-python-dep-separation-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in commit e6b1aa09 — regex changed from \\]\\s*$ to \\]\\s*(?:#.*)?$ across all three strategies (pyproject.ts lines 54, 73, 96). TOML inline comments after closing bracket (e.g., ] # end) now handled. Test added verifying extraction with trailing inline comments. 2875 tests pass. 2nd-occurrence risk finding resolved without needing a full TOML parser.",
+          "closed_at": "2026-05-22T20:46:21.926Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

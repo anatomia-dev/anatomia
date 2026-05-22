@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 106 active · 3 promoted · 759 closed
+151 runs · 105 active · 3 promoted · 760 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 72 | 2026-05-22 |
+| cli | 105 | 71 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 105 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -56,10 +56,10 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
+- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
 
-- **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break `]\s*$` anchor — still present from prior cycle — *Separate Python production deps from dev deps*
 - **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break \]\s*$ anchor — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
