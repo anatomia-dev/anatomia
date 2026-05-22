@@ -7,6 +7,28 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-05-22
+
+### Fixed
+
+- **False surface detection** — workspace packages in `examples/`, `templates/`, `e2e/`, `test/`, `playground/`, `sandbox/`, and similar directories excluded from surface detection. Re-init silently drops previously-detected false surfaces.
+- **Application shape priority** — framework evidence now outranks CLI and MCP dependency signals. NestJS with yargs → `api-server` (was `cli`). Express with MCP SDK → `api-server` (was `mcp-server`). Next.js with LangChain → `web-app` (was `ai-agent`).
+- **Primary package selection** — name-match policy uses the repo directory name to prefer packages whose npm name matches the project identity. Four-tier matching with file-count minimum guard prevents thin wrappers from winning.
+- **TypeScript language detection** — three-tier detection: root `tsconfig.json`, `typescript` in root devDependencies, and `tsconfig.json` in common subdirectories. Fixes monorepos and non-workspace multi-dir projects.
+- **Python testing framework detection** — PEP 735 `[dependency-groups]` parsed, TOML array regex handles extras brackets, single-quoted strings matched alongside double-quoted.
+- **Python production/dev dependency separation** — stack detection (framework, database, auth, AI SDK) uses production deps only. Testing detection uses all deps. Fixes false framework/database detections from test dependencies.
+- **Schema discovery filters non-product paths** — `discoverSchemas` skips e2e/test/example workspace roots and filters glob fallbacks through `isNonProductPath`.
+- **TOML inline comment handling** — closing-bracket regex handles valid TOML `] # comment` across all pyproject.toml strategies.
+- **False rejection archives** — same-session re-saves no longer create false archive files or history entries. Stage-transition gate prevents timing data corruption from phantom rejection cycles.
+
+### Added
+
+- **Scan terminal Surfaces section** — surfaces promoted from inline sub-item to standalone section between Stack and Intelligence. Each surface shows framework (or language fallback) and primary testing framework.
+- **Branch pattern detection from merge history** — reports the climate (e.g., "48/50 merges used `feature/`") instead of the weather (live remote branches). Falls back to remote branches for shallow clones.
+- 10 new database packages — Kysely, MikroORM, slonik, @vercel/postgres, mongodb, postgres.js, sqlite3, mssql, and more
+- 5 new framework config variants — `.mjs` variants for Svelte, Nuxt, Remix, React Router, Vue
+- @stripe/react-stripe-js added to payment detection
+
 ## [1.1.2] - 2026-05-21
 
 ### Added
@@ -224,7 +246,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/anatomia-dev/anatomia/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/anatomia-dev/anatomia/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/anatomia-dev/anatomia/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/anatomia-dev/anatomia/compare/v1.0.2...v1.1.0
