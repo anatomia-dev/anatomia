@@ -37792,6 +37792,263 @@
         "base_commit": "631f4f815673199b258bcadf3e1f9bafaa322be2"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-false-surface-detection",
+      "feature": "Fix False Surface Detection",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Packages under examples/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Packages under templates/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Packages under e2e/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Packages under test/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Packages under playground/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Packages under sandbox/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Packages under fixtures/ are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Packages ending with -e2e are excluded from surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Compound names like test-utils are not excluded",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Compound names like demo-app are not excluded",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Path exclusion is case-insensitive",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Non-product segment anywhere in path triggers exclusion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Legitimate apps/ surfaces are still detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Legitimate packages/ with bin+dev are still detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The non-product path predicate is exported for reuse",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Re-init silently drops false surfaces from ana.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "No warning is logged when dropping false surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Legitimate orphaned surfaces are kept on re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A warning is logged for kept orphaned surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Empty surfaces result omits the surfaces key from ana.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Mixed orphaned surfaces are handled correctly — false dropped, legitimate kept",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Legitimate surface survives mixed cleanup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "All 22 non-product segment names are in the exclusion set",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Packages under example-apps/ are not detected as surfaces",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 126,
+        "think": 43,
+        "plan": 61,
+        "build": 5,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:652ce6984f4cdb8cc4f1886eda2381d7f4413768768d8f01b744de451510b18d",
+        "contract": "sha256:9730e6b4d4b4c76c6eda910f65158702261f4df176b8fce1dd0633b5aefa6175",
+        "plan": "sha256:8f603bec101958130c74b7eb2fce6a03a304a212062d5d6fe5836b7263654e67",
+        "spec": "sha256:ee2ef823a7e4d33603a0bf4c9931974a5f9beae447b23742f5fe8705b3fd45af",
+        "build-report": "sha256:03be07cd7c88ebd0cc34222edf0c4f4d5e65a7c1d711219e074be1a61a477661",
+        "build-data": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd",
+        "verify-report": "sha256:d1cc9974c398b7390576d3f36cb670a5d8409edbb6b9277e0ec01ab61062c1e0",
+        "verify-data": "sha256:3baa2495ac608016a25a2d4e925084b10fa72d8ad9e0dc32f998b95148b774c6"
+      },
+      "completed_at": "2026-05-22T07:07:02.495Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+        "packages/cli/tests/engine/detectors/surfaces.test.ts"
+      ],
+      "scope_summary": "Non-product workspace packages (examples, templates, e2e fixtures, reference apps) are detected as product surfaces, polluting ana.json and misleading the pipeline. This is the #1 priority issue from R5 comprehensive validation — 12 of 35 monorepos (34%) have false surfaces, totaling ~82+ confirmed false detections across 13 repos.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Double path split — detectSurfaces splits relativePath at line 268, then isNonProductPath splits it again at line 85",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 272,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "fix-false-surface-detection-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 45,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "fix-false-surface-detection-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Contract file_changes lists state.test.ts but tests were written in monorepoCommandScoping.test.ts — file mismatch between contract and implementation",
+          "file": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A016",
+            "A017",
+            "A018",
+            "A019",
+            "A020",
+            "A021",
+            "A022"
+          ],
+          "id": "fix-false-surface-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "mergeSurfaces console.warn on removed surfaces may be noisy for intentional removals — pre-existing concern from proof context still applies to legitimate orphaned surfaces",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 647,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-false-surface-detection-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T07:07:02.495Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "isNonProductPath returns true for empty string segments from trailing slashes — 'examples/'.split('/') produces ['examples', ''], and '' does not match EXCLUDED_SEGMENTS, so it still works, but edge is unguarded",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 85,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-false-surface-detection-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T06:25:08.258Z",
+        "completed_at": "2026-05-22T07:07:02.489Z",
+        "commit_count": 0,
+        "base_commit": "bfe2d19ab031e26d76530f9bbf5c0301b3c57c90"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

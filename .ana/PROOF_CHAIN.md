@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-140 runs · 89 active · 3 promoted · 724 closed
+141 runs · 93 active · 3 promoted · 725 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 94 | 55 | 2026-05-21 |
+| cli | 95 | 59 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
-| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
+| packages/cli/src/engine/detectors/surfaces.ts | 5 | 2 |
+| packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 89 total)
+## Active Findings (30 shown of 93 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -51,6 +51,9 @@
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
+- **code:** Double path split — detectSurfaces splits relativePath at line 268, then isNonProductPath splits it again at line 85 — *Fix False Surface Detection*
+- **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
+- **code:** isNonProductPath returns true for empty string segments from trailing slashes — 'examples/'.split('/') produces ['examples', ''], and '' does not match EXCLUDED_SEGMENTS, so it still works, but edge is unguarded — *Fix False Surface Detection*
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 - **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
@@ -69,6 +72,7 @@
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
+- **test:** Contract file_changes lists state.test.ts but tests were written in monorepoCommandScoping.test.ts — file mismatch between contract and implementation — *Fix False Surface Detection*
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/proof-surface-derivation.test.ts
@@ -101,16 +105,9 @@
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 
-### website/components/pricing/pricing.module.css
-
-- **code:** Error color hardcoded as #ff8a8a on highlighted card instead of CSS custom property — *Team edition waitlist form*
-
 ### website/components/pricing/WaitlistForm.tsx
 
 - **code:** Honeypot DOM input is dead code — JSON submission hardcodes _gotcha: '' regardless of field value — *Team edition waitlist form*
-- **code:** Hidden _source DOM input is dead code — JSON body hardcodes _source value, DOM element never read — *Team edition waitlist form*
-- **code:** Success message aria-live on freshly mounted element — screen readers may not announce dynamically inserted aria-live regions — *Team edition waitlist form*
-- **code:** No client-side rate limiting — user can spam submit after error state re-enables the button — *Team edition waitlist form*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
