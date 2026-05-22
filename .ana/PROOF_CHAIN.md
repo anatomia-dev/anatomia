@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 101 active · 3 promoted · 764 closed
+151 runs · 100 active · 3 promoted · 765 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 67 | 2026-05-22 |
+| cli | 105 | 66 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 101 total)
+## Active Findings (30 shown of 100 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -53,6 +53,10 @@
 ### packages/cli/src/engine/detectors/applicationShape.ts
 
 - **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
+
+### packages/cli/src/engine/detectors/projectType.ts
+
+- **code:** Ruby detection is existence-only — no Gemfile content analysis, so a Gemfile with only dev gems still triggers Ruby — *Fix Polyglot Detection for Tauri+TS and Ruby+JS Projects*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -90,7 +94,6 @@
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
-- **test:** @ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64) — *Fix Application Shape Detection Priority Chain*
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts

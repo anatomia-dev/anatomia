@@ -38229,7 +38229,10 @@
             "A003"
           ],
           "id": "fix-shape-detection-priority-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by scan-quality-polish scope — @ana A003 tag relocated from line 319 (pure function check) to line 64 (MCP+Next.js→web-app test). Verified: grep shows A003 at applicationShape.test.ts:64 only.",
+          "closed_at": "2026-05-22T20:53:04.572Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
