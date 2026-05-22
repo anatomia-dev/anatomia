@@ -1,0 +1,25 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    line: 511
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A020"]
+  - category: upstream
+    summary: "vue.config.ts missing from both FRAMEWORK_HINTS and STRONG_FRAMEWORK_CONFIGS — pre-existing gap, not introduced by this build"
+    severity: observation
+    suggested_action: scope
+  - category: code
+    summary: "FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing"
+    file: "packages/cli/src/engine/census.ts"
+    line: 31
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "@ana tag collision — A015-A020 IDs reused from scan-surface-detection contract in same test file. Machines parsing @ana tags will match wrong tests for older contracts."
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    line: 479
+    severity: observation
+    suggested_action: accept

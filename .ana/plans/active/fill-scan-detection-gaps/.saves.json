@@ -54,5 +54,20 @@
     "packages/cli/tests/engine/detectors/dependencies.test.ts",
     "packages/cli/tests/engine/detectors/surfaces.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:53:51.579Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:d76bd2582ce022e4d99a397e47f3155756edb059d437ac27351d7f5713b802fc",
+    "run_at": "2026-05-22T07:58:09.214Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:58:09.256Z",
+    "hash": "sha256:2376d0b9787a7a6cbded1b115eaea3e7c2c70da7b65799b3564e74e45c7a1ad7"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:58:09.256Z",
+    "hash": "sha256:980b2d76e8f8fae3f29c49e33529d64ee629e386e05dfea077720f67f0a8b62d"
+  }
 }
