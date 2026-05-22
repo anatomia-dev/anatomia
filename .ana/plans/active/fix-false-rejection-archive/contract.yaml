@@ -84,7 +84,7 @@ assertions:
     block: "false history does not activate rejection timing"
     target: "timing.build"
     matcher: "equals"
-    value: 60
+    value: 70
 
   - id: A012
     says: "Missing verify report file falls back to simple timing"

@@ -73,8 +73,8 @@ Now produces no archive message. Genuine rejection cycles (opposing stage advanc
 
 - **Unit tests (proofSummary.test.ts):**
   - Update existing rejection-cycle test (line 4194): add a `verify_report.md` file to `slugDir` with a "Previous Findings Resolution" section containing an UNSATISFIED assertions table. History arrays remain for the timing reconstruction data.
-  - Add test: no history arrays but verify report has rejection content → rejection timing branch activates.
-  - Add test: history arrays present but verify report has no rejection content → fallback branch activates (not rejection branch). This validates the behavioral change.
+  - Add test: no history arrays but verify report has rejection content → rejection timing branch activates. Use the same fixture as the existing rejection test (contract=10:30, history build[0]=11:00, verify[0]=11:10, build.current=11:40, verify.current=11:50). Rejection path: build = (11:00-10:30) + (11:40-11:10) = 60. Assert `timing.build` equals 60.
+  - Add test: history arrays present but verify report has NO rejection content → fallback branch activates (not rejection branch). Use the same timestamp fixture. Fallback path: build = contract(10:30) → build.current(11:40) = 70. Assert `timing.build` equals 70. The different value (70 vs 60) proves which code path was taken.
   - Add test: verify report file missing → graceful fallback to simple endpoint-subtraction.
 
 - **Edge cases:**
