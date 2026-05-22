@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 117 active · 3 promoted · 728 closed
+147 runs · 116 active · 3 promoted · 729 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 83 | 2026-05-22 |
+| cli | 101 | 82 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/src/engine/detectors/surfaces.ts | 5 | 2 |
 | packages/cli/src/engine/detectors/git.ts | 4 | 3 |
+| packages/cli/tests/commands/init/monorepoCommandScoping.test.ts | 4 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 117 total)
+## Active Findings (30 shown of 116 total)
 
 ### packages/cli/src/engine/census.ts
 
@@ -43,7 +43,6 @@
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
-- **code:** Double path split — detectSurfaces splits relativePath at line 268, then isNonProductPath splits it again at line 85 — *Fix False Surface Detection*
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
 - **code:** isNonProductPath returns true for empty string segments from trailing slashes — 'examples/'.split('/') produces ['examples', ''], and '' does not match EXCLUDED_SEGMENTS, so it still works, but edge is unguarded — *Fix False Surface Detection*
 
@@ -52,6 +51,10 @@
 - **code:** Strategy numbering gap — 1, 2, 5, 3, 4 — from inserting PEP 735 before Poetry strategies — *Fix Python pyproject.toml parser — 3 bugs*
 - **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break \]\s*$ anchor — *Fix Python pyproject.toml parser — 3 bugs*
 - **code:** Windows \r\n line endings could leave \r in captured content — $  matches before \n only — *Fix Python pyproject.toml parser — 3 bugs*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
 ### packages/cli/src/engine/scan-engine.ts
 

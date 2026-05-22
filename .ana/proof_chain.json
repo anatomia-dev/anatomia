@@ -37970,7 +37970,10 @@
           "suggested_action": "accept",
           "related_assertions": [],
           "id": "fix-false-surface-detection-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Micro-optimization concern — detectSurfaces splits relativePath at line 268 for lastSegment, isNonProductPath splits again at line 85 for segment iteration. Both on short path strings (2-4 segments), called once per source root during scan. No performance or correctness impact.",
+          "closed_at": "2026-05-22T08:40:15.378Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
