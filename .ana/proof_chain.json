@@ -40271,7 +40271,10 @@
             "A002"
           ],
           "id": "fix-schema-glob-fallback-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "The glob fallback path at scan-engine.ts:304 and the census-sourced path at census.ts:322 both filter through the same isNonProductPath function. The test at scanProject.test.ts:241 verifies isNonProductPath correctly excludes e2e paths. Testing through one code path proves the shared filter works — the glob path uses the identical function call.",
+          "closed_at": "2026-05-22T20:35:01.760Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 108 active · 3 promoted · 757 closed
+151 runs · 107 active · 3 promoted · 758 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 74 | 2026-05-22 |
+| cli | 105 | 73 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,6 +33,7 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
+- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/work.ts
 
@@ -101,10 +102,6 @@
 ### packages/cli/tests/engine/parsers/python.test.ts
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
-
-### packages/cli/tests/engine/scanProject.test.ts
-
-- **test:** Multi-file Prisma fallback path (trailing-slash directories) not exercised by non-product exclusion test — *Filter non-product paths from schema glob fallbacks*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 
