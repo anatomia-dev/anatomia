@@ -39203,7 +39203,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fill-scan-detection-gaps-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Systemic tag collision — A015-A020 IDs reused from scan-surface-detection contract in surfaces.test.ts. Same established pattern documented and closed across the proof chain.",
+          "closed_at": "2026-05-22T08:42:52.982Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,

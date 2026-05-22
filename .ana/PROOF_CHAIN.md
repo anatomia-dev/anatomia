@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 106 active · 3 promoted · 739 closed
+147 runs · 105 active · 3 promoted · 740 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 72 | 2026-05-22 |
+| cli | 101 | 71 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 105 total)
 
 ### packages/cli/src/commands/config.ts
 
@@ -51,6 +51,7 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
+- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
 
@@ -96,7 +97,6 @@
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
-- **test:** @ana tag collision — A015-A020 IDs reused from scan-surface-detection contract in same test file. Machines parsing @ana tags will match wrong tests for older contracts. — *Fill Scan Detection Gaps*
 
 ### packages/cli/tests/engine/parsers/python.test.ts
 
