@@ -1,0 +1,121 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix AnaDocs date freshness"
+
+assertions:
+  - id: A001
+    says: "The CLI reference page shows a build-derived date, not a hardcoded one"
+    block: "CLI reference uses buildTimestamp for last reviewed date"
+    target: "source.cliReferencePage"
+    matcher: "not_contains"
+    value: "Last reviewed</b> · 2026-05-22"
+
+  - id: A002
+    says: "The CLI reference page derives the date from buildTimestamp"
+    block: "CLI reference uses buildTimestamp for last reviewed date"
+    target: "source.cliReferencePage"
+    matcher: "contains"
+    value: "meta.buildTimestamp.slice(0, 10)"
+
+  - id: A003
+    says: "Stale docs trigger a warning with the file path"
+    block: "staleness check warns for docs older than 60 days"
+    target: "output.staleWarning"
+    matcher: "contains"
+    value: ".mdx"
+
+  - id: A004
+    says: "Stale docs warning includes the age in days"
+    block: "staleness check warns for docs older than 60 days"
+    target: "output.staleWarning"
+    matcher: "contains"
+    value: "days"
+
+  - id: A005
+    says: "Fresh docs produce no staleness warnings"
+    block: "staleness check is silent when all docs are fresh"
+    target: "output.staleWarnings"
+    matcher: "equals"
+    value: 0
+
+  - id: A006
+    says: "Files without a lastReviewed field are skipped without error"
+    block: "staleness check skips files without lastReviewed"
+    target: "result.skippedFile"
+    matcher: "truthy"
+
+  - id: A007
+    says: "The staleness threshold is 60 days"
+    block: "staleness check uses 60-day threshold"
+    target: "source.extractDocsData"
+    matcher: "contains"
+    value: "60"
+
+  - id: A008
+    says: "All concept pages have today's review date"
+    block: "MDX files have updated lastReviewed dates"
+    target: "frontmatter.lastReviewed"
+    matcher: "equals"
+    value: "2026-05-22"
+
+  - id: A009
+    says: "All guide pages have today's review date"
+    block: "MDX files have updated lastReviewed dates"
+    target: "frontmatter.lastReviewed"
+    matcher: "equals"
+    value: "2026-05-22"
+
+  - id: A010
+    says: "The start page has today's review date"
+    block: "MDX files have updated lastReviewed dates"
+    target: "frontmatter.lastReviewed"
+    matcher: "equals"
+    value: "2026-05-22"
+
+  - id: A011
+    says: "The staleness check does not fail the build"
+    block: "staleness check is a warning, not a build failure"
+    target: "source.extractDocsData.checkStaleDocs"
+    matcher: "not_contains"
+    value: "process.exit"
+
+  - id: A012
+    says: "The website build succeeds with all changes applied"
+    block: "website build passes"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "website/app/docs/reference/cli/page.tsx"
+    action: modify
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/artifacts.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/context.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/contract.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/findings.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/pipeline.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/skills.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/toolbelt.mdx"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: "website/content/docs/guides/reading-a-proof.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-setup.mdx"
+    action: modify
+  - path: "website/content/docs/guides/verifying-changes.mdx"
+    action: modify
