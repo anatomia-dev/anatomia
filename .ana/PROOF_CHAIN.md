@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-147 runs · 109 active · 3 promoted · 736 closed
+147 runs · 108 active · 3 promoted · 737 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 101 | 75 | 2026-05-22 |
+| cli | 101 | 74 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -38,7 +38,6 @@
 
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
-- **code:** IDENTITY_WORDS.has(bareLower) checks case-insensitively via bareLower, but the Set contains lowercase strings — this is correct but implicit. No comment documenting the case-insensitive intent. — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/src/engine/detectors/applicationShape.ts
 
@@ -65,6 +64,10 @@
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
+
+### packages/cli/tests/commands/proof-surface-derivation.test.ts
+
+- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/commands/scan.test.ts
 

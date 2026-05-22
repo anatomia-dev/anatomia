@@ -38783,7 +38783,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-primary-selection-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Variable name bareLower documents the case-insensitive intent — 'Lower' suffix indicates the value has been lowercased. The IDENTITY_WORDS Set containing lowercase strings is the natural complement. Adding a comment would be redundant with the naming convention.",
+          "closed_at": "2026-05-22T08:42:16.258Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
