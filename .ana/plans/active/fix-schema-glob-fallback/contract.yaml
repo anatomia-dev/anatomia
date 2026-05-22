@@ -1,0 +1,65 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Filter non-product paths from schema glob fallbacks"
+
+assertions:
+  - id: A001
+    says: "The scan engine imports the non-product path filter from the surfaces module"
+    block: "excludes Prisma schema in e2e directory from detection"
+    target: "import.isNonProductPath"
+    matcher: "exists"
+
+  - id: A002
+    says: "A Prisma schema in an e2e directory is not detected as a real schema"
+    block: "excludes Prisma schema in e2e directory from detection"
+    target: "result.schemas.prisma.found"
+    matcher: "equals"
+    value: false
+
+  - id: A003
+    says: "A missing Prisma schema triggers the expected blind spot warning"
+    block: "excludes Prisma schema in e2e directory from detection"
+    target: "result.blindSpots"
+    matcher: "contains"
+    value: "Prisma"
+
+  - id: A004
+    says: "A Drizzle schema in an examples directory is not detected as a real schema"
+    block: "excludes Drizzle schema in examples directory from detection"
+    target: "result.schemas.drizzle.found"
+    matcher: "equals"
+    value: false
+
+  - id: A005
+    says: "A missing Drizzle schema triggers the expected blind spot warning"
+    block: "excludes Drizzle schema in examples directory from detection"
+    target: "result.blindSpots"
+    matcher: "contains"
+    value: "drizzle-orm"
+
+  - id: A006
+    says: "A real Prisma schema in a product path is still detected normally"
+    block: "detects external services and schemas"
+    target: "result.schemas.prisma.found"
+    matcher: "equals"
+    value: true
+
+  - id: A007
+    says: "A real Prisma schema in a monorepo sub-package is still detected"
+    block: "detects Prisma schema in a monorepo sub-package"
+    target: "result.schemas.prisma.found"
+    matcher: "equals"
+    value: true
+
+  - id: A008
+    says: "Existing test suite passes without regressions"
+    block: "all existing tests"
+    target: "testSuite.passCount"
+    matcher: "greater"
+    value: 2855
+
+file_changes:
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/scanProject.test.ts"
+    action: modify
