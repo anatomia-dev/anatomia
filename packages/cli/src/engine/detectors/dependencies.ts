@@ -17,15 +17,21 @@ export const DATABASE_PACKAGES: Record<string, string> = {
   'drizzle-orm': 'Drizzle',
   'typeorm': 'TypeORM', 'sequelize': 'Sequelize',
   'mongoose': 'Mongoose', 'knex': 'Knex',
+  'kysely': 'Kysely', '@mikro-orm/core': 'MikroORM',
   // BaaS / serverless databases
   'convex': 'Convex',
   '@supabase/supabase-js': 'Supabase',
   '@neondatabase/serverless': 'Neon',
   '@planetscale/database': 'PlanetScale',
   'firebase': 'Firebase', 'firebase-admin': 'Firebase',
+  '@vercel/postgres': 'Vercel Postgres',
   // Raw drivers last
   'pg': 'PostgreSQL', 'mysql2': 'MySQL',
   'better-sqlite3': 'SQLite', '@libsql/client': 'Turso',
+  'slonik': 'PostgreSQL', '@silverhand/slonik': 'PostgreSQL',
+  'mongodb': 'MongoDB',
+  'postgres': 'PostgreSQL',
+  'sqlite3': 'SQLite', 'mssql': 'SQL Server',
 };
 
 /**
@@ -80,7 +86,7 @@ export const TESTING_PACKAGES: Record<string, string> = {
  * Payment packages for dependency detection
  */
 export const PAYMENT_PACKAGES: Record<string, string> = {
-  'stripe': 'Stripe', '@stripe/stripe-js': 'Stripe',
+  'stripe': 'Stripe', '@stripe/stripe-js': 'Stripe', '@stripe/react-stripe-js': 'Stripe',
   '@lemonsqueezy/lemonsqueezy.js': 'LemonSqueezy',
   '@polar-sh/sdk': 'Polar',
   'paddle-sdk': 'Paddle', '@paddle/paddle-js': 'Paddle',
