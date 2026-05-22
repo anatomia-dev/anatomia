@@ -35,5 +35,20 @@
     "packages/cli/tests/commands/scan.test.ts",
     "packages/cli/tests/engine/detectors/applicationShape.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T10:35:46.035Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:69d65ccedbdcd6afe44df698a57fb7851f58420bd2f250ca52450ddc5e169531",
+    "run_at": "2026-05-22T10:41:43.673Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T10:41:43.711Z",
+    "hash": "sha256:7089e669de46d3769c2da642a446bc948574f24a413588b8c339a51bc6eb5059"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T10:41:43.712Z",
+    "hash": "sha256:d75d2d052143c7294637bffc2934e5e68f12434a7b82a23c066440b1f05a5b00"
+  }
 }
