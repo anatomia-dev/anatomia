@@ -24,6 +24,7 @@ findings:
     severity: risk
     suggested_action: scope
     related_assertions: ["A001"]
+    resolves: []
   - category: test
     summary: "A013 tested at two levels — parsePyprojectToml checks result.dev (proxy), readPythonDependencies checks result.all (direct). Both pass but the parser-level test is indirect."
     file: "packages/cli/tests/engine/parsers/python.test.ts"
