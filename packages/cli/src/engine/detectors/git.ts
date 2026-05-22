@@ -178,18 +178,76 @@ function detectCommitFormat(cwd: string): GitInfo['commitFormat'] {
 }
 
 /**
- * Detect branch naming patterns from remote branches.
+ * Detect branch naming patterns from merge commit history on the default branch.
+ * Falls back to remote branches when no merge history produces parseable branch names.
  */
-function detectBranchPatterns(cwd: string): GitInfo['branchPatterns'] {
+function detectBranchPatterns(cwd: string, defaultBranch: string | null): GitInfo['branchPatterns'] {
+  // Primary path: parse merge commit subjects on the default branch
+  if (defaultBranch) {
+    const output = gitExec(`git log --merges --format=%s -50 ${defaultBranch}`, cwd);
+    if (output) {
+      const branchNames = extractBranchNamesFromMergeSubjects(output);
+      if (branchNames.length > 0) {
+        return buildPrefixCounts(branchNames);
+      }
+    }
+  }
+
+  // Fallback: read remote branches (original behavior)
   const output = gitExec('git branch -r', cwd);
   if (!output) return { prefixes: {}, primary: null };
 
-  const prefixes: Record<string, number> = {};
+  const names: string[] = [];
   for (const line of output.split('\n')) {
     const name = line.trim().replace(/^origin\//, '');
     if (!name || name.includes(' -> ') || name === 'HEAD') continue;
     if (isBotBranch(name)) continue;
-    // Extract prefix: feature/foo → feature/, fix/bar → fix/
+    names.push(name);
+  }
+
+  return buildPrefixCounts(names);
+}
+
+/**
+ * Extract branch names from merge commit subjects.
+ * Handles two formats:
+ * - GitHub PR: "Merge pull request #N from org/feature/slug"
+ * - Git CLI:   "Merge branch 'feature/slug'" (with optional "into ...")
+ */
+function extractBranchNamesFromMergeSubjects(output: string): string[] {
+  const githubPrPattern = /^Merge pull request #\d+ from [^/]+\/(.+)$/;
+  const gitMergePattern = /^Merge branch '([^']+)'/;
+
+  const names: string[] = [];
+  for (const line of output.split('\n')) {
+    const subject = line.trim();
+    if (!subject) continue;
+
+    let branchName: string | null = null;
+    const ghMatch = subject.match(githubPrPattern);
+    if (ghMatch?.[1]) {
+      branchName = ghMatch[1];
+    } else {
+      const gitMatch = subject.match(gitMergePattern);
+      if (gitMatch?.[1]) {
+        branchName = gitMatch[1];
+      }
+    }
+
+    if (branchName && !isBotBranch(branchName)) {
+      names.push(branchName);
+    }
+  }
+
+  return names;
+}
+
+/**
+ * Count prefix frequency from branch names and select the primary (most frequent).
+ */
+function buildPrefixCounts(names: string[]): { prefixes: Record<string, number>; primary: string | null } {
+  const prefixes: Record<string, number> = {};
+  for (const name of names) {
     const slashIdx = name.indexOf('/');
     if (slashIdx > 0) {
       const prefix = name.slice(0, slashIdx + 1);
@@ -197,7 +255,6 @@ function detectBranchPatterns(cwd: string): GitInfo['branchPatterns'] {
     }
   }
 
-  // Primary = most frequent prefix
   let primary: string | null = null;
   let maxCount = 0;
   for (const [prefix, count] of Object.entries(prefixes)) {
@@ -428,7 +485,7 @@ export async function detectGitInfo(cwd: string): Promise<GitInfo> {
     defaultBranch,
     branches,
     commitFormat: detectCommitFormat(cwd),
-    branchPatterns: detectBranchPatterns(cwd),
+    branchPatterns: detectBranchPatterns(cwd, defaultBranch),
     hooks: detectHooks(cwd),
     mergeStrategy: detectMergeStrategy(cwd, defaultBranch),
     coAuthor: detectCoAuthor(cwd),

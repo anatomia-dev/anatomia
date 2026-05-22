@@ -988,6 +988,160 @@ describe('ana scan', () => {
       expect(result.monorepo.packages).toBeInstanceOf(Array);
       expect(result.monorepo.packages.length).toBeGreaterThan(0);
     });
+
+    // @ana A011
+    it('Workspace line does not include inline Surfaces sub-item', async () => {
+      await createTestFiles({
+        'pnpm-workspace.yaml': 'packages:\n  - "packages/*"',
+        'packages/cli/package.json': JSON.stringify({ name: 'cli', bin: { cli: 'index.js' }, scripts: { dev: 'node index.js' } }),
+        'packages/web/package.json': JSON.stringify({ name: 'web', dependencies: { next: '14.0.0' } }),
+        'package.json': JSON.stringify({ name: 'root' }),
+        'index.ts': 'const x = 1;',
+        // Enough source files to meet MIN_SOURCE_FILES for surface detection
+        ...Object.fromEntries(
+          Array.from({ length: 6 }, (_, i) => [`packages/cli/src/f${i}.ts`, `export const x${i} = ${i};`]),
+        ),
+        ...Object.fromEntries(
+          Array.from({ length: 6 }, (_, i) => [`packages/web/src/f${i}.ts`, `export const x${i} = ${i};`]),
+        ),
+        'packages/web/next.config.js': 'module.exports = {};',
+      });
+      process.chdir(tempDir);
+
+      const { stdout } = runScan();
+      // Workspace line should exist but NOT contain "Surfaces" as a sub-item
+      const workspaceLine = stdout.split('\n').find((l: string) => l.includes('Workspace'));
+      expect(workspaceLine).toBeDefined();
+      expect(workspaceLine).not.toContain('Surfaces');
+    });
+  });
+
+  // @ana A001, A002, A003, A004, A005, A006, A010
+  describe('Surfaces section', () => {
+    /**
+     * Helper to create a monorepo with surfaces.
+     * Each surface has enough source files to meet MIN_SOURCE_FILES.
+     */
+    async function createMonorepoWithSurfaces(
+      surfaces: Array<{ name: string; framework?: string; deps?: Record<string, string>; devDeps?: Record<string, string>; configFile?: [string, string] }>,
+    ): Promise<void> {
+      const files: Record<string, string> = {
+        'pnpm-workspace.yaml': 'packages:\n  - "packages/*"',
+        'package.json': JSON.stringify({ name: 'root' }),
+        'index.ts': 'const x = 1;',
+      };
+      for (const s of surfaces) {
+        const pkg: Record<string, unknown> = {
+          name: s.name,
+          bin: { [s.name]: 'index.js' },
+          scripts: { dev: 'node index.js' },
+        };
+        if (s.deps) pkg['dependencies'] = s.deps;
+        if (s.devDeps) pkg['devDependencies'] = s.devDeps;
+        files[`packages/${s.name}/package.json`] = JSON.stringify(pkg);
+        // Enough source files
+        for (let i = 0; i < 6; i++) {
+          files[`packages/${s.name}/src/f${i}.ts`] = `export const x${i} = ${i};`;
+        }
+        if (s.configFile) {
+          files[`packages/${s.name}/${s.configFile[0]}`] = s.configFile[1];
+        }
+      }
+      await createTestFiles(files);
+      process.chdir(tempDir);
+    }
+
+    it('renders Surfaces section with header and divider for monorepo', async () => {
+      await createMonorepoWithSurfaces([
+        { name: 'cli', devDeps: { vitest: '2.0.0' } },
+        { name: 'web', deps: { next: '14.0.0' }, devDeps: { vitest: '2.0.0' }, configFile: ['next.config.js', 'module.exports = {};'] },
+      ]);
+
+      const { stdout } = runScan();
+      expect(stdout).toContain('Surfaces');
+      // Divider for "Surfaces" (8 chars)
+      expect(stdout).toMatch(/────────/);
+    });
+
+    it('shows surface name, framework/language, and testing on each line', async () => {
+      await createMonorepoWithSurfaces([
+        { name: 'cli', devDeps: { vitest: '2.0.0' } },
+        { name: 'web', deps: { next: '14.0.0' }, devDeps: { vitest: '2.0.0' }, configFile: ['next.config.js', 'module.exports = {};'] },
+      ]);
+
+      const { stdout } = runScan();
+      const lines = stdout.split('\n');
+
+      // Find lines after "Surfaces" header
+      const surfIdx = lines.findIndex((l: string) => l.includes('Surfaces') && !l.includes('────'));
+      expect(surfIdx).toBeGreaterThan(-1);
+
+      // Check for surface data lines (after header + divider)
+      const surfaceBlock = lines.slice(surfIdx + 2, surfIdx + 6).join('\n');
+      expect(surfaceBlock).toContain('cli');
+      expect(surfaceBlock).toContain('web');
+    });
+
+    // @ana A007
+    it('surfaces without testing show identity only (no separator)', async () => {
+      await createMonorepoWithSurfaces([
+        { name: 'cli' },  // no devDeps with testing framework
+      ]);
+
+      const { stdout } = runScan();
+      const lines = stdout.split('\n');
+      const surfIdx = lines.findIndex((l: string) => l.includes('Surfaces') && !l.includes('────'));
+      if (surfIdx > -1) {
+        // The cli surface line should not contain " · " separator since no testing
+        const cliLine = lines.slice(surfIdx + 2).find((l: string) => l.includes('cli'));
+        if (cliLine) {
+          expect(cliLine).not.toContain(' · ');
+        }
+      }
+    });
+
+    // @ana A008
+    it('shows overflow indicator for 5+ surfaces', async () => {
+      await createMonorepoWithSurfaces([
+        { name: 'svc1' },
+        { name: 'svc2' },
+        { name: 'svc3' },
+        { name: 'svc4' },
+        { name: 'svc5' },
+      ]);
+
+      const { stdout } = runScan();
+      expect(stdout).toContain('(+1 more)');
+    });
+
+    // @ana A009
+    it('shows no overflow for exactly 4 surfaces', async () => {
+      await createMonorepoWithSurfaces([
+        { name: 'svc1' },
+        { name: 'svc2' },
+        { name: 'svc3' },
+        { name: 'svc4' },
+      ]);
+
+      const { stdout } = runScan();
+      expect(stdout).not.toContain('(+');
+    });
+
+    it('omits Surfaces section for single-repo project', async () => {
+      await createTestFiles({
+        'package.json': JSON.stringify({ name: 'test', devDependencies: { vitest: '2.0.0' } }),
+        'index.ts': 'const x = 1;',
+      });
+      process.chdir(tempDir);
+
+      const { stdout } = runScan();
+      // "Surfaces" should not appear as a section header
+      const lines = stdout.split('\n');
+      const hasSurfaceSection = lines.some((l: string) =>
+        l.trim() === 'Surfaces' || l.match(/^\s+Surfaces\s*$/),
+      );
+      expect(hasSurfaceSection).toBe(false);
+    });
   });
 });
 

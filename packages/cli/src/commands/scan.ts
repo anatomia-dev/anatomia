@@ -202,18 +202,27 @@ function formatHumanReadable(
       wsDisplay += ` · primary: ${result.monorepo.primaryPackage.path}`;
     }
     lines.push(`  ${chalk.gray('Workspace'.padEnd(12))} ${wsDisplay}`);
+  }
 
-    // Surfaces — detected development surfaces within the monorepo
-    if (result.surfaces.length > 0) {
-      const MAX_SURFACES = 4;
-      const surfaceLabels = result.surfaces.slice(0, MAX_SURFACES).map(s =>
-        s.framework ? `${s.name} (${s.framework})` : s.name,
-      );
-      const displayed = surfaceLabels.join(' · ');
-      const overflow = result.surfaces.length > MAX_SURFACES
-        ? ` ${chalk.dim(`(+${result.surfaces.length - MAX_SURFACES} more)`)}`
-        : '';
-      lines.push(`  ${chalk.gray('Surfaces'.padEnd(12))} ${displayed}${overflow}`);
+  // Surfaces — standalone section for monorepo surfaces
+  if (result.surfaces.length > 0) {
+    const MAX_SURFACES = 4;
+    const displayed = result.surfaces.slice(0, MAX_SURFACES);
+    const namePad = Math.max(...displayed.map(s => s.name.length)) + 2;
+
+    lines.push('');
+    lines.push(chalk.bold('  Surfaces'));
+    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(8)));
+
+    for (const s of displayed) {
+      const identity = s.framework || s.language || '';
+      const testing = s.testing?.[0] || '';
+      const detail = testing ? `${identity} · ${testing}` : identity;
+      lines.push(`  ${chalk.gray(s.name.padEnd(namePad))} ${detail}`);
+    }
+
+    if (result.surfaces.length > MAX_SURFACES) {
+      lines.push(`  ${' '.repeat(namePad)} ${chalk.dim(`(+${result.surfaces.length - MAX_SURFACES} more)`)}`);
     }
   }
 

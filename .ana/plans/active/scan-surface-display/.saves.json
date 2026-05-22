@@ -34,5 +34,37 @@
   "spec": {
     "saved_at": "2026-05-22T04:25:30.516Z",
     "hash": "sha256:4ca1ae2e53c7a3b03b2fa0b9de7a42d5f5b9aa497afa005af936a36367405cfa"
+  },
+  "build_started_at": "2026-05-22T06:45:19.887Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T06:55:45.059Z",
+    "hash": "sha256:f91c238ef8732bf6dbd0079d424a954b441dff716ada746ab2c6455e155eea63"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T06:55:45.060Z",
+    "hash": "sha256:732bbe9d0ebc8ce1d7c5342b477600229afba15972292de86365df28a2246de0"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/engine/detectors/git.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "packages/cli/tests/engine/detectors/git-workflow.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:13:42.197Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:8bcd1a818841b00abb42b79244be3341a107e02c6c904a9fa8e1bb94ba71bbdd",
+    "run_at": "2026-05-22T07:19:24.405Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:19:24.441Z",
+    "hash": "sha256:4f22ae14c1384e2e528fa62a9e91f6ed9917874e8acd8082577eaf79a98a5260"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:19:24.441Z",
+    "hash": "sha256:4f1e4bc2a83e9ec2270f86e3f5919dae098941f843178735e5a1fab0b8b15a79"
   }
 }
