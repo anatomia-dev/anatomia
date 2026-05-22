@@ -18,5 +18,22 @@
   "spec": {
     "saved_at": "2026-05-22T10:17:44.786Z",
     "hash": "sha256:fb9d340f5c0c07aa8cc0a0fe41a2b1cc18f6a6a8d0ddb0a5002473981335706b"
-  }
+  },
+  "build_started_at": "2026-05-22T10:25:36.794Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T10:33:28.722Z",
+    "hash": "sha256:9d1d8445950a0b2d8d5838d5abe0d3835eccd75d20b0227e42a189a504f22e36"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T10:33:28.722Z",
+    "hash": "sha256:0c330ad46edf16d05ec356a4f06be9053fc6bc7385fdd89defd7272e6e373241"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+  ],
+  "commit_hygiene": []
 }
