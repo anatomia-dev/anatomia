@@ -1038,6 +1038,66 @@ function validateInternalLinks(
 // Main
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Page dates (git-derived) + staleness check
+// ---------------------------------------------------------------------------
+
+const STALENESS_THRESHOLD_DAYS = 60;
+
+interface PageDates {
+  [slug: string]: string;
+}
+
+function extractPageDates(buildTimestamp: string): PageDates {
+  const contentDir = path.join(WEBSITE_DIR, 'content', 'docs');
+  const pageDates: PageDates = {};
+  const fallbackDate = buildTimestamp.slice(0, 10);
+
+  function walk(dir: string, prefix: string): void {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        walk(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name);
+      } else if (entry.name.endsWith('.mdx')) {
+        const slug = prefix ? `${prefix}/${entry.name.replace(/\.mdx$/, '')}` : entry.name.replace(/\.mdx$/, '');
+        const filepath = path.join(dir, entry.name);
+        let date = fallbackDate;
+        try {
+          const gitDate = execSync(`git log -1 --format=%aI -- "${filepath}"`, { encoding: 'utf-8' }).trim();
+          if (gitDate) {
+            date = gitDate.slice(0, 10);
+          }
+        } catch {
+          // git failure — use fallback
+        }
+        pageDates[slug] = date;
+      }
+    }
+  }
+
+  walk(contentDir, '');
+  return pageDates;
+}
+
+interface StaleDoc {
+  file: string;
+  days: number;
+}
+
+function checkStaleDocs(pageDates: PageDates): StaleDoc[] {
+  const now = Date.now();
+  const staleDocs: StaleDoc[] = [];
+
+  for (const [slug, dateStr] of Object.entries(pageDates)) {
+    const date = new Date(dateStr);
+    const days = Math.floor((now - date.getTime()) / (1000 * 60 * 60 * 24));
+    if (days > STALENESS_THRESHOLD_DAYS) {
+      staleDocs.push({ file: `${slug}.mdx`, days });
+    }
+  }
+
+  return staleDocs.sort((a, b) => b.days - a.days);
+}
+
 async function main(): Promise<void> {
   console.log('Extracting docs data...\n');
 
@@ -1123,6 +1183,21 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   console.log('  ✓ Internal links validated');
+
+  // Extract git-derived page dates
+  const pageDates = extractPageDates(buildMeta.buildTimestamp);
+  writeJSON('page-dates.json', pageDates);
+
+  // Check for stale docs
+  const staleDocs = checkStaleDocs(pageDates);
+  if (staleDocs.length > 0) {
+    console.warn('\n  ⚠ Stale docs (last commit > 60 days ago):');
+    for (const doc of staleDocs) {
+      console.warn(`    ${doc.file} — ${doc.days} days`);
+    }
+  } else {
+    console.log('  ✓ No stale docs');
+  }
 
   // Validate completeness
   const errors: string[] = [];
