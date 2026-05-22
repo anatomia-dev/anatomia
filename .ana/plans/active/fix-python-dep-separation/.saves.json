@@ -43,5 +43,20 @@
     "packages/cli/tests/engine/integration/edge-cases.test.ts",
     "packages/cli/tests/engine/parsers/python.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T10:08:39.570Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ed8c7fe47c207733dd9c5e735a864ebd2e57266b50613dc8dfac00f731fe669f",
+    "run_at": "2026-05-22T10:14:19.703Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T10:14:19.751Z",
+    "hash": "sha256:4790b4636d8e69b0dbde960f896112f240c7fde2d96d58172ca07f39309ea51e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T10:14:19.752Z",
+    "hash": "sha256:f62d99c83ee4a7938eff74655c5717c2d9adf05efdd00692376576c6273e8e5b"
+  }
 }
