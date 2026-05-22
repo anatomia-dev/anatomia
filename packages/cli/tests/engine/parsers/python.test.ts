@@ -141,6 +141,25 @@ benchmark = ["pytest-benchmark>=5.1.0"]`;
     expect(result.dev).toContain('pytest-benchmark');
   });
 
+  it('handles TOML inline comments after closing bracket', () => {
+    const content = `[project]
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+] # production deps
+
+[dependency-groups]
+test = [
+    "pytest>=9.0",
+    "coverage[toml]>=7.0",
+] # test dependencies`;
+    const result = parsePyprojectToml(content);
+    expect(result.production).toContain('fastapi');
+    expect(result.production).toContain('uvicorn');
+    expect(result.dev).toContain('pytest');
+    expect(result.dev).toContain('coverage');
+  });
+
   it('handles single-quoted strings in dependency-groups', () => {
     const content = `[dependency-groups]
 test = [

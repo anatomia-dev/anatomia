@@ -48,10 +48,10 @@ export function parsePyprojectToml(content: string): { production: string[]; dev
   // the sub-table key in `[project.optional-dependencies]`.
   // Note: this pattern is not section-scoped — it could match a `dependencies`
   // key inside [dependency-groups]. Dedup via `new Set(deps)` makes this harmless.
-  // Use `\]\s*$` to anchor closing bracket at end-of-line, avoiding early
+  // Use `\]\s*(?:#.*)?$` to anchor closing bracket at end-of-line, avoiding early
   // termination on mid-line brackets like `[trio]` in `"anyio[trio] >=3.2.1"`.
-  // Tradeoff: a proper TOML parser is the right next step if more edge cases surface.
-  const pep621Match = content.match(/^\s*dependencies\s*=\s*\[([\s\S]*?)\]\s*$/m);
+  // Allows optional inline comments after the bracket (valid TOML: `] # end`).
+  const pep621Match = content.match(/^\s*dependencies\s*=\s*\[([\s\S]*?)\]\s*(?:#.*)?$/m);
   if (pep621Match && pep621Match[1]) {
     production.push(...extractFromArray(pep621Match[1]));
   }
@@ -70,7 +70,7 @@ export function parsePyprojectToml(content: string): { production: string[]; dev
     const sectionBody = optionalDepsSection[1];
     // Match `group = [ ... ]` entries, allowing multi-line arrays.
     const groupMatches = sectionBody.matchAll(
-      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]\s*$/gm
+      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]\s*(?:#.*)?$/gm
     );
     for (const match of groupMatches) {
       if (match[1]) {
@@ -93,7 +93,7 @@ export function parsePyprojectToml(content: string): { production: string[]; dev
   if (depGroupsSection && depGroupsSection[1]) {
     const sectionBody = depGroupsSection[1];
     const groupMatches = sectionBody.matchAll(
-      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]\s*$/gm
+      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]\s*(?:#.*)?$/gm
     );
     for (const match of groupMatches) {
       if (match[1]) {
