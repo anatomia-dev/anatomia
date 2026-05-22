@@ -32,7 +32,7 @@ export const STRONG_FRAMEWORK_CONFIGS = new Set([
   'nuxt.config.ts', 'nuxt.config.js', 'nuxt.config.mjs',
   'svelte.config.js', 'svelte.config.ts', 'svelte.config.mjs',
   'angular.json',
-  'vue.config.js', 'vue.config.mjs',
+  'vue.config.ts', 'vue.config.js', 'vue.config.mjs',
   'remix.config.js', 'remix.config.ts', 'remix.config.mjs',
   'react-router.config.ts', 'react-router.config.js', 'react-router.config.mjs',
   'astro.config.mjs', 'astro.config.ts', 'astro.config.js',
@@ -266,7 +266,7 @@ export function detectSurfaces(
 
     // Pre-filter: infrastructure package
     const lastSegment = root.relativePath.split('/').pop() || '';
-    if (INFRA_PATTERNS.has(lastSegment)) continue;
+    if (INFRA_PATTERNS.has(lastSegment.toLowerCase())) continue;
 
     // Pre-filter: non-product package (examples, templates, fixtures, etc.)
     if (isNonProductPath(root.relativePath)) continue;
