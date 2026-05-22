@@ -5,17 +5,16 @@
  * Pure function: receives data, returns classification. No filesystem reads.
  *
  * Priority chain (most specific wins):
- *   1. mcp-server    — @modelcontextprotocol/sdk in deps
- *   2. ai-agent      — Agent framework (langchain, crewai, claude-agent-sdk) in deps
+ *   1. mcp-server    — @modelcontextprotocol/sdk in deps (guard: no framework)
+ *   2. ai-agent      — Agent framework (langchain, crewai, claude-agent-sdk) in deps (guard: no framework)
  *   3. mobile-app    — react-native or expo in deps
  *   4. worker        — Job framework WITHOUT web framework
- *   5. bin field      → cli
- *   6. CLI dependency → cli
- *   7. Browser UI framework → web-app
- *   8. Server framework without browser UI deps → api-server
- *   9. Server framework WITH browser UI deps → full-stack
- *  10. Library markers (main/module/exports) → library
- *  11. None → unknown
+ *   5. Browser UI framework → web-app
+ *   6. Server framework + browser UI deps → full-stack
+ *   7. Server framework alone → api-server
+ *   8. bin field      → cli
+ *   9. Library markers (main/module/exports) → library
+ *  10. None → unknown
  */
 
 /** Closed set of application shapes. */
@@ -75,22 +74,6 @@ const JOB_FRAMEWORK_DEPS = new Set([
   'agenda',
 ]);
 
-/** CLI-specific dependencies — presence of any implies a CLI tool. */
-const CLI_DEPS = new Set([
-  'commander',
-  'yargs',
-  'meow',
-  'cac',
-  'clipanion',
-  'oclif',
-  'vorpal',
-  'caporal',
-  'args',
-  'minimist',
-  'arg',
-  'citty',
-]);
-
 /** Browser UI frameworks — internal keys as returned by framework detectors. */
 const BROWSER_FRAMEWORKS = new Set([
   'nextjs',
@@ -114,6 +97,17 @@ const SERVER_FRAMEWORKS = new Set([
   'hono',
   'nestjs',
   'adonis',
+]);
+
+/**
+ * Browser dependency aliases — package names that differ from their internal
+ * framework keys (next→nextjs, @angular/core→angular, solid-js→solid).
+ * Used alongside BROWSER_FRAMEWORKS for the full-stack browser dep check.
+ */
+const BROWSER_DEP_ALIASES = new Set([
+  'next',
+  '@angular/core',
+  'solid-js',
 ]);
 
 /**
@@ -149,19 +143,27 @@ export function detectApplicationShape(input: ApplicationShapeInput): Applicatio
     return { shape: shape ?? 'unknown' };
   }
 
+  // Compute once — used by MCP guard, ai-agent guard, and worker guard.
+  const hasWebFramework = input.frameworkName !== null && (
+    BROWSER_FRAMEWORKS.has(input.frameworkName) || SERVER_FRAMEWORKS.has(input.frameworkName)
+  );
+
   // 1. MCP server (most specific — dedicated protocol server)
-  // BUT: if a browser framework is also present, this is a web app with an
-  // MCP feature, not a dedicated MCP server. Let it fall through to web-app.
+  // BUT: if ANY web framework is present, this is a web/API app with an
+  // MCP feature, not a dedicated MCP server. Let it fall through.
   if (input.deps.some(d => MCP_DEPS.has(d))) {
-    const hasBrowserFramework = input.frameworkName !== null && BROWSER_FRAMEWORKS.has(input.frameworkName);
-    if (!hasBrowserFramework) {
+    if (!hasWebFramework) {
       return { shape: 'mcp-server' };
     }
   }
 
   // 2. AI agent (agent FRAMEWORK, not just AI SDK)
+  // BUT: if ANY web framework is present, this is a web/API app with AI
+  // features, not a standalone agent. Let it fall through.
   if (input.deps.some(d => AGENT_FRAMEWORK_DEPS.has(d))) {
-    return { shape: 'ai-agent' };
+    if (!hasWebFramework) {
+      return { shape: 'ai-agent' };
+    }
   }
 
   // 3. Mobile app
@@ -171,24 +173,11 @@ export function detectApplicationShape(input: ApplicationShapeInput): Applicatio
 
   // 4. Worker (job framework WITHOUT web framework)
   const hasJobFramework = input.deps.some(d => JOB_FRAMEWORK_DEPS.has(d));
-  const hasWebFramework = input.frameworkName !== null && (
-    BROWSER_FRAMEWORKS.has(input.frameworkName) || SERVER_FRAMEWORKS.has(input.frameworkName)
-  );
   if (hasJobFramework && !hasWebFramework) {
     return { shape: 'worker' };
   }
 
-  // 5. bin field → cli
-  if (input.hasBin) {
-    return { shape: 'cli' };
-  }
-
-  // 6. CLI dependency → cli
-  if (input.deps.some(d => CLI_DEPS.has(d))) {
-    return { shape: 'cli' };
-  }
-
-  // 7-9. Framework-based classification
+  // 5-7. Framework-based classification (framework is identity)
   if (input.frameworkName !== null) {
     const isBrowser = BROWSER_FRAMEWORKS.has(input.frameworkName);
     const isServer = SERVER_FRAMEWORKS.has(input.frameworkName);
@@ -200,20 +189,23 @@ export function detectApplicationShape(input: ApplicationShapeInput): Applicatio
     if (isServer) {
       // Check if browser UI deps also present → full-stack.
       // BROWSER_FRAMEWORKS uses internal keys (react, vue, svelte, etc.) which
-      // match most package names directly. The inline array covers package names
-      // that differ from internal keys (next→nextjs, @angular/core→angular, etc.).
-      const hasBrowserDep = input.deps.some(d => BROWSER_FRAMEWORKS.has(d) || [
-        'next', '@angular/core', 'solid-js',
-      ].includes(d));
+      // match most package names directly. BROWSER_DEP_ALIASES covers package
+      // names that differ from internal keys (next→nextjs, @angular/core→angular, etc.).
+      const hasBrowserDep = input.deps.some(d => BROWSER_FRAMEWORKS.has(d) || BROWSER_DEP_ALIASES.has(d));
       return { shape: hasBrowserDep ? 'full-stack' : 'api-server' };
     }
   }
 
-  // 10. Library markers
+  // 8. bin field → cli
+  if (input.hasBin) {
+    return { shape: 'cli' };
+  }
+
+  // 9. Library markers
   if (input.hasMain || input.hasExports) {
     return { shape: 'library' };
   }
 
-  // 11. Unknown
+  // 10. Unknown
   return { shape: 'unknown' };
 }
