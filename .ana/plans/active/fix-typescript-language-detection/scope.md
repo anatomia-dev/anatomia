@@ -12,7 +12,7 @@ Four repos (budibase, infisical, tooljet, immich) show "Node.js" when they're cl
 - **Kind:** fix
 - **Size:** small — one code change in scan-engine.ts, plus unit tests
 - **Surface:** cli
-- **Files affected:** `packages/cli/src/engine/scan-engine.ts` (the TypeScript override block, lines 853-861)
+- **Files affected:** `packages/cli/src/engine/scan-engine.ts` (the TypeScript override block, lines 853-861) + test file TBD by plan
 - **Blast radius:** Display and context accuracy only. Language value flows to scan header, ana.json, scaffold descriptions, and scan.json `stack.language`. Does NOT affect init command generation, skill detection, setup messaging, or pipeline behavior. Upgrading Node.js → TypeScript is always an improvement, never a regression.
 - **Estimated effort:** ~30 minutes implementation + tests
 - **Multi-phase:** no
