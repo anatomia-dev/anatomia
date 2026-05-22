@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-148 runs · 106 active · 3 promoted · 744 closed
+149 runs · 108 active · 3 promoted · 749 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 102 | 72 | 2026-05-22 |
+| cli | 103 | 74 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -17,23 +17,18 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
+| packages/cli/src/engine/detectors/surfaces.ts | 4 | 3 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
-| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
-
-### packages/cli/src/commands/config.ts
-
-- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/work.ts
 
@@ -41,6 +36,7 @@
 
 ### packages/cli/src/engine/census.ts
 
+- **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 
@@ -50,6 +46,7 @@
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
+- **code:** 'testing' removed from EXCLUDED_SEGMENTS — pre-existing branch change, not from this build, but reduces surface filtering coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts

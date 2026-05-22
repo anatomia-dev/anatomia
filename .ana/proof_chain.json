@@ -39685,6 +39685,246 @@
         "base_commit": "7d5ca8acbd9e5550efdcae26e5639e62a08d8443"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "scan-quality-polish",
+      "feature": "Scan Quality Polish (6 Additive Fixes)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 11,
+        "satisfied": 11,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Schema discovery ignores schemas found inside test and example directories",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Infrastructure package filtering works regardless of capitalization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Vue projects using TypeScript config files are detected correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Vue TypeScript config is recognized as a strong framework signal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The surfaces-without-testing test fails when the Surfaces section is missing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The surfaces-without-testing test fails when the surface line is missing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Surface display tests verify framework, language, and testing values are rendered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Surface display tests verify the testing framework is rendered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The MCP-yields-to-web-app test carries the correct proof chain tag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The pure-function test no longer carries a misplaced proof chain tag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "All existing tests continue to pass after changes",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 30,
+        "think": 1,
+        "plan": 4,
+        "build": 8,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:c2e49c89768543f7af04d3649bd7e7bcacf82873ef72bd24a674e0bd6e7c8436",
+        "contract": "sha256:69d65ccedbdcd6afe44df698a57fb7851f58420bd2f250ca52450ddc5e169531",
+        "plan": "sha256:9b9c4cb3ee06341e6f5b92e1a0aecbcc456a4cd1534df0b948c40f016e8443b8",
+        "spec": "sha256:fb9d340f5c0c07aa8cc0a0fe41a2b1cc18f6a6a8d0ddb0a5002473981335706b",
+        "build-report": "sha256:9d1d8445950a0b2d8d5838d5abe0d3835eccd75d20b0227e42a189a504f22e36",
+        "build-data": "sha256:0c330ad46edf16d05ec356a4f06be9053fc6bc7385fdd89defd7272e6e373241",
+        "verify-report": "sha256:7089e669de46d3769c2da642a446bc948574f24a413588b8c339a51bc6eb5059",
+        "verify-data": "sha256:d75d2d052143c7294637bffc2934e5e68f12434a7b82a23c066440b1f05a5b00"
+      },
+      "completed_at": "2026-05-22T10:45:36.282Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/tests/commands/scan.test.ts",
+        "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+      ],
+      "scope_summary": "Six small additive fixes — 3 product accuracy improvements and 3 test quality improvements — surfaced through R5/R6 validation and proof chain findings. Each makes the scan strictly more accurate or the tests strictly more honest. None are regressions; all are pre-existing gaps now documented. Validated by 3 independent agents with no concerns.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Spec says fixture produces 'TypeScript' but actual output is 'JavaScript' — spec guidance was incorrect",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1086,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "scan-quality-polish-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T10:45:36.283Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 322,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "scan-quality-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "INFRA_PATTERNS case-insensitivity (Fix 2) resolves proof finding fix-false-surface-detection-C2",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "fix-false-surface-detection-C2"
+          ],
+          "id": "scan-quality-polish-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T10:45:36.283Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Vacuous assertion fix (Fix 4) resolves proof finding scan-surface-display-C1",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "scan-surface-display-C1"
+          ],
+          "id": "scan-quality-polish-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T10:45:36.283Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Value-level assertions (Fix 5) resolves proof finding scan-surface-display-C2",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "scan-surface-display-C2"
+          ],
+          "id": "scan-quality-polish-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T10:45:36.283Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "@ana A003 tag relocation (Fix 6) resolves proof finding fix-shape-detection-priority-C2",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "fix-shape-detection-priority-C2"
+          ],
+          "id": "scan-quality-polish-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T10:45:36.283Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "'testing' removed from EXCLUDED_SEGMENTS — pre-existing branch change, not from this build, but reduces surface filtering coverage",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 65,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "scan-quality-polish-C7",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "discoverSchemas non-product filter has no dedicated unit test — function is private",
+          "file": "packages/cli/src/engine/census.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Case-insensitive INFRA_PATTERNS has no dedicated test for capitalized package names",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T10:25:36.794Z",
+        "completed_at": "2026-05-22T10:45:36.277Z",
+        "commit_count": 0,
+        "base_commit": "25f7e4abf75029840c32af05d341df8136168bbc"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
