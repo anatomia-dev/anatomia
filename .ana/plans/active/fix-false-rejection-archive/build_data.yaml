@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "writeOpposingSaves test helper duplicates opposing-key derivation logic"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Content-based detection reads verify report files on every computeTiming call"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "A018 multi-phase rejection test uses hybrid unnumbered/numbered setup"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    severity: observation
+    suggested_action: accept

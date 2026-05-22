@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat } from '../../src/commands/artifact.js';
+import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey } from '../../src/commands/artifact.js';
 
 /**
  * Tests for `ana artifact save` command
@@ -3296,7 +3296,38 @@ describe('artifact archiving', () => {
     return `schema: 1\nconcerns:\n  - summary: "${extra ?? 'Test concern'}"\n    severity: debt\n    suggested_action: monitor`;
   }
 
-  // @ana A001, A002
+  /**
+   * Write .saves.json that simulates a genuine rejection cycle:
+   * the opposing stage has a timestamp between the first save and the re-save.
+   * This satisfies the stage-transition gate so archiving proceeds.
+   */
+  async function writeOpposingSaves(
+    slugDir: string,
+    artifactType: string,
+    firstSaveTime: string,
+    opposingTime: string,
+  ): Promise<void> {
+    const opposingKey = artifactType.startsWith('verify') ? 'build-report' : 'verify-report';
+    // Extract phase suffix from artifact type
+    const phaseMatch = artifactType.match(/-(\d+)$/);
+    const phaseSuffix = phaseMatch ? `-${phaseMatch[1]}` : '';
+    const fullOpposingKey = opposingKey + phaseSuffix;
+
+    // Determine current artifact's report key (companion → parent)
+    let currentReportKey = artifactType;
+    const companionMatch = artifactType.match(/^(verify-data|build-data)(-\d+)?$/);
+    if (companionMatch) {
+      currentReportKey = `${companionMatch[1] === 'verify-data' ? 'verify-report' : 'build-report'}${companionMatch[2] ?? ''}`;
+    }
+
+    const saves: Record<string, { saved_at: string; hash: string }> = {
+      [currentReportKey]: { saved_at: firstSaveTime, hash: 'sha256:first' },
+      [fullOpposingKey]: { saved_at: opposingTime, hash: 'sha256:opposing' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+  }
+
+  // @ana A016
   it('archives previous verify_report.md on save', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3306,6 +3337,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), originalContent, 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('Round 1'), 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement (build-report saved after verify-report)
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     // Overwrite with new content
     const newContent = getValidVerifyReportContent('Round 2 content');
@@ -3322,7 +3356,6 @@ describe('artifact archiving', () => {
     expect(archiveContent).toBe(originalContent);
   });
 
-  // @ana A003, A004
   it('archives previous verify_data.yaml on save', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3331,6 +3364,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), originalDataContent, 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('Round 2 data'), 'utf-8');
@@ -3344,7 +3380,6 @@ describe('artifact archiving', () => {
     expect(archiveContent).toBe(originalDataContent);
   });
 
-  // @ana A005, A006
   it('archives previous build_report.md on save', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3353,6 +3388,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'build_report.md'), originalContent, 'utf-8');
     await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('Round 1'), 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement (verify-report saved after build-report)
+    await writeOpposingSaves(slugDir, 'build-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('Round 2 build'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('Round 2'), 'utf-8');
@@ -3366,7 +3404,6 @@ describe('artifact archiving', () => {
     expect(archiveContent).toBe(originalContent);
   });
 
-  // @ana A016
   it('archives previous build_data.yaml on save', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3375,6 +3412,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R1'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'build_data.yaml'), originalDataContent, 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement
+    await writeOpposingSaves(slugDir, 'build-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R2'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('Round 2 build data'), 'utf-8');
@@ -3388,7 +3428,7 @@ describe('artifact archiving', () => {
     expect(archiveContent).toBe(originalDataContent);
   });
 
-  // @ana A007, A008
+  // @ana A017
   it('increments round number when _r1 already exists', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3398,10 +3438,21 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
 
+    // Simulate opposing stage advancement for round 2
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
+
     // Round 2 — overwrites, creating _r1
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
     saveArtifact('verify-report', 'test-slug');
+
+    // Simulate opposing stage advancement again for round 3
+    // Read current .saves.json to get verify-report's latest timestamp
+    const savesAfterR2 = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    const verifyTime = savesAfterR2['verify-report'].saved_at;
+    // Set build-report timestamp after verify-report
+    savesAfterR2['build-report'] = { saved_at: new Date(new Date(verifyTime).getTime() + 60000).toISOString(), hash: 'sha256:opposing2' };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(savesAfterR2, null, 2), 'utf-8');
 
     // Round 3 — overwrites, should create _r2
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R3'), 'utf-8');
@@ -3467,7 +3518,6 @@ describe('artifact archiving', () => {
     expect(archiveFiles.length).toBe(0);
   });
 
-  // @ana A011
   it('stages archive files in the same commit', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3475,6 +3525,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
@@ -3489,7 +3542,6 @@ describe('artifact archiving', () => {
     expect(commitFiles).toContain('_r1.md');
   });
 
-  // @ana A012
   it('archives phase-numbered report correctly', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3497,6 +3549,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), getValidVerifyReportContent('Phase 1 R1'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data_1.yaml'), getValidVerifyDataContent('Phase 1 R1'), 'utf-8');
     execSync('git add -A && git commit -m "phase 1 round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement for phase-numbered artifact
+    await writeOpposingSaves(slugDir, 'verify-report-1', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), getValidVerifyReportContent('Phase 1 R2'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data_1.yaml'), getValidVerifyDataContent('Phase 1 R2'), 'utf-8');
@@ -3510,7 +3565,6 @@ describe('artifact archiving', () => {
     expect(archiveName).toContain('_1_r1');
   });
 
-  // @ana A013
   it('save-all archives previous versions', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3518,6 +3572,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
@@ -3546,7 +3603,6 @@ describe('artifact archiving', () => {
     expect(lastMsg).toContain('Verify report');
   });
 
-  // @ana A015 (archiving)
   it('archives when file deleted from disk but exists in git', async () => {
     await createTestProject();
     const slugDir = await createSlugDir('test-slug');
@@ -3555,6 +3611,9 @@ describe('artifact archiving', () => {
     await fs.writeFile(path.join(slugDir, 'verify_report.md'), originalContent, 'utf-8');
     await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
     execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Simulate opposing stage advancement
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
 
     // Delete the file, then write new version
     await fs.unlink(path.join(slugDir, 'verify_report.md'));
@@ -3568,6 +3627,254 @@ describe('artifact archiving', () => {
     expect(archiveExists).toBe(true);
     const archiveContent = await fs.readFile(archivePath, 'utf-8');
     expect(archiveContent).toBe(originalContent);
+  });
+
+  // @ana A001
+  it('same-session verify re-save does not archive report', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    // Write and commit original verify report
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Write .saves.json where verify-report is NEWER than build-report (no opposing advancement)
+    const saves = {
+      'verify-report': { saved_at: '2026-01-01T11:00:00Z', hash: 'sha256:vr1' },
+      'build-report': { saved_at: '2026-01-01T10:00:00Z', hash: 'sha256:br1' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+
+    // Re-save with different content — should NOT archive
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const entries = await fs.readdir(slugDir);
+    const archiveFiles = entries.filter(e => /_r\d+\./.test(e));
+    expect(archiveFiles.length).toBe(0);
+  });
+
+  // @ana A002
+  it('same-session verify re-save does not archive companion', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // No opposing stage advancement
+    const saves = {
+      'verify-report': { saved_at: '2026-01-01T11:00:00Z', hash: 'sha256:vr1' },
+      'build-report': { saved_at: '2026-01-01T10:00:00Z', hash: 'sha256:br1' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const entries = await fs.readdir(slugDir);
+    const companionArchiveFiles = entries.filter(e => /verify_data_r\d+\.yaml$/.test(e));
+    expect(companionArchiveFiles.length).toBe(0);
+  });
+
+  // @ana A003
+  it('same-session verify re-save does not create history entry', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // No opposing stage advancement — verify is newer
+    const saves = {
+      'verify-report': { saved_at: '2026-01-01T11:00:00Z', hash: 'sha256:vr1' },
+      'build-report': { saved_at: '2026-01-01T10:00:00Z', hash: 'sha256:br1' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const updatedSaves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(updatedSaves['verify-report'].history).toBeUndefined();
+  });
+
+  // @ana A004
+  it('same-session build re-save does not archive report', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // No opposing stage advancement — build is newer
+    const saves = {
+      'build-report': { saved_at: '2026-01-01T11:00:00Z', hash: 'sha256:br1' },
+      'verify-report': { saved_at: '2026-01-01T10:00:00Z', hash: 'sha256:vr1' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('R2'), 'utf-8');
+
+    saveArtifact('build-report', 'test-slug');
+
+    const entries = await fs.readdir(slugDir);
+    const archiveFiles = entries.filter(e => /_r\d+\./.test(e));
+    expect(archiveFiles.length).toBe(0);
+  });
+
+  // @ana A005
+  it('same-session build re-save does not create history entry', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // No opposing stage advancement
+    const saves = {
+      'build-report': { saved_at: '2026-01-01T11:00:00Z', hash: 'sha256:br1' },
+      'verify-report': { saved_at: '2026-01-01T10:00:00Z', hash: 'sha256:vr1' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent('R2'), 'utf-8');
+
+    saveArtifact('build-report', 'test-slug');
+
+    const updatedSaves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(updatedSaves['build-report'].history).toBeUndefined();
+  });
+
+  // @ana A006
+  it('genuine rejection creates archive', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Opposing stage advanced — build-report is newer than verify-report
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const entries = await fs.readdir(slugDir);
+    const archiveFiles = entries.filter(e => /verify_report_r\d+\.md$/.test(e));
+    expect(archiveFiles.length).toBeGreaterThan(0);
+  });
+
+  // @ana A007
+  it('genuine rejection creates history entry', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Opposing stage advanced
+    await writeOpposingSaves(slugDir, 'verify-report', '2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const updatedSaves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(updatedSaves['verify-report'].history.length).toBeGreaterThan(0);
+  });
+
+  // @ana A008
+  it('multi-phase opposing key derives correctly', () => {
+    const opposingKey = deriveOpposingReportKey('verify-report-2');
+    expect(opposingKey).toBe('build-report-2');
+  });
+
+  // @ana A009
+  it('multi-phase opposing key derives correctly for build', () => {
+    const opposingKey = deriveOpposingReportKey('build-report-3');
+    expect(opposingKey).toBe('verify-report-3');
+  });
+
+  // @ana A013
+  it('companion follows parent gate on same-session re-save', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R1'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R1'), 'utf-8');
+    execSync('git add -A && git commit -m "round 1"', { cwd: tempDir, stdio: 'ignore' });
+
+    // No opposing stage advancement
+    const saves = {
+      'verify-report': { saved_at: '2026-01-01T11:00:00Z', hash: 'sha256:vr1' },
+      'build-report': { saved_at: '2026-01-01T10:00:00Z', hash: 'sha256:br1' },
+    };
+    await fs.writeFile(path.join(slugDir, '.saves.json'), JSON.stringify(saves, null, 2), 'utf-8');
+
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('R2'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('R2'), 'utf-8');
+
+    saveArtifact('verify-report', 'test-slug');
+
+    const entries = await fs.readdir(slugDir);
+    const companionArchiveFiles = entries.filter(e => /verify_data_r\d+\.yaml$/.test(e));
+    expect(companionArchiveFiles.length).toBe(0);
+  });
+
+  // @ana A014
+  it('first save with no prior entry works normally', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    // First save — no .saves.json, no committed version
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('First'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('First'), 'utf-8');
+
+    expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
+
+    const entries = await fs.readdir(slugDir);
+    const archiveFiles = entries.filter(e => /_r\d+\./.test(e));
+    expect(archiveFiles.length).toBe(0);
+  });
+
+  // @ana A015
+  it('first save with no saves.json works normally', async () => {
+    await createTestProject();
+    const slugDir = await createSlugDir('test-slug');
+
+    // No .saves.json at all
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), getValidVerifyReportContent('First'), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent('First'), 'utf-8');
+
+    let saveSucceeded = false;
+    try {
+      saveArtifact('verify-report', 'test-slug');
+      saveSucceeded = true;
+    } catch {
+      // save may throw on process.exit — check if commit happened
+      const lastMsg = execSync('git log -1 --pretty=%B', { cwd: tempDir, encoding: 'utf-8' });
+      saveSucceeded = lastMsg.includes('Verify report');
+    }
+    expect(saveSucceeded).toBe(true);
   });
 });
 

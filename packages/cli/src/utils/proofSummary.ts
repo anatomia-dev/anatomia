@@ -1633,9 +1633,10 @@ export function parseRejectionCycles(content: string): {
  * Compute timing from save timestamps
  *
  * @param saves - Saves data from .saves.json
+ * @param slugDir - Path to the slug directory, used for content-based rejection detection
  * @returns Timing breakdown in minutes
  */
-function computeTiming(saves: SavesData): ProofSummary['timing'] {
+function computeTiming(saves: SavesData, slugDir: string): ProofSummary['timing'] {
   const MAX_PHASE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   const getTime = (key: string): number | null => {
@@ -1703,11 +1704,42 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
   const isMultiPhase = buildPhases.length > 0;
 
   /**
-   * Detect rejection cycles: history arrays on build-report or verify-report
+   * Detect rejection cycles: content-based detection using verify report files.
+   * Reads actual verify report content and checks for "Previous Findings Resolution"
+   * sections via parseRejectionCycles, rather than relying on .saves.json history arrays
+   * which can contain false entries from same-session corrections.
    */
   const buildReportEntry = saves['build-report'] as SaveEntry | undefined;
   const verifyReportEntry = saves['verify-report'] as SaveEntry | undefined;
-  const hasRejectionHistory = !!(buildReportEntry?.history?.length || verifyReportEntry?.history?.length);
+
+  const hasRejectionContent = (() => {
+    try {
+      // Check unnumbered verify report first
+      const unnumberedPath = path.join(slugDir, 'verify_report.md');
+      if (fs.existsSync(unnumberedPath)) {
+        const content = fs.readFileSync(unnumberedPath, 'utf-8');
+        const { cycles } = parseRejectionCycles(content);
+        if (cycles > 0) return true;
+      }
+
+      // Check numbered verify reports
+      for (const { key } of verifyPhases) {
+        // Derive filename from key: "verify-report-1" → "verify_report_1.md"
+        const phaseMatch = key.match(/^verify-report-(\d+)$/);
+        if (!phaseMatch?.[1]) continue;
+        const numberedPath = path.join(slugDir, `verify_report_${phaseMatch[1]}.md`);
+        if (fs.existsSync(numberedPath)) {
+          const content = fs.readFileSync(numberedPath, 'utf-8');
+          const { cycles } = parseRejectionCycles(content);
+          if (cycles > 0) return true;
+        }
+      }
+
+      return false;
+    } catch {
+      return false;
+    }
+  })();
 
   const workStartedAt = readRawTimestamp('work_started_at');
   const planStartedAt = readRawTimestamp('plan_started_at');
@@ -1802,7 +1834,7 @@ function computeTiming(saves: SavesData): ProofSummary['timing'] {
     if (segments.length > 0) {
       timing.segments = segments;
     }
-  } else if (hasRejectionHistory && contractTime) {
+  } else if (hasRejectionContent && contractTime) {
     // Rejection cycles: reconstruct timeline from history entries
     let buildMs = 0;
     let verifyMs = 0;
@@ -1962,7 +1994,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
       }
 
       // Extract timing
-      summary.timing = computeTiming(saves);
+      summary.timing = computeTiming(saves, slugDir);
 
       // Extract commit hygiene findings
       const hygieneData = saves['commit_hygiene' as keyof typeof saves];

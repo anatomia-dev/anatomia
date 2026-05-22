@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: code
+    summary: "writeSaveMetadata companion gate is a no-op — isArchivableType regex doesn't match data keys"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 2008
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A013"]
+  - category: code
+    summary: "hasOpposingStageAdvanced exported but not imported outside artifact.ts — wider public surface than needed"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1188
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1195
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "proofSummary.ts now ~2370 lines — continues growing past comfort threshold"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: []
+  - category: test
+    summary: "A012 and A018 use toBeDefined() — contract-aligned (matcher: exists) but weaker than asserting specific fallback value"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 4620
+    severity: observation
+    suggested_action: accept
