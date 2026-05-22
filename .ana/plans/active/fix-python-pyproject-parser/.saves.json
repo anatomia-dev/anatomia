@@ -30,5 +30,35 @@
         "hash": "sha256:85dbb486409d22749829a45bc7c5e07b870c85bb2cacc18538b9181bcee0ef2d"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T08:16:20.983Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T08:20:21.557Z",
+    "hash": "sha256:59c1841fe68cf4364eb4e2e6636cc3929ef30370915dd96e156f2bcfdffdec4e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T08:20:21.558Z",
+    "hash": "sha256:7dbac6192763597d2668fb9c233ef72662d75465818e4d19778da9132617ad51"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/parsers/python/pyproject.ts",
+    "packages/cli/tests/engine/parsers/python.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T08:21:09.586Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ab31cb0ac791fe72b796c6c5d5f9c093bd054e7a385274b334651cd946c9d91b",
+    "run_at": "2026-05-22T08:24:03.559Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T08:24:03.595Z",
+    "hash": "sha256:b527e3c761c6a16cc020f9f4d28fa1c7535beebbed234e88cfabee1c4b239381"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T08:24:03.596Z",
+    "hash": "sha256:de1a3cec1cd00a01e088bdfac77104097c5c2b431a062ffd20b97b12c36af667"
   }
 }
