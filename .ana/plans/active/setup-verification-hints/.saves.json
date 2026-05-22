@@ -40,5 +40,25 @@
         "hash": "sha256:8fe3beab6b1dfe4fa1f25b496d1971df611111a777134a8be67a00fe952196e1"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-22T23:12:20.731Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T23:21:13.000Z",
+    "hash": "sha256:e01ece06fd27408ac68f8470af08439156df7294e000a105d847455c426c8981"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T23:21:13.001Z",
+    "hash": "sha256:deb92035854228b3d731ce0a3fb5338391fcfd3b4de69eab9eea6d4491dc2b9a"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-setup.md",
+    "packages/cli/src/engine/detectors/dependencies.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/src/engine/types/engineResult.ts",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/tests/contract/analyzer-contract.test.ts",
+    "packages/cli/tests/engine/detectors/dependencies.test.ts"
+  ],
+  "commit_hygiene": []
 }
