@@ -1,0 +1,123 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Python pyproject.toml parser — 3 bugs"
+
+assertions:
+  # AC1: PEP 735 [dependency-groups] support
+  - id: A001
+    says: "Dependencies listed under PEP 735 dependency-groups are detected"
+    block: "parses PEP 735 dependency-groups"
+    target: "result"
+    matcher: "contains"
+    value: "pytest"
+
+  - id: A002
+    says: "Multiple groups within dependency-groups are all extracted"
+    block: "parses PEP 735 dependency-groups"
+    target: "result.length"
+    matcher: "greater"
+    value: 1
+
+  # AC2: Array termination fix
+  - id: A003
+    says: "Packages with extras brackets like anyio[trio] are fully parsed"
+    block: "handles extras brackets in arrays"
+    target: "result"
+    matcher: "contains"
+    value: "anyio"
+
+  - id: A004
+    says: "Dependencies listed after an extras bracket are not truncated"
+    block: "handles extras brackets in arrays"
+    target: "result"
+    matcher: "contains"
+    value: "httpx"
+
+  # AC3: Single-line array regression guard
+  - id: A005
+    says: "Single-line dependency arrays continue to parse correctly"
+    block: "handles single-line arrays"
+    target: "result"
+    matcher: "contains"
+    value: "pytest-benchmark"
+
+  # AC4: Single-quoted strings
+  - id: A006
+    says: "Single-quoted package names are extracted the same as double-quoted"
+    block: "handles single-quoted strings"
+    target: "result"
+    matcher: "contains"
+    value: "pytest"
+
+  - id: A007
+    says: "Mixed single and double quotes in the same array both work"
+    block: "handles single-quoted strings"
+    target: "result"
+    matcher: "contains"
+    value: "coverage"
+
+  # AC5: Real-world validation
+  - id: A008
+    says: "Fastapi-style pyproject.toml produces pytest in the dependency list"
+    block: "extracts pytest from fastapi-style pyproject"
+    target: "result"
+    matcher: "contains"
+    value: "pytest"
+
+  - id: A009
+    says: "Pydantic-style pyproject.toml with single quotes produces pytest"
+    block: "extracts pytest from pydantic-style pyproject"
+    target: "result"
+    matcher: "contains"
+    value: "pytest"
+
+  # AC6: include-group resilience
+  - id: A010
+    says: "Include-group references do not crash the parser"
+    block: "skips include-group inline tables"
+    target: "result"
+    matcher: "not_contains"
+    value: "include-group"
+
+  - id: A011
+    says: "Real package names are still extracted alongside include-group entries"
+    block: "skips include-group inline tables"
+    target: "result"
+    matcher: "contains"
+    value: "pytest"
+
+  # AC7: Existing tests unchanged
+  - id: A012
+    says: "Existing PEP 621 parsing test still passes"
+    block: "parses PEP 621 format"
+    target: "result"
+    matcher: "equals"
+    value: ["fastapi", "uvicorn"]
+
+  - id: A013
+    says: "Existing Poetry parsing test still passes"
+    block: "parses Poetry format and skips python version"
+    target: "result"
+    matcher: "equals"
+    value: ["fastapi"]
+
+  # AC8: Code comments
+  - id: A014
+    says: "Regex tradeoff is documented in a code comment"
+    block: "code comments"
+    target: "source"
+    matcher: "contains"
+    value: "TOML parser"
+
+  - id: A015
+    says: "Strategy 1 section-scoping limitation is documented"
+    block: "code comments"
+    target: "source"
+    matcher: "contains"
+    value: "not section-scoped"
+
+file_changes:
+  - path: "packages/cli/src/engine/parsers/python/pyproject.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/parsers/python.test.ts"
+    action: modify
