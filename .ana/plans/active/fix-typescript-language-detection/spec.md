@@ -20,12 +20,12 @@ The Node.js gate (`stack.language === 'Node.js'`) remains the outer guard. Non-N
 
 Before fix — budibase scan:
 ```
-Stack      Node.js · Express · ...
+Stack      Node.js · ...
 ```
 
 After fix — budibase scan:
 ```
-Stack      TypeScript · Express · ...
+Stack      TypeScript · ...
 ```
 
 The change is a single field value. No new output, no new commands.
@@ -65,7 +65,8 @@ The change is a single field value. No new output, no new commands.
 - **Regression coverage:** The 3 existing tests in `detection-overrides.test.ts` already cover Tier 1 (root tsconfig) and Tier 1 via dep (typescript in devDeps of a single-repo). These must continue to pass unchanged.
 - **Edge cases:**
   - Tier 3 with multiple matching subdirs — only one needs to exist, `some()` returns on first match
-  - Short-circuit — test that Tier 3 does NOT run when Tier 2 matches (not directly testable without mocking, but the logic structure ensures it; the functional test is that the monorepo rootDevDeps case works without any subdirectory tsconfigs)
+  - Tier 2 sufficiency — monorepo fixture with rootDevDeps typescript but NO subdirectory tsconfigs, proving Tier 2 alone upgrades to TypeScript (A007)
+  - Multiple subdirectory tsconfigs — fixture with tsconfig.json in both `server/` and `web/`, confirming `some()` handles multiple matches (A008)
 
 ## Dependencies
 
@@ -135,6 +136,21 @@ describe('TypeScript language detection', () => {
     const result = await scanProject(tempDir, { depth: 'surface' });
     expect(result.stack.language).toBe('TypeScript');
   });
+```
+
+**Tier 3 addition** — add after the existing `if (hasTsConfig || hasTsDep)` block, inside the Node.js gate (scan-engine.ts):
+```typescript
+    // Tier 3: subdirectory tsconfig — covers projects like infisical, tooljet
+    // where tsconfig.json lives in frontend/, backend/, server/, or web/
+    if (!hasTsConfig && !hasTsDep) {
+      const tsSubdirs = ['frontend', 'backend', 'server', 'web'];
+      const hasSubdirTsConfig = tsSubdirs.some(dir =>
+        existsSync(path.join(rootPath, dir, 'tsconfig.json'))
+      );
+      if (hasSubdirTsConfig) {
+        stack.language = 'TypeScript';
+      }
+    }
 ```
 
 ### Proof Context

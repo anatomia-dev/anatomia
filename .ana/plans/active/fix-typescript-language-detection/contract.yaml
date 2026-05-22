@@ -46,15 +46,15 @@ assertions:
     value: "Node.js"
 
   - id: A007
-    says: "The subdirectory check only fires when cheaper checks miss"
-    block: "detects TypeScript when typescript is only in root devDependencies (monorepo)"
+    says: "Tier 2 alone is sufficient without any subdirectory tsconfigs present"
+    block: "detects TypeScript via rootDevDeps without subdirectory tsconfigs"
     target: "result.stack.language"
     matcher: "equals"
     value: "TypeScript"
 
   - id: A008
     says: "Multiple subdirectory tsconfig candidates are handled correctly"
-    block: "detects TypeScript when tsconfig.json exists in a subdirectory only"
+    block: "detects TypeScript when tsconfig.json exists in multiple subdirectories"
     target: "result.stack.language"
     matcher: "equals"
     value: "TypeScript"
