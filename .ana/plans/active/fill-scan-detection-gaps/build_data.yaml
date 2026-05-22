@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "react-router.config.js moved from original position to group with .ts/.mjs siblings"
+    file: "packages/cli/src/engine/census.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: monitor
