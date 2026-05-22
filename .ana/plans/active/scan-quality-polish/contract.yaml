@@ -1,0 +1,88 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan Quality Polish (6 Additive Fixes)"
+
+assertions:
+  - id: A001
+    says: "Schema discovery ignores schemas found inside test and example directories"
+    block: "discoverSchemas skips non-product paths"
+    target: "schemas"
+    matcher: "not_contains"
+    value: "e2e/"
+
+  - id: A002
+    says: "Infrastructure package filtering works regardless of capitalization"
+    block: "INFRA_PATTERNS matching is case-insensitive"
+    target: "lastSegment.toLowerCase()"
+    matcher: "exists"
+
+  - id: A003
+    says: "Vue projects using TypeScript config files are detected correctly"
+    block: "vue.config.ts recognized in FRAMEWORK_HINTS"
+    target: "FRAMEWORK_HINTS"
+    matcher: "contains"
+    value: "vue.config.ts"
+
+  - id: A004
+    says: "Vue TypeScript config is recognized as a strong framework signal"
+    block: "vue.config.ts recognized in STRONG_FRAMEWORK_CONFIGS"
+    target: "STRONG_FRAMEWORK_CONFIGS"
+    matcher: "contains"
+    value: "vue.config.ts"
+
+  - id: A005
+    says: "The surfaces-without-testing test fails when the Surfaces section is missing"
+    block: "A007 test has non-vacuous surfIdx assertion"
+    target: "expect(surfIdx).toBeGreaterThan(-1)"
+    matcher: "exists"
+
+  - id: A006
+    says: "The surfaces-without-testing test fails when the surface line is missing"
+    block: "A007 test has non-vacuous cliLine assertion"
+    target: "expect(cliLine).toBeDefined()"
+    matcher: "exists"
+
+  - id: A007
+    says: "Surface display tests verify framework, language, and testing values are rendered"
+    block: "surface display tests assert rendered values"
+    target: "surfaceBlock"
+    matcher: "contains"
+    value: "Next.js"
+
+  - id: A008
+    says: "Surface display tests verify the testing framework is rendered"
+    block: "surface display tests assert rendered values"
+    target: "surfaceBlock"
+    matcher: "contains"
+    value: "Vitest"
+
+  - id: A009
+    says: "The MCP-yields-to-web-app test carries the correct proof chain tag"
+    block: "A003 tags the correct test"
+    target: "mcp-server yields to web-app test"
+    matcher: "contains"
+    value: "// @ana A003"
+
+  - id: A010
+    says: "The pure-function test no longer carries a misplaced proof chain tag"
+    block: "A003 removed from wrong test"
+    target: "detector is a pure function describe"
+    matcher: "not_contains"
+    value: "// @ana A003"
+
+  - id: A011
+    says: "All existing tests continue to pass after changes"
+    block: "no regressions"
+    target: "test suite"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/scan.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    action: modify
