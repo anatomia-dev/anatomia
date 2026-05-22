@@ -36,5 +36,35 @@
         "hash": "sha256:9c21700ff15b15050a45bea82f9e8b85cb85022672118187045bda0829342461"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T07:14:16.107Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T07:20:15.146Z",
+    "hash": "sha256:07a49df75a5f081d61da64f81267be936038d9b7318ecedb463cc06b9b09aefc"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T07:20:15.147Z",
+    "hash": "sha256:958045e8ead3878c9996f7a0a9b9b904086a71b1a2b3c172ebdeabeaec3d90d5"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/tests/engine/census-primary.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T07:26:35.743Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:45188d7f874f2c383bb0b5ebffc5dd6d7af345f792a3eb5df144bfa39976bc54",
+    "run_at": "2026-05-22T07:31:33.808Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T07:31:33.845Z",
+    "hash": "sha256:0d41c8d37cb5dc26c29dc1556fac1d3b5823351b22f410bc0308966b658da61e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T07:31:33.845Z",
+    "hash": "sha256:1d7999cb3ac0d9da25f92d0d794cb9b3fa71be67dbdfe54b0acd6a625bb0731c"
   }
 }
