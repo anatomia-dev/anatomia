@@ -135,11 +135,11 @@ assertions:
 
   # Structural: CLI dep fallback removed
   - id: A018
-    says: "The CLI dependency fallback step has been removed from the priority chain"
-    block: "no CLI_DEPS.has check returns cli shape"
+    says: "The CLI dependency constant and fallback step have been fully removed"
+    block: "CLI_DEPS constant and usage removed"
     target: "source"
     matcher: "not_contains"
-    value: "CLI_DEPS.has"
+    value: "CLI_DEPS"
 
 file_changes:
   - path: "packages/cli/src/engine/detectors/applicationShape.ts"

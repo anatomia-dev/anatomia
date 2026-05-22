@@ -14,7 +14,7 @@ Three coordinated changes within `detectApplicationShape()`:
 
 2. **Gate ai-agent on "no framework detected."** Same principle. LangChain + Next.js is a web app with AI features, not an AI agent. Add the same `!hasWebFramework` guard used for MCP.
 
-3. **Move framework checks above bin and CLI dep checks. Remove CLI dep fallback (old step 10) entirely.** If NestJS is detected, the project is an api-server regardless of yargs in deps. Library markers move above where CLI dep was, so `hasMain`/`hasExports` still classifies correctly. The CLI dep fallback (old step 6) produced zero true positives in 70-repo validation and one false positive — delete it.
+3. **Move framework checks above bin and CLI dep checks. Remove CLI dep fallback and its constant entirely.** If NestJS is detected, the project is an api-server regardless of yargs in deps. Library markers move above where CLI dep was, so `hasMain`/`hasExports` still classifies correctly. The CLI dep fallback (old step 6) produced zero true positives in 70-repo validation and one false positive — delete both the step (line 187-189) AND the `CLI_DEPS` constant (lines 79-92). The constant is private (not exported, not imported elsewhere), so removing its only usage makes it dead code. The project enforces `@typescript-eslint/no-unused-vars: 'error'` — lint will fail if the constant survives.
 
 **Hoist `hasWebFramework`.** Currently computed at line 174 for the worker step. Three steps now need it (MCP guard, ai-agent guard, worker). Compute it once right after the non-Node early return (after line 150), before any step that uses it.
 
@@ -72,7 +72,7 @@ langfuse    → web-app     (Next.js is identity; LangChain is capability)
 
 5. Reorder the remaining steps: move the framework-based classification block (browser → web-app, server → full-stack/api-server) above the bin check and CLI dep check.
 
-6. Delete the CLI dep fallback step entirely (old step 6, lines 187-189). No replacement.
+6. Delete the CLI dep fallback step entirely (old step 6, lines 187-189) AND delete the `CLI_DEPS` constant (lines 79-92). The constant becomes dead code after its only usage is removed — lint enforces `no-unused-vars: 'error'`.
 
 7. Update the file-level JSDoc comment (lines 1-18) to reflect the new priority chain.
 
@@ -155,6 +155,7 @@ None. Pure function, no schema changes, no new dependencies.
 - **`BROWSER_FRAMEWORKS` does NOT contain `'hono'`.** `SERVER_FRAMEWORKS` does. Don't confuse the sets when writing guards.
 - **The full-stack check needs `BROWSER_DEP_ALIASES` for the dep lookup.** When extracting the inline array to a constant, make sure the full-stack check uses the new constant. The check needs both `BROWSER_FRAMEWORKS` (for direct package-name matches like `react`, `vue`) and `BROWSER_DEP_ALIASES` (for names that differ from internal keys: `next`, `@angular/core`, `solid-js`).
 - **`hasWebFramework` uses `input.frameworkName`, not deps.** It checks whether the framework detector identified a framework, not whether framework packages are in deps. This is the correct signal — `frameworkName` comes from the framework registry's priority-ordered detection.
+- **The "MCP wins over ai-agent" test (line 98-103) is intentionally unchanged.** That test has MCP SDK + LangChain but no framework. Under the new priority: both MCP and ai-agent have the no-framework guard, but MCP runs first (step 1 before step 2) — so MCP + LangChain without framework still returns `mcp-server`. Don't update it.
 
 ## Build Brief
 
