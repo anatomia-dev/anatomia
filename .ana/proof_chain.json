@@ -38954,6 +38954,249 @@
         "base_commit": "733f2baf7f21b268703cbf33db312704a5f5b237"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fill-scan-detection-gaps",
+      "feature": "Fill Scan Detection Gaps",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Kysely projects are detected as using a database",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "MikroORM projects are detected as using a database",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Slonik projects are detected as using PostgreSQL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Silverhand slonik fork is detected as PostgreSQL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Vercel Postgres projects are detected as using Vercel Postgres",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "MongoDB native driver projects are detected as using MongoDB",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Postgres.js projects are detected as using PostgreSQL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "sqlite3 projects are detected as using SQLite",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "SQL Server projects are detected as using a database",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "ORMs win over raw drivers when both are present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Mongoose wins over native MongoDB driver when both are present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A project with only postgres.js detects PostgreSQL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A project with only sqlite3 detects SQLite",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A project with only mssql detects SQL Server",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Svelte projects with .mjs config are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Nuxt projects with .mjs config are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Remix projects with .mjs config are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "React Router projects with .mjs config are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Vue projects with .mjs config are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Svelte is detected over Nuxt when both configs exist in the same surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "React Stripe.js projects are detected as using Stripe",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Frontend-only Stripe project detects Stripe payment provider",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Existing database detections are unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Existing payment detections are unchanged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 14,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 44,
+        "think": 21,
+        "plan": 9,
+        "build": 6,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:1c961f3dcbfa855370e3e5fa426561ab351e15fb74306e3d7f442306c3b00ac0",
+        "contract": "sha256:d76bd2582ce022e4d99a397e47f3155756edb059d437ac27351d7f5713b802fc",
+        "plan": "sha256:714e1978db65f2f1afc8ed7db13e47758fbfe079c8e599ef2f5fad25c6e566c2",
+        "spec": "sha256:b08d518b15c71f5d4f01887f265afe3191b30b7ac37ae83fabfb579d865ad3fc",
+        "build-report": "sha256:18045f79967ae61b1576b9d41e6acab188801e7b94b0ce3d7e551f0c95dec0ef",
+        "build-data": "sha256:b72810e7b480694b29594b86fe74b781f4b9a8738f5679c8091581d9abbd6a8e",
+        "verify-report": "sha256:2376d0b9787a7a6cbded1b115eaea3e7c2c70da7b65799b3564e74e45c7a1ad7",
+        "verify-data": "sha256:980b2d76e8f8fae3f29c49e33529d64ee629e386e05dfea077720f67f0a8b62d"
+      },
+      "completed_at": "2026-05-22T08:01:38.690Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/dependencies.ts",
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/tests/engine/detectors/dependencies.test.ts",
+        "packages/cli/tests/engine/detectors/surfaces.test.ts"
+      ],
+      "scope_summary": "The database dependency map, framework hint patterns, and payment package table are incomplete. Missing entries cause false negatives — real stack components go undetected. The user wants to fill every known gap from a 70-repo validation and independent agent review, bringing the lookup tables to vocabulary completeness for the modern TS startup customer.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "line": 511,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "fill-scan-detection-gaps-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "vue.config.ts missing from both FRAMEWORK_HINTS and STRONG_FRAMEWORK_CONFIGS — pre-existing gap, not introduced by this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "fill-scan-detection-gaps-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T08:01:38.690Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 31,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fill-scan-detection-gaps-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana tag collision — A015-A020 IDs reused from scan-surface-detection contract in same test file. Machines parsing @ana tags will match wrong tests for older contracts.",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "line": 479,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fill-scan-detection-gaps-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "react-router.config.js moved from original position to group with .ts/.mjs siblings",
+          "file": "packages/cli/src/engine/census.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T07:46:47.627Z",
+        "completed_at": "2026-05-22T08:01:38.684Z",
+        "commit_count": 0,
+        "base_commit": "8e5d305bbafdfb711fd3f4c4e9db7ad1ff60f532"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

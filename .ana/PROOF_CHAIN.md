@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-145 runs · 109 active · 3 promoted · 727 closed
+146 runs · 112 active · 3 promoted · 728 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 99 | 75 | 2026-05-22 |
+| cli | 100 | 78 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 112 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -36,6 +36,7 @@
 
 ### packages/cli/src/engine/census.ts
 
+- **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 - **code:** parsePackageName is a private helper but has no guard for empty-string input — returns { scope: '', bare: '' }. Harmless because nameMatchCandidates filters null packageName, but empty-string packageName would pass the filter and produce an empty bare match. — *Fix Primary Package Selection in Monorepos*
 - **code:** IDENTITY_WORDS.has(bareLower) checks case-insensitively via bareLower, but the Set contains lowercase strings — this is correct but implicit. No comment documenting the case-insensitive intent. — *Fix Primary Package Selection in Monorepos*
@@ -94,16 +95,12 @@
 - **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
 - **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
 
+### packages/cli/tests/engine/detectors/surfaces.test.ts
+
+- **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
+- **test:** @ana tag collision — A015-A020 IDs reused from scan-surface-detection contract in same test file. Machines parsing @ana tags will match wrong tests for older contracts. — *Fill Scan Detection Gaps*
+
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/docs/proof/ProofHero.tsx
-
-- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
-- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/lib/__tests__/docs-data/data-integrity.test.ts
-
-- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
