@@ -22,6 +22,7 @@ describe('TypeScript language detection', () => {
     await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
+  // @ana A004
   it('detects TypeScript when tsconfig.json exists alongside package.json', async () => {
     await fs.writeFile(
       path.join(tempDir, 'package.json'),
@@ -38,6 +39,7 @@ describe('TypeScript language detection', () => {
     expect(result.stack.language).toBe('TypeScript');
   });
 
+  // @ana A006
   it('shows Node.js when no tsconfig.json and no typescript dep', async () => {
     await fs.writeFile(
       path.join(tempDir, 'package.json'),
@@ -50,10 +52,114 @@ describe('TypeScript language detection', () => {
     expect(result.stack.language).toBe('Node.js');
   });
 
+  // @ana A005
   it('detects TypeScript when typescript is in devDependencies', async () => {
     await fs.writeFile(
       path.join(tempDir, 'package.json'),
       JSON.stringify({ name: 'ts-app', devDependencies: { typescript: '5.0.0' } })
+    );
+
+    const { scanProject } = await import('../../../src/engine/scan-engine.js');
+    const result = await scanProject(tempDir, { depth: 'surface' });
+    expect(result.stack.language).toBe('TypeScript');
+  });
+
+  // @ana A001
+  it('detects TypeScript when typescript is only in root devDependencies (monorepo)', async () => {
+    // Monorepo root: typescript in devDeps, pnpm workspace config
+    await fs.writeFile(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({ name: 'monorepo-root', devDependencies: { typescript: '5.0.0' } })
+    );
+    await fs.writeFile(
+      path.join(tempDir, 'pnpm-workspace.yaml'),
+      'packages:\n  - "packages/*"'
+    );
+    // Workspace package without typescript dep
+    const pkgDir = path.join(tempDir, 'packages', 'app');
+    await fs.mkdir(pkgDir, { recursive: true });
+    await fs.writeFile(
+      path.join(pkgDir, 'package.json'),
+      JSON.stringify({ name: '@mono/app', dependencies: { express: '4.0.0' } })
+    );
+
+    const { scanProject } = await import('../../../src/engine/scan-engine.js');
+    const result = await scanProject(tempDir, { depth: 'surface' });
+    expect(result.stack.language).toBe('TypeScript');
+  });
+
+  // @ana A002
+  it('detects TypeScript when tsconfig.json exists in a subdirectory only', async () => {
+    // No root tsconfig, no typescript dep — but server/tsconfig.json exists
+    await fs.writeFile(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({ name: 'subdir-ts-app', dependencies: { express: '4.0.0' } })
+    );
+    await fs.mkdir(path.join(tempDir, 'server'), { recursive: true });
+    await fs.writeFile(
+      path.join(tempDir, 'server', 'tsconfig.json'),
+      '{ "compilerOptions": { "strict": true } }'
+    );
+
+    const { scanProject } = await import('../../../src/engine/scan-engine.js');
+    const result = await scanProject(tempDir, { depth: 'surface' });
+    expect(result.stack.language).toBe('TypeScript');
+  });
+
+  // @ana A003
+  it('does not override language for non-Node projects with subdirectory tsconfig', async () => {
+    // No package.json → language detects as null, not Node.js
+    // web/tsconfig.json exists but should NOT trigger TypeScript upgrade
+    await fs.mkdir(path.join(tempDir, 'web'), { recursive: true });
+    await fs.writeFile(
+      path.join(tempDir, 'web', 'tsconfig.json'),
+      '{ "compilerOptions": { "strict": true } }'
+    );
+
+    const { scanProject } = await import('../../../src/engine/scan-engine.js');
+    const result = await scanProject(tempDir, { depth: 'surface' });
+    expect(result.stack.language).not.toBe('TypeScript');
+  });
+
+  // @ana A007
+  it('detects TypeScript via rootDevDeps without subdirectory tsconfigs', async () => {
+    // Monorepo with typescript in root devDeps, no tsconfig anywhere
+    await fs.writeFile(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({ name: 'mono-no-tsconfig', devDependencies: { typescript: '5.0.0' } })
+    );
+    await fs.writeFile(
+      path.join(tempDir, 'pnpm-workspace.yaml'),
+      'packages:\n  - "packages/*"'
+    );
+    const pkgDir = path.join(tempDir, 'packages', 'lib');
+    await fs.mkdir(pkgDir, { recursive: true });
+    await fs.writeFile(
+      path.join(pkgDir, 'package.json'),
+      JSON.stringify({ name: '@mono/lib', dependencies: { lodash: '4.0.0' } })
+    );
+
+    const { scanProject } = await import('../../../src/engine/scan-engine.js');
+    const result = await scanProject(tempDir, { depth: 'surface' });
+    expect(result.stack.language).toBe('TypeScript');
+  });
+
+  // @ana A008
+  it('detects TypeScript when tsconfig.json exists in multiple subdirectories', async () => {
+    // No root tsconfig, no typescript dep — but server/ and web/ both have tsconfig
+    await fs.writeFile(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({ name: 'multi-subdir-app', dependencies: { express: '4.0.0' } })
+    );
+    await fs.mkdir(path.join(tempDir, 'server'), { recursive: true });
+    await fs.writeFile(
+      path.join(tempDir, 'server', 'tsconfig.json'),
+      '{ "compilerOptions": { "strict": true } }'
+    );
+    await fs.mkdir(path.join(tempDir, 'web'), { recursive: true });
+    await fs.writeFile(
+      path.join(tempDir, 'web', 'tsconfig.json'),
+      '{ "compilerOptions": { "strict": true } }'
     );
 
     const { scanProject } = await import('../../../src/engine/scan-engine.js');
