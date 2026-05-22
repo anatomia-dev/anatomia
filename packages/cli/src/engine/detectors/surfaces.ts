@@ -51,6 +51,47 @@ export const INFRA_PATTERNS = new Set([
   'biome-config',
 ]);
 
+/**
+ * Path segments that indicate non-product workspace packages.
+ * Packages with ANY path segment matching (case-insensitive) are excluded
+ * from surface detection. Covers examples, templates, testing fixtures,
+ * playgrounds, and similar non-shippable directories.
+ */
+const EXCLUDED_SEGMENTS = new Set([
+  'examples', 'example',
+  'example-apps',
+  'templates', 'template',
+  'e2e',
+  'test', 'tests',
+  'fixtures', 'fixture',
+  'playground', 'playgrounds',
+  'sandbox',
+  'demos', 'demo',
+  'starters', 'starter',
+  'samples', 'sample',
+  'boilerplate',
+  'references', 'reference',
+]);
+
+/**
+ * Check whether a relative path belongs to a non-product workspace package.
+ * Returns true when any segment of the path matches EXCLUDED_SEGMENTS
+ * (case-insensitive) or the last segment ends with `-e2e`.
+ *
+ * @param relativePath - Forward-slash-separated relative path (e.g., "examples/next-app")
+ * @returns True if the path is non-product and should be excluded from surfaces
+ */
+export function isNonProductPath(relativePath: string): boolean {
+  const segments = relativePath.split('/');
+  for (const segment of segments) {
+    if (EXCLUDED_SEGMENTS.has(segment.toLowerCase())) return true;
+  }
+  // Suffix check: last segment ending with -e2e (e.g., "gauzy-e2e")
+  const lastSegment = segments[segments.length - 1] || '';
+  if (lastSegment.toLowerCase().endsWith('-e2e')) return true;
+  return false;
+}
+
 /** Minimum source files for a package to be considered as a surface. */
 export const MIN_SOURCE_FILES = 5;
 
@@ -226,6 +267,9 @@ export function detectSurfaces(
     // Pre-filter: infrastructure package
     const lastSegment = root.relativePath.split('/').pop() || '';
     if (INFRA_PATTERNS.has(lastSegment)) continue;
+
+    // Pre-filter: non-product package (examples, templates, fixtures, etc.)
+    if (isNonProductPath(root.relativePath)) continue;
 
     // Signal 1: bin + dev script
     if (root.hasBin && root.scripts.includes('dev')) {
