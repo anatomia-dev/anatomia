@@ -1,0 +1,185 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fill Scan Detection Gaps"
+
+assertions:
+  # Part A — Database packages
+  - id: A001
+    says: "Kysely projects are detected as using a database"
+    block: "DATABASE_PACKAGES contains kysely"
+    target: "DATABASE_PACKAGES['kysely']"
+    matcher: "equals"
+    value: "Kysely"
+
+  - id: A002
+    says: "MikroORM projects are detected as using a database"
+    block: "DATABASE_PACKAGES contains @mikro-orm/core"
+    target: "DATABASE_PACKAGES['@mikro-orm/core']"
+    matcher: "equals"
+    value: "MikroORM"
+
+  - id: A003
+    says: "Slonik projects are detected as using PostgreSQL"
+    block: "DATABASE_PACKAGES contains slonik"
+    target: "DATABASE_PACKAGES['slonik']"
+    matcher: "equals"
+    value: "PostgreSQL"
+
+  - id: A004
+    says: "Silverhand slonik fork is detected as PostgreSQL"
+    block: "DATABASE_PACKAGES contains @silverhand/slonik"
+    target: "DATABASE_PACKAGES['@silverhand/slonik']"
+    matcher: "equals"
+    value: "PostgreSQL"
+
+  - id: A005
+    says: "Vercel Postgres projects are detected as using PostgreSQL"
+    block: "DATABASE_PACKAGES contains @vercel/postgres"
+    target: "DATABASE_PACKAGES['@vercel/postgres']"
+    matcher: "equals"
+    value: "PostgreSQL"
+
+  - id: A006
+    says: "MongoDB native driver projects are detected as using MongoDB"
+    block: "DATABASE_PACKAGES contains mongodb"
+    target: "DATABASE_PACKAGES['mongodb']"
+    matcher: "equals"
+    value: "MongoDB"
+
+  - id: A007
+    says: "Postgres.js projects are detected as using PostgreSQL"
+    block: "DATABASE_PACKAGES contains postgres"
+    target: "DATABASE_PACKAGES['postgres']"
+    matcher: "equals"
+    value: "PostgreSQL"
+
+  - id: A008
+    says: "sqlite3 projects are detected as using SQLite"
+    block: "DATABASE_PACKAGES contains sqlite3"
+    target: "DATABASE_PACKAGES['sqlite3']"
+    matcher: "equals"
+    value: "SQLite"
+
+  - id: A009
+    says: "SQL Server projects are detected as using a database"
+    block: "DATABASE_PACKAGES contains mssql"
+    target: "DATABASE_PACKAGES['mssql']"
+    matcher: "equals"
+    value: "SQL Server"
+
+  # Part A — Ordering invariant
+  - id: A010
+    says: "ORMs win over raw drivers when both are present"
+    block: "ORM wins over raw driver"
+    target: "detectFromDeps({prisma: '1', postgres: '1'}).database"
+    matcher: "equals"
+    value: "Prisma"
+
+  - id: A011
+    says: "Mongoose wins over native MongoDB driver when both are present"
+    block: "ORM wins over raw driver"
+    target: "detectFromDeps({mongoose: '1', mongodb: '1'}).database"
+    matcher: "equals"
+    value: "Mongoose"
+
+  - id: A012
+    says: "A project with only postgres.js detects PostgreSQL"
+    block: "raw driver detects standalone"
+    target: "detectFromDeps({postgres: '1'}).database"
+    matcher: "equals"
+    value: "PostgreSQL"
+
+  - id: A013
+    says: "A project with only sqlite3 detects SQLite"
+    block: "raw driver detects standalone"
+    target: "detectFromDeps({sqlite3: '1'}).database"
+    matcher: "equals"
+    value: "SQLite"
+
+  - id: A014
+    says: "A project with only mssql detects SQL Server"
+    block: "raw driver detects standalone"
+    target: "detectFromDeps({mssql: '1'}).database"
+    matcher: "equals"
+    value: "SQL Server"
+
+  # Part B — Framework .mjs configs
+  - id: A015
+    says: "Svelte projects with .mjs config are detected"
+    block: "STRONG_FRAMEWORK_CONFIGS contains .mjs variants"
+    target: "STRONG_FRAMEWORK_CONFIGS.has('svelte.config.mjs')"
+    matcher: "truthy"
+
+  - id: A016
+    says: "Nuxt projects with .mjs config are detected"
+    block: "STRONG_FRAMEWORK_CONFIGS contains .mjs variants"
+    target: "STRONG_FRAMEWORK_CONFIGS.has('nuxt.config.mjs')"
+    matcher: "truthy"
+
+  - id: A017
+    says: "Remix projects with .mjs config are detected"
+    block: "STRONG_FRAMEWORK_CONFIGS contains .mjs variants"
+    target: "STRONG_FRAMEWORK_CONFIGS.has('remix.config.mjs')"
+    matcher: "truthy"
+
+  - id: A018
+    says: "React Router projects with .mjs config are detected"
+    block: "STRONG_FRAMEWORK_CONFIGS contains .mjs variants"
+    target: "STRONG_FRAMEWORK_CONFIGS.has('react-router.config.mjs')"
+    matcher: "truthy"
+
+  - id: A019
+    says: "Vue projects with .mjs config are detected"
+    block: "STRONG_FRAMEWORK_CONFIGS contains .mjs variants"
+    target: "STRONG_FRAMEWORK_CONFIGS.has('vue.config.mjs')"
+    matcher: "truthy"
+
+  # Part C — Svelte/Nuxt ordering
+  - id: A020
+    says: "Svelte is detected over Nuxt when both configs exist in the same surface"
+    block: "Svelte wins over Nuxt in same surface"
+    target: "detectedFramework"
+    matcher: "contains"
+    value: "svelte"
+
+  # Part D — Payment package
+  - id: A021
+    says: "React Stripe.js projects are detected as using Stripe"
+    block: "PAYMENT_PACKAGES contains @stripe/react-stripe-js"
+    target: "PAYMENT_PACKAGES['@stripe/react-stripe-js']"
+    matcher: "equals"
+    value: "Stripe"
+
+  - id: A022
+    says: "Frontend-only Stripe project detects Stripe payment provider"
+    block: "detectFromDeps with @stripe/react-stripe-js"
+    target: "detectFromDeps({'@stripe/react-stripe-js': '1'}).payments"
+    matcher: "equals"
+    value: "Stripe"
+
+  # Regression guard
+  - id: A023
+    says: "Existing database detections are unchanged"
+    block: "existing entries unchanged"
+    target: "DATABASE_PACKAGES['prisma']"
+    matcher: "equals"
+    value: "Prisma"
+
+  - id: A024
+    says: "Existing payment detections are unchanged"
+    block: "existing entries unchanged"
+    target: "PAYMENT_PACKAGES['stripe']"
+    matcher: "equals"
+    value: "Stripe"
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/dependencies.ts"
+    action: modify
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/dependencies.test.ts"
+    action: create
+  - path: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    action: modify
