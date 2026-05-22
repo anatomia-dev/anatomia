@@ -19,7 +19,7 @@ import { glob } from 'glob';
 const toPosix = (p: string): string => p.replace(/\\/g, '/');
 import type { EngineResult, EnrichedPackage } from './types/engineResult.js';
 import { getPatternLibrary } from './types/patterns.js';
-import { detectFromDeps, detectServiceDeps, detectAiSdk, detectNonNodeAiSdk, TESTING_PACKAGES } from './detectors/dependencies.js';
+import { detectFromDeps, detectServiceDeps, detectAiSdk, detectNonNodeAiSdk, findStackProvenance, TESTING_PACKAGES } from './detectors/dependencies.js';
 import { readPythonDependencies } from './parsers/python.js';
 import { readGoDependencies } from './parsers/go.js';
 import { detectPackageManager } from './detectors/packageManager.js';
@@ -792,6 +792,12 @@ export async function scanProject(
       : detectUiSystem(allDeps),
   };
 
+  // Provenance: determine which source root contributed each detection.
+  // Uses the Node-detected aiSdk only (non-Node aiSdk uses language-specific
+  // deps not in SourceRoot.deps/devDeps).
+  const nodeAiSdk = detectAiSdk(allDeps);
+  const stackProvenance = findStackProvenance(census, depResult, nodeAiSdk);
+
   // Enrich from direct detection results (replaces analysis.* references)
   if (projectTypeResult.type !== 'unknown') {
     stack.language = getLanguageDisplayName(projectTypeResult.type);
@@ -987,6 +993,7 @@ export async function scanProject(
     applicationShape: shapeResult.shape,
     overview: { project: projectName, scannedAt: now, depth: options.depth },
     stack,
+    stackProvenance,
     versions,
     files,
     structure: structureForOutput,

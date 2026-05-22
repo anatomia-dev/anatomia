@@ -21,6 +21,7 @@ import type { GitInfo } from '../detectors/git.js';
 import type { DetectedDeployment, DetectedCI } from '../detectors/deployment.js';
 import type { ApplicationShape } from '../detectors/applicationShape.js';
 import type { DocumentationResult } from '../detectors/documentation.js';
+import type { StackProvenance } from '../detectors/dependencies.js';
 
 /**
  * Closed set of stack roles an external service may fulfill. Used by
@@ -130,6 +131,13 @@ export interface EngineResult {
     aiSdk: string | null;
     uiSystem: string | null;
   };
+  /**
+   * Maps stack fields to the source root that contributed each detection.
+   * Empty when all detections came from the primary package or for single-repo
+   * projects. Populated when a detection (database, auth, payments, aiSdk)
+   * came from a non-primary monorepo root.
+   */
+  stackProvenance: StackProvenance;
   /** Declared version strings for all deps. Keys are package names, values from package.json (e.g., "^7.2.0"). */
   versions: Record<string, string>;
   files: {
@@ -374,6 +382,7 @@ export function createEmptyEngineResult(): EngineResult {
     applicationShape: 'unknown',
     overview: { project: 'unknown', scannedAt: new Date().toISOString(), depth: 'surface' },
     stack: { language: null, framework: null, database: null, auth: null, testing: [], payments: null, workspace: null, aiSdk: null, uiSystem: null },
+    stackProvenance: {},
     versions: {},
     files: { source: 0, test: 0, config: 0, total: 0 },
     structure: [],
