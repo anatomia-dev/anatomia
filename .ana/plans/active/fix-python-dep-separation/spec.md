@@ -21,7 +21,7 @@ Add `'testing'` to `EXCLUDED_SEGMENTS` in surfaces.ts alongside existing `'test'
 No user-facing output changes. The scan result is identical for correctly-detected projects. For previously-contaminated Python projects, the change removes false positives:
 
 Before (fastapi repo): `framework=Flask` (from `[dependency-groups].tests` containing flask test fixtures)
-After (fastapi repo): `framework=FastAPI` (from `[project] dependencies` containing starlette)
+After (fastapi repo): `framework=null` (production deps are starlette, pydantic, anyio — fastapi doesn't depend on itself)
 
 Before (pydantic repo): `database=SQLAlchemy` (from `[dependency-groups].dev`)
 After (pydantic repo): `database=null` (no production database dep)
