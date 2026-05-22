@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 114 active · 3 promoted · 751 closed
+151 runs · 113 active · 3 promoted · 752 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 80 | 2026-05-22 |
+| cli | 105 | 79 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 114 total)
+## Active Findings (30 shown of 113 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -35,6 +35,10 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
+
+### packages/cli/src/commands/work.ts
+
+- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -53,7 +57,6 @@
 
 ### packages/cli/src/engine/parsers/python/pyproject.ts
 
-- **code:** Strategy execution order in pyproject.ts is 1,2,5,3,4 — Strategy 5 (dependency-groups → dev) placed between Strategy 2 and 3, breaking numeric sequence — *Separate Python production deps from dev deps*
 - **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break `]\s*$` anchor — still present from prior cycle — *Separate Python production deps from dev deps*
 - **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break \]\s*$ anchor — *Fix Python pyproject.toml parser — 3 bugs*
 
