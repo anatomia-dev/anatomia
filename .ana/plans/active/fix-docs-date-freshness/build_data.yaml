@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "checkStaleDocs logic replicated in test file rather than exported from script"
+    file: "website/lib/__tests__/docs-data/staleness.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing lint warnings in Hero.tsx (formatAge, latest unused)"
+    file: "website/components/hero/Hero.tsx"
+    severity: observation
+    suggested_action: accept
