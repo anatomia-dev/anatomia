@@ -38731,7 +38731,10 @@
             "A026"
           ],
           "id": "fix-primary-selection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Per testing-standards Rule 2: source-content assertions are acceptable as enforcement tests for structural invariants. Test at census-primary.test.ts:378 documents and enforces the 3-arg selectPrimary contract. Call site verification at census.ts:571 is confirmed by source inspection comment in the test.",
+          "closed_at": "2026-05-22T08:41:50.118Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
