@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { source } from "@/lib/source";
 import { getBuildMeta } from "@/lib/docs-data/meta";
+import { getPageDate } from "@/lib/docs-data/pageDates";
 import { Breadcrumb } from "@/components/docs/layout/Breadcrumb";
 import { RightRail } from "@/components/docs/layout/RightRail";
 import { MetaRow } from "@/components/docs/content/MetaRow";
@@ -108,7 +109,7 @@ export default async function DocsPage({ params }: DocsPageProps) {
         )}
         <MetaRow
           readingTime={page.data.readingTime}
-          lastReviewed={page.data.lastReviewed}
+          lastReviewed={getPageDate(slug.join("/")) ?? undefined}
         />
         <MDXContent components={mdxComponents} />
       </article>

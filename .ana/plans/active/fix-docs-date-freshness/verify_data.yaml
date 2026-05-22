@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Staleness tests replicate checkStaleDocs rather than testing the actual function"
+    file: "website/lib/__tests__/docs-data/staleness.test.ts"
+    line: 18
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003", "A004", "A005", "A007"]
+  - category: code
+    summary: "All page-dates.json entries show today's date because MDX files were modified in this branch"
+    file: "website/data/docs/page-dates.json"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Date.now() in checkStaleDocs makes staleness non-deterministic in tests"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 1087
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Proof chain finding dynamic-pages-C1 (hardcoded date in CLI reference) is resolved by this build"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "dynamic-pages-C1"
+  - category: code
+    summary: "pageDates.ts missing JSDoc on exported getPageDate function"
+    file: "website/lib/docs-data/pageDates.ts"
+    line: 19
+    severity: observation
+    suggested_action: accept

@@ -7,7 +7,6 @@ export const docs = defineDocs({
   docs: {
     schema: frontmatterSchema.extend({
       description: z.string().min(1),
-      lastReviewed: z.string().optional(),
       readingTime: z.number().optional(),
     }),
   },

@@ -30,5 +30,55 @@
         "hash": "sha256:34d3d823fe7793ccd0a35bb5d65e5d20c88dd0cd9b5c429610def9d8009c2512"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T21:28:15.288Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T21:35:25.144Z",
+    "hash": "sha256:81fe74cd753e205d9625517182ac3f48feb384e8f7c07887a59c74dee1c535ec"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T21:35:25.145Z",
+    "hash": "sha256:9d65fd013d94c796834e11aee0f79f7b0b7916fec58af2ebe05303cbb1886c36"
+  },
+  "modules_touched": [
+    "website/app/docs/[...slug]/page.tsx",
+    "website/app/docs/reference/cli/page.tsx",
+    "website/content/docs/concepts/artifacts.mdx",
+    "website/content/docs/concepts/context.mdx",
+    "website/content/docs/concepts/contract.mdx",
+    "website/content/docs/concepts/findings.mdx",
+    "website/content/docs/concepts/pipeline.mdx",
+    "website/content/docs/concepts/skills.mdx",
+    "website/content/docs/concepts/toolbelt.mdx",
+    "website/content/docs/guides/configurability.mdx",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/guides/using-ana-setup.mdx",
+    "website/content/docs/guides/verifying-changes.mdx",
+    "website/content/docs/start.mdx",
+    "website/lib/__tests__/docs-data/page-dates.test.ts",
+    "website/lib/__tests__/docs-data/staleness.test.ts",
+    "website/lib/docs-data/index.ts",
+    "website/lib/docs-data/pageDates.ts",
+    "website/scripts/extract-docs-data.ts",
+    "website/source.config.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T21:38:07.930Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:4b1f1a5d7326e3c4040e234f1f103d915c20211d0f6b4ed0edb5f524e74cde92",
+    "run_at": "2026-05-22T21:43:47.274Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T21:43:47.307Z",
+    "hash": "sha256:408e79e88e3c47f56b28158f11dee59a34eb47c92e438df92b60c8fc416225cb"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T21:43:47.308Z",
+    "hash": "sha256:1a916f303020888c09f1e3b990d27bb50a92607fe47cb1958701b09bf33f681b"
   }
 }

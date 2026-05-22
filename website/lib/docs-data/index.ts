@@ -24,5 +24,6 @@ export { getCommands, getCommandCount, getCommandGroups } from './commands';
 export { getContextFiles } from './context';
 export { getGotchas, getGotchaCount } from './gotchas';
 export { getBuildMeta } from './meta';
+export { getPageDate } from './pageDates';
 export { buildDocsStatValues, resolveDocsStatTags } from './docsStatValues';
 export type { DocsStatInput } from './docsStatValues';

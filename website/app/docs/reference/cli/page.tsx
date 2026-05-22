@@ -67,7 +67,7 @@ export default function CLIReferencePage() {
           }}
         >
           <span><b>Commands</b> · {commandCount}</span>
-          <span><b>Last reviewed</b> · 2026-05-22</span>
+          <span><b>Last reviewed</b> · {meta.buildTimestamp.slice(0, 10)}</span>
         </div>
 
         {groups.map((group) => (
