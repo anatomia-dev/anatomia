@@ -1,0 +1,66 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects"
+
+assertions:
+  - id: A001
+    says: "Monorepo projects with TypeScript as a root toolchain dependency are detected as TypeScript"
+    block: "detects TypeScript when typescript is only in root devDependencies (monorepo)"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+  - id: A002
+    says: "Projects with TypeScript config files in common subdirectories are detected as TypeScript"
+    block: "detects TypeScript when tsconfig.json exists in a subdirectory only"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+  - id: A003
+    says: "Non-Node projects with subdirectory TypeScript configs are not falsely upgraded"
+    block: "does not override language for non-Node projects with subdirectory tsconfig"
+    target: "result.stack.language"
+    matcher: "not_equals"
+    value: "TypeScript"
+
+  - id: A004
+    says: "Root tsconfig detection continues working after the change"
+    block: "detects TypeScript when tsconfig.json exists alongside package.json"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+  - id: A005
+    says: "TypeScript dependency detection continues working after the change"
+    block: "detects TypeScript when typescript is in devDependencies"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+  - id: A006
+    says: "Plain Node.js projects without TypeScript signals stay as Node.js"
+    block: "shows Node.js when no tsconfig.json and no typescript dep"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "Node.js"
+
+  - id: A007
+    says: "The subdirectory check only fires when cheaper checks miss"
+    block: "detects TypeScript when typescript is only in root devDependencies (monorepo)"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+  - id: A008
+    says: "Multiple subdirectory tsconfig candidates are handled correctly"
+    block: "detects TypeScript when tsconfig.json exists in a subdirectory only"
+    target: "result.stack.language"
+    matcher: "equals"
+    value: "TypeScript"
+
+file_changes:
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    action: modify
