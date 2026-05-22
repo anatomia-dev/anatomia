@@ -24,5 +24,20 @@
   "spec": {
     "saved_at": "2026-05-22T22:59:17.634Z",
     "hash": "sha256:a78e226ed0cf7e4d102132a78620370ccd55b7c965a7e2c3ef93d1a1826cf475"
-  }
+  },
+  "build_started_at": "2026-05-22T23:02:28.434Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T23:07:26.600Z",
+    "hash": "sha256:75e4ff73b780d3dc9ba8c54459f05b8f6a8c642c46843e4de4882dd7c950a8d2"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T23:07:26.601Z",
+    "hash": "sha256:41945c0810de0b006d1b96f625ab66dcd60b7ae3def8e93d18c747b6fe24a698"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts"
+  ],
+  "commit_hygiene": []
 }

@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "Signal 4 surfaces show framework: null — detectFramework only recognizes config-file-based frameworks"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    severity: observation
+    suggested_action: monitor
