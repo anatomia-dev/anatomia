@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 107 active · 3 promoted · 758 closed
+151 runs · 106 active · 3 promoted · 759 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 73 | 2026-05-22 |
+| cli | 105 | 72 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,11 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
+
+### packages/cli/src/commands/config.ts
+
+- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -64,7 +68,6 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
-- **code:** Filter also applies to census-sourced paths — harmless no-op but undocumented defense-in-depth — *Filter non-product paths from schema glob fallbacks*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
