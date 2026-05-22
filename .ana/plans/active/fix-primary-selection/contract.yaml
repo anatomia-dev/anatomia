@@ -9,7 +9,7 @@ assertions:
     block: "exact name match selects primary"
     target: "result"
     matcher: "equals"
-    value: "packages/medusa"
+    value: "packages/payload"
 
   - id: A002
     says: "A scoped package whose bare name matches the repo directory is selected"
@@ -167,8 +167,8 @@ assertions:
     says: "Scalar scan is unchanged because the guard blocks the tiny core package"
     block: "scalar unchanged by guard"
     target: "result"
-    matcher: "not_equals"
-    value: "packages/oas-utils"
+    matcher: "equals"
+    value: "packages/workspace-store"
 
   # Regression: directus guard
   - id: A024

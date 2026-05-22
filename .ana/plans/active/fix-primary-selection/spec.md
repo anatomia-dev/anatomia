@@ -29,8 +29,8 @@ No user-facing output changes. The effect is observable in `scan.json` where `mo
 
 ```
 # Before (logto)
-primarySourceRoot: "packages/console"    # 1717 files, biggest
-primaryPackage: { name: "@logto/console", path: "packages/console" }
+primarySourceRoot: "packages/phrases"    # 1717 files, biggest
+primaryPackage: { name: "@logto/phrases", path: "packages/phrases" }
 
 # After (logto)
 primarySourceRoot: "packages/core"       # name-match: @logto/core, identity word "core"
@@ -90,13 +90,13 @@ primaryPackage: { name: "@logto/core", path: "packages/core" }
 - **Root exclusion is Policy 2 only.** Root (`relativePath === '.'`) must remain a viable candidate for Policy 3. Excluding it from the fallback would break repos where no name matches and no apps/ exist.
 - **The guard's "largest candidate" denominator uses Policy 0 filtered candidates.** For payload: `test/` (1754 files) is excluded by Policy 0, so the largest viable candidate is `packages/payload` (679 files). The guard is self-referential (679/679 = 100%) — this is correct.
 - **Package names with scopes need bare-name extraction.** `@medusajs/medusa` → scope `medusajs`, bare `medusa`. Unscoped packages: bare = full name, scope = empty string. Handle null `packageName` by skipping the candidate for name-match.
-- **The `isNonProductPath` import path from census.ts is `../detectors/surfaces.js`.** Census is at `src/engine/census.ts`, surfaces is at `src/engine/detectors/surfaces.ts` — one level down.
+- **The `isNonProductPath` import path from census.ts is `./detectors/surfaces.js`.** Census is at `src/engine/census.ts`, surfaces is at `src/engine/detectors/surfaces.ts` — one level down, same parent directory.
 - **Identity words are exactly {core, server}.** No fuzzy matching, no additional words. The scope explicitly rejected `engine`, `sdk`, `api`, `main`, `app`.
 
 ## Build Brief
 
 ### Rules That Apply
-- All imports use `.js` extensions: `import { isNonProductPath } from '../detectors/surfaces.js'`
+- All imports use `.js` extensions: `import { isNonProductPath } from './detectors/surfaces.js'`
 - Use `import type` for type-only imports, separate from value imports
 - Explicit return types on exported functions
 - `@param` and `@returns` JSDoc on exported functions
