@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-152 runs · 103 active · 3 promoted · 767 closed
+152 runs · 102 active · 3 promoted · 768 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
 | cli | 105 | 66 | 2026-05-22 |
-| website | 22 | 23 | 2026-05-22 |
+| website | 22 | 22 | 2026-05-22 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 103 total)
+## Active Findings (30 shown of 102 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -76,6 +76,10 @@
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
+### packages/cli/tests/engine/census-detection.test.ts
+
+- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
@@ -117,8 +121,4 @@
 ### website/lib/docs-data/pageDates.ts
 
 - **code:** pageDates.ts missing JSDoc on exported getPageDate function — *Fix AnaDocs date freshness*
-
-### website/scripts/extract-docs-data.ts
-
-- **code:** Date.now() in checkStaleDocs makes staleness non-deterministic in tests — *Fix AnaDocs date freshness*
 
