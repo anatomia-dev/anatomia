@@ -124,7 +124,7 @@ export function Drawer({
                         data={{
                           version,
                           commands: drawer.manPage.commands,
-                          moreCount: commandCount - 6,
+                          moreCount: Math.max(0, commandCount - 6),
                           moreNames: drawer.manPage.moreNames,
                         }}
                       />
