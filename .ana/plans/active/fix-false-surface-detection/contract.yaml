@@ -1,0 +1,186 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix False Surface Detection"
+
+assertions:
+  # --- Pre-filter: excluded segments ---
+  - id: A001
+    says: "Packages under examples/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A002
+    says: "Packages under templates/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A003
+    says: "Packages under e2e/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A004
+    says: "Packages under test/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A005
+    says: "Packages under playground/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A006
+    says: "Packages under sandbox/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A007
+    says: "Packages under fixtures/ are not detected as surfaces"
+    block: "pre-filter excludes non-product paths"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # --- Suffix rule ---
+  - id: A008
+    says: "Packages ending with -e2e are excluded from surfaces"
+    block: "pre-filter excludes -e2e suffix packages"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # --- Exact match safety ---
+  - id: A009
+    says: "Compound names like test-utils are not excluded"
+    block: "pre-filter preserves compound non-product names"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A010
+    says: "Compound names like demo-app are not excluded"
+    block: "pre-filter preserves compound non-product names"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 1
+
+  # --- Case insensitivity ---
+  - id: A011
+    says: "Path exclusion is case-insensitive"
+    block: "pre-filter handles case variations"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # --- Mid-path segment matching ---
+  - id: A012
+    says: "Non-product segment anywhere in path triggers exclusion"
+    block: "pre-filter checks all path segments"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # --- Legitimate surfaces unaffected ---
+  - id: A013
+    says: "Legitimate apps/ surfaces are still detected"
+    block: "pre-filter does not affect legitimate surfaces"
+    target: "surfaces.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A014
+    says: "Legitimate packages/ with bin+dev are still detected"
+    block: "pre-filter does not affect legitimate surfaces"
+    target: "surfaces.length"
+    matcher: "greater"
+    value: 0
+
+  # --- Predicate export ---
+  - id: A015
+    says: "The non-product path predicate is exported for reuse"
+    block: "isNonProductPath is exported and usable"
+    target: "isNonProductPath"
+    matcher: "exists"
+
+  # --- Merge cleanup: non-product surfaces dropped ---
+  - id: A016
+    says: "Re-init silently drops false surfaces from ana.json"
+    block: "merge cleanup drops non-product orphaned surfaces"
+    target: "mergedSurfaces"
+    matcher: "not_contains"
+    value: "examples/next-app"
+
+  - id: A017
+    says: "No warning is logged when dropping false surfaces"
+    block: "merge cleanup drops non-product orphaned surfaces"
+    target: "consoleWarnCalls"
+    matcher: "equals"
+    value: 0
+
+  # --- Merge cleanup: product surfaces kept ---
+  - id: A018
+    says: "Legitimate orphaned surfaces are kept on re-init"
+    block: "merge cleanup keeps legitimate orphaned surfaces"
+    target: "mergedSurfaces"
+    matcher: "contains"
+    value: "apps/legacy"
+
+  - id: A019
+    says: "A warning is logged for kept orphaned surfaces"
+    block: "merge cleanup keeps legitimate orphaned surfaces"
+    target: "consoleWarnCalls"
+    matcher: "greater"
+    value: 0
+
+  # --- Empty result handling ---
+  - id: A020
+    says: "Empty surfaces result omits the surfaces key from ana.json"
+    block: "merge cleanup omits empty surfaces from config"
+    target: "mergedConfig.surfaces"
+    matcher: "not_equals"
+    value: {}
+
+  # --- Mixed scenario ---
+  - id: A021
+    says: "Mixed orphaned surfaces are handled correctly — false dropped, legitimate kept"
+    block: "merge cleanup handles mixed orphaned surfaces"
+    target: "mergedKeys"
+    matcher: "not_contains"
+    value: "examples-app"
+
+  - id: A022
+    says: "Legitimate surface survives mixed cleanup"
+    block: "merge cleanup handles mixed orphaned surfaces"
+    target: "mergedKeys"
+    matcher: "contains"
+    value: "legacy"
+
+  # --- Full exclusion vocabulary ---
+  - id: A023
+    says: "All 26 non-product segment names are in the exclusion set"
+    block: "exclusion vocabulary is complete"
+    target: "excludedSegmentCount"
+    matcher: "equals"
+    value: 26
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/state.test.ts"
+    action: modify
