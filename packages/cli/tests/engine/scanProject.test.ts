@@ -237,6 +237,44 @@ describe('scanProject()', () => {
     expect(result.schemas['drizzle']!.provider).toBe('postgresql');
   });
 
+  // @ana A001, A002, A003
+  it('excludes Prisma schema in e2e directory from detection', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { '@prisma/client': '5.0.0' },
+      }),
+      'e2e/nextjs/prisma/schema.prisma':
+        'model User { id Int @id }\nmodel Post { id Int @id }\nmodel Comment { id Int @id }',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['prisma']).toBeDefined();
+    expect(result.schemas['prisma']!.found).toBe(false);
+    // Blind spot should fire because the dep exists but no real schema was found
+    expect(result.blindSpots.find(b => b.area === 'Database' && /Prisma/.test(b.issue))).toBeDefined();
+  });
+
+  // @ana A004, A005
+  it('excludes Drizzle schema in examples directory from detection', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { 'drizzle-orm': '0.30.0' },
+      }),
+      'examples/drizzle-app/schema.ts':
+        'import { pgTable, text, serial } from "drizzle-orm/pg-core";\nexport const users = pgTable("users", { id: serial("id"), name: text("name") });',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['drizzle']).toBeDefined();
+    expect(result.schemas['drizzle']!.found).toBe(false);
+    // Blind spot should fire because the dep exists but no real schema was found
+    expect(result.blindSpots.find(b => /drizzle-orm/.test(b.issue))).toBeDefined();
+  });
+
   // ============================================================================
   // Drizzle detection: config-driven discovery, glob fallback, model counting,
   // provider detection, blind spots, and consumer priority (AC1–AC10)

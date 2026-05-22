@@ -36,7 +36,7 @@ import { annotateServiceRoles } from './utils/serviceAnnotation.js';
 import { countFiles } from '../utils/fileCounts.js';
 import { buildCensus } from './census.js';
 import { generateFindings } from './findings/index.js';
-import { detectSurfaces, enrichPackages } from './detectors/surfaces.js';
+import { detectSurfaces, enrichPackages, isNonProductPath } from './detectors/surfaces.js';
 
 import { getLanguageDisplayName, getFrameworkDisplayName, getPatternDisplayName } from '../utils/displayNames.js';
 import { getProjectName } from '../utils/validators.js';
@@ -300,6 +300,8 @@ async function detectSchemas(
         const dirs = new Set(prismaGlob.map(f => toPosix(path.dirname(f as string)) + '/'));
         matches = [...dirs];
       }
+      // Filter out non-product paths (e2e/, examples/, fixtures/, etc.)
+      matches = matches.filter(m => !isNonProductPath(m));
       if (matches.length > 0) {
         // Score each candidate by model count (including sibling .prisma files)
         let best: { path: string; modelCount: number; provider: string | null } | null = null;
@@ -418,8 +420,8 @@ async function detectSchemas(
           const found = (await glob(pattern, SCHEMA_GLOB_OPTS)).map(toPosix);
           rawMatches.push(...found);
         }
-        // Deduplicate
-        const unique = [...new Set(rawMatches)];
+        // Deduplicate and filter out non-product paths (e2e/, examples/, fixtures/, etc.)
+        const unique = [...new Set(rawMatches)].filter(m => !isNonProductPath(m));
         // Content filter: file must contain a Drizzle table helper call
         for (const f of unique) {
           try {
