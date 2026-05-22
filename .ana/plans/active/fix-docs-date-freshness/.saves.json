@@ -65,5 +65,20 @@
     "website/scripts/extract-docs-data.ts",
     "website/source.config.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T21:38:07.930Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:4b1f1a5d7326e3c4040e234f1f103d915c20211d0f6b4ed0edb5f524e74cde92",
+    "run_at": "2026-05-22T21:43:47.274Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T21:43:47.307Z",
+    "hash": "sha256:408e79e88e3c47f56b28158f11dee59a34eb47c92e438df92b60c8fc416225cb"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T21:43:47.308Z",
+    "hash": "sha256:1a916f303020888c09f1e3b990d27bb50a92607fe47cb1958701b09bf33f681b"
+  }
 }
