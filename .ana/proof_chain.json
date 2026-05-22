@@ -40554,7 +40554,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-docs-date-freshness-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Website code does not enforce JSDoc — no jsdoc rules in website/eslint.config.mjs. The coding-standards JSDoc requirement applies to CLI code (enforced by pre-commit hook). getPageDate(slug: string): string | null is a 3-line function with a self-documenting TypeScript signature.",
+          "closed_at": "2026-05-22T21:51:20.621Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,

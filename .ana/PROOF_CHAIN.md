@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-152 runs · 102 active · 3 promoted · 768 closed
+152 runs · 101 active · 3 promoted · 769 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
 | cli | 105 | 66 | 2026-05-22 |
-| website | 22 | 22 | 2026-05-22 |
+| website | 22 | 21 | 2026-05-22 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 102 total)
+## Active Findings (30 shown of 101 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -84,6 +84,10 @@
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
+### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
+
+- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
+
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
@@ -117,8 +121,4 @@
 ### website/lib/__tests__/docs-data/staleness.test.ts
 
 - **test:** Staleness tests replicate checkStaleDocs rather than testing the actual function — *Fix AnaDocs date freshness*
-
-### website/lib/docs-data/pageDates.ts
-
-- **code:** pageDates.ts missing JSDoc on exported getPageDate function — *Fix AnaDocs date freshness*
 
