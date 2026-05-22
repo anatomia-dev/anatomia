@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 109 active · 3 promoted · 756 closed
+151 runs · 108 active · 3 promoted · 757 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 75 | 2026-05-22 |
+| cli | 105 | 74 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -71,6 +71,10 @@
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
+### packages/cli/tests/commands/proof-surface-derivation.test.ts
+
+- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
+
 ### packages/cli/tests/commands/scan.test.ts
 
 - **test:** A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered — *Scan Surface Display*
@@ -101,10 +105,6 @@
 ### packages/cli/tests/engine/scanProject.test.ts
 
 - **test:** Multi-file Prisma fallback path (trailing-slash directories) not exercised by non-product exclusion test — *Filter non-product paths from schema glob fallbacks*
-
-### packages/cli/tests/utils/proofSummary.test.ts
-
-- **test:** A012 and A018 use toBeDefined() — contract-aligned (matcher: exists) but weaker than asserting specific fallback value — *Fix False Rejection Archives on Same-Session Re-Saves*
 
 ### website/components/docs/proof/ProofExplorer.tsx
 
