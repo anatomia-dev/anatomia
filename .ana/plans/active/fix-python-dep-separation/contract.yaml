@@ -1,0 +1,157 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Separate Python production deps from dev deps"
+
+assertions:
+  # AC1: parsePyprojectToml structured return
+  - id: A001
+    says: "PEP 621 production dependencies land in the production bucket"
+    block: "parses PEP 621 format"
+    target: "result.production"
+    matcher: "contains"
+    value: "fastapi"
+
+  - id: A002
+    says: "PEP 735 dependency-groups land in the dev bucket, not production"
+    block: "parses PEP 735 dependency-groups into dev"
+    target: "result.dev"
+    matcher: "contains"
+    value: "pytest"
+
+  - id: A003
+    says: "PEP 735 dependencies never contaminate the production list"
+    block: "parses PEP 735 dependency-groups into dev"
+    target: "result.production"
+    matcher: "not_contains"
+    value: "pytest"
+
+  - id: A004
+    says: "Optional dependencies are production extras, not dev"
+    block: "parses optional-dependencies into production"
+    target: "result.production"
+    matcher: "contains"
+    value: "httpx"
+
+  - id: A005
+    says: "Poetry main dependencies land in production"
+    block: "parses Poetry format and skips python version"
+    target: "result.production"
+    matcher: "contains"
+    value: "fastapi"
+
+  - id: A006
+    says: "Poetry group dependencies land in production (deferred split)"
+    block: "parses Poetry dev dependencies"
+    target: "result.production"
+    matcher: "contains"
+    value: "pytest"
+
+  # AC2: readPythonDependencies structured return
+  - id: A007
+    says: "The combined reader provides both production and all-deps views"
+    block: "returns structured production and all"
+    target: "result.production"
+    matcher: "exists"
+
+  - id: A008
+    says: "All-deps includes both production and dev dependencies"
+    block: "returns structured production and all"
+    target: "result.all"
+    matcher: "contains"
+    value: "pytest"
+
+  # AC5: Flask contamination fixed
+  - id: A009
+    says: "Flask in dev dependency-groups does not contaminate framework detection"
+    block: "does not include dev-only Flask in production"
+    target: "result.production"
+    matcher: "not_contains"
+    value: "flask"
+
+  - id: A010
+    says: "Flask correctly appears in the dev bucket when in dependency-groups"
+    block: "does not include dev-only Flask in production"
+    target: "result.dev"
+    matcher: "contains"
+    value: "flask"
+
+  # AC6: SQLAlchemy contamination fixed
+  - id: A011
+    says: "SQLAlchemy in dev dependency-groups does not contaminate database detection"
+    block: "does not include dev-only SQLAlchemy in production"
+    target: "result.production"
+    matcher: "not_contains"
+    value: "sqlalchemy"
+
+  - id: A012
+    says: "SQLAlchemy correctly appears in the dev bucket when in dependency-groups"
+    block: "does not include dev-only SQLAlchemy in production"
+    target: "result.dev"
+    matcher: "contains"
+    value: "sqlalchemy"
+
+  # AC7: Testing detection still works
+  - id: A013
+    says: "pytest in dependency-groups is still detected for testing"
+    block: "pytest in dependency-groups appears in all for testing detection"
+    target: "result.all"
+    matcher: "contains"
+    value: "pytest"
+
+  # AC8: Production FastAPI unaffected
+  - id: A014
+    says: "FastAPI in production dependencies still produces correct framework detection"
+    block: "FastAPI in project dependencies lands in production"
+    target: "result.production"
+    matcher: "contains"
+    value: "fastapi"
+
+  # AC9: EXCLUDED_SEGMENTS
+  - id: A015
+    says: "Directories named testing are excluded from surface detection"
+    block: "excludes testing segment from surface detection"
+    target: "isNonProductPath"
+    matcher: "equals"
+    value: true
+
+  # AC10: Docstring fix
+  - id: A016
+    says: "The optional-dependencies docstring no longer calls them devDependencies"
+    block: "docstring does not say devDependencies"
+    target: "pyproject.ts docstring"
+    matcher: "not_contains"
+    value: "devDependencies"
+
+  # Edge cases
+  - id: A017
+    says: "Empty dependency-groups returns empty dev array"
+    block: "handles empty dependency-groups section"
+    target: "result.dev"
+    matcher: "equals"
+    value: []
+
+  - id: A018
+    says: "Invalid TOML returns empty production and dev arrays"
+    block: "returns empty arrays for invalid TOML"
+    target: "result.production"
+    matcher: "equals"
+    value: []
+
+  # Strategy 1 cross-match awareness
+  - id: A019
+    says: "A dependency-group named 'dependencies' is handled without crashing"
+    block: "handles dependency-group named dependencies"
+    target: "result.dev"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/src/engine/parsers/python/pyproject.ts"
+    action: modify
+  - path: "packages/cli/src/engine/parsers/python.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/parsers/python.test.ts"
+    action: modify
