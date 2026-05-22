@@ -45,5 +45,20 @@
     "packages/cli/src/engine/parsers/python/pyproject.ts",
     "packages/cli/tests/engine/parsers/python.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T08:21:09.586Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ab31cb0ac791fe72b796c6c5d5f9c093bd054e7a385274b334651cd946c9d91b",
+    "run_at": "2026-05-22T08:24:03.559Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T08:24:03.595Z",
+    "hash": "sha256:b527e3c761c6a16cc020f9f4d28fa1c7535beebbed234e88cfabee1c4b239381"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T08:24:03.596Z",
+    "hash": "sha256:de1a3cec1cd00a01e088bdfac77104097c5c2b431a062ffd20b97b12c36af667"
+  }
 }
