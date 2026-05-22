@@ -1,0 +1,148 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Application Shape Detection Priority Chain"
+
+assertions:
+  # AC1-AC2: MCP guard extended to server frameworks
+  - id: A001
+    says: "A data platform with Express and MCP SDK is classified as an API server, not an MCP server"
+    block: "MCP + server framework → api-server"
+    target: "result.shape"
+    matcher: "equals"
+    value: "api-server"
+
+  - id: A002
+    says: "A dedicated MCP server without any framework is still classified as MCP server"
+    block: "pure MCP server (no framework) → mcp-server"
+    target: "result.shape"
+    matcher: "equals"
+    value: "mcp-server"
+
+  - id: A003
+    says: "A Next.js app with MCP SDK is classified as a web app, not an MCP server"
+    block: "MCP + browser framework → web-app"
+    target: "result.shape"
+    matcher: "equals"
+    value: "web-app"
+
+  # AC6: ai-agent guard added
+  - id: A004
+    says: "A Next.js observability platform with LangChain is classified as a web app, not an AI agent"
+    block: "ai-agent + browser framework → web-app"
+    target: "result.shape"
+    matcher: "equals"
+    value: "web-app"
+
+  - id: A005
+    says: "An Express API with LangChain is classified as an API server, not an AI agent"
+    block: "ai-agent + server framework → api-server"
+    target: "result.shape"
+    matcher: "equals"
+    value: "api-server"
+
+  - id: A006
+    says: "A standalone LangChain project without a framework is still classified as an AI agent"
+    block: "ai-agent without framework → ai-agent"
+    target: "result.shape"
+    matcher: "equals"
+    value: "ai-agent"
+
+  # AC3-AC4: Framework beats CLI deps
+  - id: A007
+    says: "A NestJS platform with yargs in deps is classified as an API server, not a CLI"
+    block: "server framework + CLI dep → api-server"
+    target: "result.shape"
+    matcher: "equals"
+    value: "api-server"
+
+  - id: A008
+    says: "A Next.js app with commander in deps is classified as a web app, not a CLI"
+    block: "browser framework + CLI dep → web-app"
+    target: "result.shape"
+    matcher: "equals"
+    value: "web-app"
+
+  # AC5: Library markers beat CLI deps (step 10 removed)
+  - id: A009
+    says: "A library with arg in devDeps is classified as a library, not a CLI"
+    block: "library markers + CLI dep → library"
+    target: "result.shape"
+    matcher: "equals"
+    value: "library"
+
+  - id: A010
+    says: "A project with only commander in deps and no other signals is classified as unknown"
+    block: "CLI dep alone → unknown (step 10 removed)"
+    target: "result.shape"
+    matcher: "equals"
+    value: "unknown"
+
+  # AC13: bin + server framework design decision
+  - id: A011
+    says: "A server tool with both a bin field and Express is classified as an API server"
+    block: "bin + server framework → api-server (framework wins)"
+    target: "result.shape"
+    matcher: "equals"
+    value: "api-server"
+
+  # AC7: Anatomia unchanged
+  - id: A012
+    says: "A CLI tool with bin field and commander but no framework is still classified as CLI"
+    block: "bin + CLI dep, no framework → cli (Anatomia scenario)"
+    target: "result.shape"
+    matcher: "equals"
+    value: "cli"
+
+  # AC8: full-stack unchanged
+  - id: A013
+    says: "A NestJS app with Angular frontend deps is classified as full-stack"
+    block: "server framework + browser deps → full-stack (ghostfolio scenario)"
+    target: "result.shape"
+    matcher: "equals"
+    value: "full-stack"
+
+  # AC9: web-app unchanged
+  - id: A014
+    says: "A Next.js app without special deps is classified as a web app"
+    block: "browser framework alone → web-app"
+    target: "result.shape"
+    matcher: "equals"
+    value: "web-app"
+
+  # AC10: Non-Node unchanged
+  - id: A015
+    says: "Non-Node projects still use the framework lookup table unchanged"
+    block: "non-Node projects use FRAMEWORK_TO_SHAPE lookup"
+    target: "result.shape"
+    matcher: "equals"
+    value: "api-server"
+
+  # AC12: bin + library markers (bin wins)
+  - id: A016
+    says: "A project with both bin field and library markers is classified as CLI, not library"
+    block: "bin + library markers → cli (bin wins)"
+    target: "result.shape"
+    matcher: "equals"
+    value: "cli"
+
+  # Structural: BROWSER_DEP_ALIASES extracted
+  - id: A017
+    says: "The browser dependency alias list is a named constant, not an inline array"
+    block: "BROWSER_DEP_ALIASES is a module-level constant"
+    target: "source"
+    matcher: "contains"
+    value: "BROWSER_DEP_ALIASES"
+
+  # Structural: CLI dep fallback removed
+  - id: A018
+    says: "The CLI dependency fallback step has been removed from the priority chain"
+    block: "no CLI_DEPS.has check returns cli shape"
+    target: "source"
+    matcher: "not_contains"
+    value: "CLI_DEPS.has"
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/applicationShape.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+    action: modify
