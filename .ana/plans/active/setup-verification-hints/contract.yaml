@@ -38,9 +38,9 @@ assertions:
   - id: A005
     says: "Single-repo projects always produce empty provenance"
     block: "findStackProvenance single-repo"
-    target: "provenance"
+    target: "Object.keys(provenance).length"
     matcher: "equals"
-    value: "{}"
+    value: 0
 
   # ── findStackProvenance — monorepo primary ─────────────────────────
 
@@ -75,16 +75,16 @@ assertions:
   - id: A010
     says: "Null dep result fields produce no provenance entry"
     block: "findStackProvenance null dep fields"
-    target: "provenance"
+    target: "Object.keys(provenance).length"
     matcher: "equals"
-    value: "{}"
+    value: 0
 
   - id: A011
     says: "Null aiSdk parameter produces no aiSdk provenance"
     block: "findStackProvenance aiSdk null"
-    target: "provenance.aiSdk"
-    matcher: "not_equals"
-    value: "exists"
+    target: "Object.keys(provenance)"
+    matcher: "not_contains"
+    value: "aiSdk"
 
   # ── findStackProvenance — field coverage ───────────────────────────
 

@@ -16,7 +16,7 @@ For each field, the function checks whether the primary root's deps or devDeps c
 
 **2. Setup template — verification-aware Step 2.** Two conditional blocks added to the Config Confirmation step:
 
-- **Surface gap check.** After the surfaces block, cross-reference `monorepo.packages` against `surfaces` from scan.json. Flag packages with a `dev` script, 15+ source files, not already in surfaces, and not matching inlined non-product path patterns. Present up to 5, sorted by source file count descending. Include framework when available. If the developer confirms adding any, write them to ana.json with scoped commands.
+- **Surface gap check.** After the surfaces block, cross-reference `monorepo.packages` against `surfaces` from scan.json. Flag packages with a `dev` script, 15+ source files, not already in surfaces, and not matching inlined non-product path patterns. Present up to 5, sorted by source file count descending. Include `framework` from the `EnrichedPackage` when non-null (this is config-file-based detection — frameworks without config files like Express will be null, so don't show a framework placeholder for those). If the developer confirms adding any, write them to ana.json with scoped commands, setting `language` and `framework` from the `EnrichedPackage` fields (both may be null).
 
 - **Provenance notes.** When `stackProvenance` has entries, show an `ⓘ` note for each non-primary detection with the source path. Prompt correction without being alarming.
 
@@ -47,8 +47,8 @@ Both additions are silent when there's nothing to flag.
     website          (cd 'website' && pnpm run test)
 
   Possible surfaces not yet tracked:
-    packages/api         Express, 305 files, has dev/test/build
-    packages/worker      —, 42 files, has dev/test
+    packages/api         Next.js, 305 files, has dev/test/build
+    packages/worker      42 files, has dev/test
     + 3 more
 ```
 
@@ -66,7 +66,7 @@ Both additions are silent when there's nothing to flag.
     "api": {
       "path": "packages/api",
       "language": "TypeScript",
-      "framework": "Express",
+      "framework": null,
       "commands": {
         "test": "(cd 'packages/api' && pnpm run test)",
         "build": "(cd 'packages/api' && pnpm run build)",
