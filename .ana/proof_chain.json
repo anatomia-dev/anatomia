@@ -38446,7 +38446,10 @@
             "A007"
           ],
           "id": "scan-surface-display-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by scan-quality-polish scope — conditional assertions replaced with real assertions at scan.test.ts:1099 (expect(surfIdx).toBeGreaterThan(-1)) and :1102 (expect(cliLine).toBeDefined()). Test now fails if Surfaces section isn't rendered instead of passing vacuously.",
+          "closed_at": "2026-05-22T20:52:47.659Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

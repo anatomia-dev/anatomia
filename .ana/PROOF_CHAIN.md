@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 103 active · 3 promoted · 762 closed
+151 runs · 102 active · 3 promoted · 763 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 69 | 2026-05-22 |
+| cli | 105 | 68 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 103 total)
+## Active Findings (30 shown of 102 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -78,8 +78,11 @@
 
 ### packages/cli/tests/commands/scan.test.ts
 
-- **test:** A007 test uses conditional assertions — passes vacuously if Surfaces section not rendered — *Scan Surface Display*
 - **test:** A003-A006 test asserts surface names exist in block but not framework, language, or testing values — *Scan Surface Display*
+
+### packages/cli/tests/engine/census-detection.test.ts
+
+- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/census-primary.test.ts
 
