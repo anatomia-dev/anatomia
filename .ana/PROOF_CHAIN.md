@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-151 runs · 102 active · 3 promoted · 763 closed
+151 runs · 101 active · 3 promoted · 764 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 68 | 2026-05-22 |
+| cli | 105 | 67 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 102 total)
+## Active Findings (30 shown of 101 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -76,10 +76,6 @@
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
-### packages/cli/tests/commands/scan.test.ts
-
-- **test:** A003-A006 test asserts surface names exist in block but not framework, language, or testing values — *Scan Surface Display*
-
 ### packages/cli/tests/engine/census-detection.test.ts
 
 - **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
@@ -87,6 +83,10 @@
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
+
+### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
+
+- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
