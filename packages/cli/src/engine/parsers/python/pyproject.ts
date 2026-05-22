@@ -31,7 +31,7 @@ export function parsePyprojectToml(content: string): string[] {
   // Returns lowercased package names.
   const extractFromArray = (arrayBody: string): string[] => {
     const names: string[] = [];
-    const matches = arrayBody.matchAll(/"([a-zA-Z0-9][\w.-]*)[\[\]>=<\s"]/g);
+    const matches = arrayBody.matchAll(/["']([a-zA-Z0-9][\w.-]*)[\[\]>=<\s"']/g);
     for (const match of matches) {
       if (match[1]) {
         names.push(match[1].toLowerCase());
@@ -44,7 +44,12 @@ export function parsePyprojectToml(content: string): string[] {
   // Pattern: dependencies = ["package>=version", "package2"]
   // Anchor on a line-leading `dependencies = [` to avoid accidentally matching
   // the sub-table key in `[project.optional-dependencies]`.
-  const pep621Match = content.match(/^\s*dependencies\s*=\s*\[([\s\S]*?)\]/m);
+  // Note: this pattern is not section-scoped — it could match a `dependencies`
+  // key inside [dependency-groups]. Dedup via `new Set(deps)` makes this harmless.
+  // Use `\]\s*$` to anchor closing bracket at end-of-line, avoiding early
+  // termination on mid-line brackets like `[trio]` in `"anyio[trio] >=3.2.1"`.
+  // Tradeoff: a proper TOML parser is the right next step if more edge cases surface.
+  const pep621Match = content.match(/^\s*dependencies\s*=\s*\[([\s\S]*?)\]\s*$/m);
   if (pep621Match && pep621Match[1]) {
     deps.push(...extractFromArray(pep621Match[1]));
   }
@@ -63,7 +68,30 @@ export function parsePyprojectToml(content: string): string[] {
     const sectionBody = optionalDepsSection[1];
     // Match `group = [ ... ]` entries, allowing multi-line arrays.
     const groupMatches = sectionBody.matchAll(
-      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]/gm
+      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]\s*$/gm
+    );
+    for (const match of groupMatches) {
+      if (match[1]) {
+        deps.push(...extractFromArray(match[1]));
+      }
+    }
+  }
+
+  // Strategy 5: PEP 735 [dependency-groups] (Python 3.12+)
+  // Pattern:
+  //   [dependency-groups]
+  //   test = ["pytest>=7.0", "coverage"]
+  //   docs = ["sphinx"]
+  // Same structure as Strategy 2 — section body with `group = [...]` entries.
+  // Note: `include-group` inline tables (e.g., `{include-group = "tests"}`) will
+  // produce harmless phantom dep names that no detector matches.
+  const depGroupsSection = content.match(
+    /\[dependency-groups\]([\s\S]*?)(?:\n\[|$)/
+  );
+  if (depGroupsSection && depGroupsSection[1]) {
+    const sectionBody = depGroupsSection[1];
+    const groupMatches = sectionBody.matchAll(
+      /^\s*[a-zA-Z0-9][\w.-]*\s*=\s*\[([\s\S]*?)\]\s*$/gm
     );
     for (const match of groupMatches) {
       if (match[1]) {
