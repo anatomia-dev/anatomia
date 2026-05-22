@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-144 runs · 106 active · 3 promoted · 726 closed
+145 runs · 109 active · 3 promoted · 727 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 98 | 72 | 2026-05-22 |
+| cli | 99 | 75 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,16 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
-
-### packages/cli/src/commands/config.ts
-
-- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/work.ts
 
@@ -63,14 +58,14 @@
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
+### packages/cli/src/engine/scan-engine.ts
+
+- **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
+
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Contract file_changes lists state.test.ts but tests were written in monorepoCommandScoping.test.ts — file mismatch between contract and implementation — *Fix False Surface Detection*
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
-
-### packages/cli/tests/commands/proof-surface-derivation.test.ts
-
-- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/commands/scan.test.ts
 
@@ -88,6 +83,11 @@
 - **test:** Stale @ana tags from prior contract create proof chain ambiguity — 20 duplicate tags with colliding IDs — *Fix Application Shape Detection Priority Chain*
 - **test:** @ana A003 tags wrong test — tags 'pure function' check (line 319) instead of MCP+Next.js→web-app test (line 64) — *Fix Application Shape Detection Priority Chain*
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
+
+### packages/cli/tests/engine/detectors/detection-overrides.test.ts
+
+- **test:** A003 asserts not-TypeScript but not what language IS — weaker than necessary — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
+- **test:** Only server/ and web/ subdirectories exercised — frontend/ and backend/ untested — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 

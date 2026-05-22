@@ -38786,6 +38786,174 @@
         "base_commit": "26e355daa30f89ae76a7dbfe5b659497458cf830"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-typescript-language-detection",
+      "feature": "Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Monorepo projects with TypeScript as a root toolchain dependency are detected as TypeScript",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Projects with TypeScript config files in common subdirectories are detected as TypeScript",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Non-Node projects with subdirectory TypeScript configs are not falsely upgraded",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Root tsconfig detection continues working after the change",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "TypeScript dependency detection continues working after the change",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Plain Node.js projects without TypeScript signals stay as Node.js",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Tier 2 alone is sufficient without any subdirectory tsconfigs present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Multiple subdirectory tsconfig candidates are handled correctly",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 38,
+        "think": 17,
+        "plan": 9,
+        "build": 3,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:77a8ec5a49b962f076082a49e788e5997b3037acb9d6c2eee95242a0374b0dec",
+        "contract": "sha256:ad0231a7e0a60451d34a3a9fa30a9d2ce957c1691672ae730bcfee851e82d49d",
+        "plan": "sha256:d2f6f33579787c1890e290f3440753d7a8a24a8b3f724ef2afc8a8a3010694e2",
+        "spec": "sha256:1ad87e99f232c865ec7c7ccefac245039f53a1bcc04934ea9f8e5585e915efb8",
+        "build-report": "sha256:ee2c6d605aaa993591aee85d455ce835f70d2a84849f8a3623b35e04424f94b9",
+        "build-data": "sha256:c8173bb7cd4cd62690f9577f3aa412fbdee91fde2a845e30b4a8387f96f59610",
+        "verify-report": "sha256:b3110f9cf2d6148a7e7601938687bf580fcc82538cf1bf9b1580e2c29740f798",
+        "verify-data": "sha256:6911be84f3ba56ef758d9f4669f88935ce8165da5a836a87a1d2c8e6e90f3582"
+      },
+      "completed_at": "2026-05-22T07:44:56.206Z",
+      "modules_touched": [
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+      ],
+      "scope_summary": "Four repos (budibase, infisical, tooljet, immich) show \"Node.js\" when they're clearly TypeScript. The TypeScript override check only looks at root tsconfig.json and allDeps — it misses typescript in root devDependencies (monorepo toolchain deps) and tsconfig.json files in non-workspace subdirectories. This fix expands detection to catch both cases without changing any currently-correct result.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Hardcoded subdirectory list inline in 900+ line function",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 865,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A002",
+            "A008"
+          ],
+          "id": "fix-typescript-language-detection-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A003 asserts not-TypeScript but not what language IS — weaker than necessary",
+          "file": "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
+          "anchor": null,
+          "line": 121,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "fix-typescript-language-detection-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Only server/ and web/ subdirectories exercised — frontend/ and backend/ untested",
+          "file": "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
+          "anchor": null,
+          "line": 98,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A002",
+            "A008"
+          ],
+          "id": "fix-typescript-language-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "AC1-3 reference real repos (budibase, infisical, tooljet) but are only verifiable by proxy through unit test fixtures",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-typescript-language-detection-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-22T07:44:56.206Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Baseline test count discrepancy: spec says 2762 but worktree shows 2780 — tests added between spec creation and worktree creation",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T07:27:20.131Z",
+        "completed_at": "2026-05-22T07:44:56.200Z",
+        "commit_count": 0,
+        "base_commit": "733f2baf7f21b268703cbf33db312704a5f5b237"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
