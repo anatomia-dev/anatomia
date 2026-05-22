@@ -61,6 +61,7 @@ describe('detectApplicationShape', () => {
   });
 
   describe('priority: most specific shape wins', () => {
+    // @ana A003
     it('mcp-server yields to web-app when browser framework present', () => {
       // A Next.js app with @modelcontextprotocol/sdk is a web-app with an MCP feature
       const result = detectApplicationShape(makeInput({
@@ -316,7 +317,6 @@ describe('detectApplicationShape', () => {
     });
   });
 
-  // @ana A003
   describe('detector is a pure function', () => {
     it('does not import node:fs', async () => {
       const detectorSource = await import('node:fs/promises').then(fs =>

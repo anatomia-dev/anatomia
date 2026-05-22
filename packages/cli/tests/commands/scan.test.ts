@@ -1080,6 +1080,11 @@ describe('ana scan', () => {
       const surfaceBlock = lines.slice(surfIdx + 2, surfIdx + 6).join('\n');
       expect(surfaceBlock).toContain('cli');
       expect(surfaceBlock).toContain('web');
+
+      // Value-level assertions: verify rendered framework, language, and testing
+      expect(surfaceBlock).toContain('Next.js');
+      expect(surfaceBlock).toContain('JavaScript');
+      expect(surfaceBlock).toContain('Vitest');
     });
 
     // @ana A007
@@ -1091,13 +1096,11 @@ describe('ana scan', () => {
       const { stdout } = runScan();
       const lines = stdout.split('\n');
       const surfIdx = lines.findIndex((l: string) => l.includes('Surfaces') && !l.includes('────'));
-      if (surfIdx > -1) {
-        // The cli surface line should not contain " · " separator since no testing
-        const cliLine = lines.slice(surfIdx + 2).find((l: string) => l.includes('cli'));
-        if (cliLine) {
-          expect(cliLine).not.toContain(' · ');
-        }
-      }
+      expect(surfIdx).toBeGreaterThan(-1);
+      // The cli surface line should not contain " · " separator since no testing
+      const cliLine = lines.slice(surfIdx + 2).find((l: string) => l.includes('cli'));
+      expect(cliLine).toBeDefined();
+      expect(cliLine).not.toContain(' · ');
     });
 
     // @ana A008

@@ -59,6 +59,7 @@ const FRAMEWORK_HINTS: Array<{ pattern: string; framework: string; check: 'file'
   // Angular
   { pattern: 'angular.json', framework: 'angular', check: 'file' },
   // Vue CLI
+  { pattern: 'vue.config.ts', framework: 'vue', check: 'file' },
   { pattern: 'vue.config.js', framework: 'vue', check: 'file' },
   { pattern: 'vue.config.mjs', framework: 'vue', check: 'file' },
   // Astro
@@ -317,6 +318,9 @@ function discoverSchemas(
 ): SchemaFileEntry[] {
   const entries: SchemaFileEntry[] = [];
   for (const root of roots) {
+    // Skip non-product paths (e2e fixtures, examples, templates, etc.)
+    if (isNonProductPath(root.relativePath)) continue;
+
     // Prisma — check both conventional locations:
     // - {root}/prisma/schema.prisma (monolith, most monorepos)
     // - {root}/schema.prisma (prisma package root, e.g., cal.com's @calcom/prisma)

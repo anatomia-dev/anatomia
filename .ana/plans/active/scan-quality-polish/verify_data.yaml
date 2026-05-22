@@ -1,0 +1,46 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Spec says fixture produces 'TypeScript' but actual output is 'JavaScript' — spec guidance was incorrect"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1086
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007"]
+  - category: code
+    summary: "No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage"
+    file: "packages/cli/src/engine/census.ts"
+    line: 322
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001"]
+  - category: upstream
+    summary: "INFRA_PATTERNS case-insensitivity (Fix 2) resolves proof finding fix-false-surface-detection-C2"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "fix-false-surface-detection-C2"
+  - category: upstream
+    summary: "Vacuous assertion fix (Fix 4) resolves proof finding scan-surface-display-C1"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "scan-surface-display-C1"
+  - category: upstream
+    summary: "Value-level assertions (Fix 5) resolves proof finding scan-surface-display-C2"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "scan-surface-display-C2"
+  - category: upstream
+    summary: "@ana A003 tag relocation (Fix 6) resolves proof finding fix-shape-detection-priority-C2"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "fix-shape-detection-priority-C2"
+  - category: code
+    summary: "'testing' removed from EXCLUDED_SEGMENTS — pre-existing branch change, not from this build, but reduces surface filtering coverage"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 65
+    severity: observation
+    suggested_action: monitor

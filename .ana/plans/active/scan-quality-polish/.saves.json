@@ -18,5 +18,37 @@
   "spec": {
     "saved_at": "2026-05-22T10:17:44.786Z",
     "hash": "sha256:fb9d340f5c0c07aa8cc0a0fe41a2b1cc18f6a6a8d0ddb0a5002473981335706b"
+  },
+  "build_started_at": "2026-05-22T10:25:36.794Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T10:33:28.722Z",
+    "hash": "sha256:9d1d8445950a0b2d8d5838d5abe0d3835eccd75d20b0227e42a189a504f22e36"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T10:33:28.722Z",
+    "hash": "sha256:0c330ad46edf16d05ec356a4f06be9053fc6bc7385fdd89defd7272e6e373241"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "packages/cli/tests/engine/detectors/applicationShape.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-22T10:35:46.035Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:69d65ccedbdcd6afe44df698a57fb7851f58420bd2f250ca52450ddc5e169531",
+    "run_at": "2026-05-22T10:41:43.673Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-22T10:41:43.711Z",
+    "hash": "sha256:7089e669de46d3769c2da642a446bc948574f24a413588b8c339a51bc6eb5059"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-22T10:41:43.712Z",
+    "hash": "sha256:d75d2d052143c7294637bffc2934e5e68f12434a7b82a23c066440b1f05a5b00"
   }
 }
