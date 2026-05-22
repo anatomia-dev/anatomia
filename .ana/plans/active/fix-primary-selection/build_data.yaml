@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "A014 contract assertion not_equals '.' is structurally awkward — Policy 3 can select root independently of Policy 2 exclusion, requiring indirect test design"
+    severity: observation
+    suggested_action: accept
