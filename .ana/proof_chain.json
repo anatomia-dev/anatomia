@@ -39197,6 +39197,207 @@
         "base_commit": "8e5d305bbafdfb711fd3f4c4e9db7ad1ff60f532"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-python-pyproject-parser",
+      "feature": "Fix Python pyproject.toml parser — 3 bugs",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 15,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Dependencies listed under PEP 735 dependency-groups are detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Multiple groups within dependency-groups are all extracted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Packages with extras brackets like anyio[trio] are fully parsed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Dependencies listed after an extras bracket are not truncated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-line dependency arrays continue to parse correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Single-quoted package names are extracted the same as double-quoted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Mixed single and double quotes in the same array both work",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Fastapi-style pyproject.toml produces pytest in the dependency list",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Pydantic-style pyproject.toml with single quotes produces pytest",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Include-group entries produce harmless phantom deps, not crashes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Real package names are still extracted alongside include-group entries",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Existing PEP 621 parsing test still passes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Existing Poetry parsing test still passes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Regex tradeoff is documented in a code comment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Strategy 1 section-scoping limitation is documented",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 22,
+        "think": 5,
+        "plan": 5,
+        "build": 4,
+        "verify": 3
+      },
+      "hashes": {
+        "scope": "sha256:39afcbc50b9752106fd403feebadb6adccb6e53db659508df12d39e1ecf2eda9",
+        "contract": "sha256:ab31cb0ac791fe72b796c6c5d5f9c093bd054e7a385274b334651cd946c9d91b",
+        "plan": "sha256:e704dfa4ba7c2e98da4bc7fc4595fe9fbd3649ae4fdb40c604c292b15efc8321",
+        "spec": "sha256:90a5a66ff58c4feb4995eb51849fdd71051cd37f6512fded901e85c612cb309c",
+        "build-report": "sha256:59c1841fe68cf4364eb4e2e6636cc3929ef30370915dd96e156f2bcfdffdec4e",
+        "build-data": "sha256:7dbac6192763597d2668fb9c233ef72662d75465818e4d19778da9132617ad51",
+        "verify-report": "sha256:b527e3c761c6a16cc020f9f4d28fa1c7535beebbed234e88cfabee1c4b239381",
+        "verify-data": "sha256:de1a3cec1cd00a01e088bdfac77104097c5c2b431a062ffd20b97b12c36af667"
+      },
+      "completed_at": "2026-05-22T08:27:28.485Z",
+      "modules_touched": [
+        "packages/cli/src/engine/parsers/python/pyproject.ts",
+        "packages/cli/tests/engine/parsers/python.test.ts"
+      ],
+      "scope_summary": "The pyproject.toml parser silently fails to detect pytest for every Python project we've tested. Three bugs compound: (1) PEP 735 `[dependency-groups]` isn't parsed at all, (2) the TOML array regex terminates at extras brackets like `[trio]` inside package specifiers, truncating everything after, and (3) single-quoted strings are ignored. All 5 validated Python repos (fastapi, pydantic, litellm, reflex, prefect) show `testing: []` despite having pytest. The scan lies — it says \"no tests\" when tests exist.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Strategy numbering gap — 1, 2, 5, 3, 4 — from inserting PEP 735 before Poetry strategies",
+          "file": "packages/cli/src/engine/parsers/python/pyproject.ts",
+          "anchor": null,
+          "line": 80,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "fix-python-pyproject-parser-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "TOML inline comments after closing bracket (e.g., `] # end`) would break \\]\\s*$ anchor",
+          "file": "packages/cli/src/engine/parsers/python/pyproject.ts",
+          "anchor": null,
+          "line": 52,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "fix-python-pyproject-parser-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Windows \\r\\n line endings could leave \\r in captured content — $  matches before \\n only",
+          "file": "packages/cli/src/engine/parsers/python/pyproject.ts",
+          "anchor": null,
+          "line": 52,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-python-pyproject-parser-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex",
+          "file": "packages/cli/tests/engine/parsers/python.test.ts",
+          "anchor": null,
+          "line": 185,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "fix-python-pyproject-parser-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test for empty string or malformed TOML in dependency-groups — only empty section tested",
+          "file": "packages/cli/tests/engine/parsers/python.test.ts",
+          "anchor": null,
+          "line": 199,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-python-pyproject-parser-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T08:16:20.983Z",
+        "completed_at": "2026-05-22T08:27:28.479Z",
+        "commit_count": 0,
+        "base_commit": "91af007e14918a80c7eabb8ed874d327364e1588"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-146 runs · 112 active · 3 promoted · 728 closed
+147 runs · 117 active · 3 promoted · 728 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 100 | 78 | 2026-05-22 |
+| cli | 101 | 83 | 2026-05-22 |
 | website | 21 | 20 | 2026-05-21 |
 
 ## Hot Modules
@@ -24,15 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
-
-### packages/cli/src/commands/init/state.ts
-
-- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-
-### packages/cli/src/commands/work.ts
-
-- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
+## Active Findings (30 shown of 117 total)
 
 ### packages/cli/src/engine/census.ts
 
@@ -55,9 +47,11 @@
 - **code:** INFRA_PATTERNS is case-sensitive while EXCLUDED_SEGMENTS is case-insensitive — inconsistent casing strategy between the two pre-filters — *Fix False Surface Detection*
 - **code:** isNonProductPath returns true for empty string segments from trailing slashes — 'examples/'.split('/') produces ['examples', ''], and '' does not match EXCLUDED_SEGMENTS, so it still works, but edge is unguarded — *Fix False Surface Detection*
 
-### packages/cli/src/engine/sampling/proportionalSampler.ts
+### packages/cli/src/engine/parsers/python/pyproject.ts
 
-- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
+- **code:** Strategy numbering gap — 1, 2, 5, 3, 4 — from inserting PEP 735 before Poetry strategies — *Fix Python pyproject.toml parser — 3 bugs*
+- **code:** TOML inline comments after closing bracket (e.g., `] # end`) would break \]\s*$ anchor — *Fix Python pyproject.toml parser — 3 bugs*
+- **code:** Windows \r\n line endings could leave \r in captured content — $  matches before \n only — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### packages/cli/src/engine/scan-engine.ts
 
@@ -66,7 +60,6 @@
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Contract file_changes lists state.test.ts but tests were written in monorepoCommandScoping.test.ts — file mismatch between contract and implementation — *Fix False Surface Detection*
-- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/scan.test.ts
 
@@ -100,7 +93,8 @@
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
 - **test:** @ana tag collision — A015-A020 IDs reused from scan-surface-detection contract in same test file. Machines parsing @ana tags will match wrong tests for older contracts. — *Fill Scan Detection Gaps*
 
-### website/components/docs/proof/ProofExplorer.tsx
+### packages/cli/tests/engine/parsers/python.test.ts
 
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
+- **test:** No test for empty string or malformed TOML in dependency-groups — only empty section tested — *Fix Python pyproject.toml parser — 3 bugs*
 
