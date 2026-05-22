@@ -24993,7 +24993,10 @@
             "A018"
           ],
           "id": "dynamic-pages-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-docs-date-freshness scope — hardcoded '2026-05-11' at cli/page.tsx:70 replaced with dynamic meta.buildTimestamp.slice(0, 10). Date now updates on every site build. Verified in current code.",
+          "closed_at": "2026-05-22T21:51:46.314Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

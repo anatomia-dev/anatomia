@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-152 runs · 101 active · 3 promoted · 769 closed
+152 runs · 100 active · 3 promoted · 770 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
 | cli | 105 | 66 | 2026-05-22 |
-| website | 22 | 21 | 2026-05-22 |
+| website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 101 total)
+## Active Findings (30 shown of 100 total)
 
 ### packages/cli/src/commands/artifact.ts
 
