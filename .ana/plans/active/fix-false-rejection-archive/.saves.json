@@ -30,5 +30,22 @@
         "hash": "sha256:c7b9069889a16b4bc40a46ad4279c9dc48ed71740300e446fcec8145424d0b8a"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-22T10:59:14.581Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T20:02:04.857Z",
+    "hash": "sha256:ca5e2b141909426ff7585edf59e57e952e7eb09ee30eeb72ea9d328ea34364db"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T20:02:04.858Z",
+    "hash": "sha256:b975546174afdfe9ea6c996ef7a91ad009ea3eed723265a3b842cef6c95dcf27"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/utils/proofSummary.test.ts"
+  ],
+  "commit_hygiene": []
 }
