@@ -19,7 +19,7 @@ Three display surfaces show the scan output — the terminal, the README, and th
 - **Size:** small — 1 code fix (~5 lines), 2 content rewrites (README markdown + website JSX)
 - **Surface:** cross-surface
 - **Files affected:**
-  - `packages/cli/src/commands/scan.ts` — box alignment fix (line 147)
+  - `packages/cli/src/commands/scan.ts` — box alignment fix (lines 147 + 150)
   - `README.md` — scan example replacement (lines 17-46)
   - `website/components/scan/ScanSlab.tsx` — terminal mock content update (lines 44-114)
 - **Blast radius:** Minimal. The terminal fix is a padding calculation — no behavioral change. The README and website changes are content-only — no code logic changes.
@@ -80,10 +80,10 @@ None. The scope is narrow and the approach is clear.
 
 ### Constraints Discovered
 
-- [TYPE-VERIFIED] `chalk.dim()` wraps text in `\x1b[2m...\x1b[22m` (8 invisible characters). `padEnd` counts these, shortening visible padding by 8 characters.
+- [TYPE-VERIFIED] `chalk.dim()` wraps text in `\x1b[2m...\x1b[22m` (4 + 5 = 9 invisible characters). `padEnd` counts these, shortening visible padding by 9 characters.
 - [OBSERVED] `boxWidth = 71`, `innerWidth = 69`. The box is fixed-width, not terminal-responsive.
 - [OBSERVED] The website ScanSlab uses `papermark` as the example project. It shows 0 surfaces and a "No test framework" warning — the worst possible first impression after the R5/R6 fixes.
-- [OBSERVED] The README example box has a subtle alignment issue too — the right `│` on the name line shows extra space: `web-app   │` vs the border line above.
+- [OBSERVED] The README example box is manually formatted at 71 chars per line — alignment is correct in the static markdown. The new example must maintain this exact width.
 
 ### Test Infrastructure
 
@@ -97,7 +97,7 @@ The existing ScanSlab at `website/components/scan/ScanSlab.tsx` IS the structura
 
 ### Relevant Code Paths
 
-- `packages/cli/src/commands/scan.ts` lines 142-152 — header box rendering. The fix is on line 147.
+- `packages/cli/src/commands/scan.ts` lines 142-152 — header box rendering. Fixes on lines 147 (ANSI padding) and 150 (content overflow).
 - `README.md` lines 17-46 — scan example code block.
 - `website/components/scan/ScanSlab.tsx` lines 44-114 — terminal mock JSX.
 - `website/lib/copy.ts` lines 70-82 — scan section copy text (may need minor updates to asserts).
