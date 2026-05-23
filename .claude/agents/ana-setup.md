@@ -150,6 +150,59 @@ how Ana's pipeline integrates with your codebase:
     {name}              {surfaces.{name}.commands.test ?? '⚠ no test command'}
     ...for each surface]
 
+  [If monorepo — surface gap check:
+  Read `monorepo.packages` from scan.json and compare against `surfaces` in ana.json.
+  A package is a potential surface gap if ALL of these are true:
+    - It has a `dev` script (check its `scripts` array)
+    - It has 15+ source files (check its `sourceFiles` field)
+    - It is NOT already tracked in surfaces (compare `path` against surface paths)
+    - Its path does NOT contain any of these non-product segments:
+      `examples`, `templates`, `fixtures`, `e2e`, `test`, `tests`, `testing`,
+      `playground`, `sandbox`, `demos`, `starters`, `samples`, `boilerplate`, `references`
+    - Its name does NOT match these infra patterns:
+      `tsconfig`, `eslint-config`, `prettier-config`, `tailwind-config`,
+      `config-typescript`, `biome-config`
+
+  If any gaps found, show up to 5, sorted by sourceFiles descending:
+  ```
+  Possible surfaces not yet tracked:
+    {path}         {framework + ', ' if framework non-null}{sourceFiles} files, has {scripts matching dev/test/build joined}
+    ...
+    + {N} more   (if more than 5)
+  ```
+
+  If the developer confirms adding any, for each confirmed surface:
+  1. Derive the surface key from the last path segment (e.g., `packages/api` → `api`)
+  2. Read the current `.ana/ana.json`
+  3. Add the surface with scoped commands using `(cd '{path}' && {packageManager} run {script})` pattern:
+     ```json
+     "{key}": {
+       "path": "{path}",
+       "language": "{language from EnrichedPackage, may be null}",
+       "framework": "{framework from EnrichedPackage, may be null}",
+       "commands": {
+         "test": "(cd '{path}' && {pm} run test)",
+         "build": "(cd '{path}' && {pm} run build)",
+         "lint": "(cd '{path}' && {pm} run lint)",
+         "dev": null
+       }
+     }
+     ```
+     Only include test/build/lint commands if the package has matching scripts.
+     Always set `dev: null`.
+  4. Write ana.json, then read it back to confirm the change persisted.]
+
+  [If scan.json contains `stackProvenance` with non-empty entries:
+  After the Stack line, show an ⓘ note for each entry:
+  ```
+    ⓘ {field label} ({display name}): detected from {path}, not
+      your primary package. Correct?
+  ```
+  Field labels: database → "Database", auth → "Auth", payments → "Payments", aiSdk → "AI SDK".
+  The display name comes from scan.json `stack.{field}`.
+  These are informational — prompt correction without being alarming.
+  If stackProvenance is empty `{}`, show nothing.]
+
 Does this look right?
 ```
 

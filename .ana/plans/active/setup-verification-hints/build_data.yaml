@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "detectAiSdk called twice in scan-engine.ts — once inline in stack literal, once for provenance"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Dogfood agent template sync is manual — no automation prevents divergence during development"
+    severity: observation
+    suggested_action: monitor

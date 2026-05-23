@@ -150,6 +150,7 @@ describe('Engine Interface Contract', () => {
         'applicationShape',
         'overview',
         'stack',
+        'stackProvenance',
         'versions',
         'files',
         'structure',

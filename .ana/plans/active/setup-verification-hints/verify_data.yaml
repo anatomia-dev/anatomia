@@ -1,0 +1,36 @@
+schema: 1
+findings:
+  - category: code
+    summary: "detectAiSdk(allDeps) called twice — line 787 for stack and line 798 for provenance"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 798
+    severity: debt
+    suggested_action: accept
+    related_assertions: []
+  - category: test
+    summary: "Duplicate @ana tag IDs across describe blocks (A001-A004 used by both old and new tests)"
+    file: "packages/cli/tests/engine/detectors/dependencies.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "Redundant toBeDefined() before specific toBe() in A008 and A009 tests"
+    file: "packages/cli/tests/engine/detectors/dependencies.test.ts"
+    line: 245
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true"
+    file: "packages/cli/src/engine/detectors/dependencies.ts"
+    line: 371
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Spec gotcha said capture nodeAiSdk once and use in both stack and provenance — builder captured separately but didn't wire into stack construction"
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper"
+    file: "packages/cli/tests/engine/detectors/dependencies.test.ts"
+    line: 163
+    severity: debt
+    suggested_action: scope

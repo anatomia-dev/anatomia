@@ -40,5 +40,40 @@
         "hash": "sha256:8fe3beab6b1dfe4fa1f25b496d1971df611111a777134a8be67a00fe952196e1"
       }
     ]
+  },
+  "build_started_at": "2026-05-22T23:12:20.731Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-22T23:21:13.000Z",
+    "hash": "sha256:e01ece06fd27408ac68f8470af08439156df7294e000a105d847455c426c8981"
+  },
+  "build-data": {
+    "saved_at": "2026-05-22T23:21:13.001Z",
+    "hash": "sha256:deb92035854228b3d731ce0a3fb5338391fcfd3b4de69eab9eea6d4491dc2b9a"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-setup.md",
+    "packages/cli/src/engine/detectors/dependencies.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/src/engine/types/engineResult.ts",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/tests/contract/analyzer-contract.test.ts",
+    "packages/cli/tests/engine/detectors/dependencies.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-23T04:34:53.378Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:6a80820c03820ad617dee1a7c36428ebfa2117a0604f60e95bdf50c06cb6527e",
+    "run_at": "2026-05-23T04:40:47.621Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-23T04:40:47.660Z",
+    "hash": "sha256:ef84413fcd88efefa70aef282e454df66aa05172413ea822de74f98b064995ea"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-23T04:40:47.660Z",
+    "hash": "sha256:5436b0ca95749452a21109e378f6d20d2fc9c551d9f4e5044281843f0ef64031"
   }
 }
