@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "Overflow test fragile to language detection heuristic changes — uses 1000 models to push 1 char past boundary"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts:198"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept
