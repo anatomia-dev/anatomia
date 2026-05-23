@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 106 active · 3 promoted · 775 closed
+154 runs · 105 active · 3 promoted · 776 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 72 | 2026-05-23 |
+| cli | 107 | 71 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,11 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 105 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
+
+### packages/cli/src/commands/config.ts
+
+- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -92,7 +96,6 @@
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
-- **test:** No test for multiple packages where one is caught by Signal 3 and another by Signal 4 in the same census — *Backend Service Surface Detection*
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
 
 ### packages/cli/tests/engine/parsers/python.test.ts

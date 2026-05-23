@@ -40765,7 +40765,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "add-backend-surface-detection-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Signals are independent — each evaluates its own conditions and pushes to the candidates array without affecting other signals. Testing each signal in isolation is sufficient. A multi-signal test would verify array concatenation, which is covered by existing multi-candidate tests (name collision disambiguation, etc.).",
+          "closed_at": "2026-05-23T04:56:37.311Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
