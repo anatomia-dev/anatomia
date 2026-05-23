@@ -141,12 +141,27 @@ function formatHumanReadable(
 
   // Render box
   const namePad = innerWidth - projectName.length - shape.length - 4;
-  const nameWithShape = `  ${projectName}${' '.repeat(Math.max(1, namePad))}${chalk.dim(shape)}`;
+  // Compute visible width explicitly — chalk.dim(shape) adds ANSI codes that break padEnd
+  const nameVisibleWidth = 2 + projectName.length + Math.max(1, namePad) + shape.length;
+  const nameTrailing = ' '.repeat(Math.max(0, innerWidth - nameVisibleWidth));
+  const nameWithShape = `  ${projectName}${' '.repeat(Math.max(1, namePad))}${chalk.dim(shape)}${nameTrailing}`;
 
   lines.push(chalk.cyan(BOX.topLeft + BOX.horizontal.repeat(innerWidth) + BOX.topRight));
-  lines.push(chalk.cyan(BOX.vertical) + chalk.bold(nameWithShape.padEnd(innerWidth)) + chalk.cyan(BOX.vertical));
+  lines.push(chalk.cyan(BOX.vertical) + chalk.bold(nameWithShape) + chalk.cyan(BOX.vertical));
   if (summaryLine) {
-    const summaryPadded = `  ${summaryLine}`;
+    // Drop package count if summary would overflow innerWidth
+    let finalSummary = summaryLine;
+    if (`  ${finalSummary}`.length > innerWidth && result.monorepo.isMonorepo) {
+      const withoutPackages = summaryParts
+        .filter(p => !p.endsWith('packages'))
+        .join(' · ');
+      finalSummary = withoutPackages;
+    }
+    // Truncate with ellipsis as last resort
+    if (`  ${finalSummary}`.length > innerWidth) {
+      finalSummary = finalSummary.slice(0, innerWidth - 3) + '…';
+    }
+    const summaryPadded = `  ${finalSummary}`;
     lines.push(chalk.cyan(BOX.vertical) + summaryPadded.padEnd(innerWidth) + chalk.cyan(BOX.vertical));
   }
   lines.push(chalk.cyan(BOX.bottomLeft + BOX.horizontal.repeat(innerWidth) + BOX.bottomRight));
