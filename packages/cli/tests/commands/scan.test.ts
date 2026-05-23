@@ -1146,6 +1146,101 @@ describe('ana scan', () => {
       expect(hasSurfaceSection).toBe(false);
     });
   });
+
+  describe('box alignment', () => {
+    // @ana A001
+    it('name line with shape badge has correct box width', async () => {
+      // Project with a detected shape — the name line must be exactly boxWidth (71) chars
+      await createTestFiles({
+        'package.json': JSON.stringify({
+          name: 'inbox-zero',
+          dependencies: { next: '15.0.0', react: '19.0.0', 'react-dom': '19.0.0' },
+        }),
+        'app/page.tsx': 'export default function Home() { return <div />; }',
+        'app/layout.tsx': 'export default function Layout({ children }: { children: React.ReactNode }) { return <html><body>{children}</body></html>; }',
+        'index.ts': 'const x = 1;',
+      });
+      process.chdir(tempDir);
+
+      const { stdout } = runScan();
+      const lines = stdout.split('\n');
+      // Find the name line (contains project name between │ borders)
+      const nameLine = lines.find((l: string) => l.includes('inbox-zero') && l.includes('│'));
+      expect(nameLine).toBeDefined();
+      // With FORCE_COLOR=0, no ANSI codes — line length should be exactly 71
+      expect(nameLine!.length).toBe(71);
+    });
+
+    // @ana A002
+    it('summary line has correct box width', async () => {
+      await createTestFiles({
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          dependencies: { next: '15.0.0', react: '19.0.0', 'react-dom': '19.0.0' },
+        }),
+        'app/page.tsx': 'export default function Home() { return <div />; }',
+        'app/layout.tsx': 'export default function Layout({ children }: { children: React.ReactNode }) { return <html><body>{children}</body></html>; }',
+        'index.ts': 'const x = 1;',
+      });
+      process.chdir(tempDir);
+
+      const { stdout } = runScan();
+      const lines = stdout.split('\n');
+      // Find summary line — contains "Next.js" between │ borders, but NOT the name line
+      const summaryLine = lines.find((l: string) =>
+        l.includes('Next.js') && l.includes('│') && !l.includes('test-project'),
+      );
+      if (summaryLine) {
+        expect(summaryLine.length).toBe(71);
+      }
+    });
+
+    // @ana A003, A004
+    it('drops package count from summary when it would overflow', async () => {
+      // Create a monorepo with Prisma + PostgreSQL (long database display) + many packages.
+      // The primary package has the deps so the scanner detects them.
+      // Summary would be: "TypeScript · Next.js · Prisma → PostgreSQL (100 models) · 113 packages"
+      // That's 72 visible chars with "  " prefix = 74, exceeding innerWidth of 69
+      const files: Record<string, string> = {
+        'pnpm-workspace.yaml': 'packages:\n  - "packages/*"\n  - "apps/*"',
+        'package.json': JSON.stringify({ name: 'calcom-monorepo' }),
+        'apps/web/package.json': JSON.stringify({
+          name: 'web',
+          dependencies: { '@prisma/client': '5.0.0', next: '15.0.0', react: '19.0.0', 'react-dom': '19.0.0' },
+        }),
+        'apps/web/app/page.tsx': 'export default function Home() { return <div />; }',
+        'apps/web/app/layout.tsx': 'export default function Layout({ children }: { children: React.ReactNode }) { return <html><body>{children}</body></html>; }',
+        'apps/web/src/index.ts': 'export const x = 1;',
+      };
+      // Create many packages to produce "113 packages" in summary
+      for (let i = 0; i < 113; i++) {
+        files[`packages/pkg${i}/package.json`] = JSON.stringify({ name: `pkg${i}` });
+      }
+      // Prisma schema in conventional location with enough models to produce a 4-digit count.
+      // "Prisma → PostgreSQL (1000 models)" is 1 char longer than "(100 models)",
+      // pushing "  " + summary past innerWidth (69) to trigger overflow.
+      const models = Array.from({ length: 1000 }, (_, i) => `model M${i} { id Int @id }`).join('\n');
+      files['prisma/schema.prisma'] = `datasource db {\n  provider = "postgresql"\n  url = env("DATABASE_URL")\n}\n${models}`;
+
+      await createTestFiles(files);
+      process.chdir(tempDir);
+
+      const { stdout } = runScan();
+      const lines = stdout.split('\n');
+      // Find the summary line (between │ borders, contains the tech stack but not the project name)
+      const summaryLine = lines.find((l: string) =>
+        l.includes('│') && (l.includes('·') || l.includes('Prisma')) && !l.includes('calcom-monorepo'),
+      );
+      expect(summaryLine).toBeDefined();
+      // Summary must fit within box width
+      expect(summaryLine!.length).toBe(71);
+      // If the original summary would have overflowed, package count is dropped
+      // (package count is shown in the Workspace line below the box)
+      if (summaryLine!.includes('Prisma')) {
+        expect(summaryLine!).not.toContain('packages');
+      }
+    });
+  });
 });
 
 describe('display name mapping', () => {

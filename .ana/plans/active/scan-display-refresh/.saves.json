@@ -34,5 +34,37 @@
         "hash": "sha256:1131f17b0f54b5690fdf4ea784a337830e4cbe94b0aca3dac5349e780a2a2d02"
       }
     ]
+  },
+  "build_started_at": "2026-05-23T19:49:18.414Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-23T20:04:52.515Z",
+    "hash": "sha256:79dc5c9d58492e6983cd88d4923f76100c4c7f7b803b8a85de66f9a5a8c2f466"
+  },
+  "build-data": {
+    "saved_at": "2026-05-23T20:04:52.516Z",
+    "hash": "sha256:6b46dac774a828c5148ea02f8ffe62d4b504928fc3e8c189ed47b59a36cc489d"
+  },
+  "modules_touched": [
+    "README.md",
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "website/components/scan/ScanSlab.tsx"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-23T20:09:39.513Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:daf0ce34a13dc5db14542753860ad7a14a5ed4d0b44b64d891efa3099640bdcc",
+    "run_at": "2026-05-23T20:16:24.287Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-23T20:16:24.321Z",
+    "hash": "sha256:e3e1c82ef6498804a50310113ce150bcd893b51e17fcc948d3320c7f933f2b17"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-23T20:16:24.322Z",
+    "hash": "sha256:c8a906ad6c83296803cd9867d1aff3aaf6d72a3d965360f35077601af556a602"
   }
 }
