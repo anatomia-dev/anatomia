@@ -1,0 +1,80 @@
+---
+title: Scan and surfaces
+description: "The scan is the entry point. It reads your codebase, detects your stack, identifies which packages you actually deploy, and writes the configuration every agent reads."
+readingTime: 6
+---
+
+## What the scan detects
+
+The scan reads your project and writes two files: `ana.json` (configuration every agent reads) and `scan.json` (the full inventory).
+
+It detects your language, framework, package manager, and testing tools. It identifies external service dependencies — Stripe, Redis, Postgres — so agents know what your system talks to. It reads conventions: import style, error handling patterns, file organization. And it records findings about potential issues — missing test commands, misconfigured build scripts, unused dependencies that suggest dead code.
+
+Everything the scan detects is stored, not recomputed. Agents read `scan.json` on startup — they don&apos;t re-analyze your source tree on every pipeline run.
+
+This means the scan is a point-in-time snapshot. If you add a new framework dependency between scans, agents won&apos;t know about it until the next `ana init`.
+
+Manual overrides via `ana config set` survive re-init — the scan updates detected values but preserves your corrections. Override the test command, change the branch prefix, add a surface the scan missed — all of it persists.
+
+## Surfaces
+
+In a monorepo, not every package is something you deploy. Surfaces are the workspace packages that represent actual deployment targets — the ones with CLI entry points, framework configurations, or server framework dependencies.
+
+A Next.js app with a `next.config` is a surface. A shared `utils` package imported by three other packages is not.
+
+The scan identifies surfaces by looking for deployment indicators:
+
+- A `bin` field in package.json — CLI entry point
+- Framework config files like `next.config.js` or `vite.config.ts`
+- Dependencies on server frameworks like Express or Fastify
+
+Packages that exist only to be imported — shared libraries, internal tooling, example apps, e2e test suites — are excluded. The scan looks for evidence that a package runs independently, not that it has code in it.
+
+Each surface carries its own metadata: path, language, framework, and per-surface commands for build, test, and lint. When you run `ana config set surfaces.api.commands.test "cd apps/api && pnpm test"`, you&apos;re telling agents how to compile and verify that specific surface.
+
+A monorepo with three surfaces gets three independent test commands. Agents run the right one based on which surface the current work targets. If the scan misses a surface or detects a false one, you can add or remove surfaces manually — see the [configurability guide](/docs/guides/configurability).
+
+## Application shape
+
+The scan assigns your project one of nine application shapes: web-app, api, cli, mobile, desktop, library, monorepo, static-site, or fullstack. Single-surface projects get the shape of their one surface. Multi-surface projects are classified as monorepo or fullstack depending on what the surfaces contain.
+
+Shape is determined by framework evidence — a project with Next.js is a web-app, not "a Node project with React dependencies." Framework signals outrank dependency signals. A project with both a CLI entry point and a React frontend is fullstack, not cli.
+
+Shape affects how the scan describes your project (the header line agents see on startup), how `ana init` scaffolds descriptions, and what context agents receive about your architecture.
+
+It does not affect pipeline behavior — a CLI and a web-app go through the same five stages with the same verification guarantees. Shape is context, not control flow.
+
+## The cascade
+
+Surfaces flow through the entire pipeline:
+
+- **Scan** detects them from workspace packages with deployment indicators
+- **Init** writes per-surface commands into `ana.json`
+- **Think** scopes work targeting a specific surface
+- **Plan** reads that surface&apos;s test command and writes it into the Build Brief
+- **Build** runs surface-specific tests — not the project-wide suite — to verify changes in isolation
+- **Verify** checks independently using the same surface command
+- **Learn** labels proof chain entries by surface
+
+A concrete example: the scan detects a surface called `api` at `packages/api`. Init writes `(cd 'packages/api' && pnpm run test)` as its test command. Plan references this in the spec. Build runs `(cd 'packages/api' && pnpm run test)` after each change — not `pnpm run test` at the root, which would run every surface&apos;s tests.
+
+The proof chain entry records `surface: api`. Six months later, `ana proof health` can show quality trajectory per surface — the API improved while the dashboard regressed.
+
+Without surfaces, a monorepo is a single blob. With them, every stage of the pipeline knows which part of the codebase it&apos;s working on — and the proof chain tracks quality at that granularity.
+
+Even single-surface projects benefit. The surface commands in `ana.json` are what agents actually run. The scan writes them once; you override them once; every pipeline run uses them automatically.
+
+<NextCards cards={[
+  {
+    eyebrow: "Next concept",
+    title: "The pipeline",
+    href: "/docs/concepts/pipeline",
+    description: "Five stages, five agents. How scoped work moves from diagnosis to verified code."
+  },
+  {
+    eyebrow: "Guide",
+    title: "Configurability",
+    href: "/docs/guides/configurability",
+    description: "Override what the scan detected and manage surfaces manually."
+  }
+]} />
