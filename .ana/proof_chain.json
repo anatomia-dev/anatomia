@@ -40722,7 +40722,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "add-backend-surface-detection-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Cosmetic stale comment — test file JSDoc at surfaces.test.ts:4 says 'three signals' but Signal 4 (server framework dep) was just added. Same pattern as strategy numbering — comment labels, not code. Tests themselves correctly exercise all four signals.",
+          "closed_at": "2026-05-23T04:56:06.013Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

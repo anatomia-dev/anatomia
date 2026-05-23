@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 109 active · 3 promoted · 772 closed
+154 runs · 108 active · 3 promoted · 773 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 75 | 2026-05-23 |
+| cli | 107 | 74 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/tests/engine/detectors/surfaces.test.ts | 4 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
+| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -91,7 +91,6 @@
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
-- **code:** Test file JSDoc still says 'three signals' instead of 'four signals' — *Backend Service Surface Detection*
 - **test:** No test for package with server dep but NO scripts at all (empty scripts array) — *Backend Service Surface Detection*
 - **test:** No test for multiple packages where one is caught by Signal 3 and another by Signal 4 in the same census — *Backend Service Surface Detection*
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
@@ -108,6 +107,10 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/lib/__tests__/docs-data/data-integrity.test.ts
+
+- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
 ### website/lib/__tests__/docs-data/staleness.test.ts
 
