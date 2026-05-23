@@ -28,7 +28,11 @@ Three display surfaces show the scan output — the terminal, the README, and th
 
 ## Approach
 
-**Terminal fix:** Replace `nameWithShape.padEnd(innerWidth)` with explicit trailing padding calculated from the known visible width. The visible width is already computed at line 143 (`namePad = innerWidth - projectName.length - shape.length - 4`). Add trailing spaces explicitly instead of relying on `padEnd` which can't account for ANSI escape codes. One-line change.
+**Terminal fix — two bugs, same box:**
+
+1. **Name line (line 147):** `nameWithShape.padEnd(innerWidth)` miscounts because `chalk.dim(shape)` adds ANSI escape codes. Fix: explicit trailing padding from the known visible width (already computed at line 143). One-line change.
+
+2. **Summary line (line 150):** The summary string overflows `innerWidth` (69 chars) when the database has a provider + model count AND it's a monorepo with many packages. Example: `"  TypeScript · Next.js · Prisma → PostgreSQL (100 models) · 113 packages"` = 72 visible characters. `padEnd(69)` adds nothing because the string is already longer. Fix: truncate or abbreviate the summary when it exceeds `innerWidth`. The most elegant truncation: drop the package count (already shown in the Workspace line below) or abbreviate the database display. Plan should decide the truncation strategy — the summary should always fit in the box.
 
 **README:** Replace the `my-saas-app` example with a real-world monorepo scan that shows surfaces. Use inbox-zero as the reference — it's the A+ repo, perfect sniper profile (Next.js, Prisma 63 models, Better Auth, Stripe, Vercel AI, 3 surfaces). Show the exact terminal output a developer would see, including the Surfaces section with framework annotations. Keep the same format (code block in markdown). The example should make a developer think "that looks like my project."
 
@@ -36,7 +40,7 @@ Three display surfaces show the scan output — the terminal, the README, and th
 
 ## Acceptance Criteria
 
-- AC1: The terminal header box right border `│` aligns with the top border `┐` for project names and shapes of all tested lengths (verified on at least: `root`/`full-stack`, `anatomia-workspace`/`cli`, `inbox-zero`/`web-app`, `helicone-monorepo`/`web-app`).
+- AC1: The terminal header box right border `│` aligns with the top border `┐` on BOTH the name line AND the summary line, for all tested repos including long summaries (verified on at least: `root`/`full-stack`, `anatomia-workspace`/`cli`, `inbox-zero`/`web-app`, `calcom-monorepo`/`web-app` with `Prisma → PostgreSQL (100 models) · 113 packages`).
 - AC2: The README scan example shows a monorepo with surfaces. The Surfaces section is visible in the example. The stack includes at minimum: framework, database with models, auth, AI, payments, testing, UI.
 - AC3: The README example does not use a fictional project name — it uses a real or realistic-looking project name that a developer would recognize as representative.
 - AC4: The website ScanSlab terminal mock shows a monorepo scan with a Surfaces section listing 2-3 surfaces with framework annotations.
@@ -51,7 +55,7 @@ Three display surfaces show the scan output — the terminal, the README, and th
 
 **Website ScanSlab monorepo data:** The current mock is for a single-package project. Adding a Surfaces section requires a new JSX block between Stack and Intelligence. The layout should accommodate this without breaking the responsive grid. The existing spacing pattern (`mt-4` between groups) should be followed.
 
-**Terminal fix scope:** The fix only touches the name+shape line (line 147). The summary line below (line 150) uses `summaryPadded.padEnd(innerWidth)` but `summaryPadded` has no ANSI codes — it's plain text. No fix needed there. However, Plan should verify this assumption.
+**Terminal fix scope:** Two lines need fixing. Line 147 (ANSI escape miscounting) and line 150 (content overflow on long summaries). Both cause the right border to extend past the box. The cal.com screenshot shows both bugs simultaneously.
 
 ## Rejected Approaches
 
@@ -70,7 +74,7 @@ None. The scope is narrow and the approach is clear.
 ### Patterns Discovered
 
 - `scan.ts:143-147`: The padding calculation at line 143 correctly computes `namePad` for the visible width. The bug is that this correct calculation is then undermined by `padEnd` on line 147 which re-counts including ANSI codes. The fix is to use the already-correct `namePad` to also compute trailing padding.
-- `scan.ts:150`: `summaryPadded` is plain text (no chalk calls). `padEnd` works correctly there. No fix needed.
+- `scan.ts:150`: `summaryPadded` is plain text (no chalk calls) so `padEnd` counts correctly. BUT the string can exceed `innerWidth` (69 chars) when database display is long AND package count is included. cal.com: `"  TypeScript · Next.js · Prisma → PostgreSQL (100 models) · 113 packages"` = 72 chars. Overflow by 3. The `·` separator chars are single-width Unicode (U+00B7) and `→` is single-width (U+2192). `len()` in JS counts them as 1 each, matching visible width. The overflow is real content length, not encoding.
 - `ScanSlab.tsx`: The terminal mock is ~70 lines of inline JSX with hardcoded content. The visual structure (header, Stack grid, Intelligence grid, Warning, Footer) maps to CSS grid with `gridTemplateColumns: "92px 1fr"`. Adding a Surfaces section follows the same grid pattern.
 - `README.md:17-46`: The scan example is a markdown code block. No dynamic rendering — pure text.
 
