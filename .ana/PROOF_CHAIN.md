@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 107 active · 3 promoted · 774 closed
+154 runs · 106 active · 3 promoted · 775 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 73 | 2026-05-23 |
+| cli | 107 | 72 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,6 +33,7 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
+- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/work.ts
 
@@ -91,7 +92,6 @@
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
-- **test:** No test for package with server dep but NO scripts at all (empty scripts array) — *Backend Service Surface Detection*
 - **test:** No test for multiple packages where one is caught by Signal 3 and another by Signal 4 in the same census — *Backend Service Surface Detection*
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
 

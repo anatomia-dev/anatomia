@@ -40752,7 +40752,10 @@
             "A012"
           ],
           "id": "add-backend-surface-detection-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Empty scripts array returns false for .includes('dev') by definition — the negative case is implicit in every test that doesn't match Signal 4. An explicit test would verify Array.includes on an empty array, which is a JavaScript language guarantee, not application logic.",
+          "closed_at": "2026-05-23T04:56:28.879Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
