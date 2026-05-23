@@ -40587,6 +40587,212 @@
         "base_commit": "d790eedcc65c0d92f55baa62d7f3dd973fcd7070"
       },
       "surface": "website"
+    },
+    {
+      "slug": "add-backend-surface-detection",
+      "feature": "Backend Service Surface Detection",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 16,
+        "satisfied": 16,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A backend package matching both a config file and a server framework is detected exactly once",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The server framework list contains exactly ten frameworks",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Express is recognized as a server framework",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Fastify is recognized as a server framework",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "NestJS core is recognized as a server framework",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Hono is recognized as a server framework",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A server framework in dev dependencies does not trigger backend detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A backend with fewer than fifteen source files is not detected as a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The minimum file threshold for server dependency detection is fifteen",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A backend with a dev script and server framework is detected as a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A NestJS backend using start:dev is detected as a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A server framework without a dev or start:dev script is not detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Signal evaluation order is documented in the source code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The file count threshold is a named constant, not a magic number",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The module documentation describes all four detection signals",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "All existing surface detection tests pass without modification",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 11
+      },
+      "timing": {
+        "total_minutes": 71,
+        "think": 33,
+        "plan": 4,
+        "build": 5,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:74bc13e4149725881ede69070624458cfff4bc70dc74a69005d0d7f4dd8ae015",
+        "contract": "sha256:bf0c52162136323f485420fdcfb024fb7a9101a08dcc85d6cc8dfb01c581e3e7",
+        "plan": "sha256:b7505f15a9ecae14532949be9c8f44898d5130252f72eb0a8d7d03a44f445fbe",
+        "spec": "sha256:a78e226ed0cf7e4d102132a78620370ccd55b7c965a7e2c3ef93d1a1826cf475",
+        "build-report": "sha256:75e4ff73b780d3dc9ba8c54459f05b8f6a8c642c46843e4de4882dd7c950a8d2",
+        "build-data": "sha256:41945c0810de0b006d1b96f625ab66dcd60b7ae3def8e93d18c747b6fe24a698",
+        "verify-report": "sha256:ea4d83e7995e432f7825140653226f3f6331927fae5c193a821c612ce2f4e320",
+        "verify-data": "sha256:c1d055e26b8eb50376b4c16f375378ce457d18325ad8568cfb8af2052ae0d5e9"
+      },
+      "completed_at": "2026-05-23T01:59:51.152Z",
+      "modules_touched": [
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/tests/engine/detectors/surfaces.test.ts"
+      ],
+      "scope_summary": "The surface detector has a structural blind spot for backend services. All three existing signals rely on filesystem artifacts: bin fields (Signal 1), directory conventions (Signal 2), and config files (Signal 3). Backend frameworks like Express, Fastify, Koa, Hono, and Elysia are imported as dependencies — they leave no filesystem trace beyond package.json. This causes 6-8 repos in the 85-repo validation set to have legitimate backend services invisible to the scan. A startup with a Next.js frontend + Express API backend detects the frontend but misses the backend entirely.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Test file JSDoc still says 'three signals' instead of 'four signals'",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "line": 3,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "add-backend-surface-detection-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Signal 4 checks fileCount before deps — minor perf preference but Object.keys().some() runs even when fileCount is sufficient",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 320,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "add-backend-surface-detection-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test for package with server dep but NO scripts at all (empty scripts array)",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A012"
+          ],
+          "id": "add-backend-surface-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test for multiple packages where one is caught by Signal 3 and another by Signal 4 in the same census",
+          "file": "packages/cli/tests/engine/detectors/surfaces.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "add-backend-surface-detection-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A013 matcher 'exists' for a code comment is not mechanically verifiable via test — requires source inspection",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "add-backend-surface-detection-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-23T01:59:51.152Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Signal 4 surfaces show framework: null — detectFramework only recognizes config-file-based frameworks",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T23:02:28.434Z",
+        "completed_at": "2026-05-23T01:59:51.146Z",
+        "commit_count": 0,
+        "base_commit": "71aeb595ce5b9e154669aa10221615fee3cd6a7d"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

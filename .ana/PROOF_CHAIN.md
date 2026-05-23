@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-152 runs · 100 active · 3 promoted · 770 closed
+153 runs · 104 active · 3 promoted · 771 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 105 | 66 | 2026-05-22 |
+| cli | 106 | 70 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
+| packages/cli/tests/engine/detectors/surfaces.test.ts | 4 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 3 | 3 |
-| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 100 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -38,7 +38,6 @@
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
-- **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
 ### packages/cli/src/commands/work.ts
 
@@ -56,8 +55,8 @@
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
+- **code:** Signal 4 checks fileCount before deps — minor perf preference but Object.keys().some() runs even when fileCount is sufficient — *Backend Service Surface Detection*
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
-- **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
@@ -76,17 +75,9 @@
 
 - **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
-### packages/cli/tests/engine/census-detection.test.ts
-
-- **test:** Workspace label tests verify a replicated helper, not the actual scan-engine.ts ternary — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
-
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
-
-### packages/cli/tests/engine/detectors/ai-sdk-detection.test.ts
-
-- **test:** Wildcard capitalization only tested with single-word providers — no test for hyphenated wildcard input like @ai-sdk/foo-bar — *Stack Detection Gaps (V2-Alpha Breadth Sweep)*
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
@@ -99,6 +90,9 @@
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
+- **code:** Test file JSDoc still says 'three signals' instead of 'four signals' — *Backend Service Surface Detection*
+- **test:** No test for package with server dep but NO scripts at all (empty scripts array) — *Backend Service Surface Detection*
+- **test:** No test for multiple packages where one is caught by Signal 3 and another by Signal 4 in the same census — *Backend Service Surface Detection*
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
 
 ### packages/cli/tests/engine/parsers/python.test.ts
