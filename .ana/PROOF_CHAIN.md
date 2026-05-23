@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 108 active · 3 promoted · 773 closed
+154 runs · 107 active · 3 promoted · 774 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 74 | 2026-05-23 |
+| cli | 107 | 73 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -52,10 +52,6 @@
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
 
-### packages/cli/src/engine/detectors/surfaces.ts
-
-- **code:** Signal 4 checks fileCount before deps — minor perf preference but Object.keys().some() runs even when fileCount is sufficient — *Backend Service Surface Detection*
-
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
@@ -69,6 +65,10 @@
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
+
+### packages/cli/tests/commands/proof-surface-derivation.test.ts
+
+- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/engine/census-primary.test.ts
 

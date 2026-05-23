@@ -40736,7 +40736,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "add-backend-surface-detection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding misreads the performance trade-off. fileCount >= threshold is O(1) (numeric comparison). Object.keys(root.deps).some() is O(n) (allocates keys array, iterates). The current order (cheap guard first, expensive check second) is correct — the cheap guard short-circuits before the allocation.",
+          "closed_at": "2026-05-23T04:56:18.113Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
