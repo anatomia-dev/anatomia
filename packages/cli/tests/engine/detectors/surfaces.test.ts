@@ -14,6 +14,8 @@ import {
   INFRA_PATTERNS,
   MIN_SOURCE_FILES,
   APPS_DIR_FILE_THRESHOLD,
+  SERVER_FRAMEWORK_DEPS,
+  MIN_FILES_SERVER_DEP,
 } from '../../../src/engine/detectors/surfaces.js';
 import type { ProjectCensus, SourceRoot, FrameworkHintEntry, TsconfigEntry } from '../../../src/engine/types/census.js';
 
@@ -1121,5 +1123,157 @@ describe('exported constants', () => {
 
   it('APPS_DIR_FILE_THRESHOLD is 50', () => {
     expect(APPS_DIR_FILE_THRESHOLD).toBe(50);
+  });
+
+  // @ana A002
+  it('SERVER_FRAMEWORK_DEPS has 10 entries', () => {
+    expect(SERVER_FRAMEWORK_DEPS.size).toBe(10);
+  });
+
+  // @ana A003
+  it('SERVER_FRAMEWORK_DEPS includes express', () => {
+    expect(SERVER_FRAMEWORK_DEPS.has('express')).toBe(true);
+  });
+
+  // @ana A004
+  it('SERVER_FRAMEWORK_DEPS includes fastify', () => {
+    expect(SERVER_FRAMEWORK_DEPS.has('fastify')).toBe(true);
+  });
+
+  // @ana A005
+  it('SERVER_FRAMEWORK_DEPS includes @nestjs/core', () => {
+    expect(SERVER_FRAMEWORK_DEPS.has('@nestjs/core')).toBe(true);
+  });
+
+  // @ana A006
+  it('SERVER_FRAMEWORK_DEPS includes hono', () => {
+    expect(SERVER_FRAMEWORK_DEPS.has('hono')).toBe(true);
+  });
+
+  // @ana A009, A014
+  it('MIN_FILES_SERVER_DEP is 15', () => {
+    expect(MIN_FILES_SERVER_DEP).toBe(15);
+  });
+});
+
+// ── Signal 4: server framework dep detection ─────────────────────────
+
+// @ana A010
+describe('signal 4 detects server framework + dev script', () => {
+  it('detects package with express in deps + dev script + sufficient files', () => {
+    const root = makeRoot({
+      relativePath: 'packages/api',
+      deps: { express: '4.18.0' },
+      scripts: ['build', 'dev', 'test'],
+      fileCount: 20,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.name).toBe('api');
+  });
+
+  it('detects package with fastify in deps + dev script', () => {
+    const root = makeRoot({
+      relativePath: 'packages/gateway',
+      deps: { fastify: '4.0.0' },
+      scripts: ['build', 'dev'],
+      fileCount: 30,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.name).toBe('gateway');
+  });
+});
+
+// @ana A011
+describe('signal 4 detects server framework + start:dev script', () => {
+  it('detects NestJS backend using start:dev convention', () => {
+    const root = makeRoot({
+      relativePath: 'packages/backend',
+      deps: { '@nestjs/core': '10.0.0' },
+      scripts: ['build', 'start:dev', 'test'],
+      fileCount: 44,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.name).toBe('backend');
+  });
+});
+
+// @ana A007
+describe('signal 4 ignores devDeps', () => {
+  it('does not detect package with server framework only in devDeps', () => {
+    const root = makeRoot({
+      relativePath: 'packages/api',
+      devDeps: { express: '4.18.0' },
+      scripts: ['build', 'dev', 'test'],
+      fileCount: 20,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A012
+describe('signal 4 rejects packages without dev or start:dev', () => {
+  it('does not detect server framework package without dev/start:dev script', () => {
+    const root = makeRoot({
+      relativePath: 'packages/api',
+      deps: { express: '4.18.0' },
+      scripts: ['build', 'test', 'start'],
+      fileCount: 20,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A008
+describe('signal 4 rejects packages below MIN_FILES_SERVER_DEP', () => {
+  it('does not detect server framework package with fewer than 15 files', () => {
+    const root = makeRoot({
+      relativePath: 'packages/api',
+      deps: { express: '4.18.0' },
+      scripts: ['build', 'dev'],
+      fileCount: 10,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A001
+describe('signal 3 continue prevents duplicate candidates', () => {
+  it('package matching both Signal 3 (config) and Signal 4 (server dep) is detected exactly once', () => {
+    const root = makeRoot({
+      relativePath: 'packages/server',
+      deps: { '@nestjs/core': '10.0.0' },
+      scripts: ['build', 'dev', 'test'],
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nestjs',
+      sourceRootPath: 'packages/server',
+      path: 'packages/server/nest-cli.json',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.name).toBe('server');
+    // Signal 3 claims it — framework detected from config
+    expect(surfaces[0]!.framework).toBe('NestJS');
   });
 });

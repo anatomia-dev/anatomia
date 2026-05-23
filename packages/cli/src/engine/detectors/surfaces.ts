@@ -5,10 +5,13 @@
  * an API server, a CLI tool. Shared libraries, config packages, and
  * infrastructure tooling are excluded.
  *
- * Three signals classify surfaces:
+ * Four signals classify surfaces (evaluation order is load-bearing —
+ * signals use `continue` to short-circuit, so the first match wins):
  * 1. Bin + dev script — package declares `bin` AND has "dev" in scripts
  * 2. apps/ + strong config OR fileCount > 50 — under apps/ with evidence
  * 3. Strong framework config — config file (e.g., next.config.ts) anywhere
+ * 4. Server framework dep — production dep on a server framework (Express,
+ *    Fastify, etc.) + dev/start:dev script + ≥15 source files
  *
  * Pure function: census in, surfaces out. No filesystem access.
  */
@@ -97,6 +100,26 @@ export const MIN_SOURCE_FILES = 5;
 
 /** File count threshold for apps/ packages without strong framework config. */
 export const APPS_DIR_FILE_THRESHOLD = 50;
+
+/**
+ * Production dependency package names for server frameworks.
+ * Used by Signal 4 to detect backend services that have no config file.
+ */
+export const SERVER_FRAMEWORK_DEPS = new Set([
+  'express',
+  'fastify',
+  'koa',
+  'hono',
+  '@hono/node-server',
+  '@nestjs/core',
+  'elysia',
+  'polka',
+  'restify',
+  'h3',
+]);
+
+/** Minimum source files for a package to be detected via server framework dep (Signal 4). */
+export const MIN_FILES_SERVER_DEP = 15;
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -288,6 +311,18 @@ export function detectSurfaces(
     // Signal 3: strong framework config anywhere
     if (hasStrongConfig(root, census)) {
       candidates.push({ root });
+      continue;
+    }
+
+    // Signal 4: server framework dep + dev/start:dev script + enough files
+    // Last signal — weakest evidence. Stronger signals claim packages first
+    // via `continue`, so evaluation order is load-bearing.
+    if (root.fileCount >= MIN_FILES_SERVER_DEP) {
+      const hasServerDep = Object.keys(root.deps).some(d => SERVER_FRAMEWORK_DEPS.has(d));
+      if (hasServerDep && (root.scripts.includes('dev') || root.scripts.includes('start:dev'))) {
+        candidates.push({ root });
+        continue;
+      }
     }
   }
 
