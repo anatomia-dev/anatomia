@@ -60,5 +60,20 @@
     "packages/cli/tests/contract/analyzer-contract.test.ts",
     "packages/cli/tests/engine/detectors/dependencies.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-23T04:34:53.378Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:6a80820c03820ad617dee1a7c36428ebfa2117a0604f60e95bdf50c06cb6527e",
+    "run_at": "2026-05-23T04:40:47.621Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-23T04:40:47.660Z",
+    "hash": "sha256:ef84413fcd88efefa70aef282e454df66aa05172413ea822de74f98b064995ea"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-23T04:40:47.660Z",
+    "hash": "sha256:5436b0ca95749452a21109e378f6d20d2fc9c551d9f4e5044281843f0ef64031"
+  }
 }
