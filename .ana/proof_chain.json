@@ -41073,6 +41073,205 @@
         "base_commit": "76e9c31f122a0873793b57ae1c564e123f2b8b84"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "scan-display-refresh",
+      "feature": "Scan Display Refresh",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 15,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The terminal box right border aligns with the top border on projects with a shape badge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The terminal box right border aligns when the summary line is shorter than the box width",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Long summary lines are truncated to fit inside the box instead of overflowing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Package count is dropped from the summary when it would cause overflow",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The README scan example shows a monorepo project named inbox-zero",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The README scan example includes a Surfaces section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The README scan example shows database detection with model counts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The README no longer uses the fictional my-saas-app project",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The website scan mock shows inbox-zero instead of papermark",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The website scan mock no longer references papermark",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The website scan mock includes a Surfaces section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The website scan mock does not show a no-test-framework warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The website scan mock shows a Testing field in the stack",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The website scan mock shows AI detection in the stack",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The website scan mock maintains the existing grid layout pattern",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 138,
+        "think": 30,
+        "plan": 16,
+        "build": 16,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:d19bdd8208b244ce7f070805a41d3ee6894a59feb4a40c88a56ff192c994866b",
+        "contract": "sha256:daf0ce34a13dc5db14542753860ad7a14a5ed4d0b44b64d891efa3099640bdcc",
+        "plan": "sha256:4399b9afaffcad44179a701a950e4524225303dc4fc10bfdd835295810a23c58",
+        "spec": "sha256:c4a23ab354f2112440d82772c4edef98afd3d1cf616c724dd7daf5118f440840",
+        "build-report": "sha256:79dc5c9d58492e6983cd88d4923f76100c4c7f7b803b8a85de66f9a5a8c2f466",
+        "build-data": "sha256:6b46dac774a828c5148ea02f8ffe62d4b504928fc3e8c189ed47b59a36cc489d",
+        "verify-report": "sha256:e3e1c82ef6498804a50310113ce150bcd893b51e17fcc948d3320c7f933f2b17",
+        "verify-data": "sha256:c8a906ad6c83296803cd9867d1aff3aaf6d72a3d965360f35077601af556a602"
+      },
+      "completed_at": "2026-05-23T21:05:44.908Z",
+      "modules_touched": [
+        "README.md",
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/tests/commands/scan.test.ts",
+        "website/components/scan/ScanSlab.tsx"
+      ],
+      "scope_summary": "Three display surfaces show the scan output — the terminal, the README, and the website. All three have issues:",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A002 summary line assertion is vacuous when summaryLine is not found",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1193,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "scan-display-refresh-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A004 not_contains check gated by conditional — skipped if Prisma detection fails",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1239,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "scan-display-refresh-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Stale @ana tags from previous contracts collide with current assertion IDs",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "scan-display-refresh-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-23T21:05:44.908Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Truncation uses Unicode ellipsis — single JS char but 3 UTF-8 bytes",
+          "file": "packages/cli/src/commands/scan.ts",
+          "anchor": null,
+          "line": 162,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "scan-display-refresh-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Overflow test fragile to language detection heuristic changes — uses 1000 models to push 1 char past boundary",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts:198",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-23T19:49:18.414Z",
+        "completed_at": "2026-05-23T21:05:44.901Z",
+        "commit_count": 0,
+        "base_commit": "1bfb72f08028100d0af9abb6ca788c56c17d57be"
+      }
     }
   ],
   "schema": 1,
