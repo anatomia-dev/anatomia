@@ -37,8 +37,8 @@ Three independent fixes across three surfaces — terminal, README, website. All
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  inbox-zero                                               web-app  │
-│  TypeScript · Next.js · Prisma → PostgreSQL (63 models)            │
+│  inbox-zero                                                web-app │
+│  TypeScript · Next.js · Prisma → PostgreSQL (63 models)             │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -50,8 +50,8 @@ When the summary would overflow (e.g., cal.com with 100 models + 113 packages), 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  calcom-monorepo                                          web-app  │
-│  TypeScript · Next.js · Prisma → PostgreSQL (100 models)           │
+│  calcom-monorepo                                           web-app │
+│  TypeScript · Next.js · Prisma → PostgreSQL (100 models)            │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -59,8 +59,8 @@ When the summary would overflow (e.g., cal.com with 100 models + 113 packages), 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  inbox-zero                                               web-app  │
-│  TypeScript · Next.js · Prisma → PostgreSQL (63 models)            │
+│  inbox-zero                                                web-app │
+│  TypeScript · Next.js · Prisma → PostgreSQL (63 models)             │
 └─────────────────────────────────────────────────────────────────────┘
 
   Stack
@@ -79,8 +79,8 @@ When the summary would overflow (e.g., cal.com with 100 models + 113 packages), 
   Surfaces
   ────────
   web          Next.js · Vitest
-  docs         Next.js · Vitest
-  sanity       Next.js
+  api          TypeScript · Vitest
+  cli          TypeScript
 
   Intelligence
   ────────────
