@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 104 active · 3 promoted · 777 closed
+154 runs · 103 active · 3 promoted · 778 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 70 | 2026-05-23 |
+| cli | 107 | 69 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 104 total)
+## Active Findings (30 shown of 103 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -60,6 +60,7 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
+- **code:** Collision disambiguation can still produce duplicates if two version-like paths share the same parent (e.g., packages/api/v1 and packages/api/v2 both become api-v1 and api-v2 — fine, but apps/api/v1 and packages/api/v1 would both become api-v1 after version normalization) — *Scan Surface Detection*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
@@ -88,7 +89,6 @@
 
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
-- **test:** Duplicate @ana tag IDs across describe blocks (A001-A004 used by both old and new tests) — *Setup Verification Hints*
 - **test:** Redundant toBeDefined() before specific toBe() in A008 and A009 tests — *Setup Verification Hints*
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
 
