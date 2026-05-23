@@ -16,33 +16,37 @@ No install. One command. Here's what you'll see:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  my-saas-app                                              web-app   │
-│  TypeScript · Next.js · Prisma → PostgreSQL (37 models) · Clerk     │
+│  inbox-zero                                                web-app  │
+│  TypeScript · Next.js · Prisma → PostgreSQL (63 models)             │
 └─────────────────────────────────────────────────────────────────────┘
 
   Stack
   ─────
   Language     TypeScript
   Framework    Next.js
-  Database     Prisma → PostgreSQL (37 models)
-  Auth         Clerk
-  AI           Anthropic
+  Database     Prisma → PostgreSQL (63 models)
+  Auth         Better Auth
+  AI           Vercel AI · OpenAI
   Payments     Stripe
-  Testing      Vitest, Playwright
+  Testing      Vitest
   UI           Tailwind CSS
-  Services     Resend · Sentry · PostHog · Inngest (+2 more)
+  Services     Resend · Sentry · PostHog · Upstash (+2 more)
   Deploy       Vercel · GitHub Actions
+
+  Surfaces
+  ────────
+  web          Next.js · Vitest
+  api          TypeScript · Vitest
+  cli          TypeScript
 
   Intelligence
   ────────────
-  Activity     4 contributors · 18→12→22→15 weekly
-  Hot files    webhooks.ts (31), chat.ts (24), schema.prisma (19)
-  Docs         README.md · CONTRIBUTING.md · .env.example + 3 more
+  Activity     7 contributors · 22→18→25→19 weekly
+  Hot files    clean.ts (14), ai-categorize.ts (11), schema.prisma (9)
+  Docs         README.md · CONTRIBUTING.md · .env.example + 2 more
   Pre-commit   typecheck + lint
 
-  ⚠ Hardcoded PostHog project key in lib/analytics.ts
-  ⚠ 2/3 sampled API routes have no input validation
-  Run `ana init` to scaffold 8 skills (5 core + api-patterns, data-access, ai-patterns)
+  Run `ana init` to scaffold 8 skills (5 core + ai-patterns, data-access, api-patterns)
 ```
 
 ## Install
