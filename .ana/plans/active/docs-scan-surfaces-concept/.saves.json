@@ -18,5 +18,22 @@
   "spec": {
     "saved_at": "2026-05-23T21:27:52.527Z",
     "hash": "sha256:690c288cab32d24412d34b1d7ecb915de863b71b67588d1ad6e729931cd14b09"
-  }
+  },
+  "build_started_at": "2026-05-23T21:32:17.861Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-23T21:40:47.720Z",
+    "hash": "sha256:19fcbfa23be57ff6d14489c8bf7356fa772dd5d8fe207d04c969fae44c156586"
+  },
+  "build-data": {
+    "saved_at": "2026-05-23T21:40:47.721Z",
+    "hash": "sha256:5dd011ad2ef300cd282427d66832074412ca0648fcd23efc3ae2ffe38c5cfeeb"
+  },
+  "modules_touched": [
+    "website/content/docs/concepts/meta.json",
+    "website/content/docs/concepts/scan.mdx",
+    "website/content/docs/guides/configurability.mdx",
+    "website/content/docs/guides/using-ana-setup.mdx"
+  ],
+  "commit_hygiene": []
 }

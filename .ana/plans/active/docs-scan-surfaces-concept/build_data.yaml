@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "Setup guide had pre-existing raw apostrophe in Step 1 paragraph — fixed as part of edit"
+    file: "website/content/docs/guides/using-ana-setup.mdx"
+    severity: observation
+    suggested_action: accept
