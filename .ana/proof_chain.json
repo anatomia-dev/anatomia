@@ -40793,6 +40793,265 @@
         "base_commit": "71aeb595ce5b9e154669aa10221615fee3cd6a7d"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "setup-verification-hints",
+      "feature": "Setup Verification Hints",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 23,
+        "satisfied": 23,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Database detection captures the triggering npm package name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Auth detection captures the triggering npm package name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Payment detection captures the triggering npm package name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Package name fields are null when no detection occurs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-repo projects always produce empty provenance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Detection from the primary package produces empty provenance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Detection from a non-primary package records the source path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Provenance checks devDeps, not just production deps",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "AI SDK detection from a non-primary package is flagged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Null dep result fields produce no provenance entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Null aiSdk parameter produces no aiSdk provenance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Provenance checks database, auth, payments, and aiSdk",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Provenance does not check testing or framework",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "scan.json includes stackProvenance as a top-level field",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Empty engine result initializes stackProvenance to empty object",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Setup template instructs surface gap check after showing surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Surface gap check requires dev script and 15+ source files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Surface gap results are capped at 5 suggestions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Surface gap excludes non-product paths like examples and fixtures",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Setup template shows provenance notes when non-primary detections exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Provenance notes use the informational marker not a warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Setup template includes instructions for adding surfaces to ana.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Surface commands use the cd-and-run pattern",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 357,
+        "think": 14,
+        "plan": 12,
+        "build": 9,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:f5c9c703962375997bf9fe1184131727312ae21b4ee24e9ca899b942d0b8dcd2",
+        "contract": "sha256:6a80820c03820ad617dee1a7c36428ebfa2117a0604f60e95bdf50c06cb6527e",
+        "plan": "sha256:681b9a2daa8649a6f94e52bed0c735dd69427306905d078b1d114e367fbd3a09",
+        "spec": "sha256:1278078eaba4fc644be0bb838c6c1199286ab0c0ff0261a812b1dde9f409ae20",
+        "build-report": "sha256:e01ece06fd27408ac68f8470af08439156df7294e000a105d847455c426c8981",
+        "build-data": "sha256:deb92035854228b3d731ce0a3fb5338391fcfd3b4de69eab9eea6d4491dc2b9a",
+        "verify-report": "sha256:ef84413fcd88efefa70aef282e454df66aa05172413ea822de74f98b064995ea",
+        "verify-data": "sha256:5436b0ca95749452a21109e378f6d20d2fc9c551d9f4e5044281843f0ef64031"
+      },
+      "completed_at": "2026-05-23T04:54:24.828Z",
+      "modules_touched": [
+        ".claude/agents/ana-setup.md",
+        "packages/cli/src/engine/detectors/dependencies.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/src/engine/types/engineResult.ts",
+        "packages/cli/templates/.claude/agents/ana-setup.md",
+        "packages/cli/tests/contract/analyzer-contract.test.ts",
+        "packages/cli/tests/engine/detectors/dependencies.test.ts"
+      ],
+      "scope_summary": "The setup agent presents scan output as-is. The developer confirms \"yes\" to config that might be misleading, because neither party has verified the consequential claims. The scan is deterministic code that makes heuristic bets — it's right most of the time, but when it's wrong, the error propagates silently into ana.json and project-context.md, shaping every pipeline run that follows.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "detectAiSdk(allDeps) called twice — line 787 for stack and line 798 for provenance",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 798,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "setup-verification-hints-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Duplicate @ana tag IDs across describe blocks (A001-A004 used by both old and new tests)",
+          "file": "packages/cli/tests/engine/detectors/dependencies.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "setup-verification-hints-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Redundant toBeDefined() before specific toBe() in A008 and A009 tests",
+          "file": "packages/cli/tests/engine/detectors/dependencies.test.ts",
+          "anchor": null,
+          "line": 245,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "setup-verification-hints-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true",
+          "file": "packages/cli/src/engine/detectors/dependencies.ts",
+          "anchor": null,
+          "line": 371,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "setup-verification-hints-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec gotcha said capture nodeAiSdk once and use in both stack and provenance — builder captured separately but didn't wire into stack construction",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "setup-verification-hints-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-23T04:54:24.828Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper",
+          "file": "packages/cli/tests/engine/detectors/dependencies.test.ts",
+          "anchor": null,
+          "line": 163,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "setup-verification-hints-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "detectAiSdk called twice in scan-engine.ts — once inline in stack literal, once for provenance",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Dogfood agent template sync is manual — no automation prevents divergence during development",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-22T23:12:20.731Z",
+        "completed_at": "2026-05-23T04:54:24.821Z",
+        "commit_count": 0,
+        "base_commit": "76e9c31f122a0873793b57ae1c564e123f2b8b84"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

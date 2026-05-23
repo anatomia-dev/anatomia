@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-153 runs · 104 active · 3 promoted · 771 closed
+154 runs · 109 active · 3 promoted · 772 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 106 | 70 | 2026-05-23 |
+| cli | 107 | 75 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,20 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 104 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
-### packages/cli/src/commands/config.ts
-
-- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
-
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/work.ts
 
@@ -53,10 +48,13 @@
 
 - **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
 
+### packages/cli/src/engine/detectors/dependencies.ts
+
+- **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
+
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** Signal 4 checks fileCount before deps — minor perf preference but Object.keys().some() runs even when fileCount is sufficient — *Backend Service Surface Detection*
-- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
 
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
@@ -64,16 +62,13 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
+- **code:** detectAiSdk(allDeps) called twice — line 787 for stack and line 798 for provenance — *Setup Verification Hints*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
-
-### packages/cli/tests/commands/proof-surface-derivation.test.ts
-
-- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/engine/census-primary.test.ts
 
@@ -82,6 +77,12 @@
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
+
+### packages/cli/tests/engine/detectors/dependencies.test.ts
+
+- **test:** Duplicate @ana tag IDs across describe blocks (A001-A004 used by both old and new tests) — *Setup Verification Hints*
+- **test:** Redundant toBeDefined() before specific toBe() in A008 and A009 tests — *Setup Verification Hints*
+- **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
@@ -107,10 +108,6 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/lib/__tests__/docs-data/data-integrity.test.ts
-
-- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
 ### website/lib/__tests__/docs-data/staleness.test.ts
 
