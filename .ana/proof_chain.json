@@ -40981,7 +40981,10 @@
           "suggested_action": "accept",
           "related_assertions": [],
           "id": "setup-verification-hints-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "One-line oversight — detectAiSdk(allDeps) called at scan-engine.ts:787 (stored in stack.aiSdk) and again at line 798 (stored in nodeAiSdk). Same input, same output. Line 798 could be const nodeAiSdk = stack.aiSdk. Micro-optimization — detectAiSdk iterates a small Set. Flag for next scan-engine.ts touch.",
+          "closed_at": "2026-05-23T04:56:46.798Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

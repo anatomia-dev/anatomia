@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 105 active · 3 promoted · 776 closed
+154 runs · 104 active · 3 promoted · 777 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 71 | 2026-05-23 |
+| cli | 107 | 70 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 104 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -57,13 +57,16 @@
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
 
+### packages/cli/src/engine/detectors/surfaces.ts
+
+- **code:** deriveRawName @scope stripping handles segment-level scoped names but path-level scoped packages use last path segment after split, making the @scope branch in deriveRawName unreachable for standard monorepo layouts — *Scan Surface Detection*
+
 ### packages/cli/src/engine/sampling/proportionalSampler.ts
 
 - **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
 ### packages/cli/src/engine/scan-engine.ts
 
-- **code:** detectAiSdk(allDeps) called twice — line 787 for stack and line 798 for provenance — *Setup Verification Hints*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
