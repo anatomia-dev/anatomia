@@ -1,0 +1,119 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan Display Refresh"
+
+assertions:
+  - id: A001
+    says: "The terminal box right border aligns with the top border on projects with a shape badge"
+    block: "box alignment with ANSI shape"
+    target: "nameLineLength"
+    matcher: "equals"
+    value: 71
+
+  - id: A002
+    says: "The terminal box right border aligns when the summary line is shorter than the box width"
+    block: "box alignment with short summary"
+    target: "summaryLineLength"
+    matcher: "equals"
+    value: 71
+
+  - id: A003
+    says: "Long summary lines are truncated to fit inside the box instead of overflowing"
+    block: "summary overflow truncation"
+    target: "summaryLineLength"
+    matcher: "equals"
+    value: 71
+
+  - id: A004
+    says: "Package count is dropped from the summary when it would cause overflow"
+    block: "summary overflow truncation"
+    target: "summaryContent"
+    matcher: "not_contains"
+    value: "packages"
+
+  - id: A005
+    says: "The README scan example shows a monorepo project named inbox-zero"
+    block: "README content"
+    target: "readmeContent"
+    matcher: "contains"
+    value: "inbox-zero"
+
+  - id: A006
+    says: "The README scan example includes a Surfaces section"
+    block: "README content"
+    target: "readmeContent"
+    matcher: "contains"
+    value: "Surfaces"
+
+  - id: A007
+    says: "The README scan example shows database detection with model counts"
+    block: "README content"
+    target: "readmeContent"
+    matcher: "contains"
+    value: "Prisma"
+
+  - id: A008
+    says: "The README no longer uses the fictional my-saas-app project"
+    block: "README content"
+    target: "readmeContent"
+    matcher: "not_contains"
+    value: "my-saas-app"
+
+  - id: A009
+    says: "The website scan mock shows inbox-zero instead of papermark"
+    block: "ScanSlab content"
+    target: "scanSlabContent"
+    matcher: "contains"
+    value: "inbox-zero"
+
+  - id: A010
+    says: "The website scan mock no longer references papermark"
+    block: "ScanSlab content"
+    target: "scanSlabContent"
+    matcher: "not_contains"
+    value: "papermark"
+
+  - id: A011
+    says: "The website scan mock includes a Surfaces section"
+    block: "ScanSlab content"
+    target: "scanSlabContent"
+    matcher: "contains"
+    value: "Surfaces"
+
+  - id: A012
+    says: "The website scan mock does not show a no-test-framework warning"
+    block: "ScanSlab content"
+    target: "scanSlabContent"
+    matcher: "not_contains"
+    value: "No test framework"
+
+  - id: A013
+    says: "The website scan mock shows a Testing field in the stack"
+    block: "ScanSlab content"
+    target: "scanSlabContent"
+    matcher: "contains"
+    value: "Testing"
+
+  - id: A014
+    says: "The website scan mock shows AI detection in the stack"
+    block: "ScanSlab content"
+    target: "scanSlabContent"
+    matcher: "contains"
+    value: "AI"
+
+  - id: A015
+    says: "The website scan mock maintains the existing grid layout pattern"
+    block: "ScanSlab structure"
+    target: "scanSlabContent"
+    matcher: "contains"
+    value: "92px 1fr"
+
+file_changes:
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "README.md"
+    action: modify
+  - path: "website/components/scan/ScanSlab.tsx"
+    action: modify
+  - path: "packages/cli/tests/commands/scan.test.ts"
+    action: modify
