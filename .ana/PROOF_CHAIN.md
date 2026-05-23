@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-154 runs · 103 active · 3 promoted · 778 closed
+154 runs · 102 active · 3 promoted · 779 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 25 | 14 | 2026-05-20 |
-| cli | 107 | 69 | 2026-05-23 |
+| cli | 107 | 68 | 2026-05-23 |
 | website | 22 | 20 | 2026-05-22 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 103 total)
+## Active Findings (30 shown of 102 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -38,6 +38,7 @@
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 - **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
+- **code:** displaySuccessMessage treats empty string test command as null for init display — consistent with upstream blank sanitizer — *Command Detection Language Awareness*
 
 ### packages/cli/src/commands/work.ts
 
@@ -89,7 +90,6 @@
 
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
-- **test:** Redundant toBeDefined() before specific toBe() in A008 and A009 tests — *Setup Verification Hints*
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
 
 ### packages/cli/tests/engine/detectors/polyglot.test.ts

@@ -41008,7 +41008,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "setup-verification-hints-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Redundant but not harmful — toBeDefined() before toBe() at dependencies.test.ts:245 is belt-and-suspenders. The toBe() assertion implicitly checks defined-ness (undefined !== 'packages/db'). The redundancy doesn't weaken the test — the specific toBe() assertion is the meaningful check and it's present.",
+          "closed_at": "2026-05-23T04:57:10.637Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
