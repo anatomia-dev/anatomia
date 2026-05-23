@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A002 summary line assertion is vacuous when summaryLine is not found"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1193
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A002"]
+  - category: test
+    summary: "A004 not_contains check gated by conditional — skipped if Prisma detection fails"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1239
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A004"]
+  - category: upstream
+    summary: "Stale @ana tags from previous contracts collide with current assertion IDs"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Truncation uses Unicode ellipsis — single JS char but 3 UTF-8 bytes"
+    file: "packages/cli/src/commands/scan.ts"
+    line: 162
+    severity: observation
+    suggested_action: accept

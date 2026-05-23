@@ -51,5 +51,20 @@
     "packages/cli/tests/commands/scan.test.ts",
     "website/components/scan/ScanSlab.tsx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-23T20:09:39.513Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:daf0ce34a13dc5db14542753860ad7a14a5ed4d0b44b64d891efa3099640bdcc",
+    "run_at": "2026-05-23T20:16:24.287Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-23T20:16:24.321Z",
+    "hash": "sha256:e3e1c82ef6498804a50310113ce150bcd893b51e17fcc948d3320c7f933f2b17"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-23T20:16:24.322Z",
+    "hash": "sha256:c8a906ad6c83296803cd9867d1aff3aaf6d72a3d965360f35077601af556a602"
+  }
 }
