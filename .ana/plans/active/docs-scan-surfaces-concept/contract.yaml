@@ -1,0 +1,141 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan & Surfaces Concept Page + Docs Gaps"
+
+assertions:
+  - id: A001
+    says: "A scan concept page exists with proper frontmatter"
+    block: "scan concept page structure"
+    target: "scan.mdx.frontmatter"
+    matcher: "exists"
+
+  - id: A002
+    says: "The scan concept page explains what the scan detects"
+    block: "scan concept page content"
+    target: "scan.mdx.section.what-the-scan-detects"
+    matcher: "exists"
+
+  - id: A003
+    says: "The scan concept page explains surfaces without naming the four detection signals"
+    block: "scan concept page content"
+    target: "scan.mdx.section.surfaces"
+    matcher: "exists"
+
+  - id: A004
+    says: "The scan concept page explains application shape"
+    block: "scan concept page content"
+    target: "scan.mdx.section.application-shape"
+    matcher: "exists"
+
+  - id: A005
+    says: "The scan concept page explains how surfaces cascade through the pipeline"
+    block: "scan concept page content"
+    target: "scan.mdx.section.cascade"
+    matcher: "exists"
+
+  - id: A006
+    says: "The scan concept page includes a concrete cascade example with a surface-specific test command"
+    block: "scan concept page content"
+    target: "scan.mdx.cascade-example"
+    matcher: "contains"
+    value: "pnpm"
+
+  - id: A007
+    says: "The scan concept page does not reference detection signals by number"
+    block: "scan concept page content"
+    target: "scan.mdx.content"
+    matcher: "not_contains"
+    value: "Signal 1"
+
+  - id: A008
+    says: "The scan concept page ends with navigation cards pointing to the pipeline concept"
+    block: "scan concept page structure"
+    target: "scan.mdx.nextcards.href"
+    matcher: "contains"
+    value: "/docs/concepts/pipeline"
+
+  - id: A009
+    says: "The scan concept page stays within the target length"
+    block: "scan concept page structure"
+    target: "scan.mdx.lineCount"
+    matcher: "greater"
+    value: 79
+
+  - id: A010
+    says: "The scan page appears first in concept navigation"
+    block: "meta.json ordering"
+    target: "meta.json.pages[0]"
+    matcher: "equals"
+    value: "scan"
+
+  - id: A011
+    says: "All existing concept pages remain in the navigation"
+    block: "meta.json ordering"
+    target: "meta.json.pages.length"
+    matcher: "equals"
+    value: 8
+
+  - id: A012
+    says: "The configurability guide has a surface management subsection"
+    block: "configurability surface management"
+    target: "configurability.mdx.section.surface-management"
+    matcher: "exists"
+
+  - id: A013
+    says: "The surface management section explains how to add a surface"
+    block: "configurability surface management"
+    target: "configurability.mdx.surface-management"
+    matcher: "contains"
+    value: "config set surfaces"
+
+  - id: A014
+    says: "The surface management section explains how to remove a surface"
+    block: "configurability surface management"
+    target: "configurability.mdx.surface-management"
+    matcher: "contains"
+    value: "config delete surfaces"
+
+  - id: A015
+    says: "The surface management section explains re-init behavior for surfaces"
+    block: "configurability surface management"
+    target: "configurability.mdx.surface-management"
+    matcher: "contains"
+    value: "re-init"
+
+  - id: A016
+    says: "The surface management section mentions field protection for machine-managed fields"
+    block: "configurability surface management"
+    target: "configurability.mdx.surface-management"
+    matcher: "contains"
+    value: "path"
+
+  - id: A017
+    says: "The setup guide mentions stack provenance notes"
+    block: "setup guide verification hints"
+    target: "using-ana-setup.mdx.content"
+    matcher: "contains"
+    value: "provenance"
+
+  - id: A018
+    says: "The setup guide mentions surface gap checking"
+    block: "setup guide verification hints"
+    target: "using-ana-setup.mdx.content"
+    matcher: "contains"
+    value: "surface"
+
+  - id: A019
+    says: "The website builds successfully with all changes"
+    block: "build verification"
+    target: "website.build"
+    matcher: "equals"
+    value: "success"
+
+file_changes:
+  - path: "website/content/docs/concepts/scan.mdx"
+    action: create
+  - path: "website/content/docs/concepts/meta.json"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-setup.mdx"
+    action: modify
