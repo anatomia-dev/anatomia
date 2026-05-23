@@ -33,6 +33,26 @@ Settings the CLI manages for you. Change them with commands or `ana.json` edits 
 
 Remove any field with `ana config delete <field>` — useful for clearing overrides and reverting to detected defaults.
 
+### Surface management
+
+If the scan missed a surface, add it manually with its path and commands:
+
+```bash
+ana config set surfaces.api.path "apps/api"
+ana config set surfaces.api.commands.test "cd apps/api && pnpm test"
+ana config set surfaces.api.commands.build "cd apps/api && pnpm build"
+```
+
+If the scan detected a false surface — an example app, a template package — remove it:
+
+```bash
+ana config delete surfaces.example-app
+```
+
+On re-init, the scan refreshes detected surfaces: new workspace packages with deployment indicators are added, and packages that no longer exist are silently dropped. Surfaces you added manually are preserved — but if the path doesn&apos;t exist on disk, init prints a warning. Surfaces you deleted manually stay deleted unless the scan re-detects them.
+
+The `path`, `language`, and `framework` fields on each surface are machine-managed — `ana config set` blocks writes to these fields because incorrect values would cause agents to misidentify your stack. Override commands freely; leave detection fields to the scan.
+
 ### What ana.json looks like
 
 ```json
