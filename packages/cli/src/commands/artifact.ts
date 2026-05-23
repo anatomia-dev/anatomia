@@ -25,6 +25,7 @@ import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../u
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import type { ContractSchema } from '../types/contract.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
+import { track } from '../utils/telemetry.js';
 
 /**
  * Save metadata entry for .saves.json
@@ -1629,6 +1630,8 @@ export function saveArtifact(type: string, slug: string): void {
     console.error(chalk.red(`Error: Commit failed. ${error instanceof Error ? error.message : 'Unknown error'}`));
     process.exit(1);
   }
+
+  track('artifact_saved', { stage: typeInfo.artifactType });
 
   // 10. Push (artifact branch only)
   if (typeInfo.category === 'planning') {

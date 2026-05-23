@@ -27,6 +27,7 @@ import { checkForUpdates } from '../utils/update-check.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
 import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import type { ProofChainEntry, ProofChain, ProofChainStats } from '../types/proof.js';
+import { track } from '../utils/telemetry.js';
 
 /**
  * Artifact state for a work item
@@ -1215,6 +1216,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
  * @param options.merge - When true, merge the PR via GitHub CLI before completing
  */
 export async function completeWork(slug: string, options?: { json?: boolean; merge?: boolean }): Promise<void> {
+  const completeStart = Date.now();
   // 0a. Guard: cannot run from inside a worktree
   if (isWorktreeDirectory()) {
     console.error(chalk.red('Error: Run work complete from the main project directory, not from a worktree.'));
@@ -1829,6 +1831,8 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     }
   }
 
+  track('pipeline_completed', { result: proof.result, duration_ms: Date.now() - completeStart });
+
   // 15. Print summary or JSON output
   if (options?.json) {
     const jsonResults = {
@@ -2289,6 +2293,8 @@ async function startBuildPhase(
 
     console.log(`\nWorktree ready. Run:`);
     console.log(`  cd ${path.relative(process.cwd(), result.worktreePath) || result.worktreePath}`);
+
+    track('pipeline_started');
   } catch (error) {
     console.error(chalk.red(`Error: Failed to create worktree: ${error instanceof Error ? error.message : 'Unknown error'}`));
     process.exit(1);
