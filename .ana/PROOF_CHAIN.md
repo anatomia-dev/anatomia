@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-158 runs · 111 active · 5 promoted · 792 closed
+158 runs · 110 active · 5 promoted · 793 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 27 | 18 | 2026-05-24 |
 | cli | 108 | 71 | 2026-05-24 |
-| website | 23 | 22 | 2026-05-24 |
+| website | 23 | 21 | 2026-05-24 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -112,13 +112,13 @@
 
 - **test:** @ana tag ID collisions across features — proof-parsers.test.ts and proof-health.test.ts contain @ana tags from prior features that share the same IDs (A001-A017), making per-contract tag search unreliable — *Decompose proofSummary.ts*
 
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+
 ### website/content/docs/guides/configurability.mdx
 
 - **code:** Configurability adds third command (build) not in spec mockup — *Scan & Surfaces Concept Page + Docs Gaps*
-
-### website/content/docs/guides/using-ana-setup.mdx
-
-- **code:** Builder converted existing raw apostrophe to &apos; in unchanged setup guide line — *Scan & Surfaces Concept Page + Docs Gaps*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

@@ -41465,7 +41465,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "docs-scan-surfaces-concept-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Build correctly applied the JSX apostrophe escaping rule (coding-standards Rule 4) — that&apos;s, wasn&apos;t, you&apos;ll at using-ana-setup.mdx:47-49. The rule says 'In JSX text content, use &apos; for apostrophes.' Build followed the rule on content it touched during the scope.",
+          "closed_at": "2026-05-24T06:43:57.123Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
