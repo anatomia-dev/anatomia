@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-158 runs · 108 active · 5 promoted · 795 closed
+158 runs · 107 active · 5 promoted · 796 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 27 | 18 | 2026-05-24 |
-| cli | 108 | 70 | 2026-05-24 |
+| cli | 108 | 69 | 2026-05-24 |
 | website | 23 | 20 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -107,10 +107,6 @@
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
-### packages/cli/tests/utils/proof-parsers.test.ts
-
-- **test:** @ana tag ID collisions across features — proof-parsers.test.ts and proof-health.test.ts contain @ana tags from prior features that share the same IDs (A001-A017), making per-contract tag search unreliable — *Decompose proofSummary.ts*
-
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
@@ -123,6 +119,7 @@
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
 - **test:** No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests — *CLI Polish*
+- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
 ### website/lib/__tests__/docs-data/staleness.test.ts
 
