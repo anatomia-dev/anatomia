@@ -36,5 +36,22 @@
   "spec-2": {
     "saved_at": "2026-05-24T05:21:19.641Z",
     "hash": "sha256:cf8c121644365c84bbceaa4debe2a573880435f4ae6e186b9b537a6ff15c037e"
-  }
+  },
+  "build_started_at": "2026-05-24T05:22:56.966Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-05-24T05:38:47.365Z",
+    "hash": "sha256:071c299e741e8610d60efbf1c7a5cdf82b1127eea38025a5b2cbd8ff71fc39d3"
+  },
+  "build-data-1": {
+    "saved_at": "2026-05-24T05:38:47.366Z",
+    "hash": "sha256:4ee05d25ccee18d03edeadaef560375349560481989780ec1b876d70b9493202"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/learn.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/tests/commands/proof.test.ts"
+  ],
+  "commit_hygiene": []
 }
