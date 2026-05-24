@@ -1,0 +1,188 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "CLI Polish"
+
+assertions:
+  # AC1: Proof list table alignment
+  - id: A001
+    says: "Long slugs in the proof list don't crash into adjacent columns"
+    block: "proof list table has dynamic column widths"
+    target: "stdout.columnGap"
+    matcher: "greater"
+    value: 1
+
+  - id: A002
+    says: "Every column in the proof list has at least a 2-character gap"
+    block: "proof list table has dynamic column widths"
+    target: "stdout.minGap"
+    matcher: "equals"
+    value: 2
+
+  # AC2: Audit matrix alignment
+  - id: A003
+    says: "Long slugs in the audit matrix recent proofs don't crash into the result column"
+    block: "audit matrix recent proofs has dynamic column widths"
+    target: "stdout.columnGap"
+    matcher: "greater"
+    value: 1
+
+  # AC3: Health hot spots alignment
+  - id: A004
+    says: "Long file paths in health hot spots don't crash into the findings column"
+    block: "health hot spots has dynamic column widths"
+    target: "stdout.columnGap"
+    matcher: "greater"
+    value: 1
+
+  # AC4: Box trailing space
+  - id: A005
+    says: "The proof detail box has a gap before the right border"
+    block: "proof detail box has trailing space"
+    target: "stdout.boxLine"
+    matcher: "contains"
+    value: "  │"
+
+  - id: A006
+    says: "The health box has a gap before the right border"
+    block: "health box has trailing space"
+    target: "stdout.boxLine"
+    matcher: "contains"
+    value: "  │"
+
+  # AC5: -help interception
+  - id: A007
+    says: "Running ana -help shows help text instead of an error"
+    block: "ana -help shows help"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A008
+    says: "Running ana -help includes the program description"
+    block: "ana -help shows help"
+    target: "stdout"
+    matcher: "contains"
+    value: "Verified AI development"
+
+  - id: A009
+    says: "Running ana proof -help shows proof subcommand help"
+    block: "ana proof -help shows proof help"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  # AC6: Existing help flags unchanged
+  - id: A010
+    says: "The existing --help flag still works"
+    block: "existing help flags work"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A011
+    says: "The existing -h flag still works"
+    block: "existing help flags work"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  # AC7: Learn description
+  - id: A012
+    says: "The learn command description uses imperative verb style"
+    block: "learn description is imperative"
+    target: "helpOutput"
+    matcher: "contains"
+    value: "Manage learn sessions"
+
+  # AC10: JSON output unchanged
+  - id: A013
+    says: "Proof list JSON output is unchanged by table formatting changes"
+    block: "json output is unaffected"
+    target: "jsonOutput.entries"
+    matcher: "exists"
+
+  # AC14: Empty surface indicator
+  - id: A014
+    says: "Entries with no surface show a dash indicator instead of blank space"
+    block: "empty surface shows dash indicator"
+    target: "stdout"
+    matcher: "contains"
+    value: "--"
+
+  # AC8: commands.json includes Doctor and Learn
+  - id: A015
+    says: "The CLI reference data includes the Doctor command"
+    block: "commands.json includes doctor"
+    target: "commandsJson"
+    matcher: "contains"
+    value: "doctor"
+
+  - id: A016
+    says: "The CLI reference data includes the Learn command"
+    block: "commands.json includes learn"
+    target: "commandsJson"
+    matcher: "contains"
+    value: "learn"
+
+  - id: A017
+    says: "The Learn command in reference data shows its end subcommand"
+    block: "commands.json learn has subcommands"
+    target: "learnCommand.subcommands"
+    matcher: "contains"
+    value: "end"
+
+  # AC12: ana-learn template update
+  - id: A018
+    says: "The Learn agent template uses JSON output for the audit matrix command"
+    block: "ana-learn template uses --json"
+    target: "templateContent"
+    matcher: "contains"
+    value: "--matrix --json"
+
+  - id: A019
+    says: "The Learn agent template no longer uses bare --matrix without --json"
+    block: "ana-learn template uses --json"
+    target: "templateContent"
+    matcher: "not_contains"
+    value: "--matrix`"
+
+  # AC13: README commands
+  - id: A020
+    says: "The README documents the config get command"
+    block: "README includes config get and set"
+    target: "readmeContent"
+    matcher: "contains"
+    value: "config get"
+
+  - id: A021
+    says: "The README documents the config set command"
+    block: "README includes config get and set"
+    target: "readmeContent"
+    matcher: "contains"
+    value: "config set"
+
+  # Column width max guard
+  - id: A022
+    says: "Extremely long slugs are truncated instead of consuming the full terminal width"
+    block: "column width has a maximum"
+    target: "stdout.slugColumnWidth"
+    matcher: "not_equals"
+    value: 60
+
+file_changes:
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/learn.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-learn.md"
+    action: modify
+  - path: "README.md"
+    action: modify
+  - path: "website/data/commands.json"
+    action: modify
