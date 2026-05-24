@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-157 runs · 110 active · 5 promoted · 788 closed
+157 runs · 109 active · 5 promoted · 789 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 27 | 19 | 2026-05-24 |
+| Unscoped | 27 | 18 | 2026-05-24 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -106,6 +106,7 @@
 ### website/components/docs/proof/ProofHero.tsx
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/content/docs/concepts/scan.mdx
 
@@ -126,8 +127,4 @@
 ### website/lib/__tests__/docs-data/staleness.test.ts
 
 - **test:** Staleness tests replicate checkStaleDocs rather than testing the actual function — *Fix AnaDocs date freshness*
-
-### website/scripts/extract-docs-data.ts
-
-- **code:** Third-pass regex could match .command() in comments or string literals, not just real chained calls — *CLI Polish*
 
