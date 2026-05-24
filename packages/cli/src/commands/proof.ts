@@ -46,6 +46,35 @@ function formatLocalDate(iso: string): string {
 import { isWorktreeDirectory } from '../utils/worktree.js';
 
 /**
+ * Compute a dynamic column width from data.
+ *
+ * Scans items via `accessor`, finds the longest visible value, adds a `gap`
+ * for spacing, and clamps to `[minWidth, maxWidth]`. Values exceeding
+ * `maxWidth` should be truncated with `…` at display time.
+ *
+ * @param items - Array of items to scan
+ * @param accessor - Function to extract the visible string from each item
+ * @param minWidth - Minimum column width
+ * @param maxWidth - Maximum column width (default 40)
+ * @param gap - Number of padding characters after the longest value (default 2)
+ * @returns Clamped column width
+ */
+function columnWidth(
+  items: readonly unknown[],
+  accessor: (item: unknown) => string,
+  minWidth: number,
+  maxWidth = 40,
+  gap = 2,
+): number {
+  let longest = 0;
+  for (const item of items) {
+    const len = accessor(item).length;
+    if (len > longest) longest = len;
+  }
+  return Math.min(maxWidth, Math.max(minWidth, longest + gap));
+}
+
+/**
  * Validate a surface name against ana.json surfaces configuration.
  *
  * @param projectRoot - Absolute path to the project root
@@ -205,9 +234,16 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
 
   // Header box
   const titleLine = `  ana proof`;
-  const featureLine = `  ${entry.feature}`;
+  const minTrailingGap = 2;
+  let featureText = entry.feature;
+  const featurePrefix = '  ';
+  const maxFeatureLen = innerWidth - featurePrefix.length - timestamp.length - minTrailingGap;
+  if (featureText.length > maxFeatureLen) {
+    featureText = featureText.slice(0, maxFeatureLen - 1) + '…';
+  }
+  const featureLine = `${featurePrefix}${featureText}`;
   const padding = innerWidth - featureLine.length - timestamp.length;
-  const featureWithTimestamp = `${featureLine}${' '.repeat(Math.max(1, padding))}${timestamp}`;
+  const featureWithTimestamp = `${featureLine}${' '.repeat(Math.max(minTrailingGap, padding))}${timestamp}`;
 
   lines.push(chalk.cyan(BOX.topLeft + BOX.horizontal.repeat(innerWidth) + BOX.topRight));
   lines.push(chalk.cyan(BOX.vertical) + chalk.bold(titleLine.padEnd(innerWidth)) + chalk.cyan(BOX.vertical));
@@ -392,8 +428,9 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
   const titleLine = '  ana proof health';
   const runLabel = `${runs} ${runs !== 1 ? 'runs' : 'run'}`;
   const secondLine = `  ${runLabel}`;
+  const healthMinGap = 2;
   const padding = innerWidth - secondLine.length - dateStr.length;
-  const secondWithDate = `${secondLine}${' '.repeat(Math.max(1, padding))}${dateStr}`;
+  const secondWithDate = `${secondLine}${' '.repeat(Math.max(healthMinGap, padding))}${dateStr}`;
 
   lines.push(chalk.cyan(BOX.topLeft + BOX.horizontal.repeat(innerWidth) + BOX.topRight));
   lines.push(chalk.cyan(BOX.vertical) + chalk.bold(titleLine.padEnd(innerWidth)) + chalk.cyan(BOX.vertical));
@@ -473,21 +510,30 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
     lines.push(chalk.bold('  Hot Spots'));
     lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
 
+    // Pre-compute display names for dynamic width calculation
+    const displayNames: string[] = [];
+    const findingsTexts: string[] = [];
     for (const mod of report.hot_modules) {
       const base = path.basename(mod.file);
       const displayName = (basenameCounts.get(base) ?? 0) > 1
         ? `${path.basename(path.dirname(mod.file))}/${base}`
         : base;
+      displayNames.push(displayName);
 
       const sevParts: string[] = [];
       if (mod.by_severity.risk > 0) sevParts.push(`${mod.by_severity.risk} risk`);
       if (mod.by_severity.debt > 0) sevParts.push(`${mod.by_severity.debt} debt`);
       if (mod.by_severity.observation > 0) sevParts.push(`${mod.by_severity.observation} obs`);
       if (mod.by_severity.unclassified > 0) sevParts.push(`${mod.by_severity.unclassified} unclassified`);
+      findingsTexts.push(`${mod.finding_count} findings (${sevParts.join(', ')})`);
+    }
 
-      const nameCol = displayName.padEnd(24);
-      const findingsCol = `${mod.finding_count} findings (${sevParts.join(', ')})`;
-      lines.push(`  ${nameCol}${findingsCol.padEnd(35)}${mod.entry_count} runs`);
+    const nameW = columnWidth(displayNames, (n) => n as string, 8);
+    const findingsW = columnWidth(findingsTexts, (f) => f as string, 12);
+
+    for (let i = 0; i < report.hot_modules.length; i++) {
+      const nameCol = displayNames[i]!.padEnd(nameW);
+      lines.push(`  ${nameCol}${findingsTexts[i]!.padEnd(findingsW)}${report.hot_modules[i]!.entry_count} runs`);
     }
   }
 
@@ -551,11 +597,15 @@ function formatListTable(entries: ProofChainEntry[]): string {
   lines.push(chalk.bold('  Proof History'));
   lines.push('');
 
+  // Dynamic column widths from data
+  const slugW = columnWidth(entries, (e) => (e as ProofChainEntry).slug, 8);
+  const surfaceW = columnWidth(entries, (e) => (e as ProofChainEntry).surface ?? '--', 6);
+
   // Header row
-  const slugCol = 'Slug'.padEnd(24);
+  const slugCol = 'Slug'.padEnd(slugW);
   const resultCol = 'Result'.padEnd(9);
   const assertCol = 'Assertions'.padEnd(13);
-  const surfaceCol = 'Surface'.padEnd(12);
+  const surfaceCol = 'Surface'.padEnd(surfaceW);
   const dateCol = 'Date';
   lines.push(chalk.bold(`  ${slugCol}${resultCol}${assertCol}${surfaceCol}${dateCol}`));
 
@@ -568,15 +618,19 @@ function formatListTable(entries: ProofChainEntry[]): string {
   });
 
   for (const entry of sorted) {
-    const slug = entry.slug.padEnd(24);
+    const slugText = entry.slug.length > slugW - 2 ? entry.slug.slice(0, slugW - 3) + '…' : entry.slug;
+    const slug = slugText.padEnd(slugW);
     const resultColor = entry.result === 'PASS' ? chalk.green : chalk.red;
     const resultPadded = entry.result.padEnd(9);
     const result = resultColor(resultPadded);
     const ratio = `${entry.contract.satisfied}/${entry.contract.total}`;
     const assertions = ratio.padEnd(13);
-    const surface = (entry.surface ?? '').padEnd(12);
+    const surfaceRaw = entry.surface ?? '';
+    const surfaceDisplay = surfaceRaw || chalk.dim('--');
+    const surfacePadLen = surfaceRaw ? surfaceRaw.length : 2; // '--' is 2 visible chars
+    const surfacePad = ' '.repeat(Math.max(0, surfaceW - surfacePadLen));
     const date = entry.completed_at ? formatLocalDate(entry.completed_at) : '';
-    lines.push(`  ${slug}${result}${assertions}${surface}${date}`);
+    lines.push(`  ${slug}${result}${assertions}${surfaceDisplay}${surfacePad}${date}`);
   }
 
   lines.push('');
@@ -1772,10 +1826,11 @@ export function registerProofCommand(program: Command): void {
           if (recentEntries.length > 0) {
             console.log('');
             console.log('  Recent proofs:');
+            const recentSlugW = columnWidth(recentEntries, (e) => (e as { slug?: string }).slug ?? '', 8);
             for (const e of recentEntries) {
-              const pad = Math.max(0, 20 - (e.slug?.length || 0));
+              const slugText = (e.slug ?? '').padEnd(recentSlugW);
               const findingLabel = `${e.finding_count} finding${e.finding_count !== 1 ? 's' : ''}`;
-              console.log(`    ${e.slug}${' '.repeat(pad)}${e.result}  ${findingLabel}  ${e.ago}`);
+              console.log(`    ${slugText}${e.result}  ${findingLabel}  ${e.ago}`);
             }
           }
         }
