@@ -36,5 +36,57 @@
   "spec-2": {
     "saved_at": "2026-05-24T05:21:19.641Z",
     "hash": "sha256:cf8c121644365c84bbceaa4debe2a573880435f4ae6e186b9b537a6ff15c037e"
+  },
+  "build_started_at": "2026-05-24T05:22:56.966Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-05-24T05:38:47.365Z",
+    "hash": "sha256:071c299e741e8610d60efbf1c7a5cdf82b1127eea38025a5b2cbd8ff71fc39d3"
+  },
+  "build-data-1": {
+    "saved_at": "2026-05-24T05:38:47.366Z",
+    "hash": "sha256:4ee05d25ccee18d03edeadaef560375349560481989780ec1b876d70b9493202"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-learn.md",
+    "README.md",
+    "packages/cli/src/commands/learn.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/templates/.claude/agents/ana-learn.md",
+    "packages/cli/tests/commands/proof.test.ts",
+    "website/scripts/extract-docs-data.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-24T05:39:43.532Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b2a545759d42c1ddd83f8af393c4b8602f9b1058ab6546221e124a7a7874138e",
+    "run_at": "2026-05-24T06:08:02.807Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-05-24T05:47:10.820Z",
+    "hash": "sha256:8351e86109846c495716552ad633059c62996a07ee447bbd8d3041ffc4329ede"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-05-24T05:47:10.820Z",
+    "hash": "sha256:1d67c2a482d2c609fc6d67e1f66cf4a8985e3fcad97439ab2ce1461b2062f68c"
+  },
+  "build-report-2": {
+    "saved_at": "2026-05-24T05:55:48.578Z",
+    "hash": "sha256:e165f46428b12f7c81755e4dfafc2bea5b923a7af6dfb489d3318f91cd4c7bc0"
+  },
+  "build-data-2": {
+    "saved_at": "2026-05-24T05:55:48.579Z",
+    "hash": "sha256:52a25ac02fbfab3972b39e361519511457baad03fb8ee04e2f0b6f0065ed4e22"
+  },
+  "verify-report-2": {
+    "saved_at": "2026-05-24T06:08:02.843Z",
+    "hash": "sha256:35acfb89445e960661c95f2422fea6041e8a1cd7fd4d70b4607a50ff704652d2"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-05-24T06:08:02.843Z",
+    "hash": "sha256:ae8f3243849f14f3900b3397589810a1c85a53705387dddac7baf503af3e5b70"
   }
 }

@@ -36,6 +36,16 @@ program
   .version(`ana/${pkg.version}`, '-v, --version', 'Display version number');
 
 program.helpCommand('help [command]', 'Display help for a command');
+
+// Intercept `-help` (without `--`). Commander parses it as `-h -e -l -p` and
+// errors on the unknown options. Check process.argv before Commander parses
+// and redirect to the help path.
+if (process.argv.includes('-help')) {
+  // Replace `-help` with `--help` so Commander handles it natively.
+  // This works for both root (`ana -help`) and subcommands (`ana proof -help`).
+  const idx = process.argv.indexOf('-help');
+  process.argv[idx] = '--help';
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Commander has no public API for hiding the help command; _hidden is the standard internal mechanism (stable v12-14)
 (program as any)._helpCommand._hidden = true;
 

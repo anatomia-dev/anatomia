@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "commands.json is gitignored — verifier must run extract script to inspect, can't check via git diff"
+    file: "website/data/docs/commands.json"
+    severity: observation
+    suggested_action: accept
+  - summary: "Spec says website/data/commands.json but actual path is website/data/docs/commands.json"
+    file: "website/scripts/extract-docs-data.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warnings in website (formatAge, latest unused)"
+    severity: observation
+    suggested_action: monitor
