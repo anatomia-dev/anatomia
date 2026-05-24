@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: code
+    summary: "proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "audit-matrix-orientation-C7"
+  - category: code
+    summary: "proof-health.ts at 893 lines is already above comfort threshold — health computation could decompose further"
+    file: "packages/cli/src/utils/proof-health.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "MIN_ENTRIES_FOR_EFFECTIVENESS is the only non-exported constant in proof-health.ts — different visibility than the other 4 constants without an obvious reason in the code"
+    file: "packages/cli/src/utils/proof-health.ts"
+    line: 89
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "@ana tag ID collisions across features — proof-parsers.test.ts and proof-health.test.ts contain @ana tags from prior features that share the same IDs (A001-A017), making per-contract tag search unreliable"
+    file: "packages/cli/tests/utils/proof-parsers.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - category: upstream
+    summary: "Contract A010 value (2906 tests) is a snapshot that becomes stale when any other branch adds or removes tests — assertion is structurally fragile for refactoring specs"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010"]
