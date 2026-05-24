@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-157 runs · 113 active · 5 promoted · 785 closed
+157 runs · 112 active · 5 promoted · 786 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 27 | 22 | 2026-05-24 |
+| Unscoped | 27 | 21 | 2026-05-24 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -14,17 +14,17 @@
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/tests/commands/proof.test.ts | 6 | 4 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
+| packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 113 total)
+## Active Findings (30 shown of 112 total)
 
 ### .claude/agents/ana-learn.md
 
@@ -41,6 +41,10 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
+
+### packages/cli/src/commands/work.ts
+
+- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -77,7 +81,6 @@
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
-- **test:** A014 asserts toContain('--') which could match any -- in output, not surface-column-specific — *CLI Polish*
 
 ### packages/cli/tests/engine/census-primary.test.ts
 
