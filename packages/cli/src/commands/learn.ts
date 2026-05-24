@@ -25,7 +25,7 @@ import { isWorktreeDirectory } from '../utils/worktree.js';
  */
 export function registerLearnCommand(program: Command): void {
   const learnCommand = new Command('learn')
-    .description('Learn session management');
+    .description('Manage learn sessions');
 
   const endCommand = new Command('end')
     .description('End learn session — mark timestamp for next session')
