@@ -41451,7 +41451,10 @@
             "A009"
           ],
           "id": "docs-scan-surfaces-concept-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Page shipped at 80 lines, meets AC7's minimum range (80-120). Content is complete — surfaces concept, detection signals, configuration examples all covered. 10 lines below spec midpoint is content density preference, not a defect.",
+          "closed_at": "2026-05-24T06:43:47.300Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-158 runs · 112 active · 5 promoted · 791 closed
+158 runs · 111 active · 5 promoted · 792 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 27 | 18 | 2026-05-24 |
 | cli | 108 | 71 | 2026-05-24 |
-| website | 23 | 23 | 2026-05-24 |
+| website | 23 | 22 | 2026-05-24 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,6 +37,10 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
+
+### packages/cli/src/commands/work.ts
+
+- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -107,10 +111,6 @@
 ### packages/cli/tests/utils/proof-parsers.test.ts
 
 - **test:** @ana tag ID collisions across features — proof-parsers.test.ts and proof-health.test.ts contain @ana tags from prior features that share the same IDs (A001-A017), making per-contract tag search unreliable — *Decompose proofSummary.ts*
-
-### website/content/docs/concepts/scan.mdx
-
-- **code:** scan.mdx at 80 lines sits at the minimum of AC7's 80-120 range, below spec target of 90-100 — *Scan & Surfaces Concept Page + Docs Gaps*
 
 ### website/content/docs/guides/configurability.mdx
 
