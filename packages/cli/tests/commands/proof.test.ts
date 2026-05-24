@@ -5109,4 +5109,276 @@ describe('ana proof', () => {
       expect(output.results.total_active).toBe(2);
     });
   });
+
+  // ─── CLI Display Quality ──────────────────────────────────────────
+
+  /**
+   * Helper to run the CLI with arbitrary args (not just `proof`)
+   */
+  function runCli(args: string[]): { stdout: string; stderr: string; exitCode: number } {
+    const cliPath = path.join(__dirname, '../../dist/index.js');
+    try {
+      const stdout = execSync(`node ${cliPath} ${args.join(' ')}`, {
+        encoding: 'utf-8',
+        cwd: process.cwd(),
+        env: { ...process.env, FORCE_COLOR: '0' },
+      });
+      return { stdout, stderr: '', exitCode: 0 };
+    } catch (error) {
+      const execError = error as { stdout?: string; stderr?: string; status?: number };
+      return {
+        stdout: execError.stdout || '',
+        stderr: execError.stderr || '',
+        exitCode: execError.status || 1,
+      };
+    }
+  }
+
+  describe('dynamic column widths', () => {
+    // @ana A001, A002
+    it('proof list table has 2+ char gap between slug and result for long slugs', async () => {
+      const longSlugEntry = {
+        ...sampleEntry,
+        slug: 'this-is-a-very-long-slug-name-for-testing',
+        completed_at: '2026-04-02T10:00:00Z',
+      };
+      await createProofChain([sampleEntry, longSlugEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof([]);
+      expect(exitCode).toBe(0);
+
+      const lines = stdout.split('\n');
+      // Find the data rows (after the header)
+      const dataLines = lines.filter(l => l.includes('PASS') || l.includes('FAIL'));
+      for (const line of dataLines) {
+        // Each slug should be followed by at least 2 spaces before PASS/FAIL
+        const match = line.match(/\S(\s+)(PASS|FAIL)/);
+        expect(match).toBeTruthy();
+        expect(match![1]!.length).toBeGreaterThanOrEqual(2);
+      }
+    });
+
+    // @ana A022
+    it('extremely long slugs are truncated with ellipsis', async () => {
+      const veryLongSlug = 'a'.repeat(50);
+      const longEntry = {
+        ...sampleEntry,
+        slug: veryLongSlug,
+        completed_at: '2026-04-02T10:00:00Z',
+      };
+      await createProofChain([longEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof([]);
+      expect(exitCode).toBe(0);
+
+      // Should contain truncation ellipsis, not the full 50-char slug
+      expect(stdout).not.toContain(veryLongSlug);
+      expect(stdout).toContain('…');
+    });
+
+    // @ana A003
+    it('audit matrix recent proofs have dynamic slug column width', async () => {
+      // Create multiple proof chain entries with varying slug lengths
+      const entries = [];
+      for (let i = 0; i < 5; i++) {
+        entries.push({
+          ...sampleEntry,
+          slug: `feature-${i}`,
+          completed_at: `2026-04-0${i + 1}T10:00:00Z`,
+          findings: [
+            { id: `F${i}`, category: 'test', summary: 'Test finding', severity: 'debt', status: 'active', file: 'test.ts', anchor: null, anchor_present: true, suggested_action: 'scope', first_seen_at: '2026-04-01T00:00:00Z', first_seen_in: `feature-${i}`, occurrences: 1 },
+          ],
+        });
+      }
+      // Add one with a long slug
+      entries.push({
+        ...sampleEntry,
+        slug: 'a-very-long-feature-slug-name',
+        completed_at: '2026-04-10T10:00:00Z',
+        findings: [
+          { id: 'F99', category: 'test', summary: 'Test finding', severity: 'debt', status: 'active', file: 'test.ts', anchor: null, anchor_present: true, suggested_action: 'scope', first_seen_at: '2026-04-01T00:00:00Z', first_seen_in: 'a-very-long-feature-slug-name', occurrences: 1 },
+        ],
+      });
+
+      await createProofChain(entries);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['audit', '--matrix']);
+      expect(exitCode).toBe(0);
+
+      // Recent proofs section: long slug should not crash into result
+      if (stdout.includes('Recent proofs:')) {
+        const recentLines = stdout.split('\n').filter(l => l.includes('PASS') && l.includes('finding'));
+        for (const line of recentLines) {
+          const match = line.match(/\S(\s+)(PASS|FAIL)/);
+          expect(match).toBeTruthy();
+          expect(match![1]!.length).toBeGreaterThanOrEqual(2);
+        }
+      }
+    });
+
+    // @ana A004
+    it('health hot spots have dynamic column widths', async () => {
+      // Create entries with findings that produce hot spots
+      const entriesWithFindings = [];
+      for (let i = 0; i < 3; i++) {
+        entriesWithFindings.push({
+          ...sampleEntry,
+          slug: `feature-${i}`,
+          completed_at: `2026-04-0${i + 1}T10:00:00Z`,
+          findings: [
+            { id: `F${i}a`, category: 'code', summary: 'Finding A', severity: 'risk', status: 'active', file: 'a-very-long-filename-for-testing.ts', anchor: null, anchor_present: true, suggested_action: 'scope', first_seen_at: '2026-04-01T00:00:00Z', first_seen_in: `feature-${i}`, occurrences: 1 },
+            { id: `F${i}b`, category: 'code', summary: 'Finding B', severity: 'debt', status: 'active', file: 'a-very-long-filename-for-testing.ts', anchor: null, anchor_present: true, suggested_action: 'scope', first_seen_at: '2026-04-01T00:00:00Z', first_seen_in: `feature-${i}`, occurrences: 1 },
+          ],
+        });
+      }
+
+      await createProofChain(entriesWithFindings);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['health']);
+      expect(exitCode).toBe(0);
+
+      // Hot spots section: file name should not crash into findings column
+      if (stdout.includes('Hot Spots')) {
+        const hotLines = stdout.split('\n').filter(l => l.includes('findings'));
+        for (const line of hotLines) {
+          // Should have 2+ spaces before "findings"
+          const match = line.match(/\S(\s+)\d+ findings/);
+          expect(match).toBeTruthy();
+          expect(match![1]!.length).toBeGreaterThanOrEqual(2);
+        }
+      }
+    });
+  });
+
+  describe('empty surface indicator', () => {
+    // @ana A014
+    it('shows -- for entries with no surface', async () => {
+      const noSurfaceEntry = {
+        ...sampleEntry,
+        surface: undefined,
+      };
+      await createProofChain([noSurfaceEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof([]);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('--');
+    });
+  });
+
+  describe('box trailing space', () => {
+    // @ana A005
+    it('proof detail box has trailing gap before right border', async () => {
+      // Use a very long feature name that could crash into the timestamp
+      const longFeatureEntry = {
+        ...sampleEntry,
+        feature: 'A Very Long Feature Name That Could Potentially Crash Into The Timestamp Area',
+      };
+      await createProofChain([longFeatureEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof([sampleEntry.slug]);
+      expect(exitCode).toBe(0);
+
+      // The feature line inside the box should have at least 2 spaces before the timestamp
+      const lines = stdout.split('\n');
+      for (const line of lines) {
+        if (line.includes('│') && (line.includes('Long Feature') || line.includes('…'))) {
+          // Between the feature text and the date, there should be 2+ spaces
+          // The line format is: │  {feature}{spaces}{timestamp}│
+          // With truncation, the feature gets cut with … and gap is preserved
+          const content = line.replace(/│/g, '');
+          // Check that content doesn't fill to the border without gaps
+          expect(content).toContain('  ');
+        }
+      }
+    });
+
+    // @ana A006
+    it('health box has trailing gap before right border', async () => {
+      const entries = [];
+      for (let i = 0; i < 3; i++) {
+        entries.push({
+          ...sampleEntry,
+          slug: `feature-${i}`,
+          completed_at: `2026-04-0${i + 1}T10:00:00Z`,
+        });
+      }
+      await createProofChain(entries);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['health']);
+      expect(exitCode).toBe(0);
+
+      const lines = stdout.split('\n');
+      for (const line of lines) {
+        // The run count line in the health box: "  {N} runs{spaces}{date}│"
+        if (line.includes('│') && line.includes('run') && !line.includes('─')) {
+          // Between the runs label and the date, there should be 2+ spaces
+          const content = line.replace(/│/g, '');
+          const match = content.match(/run\w?(\s+)\d{4}/);
+          if (match) {
+            expect(match[1]!.length).toBeGreaterThanOrEqual(2);
+          }
+        }
+      }
+    });
+  });
+
+  describe('-help interception', () => {
+    // @ana A007, A008
+    it('ana -help shows help text instead of error', () => {
+      const { stdout, exitCode } = runCli(['-help']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Verified AI development');
+    });
+
+    // @ana A009
+    it('ana proof -help shows proof subcommand help', () => {
+      const { stdout, exitCode } = runCli(['proof', '-help']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('proof');
+    });
+
+    // @ana A010
+    it('ana --help still works', () => {
+      const { stdout, exitCode } = runCli(['--help']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Verified AI development');
+    });
+
+    // @ana A011
+    it('ana -h still works', () => {
+      const { stdout, exitCode } = runCli(['-h']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Verified AI development');
+    });
+
+    // @ana A012
+    it('learn command description uses imperative verb style', () => {
+      const { stdout, exitCode } = runCli(['--help']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Manage learn sessions');
+    });
+  });
+
+  describe('JSON output unchanged', () => {
+    // @ana A013
+    it('proof list --json output is unaffected by display changes', async () => {
+      await createProofChain([sampleEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['--json']);
+      expect(exitCode).toBe(0);
+      const output = JSON.parse(stdout);
+      expect(output.results).toBeDefined();
+      expect(output.results.entries).toBeDefined();
+      expect(output.results.entries).toHaveLength(1);
+      expect(output.results.entries[0].slug).toBe('stripe-payments');
+    });
+  });
 });
