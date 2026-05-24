@@ -532,7 +532,7 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
     const findingsW = columnWidth(findingsTexts, (f) => f as string, 12);
 
     for (let i = 0; i < report.hot_modules.length; i++) {
-      const nameCol = displayNames[i]!.padEnd(nameW);
+      const nameCol = displayNames[i]!.slice(0, nameW).padEnd(nameW);
       lines.push(`  ${nameCol}${findingsTexts[i]!.padEnd(findingsW)}${report.hot_modules[i]!.entry_count} runs`);
     }
   }
