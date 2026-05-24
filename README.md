@@ -165,6 +165,8 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 | `ana init commit` | Commit infrastructure files to the artifact branch |
 | `ana doctor` | Check project health and configuration. `--json` for CI |
 | `ana config show` | Display current ana.json settings |
+| `ana config get <field>` | Get a config field value. Dot notation supported |
+| `ana config set <field> <value>` | Set a config field value |
 | `ana config delete <field>` | Remove a config field, reverting to detected default |
 
 ### Pipeline
