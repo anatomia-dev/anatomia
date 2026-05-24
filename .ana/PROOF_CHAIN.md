@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-157 runs · 109 active · 5 promoted · 789 closed
+158 runs · 113 active · 5 promoted · 790 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 27 | 18 | 2026-05-24 |
-| cli | 107 | 68 | 2026-05-23 |
+| cli | 108 | 72 | 2026-05-24 |
 | website | 23 | 23 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
-| packages/cli/src/utils/proofSummary.ts | 3 | 2 |
+| packages/cli/src/utils/proofSummary.ts | 4 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 113 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,10 +37,6 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
-
-### packages/cli/src/commands/work.ts
-
-- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -64,6 +60,15 @@
 
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
+
+### packages/cli/src/utils/proof-health.ts
+
+- **code:** proof-health.ts at 893 lines is already above comfort threshold — health computation could decompose further — *Decompose proofSummary.ts*
+- **code:** MIN_ENTRIES_FOR_EFFECTIVENESS is the only non-exported constant in proof-health.ts — different visibility than the other 4 constants without an obvious reason in the code — *Decompose proofSummary.ts*
+
+### packages/cli/src/utils/proofSummary.ts
+
+- **code:** proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module — *Decompose proofSummary.ts*
 
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
@@ -99,14 +104,9 @@
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
-### website/components/docs/proof/ProofExplorer.tsx
+### packages/cli/tests/utils/proof-parsers.test.ts
 
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/docs/proof/ProofHero.tsx
-
-- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
-- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** @ana tag ID collisions across features — proof-parsers.test.ts and proof-health.test.ts contain @ana tags from prior features that share the same IDs (A001-A017), making per-contract tag search unreliable — *Decompose proofSummary.ts*
 
 ### website/content/docs/concepts/scan.mdx
 
