@@ -67,7 +67,11 @@ The 2-char gap between columns is the convention. Currently there's zero gap —
 
 **Dynamic width upper bound.** If a slug is 60 characters long, a dynamic column would consume most of the terminal width. Set a max column width (e.g., 40 chars) and truncate with `…` above that. No current slug exceeds 35 chars, but the guard prevents future surprises.
 
-**Agent template impact.** Verified: all 5 agent templates use `--json` for proof commands. AnaLearn uses `ana proof audit --json`, `ana proof health --json`, `ana proof stale --json`. No agent reads or parses the human table format. The proof list table is human-only — zero agent risk.
+**Agent template impact — proof commands.** Verified: all 5 agent templates use `--json` for proof commands. AnaLearn uses `ana proof audit --json`, `ana proof health --json`, `ana proof stale --json`. No agent reads or parses the human proof table format. Proof table formatting changes are human-only — zero agent risk.
+
+**Agent template impact — work status.** CRITICAL: agents DO parse `ana work status` human output (NOT `--json`). All 5 pipeline agents run `ana work status` and read stage names ("ready-for-plan", "ready-for-build", "ready-for-verify"), worktree paths, and slug names from the human output. The `work status` display must NOT change. This scope does NOT touch work.ts or work status formatting.
+
+**CLI reference page shows flags but not descriptions.** The `CommandGroup` component renders flag names as compact codes (`Flags: --json --save -q --quick`) but not their description text. The descriptions ARE in commands.json but the rendering component doesn't display them. This means `--help` output is the primary documentation for what each flag does. The help text quality matters more because of this — it's not backed up by a detailed reference page. This scope improves `learn` description and `-help` handling but does NOT redesign the CLI reference rendering (separate scope).
 
 **`-help` false positive.** The interception must match specifically `-help` as an unknown option, not any option containing "help" (e.g., `--no-help`). Check the Commander error format to match precisely.
 
@@ -101,8 +105,12 @@ None.
 
 - [VERIFIED] All 5 agent templates use `--json` for proof commands. Zero references to human-formatted proof output in agent templates. Table formatting changes are human-only.
 - [VERIFIED] `--json` paths in proof.ts are completely separate code paths (JSON is emitted directly from the data structures, not from the formatted strings). Table changes cannot affect JSON output.
+- [CRITICAL] All 5 pipeline agents parse `ana work status` HUMAN output — not `--json`. They look for stage names, worktree paths, and slugs in the human-formatted text. Work status display format MUST NOT change. This scope does not touch work.ts.
+- [OBSERVED] The CLI reference page (CommandGroup component) renders flag names but not descriptions. `--help` is the primary documentation for flag behavior. Scope improves help text but does not change the reference page rendering (separate scope).
 - [OBSERVED] The `pr create` command has an uncaught `readdirSync` on a nonexistent directory (line 247). This produces a raw ENOENT error instead of a user-friendly message. Noted for future fix, not in scope.
 - [OBSERVED] `ana config get nonexistent.field` returns `(undefined)` with parentheses. Functional but not helpful. Noted for future fix.
+- [OBSERVED] `setup` help text doesn't mention the main use case (`claude --agent ana-setup`). The subcommands (check, complete, index) are internal — the primary entry point is the agent. Help text could note this.
+- [OBSERVED] `help [command]` subcommand visible in some help outputs (work, artifact, verify, pr, config, learn) but not others. Commander adds it automatically when using `.addCommand()`. Cosmetic inconsistency — not worth fixing.
 
 ### Test Infrastructure
 
