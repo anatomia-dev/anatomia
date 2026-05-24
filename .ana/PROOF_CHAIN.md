@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-158 runs · 110 active · 5 promoted · 793 closed
+158 runs · 109 active · 5 promoted · 794 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 27 | 18 | 2026-05-24 |
 | cli | 108 | 71 | 2026-05-24 |
-| website | 23 | 21 | 2026-05-24 |
+| website | 23 | 20 | 2026-05-24 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -116,9 +116,9 @@
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
-### website/content/docs/guides/configurability.mdx
+### website/components/docs/proof/ProofHero.tsx
 
-- **code:** Configurability adds third command (build) not in spec mockup — *Scan & Surfaces Concept Page + Docs Gaps*
+- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

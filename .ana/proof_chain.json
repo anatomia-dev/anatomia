@@ -41479,7 +41479,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "docs-scan-surfaces-concept-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Harmless over-building — configurability guide at line 43 shows ana config set for test, build, and path. The build command is a real use case that makes the example more complete. Better documentation than the spec's two-command mockup.",
+          "closed_at": "2026-05-24T06:44:07.345Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
