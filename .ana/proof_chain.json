@@ -42105,7 +42105,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "decompose-proof-summary-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional visibility difference — MIN_ENTRIES_FOR_EFFECTIVENESS at proof-health.ts:89 is an implementation detail of computePromotionEffectiveness, used only internally. The other 4 constants (TRAJECTORY_WINDOW, MIN_ENTRIES_FOR_TREND, etc.) are exported because proof.ts references them for display thresholds. Private for internal, public for consumers.",
+          "closed_at": "2026-05-24T06:44:17.146Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

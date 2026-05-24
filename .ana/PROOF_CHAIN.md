@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-158 runs · 109 active · 5 promoted · 794 closed
+158 runs · 108 active · 5 promoted · 795 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 27 | 18 | 2026-05-24 |
-| cli | 108 | 71 | 2026-05-24 |
+| cli | 108 | 70 | 2026-05-24 |
 | website | 23 | 20 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -68,7 +68,6 @@
 ### packages/cli/src/utils/proof-health.ts
 
 - **code:** proof-health.ts at 893 lines is already above comfort threshold — health computation could decompose further — *Decompose proofSummary.ts*
-- **code:** MIN_ENTRIES_FOR_EFFECTIVENESS is the only non-exported constant in proof-health.ts — different visibility than the other 4 constants without an obvious reason in the code — *Decompose proofSummary.ts*
 
 ### packages/cli/src/utils/proofSummary.ts
 
@@ -119,6 +118,7 @@
 ### website/components/docs/proof/ProofHero.tsx
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
