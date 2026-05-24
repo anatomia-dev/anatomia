@@ -37,5 +37,20 @@
     "packages/cli/tests/utils/proof-parsers.test.ts",
     "packages/cli/tests/utils/proofSummary.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-24T06:22:32.506Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:0d4af14034c600e8c0d4694ce667647847e5d39a29cd1995473241b449138e27",
+    "run_at": "2026-05-24T06:29:24.056Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-24T06:29:24.095Z",
+    "hash": "sha256:e349dd17c653471028fd5b0e83e908e4d2a5735deb9d275fa4d7a3e218190120"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-24T06:29:24.096Z",
+    "hash": "sha256:07af77ffecc44c8eaf7d9daa09bc96d32110e74481b4d4d86989cbe11993f513"
+  }
 }
