@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-155 runs · 105 active · 3 promoted · 780 closed
+156 runs · 108 active · 3 promoted · 781 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 26 | 17 | 2026-05-23 |
 | cli | 107 | 68 | 2026-05-23 |
-| website | 22 | 20 | 2026-05-22 |
+| website | 23 | 23 | 2026-05-24 |
 
 ## Hot Modules
 
@@ -24,20 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
-### packages/cli/src/commands/config.ts
-
-- **code:** config delete on top-level machine-managed fields (anaVersion, name, etc.) blocked by MACHINE_MANAGED_FIELDS guard, but delete on whole 'surfaces' key is allowed — could wipe all surfaces — *Surface Awareness Schema and Pipeline Integration*
-
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-- **code:** Non-Node surface gets empty commands object instead of null commands — no native command generation for Rust/Go surfaces — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/src/commands/scan.ts
 
@@ -73,10 +68,6 @@
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
-
-### packages/cli/tests/commands/proof-surface-derivation.test.ts
-
-- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/commands/scan.test.ts
 
@@ -116,6 +107,18 @@
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 - **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/content/docs/concepts/scan.mdx
+
+- **code:** scan.mdx at 80 lines sits at the minimum of AC7's 80-120 range, below spec target of 90-100 — *Scan & Surfaces Concept Page + Docs Gaps*
+
+### website/content/docs/guides/configurability.mdx
+
+- **code:** Configurability adds third command (build) not in spec mockup — *Scan & Surfaces Concept Page + Docs Gaps*
+
+### website/content/docs/guides/using-ana-setup.mdx
+
+- **code:** Builder converted existing raw apostrophe to &apos; in unchanged setup guide line — *Scan & Surfaces Concept Page + Docs Gaps*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

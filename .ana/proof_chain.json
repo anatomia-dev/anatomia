@@ -41272,6 +41272,220 @@
         "commit_count": 0,
         "base_commit": "1bfb72f08028100d0af9abb6ca788c56c17d57be"
       }
+    },
+    {
+      "slug": "docs-scan-surfaces-concept",
+      "feature": "Scan & Surfaces Concept Page + Docs Gaps",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 19,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A scan concept page exists with proper frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The scan concept page explains what the scan detects",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The scan concept page explains surfaces without naming the four detection signals",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The scan concept page explains application shape",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The scan concept page explains how surfaces cascade through the pipeline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The scan concept page includes a concrete cascade example with a surface-specific test command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The scan concept page does not reference detection signals by number",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The scan concept page ends with navigation cards pointing to the pipeline concept",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The scan concept page stays within the target length",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The scan page appears first in concept navigation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "All existing concept pages remain in the navigation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The configurability guide has a surface management subsection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The surface management section explains how to add a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The surface management section explains how to remove a surface",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The surface management section explains re-init behavior for surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The surface management section mentions field protection for machine-managed fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The setup guide mentions stack provenance notes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The setup guide mentions surface gap checking",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The website builds successfully with all changes",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 28,
+        "think": 2,
+        "plan": 7,
+        "build": 8,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:c377b03a1dbc5a35ea67326bc2d41f28107ef2ac03992ff2811e88a5835e42bd",
+        "contract": "sha256:6ce6422fdc85bc51567a05d92a1d7934248c3d452772ff5b1146ec20a6d16e62",
+        "plan": "sha256:8ded60281997aea60c1ed1ea339c6717808c954b60760a0c03ae5b49fc437c13",
+        "spec": "sha256:690c288cab32d24412d34b1d7ecb915de863b71b67588d1ad6e729931cd14b09",
+        "build-report": "sha256:19fcbfa23be57ff6d14489c8bf7356fa772dd5d8fe207d04c969fae44c156586",
+        "build-data": "sha256:5dd011ad2ef300cd282427d66832074412ca0648fcd23efc3ae2ffe38c5cfeeb",
+        "verify-report": "sha256:58f5edf745db1e44cc4a46e9dc245a018dedc085ad0fecd8a239cca12aa6ed9b",
+        "verify-data": "sha256:b12e6e50655a884a92a949e9f3e0c1ea45781c983c31b917fe48804d6621714d"
+      },
+      "completed_at": "2026-05-24T00:31:17.983Z",
+      "modules_touched": [
+        "website/content/docs/concepts/meta.json",
+        "website/content/docs/concepts/scan.mdx",
+        "website/content/docs/guides/configurability.mdx",
+        "website/content/docs/guides/using-ana-setup.mdx"
+      ],
+      "scope_summary": "The scan is the product's entry point — every user runs it first. Surfaces are the headline feature for monorepos — they're what makes the pipeline per-surface instead of project-wide. Application shape is visible in every scan header. But none of these have a concept page. A developer scanning their monorepo sees \"3 surfaces\" and \"web-app\" with no reference explaining what either means, how they were determined, or how they flow through the pipeline.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Surface management section contradicts itself on path field protection",
+          "file": "website/content/docs/guides/configurability.mdx",
+          "anchor": null,
+          "line": 41,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A016"
+          ],
+          "id": "docs-scan-surfaces-concept-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-24T00:31:17.984Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "scan.mdx at 80 lines sits at the minimum of AC7's 80-120 range, below spec target of 90-100",
+          "file": "website/content/docs/concepts/scan.mdx",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "docs-scan-surfaces-concept-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Builder converted existing raw apostrophe to &apos; in unchanged setup guide line",
+          "file": "website/content/docs/guides/using-ana-setup.mdx",
+          "anchor": null,
+          "line": 47,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-scan-surfaces-concept-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Configurability adds third command (build) not in spec mockup",
+          "file": "website/content/docs/guides/configurability.mdx",
+          "anchor": null,
+          "line": 43,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "docs-scan-surfaces-concept-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Setup guide had pre-existing raw apostrophe in Step 1 paragraph — fixed as part of edit",
+          "file": "website/content/docs/guides/using-ana-setup.mdx",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-23T21:32:17.861Z",
+        "completed_at": "2026-05-24T00:31:17.977Z",
+        "commit_count": 0,
+        "base_commit": "9622c36d08a8bd8b1301748bacca8132a9db1195"
+      },
+      "surface": "website"
     }
   ],
   "schema": 1,
