@@ -318,7 +318,6 @@ function buildCommandTree(filePath: string): Command[] {
     const parentVar = chainMatch[1];
     const childName = chainMatch[2];
     const parentName = varToName.get(parentVar);
-    if (!parentName) continue;
 
     // Extract the chain from the match point to the next .action(
     const rest = collapsed.substring(chainMatch.index);
@@ -327,6 +326,16 @@ function buildCommandTree(filePath: string): Command[] {
 
     const details = extractDetailsFromBlock(chainBlock);
     const childCmd: Command = { name: childName, ...details, subcommands: [] };
+
+    // When parentVar is 'program', treat as a top-level command
+    if (parentVar === 'program') {
+      if (!commands.has(childName)) {
+        commands.set(childName, childCmd);
+      }
+      continue;
+    }
+
+    if (!parentName) continue;
 
     const parent = commands.get(parentName);
     if (parent) {
@@ -458,6 +467,7 @@ function extractCommands(): CommandsData {
     Proof: 'src/commands/proof.ts',
     Agents: 'src/commands/agents.ts',
     Doctor: 'src/commands/doctor.ts',
+    Learn: 'src/commands/learn.ts',
   };
 
   // Assign registrations to groups
