@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-157 runs · 111 active · 5 promoted · 787 closed
+157 runs · 110 active · 5 promoted · 788 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 27 | 20 | 2026-05-24 |
+| Unscoped | 27 | 19 | 2026-05-24 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -24,11 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
-
-### .claude/agents/ana-learn.md
-
-- **code:** Dogfood ana-learn.md updated alongside product template — spec scoped only the product template — *CLI Polish*
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -106,6 +102,10 @@
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/docs/proof/ProofHero.tsx
+
+- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/content/docs/concepts/scan.mdx
 

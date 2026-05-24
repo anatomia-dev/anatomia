@@ -41799,7 +41799,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "cli-polish-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Updating dogfood ana-learn.md alongside the product template is correct practice. Per project-context.md: dogfood files (.claude/agents/) are our own installation — keeping them in sync with product templates (templates/.claude/agents/) is the default expectation. The spec scoping the template doesn't exclude dogfood.",
+          "closed_at": "2026-05-24T06:30:45.188Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
