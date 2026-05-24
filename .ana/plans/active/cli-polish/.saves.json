@@ -53,5 +53,20 @@
     "packages/cli/src/index.ts",
     "packages/cli/tests/commands/proof.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-24T05:39:43.532Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b2a545759d42c1ddd83f8af393c4b8602f9b1058ab6546221e124a7a7874138e",
+    "run_at": "2026-05-24T05:47:10.784Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-05-24T05:47:10.820Z",
+    "hash": "sha256:8351e86109846c495716552ad633059c62996a07ee447bbd8d3041ffc4329ede"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-05-24T05:47:10.820Z",
+    "hash": "sha256:1d67c2a482d2c609fc6d67e1f66cf4a8985e3fcad97439ab2ce1461b2062f68c"
+  }
 }

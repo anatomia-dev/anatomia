@@ -1,0 +1,45 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A003 and A004 tests use conditional assertions — silently pass if section absent"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 5247
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003", "A004"]
+
+  - category: test
+    summary: "A005 assertion checks for any double space, not trailing gap before right border"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 5296
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A005"]
+
+  - category: code
+    summary: "Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 534
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A004"]
+
+  - category: test
+    summary: "A014 asserts toContain('--') which could match any -- in output, not surface-column-specific"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 5278
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A014"]
+
+  - category: code
+    summary: "process.argv mutation for -help runs at module load time — side effect before Commander parses"
+    file: "packages/cli/src/index.ts"
+    line: 43
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "Hot spots displayName truncation specified in spec but not enforced in contract assertions"
+    severity: observation
+    suggested_action: monitor
