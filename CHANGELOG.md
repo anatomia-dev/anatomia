@@ -30,6 +30,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [1.1.3] - 2026-05-22
 
+### Added
+
+- **Scan terminal Surfaces section** — surfaces promoted from inline sub-item to standalone section between Stack and Intelligence. Each surface shows framework (or language fallback) and primary testing framework.
+- **Branch pattern detection from merge history** — reports the climate (e.g., "48/50 merges used `feature/`") instead of the weather (live remote branches). Falls back to remote branches for shallow clones.
+- 10 new database packages — Kysely, MikroORM, slonik, @vercel/postgres, mongodb, postgres.js, sqlite3, mssql, and more
+- 5 new framework config variants — `.mjs` variants for Svelte, Nuxt, Remix, React Router, Vue
+- @stripe/react-stripe-js added to payment detection
+
 ### Fixed
 
 - **False surface detection** — workspace packages in `examples/`, `templates/`, `e2e/`, `test/`, `playground/`, `sandbox/`, and similar directories excluded from surface detection. Re-init silently drops previously-detected false surfaces.
@@ -41,14 +49,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Schema discovery filters non-product paths** — `discoverSchemas` skips e2e/test/example workspace roots and filters glob fallbacks through `isNonProductPath`.
 - **TOML inline comment handling** — closing-bracket regex handles valid TOML `] # comment` across all pyproject.toml strategies.
 - **False rejection archives** — same-session re-saves no longer create false archive files or history entries. Stage-transition gate prevents timing data corruption from phantom rejection cycles.
-
-### Added
-
-- **Scan terminal Surfaces section** — surfaces promoted from inline sub-item to standalone section between Stack and Intelligence. Each surface shows framework (or language fallback) and primary testing framework.
-- **Branch pattern detection from merge history** — reports the climate (e.g., "48/50 merges used `feature/`") instead of the weather (live remote branches). Falls back to remote branches for shallow clones.
-- 10 new database packages — Kysely, MikroORM, slonik, @vercel/postgres, mongodb, postgres.js, sqlite3, mssql, and more
-- 5 new framework config variants — `.mjs` variants for Svelte, Nuxt, Remix, React Router, Vue
-- @stripe/react-stripe-js added to payment detection
 
 ## [1.1.2] - 2026-05-21
 
