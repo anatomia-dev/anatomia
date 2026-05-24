@@ -1,0 +1,177 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Decompose proofSummary.ts"
+
+assertions:
+  - id: A001
+    says: "Parser module exists and exports all parsing functions"
+    block: "proof-parsers module exports"
+    target: "proof-parsers.exports"
+    matcher: "exists"
+
+  - id: A002
+    says: "Parser module exports both type definitions used by proof summaries"
+    block: "proof-parsers module exports"
+    target: "proof-parsers.types"
+    matcher: "exists"
+
+  - id: A003
+    says: "Health module exists and exports all computation functions"
+    block: "proof-health module exports"
+    target: "proof-health.exports"
+    matcher: "exists"
+
+  - id: A004
+    says: "Health module exports all public constants"
+    block: "proof-health module exports"
+    target: "proof-health.constants"
+    matcher: "exists"
+
+  - id: A005
+    says: "Health module exports all health-related type definitions"
+    block: "proof-health module exports"
+    target: "proof-health.types"
+    matcher: "exists"
+
+  - id: A006
+    says: "Core module re-exports all parser symbols for backward compatibility"
+    block: "backward compatibility re-exports"
+    target: "proofSummary.reexports.parsers"
+    matcher: "exists"
+
+  - id: A007
+    says: "Core module re-exports all health symbols for backward compatibility"
+    block: "backward compatibility re-exports"
+    target: "proofSummary.reexports.health"
+    matcher: "exists"
+
+  - id: A008
+    says: "No consumer file import statements were modified"
+    block: "zero consumer changes"
+    target: "consumer.imports.unchanged"
+    matcher: "truthy"
+
+  - id: A009
+    says: "All existing tests pass after the decomposition"
+    block: "test suite passes"
+    target: "test.result"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A010
+    says: "Test count remains exactly the same after the split"
+    block: "test suite passes"
+    target: "test.passed"
+    matcher: "equals"
+    value: 2906
+
+  - id: A011
+    says: "Parser test file exists and imports from proof-parsers module"
+    block: "test file split"
+    target: "proof-parsers.test.import"
+    matcher: "contains"
+    value: "proof-parsers"
+
+  - id: A012
+    says: "Health test file exists and imports from proof-health module"
+    block: "test file split"
+    target: "proof-health.test.import"
+    matcher: "contains"
+    value: "proof-health"
+
+  - id: A013
+    says: "Parser test file does not import from proofSummary"
+    block: "test file split"
+    target: "proof-parsers.test.import"
+    matcher: "not_contains"
+    value: "proofSummary"
+
+  - id: A014
+    says: "Health test file does not import from proofSummary"
+    block: "test file split"
+    target: "proof-health.test.import"
+    matcher: "not_contains"
+    value: "proofSummary"
+
+  - id: A015
+    says: "Total test files increased by two after the split"
+    block: "test file split"
+    target: "test.fileCount"
+    matcher: "equals"
+    value: 124
+
+  - id: A016
+    says: "Every function keeps its exact signature and return type"
+    block: "zero behavior change"
+    target: "typecheck.result"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A017
+    says: "Build completes without errors"
+    block: "build passes"
+    target: "build.result"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A018
+    says: "Lint passes without errors"
+    block: "lint passes"
+    target: "lint.result"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A019
+    says: "Parser module has no imports from proof-health"
+    block: "dependency direction is acyclic"
+    target: "proof-parsers.imports"
+    matcher: "not_contains"
+    value: "proof-health"
+
+  - id: A020
+    says: "Health module has no imports from proof-parsers"
+    block: "dependency direction is acyclic"
+    target: "proof-health.imports"
+    matcher: "not_contains"
+    value: "proof-parsers"
+
+  - id: A021
+    says: "Health module has no imports from proofSummary"
+    block: "dependency direction is acyclic"
+    target: "proof-health.imports"
+    matcher: "not_contains"
+    value: "proofSummary"
+
+  - id: A022
+    says: "Parser module has no imports from proofSummary"
+    block: "dependency direction is acyclic"
+    target: "proof-parsers.imports"
+    matcher: "not_contains"
+    value: "proofSummary"
+
+  - id: A023
+    says: "Glob mock is in the health test file, not the core test file"
+    block: "test infrastructure placement"
+    target: "proof-health.test.globMock"
+    matcher: "exists"
+
+  - id: A024
+    says: "Core test file no longer mocks glob"
+    block: "test infrastructure placement"
+    target: "proofSummary.test.globMock"
+    matcher: "not_contains"
+    value: "vi.mock('glob'"
+
+file_changes:
+  - path: "packages/cli/src/utils/proof-parsers.ts"
+    action: create
+  - path: "packages/cli/src/utils/proof-health.ts"
+    action: create
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proof-parsers.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/proof-health.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
