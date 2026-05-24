@@ -38,16 +38,24 @@ The 2-char gap between columns is the convention. Currently there's zero gap —
 **`-help` interception.** Commander's error handler fires on unknown options. Intercept with `configureOutput({ outputError })` or a `.on('command:*')` handler. When the error contains `-help` as the unknown option, show help instead of the error. This is 5-10 lines in `index.ts`. Does not change behavior for any valid input.
 
 **Description consistency.** Two descriptions break the imperative-verb pattern:
-- `learn`: "Learn session management" → "Tend proof chain — close, promote, route findings"
+- `learn`: "Learn session management" → "Mark session boundaries for finding triage" (CORRECTED from redundant agent review — original proposal "Tend proof chain — close, promote, route findings" described what the Learn AGENT does, not what the `learn` CLI command does. The CLI command only has `end` — it writes a timestamp, not close/promote/route.)
 - `agents`: "Agent dashboard — list agents, manage models" → leave as-is (the dash-separated style works because it leads with a noun that IS the thing)
+
+**NOTE:** The description must be changed in `learn.ts` line 28 (where the command is declared), not only in `index.ts`. The docs extraction reads descriptions from the source file, not from the runtime. If only `index.ts` changes, `commands.json` will have the old description.
 
 ### Phase 2: Docs Extraction
 
 **Add Learn to funcToFile.** One line: `Learn: 'src/commands/learn.ts'`.
 
-**Extend `buildCommandTree` regex.** The current regex matches `const X = new Command('name')` but Doctor uses `program.command('doctor')`. Add a second regex pass for the `.command('name')` pattern. This is the same approach as the `return new Command` fallback already in the function.
+**Fix `buildCommandTree` for `program.command()` pattern.** The third pass at extract-docs-data.ts:315-336 already handles `.command()` chains but fails when the parent variable is `program` (a function parameter not in `varToName`). Fix: when `parentVar === 'program'`, treat the child as a top-level command instead of trying to find a parent in `varToName`. This is a 3-line change in the existing third pass, not a new regex.
+
+**Update ana-learn template.** Change `ana proof audit --matrix` to `ana proof audit --matrix --json` at ana-learn.md line 66. This eliminates the agent safety risk for the recent proofs table change. The `--json` path includes all matrix data.
+
+**Add `config get` and `config set` to README commands table.** Both are user-facing commands missing from the README (verified: `config show` and `config delete` are present, `get` and `set` are not).
 
 **Regenerate commands.json.** Run the extract script, verify Doctor and Learn appear in the output, verify the CLI reference page shows all 12 commands.
+
+**Empty surface indicator.** In the proof list table, use `--` (dim) instead of blank space for entries with no surface. One-line change in the same function being modified. Prevents the Date column from visually shifting left on surface-less rows.
 
 ## Acceptance Criteria
 
@@ -62,20 +70,23 @@ The 2-char gap between columns is the convention. Currently there's zero gap —
 - AC9: The CLI reference page at anatomia.dev/docs/reference/cli renders Doctor and Learn.
 - AC10: All existing `--json` output is unchanged — no formatting changes affect the JSON paths.
 - AC11: Tests pass: `pnpm run test -- --run`.
+- AC12: The ana-learn template uses `ana proof audit --matrix --json` (not bare `--matrix`), eliminating agent risk from the recent proofs table change.
+- AC13: README commands table includes `config get` and `config set`.
+- AC14: Empty surfaces in the proof list table show `--` (dim) instead of blank space.
 
 ## Edge Cases & Risks
 
 **Dynamic width upper bound.** If a slug is 60 characters long, a dynamic column would consume most of the terminal width. Set a max column width (e.g., 40 chars) and truncate with `…` above that. No current slug exceeds 35 chars, but the guard prevents future surprises.
 
-**Agent template impact — proof commands.** Verified: all 5 agent templates use `--json` for proof commands. AnaLearn uses `ana proof audit --json`, `ana proof health --json`, `ana proof stale --json`. No agent reads or parses the human proof table format. Proof table formatting changes are human-only — zero agent risk.
+**Agent template impact — proof commands.** CORRECTION (from redundant agent review): AnaLearn runs `ana proof audit --matrix` WITHOUT `--json` (ana-learn.md line 66). The `--matrix` output includes a "Recent proofs" section at proof.ts:1772-1779 — which IS one of the three tables this scope changes. Mitigation: update the ana-learn template to use `ana proof audit --matrix --json` (verified: `--matrix --json` produces valid JSON). This template change is additive — the JSON output contains all the same data the human output does. All OTHER proof commands used by agents are `--json`. After this template fix, proof table formatting changes are human-only.
 
 **Agent template impact — work status.** CRITICAL: agents DO parse `ana work status` human output (NOT `--json`). All 5 pipeline agents run `ana work status` and read stage names ("ready-for-plan", "ready-for-build", "ready-for-verify"), worktree paths, and slug names from the human output. The `work status` display must NOT change. This scope does NOT touch work.ts or work status formatting.
 
 **CLI reference page shows flags but not descriptions.** The `CommandGroup` component renders flag names as compact codes (`Flags: --json --save -q --quick`) but not their description text. The descriptions ARE in commands.json but the rendering component doesn't display them. This means `--help` output is the primary documentation for what each flag does. The help text quality matters more because of this — it's not backed up by a detailed reference page. This scope improves `learn` description and `-help` handling but does NOT redesign the CLI reference rendering (separate scope).
 
-**`-help` false positive.** The interception must match specifically `-help` as an unknown option, not any option containing "help" (e.g., `--no-help`). Check the Commander error format to match precisely.
+**`-help` interception and exit code.** The interception must match specifically `-help` as the unknown option. CORRECTION (from redundant agent review): Commander's `error()` method calls `outputError` then immediately calls `_exit(exitCode, ...)` which calls `process.exit(1)`. Simply suppressing the error and printing help still exits with code 1. The fix: in the `configureOutput({ outputError })` handler, when detecting `-help`, call `program.outputHelp(); process.exit(0);` to preempt the error exit path. This exits cleanly before Commander's `_exit(1)` runs.
 
-**buildCommandTree `.command()` pattern.** Doctor uses `program.command('doctor').description(...)`. The regex must capture the command name from this pattern. Other commands using `.command()` are subcommands inside a parent command file (like `init commit`, `setup complete`) — those are already parsed because they're `return new Command()` or nested inside a `new Command()` declaration. Only top-level `.command()` registrations are missed.
+**buildCommandTree `program.command()` pattern.** CORRECTION (from redundant agent review): The scope originally said "extend the regex for `.command()` pattern." This is wrong. `buildCommandTree` ALREADY has a third pass for `.command()` chains (extract-docs-data.ts line 315-336). The issue is that `program` is a function parameter in doctor.ts, not a `const` declared via `new Command()`, so it's never in `varToName`. When the third pass encounters `program.command('doctor')`, it looks up `varToName.get('program')`, gets `undefined`, and skips it (line 320: `if (!parentName) continue`). The fix: treat `program.command('name')` as a root command declaration — when `parentVar === 'program'`, create a top-level command instead of trying to find a parent.
 
 **`pr create` ENOENT error.** Noticed during audit: `ana pr create nonexistent` shows raw `Error: ENOENT: no such file or directory, scandir ...`. This should be caught and replaced with "No active work found for 'nonexistent'." Out of scope for this round — note for a future fix.
 
