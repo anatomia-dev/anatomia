@@ -41757,7 +41757,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "cli-polish-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — process.argv mutation at index.ts:43 must run before Commander parses. Comment at lines 40-42 documents: Commander interprets -help as -h -e -l -p (four short flags). The load-time side effect is the only correct timing to intercept and redirect to --help.",
+          "closed_at": "2026-05-24T06:30:36.663Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

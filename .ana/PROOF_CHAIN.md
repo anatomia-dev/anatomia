@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-157 runs · 112 active · 5 promoted · 786 closed
+157 runs · 111 active · 5 promoted · 787 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 27 | 21 | 2026-05-24 |
+| Unscoped | 27 | 20 | 2026-05-24 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### .claude/agents/ana-learn.md
 
@@ -69,10 +69,6 @@
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
-### packages/cli/src/index.ts
-
-- **code:** process.argv mutation for -help runs at module load time — side effect before Commander parses — *CLI Polish*
-
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
@@ -106,6 +102,10 @@
 ### packages/cli/tests/engine/parsers/python.test.ts
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/content/docs/concepts/scan.mdx
 
