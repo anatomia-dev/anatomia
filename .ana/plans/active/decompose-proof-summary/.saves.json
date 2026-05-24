@@ -18,5 +18,24 @@
   "spec": {
     "saved_at": "2026-05-24T05:49:03.971Z",
     "hash": "sha256:be95861c4e9c9a7abec99628028a5601669f2e11e80d92c046584e43d4c7d1e6"
-  }
+  },
+  "build_started_at": "2026-05-24T06:02:00.783Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-24T06:17:47.388Z",
+    "hash": "sha256:2712c5ddfc44349219d8a15bc14f7201a3d7847f92c9d2dd93de0bd01a2525ba"
+  },
+  "build-data": {
+    "saved_at": "2026-05-24T06:17:47.388Z",
+    "hash": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd"
+  },
+  "modules_touched": [
+    "packages/cli/src/utils/proof-health.ts",
+    "packages/cli/src/utils/proof-parsers.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/tests/utils/proof-health.test.ts",
+    "packages/cli/tests/utils/proof-parsers.test.ts",
+    "packages/cli/tests/utils/proofSummary.test.ts"
+  ],
+  "commit_hygiene": []
 }
