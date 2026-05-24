@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A019 matcher too broad — not_contains '--matrix`' matches flag references, not just command invocations"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A019"]
+  - category: code
+    summary: "Dogfood ana-learn.md updated alongside product template — spec scoped only the product template"
+    file: ".claude/agents/ana-learn.md"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Third-pass regex could match .command() in comments or string literals, not just real chained calls"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 315
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests"
+    file: "website/lib/__tests__/docs-data/data-integrity.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A015", "A016", "A017"]
+  - category: upstream
+    summary: "Median computation still duplicated between extract-docs-data.ts main() and lib/docs-data/proofs.ts — pre-existing finding from fix-prebuild-source-mutation"
+    file: "website/scripts/extract-docs-data.ts"
+    line: 1154
+    severity: observation
+    suggested_action: monitor
+    resolves: []
