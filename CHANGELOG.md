@@ -7,6 +7,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-05-24
+
+### Added
+
+- **Backend service surface detection** — workspace packages with a server framework dependency (Express, Fastify, Koa, Hono, NestJS, Elysia, and more) plus a `dev` script are now detected as surfaces. Monorepos with separate API backends get per-surface test commands automatically.
+- **Stack provenance** — `scan.json` records which workspace package contributed each stack detection. Setup flags detections from non-primary packages so you can correct during configuration.
+- **Setup surface gap check** — setup identifies workspace packages with dev scripts that weren't detected as surfaces and offers to add them.
+
+### Fixed
+
+- **Proof table alignment** — dynamic column widths replace hardcoded padding. Long slugs no longer crash into adjacent columns. 2-character minimum gap between all columns. Empty surfaces show `--` instead of blank space.
+- **Terminal box trailing space** — proof detail and health view boxes maintain a gap before the right border.
+- **`ana -help` shows help** — typing `-help` (single dash) now shows help instead of "unknown option" error. Works for all commands.
+- **Health hot spots overflow** — long file paths no longer overflow into the findings column.
+- **Scan header box alignment** — ANSI escape codes no longer break right-border alignment. Summary line truncates gracefully when content exceeds box width.
+
+### Changed
+
+- `learn` command description updated to "Manage learn sessions".
+- Setup agent template uses `--json` for proof audit matrix output.
+
 ## [1.1.3] - 2026-05-22
 
 ### Fixed
@@ -246,7 +267,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.3...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.4...HEAD
+[1.1.4]: https://github.com/anatomia-dev/anatomia/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/anatomia-dev/anatomia/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/anatomia-dev/anatomia/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/anatomia-dev/anatomia/compare/v1.1.0...v1.1.1
