@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Surface management section contradicts itself on path field protection"
+    file: "website/content/docs/guides/configurability.mdx"
+    line: 41
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A016"]
+  - category: code
+    summary: "scan.mdx at 80 lines sits at the minimum of AC7's 80-120 range, below spec target of 90-100"
+    file: "website/content/docs/concepts/scan.mdx"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A009"]
+  - category: code
+    summary: "Builder converted existing raw apostrophe to &apos; in unchanged setup guide line"
+    file: "website/content/docs/guides/using-ana-setup.mdx"
+    line: 47
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "Configurability adds third command (build) not in spec mockup"
+    file: "website/content/docs/guides/configurability.mdx"
+    line: 43
+    severity: observation
+    suggested_action: accept

@@ -44,7 +44,9 @@ Setup runs through five phases. The first is a config check, then two rounds of 
 
 ### 1. Config confirmation
 
-Setup presents your detected configuration — application shape, stack, test and build commands, artifact branch — and asks "does this look right?" Correct anything that's wrong. These settings control how agents compile, test, and commit your code.
+Setup presents your detected configuration — application shape, stack, test and build commands, artifact branch — and asks "does this look right?" Correct anything that&apos;s wrong. These settings control how agents compile, test, and commit your code.
+
+Setup also runs two silent verification checks during config confirmation. Stack provenance notes flag when a stack detection came from a non-primary package — e.g., detecting React from a storybook config rather than the main app. Surface gap checks identify workspace packages that have dev scripts but weren&apos;t surfaced by the scan. Both are silent when the scan is correct — you&apos;ll only see output if something needs attention.
 
 ### 2. Product identity
 
