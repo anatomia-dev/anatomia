@@ -41208,7 +41208,8 @@
             "A002"
           ],
           "id": "scan-display-refresh-C1",
-          "status": "active"
+          "status": "promoted",
+          "promoted_to": ".claude/skills/testing-standards/SKILL.md"
         },
         {
           "category": "test",
@@ -41222,7 +41223,8 @@
             "A004"
           ],
           "id": "scan-display-refresh-C2",
-          "status": "active"
+          "status": "promoted",
+          "promoted_to": ".claude/skills/testing-standards/SKILL.md"
         },
         {
           "category": "upstream",

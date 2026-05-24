@@ -28,6 +28,7 @@ description: "Invoke when writing tests, reviewing test quality, or setting up t
 - Tests that create git repositories must force the branch name with `git init -b main` or `git branch -M main` after first commit. CI runners have different `init.defaultBranch` settings — never assume the default. This has caused CI failures 3 times.
 - Use inline fixture data for scanner and parser tests — write files to temp directories at test time. Standalone manifest files with real package names (requirements.txt, package.json) trigger GitHub security advisory false positives.
 - Functions exported solely for test access (imported only by test files) are intentional — TypeScript has no `internal` keyword. Only flag exports with zero imports anywhere.
+- When a test searches for expected output (find, findIndex, match on stdout or result arrays), assert the search succeeded — don't gate assertions behind a truthy check. `if (line) { expect(line).toContain(x); }` silently passes when the output is missing. Write `expect(line).toBeDefined()` first, then assert the value. For optional detection results where absence is a valid test outcome, conditional checks are correct.
 
 ## Gotchas
 *Not yet captured. Add as you discover them during development.*

@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-157 runs · 115 active · 3 promoted · 785 closed
+157 runs · 113 active · 5 promoted · 785 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 27 | 24 | 2026-05-24 |
+| Unscoped | 27 | 22 | 2026-05-24 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 115 total)
+## Active Findings (30 shown of 113 total)
 
 ### .claude/agents/ana-learn.md
 
@@ -33,6 +33,10 @@
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
+
+### packages/cli/src/commands/init/state.ts
+
+- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
 
@@ -65,16 +69,15 @@
 
 - **code:** process.argv mutation for -help runs at module load time — side effect before Commander parses — *CLI Polish*
 
+### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
+
+- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
+
 ### packages/cli/tests/commands/proof.test.ts
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
 - **test:** A014 asserts toContain('--') which could match any -- in output, not surface-column-specific — *CLI Polish*
-
-### packages/cli/tests/commands/scan.test.ts
-
-- **test:** A002 summary line assertion is vacuous when summaryLine is not found — *Scan Display Refresh*
-- **test:** A004 not_contains check gated by conditional — skipped if Prisma detection fails — *Scan Display Refresh*
 
 ### packages/cli/tests/engine/census-primary.test.ts
 
