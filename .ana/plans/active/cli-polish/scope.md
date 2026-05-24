@@ -38,7 +38,7 @@ The 2-char gap between columns is the convention. Currently there's zero gap —
 **`-help` interception.** Commander's error handler fires on unknown options. Intercept with `configureOutput({ outputError })` or a `.on('command:*')` handler. When the error contains `-help` as the unknown option, show help instead of the error. This is 5-10 lines in `index.ts`. Does not change behavior for any valid input.
 
 **Description consistency.** Two descriptions break the imperative-verb pattern:
-- `learn`: "Learn session management" → "Mark session boundaries for finding triage" (CORRECTED from redundant agent review — original proposal "Tend proof chain — close, promote, route findings" described what the Learn AGENT does, not what the `learn` CLI command does. The CLI command only has `end` — it writes a timestamp, not close/promote/route.)
+- `learn`: "Learn session management" → "Manage learn sessions" (CORRECTED from redundant agent review — original proposal "Tend proof chain — close, promote, route findings" described what the Learn AGENT does, not what the `learn` CLI command does. The CLI command only has `end` — it writes a timestamp, not close/promote/route.)
 - `agents`: "Agent dashboard — list agents, manage models" → leave as-is (the dash-separated style works because it leads with a noun that IS the thing)
 
 **NOTE:** The description must be changed in `learn.ts` line 28 (where the command is declared), not only in `index.ts`. The docs extraction reads descriptions from the source file, not from the runtime. If only `index.ts` changes, `commands.json` will have the old description.
