@@ -41489,6 +41489,394 @@
         "base_commit": "9622c36d08a8bd8b1301748bacca8132a9db1195"
       },
       "surface": "website"
+    },
+    {
+      "slug": "cli-polish",
+      "feature": "CLI Polish",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 22,
+        "satisfied": 22,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Long slugs in the proof list don't crash into adjacent columns",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Every column in the proof list has at least a 2-character gap",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Long slugs in the audit matrix recent proofs don't crash into the result column",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Long file paths in health hot spots don't crash into the findings column",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The proof detail box has a gap before the right border",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The health box has a gap before the right border",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Running ana -help shows help text instead of an error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Running ana -help includes the program description",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Running ana proof -help shows proof subcommand help",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The existing --help flag still works",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The existing -h flag still works",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The learn command description uses imperative verb style",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Proof list JSON output is unchanged by table formatting changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Entries with no surface show a dash indicator instead of blank space",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The CLI reference data includes the Doctor command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The CLI reference data includes the Learn command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The Learn command in reference data shows its end subcommand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The Learn agent template uses JSON output for the audit matrix command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The Learn agent template no longer uses bare --matrix without --json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The README documents the config get command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The README documents the config set command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Extremely long slugs are truncated instead of consuming the full terminal width",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 119,
+        "think": 61,
+        "plan": 8,
+        "build": 26,
+        "verify": 21,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 61
+          },
+          {
+            "stage": "plan",
+            "minutes": 8
+          },
+          {
+            "stage": "build",
+            "minutes": 17,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 8,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 9,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 12,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:88d29c8810e46059267e3cb4e593e10e9e45f8b68f118165d46715ab6a8bf0aa",
+        "contract": "sha256:b2a545759d42c1ddd83f8af393c4b8602f9b1058ab6546221e124a7a7874138e",
+        "plan": "sha256:9cca313af6bbca2f965fa81f9bcacc504a8bc1561bbc01e02b2c5e396f5c306f",
+        "spec-1": "sha256:d8ddb70dcf768fd6875e86bd6ab0fa88e0035a595215851ab3c734091c8144ef",
+        "spec-2": "sha256:cf8c121644365c84bbceaa4debe2a573880435f4ae6e186b9b537a6ff15c037e",
+        "build-report-1": "sha256:071c299e741e8610d60efbf1c7a5cdf82b1127eea38025a5b2cbd8ff71fc39d3",
+        "build-data-1": "sha256:4ee05d25ccee18d03edeadaef560375349560481989780ec1b876d70b9493202",
+        "verify-report-1": "sha256:8351e86109846c495716552ad633059c62996a07ee447bbd8d3041ffc4329ede",
+        "verify-data-1": "sha256:1d67c2a482d2c609fc6d67e1f66cf4a8985e3fcad97439ab2ce1461b2062f68c",
+        "build-report-2": "sha256:e165f46428b12f7c81755e4dfafc2bea5b923a7af6dfb489d3318f91cd4c7bc0",
+        "build-data-2": "sha256:52a25ac02fbfab3972b39e361519511457baad03fb8ee04e2f0b6f0065ed4e22",
+        "verify-report-2": "sha256:35acfb89445e960661c95f2422fea6041e8a1cd7fd4d70b4607a50ff704652d2",
+        "verify-data-2": "sha256:ae8f3243849f14f3900b3397589810a1c85a53705387dddac7baf503af3e5b70"
+      },
+      "completed_at": "2026-05-24T06:22:40.520Z",
+      "modules_touched": [
+        ".claude/agents/ana-learn.md",
+        "README.md",
+        "packages/cli/src/commands/learn.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/tests/commands/proof.test.ts",
+        "website/scripts/extract-docs-data.ts"
+      ],
+      "scope_summary": "The CLI is the product's front door. Every command's output — its tables, error messages, help text, and empty states — is a design surface. A developer runs `ana proof` and sees their slugs smashing into the PASS column. They type `ana -help` and get an error instead of help. They visit the CLI reference page and two commands are missing. These are polish gaps, not bugs — the CLI works correctly, but it doesn't feel finished. \"Every character earns its place\" means the table columns align, the error messages guide, and the documentation is complete.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A003 and A004 tests use conditional assertions — silently pass if section absent",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 5247,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A003",
+            "A004"
+          ],
+          "id": "cli-polish-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A005 assertion checks for any double space, not trailing gap before right border",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 5296,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "cli-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 534,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "cli-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A014 asserts toContain('--') which could match any -- in output, not surface-column-specific",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 5278,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A014"
+          ],
+          "id": "cli-polish-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "process.argv mutation for -help runs at module load time — side effect before Commander parses",
+          "file": "packages/cli/src/index.ts",
+          "anchor": null,
+          "line": 43,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "cli-polish-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Hot spots displayName truncation specified in spec but not enforced in contract assertions",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "cli-polish-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-24T06:22:40.520Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A019 matcher too broad — not_contains '--matrix`' matches flag references, not just command invocations",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A019"
+          ],
+          "id": "cli-polish-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-24T06:22:40.520Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Dogfood ana-learn.md updated alongside product template — spec scoped only the product template",
+          "file": ".claude/agents/ana-learn.md",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "cli-polish-C8",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Third-pass regex could match .command() in comments or string literals, not just real chained calls",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 315,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "cli-polish-C9",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests",
+          "file": "website/lib/__tests__/docs-data/data-integrity.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A015",
+            "A016",
+            "A017"
+          ],
+          "id": "cli-polish-C10",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Median computation still duplicated between extract-docs-data.ts main() and lib/docs-data/proofs.ts — pre-existing finding from fix-prebuild-source-mutation",
+          "file": "website/scripts/extract-docs-data.ts",
+          "anchor": null,
+          "line": 1154,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [],
+          "id": "cli-polish-C11",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-24T06:22:40.520Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Box trailing space tests verify structural spacing, not exact '  │' pattern from contract",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "commands.json is gitignored — verifier must run extract script to inspect, can't check via git diff",
+          "file": "website/data/docs/commands.json",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Spec says website/data/commands.json but actual path is website/data/docs/commands.json",
+          "file": "website/scripts/extract-docs-data.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warnings in website (formatAge, latest unused)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-24T05:22:56.966Z",
+        "completed_at": "2026-05-24T06:22:40.513Z",
+        "commit_count": 0,
+        "base_commit": "1bbc44bb264ce48761999d2ac4e44fdf190b6536"
+      },
+      "phases": 2
     }
   ],
   "schema": 1,

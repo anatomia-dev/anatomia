@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-156 runs · 107 active · 3 promoted · 782 closed
+157 runs · 115 active · 3 promoted · 785 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 26 | 16 | 2026-05-23 |
+| Unscoped | 27 | 24 | 2026-05-24 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -14,29 +14,29 @@
 
 | File | Active | Entries |
 |------|--------|--------|
+| packages/cli/tests/commands/proof.test.ts | 6 | 4 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/src/commands/init/state.ts | 6 | 5 |
-| packages/cli/tests/commands/proof.test.ts | 3 | 3 |
 | packages/cli/src/utils/proofSummary.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 115 total)
+
+### .claude/agents/ana-learn.md
+
+- **code:** Dogfood ana-learn.md updated alongside product template — spec scoped only the product template — *CLI Polish*
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
-### packages/cli/src/commands/init/state.ts
+### packages/cli/src/commands/proof.ts
 
-- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-
-### packages/cli/src/commands/work.ts
-
-- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
+- **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
 
 ### packages/cli/src/engine/census.ts
 
@@ -61,13 +61,15 @@
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
-### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
+### packages/cli/src/index.ts
 
-- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
+- **code:** process.argv mutation for -help runs at module load time — side effect before Commander parses — *CLI Polish*
 
-### packages/cli/tests/commands/proof-surface-derivation.test.ts
+### packages/cli/tests/commands/proof.test.ts
 
-- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
+- **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
+- **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
+- **test:** A014 asserts toContain('--') which could match any -- in output, not surface-column-specific — *CLI Polish*
 
 ### packages/cli/tests/commands/scan.test.ts
 
@@ -99,15 +101,6 @@
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
-### website/components/docs/proof/ProofExplorer.tsx
-
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/docs/proof/ProofHero.tsx
-
-- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
-- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
-
 ### website/content/docs/concepts/scan.mdx
 
 - **code:** scan.mdx at 80 lines sits at the minimum of AC7's 80-120 range, below spec target of 90-100 — *Scan & Surfaces Concept Page + Docs Gaps*
@@ -122,9 +115,13 @@
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
-- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
+- **test:** No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests — *CLI Polish*
 
 ### website/lib/__tests__/docs-data/staleness.test.ts
 
 - **test:** Staleness tests replicate checkStaleDocs rather than testing the actual function — *Fix AnaDocs date freshness*
+
+### website/scripts/extract-docs-data.ts
+
+- **code:** Third-pass regex could match .command() in comments or string literals, not just real chained calls — *CLI Polish*
 
