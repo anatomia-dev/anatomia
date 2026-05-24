@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-156 runs · 108 active · 3 promoted · 781 closed
+156 runs · 107 active · 3 promoted · 782 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 26 | 17 | 2026-05-23 |
+| Unscoped | 26 | 16 | 2026-05-23 |
 | cli | 107 | 68 | 2026-05-23 |
 | website | 23 | 23 | 2026-05-24 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,10 +33,6 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
-
-### packages/cli/src/commands/scan.ts
-
-- **code:** Truncation uses Unicode ellipsis — single JS char but 3 UTF-8 bytes — *Scan Display Refresh*
 
 ### packages/cli/src/commands/work.ts
 
@@ -68,6 +64,10 @@
 ### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
 
 - **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
+
+### packages/cli/tests/commands/proof-surface-derivation.test.ts
+
+- **code:** deriveSurface logic duplicated in test — test reimplements work.ts logic instead of importing it — *Surface Awareness Schema and Pipeline Integration*
 
 ### packages/cli/tests/commands/scan.test.ts
 

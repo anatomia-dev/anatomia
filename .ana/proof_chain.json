@@ -41246,7 +41246,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "scan-display-refresh-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "UTF-8 byte width of '…' (3 bytes) is irrelevant for terminal display — terminals measure in characters, not bytes. The ellipsis is 1 visual character. The - 3 in slice(0, innerWidth - 3) is conservative truncation that ensures the summary + ellipsis fits within the box. Terminal output renders correctly.",
+          "closed_at": "2026-05-24T05:19:16.654Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
