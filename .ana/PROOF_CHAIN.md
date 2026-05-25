@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-162 runs · 113 active · 5 promoted · 805 closed
+162 runs · 112 active · 5 promoted · 806 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 75 | 2026-05-25 |
+| cli | 111 | 74 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -16,15 +16,15 @@
 |------|--------|--------|
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
-| packages/cli/src/engine/census.ts | 6 | 4 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
+| packages/cli/src/commands/proof.ts | 5 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 113 total)
+## Active Findings (30 shown of 112 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -52,7 +52,6 @@
 ### packages/cli/src/engine/census.ts
 
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
-- **code:** Defensive guard for !result.rootPackage is unreachable with current @manypkg behavior — *Fix Workspace Glob Fallback*
 - **code:** fallbackRootPackage type allows scripts as Record<string, unknown> but JSON.parse returns any — no runtime validation — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
@@ -99,6 +98,10 @@
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
+
+### packages/cli/tests/engine/detectors/polyglot.test.ts
+
+- **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 

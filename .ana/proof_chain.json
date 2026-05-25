@@ -42517,7 +42517,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-workspace-glob-fallback-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Harmless defensive code — @manypkg/get-packages always returns rootPackage when it succeeds (reads root package.json as part of its operation). If no root package.json exists, @manypkg throws at line 490 and result stays null — line 531 is never reached. Comment at line 532 acknowledges: 'Defensive: rootPackage type allows undefined.' Same pattern as unreachable catch blocks closed throughout this session.",
+          "closed_at": "2026-05-25T23:36:41.300Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
