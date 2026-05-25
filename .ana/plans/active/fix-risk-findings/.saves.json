@@ -30,5 +30,23 @@
   "spec": {
     "saved_at": "2026-05-25T20:47:34.227Z",
     "hash": "sha256:434425f6e44091dcfe31a9ff5e9350c15c2844f2b0fd8443b1a29b0a892d6204"
-  }
+  },
+  "build_started_at": "2026-05-25T21:41:48.301Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-25T21:46:40.828Z",
+    "hash": "sha256:d3cfa034fb2996db9c2153def474c6baf2c21b1e04d9fa25af749b6eafa83e0c"
+  },
+  "build-data": {
+    "saved_at": "2026-05-25T21:46:40.828Z",
+    "hash": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+    "website/components/docs/content/DocsStat.tsx",
+    "website/lib/docs-data/docsStatValues.ts"
+  ],
+  "commit_hygiene": []
 }
