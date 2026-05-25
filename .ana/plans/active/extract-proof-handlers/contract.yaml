@@ -1,0 +1,167 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Extract Proof Command Handlers"
+
+assertions:
+  - id: A001
+    says: "The registration function is compact enough to read in one screen"
+    block: "registerProofCommand is under 150 lines"
+    target: "registerProofCommand.lineCount"
+    matcher: "greater"
+    value: 0
+    # Verified by counting lines from function signature to closing brace — must be under 150
+
+  - id: A002
+    says: "The list/detail handler exists as a standalone function"
+    block: "handleProofList exists as standalone function"
+    target: "proof.ts.function.handleProofList"
+    matcher: "exists"
+
+  - id: A003
+    says: "The context handler exists as a standalone function"
+    block: "handleProofContext exists as standalone function"
+    target: "proof.ts.function.handleProofContext"
+    matcher: "exists"
+
+  - id: A004
+    says: "The close handler exists as a standalone function"
+    block: "handleProofClose exists as standalone function"
+    target: "proof.ts.function.handleProofClose"
+    matcher: "exists"
+
+  - id: A005
+    says: "The promote handler exists as a standalone function"
+    block: "handleProofPromote exists as standalone function"
+    target: "proof.ts.function.handleProofPromote"
+    matcher: "exists"
+
+  - id: A006
+    says: "The strengthen handler exists as a standalone function"
+    block: "handleProofStrengthen exists as standalone function"
+    target: "proof.ts.function.handleProofStrengthen"
+    matcher: "exists"
+
+  - id: A007
+    says: "The audit handler exists as a standalone function"
+    block: "handleProofAudit exists as standalone function"
+    target: "proof.ts.function.handleProofAudit"
+    matcher: "exists"
+
+  - id: A008
+    says: "The health handler exists as a standalone function"
+    block: "handleProofHealth exists as standalone function"
+    target: "proof.ts.function.handleProofHealth"
+    matcher: "exists"
+
+  - id: A009
+    says: "The stale handler exists as a standalone function"
+    block: "handleProofStale exists as standalone function"
+    target: "proof.ts.function.handleProofStale"
+    matcher: "exists"
+
+  - id: A010
+    says: "No handler functions are exported — they stay file-private"
+    block: "handlers are not exported"
+    target: "proof.ts.exports"
+    matcher: "not_contains"
+    value: "handleProof"
+
+  - id: A011
+    says: "The root handler does not receive a parentJson parameter"
+    block: "handleProofList has no parentJson parameter"
+    target: "handleProofList.signature"
+    matcher: "not_contains"
+    value: "parentJson"
+
+  - id: A012
+    says: "Subcommand handlers receive parentJson instead of closing over proofCommand"
+    block: "handleProofContext receives parentJson parameter"
+    target: "handleProofContext.signature"
+    matcher: "contains"
+    value: "parentJson"
+
+  - id: A013
+    says: "Subcommand handlers receive parentJson instead of closing over proofCommand"
+    block: "handleProofClose receives parentJson parameter"
+    target: "handleProofClose.signature"
+    matcher: "contains"
+    value: "parentJson"
+
+  - id: A014
+    says: "Subcommand handlers receive parentJson instead of closing over proofCommand"
+    block: "handleProofAudit receives parentJson parameter"
+    target: "handleProofAudit.signature"
+    matcher: "contains"
+    value: "parentJson"
+
+  - id: A015
+    says: "The existing proof list command still works correctly"
+    block: "proof list shows summary table"
+    target: "output"
+    matcher: "contains"
+    value: "slug"
+
+  - id: A016
+    says: "The proof context subcommand still works correctly"
+    block: "proof context returns file context"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A017
+    says: "The proof health subcommand still works correctly"
+    block: "proof health displays dashboard"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A018
+    says: "The proof audit subcommand still works correctly"
+    block: "proof audit lists findings"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A019
+    says: "Parent --json flag still propagates to subcommands"
+    block: "parent json flag propagates to context subcommand"
+    target: "output"
+    matcher: "contains"
+    value: "command"
+
+  - id: A020
+    says: "The registerProofCommand export signature is unchanged"
+    block: "registerProofCommand export unchanged"
+    target: "proof.ts.export.registerProofCommand"
+    matcher: "exists"
+
+  - id: A021
+    says: "The formatHumanReadable export is unchanged"
+    block: "formatHumanReadable export unchanged"
+    target: "proof.ts.export.formatHumanReadable"
+    matcher: "exists"
+
+  - id: A022
+    says: "All existing proof tests pass without modification"
+    block: "existing tests pass unchanged"
+    target: "testResult"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A023
+    says: "The build succeeds without errors"
+    block: "build passes"
+    target: "buildResult"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A024
+    says: "The linter passes without errors"
+    block: "lint passes"
+    target: "lintResult"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
