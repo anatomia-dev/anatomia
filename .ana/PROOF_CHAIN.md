@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-159 runs · 105 active · 5 promoted · 803 closed
+160 runs · 109 active · 5 promoted · 803 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 108 | 67 | 2026-05-24 |
+| cli | 109 | 71 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -16,15 +16,15 @@
 |------|--------|--------|
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
+| packages/cli/src/engine/census.ts | 6 | 4 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/src/engine/detectors/git.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 105 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -45,6 +45,9 @@
 
 ### packages/cli/src/engine/census.ts
 
+- **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
+- **code:** Defensive guard for !result.rootPackage is unreachable with current @manypkg behavior — *Fix Workspace Glob Fallback*
+- **code:** fallbackRootPackage type allows scripts as Record<string, unknown> but JSON.parse returns any — no runtime validation — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
@@ -74,10 +77,6 @@
 
 - **code:** proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module — *Decompose proofSummary.ts*
 
-### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
-
-- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
-
 ### packages/cli/tests/commands/proof.test.ts
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
@@ -86,6 +85,10 @@
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
+
+### packages/cli/tests/engine/census.test.ts
+
+- **test:** Fix A test does not assert deps/devDeps are separated correctly — only checks allDeps — *Fix Workspace Glob Fallback*
 
 ### packages/cli/tests/engine/detectors/applicationShape.test.ts
 
@@ -107,15 +110,6 @@
 ### packages/cli/tests/engine/parsers/python.test.ts
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
-
-### website/components/docs/proof/ProofExplorer.tsx
-
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/docs/proof/ProofHero.tsx
-
-- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
-- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

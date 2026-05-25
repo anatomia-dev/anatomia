@@ -42378,6 +42378,188 @@
         "commit_count": 0,
         "base_commit": "cc3e841d3899c92a73d4a02ac0bb8c4243737e18"
       }
+    },
+    {
+      "slug": "fix-workspace-glob-fallback",
+      "feature": "Fix Workspace Glob Fallback",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 14,
+        "satisfied": 14,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A workspace with unresolvable glob patterns doesn't crash the scan",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Root package dependencies are detected when workspace globs can't be resolved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Dev dependencies from root are detected when workspace globs can't be resolved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Exactly one primary source root exists when workspace globs can't be resolved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "No monorepo tool is reported when workspace packages can't be resolved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Dependencies from root package.json are recovered when workspace packages have invalid metadata",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Dev dependencies from root are recovered when workspace packages have invalid metadata",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Scan treats a failed workspace as single-repo with recovered deps",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Package name from root is used when workspace resolution fails",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Exactly one primary source root exists when workspace resolution fails",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "When there's no package.json at all, the scan still works with empty dependencies",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Empty dependency list is returned when no package.json exists anywhere",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Existing monorepo scans still work correctly after the fix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Existing monorepo dependency detection is unchanged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 6
+      },
+      "timing": {
+        "total_minutes": 1141,
+        "think": 7,
+        "plan": 5,
+        "build": 4,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:48873cb5e70c35ced44a8dfdc65064074e1711673eef1c30830f6eda525d3ffd",
+        "contract": "sha256:b3351aa73038b17babd13e7c89cd5b5b3473ff93fc0f64e60df4c8d9b5b91ffe",
+        "plan": "sha256:1b5a849dcf0c2f0fdf4492aca1e94ec6d43832adc9f64bf01325b6e2231bda2f",
+        "spec": "sha256:22a0d5b24d67ad32fcb8559f172c9cfbb38a7f4f5c1777631064b176dedde984",
+        "build-report": "sha256:45621d9d52ebe6292d732e77ebed5c3de7ed7342abeaa6e6bfbda0afe029f2dc",
+        "build-data": "sha256:a3919e88d7c72b50d3473568e99bb7bf557e3f64c42bc1fbca4ca483cdbc7fa3",
+        "verify-report": "sha256:ed60310df44e2f05236bc02bf2b4c3ec7ab6c913d6ba19cd12e4e4c5477aa009",
+        "verify-data": "sha256:7dbb63a8a214bf52459a89dd77739b43790ff27a1040e7c4077954e65e76a8c7"
+      },
+      "completed_at": "2026-05-25T23:20:41.489Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/tests/engine/census.test.ts"
+      ],
+      "scope_summary": "Three repos in the 90-repo validation set fail completely on `ana scan`: umami crashes, erxes gets zero detection, immich gets zero detection. These are the only repos where the product FAILS — every other known limitation is partial detection, not total failure. A developer hitting this on their first `npx anatomia-cli scan` would never come back.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 590,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "fix-workspace-glob-fallback-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Defensive guard for !result.rootPackage is unreachable with current @manypkg behavior",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 531,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-workspace-glob-fallback-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Fix A test does not assert deps/devDeps are separated correctly — only checks allDeps",
+          "file": "packages/cli/tests/engine/census.test.ts",
+          "anchor": null,
+          "line": 68,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "fix-workspace-glob-fallback-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "fallbackRootPackage type allows scripts as Record<string, unknown> but JSON.parse returns any — no runtime validation",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 487,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-workspace-glob-fallback-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A013/A014 contract assertions covered by pre-existing test but not tagged with @ana comment",
+          "file": "packages/cli/tests/engine/census.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-25T22:59:29.890Z",
+        "completed_at": "2026-05-25T23:20:41.484Z",
+        "commit_count": 0,
+        "base_commit": "8aacca1240e62bb6dd91cf5fc115271fed31ad39"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
