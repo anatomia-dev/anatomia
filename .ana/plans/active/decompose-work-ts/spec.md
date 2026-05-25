@@ -57,7 +57,6 @@ No user-facing output changes. This is a structural refactor. The output of `ana
 - `import * as path from 'node:path';`
 - `import { runGit } from '../utils/git-operations.js';`
 - `import { worktreeExists, getWorktreePath } from '../utils/worktree.js';`
-- `import { globSync } from 'glob';`
 
 All functions become `export function`. All types become `export interface`.
 
@@ -76,6 +75,7 @@ All functions become `export function`. All types become `export interface`.
 - `import * as fsPromises from 'node:fs/promises';`
 - `import * as path from 'node:path';`
 - `import chalk from 'chalk';`
+- `import { globSync } from 'glob';`
 - `import { runGit } from '../utils/git-operations.js';`
 - `import { findProjectRoot } from '../utils/validators.js';`
 - `import { resolveFindingPaths, generateDashboard, computeChainHealth } from '../utils/proofSummary.js';`
