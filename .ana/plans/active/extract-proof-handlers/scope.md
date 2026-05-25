@@ -76,9 +76,9 @@ The `proofCommand.opts()` call stays in the thin wrapper — the extracted funct
 ## Acceptance Criteria
 
 - AC1: `registerProofCommand` is under 150 lines (was 1695). It contains only command registration, option/argument declarations, and thin action wrappers.
-- AC2: 8 handler functions exist as standalone named functions: `handleProofList`, `handleProofContext`, `handleProofClose`, `handleProofPromote`, `handleProofStrengthen`, `handleProofAudit`, `handleProofHealth`, `handleProofStale`.
-- AC3: Each handler function receives `parentJson: boolean` instead of closing over `proofCommand`.
-- AC4: Zero behavior change — all 284 proof tests pass without modification.
+- AC2: 8 non-exported handler functions exist as standalone named functions: `handleProofList`, `handleProofContext`, `handleProofClose`, `handleProofPromote`, `handleProofStrengthen`, `handleProofAudit`, `handleProofHealth`, `handleProofStale`.
+- AC3: Each subcommand handler (7 of 8) receives `parentJson: boolean` instead of closing over `proofCommand`. The root handler (`handleProofList`) does not receive `parentJson` — it IS the parent command and receives only `(slug, options)` from Commander. (Corrected from redundant agent review — unanimous 3/3.)
+- AC4: Zero behavior change — all existing proof tests pass without modification.
 - AC5: The two exports from proof.ts (`registerProofCommand`, `formatHumanReadable`) remain unchanged in signature and behavior.
 - AC6: `pnpm run test -- --run` passes.
 - AC7: Build and lint pass.
@@ -153,6 +153,10 @@ The `registerWorkCommand` in work.ts uses the same inline handler pattern but is
 - The `audit` handler (541 lines) is the largest. It has internal branching for `--matrix`, `--new`, `--since`, `--full`, `--severity`, `--entry`, `--surface` flags. All of this moves as-is — don't refactor the internals, just extract the closure.
 - The `promote` handler at line 1018 has a `try/catch` that calls `process.exit(1)` on failure. This stays as-is in the extracted function.
 - Some handlers use `console.log` and `console.error` directly. This stays as-is — the CLI uses stdout/stderr directly, not a logger abstraction.
+- Several handlers have `return;` after `exitError(...)` calls. These must be preserved — they provide TypeScript type narrowing even though `exitError` returns `never`. (From redundant agent review.)
+- Each handler's `useJson = options.json || parentJson` derivation must be preserved exactly. The wrapper resolves `parentJson` from `proofCommand.opts()['json']`, but the handler still ORs its own `options.json` with the parent value. (From redundant agent review.)
+- Handlers must be wrapped in thin arrow functions (`.action(async (...) => handleX(...))`), not passed by reference (`.action(handleX)`). Arrow wrappers preserve the anonymous callback name Commander expects. (From redundant agent review.)
+- Additional module-level dependencies used by handlers (not listed in original scope): `EMPTY_AUDIT_MATRIX` (line 174), `SEVERITY_ORDER` (line 191), `BOX` (line 106), `isWorktreeDirectory` (imported line 45), `validateSkillName` (imported line 25), `globSync` (imported line 24). All are module-level — no issue for extraction within the same file. (From redundant agent review — 2/3.)
 
 ### Things to Investigate
 
