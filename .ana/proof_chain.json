@@ -32683,7 +32683,10 @@
             "A004"
           ],
           "id": "flip-monorepo-commands-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-risk-findings scope — same path escaping fix as monorepo-build-scoping-C5. state.ts:509 escapedPath variable applies to all surface command templates including buildPackageCmd and testPackageCmd. Same family, same fix.",
+          "closed_at": "2026-05-25T22:52:18.035Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
