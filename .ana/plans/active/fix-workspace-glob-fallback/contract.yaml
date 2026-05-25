@@ -1,0 +1,107 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Workspace Glob Fallback"
+
+assertions:
+  - id: A001
+    says: "A workspace with unresolvable glob patterns doesn't crash the scan"
+    block: "handles workspace with 0 resolved packages (Fix A)"
+    target: "census.layout"
+    matcher: "equals"
+    value: "single-repo"
+
+  - id: A002
+    says: "Root package dependencies are detected when workspace globs can't be resolved"
+    block: "handles workspace with 0 resolved packages (Fix A)"
+    target: "census.allDeps"
+    matcher: "contains"
+    value: "next"
+
+  - id: A003
+    says: "Dev dependencies from root are detected when workspace globs can't be resolved"
+    block: "handles workspace with 0 resolved packages (Fix A)"
+    target: "census.allDeps"
+    matcher: "contains"
+    value: "vitest"
+
+  - id: A004
+    says: "Exactly one primary source root exists when workspace globs can't be resolved"
+    block: "handles workspace with 0 resolved packages (Fix A)"
+    target: "census.sourceRoots.primaries.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A005
+    says: "No monorepo tool is reported when workspace packages can't be resolved"
+    block: "handles workspace with 0 resolved packages (Fix A)"
+    target: "census.monorepoTool"
+    matcher: "equals"
+    value: null
+
+  - id: A006
+    says: "Dependencies from root package.json are recovered when workspace packages have invalid metadata"
+    block: "falls back to root package.json when @manypkg throws (Fix B)"
+    target: "census.allDeps"
+    matcher: "contains"
+    value: "express"
+
+  - id: A007
+    says: "Dev dependencies from root are recovered when workspace packages have invalid metadata"
+    block: "falls back to root package.json when @manypkg throws (Fix B)"
+    target: "census.allDeps"
+    matcher: "contains"
+    value: "typescript"
+
+  - id: A008
+    says: "Scan treats a failed workspace as single-repo with recovered deps"
+    block: "falls back to root package.json when @manypkg throws (Fix B)"
+    target: "census.layout"
+    matcher: "equals"
+    value: "single-repo"
+
+  - id: A009
+    says: "Package name from root is used when workspace resolution fails"
+    block: "falls back to root package.json when @manypkg throws (Fix B)"
+    target: "census.sourceRoots[0].packageName"
+    matcher: "exists"
+
+  - id: A010
+    says: "Exactly one primary source root exists when workspace resolution fails"
+    block: "falls back to root package.json when @manypkg throws (Fix B)"
+    target: "census.sourceRoots.primaries.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A011
+    says: "When there's no package.json at all, the scan still works with empty dependencies"
+    block: "empty-deps fallback when @manypkg throws and no root package.json exists (Fix B edge)"
+    target: "census.layout"
+    matcher: "equals"
+    value: "single-repo"
+
+  - id: A012
+    says: "Empty dependency list is returned when no package.json exists anywhere"
+    block: "empty-deps fallback when @manypkg throws and no root package.json exists (Fix B edge)"
+    target: "census.allDeps.count"
+    matcher: "equals"
+    value: 0
+
+  - id: A013
+    says: "Existing monorepo scans still work correctly after the fix"
+    block: "builds census for Anatomia itself (pnpm monorepo)"
+    target: "census.layout"
+    matcher: "equals"
+    value: "monorepo"
+
+  - id: A014
+    says: "Existing monorepo dependency detection is unchanged"
+    block: "builds census for Anatomia itself (pnpm monorepo)"
+    target: "census.allDeps"
+    matcher: "contains"
+    value: "vitest"
+
+file_changes:
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/census.test.ts"
+    action: modify
