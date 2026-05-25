@@ -42741,7 +42741,10 @@
           "suggested_action": "scope",
           "related_assertions": [],
           "id": "extract-proof-handlers-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by direct commit 67d51116 — 'Reformat proof.ts handler indentation to 2-space.' Verified: handleProofList at line 648 and handleProofContext at line 723+ now use 2-space indent. Previously 4-space and 6-space from verbatim extraction.",
+          "closed_at": "2026-05-25T23:50:43.217Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

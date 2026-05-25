@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-162 runs · 109 active · 5 promoted · 809 closed
+162 runs · 108 active · 5 promoted · 810 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 71 | 2026-05-25 |
+| cli | 111 | 70 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/src/commands/proof.ts | 5 | 4 |
+| packages/cli/src/commands/proof.ts | 4 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 108 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,7 +37,6 @@
 
 ### packages/cli/src/commands/proof.ts
 
-- **code:** Inconsistent body indentation in extracted handlers — 4-space for root, 6-space for subcommands, project standard is 2-space — *Extract Proof Command Handlers*
 - **code:** ~1560 lines of handler body at 6-space indent from verbatim extraction — visual noise when reading top-level functions — *Extract Proof Command Handlers*
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
 
@@ -76,6 +75,10 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module — *Decompose proofSummary.ts*
+
+### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
+
+- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/proof.test.ts
 
