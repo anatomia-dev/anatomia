@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-162 runs · 110 active · 5 promoted · 808 closed
+162 runs · 109 active · 5 promoted · 809 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 72 | 2026-05-25 |
+| cli | 111 | 71 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,11 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
-
-### packages/cli/src/commands/artifact-validators.ts
-
-- **code:** Interfaces VerifyDataSchema and BuildDataSchema are not exported — correct, since they were module-private before. But they use index signatures ([key: string]: unknown) that suppress type errors on unknown fields. This is inherited behavior, not new. — *Extract Artifact Validators*
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,6 +33,7 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
+- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
 
