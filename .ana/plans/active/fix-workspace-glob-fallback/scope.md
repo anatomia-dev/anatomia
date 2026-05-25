@@ -63,6 +63,28 @@ Fix: in the catch block, try reading root `package.json` directly. If it exists 
 
 Then the `!result` branch at line 503 checks for `fallbackRootPackage` and reads its deps if available, instead of always creating empty deps.
 
+Variable specification (from redundant agent review — unanimous 3/3): declare `let fallbackRootPackage: Record<string, unknown> | null = null;` BEFORE the try/catch block (line 485). Set in catch block. Consumed in `!result` branch at line 503:
+```typescript
+if (!result) {
+  const fallbackDeps = (fallbackRootPackage?.dependencies ?? {}) as Record<string, string>;
+  const fallbackDevDeps = (fallbackRootPackage?.devDependencies ?? {}) as Record<string, string>;
+  const fallbackName = typeof fallbackRootPackage?.name === 'string' ? fallbackRootPackage.name : null;
+  sourceRoots = [{
+    absolutePath: normalizedRoot,
+    relativePath: '.',
+    packageName: fallbackName,
+    fileCount: countSourceFiles(normalizedRoot),
+    isPrimary: true,
+    deps: fallbackDeps,
+    devDeps: fallbackDevDeps,
+    hasBin: false,
+    scripts: Object.keys((fallbackRootPackage?.scripts ?? {}) as Record<string, unknown>),
+  }];
+}
+```
+
+This replaces the current empty-deps source root with one populated from the root package.json when available. When `fallbackRootPackage` is null (no root package.json), the optional chaining produces `{}` for all fields — identical to current behavior.
+
 After this fix, erxes reads 145 prod deps + 91 dev deps from root package.json (mongoose, mongodb, @apollo/client, react, graphql all detected). immich reads 2 devDeps from root (minimal improvement — real deps are in workspace packages, which is a separate deeper scope).
 
 ## Acceptance Criteria
@@ -71,8 +93,11 @@ After this fix, erxes reads 145 prod deps + 91 dev deps from root package.json (
 - AC2: `ana scan` on erxes detects database (Mongoose/MongoDB), framework (React or Apollo), and testing frameworks from root package.json deps. Not zero detection.
 - AC3: `ana scan` on immich completes without crashing (already doesn't crash — just zero detection). Language should still be TypeScript (from Tier 3 tsconfig detection, already working).
 - AC4: All existing monorepo scans produce identical results. The 39 pnpm monorepos, 13 yarn monorepos, and 6 npm monorepos in the test set are unaffected.
-- AC5: `pnpm run test -- --run` passes.
-- AC6: Build and lint pass.
+- AC5: A test verifies that a project with `pnpm-workspace.yaml` containing an unresolvable glob pattern and a root `package.json` with deps produces a working scan (not crash, deps detected). Exercises Fix A.
+- AC6: A test verifies that when @manypkg throws (e.g., workspace package missing `name` field) and root `package.json` exists with deps, those deps are detected. Exercises Fix B.
+- AC7: A test verifies that when @manypkg throws and NO root `package.json` exists, the empty-deps fallback runs (same as current behavior). Exercises Fix B edge case.
+- AC8: `pnpm run test -- --run` passes.
+- AC9: Build and lint pass.
 
 ## Edge Cases & Risks
 
@@ -83,7 +108,7 @@ No. `nonRootPackages.length === 0` only when @manypkg found 0 non-root packages.
 Yes, intentionally. umami IS a workspace project, but @manypkg couldn't resolve its packages. Treating it as single-repo reads root deps instead of crashing. The workspace tool information (`pnpm`) is available in `result.tool.type` — the scan could report "pnpm monorepo (workspace packages not resolved)" but that's a display enhancement, not a scope requirement. The minimum viable fix is: don't crash, read root deps.
 
 **Fix A — what about `rootPackage` being null?**
-When @manypkg succeeds, `result.rootPackage` is always present (it's the root package.json). The `isSingleRepo` branch at line 517 accesses `result.rootPackage!` — this is safe because if `result` exists and has 0 packages, `rootPackage` is the one package it DID find. Verified: umami returns `rootPackage` with `name: 'umami'` and 103 deps.
+CORRECTED (from redundant agent review — unanimous 3/3): `rootPackage` is typed as OPTIONAL in `@manypkg/tools` (`rootPackage?: Package`). All current tool implementations (PnpmTool, YarnTool, NpmTool, BunTool, LernaTool, RootTool) set it unconditionally — verified by R3 via source inspection. But the TYPE contract doesn't guarantee it. The existing `result.rootPackage!` non-null assertion at line 517 is the exact same pattern that caused the crash at line 596. Fix A MUST add a defensive guard: `if (!result?.rootPackage)` before accessing it, falling through to the empty-deps path if null. This costs 2 lines and eliminates a crash risk from future @manypkg version changes.
 
 **Fix B — could reading root package.json cause harm?**
 The root package.json is the developer's own file. Reading it to extract deps is the same operation the `isSingleRepo` branch already performs at line 524. The catch block just needs to provide the same data source. If the root package.json is corrupt (unparseable JSON), the inner try/catch handles it and falls through to the existing empty-deps fallback.
