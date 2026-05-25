@@ -42542,7 +42542,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-workspace-glob-fallback-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Standard TypeScript practice — JSON.parse returns any, type annotation at census.ts:487 provides the shape contract. Every package.json parse in the codebase uses the same pattern (type annotation without runtime schema validation). Adding Zod/runtime validation would be a codebase-wide decision, not specific to this fallback path.",
+          "closed_at": "2026-05-25T23:36:51.437Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,

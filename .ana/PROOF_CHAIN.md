@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-162 runs · 112 active · 5 promoted · 806 closed
+162 runs · 111 active · 5 promoted · 807 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 74 | 2026-05-25 |
+| cli | 111 | 73 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -52,7 +52,6 @@
 ### packages/cli/src/engine/census.ts
 
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
-- **code:** fallbackRootPackage type allows scripts as Record<string, unknown> but JSON.parse returns any — no runtime validation — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
@@ -102,6 +101,7 @@
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
 - **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
+- **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
