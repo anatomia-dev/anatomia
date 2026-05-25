@@ -29105,7 +29105,10 @@
             "A006"
           ],
           "id": "fix-prebuild-source-mutation-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-risk-findings scope — DocsStat prop type changed from value: string to value: DocsStatKey at DocsStat.tsx:8. DocsStatKey is a string literal union (docsStatValues.ts:10-19) with all 9 valid keys. A misspelled key in MDX now fails the TypeScript build instead of rendering the raw key string.",
+          "closed_at": "2026-05-25T22:52:34.482Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
