@@ -1,0 +1,115 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Extract Artifact Validators"
+
+assertions:
+  - id: A001
+    says: "The new validator module exists and exports all 8 validator functions"
+    block: "artifact-validators module structure"
+    target: "module.exports.count"
+    matcher: "equals"
+    value: 8
+
+  - id: A002
+    says: "The original module still exports the 3 public validators for backward compatibility"
+    block: "backward compatibility re-exports"
+    target: "artifact.reExports"
+    matcher: "contains"
+    value: "validateScopeFormat"
+
+  - id: A003
+    says: "The original module still exports validateVerifyDataFormat for backward compatibility"
+    block: "backward compatibility re-exports"
+    target: "artifact.reExports"
+    matcher: "contains"
+    value: "validateVerifyDataFormat"
+
+  - id: A004
+    says: "The original module still exports validateBuildDataFormat for backward compatibility"
+    block: "backward compatibility re-exports"
+    target: "artifact.reExports"
+    matcher: "contains"
+    value: "validateBuildDataFormat"
+
+  - id: A005
+    says: "Plan validation still rejects plans missing the Phases heading"
+    block: "validatePlanFormat works after extraction"
+    target: "result"
+    matcher: "contains"
+    value: "Missing '## Phases' heading"
+
+  - id: A006
+    says: "Scope validation still rejects scopes with fewer than 3 acceptance criteria"
+    block: "validateScopeFormat works after extraction"
+    target: "result"
+    matcher: "contains"
+    value: "Missing acceptance criteria"
+
+  - id: A007
+    says: "Contract validation still catches missing version field"
+    block: "validateContractFormat works after extraction"
+    target: "errors"
+    matcher: "contains"
+    value: "Missing \"version\" field"
+
+  - id: A008
+    says: "Spec validation still catches missing Build Brief section"
+    block: "validateSpecFormat works after extraction"
+    target: "result.error"
+    matcher: "contains"
+    value: "Missing 'Build Brief' section"
+
+  - id: A009
+    says: "Verify data validation still catches invalid finding categories"
+    block: "validateVerifyDataFormat works after extraction"
+    target: "result.errors"
+    matcher: "contains"
+    value: "invalid category"
+
+  - id: A010
+    says: "Build data validation still catches missing schema field"
+    block: "validateBuildDataFormat works after extraction"
+    target: "result.errors"
+    matcher: "contains"
+    value: "Missing \"schema\" field"
+
+  - id: A011
+    says: "Build report validation still catches missing required sections"
+    block: "validateBuildReportFormat works after extraction"
+    target: "result"
+    matcher: "contains"
+    value: "Missing"
+
+  - id: A012
+    says: "Verify report validation still catches missing Result line"
+    block: "validateVerifyReportFormat works after extraction"
+    target: "result"
+    matcher: "contains"
+    value: "Missing '**Result:**"
+
+  - id: A013
+    says: "The original artifact module is significantly smaller after extraction"
+    block: "artifact.ts line reduction"
+    target: "artifact.lineCount"
+    matcher: "greater"
+    value: 1350
+
+  - id: A014
+    says: "The original artifact module lost roughly 600 lines from the extraction"
+    block: "artifact.ts line reduction"
+    target: "artifact.lineCount"
+    matcher: "not_equals"
+    value: 2093
+
+  - id: A015
+    says: "All existing tests pass without modification"
+    block: "regression check"
+    target: "testResult"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: create
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
