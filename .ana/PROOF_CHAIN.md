@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-160 runs · 109 active · 5 promoted · 803 closed
+161 runs · 111 active · 5 promoted · 804 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 109 | 71 | 2026-05-25 |
+| cli | 110 | 73 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,10 +33,11 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
-- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
 
+- **code:** Inconsistent body indentation in extracted handlers — 4-space for root, 6-space for subcommands, project standard is 2-space — *Extract Proof Command Handlers*
+- **code:** ~1560 lines of handler body at 6-space indent from verbatim extraction — visual noise when reading top-level functions — *Extract Proof Command Handlers*
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
 
 ### packages/cli/src/commands/work.ts
@@ -59,10 +60,6 @@
 ### packages/cli/src/engine/detectors/dependencies.ts
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
-
-### packages/cli/src/engine/sampling/proportionalSampler.ts
-
-- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
 ### packages/cli/src/engine/scan-engine.ts
 

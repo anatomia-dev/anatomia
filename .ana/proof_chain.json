@@ -42560,6 +42560,235 @@
         "base_commit": "8aacca1240e62bb6dd91cf5fc115271fed31ad39"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "extract-proof-handlers",
+      "feature": "Extract Proof Command Handlers",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The registration function is compact enough to read in one screen",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The list/detail handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The context handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The close handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The promote handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The strengthen handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The audit handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The health handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The stale handler exists as a standalone function",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "No handler functions are exported — they stay file-private",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The root handler does not receive a parentJson parameter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Subcommand handlers receive parentJson instead of closing over proofCommand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Subcommand handlers receive parentJson instead of closing over proofCommand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Subcommand handlers receive parentJson instead of closing over proofCommand",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The existing proof list command still works correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The proof context subcommand still works correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The proof health subcommand still works correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The proof audit subcommand still works correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Parent --json flag still propagates to subcommands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The registerProofCommand export signature is unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The formatHumanReadable export is unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "All existing proof tests pass without modification",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The build succeeds without errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The linter passes without errors",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 1195,
+        "think": 42,
+        "plan": 5,
+        "build": 9,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:2178efc8b6979919df4dace139aa18243eb992848577e0d3dd94ef2eff61b1bd",
+        "contract": "sha256:44803a6698e90f6645756d5fa1bdff1290bb62c23d639d28e074fdcec07f2e3a",
+        "plan": "sha256:b6384529703c2432fb6bd7d81878b6464d73d2ffb68ebf78a698b771573061a8",
+        "spec": "sha256:861a9dacad68812923b5cc4530b14d01421a4f48734619cf04d87620e17329cc",
+        "build-report": "sha256:9ec530b289f23431095016f70fc843fdc0f3ee778aa6d6e6ad3081cdc01f4cc5",
+        "build-data": "sha256:431da980575cd21ec1013f441136d226f9395d4f2d42e3f24cfd4f0653135ed4",
+        "verify-report": "sha256:a7e5f002551d83e131ebbfc46e806f2ed24621fb38f986c31ea2793483167b03",
+        "verify-data": "sha256:4a8f74dfebd52d49d8a8fca9d9f727e6791a176c2d84ef79305a355ee683de37"
+      },
+      "completed_at": "2026-05-25T23:24:18.687Z",
+      "modules_touched": [
+        "packages/cli/src/commands/proof.ts"
+      ],
+      "scope_summary": "`registerProofCommand` is 1695 lines — a single function containing 8 inline action handlers for the proof subcommands. A developer navigating proof.ts has to scroll through the entire function to find the audit handler at line 1607 or the stale handler at line 2226. The function is structurally correct — each handler is self-contained — but it violates \"finished means a stranger can extend it.\" A stranger adding a new proof subcommand would need to understand the full 1695-line function body to know where to add it.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Inconsistent body indentation in extracted handlers — 4-space for root, 6-space for subcommands, project standard is 2-space",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 649,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [],
+          "id": "extract-proof-handlers-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "~1560 lines of handler body at 6-space indent from verbatim extraction — visual noise when reading top-level functions",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 727,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "extract-proof-handlers-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A001 matcher says greater/0 but intent is under-150 — mechanical check weaker than stated goal",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "extract-proof-handlers-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-25T23:24:18.687Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "formatContextResult is placed after registerProofCommand, unlike all other module-level helpers",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-25T22:59:59.213Z",
+        "completed_at": "2026-05-25T23:24:18.681Z",
+        "commit_count": 0,
+        "base_commit": "af4b22ddd91b8df85a92ba5b6f3a094d592bd7b0"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
