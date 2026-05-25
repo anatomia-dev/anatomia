@@ -29,7 +29,7 @@ Three independent one-line fixes that close 3 of 6 risk findings. Each is verifi
 
 Lines 513, 520, 524, 531 interpolate `surface.path` into single-quoted shell subcommands: `` `(cd '${surface.path}' && ...)` ``. A path containing a single quote (e.g., `apps/it's-broken`) would produce broken shell syntax.
 
-Fix: replace `surface.path` with `surface.path.replace(/'/g, "'\\''")`  in all 4 template literals. The `'\''` pattern ends the single-quoted string, inserts an escaped literal quote, and reopens the single-quoted string. This is the standard POSIX shell idiom for quoting single quotes within single-quoted strings.
+Fix: extract the escape to a local variable before the template literals — `const escapedPath = surface.path.replace(/'/g, "'\\''")` — and use `escapedPath` in all 4 template literals. One definition, four usages. Eliminates duplication risk (from redundant agent review: 2 of 3 agents independently flagged the 4-copy inline pattern as a smell). The `'\''` pattern ends the single-quoted string, inserts an escaped literal quote, and reopens the single-quoted string. This is the standard POSIX shell idiom for quoting single quotes within single-quoted strings.
 
 Verified: `surface.path` originates from `root.relativePath` in the census (surfaces.ts:363), which comes from `@manypkg/get-packages`. These are filesystem directory paths. Paths without single quotes are unchanged (the replace is a no-op). The escape only affects the command STRING written to ana.json — not the path field itself, not the surface name, and not anything the CLI executes.
 
@@ -45,9 +45,11 @@ Verified: the backfill migration has already run on our installation (`chain.mig
 
 DocsStat accepts `value: string` and renders `values[value] ?? value`. A misspelled key silently renders the raw key as visible text. No build-time or runtime error.
 
-Fix: export a `DocsStatKey` union type from `docsStatValues.ts` with the 9 valid keys. Change `DocsStat` prop from `value: string` to `value: DocsStatKey`. TypeScript catches misspelled keys at build time in MDX files.
+Fix: export a `DocsStatKey` union type from `docsStatValues.ts` with the 9 valid keys. Change `DocsStat` prop from `value: string` to `value: DocsStatKey`. This catches misspelled keys in any future `.tsx` call sites that use DocsStat directly.
 
-Verified: all 9 current usages in MDX files use valid keys. `buildDocsStatValues` continues to return `Record<string, string>` — the type narrowing is only on the component prop, not the builder function. `resolveDocsStatTags` (prebuild script) is unaffected — it operates on strings from regex capture, not typed props. Zero runtime change.
+**NOTE (from redundant agent review):** fumadocs compiles MDX via webpack loader, not TypeScript. The generated `.source/` files use `@ts-nocheck`. MDX component props are `ComponentType<any>` — TypeScript does NOT check `<DocsStat value="typo" />` inside MDX files at build time. The type narrowing protects future TypeScript call sites only, not the 9 current MDX usages. The `?? value` fallback in the component is kept as defense-in-depth for MDX runtime.
+
+Verified: all 9 current usages in MDX files use valid keys (verified by grep). `buildDocsStatValues` continues to return `Record<string, string>`. Zero runtime change.
 
 ## Acceptance Criteria
 
@@ -55,7 +57,7 @@ Verified: all 9 current usages in MDX files use valid keys. `buildDocsStatValues
 - AC2: A test verifies that a surface path containing a single quote produces a correctly escaped command string.
 - AC3: The backfill guard at work.ts:1101 uses `existing.surface === undefined || existing.surface === null` instead of `!existing.surface`.
 - AC4: `DocsStatKey` type is exported from `docsStatValues.ts` as a union of the 9 valid keys.
-- AC5: `DocsStat` component prop `value` accepts `DocsStatKey` instead of `string`.
+- AC5: `DocsStat` component prop `value` accepts `DocsStatKey` instead of `string`. The `?? value` runtime fallback is kept as defense-in-depth for MDX (which is not type-checked).
 - AC6: Website builds successfully (`cd website && pnpm run build`) — all existing MDX usages compile.
 - AC7: All existing tests pass unchanged: `pnpm run test -- --run`.
 
@@ -120,7 +122,7 @@ The security-hardening scope that fixed command injection vulnerabilities in git
 ### Patterns to Follow
 
 - Shell escape: `str.replace(/'/g, "'\\''")` — POSIX standard
-- Null check: `== null` (not `=== null`) to catch both undefined and null
+- Null check: `=== undefined || === null` (strict equality, matches codebase convention)
 - Type narrowing: union type at the consumption boundary, not at the producer
 
 ### Known Gotchas
