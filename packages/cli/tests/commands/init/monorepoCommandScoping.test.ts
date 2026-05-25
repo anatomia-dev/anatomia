@@ -134,6 +134,54 @@ describe('createAnaJson surface command generation', () => {
     }
   });
 
+  // @ana A001, A002, A004
+  it('escapes single quotes in surface path commands', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
+    try {
+      await setupPackage(cwdDir, "it's-here", { build: 'tsup', test: 'vitest', lint: 'eslint .' });
+      const result = makeMonorepoResult({
+        surfaces: [{ name: 'quoted', path: "it's-here" }],
+      });
+
+      await createAnaJson(tmpDir, result, cwdDir);
+      const anaJson = await readAnaJson(tmpDir);
+      const surfaces = anaJson['surfaces'] as Record<string, Record<string, unknown>>;
+      const cmds = surfaces['quoted']!['commands'] as Record<string, string | null>;
+
+      // A001: build command escapes single quote in path
+      expect(cmds['build']).toBe("(cd 'it'\\''s-here' && pnpm run build)");
+      // A002: all non-null commands use the escaped path
+      expect(cmds['test']).toBe("(cd 'it'\\''s-here' && pnpm run test)");
+      expect(cmds['lint']).toBe("(cd 'it'\\''s-here' && pnpm run lint)");
+      // A004: escape only affects cd target, not the rest
+      expect(cmds['test']).toContain('&& pnpm run test)');
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A003
+  it('does not alter paths without single quotes', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
+    const cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-cwd-'));
+    try {
+      await setupPackage(cwdDir, 'packages/cli', { build: 'tsup' });
+      const result = makeMonorepoResult({
+        surfaces: [{ name: 'cli', path: 'packages/cli' }],
+      });
+
+      await createAnaJson(tmpDir, result, cwdDir);
+      const surfaces = (await readAnaJson(tmpDir))['surfaces'] as Record<string, Record<string, unknown>>;
+      const cliCmds = surfaces['cli']!['commands'] as Record<string, string | null>;
+      expect(cliCmds['build']).toBe("(cd 'packages/cli' && pnpm run build)");
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+      await fs.rm(cwdDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
   // @ana A005
   it('does not generate surfaces for single-package repo', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-json-'));
