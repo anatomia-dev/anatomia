@@ -506,29 +506,30 @@ export async function createAnaJson(
         const pkgContent = await fs.readFile(pkgJsonPath, 'utf-8');
         const pkgJson = JSON.parse(pkgContent);
         const scripts = pkgJson.scripts || {};
+        const escapedPath = surface.path.replace(/'/g, "'\\''");
 
         // Build: first match
         for (const key of ['build', 'compile', 'tsc']) {
           if (scripts[key]) {
-            surfaceBuild = `(cd '${surface.path}' && ${prefix} ${key})`;
+            surfaceBuild = `(cd '${escapedPath}' && ${prefix} ${key})`;
             break;
           }
         }
 
         // Test: prefer script passthrough, fall back to direct runner
         if (scripts['test'] !== undefined) {
-          surfaceTest = `(cd '${surface.path}' && ${prefix} test)`;
+          surfaceTest = `(cd '${escapedPath}' && ${prefix} test)`;
         } else {
           const directCmd = buildDirectTestCommand(surface.testing || result.stack.testing, pm);
           if (directCmd) {
-            surfaceTest = `(cd '${surface.path}' && ${directCmd})`;
+            surfaceTest = `(cd '${escapedPath}' && ${directCmd})`;
           }
         }
 
         // Lint: first match
         for (const key of ['lint', 'eslint', 'biome']) {
           if (scripts[key]) {
-            surfaceLint = `(cd '${surface.path}' && ${prefix} ${key})`;
+            surfaceLint = `(cd '${escapedPath}' && ${prefix} ${key})`;
             break;
           }
         }

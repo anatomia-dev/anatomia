@@ -1,0 +1,40 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 509
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
+    resolves:
+      - "monorepo-build-scoping-C5"
+      - "flip-monorepo-commands-C4"
+  - category: upstream
+    summary: "Backfill guard fix resolves fix-test-behavioral-coverage-C1 — empty string no longer triggers overwrite"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1101
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "fix-test-behavioral-coverage-C1"
+  - category: code
+    summary: "DocsStatKey runtime fallback renders raw key name as visible page text — user sees 'proofCoutn' instead of a number if MDX has a typo"
+    file: "website/components/docs/content/DocsStat.tsx"
+    line: 34
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A010"]
+  - category: test
+    summary: "No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1101
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A005", "A006"]
+  - category: code
+    summary: "fix-surface-test-priority-C1 still active — scripts['test'] !== undefined at state.ts:520 treats explicit null in package.json as present"
+    file: "packages/cli/src/commands/init/state.ts"
+    line: 520
+    severity: observation
+    suggested_action: monitor
