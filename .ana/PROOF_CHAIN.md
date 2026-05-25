@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-158 runs · 107 active · 5 promoted · 796 closed
+159 runs · 111 active · 5 promoted · 797 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 27 | 18 | 2026-05-24 |
+| Unscoped | 28 | 22 | 2026-05-25 |
 | cli | 108 | 69 | 2026-05-24 |
 | website | 23 | 20 | 2026-05-24 |
 
@@ -14,9 +14,9 @@
 
 | File | Active | Entries |
 |------|--------|--------|
+| packages/cli/src/commands/init/state.ts | 8 | 6 |
+| packages/cli/src/commands/work.ts | 7 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
-| packages/cli/src/commands/work.ts | 6 | 4 |
-| packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/engine/detectors/git.ts | 3 | 2 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -32,6 +32,8 @@
 
 ### packages/cli/src/commands/init/state.ts
 
+- **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
+- **code:** fix-surface-test-priority-C1 still active — scripts['test'] !== undefined at state.ts:520 treats explicit null in package.json as present — *Fix Risk Findings*
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
@@ -40,6 +42,7 @@
 
 ### packages/cli/src/commands/work.ts
 
+- **test:** No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection — *Fix Risk Findings*
 - **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
@@ -107,19 +110,13 @@
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
-### website/components/docs/proof/ProofExplorer.tsx
+### website/components/docs/content/DocsStat.tsx
 
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
-
-### website/components/docs/proof/ProofHero.tsx
-
-- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
-- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
+- **code:** DocsStatKey runtime fallback renders raw key name as visible page text — user sees 'proofCoutn' instead of a number if MDX has a typo — *Fix Risk Findings*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
 - **test:** No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests — *CLI Polish*
-- **test:** Supplementary files silent pass on missing — existsSync guard inside for-loop means missing files are never asserted — *Website Test Suite*
 
 ### website/lib/__tests__/docs-data/staleness.test.ts
 

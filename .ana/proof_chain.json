@@ -42158,6 +42158,208 @@
         "base_commit": "21adc43a2a7e25d867066c35bc7d275455b52224"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-risk-findings",
+      "feature": "Fix Risk Findings",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Surface commands escape single quotes in directory paths",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Every generated command type uses the escaped path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Paths without single quotes produce unchanged command strings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Escaped path only affects the cd target, not the rest of the command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Backfill guard uses explicit null check instead of falsy coercion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Backfill guard no longer matches empty-string surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A type restricts which stat keys the component accepts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The stat key type covers all nine valid statistics",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The component prop accepts the narrowed type instead of any string",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The runtime fallback is kept for unrecognized keys from MDX",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "All existing tests continue to pass after the changes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The website builds successfully with the narrowed type",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 7,
+        "met": 7
+      },
+      "timing": {
+        "total_minutes": 1142,
+        "think": 10,
+        "plan": 61,
+        "build": 5,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:7fa51c5f4b89825ac0583029c74e8d8c1906ab03c199425ad448dace78a08510",
+        "contract": "sha256:b99d11570f45a2c8d08b3e878364967cadb3bf693be2d0d6455fc920b9182ffc",
+        "plan": "sha256:c86c688860d05418205be7314ef942707bef3fc50067701f8c3199f77f04e379",
+        "spec": "sha256:434425f6e44091dcfe31a9ff5e9350c15c2844f2b0fd8443b1a29b0a892d6204",
+        "build-report": "sha256:d3cfa034fb2996db9c2153def474c6baf2c21b1e04d9fa25af749b6eafa83e0c",
+        "build-data": "sha256:8fce9649b38cb7c948bbd03c1c6f9e500b3198a533ca99da80096cc559ebcefd",
+        "verify-report": "sha256:f6f0a3e90695434985d4215585b9e0310d3e52fbd4148703dd958358987c627e",
+        "verify-data": "sha256:f939b1ed4ca33c6041e1189b8878caf58d6e0fd37b8a32d467160226f3dd13f8"
+      },
+      "completed_at": "2026-05-25T22:50:04.127Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+        "website/components/docs/content/DocsStat.tsx",
+        "website/lib/docs-data/docsStatValues.ts"
+      ],
+      "scope_summary": "The proof chain has 6 risk-severity findings — the highest severity category. Three are fixable with minimal changes and zero blast radius. Fixing them clears the risk backlog and moves the health trend from \"worsening\" toward \"improving.\"",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 509,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "resolves": [
+            "monorepo-build-scoping-C5",
+            "flip-monorepo-commands-C4"
+          ],
+          "id": "fix-risk-findings-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Backfill guard fix resolves fix-test-behavioral-coverage-C1 — empty string no longer triggers overwrite",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1101,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "fix-test-behavioral-coverage-C1"
+          ],
+          "id": "fix-risk-findings-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-25T22:50:04.127Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "DocsStatKey runtime fallback renders raw key name as visible page text — user sees 'proofCoutn' instead of a number if MDX has a typo",
+          "file": "website/components/docs/content/DocsStat.tsx",
+          "anchor": null,
+          "line": 34,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "fix-risk-findings-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1101,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "fix-risk-findings-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "fix-surface-test-priority-C1 still active — scripts['test'] !== undefined at state.ts:520 treats explicit null in package.json as present",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "anchor": null,
+          "line": 520,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-risk-findings-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-25T21:41:48.301Z",
+        "completed_at": "2026-05-25T22:50:04.120Z",
+        "commit_count": 0,
+        "base_commit": "cc3e841d3899c92a73d4a02ac0bb8c4243737e18"
+      }
     }
   ],
   "schema": 1,
