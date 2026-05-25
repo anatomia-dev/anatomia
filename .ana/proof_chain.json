@@ -30409,7 +30409,10 @@
           "severity": "risk",
           "suggested_action": "monitor",
           "id": "monorepo-build-scoping-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-risk-findings scope — path escaping added at state.ts:509: surface.path.replace(/'/g, \"'\\\\''\" ). Single quotes in paths now escaped using shell idiom (end quote, escaped literal, start quote). All surface command templates use escapedPath variable. Root cause finding for the pkg.path sanitization family — 8 instances closed across Sessions 6-7, disease now addressed.",
+          "closed_at": "2026-05-25T22:52:08.668Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
