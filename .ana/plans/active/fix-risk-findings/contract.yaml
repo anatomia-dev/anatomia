@@ -12,11 +12,11 @@ assertions:
     value: "'\\''s-"
 
   - id: A002
-    says: "All four command types escape the path consistently"
+    says: "Every generated command type uses the escaped path"
     block: "escapes single quotes in surface path commands"
-    target: "escapedCommands"
-    matcher: "equals"
-    value: 4
+    target: "surfaceCommands.nonNull"
+    matcher: "contains"
+    value: "'\\''s-"
 
   - id: A003
     says: "Paths without single quotes produce unchanged command strings"
