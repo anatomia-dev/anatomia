@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-159 runs · 106 active · 5 promoted · 802 closed
+159 runs · 105 active · 5 promoted · 803 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 28 | 20 | 2026-05-25 |
+| Unscoped | 28 | 19 | 2026-05-25 |
 | cli | 108 | 67 | 2026-05-24 |
 | website | 23 | 19 | 2026-05-24 |
 
@@ -16,15 +16,15 @@
 |------|--------|--------|
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/src/commands/work.ts | 6 | 4 |
-| packages/cli/src/commands/init/state.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
+| packages/cli/src/commands/init/state.ts | 5 | 5 |
 | packages/cli/src/engine/detectors/git.ts | 3 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 106 total)
+## Active Findings (30 shown of 105 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,7 +33,6 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
-- **code:** fix-surface-test-priority-C1 still active — scripts['test'] !== undefined at state.ts:520 treats explicit null in package.json as present — *Fix Risk Findings*
 - **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
@@ -116,6 +115,7 @@
 ### website/components/docs/proof/ProofHero.tsx
 
 - **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
+- **test:** No unit tests for surface conditional rendering in ProofHero or ProofExplorer — by spec design (build-only strategy), but null/undefined/empty-string edge cases untested — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
