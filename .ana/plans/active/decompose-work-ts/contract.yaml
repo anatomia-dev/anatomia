@@ -1,0 +1,152 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Decompose work.ts"
+
+assertions:
+  - id: A001
+    says: "Pipeline state computation lives in its own module"
+    block: "work-state.ts exists with correct exports"
+    target: "work-state.exports.functions"
+    matcher: "equals"
+    value: 10
+
+  - id: A002
+    says: "All five pipeline type definitions are exported from the state module"
+    block: "work-state.ts exists with correct exports"
+    target: "work-state.exports.types"
+    matcher: "equals"
+    value: 5
+
+  - id: A003
+    says: "The concurrency timeout constant is exported from the state module"
+    block: "work-state.ts exists with correct exports"
+    target: "work-state.exports.CONCURRENCY_TIMEOUT_MS"
+    matcher: "exists"
+
+  - id: A004
+    says: "Proof chain writing lives in its own module"
+    block: "work-proof.ts exists with correct exports"
+    target: "work-proof.exports.functions"
+    matcher: "equals"
+    value: 3
+
+  - id: A005
+    says: "Surface derivation is re-exported from work.ts for backward compatibility"
+    block: "work.ts re-exports deriveSurface"
+    target: "work.reexport.deriveSurface"
+    matcher: "exists"
+
+  - id: A006
+    says: "The main work module is significantly smaller after decomposition"
+    block: "work.ts line count reduced"
+    target: "work.ts.lineCount"
+    matcher: "greater"
+    value: 800
+
+  - id: A007
+    says: "The main work module is significantly smaller after decomposition"
+    block: "work.ts line count reduced"
+    target: "work.ts.lineCount"
+    matcher: "not_equals"
+    value: 2545
+
+  - id: A008
+    says: "Work module imports state functions from the new state module"
+    block: "work.ts imports from work-state"
+    target: "work.ts.imports.work-state"
+    matcher: "exists"
+
+  - id: A009
+    says: "Work module imports proof functions from the new proof module"
+    block: "work.ts imports from work-proof"
+    target: "work.ts.imports.work-proof"
+    matcher: "exists"
+
+  - id: A010
+    says: "Proof module imports countPhases from the state module"
+    block: "work-proof.ts imports from work-state"
+    target: "work-proof.ts.imports.countPhases"
+    matcher: "exists"
+
+  - id: A011
+    says: "Dependency direction is acyclic — state module does not import from work or proof"
+    block: "work-state.ts has no circular imports"
+    target: "work-state.ts.imports.work"
+    matcher: "not_contains"
+    value: "./work"
+
+  - id: A012
+    says: "Dependency direction is acyclic — proof module does not import from work"
+    block: "work-proof.ts has no circular imports"
+    target: "work-proof.ts.imports.work"
+    matcher: "not_contains"
+    value: "./work.js"
+
+  - id: A013
+    says: "Human-readable status display is untouched — agents can still parse it"
+    block: "display functions stay in work.ts"
+    target: "work.ts.contains.printHumanReadable"
+    matcher: "exists"
+
+  - id: A014
+    says: "Notification display is untouched — agents can still parse it"
+    block: "display functions stay in work.ts"
+    target: "work.ts.contains.printNotifications"
+    matcher: "exists"
+
+  - id: A015
+    says: "All existing tests pass without modification"
+    block: "existing tests pass unchanged"
+    target: "testSuite.passed"
+    matcher: "equals"
+    value: 2924
+
+  - id: A016
+    says: "No test files are modified during this refactor"
+    block: "existing tests pass unchanged"
+    target: "testFiles.modified"
+    matcher: "equals"
+    value: 0
+
+  - id: A017
+    says: "The deriveSurface test can still import via the work module"
+    block: "deriveSurface backward compat import"
+    target: "work.test.deriveSurface.import"
+    matcher: "contains"
+    value: "work.js"
+
+  - id: A018
+    says: "The proofSummary import is correctly split between work.ts and work-proof.ts"
+    block: "proofSummary import split is clean"
+    target: "work-proof.ts.imports.proofSummary"
+    matcher: "contains"
+    value: "resolveFindingPaths"
+
+  - id: A019
+    says: "Work.ts keeps its own proofSummary imports after the split"
+    block: "proofSummary import split is clean"
+    target: "work.ts.imports.proofSummary"
+    matcher: "contains"
+    value: "generateProofSummary"
+
+  - id: A020
+    says: "Build and lint pass cleanly"
+    block: "build and lint pass"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A021
+    says: "Lint passes with no new violations"
+    block: "build and lint pass"
+    target: "lint.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/commands/work-state.ts"
+    action: create
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: create
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
