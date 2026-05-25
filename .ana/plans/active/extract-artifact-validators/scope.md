@@ -35,16 +35,26 @@ Move 8 validator functions from artifact.ts to a new `artifact-validators.ts` in
 | `validateVerifyReportFormat` | 27 | private | fs |
 | `validateScopeFormat` | 134 | EXPORT | fs, path, findProjectRoot |
 | `validateSpecFormat` | 41 | private | fs |
-| `validateContractFormat` | 140 | private | fs, yaml |
-| `validateVerifyDataFormat` | 127 | EXPORT | fs, path, yaml |
-| `validateBuildDataFormat` | 64 | EXPORT | fs, yaml |
+| `validateContractFormat` | 140 | private | fs, yaml, ContractSchema (type), VALID_MATCHERS, VALUE_REQUIRED_MATCHERS |
+| `validateVerifyDataFormat` | 127 | EXPORT | fs, path, yaml, VerifyDataSchema, VALID_FINDING_* constants |
+| `validateBuildDataFormat` | 64 | EXPORT | fs, yaml, BuildDataSchema, VALID_FINDING_SEVERITIES, VALID_FINDING_ACTIONS |
 | `validateBuildReportFormat` | 40 | private | fs |
+
+**Supporting declarations that move with validators (from redundant agent review — unanimous 3/3):**
+- `VALID_MATCHERS` (line 730) — used only by `validateContractFormat`
+- `VALUE_REQUIRED_MATCHERS` (line 731) — used only by `validateContractFormat`
+- `VALID_FINDING_CATEGORIES` (line 865) — used only by `validateVerifyDataFormat`
+- `VALID_FINDING_SEVERITIES` (line 866) — used by `validateVerifyDataFormat` and `validateBuildDataFormat`
+- `VALID_FINDING_ACTIONS` (line 867) — used by `validateVerifyDataFormat` and `validateBuildDataFormat`
+- `VerifyDataSchema` interface (lines 847-852) — used only by `validateVerifyDataFormat`
+- `BuildDataSchema` interface (lines 856-860) — used only by `validateBuildDataFormat`
+- `import type { ContractSchema } from '../types/contract.js'` — used only by `validateContractFormat`. Remove from artifact.ts after extraction (becomes dead import).
 
 **Dependency analysis:**
 - No validator calls another validator.
 - No validator calls any other artifact.ts function.
 - No validator has side effects (no writes, no git, no console output).
-- Only external dependency beyond Node built-ins: `findProjectRoot` from `../utils/validators.js` (used by `validateScopeFormat` only) and `yaml` (used by 3 validators for YAML parsing).
+- Only external dependency beyond Node built-ins: `findProjectRoot` from `../utils/validators.js` (used by `validateScopeFormat` only) and `yaml` (used by 3 validators for YAML parsing). Both imports remain in artifact.ts (used by non-validator code) AND are added to artifact-validators.ts. The `ContractSchema` type import is the only import removable from artifact.ts.
 - `SECRET_PATTERNS` from the engine is NOT used by any validator.
 
 **Currently private validators that need to become exported:** `validatePlanFormat`, `validateVerifyReportFormat`, `validateSpecFormat`, `validateContractFormat`, `validateBuildReportFormat` are currently private (called only by `saveArtifact` and `saveAllArtifacts`). After extraction, they must be exported from `artifact-validators.ts` so artifact.ts can import them. They do NOT need to be re-exported from artifact.ts — only the 3 already-public validators need re-exports.
@@ -56,7 +66,7 @@ Move 8 validator functions from artifact.ts to a new `artifact-validators.ts` in
 - AC1: `artifact-validators.ts` exists with all 8 validator functions exported.
 - AC2: `artifact.ts` imports validators from `./artifact-validators.js` and calls them unchanged.
 - AC3: `artifact.ts` re-exports `validateScopeFormat`, `validateVerifyDataFormat`, `validateBuildDataFormat` for backward compatibility.
-- AC4: `artifact.ts` is ~1480 lines (was 2093 — reduced by ~610).
+- AC4: `artifact.ts` is ~1500 lines (was 2093 — reduced by ~595 lines of validators + supporting constants/interfaces).
 - AC5: All existing tests pass without modification to test assertions.
 - AC6: Zero behavior change — every validator keeps its exact signature and return type.
 - AC7: `pnpm run test -- --run` passes.
@@ -64,7 +74,11 @@ Move 8 validator functions from artifact.ts to a new `artifact-validators.ts` in
 
 ## Edge Cases & Risks
 
-**`validateScopeFormat` calls `findProjectRoot`.** This import moves to artifact-validators.ts. It's already imported in artifact.ts from `../utils/validators.js`. The new module needs the same import. Since artifact-validators.ts is in the same directory as artifact.ts (`src/commands/`), the relative path is identical.
+**`validateScopeFormat` calls `findProjectRoot`.** This import moves to artifact-validators.ts. It's already imported in artifact.ts from `../utils/validators.js`. The new module needs the same import. Since artifact-validators.ts is in the same directory as artifact.ts (`src/commands/`), the relative path is identical. Note: `findProjectRoot` remains imported in artifact.ts — it's used by non-validator code at lines 1243, 1289, 1736.
+
+**Duplicate JSDoc on `validateScopeFormat`.** Lines 554-559 contain a stale duplicate of the JSDoc at lines 560-565 (from redundant agent review — unanimous 3/3). Clean up during extraction — only the second block moves.
+
+**`ContractSchema` import becomes dead in artifact.ts.** After extraction, `import type { ContractSchema }` at line 26 is unused in artifact.ts (only `validateContractFormat` used it). Remove it to pass lint.
 
 **Private-to-exported promotion.** 5 validators go from private to exported. This has no runtime impact — they were already module-scoped functions, not truly private (no class, no closure). The `export` keyword is the only change to these 5 function declarations.
 
@@ -114,7 +128,7 @@ The `decompose-proof-summary` scope — identical pattern. Move pure functions t
 
 ### Relevant Code Paths
 
-- `src/commands/artifact.ts` lines 502-1112 — the 8 validators
+- `src/commands/artifact.ts` lines 502-1090 — the 8 validators + supporting constants/interfaces (lines 1092+ are save-operation helpers, NOT validators)
 - `src/commands/artifact.ts` lines 1396-1490, 1796-1869 — where validators are called
 - `tests/commands/artifact.test.ts` line 7 — import statement
 - `tests/commands/scope-surface-validation.test.ts` line 9 — import statement
