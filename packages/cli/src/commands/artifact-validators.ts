@@ -33,15 +33,15 @@ interface BuildDataSchema {
 /**
  * Valid matchers for contract assertions
  */
-export const VALID_MATCHERS = ['equals', 'exists', 'contains', 'greater', 'truthy', 'not_equals', 'not_contains'];
-export const VALUE_REQUIRED_MATCHERS = ['equals', 'contains', 'greater', 'not_equals', 'not_contains'];
+const VALID_MATCHERS = ['equals', 'exists', 'contains', 'greater', 'truthy', 'not_equals', 'not_contains'];
+const VALUE_REQUIRED_MATCHERS = ['equals', 'contains', 'greater', 'not_equals', 'not_contains'];
 
 /**
  * Valid finding categories for verify_data.yaml
  */
-export const VALID_FINDING_CATEGORIES = ['code', 'test', 'upstream'];
-export const VALID_FINDING_SEVERITIES = ['risk', 'debt', 'observation'];
-export const VALID_FINDING_ACTIONS = ['promote', 'scope', 'monitor', 'accept'];
+const VALID_FINDING_CATEGORIES = ['code', 'test', 'upstream'];
+const VALID_FINDING_SEVERITIES = ['risk', 'debt', 'observation'];
+const VALID_FINDING_ACTIONS = ['promote', 'scope', 'monitor', 'accept'];
 
 /**
  * Validate plan.md format
