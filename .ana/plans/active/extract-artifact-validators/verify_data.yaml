@@ -1,0 +1,19 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Constants exported unnecessarily — VALID_MATCHERS, VALUE_REQUIRED_MATCHERS, VALID_FINDING_CATEGORIES, VALID_FINDING_SEVERITIES, VALID_FINDING_ACTIONS were module-private in artifact.ts but exported in artifact-validators.ts"
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    line: 36
+    severity: debt
+    suggested_action: accept
+  - category: code
+    summary: "Interfaces VerifyDataSchema and BuildDataSchema are not exported — correct, since they were module-private before. But they use index signatures ([key: string]: unknown) that suppress type errors on unknown fields. This is inherited behavior, not new."
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    line: 18
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "A013 matcher 'greater' with value 1350 is loose — artifact.ts is 1501 lines, well above the threshold. The assertion tests that extraction happened but doesn't tightly bound the result. A range-based check (e.g., between 1400-1600) would catch accidental inclusion or double-extraction."
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A013"]
