@@ -1098,7 +1098,7 @@ async function writeProofChain(slug: string, proof: ProofSummary, projectRoot: s
   // Backfill migration: derive surface for existing entries without one
   if (anaSurfaces && !chain.migrations?.['surface_backfill']) {
     for (const existing of chain.entries) {
-      if (!existing.surface && existing.modules_touched?.length) {
+      if ((existing.surface === undefined || existing.surface === null) && existing.modules_touched?.length) {
         const derived = deriveSurface(existing.modules_touched, anaSurfaces);
         if (derived) {
           existing.surface = derived;
