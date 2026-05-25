@@ -42755,7 +42755,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "extract-proof-handlers-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by same direct commit 67d51116 — ~1560 lines of handler body reformatted from 6-space to 2-space indent. All extracted handlers now use project-standard 2-space indentation as top-level functions.",
+          "closed_at": "2026-05-25T23:50:51.177Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-162 runs · 108 active · 5 promoted · 810 closed
+162 runs · 107 active · 5 promoted · 811 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 70 | 2026-05-25 |
+| cli | 111 | 69 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/src/commands/proof.ts | 4 | 4 |
+| packages/cli/src/engine/census.ts | 4 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 108 total)
+## Active Findings (30 shown of 107 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,7 +37,6 @@
 
 ### packages/cli/src/commands/proof.ts
 
-- **code:** ~1560 lines of handler body at 6-space indent from verbatim extraction — visual noise when reading top-level functions — *Extract Proof Command Handlers*
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
 
 ### packages/cli/src/commands/work.ts
@@ -113,6 +112,10 @@
 ### packages/cli/tests/engine/parsers/python.test.ts
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
