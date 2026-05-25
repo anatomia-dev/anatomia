@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-159 runs · 107 active · 5 promoted · 801 closed
+159 runs · 106 active · 5 promoted · 802 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 28 | 21 | 2026-05-25 |
+| Unscoped | 28 | 20 | 2026-05-25 |
 | cli | 108 | 67 | 2026-05-24 |
 | website | 23 | 19 | 2026-05-24 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 106 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -109,13 +109,13 @@
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
-### website/components/docs/content/DocsStat.tsx
-
-- **code:** DocsStatKey runtime fallback renders raw key name as visible page text — user sees 'proofCoutn' instead of a number if MDX has a typo — *Fix Risk Findings*
-
 ### website/components/docs/proof/ProofExplorer.tsx
 
 - **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
+
+### website/components/docs/proof/ProofHero.tsx
+
+- **code:** formatDuration duplicated in ProofHero — known across 4 files per proof context — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

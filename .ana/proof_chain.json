@@ -42326,7 +42326,10 @@
             "A010"
           ],
           "id": "fix-risk-findings-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "The DocsStatKey type union at docsStatValues.ts:10-19 prevents invalid keys at build time. The runtime fallback (values[value] ?? value) at DocsStat.tsx:34 is defense-in-depth — unreachable through normal usage since the prop type is DocsStatKey, not string. Only triggerable via explicit type casting (as any), which bypasses all type safety intentionally.",
+          "closed_at": "2026-05-25T22:53:06.039Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
