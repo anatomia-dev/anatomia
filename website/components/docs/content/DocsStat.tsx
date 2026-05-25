@@ -2,9 +2,10 @@ import { getProofEntries, getProofStats, getMedianTimings } from '@/lib/docs-dat
 import { getSkillCount } from '@/lib/docs-data/skills';
 import { getGotchaCount } from '@/lib/docs-data/gotchas';
 import { buildDocsStatValues } from '@/lib/docs-data/docsStatValues';
+import type { DocsStatKey } from '@/lib/docs-data/docsStatValues';
 
 interface DocsStatProps {
-  value: string;
+  value: DocsStatKey;
 }
 
 /**

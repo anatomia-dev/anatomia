@@ -6,6 +6,18 @@
  * prebuild stripJsx path in extract-docs-data.ts.
  */
 
+/** Valid keys for the DocsStat component's `value` prop. */
+export type DocsStatKey =
+  | 'proofCount'
+  | 'rejections'
+  | 'findings'
+  | 'skillCount'
+  | 'gotchaCount'
+  | 'medianThink'
+  | 'medianPlan'
+  | 'medianBuild'
+  | 'medianVerify';
+
 /** Raw inputs needed to compute all 9 value keys. */
 export interface DocsStatInput {
   proofCount: number;
