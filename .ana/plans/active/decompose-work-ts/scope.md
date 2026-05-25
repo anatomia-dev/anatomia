@@ -57,6 +57,8 @@ Cross-calls are acyclic:
 
 Imports needed: `fs`, `path`, `runGit` (from `../utils/git-operations.js`), `worktreeExists`, `getWorktreePath` (from `../utils/worktree.js`).
 
+**Module-scope constant (from redundant agent review, unanimous 3/3):** `CONCURRENCY_TIMEOUT_MS` (line 2371) is used by BOTH `isTimestampRecent` (moves to work-state.ts) and `checkConcurrencyGuard` (stays in work.ts). Move the constant to work-state.ts and export it. work.ts imports it from work-state.ts. Single source of truth, clean dependency direction.
+
 **`src/commands/work-proof.ts`** (~320 lines) — proof chain writing:
 
 | Function | Lines | Dependencies |
@@ -65,9 +67,11 @@ Imports needed: `fs`, `path`, `runGit` (from `../utils/git-operations.js`), `wor
 | `deriveSurface` | 33 | path (pure computation, already exported) |
 | `writeProofChain` | 265 | fs, path, chalk, deriveSurface, guardFailResult, + proofSummary imports (resolveFindingPaths, generateDashboard, computeChainHealth), proof types |
 
-Cross-calls: `writeProofChain` → `deriveSurface`, `guardFailResult`. Both move together.
+Cross-calls: `writeProofChain` → `deriveSurface`, `guardFailResult` (both move together), AND `countPhases` (imported from work-state.ts — corrected from redundant agent review, unanimous 3/3).
 
-Imports needed: `fs`, `path`, `chalk`, proofSummary functions (resolveFindingPaths, generateDashboard, computeChainHealth), proof types (ProofChainEntry, ProofChain, etc.), `findProjectRoot` from validators, `runGit` from git-operations.
+**NOTE (from redundant agent review, unanimous 3/3):** `guardFailResult` calls `console.error` (3 times) and `process.exit(1)`. `writeProofChain` calls `console.error` for UNKNOWN result warnings. These are stderr error paths — NOT agent-parsed display output. Agents don't run `ana work complete`. Safe to move, but work-proof.ts is NOT pure computation — it has side effects.
+
+Imports needed: `fs`, `fsPromises` (from `node:fs/promises` — used by writeProofChain for mkdir/writeFile), `path`, `chalk`, `countPhases` (from `./work-state.js`), proofSummary functions (resolveFindingPaths, generateDashboard, computeChainHealth), proof types (ProofChainEntry, ProofChain, etc.), `findProjectRoot` from validators, `runGit` from git-operations.
 
 **`src/commands/work.ts`** (~1717 lines) — keeps everything agents interact with:
 
@@ -78,7 +82,7 @@ Utility: `commitSaves`
 Types: `WorkItem` (uses `ArtifactState` imported from work-state), `StatusOutput`, `ConcurrencyGuardResult`
 
 New imports from work-state.ts: all 10 state functions + `ArtifactState` type
-New imports from work-proof.ts: `writeProofChain`, `deriveSurface`
+New imports from work-proof.ts: `writeProofChain`, `deriveSurface`, `guardFailResult` (corrected from redundant agent review — `completeWork` calls `guardFailResult` directly at line 1676)
 Re-export: `export { deriveSurface } from './work-proof.js'` (backward compat for work.test.ts dynamic import)
 
 Some proofSummary imports stay in work.ts (`generateProofSummary`, `wrapJsonResponse`, `wrapJsonError`, `detectHealthChange`, `getProofContext`, `extractScopeKind` — all used by `completeWork` outside of `writeProofChain`). Some proofSummary imports move to work-proof.ts (`resolveFindingPaths`, `generateDashboard`, `computeChainHealth` — used only by `writeProofChain`). The import line splits.
