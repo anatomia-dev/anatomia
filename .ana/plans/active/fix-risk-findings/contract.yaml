@@ -1,0 +1,104 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Risk Findings"
+
+assertions:
+  # Fix 1: Path escape in surface commands
+  - id: A001
+    says: "Surface commands escape single quotes in directory paths"
+    block: "escapes single quotes in surface path commands"
+    target: "surfaceBuild"
+    matcher: "contains"
+    value: "'\\''s-"
+
+  - id: A002
+    says: "All four command types escape the path consistently"
+    block: "escapes single quotes in surface path commands"
+    target: "escapedCommands"
+    matcher: "equals"
+    value: 4
+
+  - id: A003
+    says: "Paths without single quotes produce unchanged command strings"
+    block: "does not alter paths without single quotes"
+    target: "surfaceBuild"
+    matcher: "equals"
+    value: "(cd 'packages/cli' && pnpm run build)"
+
+  - id: A004
+    says: "Escaped path only affects the cd target, not the rest of the command"
+    block: "escapes single quotes in surface path commands"
+    target: "surfaceTest"
+    matcher: "contains"
+    value: "&& pnpm run test)"
+
+  # Fix 2: Backfill guard explicit null check
+  - id: A005
+    says: "Backfill guard uses explicit null check instead of falsy coercion"
+    block: "backfill guard uses strict equality"
+    target: "sourceCode"
+    matcher: "contains"
+    value: "existing.surface === undefined || existing.surface === null"
+
+  - id: A006
+    says: "Backfill guard no longer matches empty-string surfaces"
+    block: "backfill guard uses strict equality"
+    target: "sourceCode"
+    matcher: "not_contains"
+    value: "!existing.surface"
+
+  # Fix 3: DocsStatKey type narrowing
+  - id: A007
+    says: "A type restricts which stat keys the component accepts"
+    block: "DocsStatKey type is exported"
+    target: "docsStatValues.exports"
+    matcher: "contains"
+    value: "DocsStatKey"
+
+  - id: A008
+    says: "The stat key type covers all nine valid statistics"
+    block: "DocsStatKey type is exported"
+    target: "DocsStatKey.members"
+    matcher: "equals"
+    value: 9
+
+  - id: A009
+    says: "The component prop accepts the narrowed type instead of any string"
+    block: "DocsStat prop uses DocsStatKey"
+    target: "DocsStatProps.value"
+    matcher: "equals"
+    value: "DocsStatKey"
+
+  - id: A010
+    says: "The runtime fallback is kept for unrecognized keys from MDX"
+    block: "DocsStat prop uses DocsStatKey"
+    target: "componentBody"
+    matcher: "contains"
+    value: "?? value"
+
+  # Cross-cutting: regression
+  - id: A011
+    says: "All existing tests continue to pass after the changes"
+    block: "existing tests pass unchanged"
+    target: "testSuite.passed"
+    matcher: "greater"
+    value: 2918
+
+  - id: A012
+    says: "The website builds successfully with the narrowed type"
+    block: "website build succeeds"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "website/lib/docs-data/docsStatValues.ts"
+    action: modify
+  - path: "website/components/docs/content/DocsStat.tsx"
+    action: modify
+  - path: "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts"
+    action: modify
