@@ -42789,6 +42789,184 @@
         "base_commit": "af4b22ddd91b8df85a92ba5b6f3a094d592bd7b0"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "extract-artifact-validators",
+      "feature": "Extract Artifact Validators",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 15,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The new validator module exists and exports all 8 validator functions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The original module still exports the 3 public validators for backward compatibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The original module still exports validateVerifyDataFormat for backward compatibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The original module still exports validateBuildDataFormat for backward compatibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Plan validation still rejects plans missing the Phases heading",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Scope validation still rejects scopes with fewer than 3 acceptance criteria",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Contract validation still catches missing version field",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Spec validation still catches missing Build Brief section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Verify data validation still catches invalid finding categories",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Build data validation still catches missing schema field",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Build report validation still catches missing required sections",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Verify report validation still catches missing Result line",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The original artifact module is significantly smaller after extraction",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The original artifact module lost roughly 600 lines from the extraction",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "All existing tests pass without modification",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 1188,
+        "think": 32,
+        "plan": 5,
+        "build": 7,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:38f48356b580d767ac59a293a447416606f7512b33a9c8872940a100dbf86d94",
+        "contract": "sha256:4a3cd6490d840b68903babb9aaf18924c5c729cdf9a474cbea1766eefa311808",
+        "plan": "sha256:c9f41709864bd4769e5f0a214fedc94117f1f17f1e36a84a1d6623f180f56ab0",
+        "spec": "sha256:4a4253a6f4d14abf7c1994c495beefed44f6140c9e55d369d3c1870aa9dd925d",
+        "build-report": "sha256:7bda11ee89f6804e958dcdceaf3fc1b0420e8d0040bfe6b85ec714f0808869a3",
+        "build-data": "sha256:eedbc774d51648a41fd85967353118a351016c807e36f3fb94fe06370f9e2b15",
+        "verify-report": "sha256:c20f3605fb58b2a15ddb02fcdd4339590d95b490e2015a46e8de9442d287d042",
+        "verify-data": "sha256:d0ca4ee30a2fd99136160ffdc51915a814de679890d93039dd68f8586cbeb50c"
+      },
+      "completed_at": "2026-05-25T23:28:25.813Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/artifact.ts"
+      ],
+      "scope_summary": "`artifact.ts` is 2093 lines — the third-largest source file. 610 of those lines are 8 format validators (`validatePlanFormat`, `validateScopeFormat`, `validateContractFormat`, etc.) that are pure functions: file path in, error string (or null) out. They have no dependency on any other artifact.ts function, no shared state, and a clean dependency set (fs, path, yaml, findProjectRoot). They're called from exactly two places: `saveArtifact` and `saveAllArtifacts`.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Constants exported unnecessarily — VALID_MATCHERS, VALUE_REQUIRED_MATCHERS, VALID_FINDING_CATEGORIES, VALID_FINDING_SEVERITIES, VALID_FINDING_ACTIONS were module-private in artifact.ts but exported in artifact-validators.ts",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 36,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "extract-artifact-validators-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Interfaces VerifyDataSchema and BuildDataSchema are not exported — correct, since they were module-private before. But they use index signatures ([key: string]: unknown) that suppress type errors on unknown fields. This is inherited behavior, not new.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 18,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "extract-artifact-validators-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A013 matcher 'greater' with value 1350 is loose — artifact.ts is 1501 lines, well above the threshold. The assertion tests that extraction happened but doesn't tightly bound the result. A range-based check (e.g., between 1400-1600) would catch accidental inclusion or double-extraction.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "extract-artifact-validators-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-25T23:28:25.814Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-25T23:03:36.649Z",
+        "completed_at": "2026-05-25T23:28:25.808Z",
+        "commit_count": 0,
+        "base_commit": "85065d565eaf09cddfdb0f564af79dd71a873fc2"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

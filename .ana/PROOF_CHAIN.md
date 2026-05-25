@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-161 runs · 111 active · 5 promoted · 804 closed
+162 runs · 113 active · 5 promoted · 805 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 110 | 73 | 2026-05-25 |
+| cli | 111 | 75 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,12 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 113 total)
+
+### packages/cli/src/commands/artifact-validators.ts
+
+- **code:** Constants exported unnecessarily — VALID_MATCHERS, VALUE_REQUIRED_MATCHERS, VALID_FINDING_CATEGORIES, VALID_FINDING_SEVERITIES, VALID_FINDING_ACTIONS were module-private in artifact.ts but exported in artifact-validators.ts — *Extract Artifact Validators*
+- **code:** Interfaces VerifyDataSchema and BuildDataSchema are not exported — correct, since they were module-private before. But they use index signatures ([key: string]: unknown) that suppress type errors on unknown fields. This is inherited behavior, not new. — *Extract Artifact Validators*
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -94,11 +99,6 @@
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
-
-### packages/cli/tests/engine/detectors/polyglot.test.ts
-
-- **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
-- **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
