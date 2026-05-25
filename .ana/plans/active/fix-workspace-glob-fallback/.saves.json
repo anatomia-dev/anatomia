@@ -39,5 +39,20 @@
     "packages/cli/src/engine/census.ts",
     "packages/cli/tests/engine/census.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-25T23:06:34.622Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b3351aa73038b17babd13e7c89cd5b5b3473ff93fc0f64e60df4c8d9b5b91ffe",
+    "run_at": "2026-05-25T23:10:59.330Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-25T23:10:59.363Z",
+    "hash": "sha256:ed60310df44e2f05236bc02bf2b4c3ec7ab6c913d6ba19cd12e4e4c5477aa009"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-25T23:10:59.363Z",
+    "hash": "sha256:7dbb63a8a214bf52459a89dd77739b43790ff27a1040e7c4077954e65e76a8c7"
+  }
 }

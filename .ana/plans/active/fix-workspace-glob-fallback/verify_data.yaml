@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: code
+    summary: "rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps"
+    file: "packages/cli/src/engine/census.ts"
+    line: 590
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007"]
+  - category: code
+    summary: "Defensive guard for !result.rootPackage is unreachable with current @manypkg behavior"
+    file: "packages/cli/src/engine/census.ts"
+    line: 531
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "Fix A test does not assert deps/devDeps are separated correctly — only checks allDeps"
+    file: "packages/cli/tests/engine/census.test.ts"
+    line: 68
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "fallbackRootPackage type allows scripts as Record<string, unknown> but JSON.parse returns any — no runtime validation"
+    file: "packages/cli/src/engine/census.ts"
+    line: 487
+    severity: observation
+    suggested_action: accept
