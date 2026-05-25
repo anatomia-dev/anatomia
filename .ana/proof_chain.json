@@ -42925,7 +42925,10 @@
           "severity": "debt",
           "suggested_action": "accept",
           "id": "extract-artifact-validators-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by direct commit 0bf2b86a — 'Remove unnecessary export from artifact-validators constants.' VALID_MATCHERS, VALUE_REQUIRED_MATCHERS, VALID_FINDING_CATEGORIES, VALID_FINDING_SEVERITIES, VALID_FINDING_ACTIONS changed from export const to const at artifact-validators.ts:36-44. Verified in current code.",
+          "closed_at": "2026-05-25T23:37:01.970Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

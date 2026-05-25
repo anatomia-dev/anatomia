@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-162 runs · 111 active · 5 promoted · 807 closed
+162 runs · 110 active · 5 promoted · 808 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 73 | 2026-05-25 |
+| cli | 111 | 72 | 2026-05-25 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,11 +24,10 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
-- **code:** Constants exported unnecessarily — VALID_MATCHERS, VALUE_REQUIRED_MATCHERS, VALID_FINDING_CATEGORIES, VALID_FINDING_SEVERITIES, VALID_FINDING_ACTIONS were module-private in artifact.ts but exported in artifact-validators.ts — *Extract Artifact Validators*
 - **code:** Interfaces VerifyDataSchema and BuildDataSchema are not exported — correct, since they were module-private before. But they use index signatures ([key: string]: unknown) that suppress type errors on unknown fields. This is inherited behavior, not new. — *Extract Artifact Validators*
 
 ### packages/cli/src/commands/artifact.ts
@@ -63,6 +62,10 @@
 ### packages/cli/src/engine/detectors/dependencies.ts
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
 ### packages/cli/src/engine/scan-engine.ts
 
