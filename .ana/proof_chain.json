@@ -36966,7 +36966,10 @@
             "A004"
           ],
           "id": "fix-test-behavioral-coverage-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by fix-risk-findings scope — backfill guard at work.ts:1101 changed from !existing.surface (falsy, treats '' as no surface) to existing.surface === undefined || existing.surface === null (explicit nullish check). Empty string surface is now preserved during backfill.",
+          "closed_at": "2026-05-25T22:51:57.632Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

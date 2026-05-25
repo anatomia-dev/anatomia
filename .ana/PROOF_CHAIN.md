@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-159 runs · 111 active · 5 promoted · 797 closed
+159 runs · 110 active · 5 promoted · 798 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 22 | 2026-05-25 |
-| cli | 108 | 69 | 2026-05-24 |
+| cli | 108 | 68 | 2026-05-24 |
 | website | 23 | 20 | 2026-05-24 |
 
 ## Hot Modules
@@ -15,8 +15,8 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/init/state.ts | 8 | 6 |
-| packages/cli/src/commands/work.ts | 7 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
+| packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/engine/detectors/git.ts | 3 | 2 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -43,7 +43,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **test:** No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection — *Fix Risk Findings*
-- **code:** Backfill guard treats empty string surface as 'no surface' — !'' is truthy in JS, so surface: '' would be overwritten during backfill — *Fix test behavioral coverage gaps*
 
 ### packages/cli/src/engine/census.ts
 
@@ -113,6 +112,10 @@
 ### website/components/docs/content/DocsStat.tsx
 
 - **code:** DocsStatKey runtime fallback renders raw key name as visible page text — user sees 'proofCoutn' instead of a number if MDX has a typo — *Fix Risk Findings*
+
+### website/components/docs/proof/ProofExplorer.tsx
+
+- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
