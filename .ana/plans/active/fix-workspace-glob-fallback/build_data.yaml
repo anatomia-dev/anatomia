@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "A013/A014 contract assertions covered by pre-existing test but not tagged with @ana comment"
+    file: "packages/cli/tests/engine/census.test.ts"
+    severity: observation
+    suggested_action: accept

@@ -24,5 +24,20 @@
   "spec": {
     "saved_at": "2026-05-25T22:55:31.872Z",
     "hash": "sha256:22a0d5b24d67ad32fcb8559f172c9cfbb38a7f4f5c1777631064b176dedde984"
-  }
+  },
+  "build_started_at": "2026-05-25T22:59:29.890Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-25T23:03:01.059Z",
+    "hash": "sha256:45621d9d52ebe6292d732e77ebed5c3de7ed7342abeaa6e6bfbda0afe029f2dc"
+  },
+  "build-data": {
+    "saved_at": "2026-05-25T23:03:01.060Z",
+    "hash": "sha256:a3919e88d7c72b50d3473568e99bb7bf557e3f64c42bc1fbca4ca483cdbc7fa3"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/tests/engine/census.test.ts"
+  ],
+  "commit_hygiene": []
 }
