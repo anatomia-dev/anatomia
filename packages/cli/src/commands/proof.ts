@@ -639,16 +639,13 @@ function formatListTable(entries: ProofChainEntry[]): string {
 }
 
 /**
- * Register the `proof` command.
+ * Handle the root `proof` command — list all proofs or show detail for a slug.
  *
- * @param program - Commander program instance.
+ * @param slug - Optional work item slug to display proof for
+ * @param options - Command options
+ * @param options.json - Output JSON format
  */
-export function registerProofCommand(program: Command): void {
-  const proofCommand = new Command('proof')
-    .description('View proof chain entries, health, and findings')
-    .argument('[slug]', 'Work item slug to display proof for')
-    .option('--json', 'Output JSON format for programmatic consumption')
-    .action(async (slug: string | undefined, options: { json?: boolean }) => {
+async function handleProofList(slug: string | undefined, options: { json?: boolean }): Promise<void> {
     const proofRoot = findProjectRoot();
     const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
 
@@ -716,16 +713,17 @@ export function registerProofCommand(program: Command): void {
     } else {
       console.log(formatHumanReadable(entry));
     }
-  });
+}
 
-  // Register context subcommand
-  // Commander subcommands share parent options when parent has same flag.
-  // Parent proof command defines --json, so context reads it from parent.
-  const contextCommand = new Command('context')
-    .description('Query proof chain for context about specific files')
-    .argument('<files...>', 'File paths to query')
-    .option('--json', 'Output JSON format')
-    .action(async (files: string[], options: { json?: boolean }) => {
+/**
+ * Handle the `proof context` subcommand — query proof chain for context about specific files.
+ *
+ * @param files - File paths to query
+ * @param options - Command options
+ * @param options.json - Output JSON format
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofContext(files: string[], options: { json?: boolean }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
 
@@ -737,9 +735,7 @@ export function registerProofCommand(program: Command): void {
 
       const results = getProofContext(files, proofRoot);
 
-      // Check both own --json and parent's --json
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       if (useJson) {
         const chainContent = fs.readFileSync(proofChainPath, 'utf-8');
@@ -755,22 +751,22 @@ export function registerProofCommand(program: Command): void {
       }
 
       console.log(outputs.join('\n───\n\n'));
-    });
+}
 
-  proofCommand.addCommand(contextCommand);
-
-  // Register close subcommand
-  const closeCommand = new Command('close')
-    .description('Close active findings with a reason')
-    .argument('<ids...>', 'Finding IDs to close (e.g., F003 or F001 F002 F003)')
-    .option('--reason <reason>', 'Why these findings no longer apply')
-    .option('--dry-run', 'Show what would happen without making changes')
-    .option('--json', 'Output JSON format')
-    .action(async (ids: string[], options: { reason?: string; dryRun?: boolean; json?: boolean }) => {
+/**
+ * Handle the `proof close` subcommand — close active findings with a reason.
+ *
+ * @param ids - Finding IDs to close
+ * @param options - Command options
+ * @param options.reason - Why these findings no longer apply
+ * @param options.dryRun - Show what would happen without making changes
+ * @param options.json - Output JSON format
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofClose(ids: string[], options: { reason?: string; dryRun?: boolean; json?: boolean }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       // @ana A009
       const exitError = createExitError({
@@ -1002,24 +998,24 @@ export function registerProofCommand(program: Command): void {
         console.log('');
         console.log(chalk.gray(`Chain: ${health.chain_runs} ${health.chain_runs !== 1 ? 'runs' : 'run'} · ${health.findings.active} active finding${health.findings.active !== 1 ? 's' : ''}`));
       }
-    });
+}
 
-  proofCommand.addCommand(closeCommand);
-
-  // Register promote subcommand
-  const promoteCommand = new Command('promote')
-    .description('Promote findings to a skill rule')
-    .argument('<ids...>', 'Finding IDs to promote (e.g., F001 or F001 F002)')
-    .option('--skill <skill>', 'Skill to promote to (e.g., coding-standards)')
-    .option('--text <text>', 'Custom rule text (defaults to first finding\'s summary)')
-    .option('--section <section>', 'Target section: rules or gotchas (default: rules)')
-    .option('--force', 'Allow promoting a closed finding')
-    .option('--json', 'Output JSON format')
-    .action(async (ids: string[], options: { skill?: string; text?: string; section?: string; force?: boolean; json?: boolean }) => {
+/**
+ * Handle the `proof promote` subcommand — promote findings to a skill rule.
+ *
+ * @param ids - Finding IDs to promote
+ * @param options - Command options
+ * @param options.skill - Skill to promote to
+ * @param options.text - Custom rule text
+ * @param options.section - Target section: rules or gotchas
+ * @param options.force - Allow promoting a closed finding
+ * @param options.json - Output JSON format
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofPromote(ids: string[], options: { skill?: string; text?: string; section?: string; force?: boolean; json?: boolean }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       // Discover available skills for contextual help
       const skillGlobs = globSync('.claude/skills/*/SKILL.md', { cwd: proofRoot });
@@ -1332,23 +1328,23 @@ export function registerProofCommand(program: Command): void {
         console.log('');
         console.log(chalk.gray(`Chain: ${health.chain_runs} ${health.chain_runs !== 1 ? 'runs' : 'run'} · ${health.findings.active} active finding${health.findings.active !== 1 ? 's' : ''}`));
       }
-    });
+}
 
-  proofCommand.addCommand(promoteCommand);
-
-  // Register strengthen subcommand
-  const strengthenCommand = new Command('strengthen')
-    .description('Commit a skill file edit and mark findings as promoted')
-    .argument('<ids...>', 'Finding IDs to strengthen (e.g., F001 or F001 F002)')
-    .option('--skill <skill>', 'Skill whose file was edited (e.g., coding-standards)')
-    .option('--reason <reason>', 'Why this skill was strengthened')
-    .option('--force', 'Allow strengthening a closed finding')
-    .option('--json', 'Output JSON format')
-    .action(async (ids: string[], options: { skill?: string; reason?: string; force?: boolean; json?: boolean }) => {
+/**
+ * Handle the `proof strengthen` subcommand — commit a skill file edit and mark findings as promoted.
+ *
+ * @param ids - Finding IDs to strengthen
+ * @param options - Command options
+ * @param options.skill - Skill whose file was edited
+ * @param options.reason - Why this skill was strengthened
+ * @param options.force - Allow strengthening a closed finding
+ * @param options.json - Output JSON format
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofStrengthen(ids: string[], options: { skill?: string; reason?: string; force?: boolean; json?: boolean }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       // @ana A011
       const exitError = createExitError({
@@ -1589,26 +1585,26 @@ export function registerProofCommand(program: Command): void {
         console.log('');
         console.log(chalk.gray(`Chain: ${health.chain_runs} ${health.chain_runs !== 1 ? 'runs' : 'run'} · ${health.findings.active} active finding${health.findings.active !== 1 ? 's' : ''}`));
       }
-    });
+}
 
-  proofCommand.addCommand(strengthenCommand);
-
-  // Register audit subcommand
-  const auditCommand = new Command('audit')
-    .description('List active findings grouped by file')
-    .option('--json', 'Output JSON format')
-    .option('--full', 'Return all findings without truncation (requires --json)')
-    .option('--severity <values>', 'Filter by severity (comma-separated: risk,debt,observation,unclassified)')
-    .option('--entry <slug>', 'Filter to findings from a specific pipeline run')
-    .option('--matrix', 'Show orientation summary instead of file-grouped findings')
-    .option('--surface <name>', 'Filter to findings from entries belonging to a specific surface')
-    .option('--new', 'Filter to findings from entries completed after the last learn session')
-    .option('--since <date>', 'Filter to findings from entries completed after ISO date')
-    .action(async (options: { json?: boolean; full?: boolean; severity?: string; entry?: string; matrix?: boolean; new?: boolean; since?: string; surface?: string }) => {
+/**
+ * Handle the `proof audit` subcommand — list active findings grouped by file.
+ *
+ * @param options - Command options
+ * @param options.json - Output JSON format
+ * @param options.full - Return all findings without truncation
+ * @param options.severity - Filter by severity
+ * @param options.entry - Filter to findings from a specific pipeline run
+ * @param options.matrix - Show orientation summary
+ * @param options.new - Filter to findings after last learn session
+ * @param options.since - Filter to findings after ISO date
+ * @param options.surface - Filter to findings from a specific surface
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofAudit(options: { json?: boolean; full?: boolean; severity?: string; entry?: string; matrix?: boolean; new?: boolean; since?: string; surface?: string }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       // --full without --json: print usage hint and return
       if (options.full && !useJson) {
@@ -2143,20 +2139,20 @@ export function registerProofCommand(program: Command): void {
           console.log(`  ... and ${overflowFiles} more file${overflowFiles !== 1 ? 's' : ''} (${overflowFindings} findings)`);
         }
       }
-    });
+}
 
-  proofCommand.addCommand(auditCommand);
-
-  // Register health subcommand
-  const healthCommand = new Command('health')
-    .description('Display proof chain health dashboard')
-    .option('--json', 'Output JSON format')
-    .option('--surface <name>', 'Filter to entries belonging to a specific surface')
-    .action(async (options: { json?: boolean; surface?: string }) => {
+/**
+ * Handle the `proof health` subcommand — display proof chain health dashboard.
+ *
+ * @param options - Command options
+ * @param options.json - Output JSON format
+ * @param options.surface - Filter to entries from a specific surface
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofHealth(options: { json?: boolean; surface?: string }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       // Validate --surface flag early
       if (options.surface) {
@@ -2213,21 +2209,21 @@ export function registerProofCommand(program: Command): void {
 
       // Terminal display
       console.log(formatHealthDisplay(report));
-    });
+}
 
-  proofCommand.addCommand(healthCommand);
-
-  // Register stale subcommand
-  const staleCommand = new Command('stale')
-    .description('Show findings with staleness signals from subsequent pipeline runs')
-    .option('--after <slug>', 'Filter to findings from a specific pipeline entry')
-    .option('--min-confidence <level>', 'Minimum confidence tier (high or medium)')
-    .option('--json', 'Output JSON format')
-    .action(async (options: { after?: string; minConfidence?: string; json?: boolean }) => {
+/**
+ * Handle the `proof stale` subcommand — show findings with staleness signals.
+ *
+ * @param options - Command options
+ * @param options.after - Filter to findings from a specific pipeline entry
+ * @param options.minConfidence - Minimum confidence tier
+ * @param options.json - Output JSON format
+ * @param parentJson - Whether the parent command's --json flag was set
+ */
+async function handleProofStale(options: { after?: string; minConfidence?: string; json?: boolean }, parentJson: boolean): Promise<void> {
       const proofRoot = findProjectRoot();
       const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
-      const parentOpts = proofCommand.opts();
-      const useJson = options.json || parentOpts['json'];
+      const useJson = options.json || parentJson;
 
       // Read chain (no branch check — stale is read-only)
       if (!fs.existsSync(proofChainPath)) {
@@ -2325,8 +2321,104 @@ export function registerProofCommand(program: Command): void {
           console.log('');
         }
       }
-    });
+}
 
+/**
+ * Register the `proof` command.
+ *
+ * @param program - Commander program instance.
+ */
+export function registerProofCommand(program: Command): void {
+  const proofCommand = new Command('proof')
+    .description('View proof chain entries, health, and findings')
+    .argument('[slug]', 'Work item slug to display proof for')
+    .option('--json', 'Output JSON format for programmatic consumption')
+    .action(async (slug, options) => handleProofList(slug, options));
+
+  const contextCommand = new Command('context')
+    .description('Query proof chain for context about specific files')
+    .argument('<files...>', 'File paths to query')
+    .option('--json', 'Output JSON format')
+    .action(async (files, options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofContext(files, options, parentJson);
+    });
+  proofCommand.addCommand(contextCommand);
+
+  const closeCommand = new Command('close')
+    .description('Close active findings with a reason')
+    .argument('<ids...>', 'Finding IDs to close (e.g., F003 or F001 F002 F003)')
+    .option('--reason <reason>', 'Why these findings no longer apply')
+    .option('--dry-run', 'Show what would happen without making changes')
+    .option('--json', 'Output JSON format')
+    .action(async (ids, options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofClose(ids, options, parentJson);
+    });
+  proofCommand.addCommand(closeCommand);
+
+  const promoteCommand = new Command('promote')
+    .description('Promote findings to a skill rule')
+    .argument('<ids...>', 'Finding IDs to promote (e.g., F001 or F001 F002)')
+    .option('--skill <skill>', 'Skill to promote to (e.g., coding-standards)')
+    .option('--text <text>', 'Custom rule text (defaults to first finding\'s summary)')
+    .option('--section <section>', 'Target section: rules or gotchas (default: rules)')
+    .option('--force', 'Allow promoting a closed finding')
+    .option('--json', 'Output JSON format')
+    .action(async (ids, options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofPromote(ids, options, parentJson);
+    });
+  proofCommand.addCommand(promoteCommand);
+
+  const strengthenCommand = new Command('strengthen')
+    .description('Commit a skill file edit and mark findings as promoted')
+    .argument('<ids...>', 'Finding IDs to strengthen (e.g., F001 or F001 F002)')
+    .option('--skill <skill>', 'Skill whose file was edited (e.g., coding-standards)')
+    .option('--reason <reason>', 'Why this skill was strengthened')
+    .option('--force', 'Allow strengthening a closed finding')
+    .option('--json', 'Output JSON format')
+    .action(async (ids, options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofStrengthen(ids, options, parentJson);
+    });
+  proofCommand.addCommand(strengthenCommand);
+
+  const auditCommand = new Command('audit')
+    .description('List active findings grouped by file')
+    .option('--json', 'Output JSON format')
+    .option('--full', 'Return all findings without truncation (requires --json)')
+    .option('--severity <values>', 'Filter by severity (comma-separated: risk,debt,observation,unclassified)')
+    .option('--entry <slug>', 'Filter to findings from a specific pipeline run')
+    .option('--matrix', 'Show orientation summary instead of file-grouped findings')
+    .option('--surface <name>', 'Filter to findings from entries belonging to a specific surface')
+    .option('--new', 'Filter to findings from entries completed after the last learn session')
+    .option('--since <date>', 'Filter to findings from entries completed after ISO date')
+    .action(async (options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofAudit(options, parentJson);
+    });
+  proofCommand.addCommand(auditCommand);
+
+  const healthCommand = new Command('health')
+    .description('Display proof chain health dashboard')
+    .option('--json', 'Output JSON format')
+    .option('--surface <name>', 'Filter to entries belonging to a specific surface')
+    .action(async (options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofHealth(options, parentJson);
+    });
+  proofCommand.addCommand(healthCommand);
+
+  const staleCommand = new Command('stale')
+    .description('Show findings with staleness signals from subsequent pipeline runs')
+    .option('--after <slug>', 'Filter to findings from a specific pipeline entry')
+    .option('--min-confidence <level>', 'Minimum confidence tier (high or medium)')
+    .option('--json', 'Output JSON format')
+    .action(async (options) => {
+      const parentJson = !!proofCommand.opts()['json'];
+      await handleProofStale(options, parentJson);
+    });
   proofCommand.addCommand(staleCommand);
 
   program.addCommand(proofCommand);
