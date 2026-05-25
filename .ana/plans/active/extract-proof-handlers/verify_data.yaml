@@ -1,0 +1,20 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Inconsistent body indentation in extracted handlers — 4-space for root, 6-space for subcommands, project standard is 2-space"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 649
+    severity: debt
+    suggested_action: scope
+    related_assertions: []
+  - category: code
+    summary: "~1560 lines of handler body at 6-space indent from verbatim extraction — visual noise when reading top-level functions"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 727
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Contract A001 matcher says greater/0 but intent is under-150 — mechanical check weaker than stated goal"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]

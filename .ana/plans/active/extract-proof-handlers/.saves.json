@@ -38,5 +38,20 @@
   "modules_touched": [
     "packages/cli/src/commands/proof.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-25T23:09:49.692Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:44803a6698e90f6645756d5fa1bdff1290bb62c23d639d28e074fdcec07f2e3a",
+    "run_at": "2026-05-25T23:13:49.893Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-25T23:13:49.924Z",
+    "hash": "sha256:a7e5f002551d83e131ebbfc46e806f2ed24621fb38f986c31ea2793483167b03"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-25T23:13:49.924Z",
+    "hash": "sha256:4a8f74dfebd52d49d8a8fca9d9f727e6791a176c2d84ef79305a355ee683de37"
+  }
 }
