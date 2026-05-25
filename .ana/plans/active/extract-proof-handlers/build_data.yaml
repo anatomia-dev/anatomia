@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "formatContextResult is placed after registerProofCommand, unlike all other module-level helpers"
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
