@@ -481,51 +481,80 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
   const normalizedRoot = path.resolve(rootPath).replace(/\/+$/, '');
 
   // @manypkg/get-packages throws if no package.json exists (Python, Go, Rust,
-  // empty directories). Fall back to a single source root with no deps.
+  // empty directories), or if workspace packages have invalid metadata (missing
+  // "name" field — erxes, immich). Fall back to root package.json when available.
   let result: Awaited<ReturnType<typeof getPackages>> | null = null;
+  let fallbackRootPackage: { name?: string; dependencies?: Record<string, string>; devDependencies?: Record<string, string>; bin?: unknown; scripts?: Record<string, unknown> } | null = null;
   try {
     result = await getPackages(normalizedRoot);
   } catch {
-    // Non-Node project or empty directory — continue with fallback
-    // Future target: non-Node monorepo support (Python workspaces, Go modules)
+    // Attempt to recover root package.json for dep detection
+    const rootPkgPath = path.join(normalizedRoot, 'package.json');
+    if (existsSync(rootPkgPath)) {
+      try {
+        fallbackRootPackage = JSON.parse(readFileSync(rootPkgPath, 'utf-8'));
+      } catch {
+        // Corrupt package.json — continue with empty deps
+      }
+    }
   }
 
   // @manypkg returns tool.type 'root' when it can't determine the package manager.
   // packages[] always includes the root package itself, so check for non-root packages.
+  // When 0 non-root packages exist, treat as single-repo regardless of tool type —
+  // repos with workspace YAML but unresolvable globs (umami) return tool.type 'pnpm'
+  // with 0 packages, which would otherwise enter the monorepo branch and crash.
   const nonRootPackages = result?.packages.filter(p => p.relativeDir !== '.') ?? [];
-  const isSingleRepo = !result || (result.tool.type === 'root' && nonRootPackages.length === 0);
+  const isSingleRepo = !result || nonRootPackages.length === 0;
 
   // Project name from root package.json or directory name
-  const projectName = result?.rootPackage?.packageJson?.name ?? path.basename(normalizedRoot);
+  const projectName = result?.rootPackage?.packageJson?.name
+    ?? fallbackRootPackage?.name
+    ?? path.basename(normalizedRoot);
 
   // Build source roots
   let sourceRoots: SourceRoot[];
   if (!result) {
-    // No package.json — single root with no deps
+    // @manypkg failed — use fallback root package.json if available
     sourceRoots = [{
       absolutePath: normalizedRoot,
       relativePath: '.',
-      packageName: null,
+      packageName: fallbackRootPackage?.name ?? null,
       fileCount: countSourceFiles(normalizedRoot),
       isPrimary: true,
-      deps: {},
-      devDeps: {},
-      hasBin: false,
-      scripts: [],
+      deps: (fallbackRootPackage?.dependencies ?? {}) as Record<string, string>,
+      devDeps: (fallbackRootPackage?.devDependencies ?? {}) as Record<string, string>,
+      hasBin: !!(fallbackRootPackage?.bin),
+      scripts: Object.keys((fallbackRootPackage?.scripts as Record<string, unknown> | null) ?? {}),
     }];
   } else if (isSingleRepo) {
-    const pkg = result.rootPackage!;
-    sourceRoots = [{
-      absolutePath: normalizedRoot,
-      relativePath: '.',
-      packageName: pkg.packageJson.name ?? null,
-      fileCount: countSourceFiles(normalizedRoot),
-      isPrimary: true,
-      deps: (pkg.packageJson.dependencies ?? {}) as Record<string, string>,
-      devDeps: (pkg.packageJson.devDependencies ?? {}) as Record<string, string>,
-      hasBin: !!((pkg.packageJson as unknown as Record<string, unknown>)['bin']),
-      scripts: Object.keys(((pkg.packageJson as unknown as Record<string, unknown>)['scripts'] as Record<string, unknown> | null) ?? {}),
-    }];
+    if (!result.rootPackage) {
+      // Defensive: rootPackage type allows undefined — fall through to empty deps
+      sourceRoots = [{
+        absolutePath: normalizedRoot,
+        relativePath: '.',
+        packageName: null,
+        fileCount: countSourceFiles(normalizedRoot),
+        isPrimary: true,
+        deps: {},
+        devDeps: {},
+        hasBin: false,
+        scripts: [],
+      }];
+    } else {
+      const pkg = result.rootPackage;
+      sourceRoots = [{
+        absolutePath: normalizedRoot,
+        relativePath: '.',
+        packageName: pkg.packageJson.name ?? null,
+        fileCount: countSourceFiles(normalizedRoot),
+        isPrimary: true,
+        deps: (pkg.packageJson.dependencies ?? {}) as Record<string, string>,
+        devDeps: (pkg.packageJson.devDependencies ?? {}) as Record<string, string>,
+        hasBin: !!((pkg.packageJson as unknown as Record<string, unknown>)['bin']),
+        scripts: Object.keys(((pkg.packageJson as unknown as Record<string, unknown>)['scripts'] as Record<string, unknown> | null) ?? {}),
+      }];
+    }
   } else {
     sourceRoots = result.packages.map(pkg => {
       const abs = pkg.dir;
