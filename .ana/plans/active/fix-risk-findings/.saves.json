@@ -48,5 +48,20 @@
     "website/components/docs/content/DocsStat.tsx",
     "website/lib/docs-data/docsStatValues.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-25T22:38:52.014Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b99d11570f45a2c8d08b3e878364967cadb3bf693be2d0d6455fc920b9182ffc",
+    "run_at": "2026-05-25T22:43:06.742Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-25T22:43:06.774Z",
+    "hash": "sha256:f6f0a3e90695434985d4215585b9e0310d3e52fbd4148703dd958358987c627e"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-25T22:43:06.774Z",
+    "hash": "sha256:f939b1ed4ca33c6041e1189b8878caf58d6e0fd37b8a32d467160226f3dd13f8"
+  }
 }
