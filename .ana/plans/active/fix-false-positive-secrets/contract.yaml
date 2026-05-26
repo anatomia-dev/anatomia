@@ -1,0 +1,96 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix False Positive Secret Detection"
+
+assertions:
+  - id: A001
+    says: "The weak signing secret regex no longer exists in the scanner"
+    block: "SECRET_PATTERNS does not contain weak signing secret pattern"
+    target: "SECRET_PATTERNS"
+    matcher: "not_contains"
+    value: "Weak signing secret"
+
+  - id: A002
+    says: "PostHog public analytics keys are no longer flagged"
+    block: "SECRET_PATTERNS does not contain PostHog pattern"
+    target: "SECRET_PATTERNS"
+    matcher: "not_contains"
+    value: "PostHog project key"
+
+  - id: A003
+    says: "AWS documented example key is not flagged as a secret"
+    block: "does not flag AWS example key AKIAIOSFODNN7EXAMPLE"
+    target: "findings"
+    matcher: "not_contains"
+    value: "critical"
+
+  - id: A004
+    says: "Real AWS keys are still detected"
+    block: "detects AWS access key that is not the example key"
+    target: "finding.severity"
+    matcher: "equals"
+    value: "critical"
+
+  - id: A005
+    says: "Database URLs with bracket template passwords are not flagged"
+    block: "filters [password] bracket template in database URL"
+    target: "findings"
+    matcher: "not_contains"
+    value: "critical"
+
+  - id: A006
+    says: "Database URLs with short placeholder passwords are not flagged"
+    block: "filters pw placeholder in database URL"
+    target: "findings"
+    matcher: "not_contains"
+    value: "critical"
+
+  - id: A007
+    says: "Database URLs with real credentials are still detected"
+    block: "detects real credentials in database URL"
+    target: "finding.severity"
+    matcher: "equals"
+    value: "critical"
+
+  - id: A008
+    says: "Enum values like SECRET = secret no longer trigger false findings"
+    block: "does not flag enum-style secret assignments"
+    target: "findings"
+    matcher: "not_contains"
+    value: "critical"
+
+  - id: A009
+    says: "Stripe live keys are still detected"
+    block: "detects Stripe live key"
+    target: "finding.severity"
+    matcher: "equals"
+    value: "critical"
+
+  - id: A010
+    says: "Duplicate constraint lines are collapsed in AGENTS.md"
+    block: "deduplicates identical constraint lines"
+    target: "constraintLines"
+    matcher: "equals"
+    value: 1
+
+  - id: A011
+    says: "Different constraint types are preserved, not collapsed"
+    block: "preserves distinct constraint lines"
+    target: "constraintLines.length"
+    matcher: "greater"
+    value: 1
+
+  - id: A012
+    says: "Database URLs with pwd placeholder are not flagged"
+    block: "filters pwd placeholder in database URL"
+    target: "findings"
+    matcher: "not_contains"
+    value: "critical"
+
+file_changes:
+  - path: "packages/cli/src/engine/findings/rules/secrets.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/findings/secrets.test.ts"
+    action: modify
