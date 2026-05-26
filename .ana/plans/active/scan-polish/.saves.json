@@ -24,5 +24,22 @@
   "spec": {
     "saved_at": "2026-05-26T22:25:07.337Z",
     "hash": "sha256:eab39e6865b596c973aab0026814bd3e44b16841493eb2a5335826ddd0ddf16f"
-  }
+  },
+  "build_started_at": "2026-05-26T22:27:55.424Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T22:37:28.503Z",
+    "hash": "sha256:851318b5cbb6aaa21d863094d84b82f9ca123bb92ffb9310d880880f2b54e375"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T22:37:28.504Z",
+    "hash": "sha256:aec5d02c817ee2fb4a82e5b8a5b1fea14860f5d5f0c931e4210e5410a32fa835"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/commands/agents-md.test.ts",
+    "packages/cli/tests/engine/scanProject.test.ts"
+  ],
+  "commit_hygiene": []
 }

@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "generateAgentsMd exported from assets.ts for testing — was private"
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Stale comment ~659 already drifted to ~689 after barrel fallback insertion"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    severity: observation
+    suggested_action: accept
