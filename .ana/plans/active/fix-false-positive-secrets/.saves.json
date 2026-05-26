@@ -34,16 +34,29 @@
   "build_started_at": "2026-05-26T20:01:20.677Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-05-26T20:08:02.503Z",
-    "hash": "sha256:626bd70df541ba3b9be6f00822ad1b200e28741d31f489c4ea692a21b5c0ad38"
+    "saved_at": "2026-05-26T20:25:39.130Z",
+    "hash": "sha256:9e2c48e42ab229ee408f14e8e23a00289e37bc018f52af8d6f0772a43ac7705c",
+    "history": [
+      {
+        "saved_at": "2026-05-26T20:08:02.503Z",
+        "hash": "sha256:626bd70df541ba3b9be6f00822ad1b200e28741d31f489c4ea692a21b5c0ad38"
+      }
+    ]
   },
   "build-data": {
-    "saved_at": "2026-05-26T20:08:02.504Z",
-    "hash": "sha256:a89c225337e73de0c4e4ec8cdffe2ed4b00e1d9dd01010c381e1d69e5468671b"
+    "saved_at": "2026-05-26T20:25:39.130Z",
+    "hash": "sha256:f788192b771314fdb75847c113f79da13c0a3c6f72fbba7b1d5745cca33bc893",
+    "history": [
+      {
+        "saved_at": "2026-05-26T20:08:02.504Z",
+        "hash": "sha256:a89c225337e73de0c4e4ec8cdffe2ed4b00e1d9dd01010c381e1d69e5468671b"
+      }
+    ]
   },
   "modules_touched": [
     "packages/cli/src/commands/init/assets.ts",
     "packages/cli/src/engine/findings/rules/secrets.ts",
+    "packages/cli/tests/commands/commit-hygiene.test.ts",
     "packages/cli/tests/engine/findings/secrets.test.ts"
   ],
   "commit_hygiene": [
@@ -52,6 +65,12 @@
       "file": "packages/cli/src/engine/findings/rules/secrets.ts",
       "severity": "warn",
       "message": "possible secret in packages/cli/src/engine/findings/rules/secrets.ts (AWS access key)"
+    },
+    {
+      "check": "conflict-marker",
+      "file": "packages/cli/tests/commands/commit-hygiene.test.ts",
+      "severity": "warn",
+      "message": "merge conflict marker in packages/cli/tests/commands/commit-hygiene.test.ts"
     }
   ],
   "verify_started_at": "2026-05-26T20:08:50.898Z",
