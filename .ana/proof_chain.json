@@ -43410,6 +43410,179 @@
         "base_commit": "51c0fbde8ee78e798707e1bc8ed69ccf9cb903d2"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "show-finding-details",
+      "feature": "Show Finding Details in CLI Output",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Scan output shows detail text below each warning or critical finding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Detail text appears dimmed to distinguish it from the finding title",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Findings without detail text show only the title line",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Multi-line detail text renders each line separately",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Validation finding explains its detection methodology in one line",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Validation detail no longer contains a newline character",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Validation detail still mentions wrapper-based detection limitation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Secret findings show their redacted match and file location as detail",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Env hygiene finding shows its explanatory detail",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Pass findings never enter the detail display path",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 59,
+        "think": 31,
+        "plan": 6,
+        "build": 6,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:20f5660cee79fea198233a8e84bc67560be19eb6a6d17de5b3f125df44a99dfe",
+        "contract": "sha256:df547c88834aed2b22d5295431eaed9f35cc1ffbb84f4a0f4ef8ba478c5fc70e",
+        "plan": "sha256:e386463c95e52e9d3b2957b5bc1d1ae048eb272eaa46bf7bfc5fd4f11842f2b2",
+        "spec": "sha256:f8d71d41cce33be4e1591621e2aad56daff09acec1776a795923a2838eb560a6",
+        "build-report": "sha256:73bfc646db8d1b1e204120300cc45fa6ef5392dda9a70d74b9e287b5ce814fe2",
+        "build-data": "sha256:94bdbdc3b22262cba5b50b67b6848a6d9c33dd4c205b5574b0da98b44a6dbfc8",
+        "verify-report": "sha256:628242bdc030979cf48c99cdfe57eb806547543635fb617fc7957e06844d2e86",
+        "verify-data": "sha256:f60ca3a5144c74fa072973d183e79e84ac54a3fdfaa0a5f81958d141e4a6d207"
+      },
+      "completed_at": "2026-05-26T20:34:52.529Z",
+      "modules_touched": [
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/engine/findings/rules/validation.ts",
+        "packages/cli/tests/commands/scan-finding-details.test.ts",
+        "packages/cli/tests/engine/findings/rules/validation.test.ts"
+      ],
+      "scope_summary": "The CLI renders `f.title` for every critical/warn finding but never renders `f.detail`. Three of four finding rules write meaningful detail text — methodology disclaimers, file:line locations, actionable explanations — that the founder never sees. The detail for the validation finding (\"Routes using wrapper-based or middleware-based validation may not be detected\") is the only visible qualification of a heuristic count, and it's invisible. Show the detail.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Validation detail text contains redundant repetition — 'checks imports in first 30 lines' appears twice in the same sentence",
+          "file": "packages/cli/src/engine/findings/rules/validation.ts",
+          "anchor": null,
+          "line": 116,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "show-finding-details-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T20:34:52.529Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "formatHumanReadable exported solely for test access — increases public API surface",
+          "file": "packages/cli/src/commands/scan.ts",
+          "anchor": null,
+          "line": 101,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "show-finding-details-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A002 test verifies indentation but not chalk.gray ANSI styling — source inspection confirms gray is applied but test doesn't enforce it",
+          "file": "packages/cli/tests/commands/scan-finding-details.test.ts",
+          "anchor": null,
+          "line": 44,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "show-finding-details-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A003 test checks next line isn't detail-indented rather than counting output lines — functionally equivalent but diverges from contract's 'outputLines.length equals 1' framing",
+          "file": "packages/cli/tests/commands/scan-finding-details.test.ts",
+          "anchor": null,
+          "line": 68,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "show-finding-details-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-26T20:07:00.732Z",
+        "completed_at": "2026-05-26T20:34:52.524Z",
+        "commit_count": 0,
+        "base_commit": "4815dcc018274054cd29f31f7e63c688a5ac7391"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

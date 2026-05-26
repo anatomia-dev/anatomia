@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-164 runs · 112 active · 5 promoted · 816 closed
+165 runs · 115 active · 5 promoted · 817 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 113 | 74 | 2026-05-26 |
+| cli | 114 | 77 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 112 total)
+## Active Findings (30 shown of 115 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,6 +37,10 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
+
+### packages/cli/src/commands/scan.ts
+
+- **code:** formatHumanReadable exported solely for test access — increases public API surface — *Show Finding Details in CLI Output*
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -54,10 +58,6 @@
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
-
-### packages/cli/src/engine/detectors/applicationShape.ts
-
-- **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -82,6 +82,11 @@
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
 
+### packages/cli/tests/commands/scan-finding-details.test.ts
+
+- **test:** A002 test verifies indentation but not chalk.gray ANSI styling — source inspection confirms gray is applied but test doesn't enforce it — *Show Finding Details in CLI Output*
+- **test:** A003 test checks next line isn't detail-indented rather than counting output lines — functionally equivalent but diverges from contract's 'outputLines.length equals 1' framing — *Show Finding Details in CLI Output*
+
 ### packages/cli/tests/engine/census-primary.test.ts
 
 - **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
@@ -90,10 +95,6 @@
 
 - **test:** Fix A test does not assert deps/devDeps are separated correctly — only checks allDeps — *Fix Workspace Glob Fallback*
 
-### packages/cli/tests/engine/detectors/applicationShape.test.ts
-
-- **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
-
 ### packages/cli/tests/engine/detectors/ci-detection.test.ts
 
 - **test:** No negative test for primaryPath matching wrong sourceRootPath substring (e.g., 'apps/we' partial match) — *Fix deploy platform detection for monorepos*
@@ -101,10 +102,6 @@
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
-
-### packages/cli/tests/engine/detectors/polyglot.test.ts
-
-- **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
