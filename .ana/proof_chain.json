@@ -43583,6 +43583,227 @@
         "base_commit": "4815dcc018274054cd29f31f7e63c688a5ac7391"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-false-positive-secrets",
+      "feature": "Fix False Positive Secret Detection",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The weak signing secret regex no longer exists in the scanner",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "PostHog public analytics keys are no longer flagged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "AWS documented example key is not flagged as a secret",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Real AWS keys are still detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Database URLs with bracket template passwords are not flagged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Database URLs with short placeholder passwords are not flagged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Database URLs with real credentials are still detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Enum values like SECRET = secret no longer trigger false findings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Stripe live keys are still detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Duplicate constraint lines are collapsed in AGENTS.md",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Different constraint types are preserved, not collapsed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Database URLs with pwd placeholder are not flagged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 4
+      },
+      "timing": {
+        "total_minutes": 83,
+        "think": 11,
+        "plan": 6,
+        "build": 54,
+        "verify": 22
+      },
+      "hashes": {
+        "scope": "sha256:d9f42b5ecbb57ede03a4c3177e1e502bea655aa4c5e4fe2064bec79a16ca50a7",
+        "contract": "sha256:b29c1d9ddb1bf2268e5d28f847761cd947649193950ac9021fb5c1e81f8b9c72",
+        "plan": "sha256:6fb8cabdbcd6a2a2803b03e3be091dbf4d679f992992229d0c9266b1bb08ece9",
+        "spec": "sha256:42f3f0251c7e0cdb337b2ea500e2ac7d772e4ae9a211407b4a57cc63e1b7a868",
+        "build-report": "sha256:9e2c48e42ab229ee408f14e8e23a00289e37bc018f52af8d6f0772a43ac7705c",
+        "build-data": "sha256:f788192b771314fdb75847c113f79da13c0a3c6f72fbba7b1d5745cca33bc893",
+        "verify-report": "sha256:ab5ec0bfa7f5ce3643c1890fc589d0f9a93a362cc443062ae218d8e85020c381",
+        "verify-data": "sha256:a9ddedb1488764297359f1dba352566422862ad2689e99dd23fa2570f24bb56b"
+      },
+      "completed_at": "2026-05-26T20:38:35.638Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/engine/findings/rules/secrets.ts",
+        "packages/cli/tests/commands/commit-hygiene.test.ts",
+        "packages/cli/tests/engine/findings/secrets.test.ts"
+      ],
+      "scope_summary": "The secret scanner's weak signing secret regex produces false critical findings from enum values, JSDoc examples, dev default constants, form field type declarations, and mock methods. Across 48 repos tested, this regex has zero true positives and 23+ false positives. Those false findings propagate into AGENTS.md as duplicated constraint lines and into project-context.md as inflated issue counts. The PostHog `phc_` pattern also flags intentionally-public analytics keys as warnings.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Vacuously true test — __tests__ exclusion still uses removed phc_ pattern",
+          "file": "packages/cli/tests/commands/commit-hygiene.test.ts",
+          "anchor": null,
+          "line": 137,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [],
+          "id": "fix-false-positive-secrets-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ]",
+          "file": "packages/cli/src/engine/findings/rules/secrets.ts",
+          "anchor": null,
+          "line": 44,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-false-positive-secrets-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Dedup assertions test extracted logic, not actual generateAgentsMd code path",
+          "file": "packages/cli/tests/engine/findings/secrets.test.ts",
+          "anchor": null,
+          "line": 293,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A010",
+            "A011"
+          ],
+          "id": "fix-false-positive-secrets-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle",
+          "file": "packages/cli/tests/engine/findings/secrets.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "fix-false-positive-secrets-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "fix-scanner-trust-output-C1 still present — A007 old test asserts 'at least one critical' without verifying both URLs fire",
+          "file": "packages/cli/tests/engine/findings/secrets.test.ts",
+          "anchor": null,
+          "line": 169,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-false-positive-secrets-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T20:38:35.638Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Trailing bracket regex /^[a-z_-]+\\]$/ broader than needed — suppresses any lowercase word ending in ]",
+          "file": "packages/cli/src/engine/findings/rules/secrets.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A010/A011 dedup tests replicate loop logic from assets.ts rather than testing actual function",
+          "file": "packages/cli/tests/engine/findings/secrets.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "@ana tag namespace collision — pre-existing A001-A007 tags coexist with new contract's A001-A007",
+          "file": "packages/cli/tests/engine/findings/secrets.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "commit_hygiene": [
+        {
+          "check": "secret-detected",
+          "file": "packages/cli/src/engine/findings/rules/secrets.ts",
+          "severity": "warn",
+          "message": "possible secret in packages/cli/src/engine/findings/rules/secrets.ts (AWS access key)"
+        },
+        {
+          "check": "conflict-marker",
+          "file": "packages/cli/tests/commands/commit-hygiene.test.ts",
+          "severity": "warn",
+          "message": "merge conflict marker in packages/cli/tests/commands/commit-hygiene.test.ts"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-26T20:27:00.655Z",
+        "completed_at": "2026-05-26T20:38:35.632Z",
+        "commit_count": 0,
+        "base_commit": "f8eb0494e373e976722f14af5e065f1f8dbd8c61"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

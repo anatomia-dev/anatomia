@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-165 runs · 115 active · 5 promoted · 817 closed
+166 runs · 119 active · 5 promoted · 818 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 114 | 77 | 2026-05-26 |
+| cli | 115 | 81 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 115 total)
+## Active Findings (30 shown of 119 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -56,18 +56,19 @@
 - **code:** census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific — *Fix deploy platform detection for monorepos*
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
-- **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
-- **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
 
+### packages/cli/src/engine/findings/rules/secrets.ts
+
+- **code:** Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ] — *Fix False Positive Secret Detection*
+
 ### packages/cli/src/engine/scan-engine.ts
 
 - **test:** No @ana tag for A008 — assertion verified by source inspection only — *Fix deploy platform detection for monorepos*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
-- **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/src/utils/proof-health.ts
 
@@ -76,6 +77,10 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module — *Decompose proofSummary.ts*
+
+### packages/cli/tests/commands/commit-hygiene.test.ts
+
+- **test:** Vacuously true test — __tests__ exclusion still uses removed phc_ pattern — *Fix False Positive Secret Detection*
 
 ### packages/cli/tests/commands/proof.test.ts
 
@@ -86,10 +91,6 @@
 
 - **test:** A002 test verifies indentation but not chalk.gray ANSI styling — source inspection confirms gray is applied but test doesn't enforce it — *Show Finding Details in CLI Output*
 - **test:** A003 test checks next line isn't detail-indented rather than counting output lines — functionally equivalent but diverges from contract's 'outputLines.length equals 1' framing — *Show Finding Details in CLI Output*
-
-### packages/cli/tests/engine/census-primary.test.ts
-
-- **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/tests/engine/census.test.ts
 
@@ -106,6 +107,11 @@
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
+
+### packages/cli/tests/engine/findings/secrets.test.ts
+
+- **test:** Dedup assertions test extracted logic, not actual generateAgentsMd code path — *Fix False Positive Secret Detection*
+- **test:** @ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle — *Fix False Positive Secret Detection*
 
 ### packages/cli/tests/engine/parsers/python.test.ts
 
