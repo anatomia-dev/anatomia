@@ -1,21 +1,21 @@
 # Proof Chain Dashboard
 
-162 runs · 107 active · 5 promoted · 811 closed
+163 runs · 111 active · 5 promoted · 812 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 111 | 69 | 2026-05-25 |
+| cli | 112 | 73 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
+| packages/cli/src/commands/work.ts | 9 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
-| packages/cli/src/commands/work.ts | 6 | 4 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
 | packages/cli/src/engine/census.ts | 4 | 4 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 107 total)
+## Active Findings (30 shown of 111 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,14 +33,20 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
-- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
 
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
 
+### packages/cli/src/commands/work-state.ts
+
+- **code:** work-state.ts determineStage function is 148 lines with deeply nested conditionals — largest function in the new module, could benefit from phase-specific helpers — *Decompose work.ts*
+
 ### packages/cli/src/commands/work.ts
 
+- **code:** getNextAction not moved to work-state.ts — 9 functions instead of contract's 10 — *Decompose work.ts*
+- **code:** computeChainHealth imported in both work.ts and work-proof.ts — spec said it should only be in work-proof.ts but recovery path needs it — *Decompose work.ts*
+- **code:** _branchPrefix parameter in getNextAction still unused after refactor — pre-existing issue now more visible — *Decompose work.ts*
 - **test:** No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection — *Fix Risk Findings*
 
 ### packages/cli/src/engine/census.ts
@@ -58,10 +64,6 @@
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
 
-### packages/cli/src/engine/sampling/proportionalSampler.ts
-
-- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
-
 ### packages/cli/src/engine/scan-engine.ts
 
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
@@ -74,10 +76,6 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module — *Decompose proofSummary.ts*
-
-### packages/cli/tests/commands/init/monorepoCommandScoping.test.ts
-
-- **test:** Repeated tmpDir/cwdDir setup+teardown boilerplate in all 4 new tests — follows existing pattern but adds to known tech debt — *Fix per-surface test command priority*
 
 ### packages/cli/tests/commands/proof.test.ts
 
@@ -112,10 +110,6 @@
 ### packages/cli/tests/engine/parsers/python.test.ts
 
 - **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
-
-### website/components/docs/proof/ProofExplorer.tsx
-
-- **code:** Badge style object duplicated three times in ProofExplorer inline badge container — *Comprehensive Documentation Update for Surface Awareness*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 

@@ -42985,6 +42985,253 @@
         "base_commit": "85065d565eaf09cddfdb0f564af79dd71a873fc2"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "decompose-work-ts",
+      "feature": "Decompose work.ts",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 21,
+        "satisfied": 20,
+        "unsatisfied": 1,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Pipeline state computation lives in its own module",
+          "status": "UNSATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "All five pipeline type definitions are exported from the state module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The concurrency timeout constant is exported from the state module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Proof chain writing lives in its own module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Surface derivation is re-exported from work.ts for backward compatibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The main work module is significantly smaller after decomposition",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The main work module is significantly smaller after decomposition",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Work module imports state functions from the new state module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Work module imports proof functions from the new proof module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Proof module imports countPhases from the state module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Dependency direction is acyclic — state module does not import from work or proof",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Dependency direction is acyclic — proof module does not import from work",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Human-readable status display is untouched — agents can still parse it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Notification display is untouched — agents can still parse it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "All existing tests pass without modification",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "No test files are modified during this refactor",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The deriveSurface test can still import via the work module",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The proofSummary import is correctly split between work.ts and work-proof.ts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Work.ts keeps its own proofSummary imports after the split",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Build and lint pass cleanly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Lint passes with no new violations",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 7
+      },
+      "timing": {
+        "total_minutes": 1135,
+        "think": 9,
+        "plan": 6,
+        "build": 17,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:7b77d3edc21ed73f59ca0cf3043b81998b1fef31cff39500b28920adfecf08ba",
+        "contract": "sha256:a96e45c6c00e3acb105c7e3e09597ed5ab483210b8b7c84855254640acd10c57",
+        "plan": "sha256:0d433c5fec050199cf02ce9966b9b61860e1f68c3a4e0dcce9e531c7de241f5b",
+        "spec": "sha256:4e704ae7cff048d3a3e81658abf7b71f82ddebcb442224d9eb04343f14b8baa7",
+        "build-report": "sha256:000b001c8a8dc35acdb4b64dd640e535dfabde9874167e3f5d325121dc688ef7",
+        "build-data": "sha256:1f6a902c1b5e9bc5d2af5d8dd130c54033487add5fdcc8a9ba293493287e2662",
+        "verify-report": "sha256:03e1dc96ac9093a01b1d868c246072e1b97c23094ffb93179b2f77682fe6b940",
+        "verify-data": "sha256:39946996949d903f2345837512536f5584ce77684d3dd6adc4ef0bfc21891a1e"
+      },
+      "completed_at": "2026-05-26T00:33:47.782Z",
+      "modules_touched": [
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/commands/work-state.ts",
+        "packages/cli/src/commands/work.ts"
+      ],
+      "scope_summary": "`work.ts` is the largest source file (2545 lines) and the highest-churn file in the codebase (104 commits all-time — 50% more than the next highest). It contains 22 functions spanning 3 unrelated responsibilities: pipeline state computation, proof chain writing, and command orchestration + display. A developer adding a new pipeline stage has to navigate 2545 lines to find `determineStage`. A developer debugging proof chain entries has to find `writeProofChain` buried between `guardFailResult` and `completeWork`.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "getNextAction not moved to work-state.ts — 9 functions instead of contract's 10",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 78,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "decompose-work-ts-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "computeChainHealth imported in both work.ts and work-proof.ts — spec said it should only be in work-proof.ts but recovery path needs it",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 23,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "decompose-work-ts-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A001 value may be miscounted — getNextAction is a display concern (maps stages to commands) and arguably belongs with display functions in work.ts, not state computation in work-state.ts",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "decompose-work-ts-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T00:33:47.782Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "work-state.ts determineStage function is 148 lines with deeply nested conditionals — largest function in the new module, could benefit from phase-specific helpers",
+          "file": "packages/cli/src/commands/work-state.ts",
+          "anchor": null,
+          "line": 343,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "decompose-work-ts-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "_branchPrefix parameter in getNextAction still unused after refactor — pre-existing issue now more visible",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 78,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "decompose-work-ts-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "getNextAction kept in work.ts instead of work-state.ts due to source-reading test constraint",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "computeChainHealth imported in both work.ts and work-proof.ts — recovery path in completeWork needs it",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-25T23:55:19.427Z",
+        "completed_at": "2026-05-26T00:33:47.776Z",
+        "commit_count": 0,
+        "base_commit": "3c3ce6803cf997a334150d2bebec46425c16d91a"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
