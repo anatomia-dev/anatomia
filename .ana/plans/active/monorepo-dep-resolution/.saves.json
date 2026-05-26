@@ -18,5 +18,27 @@
   "spec": {
     "saved_at": "2026-05-26T20:20:56.399Z",
     "hash": "sha256:0e5c85d784b77b8e25d339c992300ec433a3df1706f71762c9c5428d445f2055"
-  }
+  },
+  "build_started_at": "2026-05-26T20:28:38.472Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T20:37:30.282Z",
+    "hash": "sha256:f32a7be6ce9094bc28d8239d65c8a06e178c1220ef182cff5c7801d6900789c4"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T20:37:30.283Z",
+    "hash": "sha256:f12936f4da07161c72f57fc84532240f93de6301e2ca773296a7ef8e4826e1d6"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/dependencies.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/src/engine/types/census.ts",
+    "packages/cli/tests/engine/detectors/dependencies.test.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts",
+    "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+    "packages/cli/tests/engine/three-tier-detection.test.ts",
+    "packages/cli/tests/engine/types/census.test.ts"
+  ],
+  "commit_hygiene": []
 }
