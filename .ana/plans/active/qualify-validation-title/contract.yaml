@@ -1,0 +1,68 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Qualify Validation Finding Title"
+
+assertions:
+  - id: A001
+    says: "Warn title shows approximate count with tilde prefix"
+    block: "warn title uses tilde approximation"
+    target: "finding.title"
+    matcher: "contains"
+    value: "~"
+
+  - id: A002
+    says: "Warn title says 'route files' instead of 'routes'"
+    block: "warn title uses route files terminology"
+    target: "finding.title"
+    matcher: "contains"
+    value: "API route files"
+
+  - id: A003
+    says: "Warn title uses 'may lack' language instead of 'have no'"
+    block: "warn title uses qualified language"
+    target: "finding.title"
+    matcher: "contains"
+    value: "may lack input validation"
+
+  - id: A004
+    says: "Warn title uses 'of' separator instead of slash"
+    block: "warn title uses word separator"
+    target: "finding.title"
+    matcher: "not_contains"
+    value: "/"
+
+  - id: A005
+    says: "Pass title says 'route files' instead of 'routes'"
+    block: "pass title uses route files terminology"
+    target: "finding.title"
+    matcher: "contains"
+    value: "API route files"
+
+  - id: A006
+    says: "Pass title includes 'detected' qualifier"
+    block: "pass title signals methodology"
+    target: "finding.title"
+    matcher: "contains"
+    value: "validation imports detected"
+
+  - id: A007
+    says: "Pass title has no tilde since 100% coverage is exact"
+    block: "pass title has no approximation marker"
+    target: "finding.title"
+    matcher: "not_contains"
+    value: "~"
+
+  - id: A008
+    says: "Finding ID remains stable for downstream consumers"
+    block: "finding ID unchanged"
+    target: "finding.id"
+    matcher: "equals"
+    value: "api-validation"
+
+file_changes:
+  - path: "packages/cli/src/engine/findings/rules/validation.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/findings/rules/validation.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/findings/validation.test.ts"
+    action: modify
