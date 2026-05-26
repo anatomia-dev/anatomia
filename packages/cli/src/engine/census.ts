@@ -77,7 +77,12 @@ const FRAMEWORK_HINTS: Array<{ pattern: string; framework: string; check: 'file'
   { pattern: 'app.py', framework: 'flask', check: 'file' },
 ];
 
-/** Deployment config file → platform name. */
+/**
+ * Deployment config file → platform name.
+ * Insertion order is intentional within-root priority: V8 guarantees string-key
+ * insertion order matches definition order. When a single source root has both
+ * `vercel.json` and `Dockerfile`, Vercel wins because it appears first.
+ */
 const DEPLOYMENT_CONFIGS: Record<string, string> = {
   'vercel.json': 'Vercel',
   'Dockerfile': 'Docker',

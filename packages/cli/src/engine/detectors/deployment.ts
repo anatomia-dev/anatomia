@@ -27,14 +27,31 @@ export interface DetectedCI {
 
 /**
  * Detect deployment platform from census deployment entries.
- * Returns the first match (primary source root's deployment in a monorepo).
+ * When `primaryPath` is provided, prefers a deployment whose `sourceRootPath`
+ * matches the primary source root. Falls back to `deployments[0]` when no
+ * primary match exists or `primaryPath` is omitted.
+ *
+ * @param deployments - Census deployment entries discovered during scan.
+ * @param primaryPath - Optional primary source root path (e.g. `'apps/web'` or `'.'`).
+ * @returns Detected deployment platform and config file, or nulls if none found.
  */
-export function detectDeployment(deployments: DeploymentEntry[]): DetectedDeployment {
-  if (deployments.length > 0) {
-    const first = deployments[0]!;
-    return { platform: first.platform, configFile: first.path };
+export function detectDeployment(
+  deployments: DeploymentEntry[],
+  primaryPath?: string,
+): DetectedDeployment {
+  if (deployments.length === 0) {
+    return { platform: null, configFile: null };
   }
-  return { platform: null, configFile: null };
+
+  if (primaryPath !== undefined) {
+    const primary = deployments.find(d => d.sourceRootPath === primaryPath);
+    if (primary) {
+      return { platform: primary.platform, configFile: primary.path };
+    }
+  }
+
+  const first = deployments[0]!;
+  return { platform: first.platform, configFile: first.path };
 }
 
 /**
