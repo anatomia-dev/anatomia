@@ -1,10 +1,18 @@
 schema: 1
 concerns:
-  - summary: "Trailing bracket regex /^[a-z_-]+\\]$/ could suppress passwords like mytoken]"
+  - summary: "Trailing bracket regex /^[a-z_-]+\\]$/ broader than needed — suppresses any lowercase word ending in ]"
     file: "packages/cli/src/engine/findings/rules/secrets.ts"
     severity: observation
     suggested_action: monitor
-  - summary: "A010/A011 dedup tests replicate loop logic rather than calling actual function"
+  - summary: "A010/A011 dedup tests replicate loop logic from assets.ts rather than testing actual function"
     file: "packages/cli/tests/engine/findings/secrets.test.ts"
     severity: debt
     suggested_action: scope
+  - summary: "@ana tag namespace collision — pre-existing A001-A007 tags coexist with new contract's A001-A007"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
