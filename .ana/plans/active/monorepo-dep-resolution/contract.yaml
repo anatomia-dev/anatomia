@@ -1,0 +1,211 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Monorepo Three-Tier Dependency Resolution"
+
+assertions:
+  # ── AC7: rootDeps type and census population ──────────────────────────
+
+  - id: A001
+    says: "The census type includes root production dependencies"
+    block: "rootDeps on ProjectCensus"
+    target: "census.rootDeps"
+    matcher: "exists"
+
+  - id: A002
+    says: "Census builder populates root production deps from root package.json"
+    block: "rootDeps populated in census"
+    target: "census.rootDeps"
+    matcher: "exists"
+
+  # ── AC8: ORM_PACKAGES export ──────────────────────────────────────────
+
+  - id: A003
+    says: "ORM package names are exported as a constant"
+    block: "ORM_PACKAGES is exported"
+    target: "ORM_PACKAGES"
+    matcher: "exists"
+
+  - id: A004
+    says: "Prisma is recognized as an ORM"
+    block: "ORM_PACKAGES contains all ORMs"
+    target: "ORM_PACKAGES.has('prisma')"
+    matcher: "equals"
+    value: true
+
+  - id: A005
+    says: "Raw database drivers are not classified as ORMs"
+    block: "ORM_PACKAGES excludes non-ORMs"
+    target: "ORM_PACKAGES.has('pg')"
+    matcher: "equals"
+    value: false
+
+  - id: A006
+    says: "BaaS packages are not classified as ORMs"
+    block: "ORM_PACKAGES excludes non-ORMs"
+    target: "ORM_PACKAGES.has('@supabase/supabase-js')"
+    matcher: "equals"
+    value: false
+
+  # ── AC1: n8n contamination fix ────────────────────────────────────────
+
+  - id: A007
+    says: "Primary package database wins over integration package database"
+    block: "n8n-shaped: primary pg beats non-primary supabase"
+    target: "database"
+    matcher: "equals"
+    value: "PostgreSQL"
+
+  - id: A008
+    says: "Integration packages do not contaminate project identity"
+    block: "n8n-shaped: primary pg beats non-primary supabase"
+    target: "database"
+    matcher: "not_equals"
+    value: "Supabase"
+
+  # ── AC2: postiz-app hoisted deps fix ──────────────────────────────────
+
+  - id: A009
+    says: "Hoisted database dependencies are detected from root package.json"
+    block: "postiz-shaped: rootDeps fallback detects prisma"
+    target: "database"
+    matcher: "equals"
+    value: "Prisma"
+
+  - id: A010
+    says: "Hoisted auth dependencies are detected from root package.json"
+    block: "postiz-shaped: rootDeps fallback detects JWT"
+    target: "auth"
+    matcher: "equals"
+    value: "JWT"
+
+  - id: A011
+    says: "Hoisted payment dependencies are detected from root package.json"
+    block: "postiz-shaped: rootDeps fallback detects Stripe"
+    target: "payments"
+    matcher: "equals"
+    value: "Stripe"
+
+  # ── AC4: dub ORM-beats-driver ─────────────────────────────────────────
+
+  - id: A012
+    says: "ORM in a shared package wins over raw driver in primary package"
+    block: "dub-shaped: ORM prisma beats driver planetscale"
+    target: "database"
+    matcher: "equals"
+    value: "Prisma"
+
+  - id: A013
+    says: "The ORM merge rule prevents serverless adapters from shadowing ORMs"
+    block: "dub-shaped: ORM prisma beats driver planetscale"
+    target: "database"
+    matcher: "not_equals"
+    value: "PlanetScale"
+
+  # ── AC5: single-repo passthrough ──────────────────────────────────────
+
+  - id: A014
+    says: "Single-repo projects detect databases the same as before"
+    block: "single-repo passthrough"
+    target: "database"
+    matcher: "equals"
+    value: "Prisma"
+
+  - id: A015
+    says: "Single-repo projects detect auth the same as before"
+    block: "single-repo passthrough"
+    target: "auth"
+    matcher: "equals"
+    value: "NextAuth"
+
+  # ── AC6: schema trigger hasDep ────────────────────────────────────────
+
+  - id: A016
+    says: "Hoisted Prisma dependency triggers schema detection"
+    block: "hasDep finds prisma in rootDeps"
+    target: "hasDep('prisma', census)"
+    matcher: "equals"
+    value: true
+
+  - id: A017
+    says: "hasDep returns false when package is absent from all tiers"
+    block: "hasDep returns false for missing package"
+    target: "hasDep('nonexistent', census)"
+    matcher: "equals"
+    value: false
+
+  - id: A018
+    says: "hasDep finds packages in primary deps"
+    block: "hasDep finds package in primaryDeps"
+    target: "hasDep('prisma', census)"
+    matcher: "equals"
+    value: true
+
+  # ── novu auth change (known, documented) ──────────────────────────────
+
+  - id: A019
+    says: "Primary API auth wins over dashboard frontend auth"
+    block: "novu-shaped: primary passport beats non-primary clerk"
+    target: "auth"
+    matcher: "equals"
+    value: "Passport"
+
+  # ── aiSdk three-tier ──────────────────────────────────────────────────
+
+  - id: A020
+    says: "AI SDK is detected from root deps when absent from workspace packages"
+    block: "aiSdk detected from rootDeps"
+    target: "aiSdk"
+    matcher: "equals"
+    value: "Anthropic"
+
+  - id: A021
+    says: "Primary AI SDK wins over non-primary AI SDK"
+    block: "aiSdk primary wins"
+    target: "aiSdk"
+    matcher: "equals"
+    value: "OpenAI"
+
+  # ── uiSystem rootDeps fallback ────────────────────────────────────────
+
+  - id: A022
+    says: "UI system is detected from root deps in hoisted monorepos"
+    block: "uiSystem detected from rootDeps"
+    target: "uiSystem"
+    matcher: "equals"
+    value: "Tailwind CSS"
+
+  # ── Edge cases ────────────────────────────────────────────────────────
+
+  - id: A023
+    says: "All tiers returning null produces null, not a crash"
+    block: "all tiers null"
+    target: "database"
+    matcher: "equals"
+    value: null
+
+  - id: A024
+    says: "ORM in root deps beats raw driver in primary deps"
+    block: "ORM in tier 3 beats driver in tier 1"
+    target: "database"
+    matcher: "equals"
+    value: "Drizzle"
+
+file_changes:
+  - path: "packages/cli/src/engine/types/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/dependencies.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/dependencies.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/types/census.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/sampling/proportional-sampler.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/three-tier-detection.test.ts"
+    action: create
