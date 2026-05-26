@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 115 active · 5 promoted · 832 closed
+169 runs · 119 active · 5 promoted · 833 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 77 | 2026-05-26 |
+| cli | 118 | 81 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,11 +24,16 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 115 total)
+## Active Findings (30 shown of 119 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
+
+### packages/cli/src/commands/init/assets.ts
+
+- **test:** generateAgentsMd exported as public API for test access — documented with @internal JSDoc but TypeScript has no enforcement — *Scan Polish — Detection Gaps + AGENTS.md Quality*
+- **code:** Surfaces section has no trailing newline after +N more line when overflow triggers — the empty string push is inside the outer if block but the overflow text has no blank line separator from next section — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -51,8 +56,6 @@
 
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
-- **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
-- **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -68,8 +71,9 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
+- **code:** Barrel expansion glob matches .d.ts files — benign since regex filters for table helpers, but could add exclusion — *Scan Polish — Detection Gaps + AGENTS.md Quality*
+- **code:** Env enrichment pattern check is slightly different from detectSecrets — detectSecrets checks exact filenames while enrichment uses startsWith/endsWith heuristic — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
-- **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/src/utils/proof-health.ts
 
@@ -87,10 +91,6 @@
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
-
-### packages/cli/tests/engine/census-primary.test.ts
-
-- **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/tests/engine/census.test.ts
 

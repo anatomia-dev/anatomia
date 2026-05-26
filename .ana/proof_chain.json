@@ -44293,6 +44293,223 @@
         "base_commit": "91df27a463fb00903df39ad75d7d9fbe98ffa6b3"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "scan-polish",
+      "feature": "Scan Polish — Detection Gaps + AGENTS.md Quality",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 16,
+        "satisfied": 16,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Barrel-index Drizzle schemas aggregate table counts from all files in the directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The barrel file path is preserved as the schema entry point",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Provider is determined from aggregated table helper counts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Single-file schemas with real tables are not affected by the barrel fallback",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A schema file with zero tables and no sibling files still reports zero",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Monorepo env example in primary source root is detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Root-level env example still detected when primary is root",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "AI sub-provider variants are excluded from AGENTS.md services",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Direct SDK services are preserved even when AI SDK sub-providers are filtered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "AGENTS.md includes a Surfaces section for monorepo projects",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Surface entries show name and path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Surface entries include framework when present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Single-package projects do not get a Surfaces section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "More than 4 surfaces shows truncation indicator",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Stale comment about allDeps is updated to reflect three-tier model",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Stale line reference is corrected to ~659",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 45,
+        "think": 18,
+        "plan": 5,
+        "build": 10,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:97748fb589abd6c1769dcf1a242c36384af7cb36dface14ba698f9c3155bfaf1",
+        "contract": "sha256:2769892e5435e2fdc0bae20e67cbfbd45cde6daf30633748b4b3d33e640a1c23",
+        "plan": "sha256:f1024650e3f51c83c3b04553aaeac692cf7cc5be4f1387dc6903839c35c7960c",
+        "spec": "sha256:eab39e6865b596c973aab0026814bd3e44b16841493eb2a5335826ddd0ddf16f",
+        "build-report": "sha256:851318b5cbb6aaa21d863094d84b82f9ca123bb92ffb9310d880880f2b54e375",
+        "build-data": "sha256:aec5d02c817ee2fb4a82e5b8a5b1fea14860f5d5f0c931e4210e5410a32fa835",
+        "verify-report": "sha256:8b5d5309059d4ee1068617089c13b95b92b0bcc5bf820342174e6b74cfe848ef",
+        "verify-data": "sha256:8ab3d72de9e17fae480b89255c6a0ea56abd7b4f18e383d2416e67eb2ff5764e"
+      },
+      "completed_at": "2026-05-26T22:50:00.472Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/commands/agents-md.test.ts",
+        "packages/cli/tests/engine/scanProject.test.ts"
+      ],
+      "scope_summary": "Five P2-P3 improvements that make the scan more complete and the init output cleaner. None fix wrong data — the scan is already correct for all identity fields after Tier 1. These fill gaps where the scan shows incomplete data or downstream output is noisy.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Barrel expansion glob matches .d.ts files — benign since regex filters for table helpers, but could add exclusion",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 483,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "scan-polish-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Env enrichment pattern check is slightly different from detectSecrets — detectSecrets checks exact filenames while enrichment uses startsWith/endsWith heuristic",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 1000,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "scan-polish-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "generateAgentsMd exported as public API for test access — documented with @internal JSDoc but TypeScript has no enforcement",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 340,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A008",
+            "A010"
+          ],
+          "id": "scan-polish-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Surfaces section has no trailing newline after +N more line when overflow triggers — the empty string push is inside the outer if block but the overflow text has no blank line separator from next section",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 403,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "scan-polish-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A001 matcher is 'greater' (value 0) but test correctly uses both toBeGreaterThan(0) AND toBe(3) — contract could be tighter",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "scan-polish-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T22:50:00.472Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "generateAgentsMd exported from assets.ts for testing — was private",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Stale comment ~659 already drifted to ~689 after barrel fallback insertion",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-26T22:27:55.424Z",
+        "completed_at": "2026-05-26T22:50:00.465Z",
+        "commit_count": 0,
+        "base_commit": "45d280423f1b5ba953345c0c1622a4f66bb7524d"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
