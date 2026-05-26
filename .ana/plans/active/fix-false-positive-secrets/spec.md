@@ -87,7 +87,8 @@ After:
   - DB URL with `pw` as password → should NOT be flagged
 - **Removed test:** The "detects weak JWT signing secret" test (lines 66-72) — remove it. The pattern no longer exists.
 - **Regression negative test (optional):** A file containing `SECRET = "secret"` in an enum context → should NOT be flagged. Documents intent even though the code path is removed.
-- **Existing tests that must still pass:** All other 20+ tests in the file. The AWS test at line 39-44 uses `AKIAIOSFODNN7EXAMPLE1` (trailing `1`) — this is NOT the AWS example key and must still be flagged as critical.
+- **Modified existing test:** The AWS test at line 39-44 must change its test key from `AKIAIOSFODNN7EXAMPLE1` to `AKIA1234567890ABCDEF`. The original key collides with the AWS example key after regex capture (both produce the same 20-char match). The new key must still be flagged as critical.
+- **Existing tests that must still pass:** All other 20+ tests in the file must pass unchanged.
 
 ## Dependencies
 None. All changes are self-contained within the CLI package.
@@ -95,10 +96,10 @@ None. All changes are self-contained within the CLI package.
 ## Constraints
 - The `checkedServices` list in the pass message (line 200) must not be modified. It names services, not patterns.
 - `DB_URL_PLACEHOLDERS` already contains `pass` at line 33. Do not add a duplicate.
-- The AWS test at line 39-44 uses `AKIAIOSFODNN7EXAMPLE1` — one character different from the example key. The validate function must reject the exact example key only, not a prefix match.
+- **The existing AWS test key must change.** The test at line 39-44 uses `AKIAIOSFODNN7EXAMPLE1` (21 chars), but the regex `/AKIA[A-Z0-9]{16}/g` captures exactly 20 characters — so `match[0]` is `AKIAIOSFODNN7EXAMPLE`, identical to the AWS documented example key. If the validate function rejects `AKIAIOSFODNN7EXAMPLE`, the existing test breaks. Replace the test key with `AKIA1234567890ABCDEF` (a different 20-char key that is obviously fake but does not collide with the example key).
 
 ## Gotchas
-- The `validate` function for AWS receives the full regex match string (e.g., `AKIAIOSFODNN7EXAMPLE`). The check should compare the full 20-char match, not a substring. The regex is `/AKIA[A-Z0-9]{16}/g` — it matches exactly 20 characters.
+- **AWS regex captures exactly 20 characters regardless of surrounding text.** The regex `/AKIA[A-Z0-9]{16}/g` always produces a 20-char `match[0]`. A source string `AKIAIOSFODNN7EXAMPLE1` (21 chars) produces `match[0] = "AKIAIOSFODNN7EXAMPLE"` (20 chars) — identical to the documented example key. The `validate` function receives `match[0]`, so it cannot distinguish these two strings. The existing test key `AKIAIOSFODNN7EXAMPLE1` must be replaced with `AKIA1234567890ABCDEF` to avoid collision.
 - The bracket template regexes operate on the already-extracted, lowercased password from the DB URL regex. The password extraction happens in the existing `validate` function on the DB URL pattern (line 93-94). The new `TEMPLATE_PATTERNS` are checked by `isTemplateSyntax` which is already called at line 96. Adding the patterns to `TEMPLATE_PATTERNS` is sufficient — no new call site needed.
 - When removing the PostHog pattern, also remove the trailing comma on the Twilio line if it becomes the last entry before the removed lines. Check formatting.
 
@@ -168,4 +169,4 @@ None. All changes are self-contained within the CLI package.
 - Current test files: 124 passed
 - Command used: `(cd 'packages/cli' && pnpm vitest run)`
 - After build: expected 2926+ tests (removing 1 test, adding 3-4 new tests = net +2-3)
-- Regression focus: `tests/engine/findings/secrets.test.ts` — all existing tests except the removed one must pass unchanged
+- Regression focus: `tests/engine/findings/secrets.test.ts` — all existing tests must pass. Two are modified: weak signing secret test removed, AWS test key changed from `AKIAIOSFODNN7EXAMPLE1` to `AKIA1234567890ABCDEF`
