@@ -44462,7 +44462,10 @@
             "A010"
           ],
           "id": "scan-polish-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Per testing-standards Rule 1: functions exported solely for test access are intentional. generateAgentsMd at assets.ts:341 is documented with @internal JSDoc at line 337 ('Exported for testing only — call via createClaudeConfiguration'). Used internally and imported by tests.",
+          "closed_at": "2026-05-26T22:57:07.874Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

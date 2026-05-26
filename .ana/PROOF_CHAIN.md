@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-169 runs · 117 active · 5 promoted · 835 closed
+169 runs · 116 active · 5 promoted · 836 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 118 | 79 | 2026-05-26 |
+| cli | 118 | 78 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 117 total)
+## Active Findings (30 shown of 116 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -32,7 +32,6 @@
 
 ### packages/cli/src/commands/init/assets.ts
 
-- **test:** generateAgentsMd exported as public API for test access — documented with @internal JSDoc but TypeScript has no enforcement — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 - **code:** Surfaces section has no trailing newline after +N more line when overflow triggers — the empty string push is inside the outer if block but the overflow text has no blank line separator from next section — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 
 ### packages/cli/src/commands/init/state.ts
@@ -57,6 +56,7 @@
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
+- **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
