@@ -44444,7 +44444,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "scan-polish-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentionally different heuristics for different purposes. Env enrichment at scan-engine.ts:1000 uses startsWith/endsWith to answer 'does ANY example file exist?' (broad match). detectSecrets uses exact filenames to answer 'is THIS specific file committed?' (exact match). The inconsistency is by design — each serves its own correctness requirement.",
+          "closed_at": "2026-05-26T22:56:57.180Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
