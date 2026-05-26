@@ -10,7 +10,7 @@ Two changes, both small:
 
 1. **Display loop in `scan.ts`:** After each finding title line is pushed, check if `f.detail` is non-null. If so, split on `\n` and push each line as `chalk.gray()` with 4-space indent. This sits inside the existing `for (const f of criticalOrWarn)` loop, immediately after the title push.
 
-2. **Validation detail rewrite in `validation.ts`:** Replace the two-line detail string (which contains a literal `\n`) with a single line: `Heuristic: checks imports in first 30 lines. Wrapper or middleware validation may not be detected.`
+2. **Validation detail rewrite in `validation.ts`:** Replace the two-line detail string (which contains a literal `\n`) with a single line: `Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected.`
 
 The structural analog is the funnel-mode pass display at `scan.ts:333-340` — same `lines.push()` pattern, same loop context. The detail rendering follows the same shape: conditional content pushed as indented lines below the primary line.
 
@@ -19,7 +19,7 @@ The structural analog is the funnel-mode pass display at `scan.ts:333-340` — s
 **Warn finding with detail (validation):**
 ```
   ⚠ 3/10 API routes have no validation imports
-    Heuristic: checks imports in first 30 lines. Wrapper or middleware validation may not be detected.
+    Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected.
 ```
 
 **Critical finding with detail (secret):**
@@ -44,7 +44,7 @@ The structural analog is the funnel-mode pass display at `scan.ts:333-340` — s
 **Why:** Without this, `f.detail` is computed by every finding rule but never shown to the user. Three of four rules write meaningful detail text that aids diagnosis.
 
 ### `packages/cli/src/engine/findings/rules/validation.ts` (modify)
-**What changes:** Replace the detail string at line 116 from the two-line version (with literal `\n`) to a single line: `'Heuristic: checks imports in first 30 lines. Wrapper or middleware validation may not be detected.'`
+**What changes:** Replace the detail string at line 116 from the two-line version (with literal `\n`) to a single line: `'Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected.'`
 **Pattern to follow:** The env.ts detail at line 50 — a single explanatory sentence.
 **Why:** The current two-line detail produces a sentence fragment on line 1 if rendered individually. A single line is cleaner and complete.
 
@@ -52,7 +52,7 @@ The structural analog is the funnel-mode pass display at `scan.ts:333-340` — s
 
 - [ ] AC1: `ana scan` on a repo with warn/critical findings shows `f.detail` as indented gray text below each finding title.
 - [ ] AC2: `ana scan` on a repo with all-pass findings shows no detail lines (pass findings only render in funnel mode, and funnel mode doesn't use the detail path).
-- [ ] AC3: The validation finding's detail is a single line: `Heuristic: checks imports in first 30 lines. Wrapper or middleware validation may not be detected.`
+- [ ] AC3: The validation finding's detail is a single line: `Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected.`
 - [ ] AC4: Secret findings show their redacted match + file:line detail below each title.
 - [ ] AC5: Env hygiene finding shows its explanatory detail below the title.
 - [ ] AC6: CLI output for a repo with multiple findings remains compact — one detail line per finding, indented under its title.
@@ -61,7 +61,7 @@ The structural analog is the funnel-mode pass display at `scan.ts:333-340` — s
 
 ## Testing Strategy
 
-- **Unit tests:** Add a test for the validation detail text change. The existing test A007 in `tests/engine/findings/rules/validation.test.ts` asserts `detail` contains `'wrapper-based'` — the new text still contains this, so A007 passes unchanged. Add a new test asserting the detail is a single line (no `\n`) and matches the exact AC3 text.
+- **Unit tests:** Add a test for the validation detail text change. The existing test A007 in `tests/engine/findings/rules/validation.test.ts` asserts `detail` contains `'wrapper-based'` — the new detail text preserves this exact substring (lowercase, hyphenated), so A007 continues to pass. Add a new test asserting the detail is a single line (no `\n`) and matches the exact AC3 text.
 - **Unit tests:** Add a test for the `scan.ts` display rendering. The `formatHumanReadable` function is not exported, so test via the finding detail rendering logic directly — create findings with detail, pass through the display, and verify detail lines appear in output.
 - **Edge cases:** Finding with `detail: null` produces no extra lines. Finding with multi-line detail (split on `\n`) produces multiple gray lines.
 
@@ -78,7 +78,7 @@ None. Both files exist and the patterns are established.
 
 - The validation detail at line 116 uses a literal `\n` inside a regular string, not a template literal newline. The replacement is the entire string, so the `\n` handling is moot — but don't try to "fix" the escape; replace the whole value.
 - `formatHumanReadable` is not exported. To test the display rendering, the builder will need to either export it or test via the existing test patterns for scan display. Check how other scan display tests work — if none exist, export the function or test the detail-rendering logic in isolation.
-- Existing test A007 asserts `finding.detail` contains `'wrapper-based'`. The new detail text still contains this substring — no update needed for that test. But verify this before committing.
+- Existing test A007 asserts `finding.detail` contains `'wrapper-based'`. The new detail text preserves `wrapper-based` (lowercase, hyphenated) so the case-sensitive `.toContain()` assertion passes unchanged.
 
 ## Build Brief
 

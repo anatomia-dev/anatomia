@@ -36,7 +36,7 @@ assertions:
     block: "validation detail is a single concise line"
     target: "finding.detail"
     matcher: "equals"
-    value: "Heuristic: checks imports in first 30 lines. Wrapper or middleware validation may not be detected."
+    value: "Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected."
 
   - id: A006
     says: "Validation detail no longer contains a newline character"
