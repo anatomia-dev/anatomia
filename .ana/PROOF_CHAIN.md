@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 125 active · 5 promoted · 822 closed
+168 runs · 124 active · 5 promoted · 823 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 87 | 2026-05-26 |
+| cli | 117 | 86 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 125 total)
+## Active Findings (30 shown of 124 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -33,10 +33,6 @@
 ### packages/cli/src/commands/proof.ts
 
 - **code:** Hot spots displayNames not truncated when exceeding maxWidth — padEnd passes through unchanged — *CLI Polish*
-
-### packages/cli/src/commands/scan.ts
-
-- **code:** formatHumanReadable exported solely for test access — increases public API surface — *Show Finding Details in CLI Output*
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -121,4 +117,8 @@
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
 - **test:** No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests — *CLI Polish*
+
+### website/lib/__tests__/docs-data/staleness.test.ts
+
+- **test:** Staleness tests replicate checkStaleDocs rather than testing the actual function — *Fix AnaDocs date freshness*
 

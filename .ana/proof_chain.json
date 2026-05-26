@@ -43540,7 +43540,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "show-finding-details-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Per testing-standards Rule 1: functions exported solely for test access are intentional — TypeScript has no internal keyword. formatHumanReadable at scan.ts:101 is used internally at scan.ts:452 and imported only by scan-finding-details.test.ts:12 for unit testing.",
+          "closed_at": "2026-05-26T22:08:45.826Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
