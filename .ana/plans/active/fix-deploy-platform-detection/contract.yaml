@@ -59,11 +59,11 @@ assertions:
     value: "census.primarySourceRoot"
 
 file_changes:
-  - path: "src/engine/detectors/deployment.ts"
+  - path: "packages/cli/src/engine/detectors/deployment.ts"
     action: modify
-  - path: "src/engine/scan-engine.ts"
+  - path: "packages/cli/src/engine/scan-engine.ts"
     action: modify
-  - path: "src/engine/census.ts"
+  - path: "packages/cli/src/engine/census.ts"
     action: modify
-  - path: "tests/engine/detectors/ci-detection.test.ts"
+  - path: "packages/cli/tests/engine/detectors/ci-detection.test.ts"
     action: modify
