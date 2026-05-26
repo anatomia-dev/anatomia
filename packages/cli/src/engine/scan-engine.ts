@@ -921,7 +921,7 @@ export async function scanProject(
   }
   const { schemas, blindSpots } = await detectSchemas(allDeps, rootPath, census.configs.schemas);
   const secrets = await detectSecrets(rootPath);
-  const deployment = detectDeployment(census.configs.deployments);
+  const deployment = detectDeployment(census.configs.deployments, census.primarySourceRoot);
   const ci = detectCI(census.configs.ciWorkflows);
 
   // Annotate services with the stack roles they fulfill. Display code uses
