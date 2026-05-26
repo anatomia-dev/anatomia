@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 123 active · 5 promoted · 824 closed
+168 runs · 122 active · 5 promoted · 825 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 85 | 2026-05-26 |
+| cli | 117 | 84 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 123 total)
+## Active Findings (30 shown of 122 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -50,6 +50,7 @@
 ### packages/cli/src/engine/census.ts
 
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
+- **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -84,10 +85,6 @@
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
-
-### packages/cli/tests/commands/scan-finding-details.test.ts
-
-- **test:** A003 test checks next line isn't detail-indented rather than counting output lines — functionally equivalent but diverges from contract's 'outputLines.length equals 1' framing — *Show Finding Details in CLI Output*
 
 ### packages/cli/tests/engine/census.test.ts
 

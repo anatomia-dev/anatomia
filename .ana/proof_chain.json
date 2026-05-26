@@ -43574,7 +43574,10 @@
             "A003"
           ],
           "id": "show-finding-details-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Functionally equivalent to the contract assertion. Contract says 'outputLines.length equals 1' — test verifies the next line after the finding isn't detail-indented, proving no detail line was rendered. Different assertion style, same behavioral proof.",
+          "closed_at": "2026-05-26T22:09:08.444Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
