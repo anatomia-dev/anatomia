@@ -186,6 +186,7 @@ function makeCensus(roots: SourceRoot[]): ProjectCensus {
     deps: {},
     devDeps: {},
     rootDevDeps: {},
+    rootDeps: {},
     primaryDeps: {},
     configs: {
       frameworkHints: [],

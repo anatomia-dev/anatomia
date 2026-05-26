@@ -594,6 +594,12 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
   // in root devDeps (like @playwright/test) should still be detected.
   const rootDevDeps = (result?.rootPackage?.packageJson?.devDependencies ?? {}) as Record<string, string>;
 
+  // Root production deps — for three-tier identity detection fallback.
+  // In hoisted monorepos (postiz-app), all deps live in the root package.json
+  // and workspace packages declare none. Without this tier, identity fields
+  // (database, auth, payments) return null for hoisted layouts.
+  const rootDeps = (result?.rootPackage?.packageJson?.dependencies ?? {}) as Record<string, string>;
+
   // Discover configs (pass all roots for per-root discovery)
   const rootDescriptors = sourceRoots.map(r => ({
     absolutePath: r.absolutePath,
@@ -641,6 +647,7 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
     deps,
     devDeps,
     rootDevDeps,
+    rootDeps,
     primaryDeps,
     configs: {
       frameworkHints,
