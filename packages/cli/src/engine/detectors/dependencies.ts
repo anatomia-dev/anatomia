@@ -35,6 +35,20 @@ export const DATABASE_PACKAGES: Record<string, string> = {
 };
 
 /**
+ * ORM package names — the subset of DATABASE_PACKAGES that represent ORMs.
+ * Used by the ORM-beats-driver merge rule in three-tier identity detection:
+ * if any tier found an ORM, that tier's database result wins regardless of
+ * tier priority.
+ */
+export const ORM_PACKAGES: Set<string> = new Set([
+  'prisma', '@prisma/client',
+  'drizzle-orm',
+  'typeorm', 'sequelize',
+  'mongoose', 'knex',
+  'kysely', '@mikro-orm/core',
+]);
+
+/**
  * Auth packages for dependency detection
  */
 export const AUTH_PACKAGES: Record<string, string> = {
