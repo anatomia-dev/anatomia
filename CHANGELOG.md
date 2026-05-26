@@ -7,6 +7,37 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-05-26
+
+### Added
+
+- **Three-tier monorepo dependency resolution** — identity fields (database, auth, payments, AI SDK) now use tiered detection: primary package → all workspace packages → root package.json. Includes ORM-beats-driver merge rule: when a shared package has Prisma and the primary has @planetscale/database, Prisma wins. Fixes n8n false Supabase detection and postiz-app empty stack from hoisted deps.
+- **Finding details in CLI output** — scan findings now show methodology detail as indented gray text below each warning. The validation finding's disclaimer ("Wrapper-based or middleware validation may not be detected") is now visible to founders instead of hidden in JSON.
+- **Surfaces section in AGENTS.md** — monorepo projects get a `## Surfaces` section listing surface names, paths, and frameworks. Capped at 4 entries. Helps Cursor, Windsurf, and Copilot users navigate monorepo structure.
+- **Env hygiene monorepo enrichment** — scanner now checks the primary source root for `.env.example` when root directory doesn't have one. Fixes 9 of 30 handoff repos including dub and inbox-zero.
+- **Drizzle barrel-file model aggregation** — when a drizzle config points to a barrel index file (re-exports from subdirectories), table counts are aggregated across all files in the directory tree. Fixes openstatus (0 → 40 models).
+
+### Fixed
+
+- **False positive secret detection eliminated** — removed weak signing secret regex (0 true positives across 48 repos). Removed PostHog public key pattern. Added bracket template filters and placeholder values for DB URLs. Added AWS example key blocklist. Medusa: 10 false criticals → 0. Infisical: 12 → 0.
+- **Deploy platform detection primary-aware** — monorepo scans now prefer the primary package's deploy config. Fixes inbox-zero and Cap showing "Cloudflare Workers" instead of "Vercel." Prisma+Vercel serverless singleton gotcha now fires correctly.
+- **AGENTS.md constraint deduplication** — multiple secret findings no longer produce duplicate constraint lines. Medusa's 10 identical "🔴 Use environment variables..." lines → 1.
+- **AI sub-provider collapse in AGENTS.md** — Vercel AI provider variants (OpenAI, Anthropic, Google, etc.) filtered from services section when the stack already reports the primary AI SDK. Direct SDK usage preserved.
+- **Validation finding title qualified** — changed from `185/464 API routes have no validation imports` to `~185 of 464 API route files may lack input validation`. Tilde signals approximation. Singular/plural handled correctly.
+- **shadcn/ui split-package detection** — UI system detection uses merged workspace deps for monorepos. The shadcn/ui 3-dep signature (cva + tw-merge + radix) commonly split across packages is now correctly detected. Fixes dub ("Tailwind CSS" → "shadcn/ui (Tailwind)").
+- **Workspace glob fallback** — scanner no longer crashes on wildcard workspace patterns or packages with missing name fields.
+
+### Changed
+
+- `ProjectCensus` type gains `rootDeps` field (root package.json production dependencies)
+- `ORM_PACKAGES` exported from `detectors/dependencies.ts` for the ORM-beats-driver merge rule
+- `detectDeployment` gains optional `primaryPath` parameter
+- `SECRET_PATTERNS` reduced from 11 to 9 entries
+- `DB_URL_PLACEHOLDERS` and `TEMPLATE_PATTERNS` expanded
+- Validation finding detail rewritten to single concise line
+- `formatHumanReadable` exported for testing
+- Stale comments in scan-engine.ts updated to reflect three-tier model
+
 ## [1.1.4] - 2026-05-24
 
 ### Added
@@ -267,7 +298,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.5...HEAD
+[1.1.5]: https://github.com/anatomia-dev/anatomia/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/anatomia-dev/anatomia/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/anatomia-dev/anatomia/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/anatomia-dev/anatomia/compare/v1.1.1...v1.1.2

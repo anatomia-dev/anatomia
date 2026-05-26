@@ -1,6 +1,6 @@
 {
   "name": "anatomia-cli",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Verified AI development. Scan your project, generate context, verify every change through a four-agent pipeline.",
   "bin": {
     "ana": "./dist/index.js"
