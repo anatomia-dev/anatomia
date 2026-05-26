@@ -824,10 +824,12 @@ export async function scanProject(
     // Single call chain eliminates the duplicate detectAiSdk(allDeps) that
     // previously existed at line 798 for provenance.
     aiSdk: detectAiSdk(census.primaryDeps) ?? detectAiSdk(census.allDeps) ?? detectAiSdk(census.rootDeps),
-    // uiSystem scoped to primary in monorepos, with rootDeps fallback
-    // for hoisted monorepos (postiz-app has tailwindcss in root).
+    // uiSystem uses allDeps for monorepos — the shadcn/ui 3-dep signature
+    // (cva + tw-merge + radix) is commonly split across workspace packages
+    // (e.g., dub: cva in packages/ui, tw-merge in packages/utils, radix in
+    // apps/web). Only allDeps merges them. rootDeps fallback for hoisted.
     uiSystem: census.layout === 'monorepo'
-      ? detectUiSystem(census.primaryDeps) ?? detectUiSystem(census.rootDeps)
+      ? detectUiSystem(census.allDeps) ?? detectUiSystem(census.rootDeps)
       : detectUiSystem(allDeps),
   };
 
