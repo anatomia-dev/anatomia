@@ -1,0 +1,126 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan Polish — Detection Gaps + AGENTS.md Quality"
+
+assertions:
+  - id: A001
+    says: "Barrel-index Drizzle schemas aggregate table counts from all files in the directory"
+    block: "barrel file triggers directory expansion and aggregates model count"
+    target: "result.schemas.drizzle.modelCount"
+    matcher: "greater"
+    value: 0
+
+  - id: A002
+    says: "The barrel file path is preserved as the schema entry point"
+    block: "barrel file triggers directory expansion and aggregates model count"
+    target: "result.schemas.drizzle.path"
+    matcher: "contains"
+    value: "index.ts"
+
+  - id: A003
+    says: "Provider is determined from aggregated table helper counts"
+    block: "barrel file triggers directory expansion and aggregates model count"
+    target: "result.schemas.drizzle.provider"
+    matcher: "equals"
+    value: "sqlite"
+
+  - id: A004
+    says: "Single-file schemas with real tables are not affected by the barrel fallback"
+    block: "single-file schema with tables is unchanged"
+    target: "result.schemas.drizzle.modelCount"
+    matcher: "equals"
+    value: 3
+
+  - id: A005
+    says: "A schema file with zero tables and no sibling files still reports zero"
+    block: "schema with no tables and no siblings reports modelCount 0"
+    target: "result.schemas.drizzle.modelCount"
+    matcher: "equals"
+    value: 0
+
+  - id: A006
+    says: "Monorepo env example in primary source root is detected"
+    block: "env example in monorepo primary source root detected"
+    target: "result.secrets.envExampleExists"
+    matcher: "equals"
+    value: true
+
+  - id: A007
+    says: "Root-level env example still detected when primary is root"
+    block: "env example at root still works when primary is root"
+    target: "result.secrets.envExampleExists"
+    matcher: "equals"
+    value: true
+
+  - id: A008
+    says: "AI sub-provider variants are excluded from AGENTS.md services"
+    block: "AI sub-provider collapse filters parenthesized variants"
+    target: "agentsMdContent"
+    matcher: "not_contains"
+    value: "Vercel AI (OpenAI)"
+
+  - id: A009
+    says: "Direct SDK services are preserved even when AI SDK sub-providers are filtered"
+    block: "AI sub-provider collapse filters parenthesized variants"
+    target: "agentsMdContent"
+    matcher: "contains"
+    value: "OpenAI"
+
+  - id: A010
+    says: "AGENTS.md includes a Surfaces section for monorepo projects"
+    block: "surfaces section rendered for multi-surface projects"
+    target: "agentsMdContent"
+    matcher: "contains"
+    value: "## Surfaces"
+
+  - id: A011
+    says: "Surface entries show name and path"
+    block: "surfaces section rendered for multi-surface projects"
+    target: "agentsMdContent"
+    matcher: "contains"
+    value: "- cli (packages/cli)"
+
+  - id: A012
+    says: "Surface entries include framework when present"
+    block: "surfaces section rendered for multi-surface projects"
+    target: "agentsMdContent"
+    matcher: "contains"
+    value: "Next.js"
+
+  - id: A013
+    says: "Single-package projects do not get a Surfaces section"
+    block: "no surfaces section for single-package projects"
+    target: "agentsMdContent"
+    matcher: "not_contains"
+    value: "## Surfaces"
+
+  - id: A014
+    says: "More than 4 surfaces shows truncation indicator"
+    block: "surfaces section truncates at 4 with overflow"
+    target: "agentsMdContent"
+    matcher: "contains"
+    value: "+2 more"
+
+  - id: A015
+    says: "Stale comment about allDeps is updated to reflect three-tier model"
+    block: "stale comment fixes"
+    target: "sourceContent"
+    matcher: "not_contains"
+    value: "stay on allDeps"
+
+  - id: A016
+    says: "Stale line reference is corrected to ~659"
+    block: "stale comment fixes"
+    target: "sourceContent"
+    matcher: "contains"
+    value: "~659"
+
+file_changes:
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/scanProject.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/agents-md.test.ts"
+    action: create
