@@ -36,7 +36,7 @@ The service-specific patterns (Stripe `sk_live_`, OpenAI `sk-proj-`, AWS `AKIA`,
 - AC3: `ana scan` on openpanel produces 0 critical secret findings (currently 1 DB URL false positive)
 - AC4: `ana scan` on n8n, trigger.dev, langfuse produce 0 PostHog warnings (currently 1 each)
 - AC5: `ana init` on medusa produces AGENTS.md with at most 1 `hardcoded-secret` constraint line, not 10 duplicates
-- AC6: All Group A sniper-customer repos (dub, inbox-zero, formbricks, midday, Cap, postiz-app) remain clean — zero regressions
+- AC6: All Group A sniper-customer repos (dub, inbox-zero, formbricks, midday, openpanel, Cap) remain clean — zero regressions
 - AC7: `ana scan` on electric still detects the DB URL with real credentials (true positive preserved)
 - AC8: All existing secrets tests pass except the weak signing secret test, which is removed or converted to a negative test
 - AC9: `SECRET_PATTERNS` array no longer contains the weak signing secret pattern or the PostHog `phc_` pattern
