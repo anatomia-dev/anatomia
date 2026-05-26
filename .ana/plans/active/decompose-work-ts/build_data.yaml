@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "getNextAction kept in work.ts instead of work-state.ts due to source-reading test constraint"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "computeChainHealth imported in both work.ts and work-proof.ts — recovery path in completeWork needs it"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: monitor
