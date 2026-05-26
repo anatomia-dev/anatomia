@@ -1,0 +1,79 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Show Finding Details in CLI Output"
+
+assertions:
+  - id: A001
+    says: "Scan output shows detail text below each warning or critical finding"
+    block: "renders detail lines for findings with non-null detail"
+    target: "output"
+    matcher: "contains"
+    value: "    "
+
+  - id: A002
+    says: "Detail text appears dimmed to distinguish it from the finding title"
+    block: "renders detail lines for findings with non-null detail"
+    target: "detailLine.style"
+    matcher: "equals"
+    value: "gray"
+
+  - id: A003
+    says: "Findings without detail text show only the title line"
+    block: "skips detail for findings with null detail"
+    target: "outputLines.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A004
+    says: "Multi-line detail text renders each line separately"
+    block: "splits multi-line detail into separate indented lines"
+    target: "detailLines.length"
+    matcher: "equals"
+    value: 2
+
+  - id: A005
+    says: "Validation finding explains its detection methodology in one line"
+    block: "validation detail is a single concise line"
+    target: "finding.detail"
+    matcher: "equals"
+    value: "Heuristic: checks imports in first 30 lines. Wrapper or middleware validation may not be detected."
+
+  - id: A006
+    says: "Validation detail no longer contains a newline character"
+    block: "validation detail is a single concise line"
+    target: "finding.detail"
+    matcher: "not_contains"
+    value: "\n"
+
+  - id: A007
+    says: "Validation detail still mentions wrapper-based detection limitation"
+    block: "validation detail is a single concise line"
+    target: "finding.detail"
+    matcher: "contains"
+    value: "wrapper-based"
+
+  - id: A008
+    says: "Secret findings show their redacted match and file location as detail"
+    block: "secret finding detail contains file location"
+    target: "finding.detail"
+    matcher: "contains"
+    value: ":"
+
+  - id: A009
+    says: "Env hygiene finding shows its explanatory detail"
+    block: "env finding detail is present"
+    target: "finding.detail"
+    matcher: "exists"
+
+  - id: A010
+    says: "Pass findings never enter the detail display path"
+    block: "pass findings excluded from detail rendering"
+    target: "renderedFindings"
+    matcher: "not_contains"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "packages/cli/src/engine/findings/rules/validation.ts"
+    action: modify
