@@ -30,5 +30,22 @@
         "hash": "sha256:f957a68828b1bae3fd429ffbf2ff11a6a86bf875f630569a0a6a8b705b73457d"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-26T20:07:00.732Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T20:12:54.367Z",
+    "hash": "sha256:73bfc646db8d1b1e204120300cc45fa6ef5392dda9a70d74b9e287b5ce814fe2"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T20:12:54.368Z",
+    "hash": "sha256:94bdbdc3b22262cba5b50b67b6848a6d9c33dd4c205b5574b0da98b44a6dbfc8"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/engine/findings/rules/validation.ts",
+    "packages/cli/tests/commands/scan-finding-details.test.ts",
+    "packages/cli/tests/engine/findings/rules/validation.test.ts"
+  ],
+  "commit_hygiene": []
 }
