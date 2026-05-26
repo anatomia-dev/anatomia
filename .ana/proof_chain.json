@@ -43930,7 +43930,10 @@
             "A008"
           ],
           "id": "qualify-validation-title-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Systemic tag collision — 8 stale @ana tags inherited from prior build cycle in validation.test.ts. None map to this contract's assertions. Same established pattern.",
+          "closed_at": "2026-05-26T22:09:38.797Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

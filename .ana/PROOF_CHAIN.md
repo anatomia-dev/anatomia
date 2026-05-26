@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 120 active · 5 promoted · 827 closed
+168 runs · 119 active · 5 promoted · 828 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 82 | 2026-05-26 |
+| cli | 117 | 81 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/tests/engine/findings/rules/validation.test.ts | 4 | 2 |
+| packages/cli/src/engine/census.ts | 4 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 120 total)
+## Active Findings (30 shown of 119 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -99,9 +99,12 @@
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
 
+### packages/cli/tests/engine/detectors/surfaces.test.ts
+
+- **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
+
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
-- **test:** All 8 @ana tags are stale — inherited from prior build cycle, none map to this contract's assertions — *Qualify Validation Finding Title*
 - **test:** No test asserts 'detected' keyword in pass title — A006 verified only by source inspection — *Qualify Validation Finding Title*
 - **test:** No test asserts absence of tilde in pass title — A007 verified only by source inspection — *Qualify Validation Finding Title*
 
