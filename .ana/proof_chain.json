@@ -44241,7 +44241,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "monorepo-dep-resolution-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Empty string version is invalid npm — package.json dependency values are always non-empty strings ('^1.0.0', '*', 'latest'). npm publish rejects empty version strings. The truthy || check at scan-engine.ts:136 is correct for all valid inputs.",
+          "closed_at": "2026-05-26T22:10:44.685Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

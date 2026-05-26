@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 116 active · 5 promoted · 831 closed
+168 runs · 115 active · 5 promoted · 832 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 78 | 2026-05-26 |
+| cli | 117 | 77 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 116 total)
+## Active Findings (30 shown of 115 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -68,7 +68,6 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
-- **code:** hasDep uses truthy check (||) — empty string version would be treated as absent — *Monorepo Three-Tier Dependency Resolution*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
@@ -88,6 +87,10 @@
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
+
+### packages/cli/tests/engine/census-primary.test.ts
+
+- **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/tests/engine/census.test.ts
 
