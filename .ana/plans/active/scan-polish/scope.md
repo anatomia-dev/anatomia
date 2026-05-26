@@ -11,48 +11,53 @@ Bundled because: all are small (5-15 lines each), all have zero blast radius (ad
 
 ## Complexity Assessment
 - **Kind:** chore
-- **Size:** small — 5 changes across 2 files, ~50 lines total production code
+- **Size:** small — 5 changes across 2 files + 2 stale comment fixes, ~50 lines total production code
 - **Surface:** cli
 - **Files affected:**
-  - `packages/cli/src/engine/scan-engine.ts` — 3 changes (Drizzle model aggregation, env hygiene monorepo check, stale comment fix)
-  - `packages/cli/src/commands/init/assets.ts` — 2 changes (AI service collapse, surfaces section)
-- **Blast radius:** Zero. All changes are additive (checking more paths, filtering noise, adding a section). No existing correct output changes. Model counts can only increase or stay the same. Env detection can only change false→true. AGENTS.md gains content, doesn't lose it.
+  - `packages/cli/src/engine/scan-engine.ts` — 3 changes (Drizzle model aggregation, env hygiene monorepo check, 2 stale comment fixes)
+  - `packages/cli/src/commands/init/assets.ts` — 2 changes (AI sub-provider collapse, surfaces section)
+- **Blast radius:** Zero for detection changes (additive only — broader globs, additional path checks). Near-zero for AGENTS.md changes (additive section, narrower service filter). No existing correct output changes. Model counts can only increase or stay the same.
 - **Estimated effort:** 2-3 hours
 - **Multi-phase:** no
 
 ## Approach
 
-Five independent improvements shipped as one scope because they share the same risk profile (zero blast radius, additive only) and the same verification strategy (scan real repos, check output).
+Five independent improvements plus two stale comment fixes, shipped as one scope.
 
 ## Acceptance Criteria
 
-- AC1: openstatus Drizzle model count shows ~20+ models (currently 0) — the barrel index pattern is followed into subdirectories
+- AC1: openstatus Drizzle model count shows ~40 tables (currently 0) — barrel index file expanded into directory, counts aggregated across all schema files
 - AC2: dub env hygiene shows `envExampleExists: true` (currently false — `.env.example` is at `apps/web/.env.example`, not root)
-- AC3: inbox-zero AGENTS.md services section does NOT list 12+ Vercel AI sub-provider variants individually
-- AC4: inbox-zero AGENTS.md has a `## Surfaces` section listing surface names with paths and frameworks
-- AC5: scan-engine.ts:723-724 comment accurately reflects three-tier model (not "stay on allDeps")
-- AC6: midday and Cap Drizzle model counts are UNCHANGED (they use single-file schemas that already work)
-- AC7: All Group A repos produce identical identity fields — zero regressions
+- AC3: inbox-zero AGENTS.md services section does NOT list "Vercel AI (OpenAI)", "Vercel AI (Anthropic)", etc. individually. BUT it DOES still list "OpenAI" (direct SDK usage) if present as a standalone service.
+- AC4: inbox-zero AGENTS.md has a `## Surfaces` section listing surface names with paths and frameworks. Single-package repos with 0 surfaces do NOT get a Surfaces section.
+- AC5: scan-engine.ts:723-724 comment accurately reflects three-tier model
+- AC6: scan-engine.ts:733 stale line reference updated (says "line ~504", actual is ~659)
+- AC7: midday and Cap Drizzle model counts are UNCHANGED (50 and 31 respectively — they use single-file schemas)
+- AC8: All Group A repos produce identical identity fields — zero regressions
 
 ## Edge Cases & Risks
 
-**Drizzle barrel file detection:** When the census-resolved schema path has 0 table definitions, the fix scans the file's directory recursively for .ts files with pgTable/mysqlTable/sqliteTable calls. Risk: could find table definitions in unrelated .ts files in the same directory tree. Mitigated by: the directory IS the drizzle config's `schema` path — files in it are schema files by definition.
+**Drizzle barrel file detection:** When the census-resolved schema path is a file with 0 table definitions (e.g., a barrel index.ts that only re-exports), the fix scans the file's directory recursively for .ts files with `pgTable(`/`mysqlTable(`/`sqliteTable(` calls and aggregates counts. This is a POST-SCORING FALLBACK that only triggers when `best.modelCount === 0` — it does NOT change behavior for repos where the schema file has tables directly (midday, Cap).
 
-**Drizzle aggregation vs best-file:** The current code picks the single best file. The fix aggregates across ALL matched files in the directory. Risk: could double-count if a file re-exports tables from another file (barrel that also defines tables). Mitigated by: counting `Table(` calls, not exports — a re-export doesn't create a new `Table(` call.
+**Drizzle aggregation path storage:** When aggregating, store the barrel file path as `schemas['drizzle'].path` — it's the entry point users should know about, even though the tables are in subdirectories.
 
-**Env hygiene false positive:** Could checking the primary path produce `envExampleExists: true` for repos where the `.env.example` is stale or unrelated? Low risk — the presence of `.env.example` is always a positive signal regardless of which directory it's in.
+**Drizzle aggregation provider:** Aggregate table helper counts (pgTable, mysqlTable, sqliteTable) across ALL expanded files, then determine provider from the global totals. For openstatus (all sqliteTable), provider will be "sqlite". The `configDialect` fallback ("turso") only fires if 0 table helpers are found globally, which won't happen after aggregation succeeds.
 
-**AI service filtering in AGENTS.md:** Filtering by `category === 'ai'` when `stack.aiSdk` is populated. Risk: could filter a genuine non-Vercel-AI service that happens to be categorized as 'ai'. Mitigated by: only filter when `stack.aiSdk` is non-null AND the service's category is 'ai'. A project without any AI SDK in the stack wouldn't filter anything.
+**AI service collapse precision:** The filter removes services whose name starts with `stack.aiSdk + ' ('` — i.e., the parenthesized sub-provider variants like "Vercel AI (OpenAI)", "Vercel AI (Anthropic)". This does NOT remove standalone SDK services like "OpenAI" or "Anthropic" that are direct dependencies. A project using BOTH Vercel AI (meta-framework) AND the direct OpenAI SDK (for embeddings) correctly preserves the direct OpenAI mention.
 
-**Surfaces in AGENTS.md:** Adding a ## Surfaces section. Risk: repos with 10+ surfaces could produce a long list. Mitigated by: cap at 6 surfaces with "+N more" if needed — matching the init success message pattern.
+**AGENTS.md write-once behavior:** `generateAgentsMd` at line 342 checks `if (await fileExists(destPath)) return` — the improvements only affect NEW init runs. Existing users must delete AGENTS.md and re-init to see the changes. This is by design (merge-not-overwrite).
+
+**Surfaces section for single-package repos:** If `engineResult.surfaces.length === 0`, the Surfaces section is omitted entirely. No empty heading.
+
+**Surfaces cap:** Cap at 4 (matching scan.ts `MAX_SURFACES = 4` pattern). Repos with more than 4 surfaces get "+N more" truncation.
 
 ## Rejected Approaches
 
-**Drizzle: following import/export chains from barrel files.** Parsing `export * from "./monitors"` to find the re-exported files would work but is over-engineered. Just scanning the directory tree is simpler and catches the same files.
+**AI service filter by category:** Filtering all services with `category === 'ai'` when `stack.aiSdk` is populated. This would hide legitimate direct SDK usage (e.g., the `openai` package installed alongside Vercel AI for embeddings). Three independent reviewers caught this — the name-prefix approach is more precise.
 
-**Env: checking ALL workspace package directories.** Unnecessary — the primary source root is where the app runs. An env.example in a utility package isn't relevant.
+**Drizzle fix during resolution phase:** Moving the barrel-file detection to the file-vs-directory resolution (lines 406-414) instead of post-scoring. While cleaner architecturally, it requires reading file content during resolution (currently done only in scoring), changing two code phases instead of adding one fallback. The post-scoring approach is simpler: if `best.modelCount === 0`, expand and re-aggregate.
 
-**Services: using collapseServiceVariants from scan.ts.** That function groups variants but still lists them. For AGENTS.md, we want to REMOVE the sub-providers entirely (the stack field already names the primary SDK).
+**Surfaces cap at 6:** Too high for AGENTS.md which is a density-optimized file read by AI tools. scan.ts uses 4, init uses 3. Cap at 4 for consistency with the scan terminal.
 
 ## Open Questions
 
@@ -61,47 +66,52 @@ None.
 ## Exploration Findings
 
 ### Patterns Discovered
-- `scan-engine.ts:385-500` — Drizzle detection block. Census path resolves to file or directory. For openstatus: resolves to `packages/db/src/schema/index.ts` (a barrel with 0 tables). Scoring picks best single file — finds 0 in the barrel and stops.
-- `scan-engine.ts:543-564` — `detectSecrets()` only reads `rootPath`. Doesn't receive census or primary path.
-- `assets.ts:426-435` — Services section iterates `standalone` (stackRoles.length === 0) services. AI sub-providers have no stackRole (they don't match `stack.aiSdk` by name) so they all appear.
+- `scan-engine.ts:447-474` — Drizzle scoring picks BEST single file. For barrel files (0 tables), no fallback exists. The fix adds one after line 474.
+- `scan-engine.ts:543-564` — `detectSecrets()` only reads `rootPath`. Census is in scope at call site (line 962) but not passed. Option (b) from the scope: mutate the returned result at the call site — avoids changing function signature.
+- `assets.ts:423-435` — Services section iterates `standalone` (stackRoles.length === 0). AI sub-providers have no stackRole because their name doesn't match `stack.aiSdk` exactly. The name-prefix filter `svc.name.startsWith(stack.aiSdk + ' (')` is precise.
+- `collapseServiceVariants` in scan.ts already groups AI sub-providers for CLI terminal display. AGENTS.md doesn't call it — the service section lists them individually.
 
 ### Constraints Discovered
-- [TYPE-VERIFIED] `detectSecrets` signature is `(rootPath: string)` — needs a second parameter for the primary path, OR the caller handles it
-- [OBSERVED] Drizzle census path can be file or directory (line 407-421 handles both cases). The barrel-file-with-0-tables case isn't handled.
-- [OBSERVED] AGENTS.md services list has no truncation — lists ALL standalone services. scan.ts CLI has truncation (5 max + "+N more").
-- [OBSERVED] `engineResult.surfaces` array is available in `generateAgentsMd` but never rendered.
+- [TYPE-VERIFIED] `detectSecrets` signature is `(rootPath: string)` — option (b) mutates result at call site, avoids parameter change
+- [OBSERVED] AGENTS.md `generateAgentsMd` at line 342 returns early if file exists — improvements only affect new init
+- [OBSERVED] scan.ts `MAX_SURFACES = 4`, init `MAX_SURFACE_DISPLAY = 3` — AGENTS.md should use 4 for consistency with terminal
+- [VERIFIED] openstatus has 40 `sqliteTable(` calls across schema files (using the scanner's exact regex pattern). Earlier estimate of "~20+" was low.
+- [VERIFIED] inbox-zero has BOTH `ai` (Vercel AI) AND `openai` (direct SDK). Category filter would hide the direct SDK.
 
 ### Test Infrastructure
-- `tests/engine/findings/env.test.ts` — tests `checkEnvHygiene` with mock secrets data (not filesystem). The `detectSecrets` function is tested via integration in `scanProject.test.ts`.
-- No dedicated test for AGENTS.md content generation — `generateAgentsMd` writes to disk. Tests would need to read the generated file.
+- No dedicated test for AGENTS.md content — `generateAgentsMd` writes to disk. Tests would need to read the generated file.
+- Drizzle schema detection tested via integration in `scanProject.test.ts`.
 
 ## For AnaPlan
 
 ### Structural Analog
-- Drizzle directory scanning: `scan-engine.ts:407-421` — existing directory-handling code within the Drizzle block. The fix extends this pattern.
-- Env primary path: `scan-engine.ts:962` call site has `census` in scope. Pattern follows how other detection functions receive primary info.
-- AGENTS.md services filtering: `scan.ts:192-200` — CLI display already filters by `stackRoles.length === 0`. AGENTS.md can add a category filter on top.
-- AGENTS.md surfaces: state.ts:997-1017 — init success message already renders surfaces with truncation.
+- Drizzle directory expansion: `scan-engine.ts:408-411` — existing directory-handling code that pushes `${p}/**/*.ts` files into matches. The barrel fallback follows the same glob pattern.
+- Env primary path: `scan-engine.ts:962` call site has `census` in scope. Pattern follows how other post-detection enrichments work.
+- AI service filtering: `scan.ts:192-200` — CLI already filters standalone services. AGENTS.md adds a name-prefix filter on top.
+- Surfaces: `state.ts:997-1017` — init success message renders surfaces with truncation. AGENTS.md section follows the same structure.
 
 ### Relevant Code Paths
-- `packages/cli/src/engine/scan-engine.ts:385-500` — Drizzle detection, scoring, and result writing
+- `packages/cli/src/engine/scan-engine.ts:447-480` — Drizzle scoring loop + result writing. Barrel fallback inserts between best check and schema write.
 - `packages/cli/src/engine/scan-engine.ts:543-564` — detectSecrets function
 - `packages/cli/src/engine/scan-engine.ts:962` — detectSecrets call site (census in scope)
-- `packages/cli/src/engine/scan-engine.ts:720-726` — stale comment
+- `packages/cli/src/engine/scan-engine.ts:723-724` — stale comment about allDeps
+- `packages/cli/src/engine/scan-engine.ts:733` — stale line reference ("line ~504", actual ~659)
 - `packages/cli/src/commands/init/assets.ts:423-435` — AGENTS.md services section
 - `packages/cli/src/commands/init/assets.ts:340-476` — full generateAgentsMd function
 
 ### Patterns to Follow
-- Drizzle: the existing directory glob at line 410 (`${p}/**/*.ts`)
+- Drizzle: the existing directory glob at line 410 (`${p}/**/*.ts`) for the barrel fallback
 - Env: the existing `envExampleExists` boolean pattern at line 555
-- Services: the `svc.stackRoles.length === 0` filter pattern at line 427
-- Surfaces: the init display at state.ts:1000-1017 (MAX_SURFACE_DISPLAY = 3 pattern)
+- Services: `svc.name.startsWith(stack.aiSdk + ' (')` for the name-prefix filter — verified against actual service names in EXTERNAL_SERVICE_PACKAGES and AI_SDK_PACKAGES
+- Surfaces: `state.ts:1000-1017` for the MAX_SURFACE_DISPLAY pattern with "+N more"
+- Surface entry format: `- {name} ({path}) — {framework}` or `- {name} ({path})` if framework is null
 
 ### Known Gotchas
-- `detectSecrets` is called at line 962 with just `rootPath`. To check the primary path, either: (a) add a second parameter `primaryAbsPath?: string`, or (b) do the check inline at the call site after `detectSecrets` returns and override `envExampleExists` if found in primary. Option (b) avoids changing the function signature.
-- The AGENTS.md surfaces section should go AFTER the deployment section and BEFORE the conventions section — matching the visual hierarchy of scan output.
-- For AI service filtering: check `engineResult.stack.aiSdk !== null` before filtering. Don't filter if no AI SDK is detected (the services might be standalone).
-- The Drizzle aggregation must preserve the `provider` detection logic — use the most common table helper across all files (most pgTable calls across all files → postgresql).
+- `detectSecrets` returns an object. Mutating `secrets.envExampleExists` at the call site is fine — the object is not frozen/const.
+- Guard env check with `census.primarySourceRoot !== '.'` — if primary IS root, the root check already ran.
+- The barrel fallback must only trigger from CENSUS matches, not from GLOB FALLBACK matches. The glob fallback (lines 430-444) already has its own content filter. Adding a directory expansion there would be redundant and could cause over-counting.
+- For the surfaces section placement: after `## Deployment` and before `## Conventions` (if it exists). Check the section ordering in `generateAgentsMd`.
+- `engineResult.surfaces` may be empty for single-repo projects. ALWAYS check `surfaces.length > 0` before rendering the section heading.
 
 ### Things to Investigate
-- Whether openstatus's `drizzle.config.ts` pointing to `./src/schema/index.ts` produces a relative path in `censusDrizzle` that matches what the scanner sees. The path resolution through census → scan-engine might differ from what `path.dirname()` produces.
+- Whether openstatus's `drizzle.config.ts` path `./src/schema/index.ts` resolves through census to the expected relative path `packages/db/src/schema/index.ts`. The path resolution through census → scan-engine matters for `path.dirname()` to produce the right directory.
