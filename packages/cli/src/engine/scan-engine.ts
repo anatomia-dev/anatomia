@@ -19,7 +19,9 @@ import { glob } from 'glob';
 const toPosix = (p: string): string => p.replace(/\\/g, '/');
 import type { EngineResult, EnrichedPackage } from './types/engineResult.js';
 import { getPatternLibrary } from './types/patterns.js';
-import { detectFromDeps, detectServiceDeps, detectAiSdk, detectNonNodeAiSdk, findStackProvenance, TESTING_PACKAGES } from './detectors/dependencies.js';
+import { detectFromDeps, detectServiceDeps, detectAiSdk, detectNonNodeAiSdk, findStackProvenance, TESTING_PACKAGES, ORM_PACKAGES } from './detectors/dependencies.js';
+import type { DependencyDetectionResult } from './detectors/dependencies.js';
+import type { ProjectCensus } from './types/census.js';
 import { readPythonDependencies } from './parsers/python.js';
 import { readGoDependencies } from './parsers/go.js';
 import { detectPackageManager } from './detectors/packageManager.js';
@@ -124,6 +126,14 @@ function detectUiSystem(allDeps: Record<string, string>): string | null {
   }
 
   return 'Tailwind CSS';
+}
+
+/**
+ * Check if a package exists in any of the three dependency tiers.
+ * Used by schema triggers — boolean presence, not identity detection.
+ */
+function hasDep(pkg: string, census: ProjectCensus): boolean {
+  return !!(census.primaryDeps[pkg] || census.allDeps[pkg] || census.rootDeps[pkg]);
 }
 
 // Census (via @manypkg/get-packages) is the single source for monorepo
@@ -260,6 +270,7 @@ async function detectSchemas(
   allDeps: Record<string, string>,
   rootPath: string,
   censusSchemas: import('./types/census.js').SchemaFileEntry[] = [],
+  census: ProjectCensus,
 ): Promise<{ schemas: EngineResult['schemas']; blindSpots: EngineResult['blindSpots'] }> {
   const schemas: EngineResult['schemas'] = {};
   const blindSpots: EngineResult['blindSpots'] = [];
@@ -285,7 +296,7 @@ async function detectSchemas(
   // Multi-file schemas (prismaSchemaFolder): count models across all sibling
   // .prisma files in the same directory, not just schema.prisma.
   // Directory entries (path ending with /): read all .prisma files in the dir.
-  const hasPrisma = allDeps['prisma'] || allDeps['@prisma/client'];
+  const hasPrisma = hasDep('prisma', census) || hasDep('@prisma/client', census);
   if (hasPrisma) {
     try {
       const censusPrisma = censusSchemas.filter(s => s.orm === 'prisma').map(s => s.path);
@@ -371,7 +382,7 @@ async function detectSchemas(
   // Mirrors the Prisma block above: census provides config-extracted paths,
   // glob catches projects without a drizzle.config file, scorer picks the
   // candidate with the most table definitions.
-  if (allDeps['drizzle-orm']) {
+  if (hasDep('drizzle-orm', census)) {
     try {
       const censusDrizzle = censusSchemas.filter(s => s.orm === 'drizzle').map(s => s.path);
       // Read dialect directly from config file (census no longer passes it via sentinel)
@@ -489,7 +500,7 @@ async function detectSchemas(
   }
 
   // Supabase migrations — count unique tables, not files
-  if (allDeps['@supabase/supabase-js']) {
+  if (hasDep('@supabase/supabase-js', census)) {
     try {
       const migrationFiles = await glob('**/supabase/migrations/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]);
       const schemaFiles = await glob('**/schema/**/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]);
@@ -660,7 +671,32 @@ export async function scanProject(
 
   // 3. Dependencies from census (single source of truth)
   const allDeps = census.allDeps;
-  const depResult = detectFromDeps(allDeps);
+
+  // Three-tier identity detection: primaryDeps → allDeps → rootDeps.
+  // In monorepos, each tier carries a different slice of the dependency graph.
+  // In single-repos, primaryDeps ≈ allDeps and rootDeps is empty/identical,
+  // so the chain degrades gracefully (tier 1 finds everything).
+  const tier1 = detectFromDeps(census.primaryDeps);
+  const tier2 = census.layout === 'monorepo' ? detectFromDeps(census.allDeps) : tier1;
+  const tier3 = census.layout === 'monorepo' ? detectFromDeps(census.rootDeps) : tier1;
+
+  // ORM-beats-driver merge for database: if any tier found an ORM,
+  // that tier wins regardless of tier priority. This handles dub-shaped
+  // projects where tier 1 has @planetscale/database but tier 2 has prisma.
+  const tiers = [tier1, tier2, tier3] as const;
+  const ormTier = tiers.find(t => t.databasePkg !== null && ORM_PACKAGES.has(t.databasePkg));
+  const winningDbTier = ormTier ?? tiers.find(t => t.database !== null) ?? tier1;
+
+  // Resolve identity fields: ORM merge for database, ?? chain for the rest.
+  const depResult: DependencyDetectionResult = {
+    database: winningDbTier.database,
+    databasePkg: winningDbTier.databasePkg,
+    auth: tier1.auth ?? tier2.auth ?? tier3.auth ?? null,
+    authPkg: tier1.authPkg ?? tier2.authPkg ?? tier3.authPkg ?? null,
+    testing: tier1.testing.length > 0 ? tier1.testing : tier2.testing.length > 0 ? tier2.testing : tier3.testing,
+    payments: tier1.payments ?? tier2.payments ?? tier3.payments ?? null,
+    paymentsPkg: tier1.paymentsPkg ?? tier2.paymentsPkg ?? tier3.paymentsPkg ?? null,
+  };
 
   // 4. Direct detection phases — project type, framework, structure, and
   //    deep-tier analysis (tree-sitter parsing, patterns, conventions).
@@ -784,19 +820,20 @@ export async function scanProject(
           ? `Nx (${mono.tool})`
           : `${mono.tool} monorepo`)
       : null,
-    aiSdk: detectAiSdk(allDeps),
-    // uiSystem scoped to primary in monorepos (same rationale as framework —
-    // a demo site's Tailwind shouldn't define a CLI's identity).
+    // Three-tier aiSdk: primary wins, then allDeps, then rootDeps.
+    // Single call chain eliminates the duplicate detectAiSdk(allDeps) that
+    // previously existed at line 798 for provenance.
+    aiSdk: detectAiSdk(census.primaryDeps) ?? detectAiSdk(census.allDeps) ?? detectAiSdk(census.rootDeps),
+    // uiSystem scoped to primary in monorepos, with rootDeps fallback
+    // for hoisted monorepos (postiz-app has tailwindcss in root).
     uiSystem: census.layout === 'monorepo'
-      ? detectUiSystem(census.primaryDeps)
+      ? detectUiSystem(census.primaryDeps) ?? detectUiSystem(census.rootDeps)
       : detectUiSystem(allDeps),
   };
 
   // Provenance: determine which source root contributed each detection.
-  // Uses the Node-detected aiSdk only (non-Node aiSdk uses language-specific
-  // deps not in SourceRoot.deps/devDeps).
-  const nodeAiSdk = detectAiSdk(allDeps);
-  const stackProvenance = findStackProvenance(census, depResult, nodeAiSdk);
+  // Uses the three-tier aiSdk value (already resolved above).
+  const stackProvenance = findStackProvenance(census, depResult, stack.aiSdk);
 
   // Enrich from direct detection results (replaces analysis.* references)
   if (projectTypeResult.type !== 'unknown') {
@@ -919,7 +956,7 @@ export async function scanProject(
       externalServices.push({ name: svc.name, category: svc.category, source: 'dependency', configFound: false, stackRoles: [] });
     }
   }
-  const { schemas, blindSpots } = await detectSchemas(allDeps, rootPath, census.configs.schemas);
+  const { schemas, blindSpots } = await detectSchemas(allDeps, rootPath, census.configs.schemas, census);
   const secrets = await detectSecrets(rootPath);
   const deployment = detectDeployment(census.configs.deployments, census.primarySourceRoot);
   const ci = detectCI(census.configs.ciWorkflows);
