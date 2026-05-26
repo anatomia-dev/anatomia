@@ -46,5 +46,20 @@
     "packages/cli/src/commands/work-state.ts",
     "packages/cli/src/commands/work.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-26T00:13:49.361Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:a96e45c6c00e3acb105c7e3e09597ed5ab483210b8b7c84855254640acd10c57",
+    "run_at": "2026-05-26T00:20:41.748Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T00:20:41.779Z",
+    "hash": "sha256:03e1dc96ac9093a01b1d868c246072e1b97c23094ffb93179b2f77682fe6b940"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T00:20:41.779Z",
+    "hash": "sha256:39946996949d903f2345837512536f5584ce77684d3dd6adc4ef0bfc21891a1e"
+  }
 }

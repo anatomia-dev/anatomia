@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: code
+    summary: "getNextAction not moved to work-state.ts — 9 functions instead of contract's 10"
+    file: "packages/cli/src/commands/work.ts"
+    line: 78
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001"]
+  - category: code
+    summary: "computeChainHealth imported in both work.ts and work-proof.ts — spec said it should only be in work-proof.ts but recovery path needs it"
+    file: "packages/cli/src/commands/work.ts"
+    line: 23
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "Contract A001 value may be miscounted — getNextAction is a display concern (maps stages to commands) and arguably belongs with display functions in work.ts, not state computation in work-state.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
+  - category: code
+    summary: "work-state.ts determineStage function is 148 lines with deeply nested conditionals — largest function in the new module, could benefit from phase-specific helpers"
+    file: "packages/cli/src/commands/work-state.ts"
+    line: 343
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "_branchPrefix parameter in getNextAction still unused after refactor — pre-existing issue now more visible"
+    file: "packages/cli/src/commands/work.ts"
+    line: 78
+    severity: observation
+    suggested_action: accept
+    related_assertions: []
