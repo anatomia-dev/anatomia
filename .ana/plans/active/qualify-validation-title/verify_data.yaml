@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: test
+    summary: "All 8 @ana tags are stale — inherited from prior build cycle, none map to this contract's assertions"
+    file: "packages/cli/tests/engine/findings/rules/validation.test.ts"
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A001", "A002", "A003", "A004", "A005", "A006", "A007", "A008"]
+  - category: test
+    summary: "No test asserts 'detected' keyword in pass title — A006 verified only by source inspection"
+    file: "packages/cli/tests/engine/findings/rules/validation.test.ts"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A006"]
+  - category: test
+    summary: "No test asserts absence of tilde in pass title — A007 verified only by source inspection"
+    file: "packages/cli/tests/engine/findings/rules/validation.test.ts"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A007"]
+  - category: code
+    summary: "Grammatically incorrect '1 API route files' in singular edge case — known, documented in spec as out of scope"
+    file: "packages/cli/src/engine/findings/rules/validation.ts"
+    line: 115
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Tilde qualifier partially addresses known false-positive inaccuracy in validation detection"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "fix-deep-tier-sampling-C1"
