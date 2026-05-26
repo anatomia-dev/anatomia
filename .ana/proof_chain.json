@@ -43160,7 +43160,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "decompose-work-ts-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Both imports are justified — work-proof.ts:313 uses computeChainHealth for proof chain writing, work.ts uses it in recovery/display path. Two modules importing the same utility is standard. The spec's guidance to consolidate was aspirational — the recovery path genuinely needs the health computation in work.ts.",
+          "closed_at": "2026-05-26T00:38:02.087Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

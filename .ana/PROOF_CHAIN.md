@@ -1,20 +1,20 @@
 # Proof Chain Dashboard
 
-163 runs · 111 active · 5 promoted · 812 closed
+163 runs · 110 active · 5 promoted · 813 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 112 | 73 | 2026-05-26 |
+| cli | 112 | 72 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 9 | 5 |
+| packages/cli/src/commands/work.ts | 8 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 111 total)
+## Active Findings (30 shown of 110 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -45,7 +45,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** getNextAction not moved to work-state.ts — 9 functions instead of contract's 10 — *Decompose work.ts*
-- **code:** computeChainHealth imported in both work.ts and work-proof.ts — spec said it should only be in work-proof.ts but recovery path needs it — *Decompose work.ts*
 - **code:** _branchPrefix parameter in getNextAction still unused after refactor — pre-existing issue now more visible — *Decompose work.ts*
 - **test:** No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection — *Fix Risk Findings*
 
@@ -63,6 +62,10 @@
 ### packages/cli/src/engine/detectors/dependencies.ts
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
+
+### packages/cli/src/engine/sampling/proportionalSampler.ts
+
+- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
 
 ### packages/cli/src/engine/scan-engine.ts
 
