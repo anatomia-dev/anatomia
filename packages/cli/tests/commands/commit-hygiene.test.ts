@@ -134,7 +134,7 @@ describe('runCommitHygieneChecks', () => {
   });
 
   it('excludes __tests__ directory from secret scan', async () => {
-    await createFile('src/__tests__/api.ts', 'const key = "phc_testaaaaabbbbbcccccddddd";');
+    await createFile('src/__tests__/api.ts', 'const key = "re_testaaaaabbbbbcccccddddd";');
     writeSaves({ modules_touched: ['src/__tests__/api.ts'] });
     runCommitHygieneChecks(tempDir, slugDir);
     expect(getFindings()).toHaveLength(0);

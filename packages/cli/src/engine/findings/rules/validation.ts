@@ -100,7 +100,7 @@ export async function checkApiValidation(ctx: FindingContext): Promise<Finding |
     return {
       id: 'api-validation',
       severity: 'pass',
-      title: `All ${routeFiles.length} API route files have validation imports detected`,
+      title: `All ${routeFiles.length} API route file${routeFiles.length !== 1 ? 's' : ''} have validation imports detected`,
       detail: null,
       category: 'security',
     };
@@ -112,7 +112,7 @@ export async function checkApiValidation(ctx: FindingContext): Promise<Finding |
   return {
     id: 'api-validation',
     severity,
-    title: `~${unvalidated} of ${routeFiles.length} API route files may lack input validation`,
+    title: `~${unvalidated} of ${routeFiles.length} API route file${routeFiles.length !== 1 ? 's' : ''} may lack input validation`,
     detail: 'Heuristic: checks imports in first 30 lines. Wrapper-based or middleware validation may not be detected.',
     category: 'security',
   };

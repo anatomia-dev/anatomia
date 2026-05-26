@@ -86,7 +86,7 @@ describe('API validation rule', () => {
 
       const result = await checkApiValidation(makeContext(tmpDir));
       expect(result?.severity).not.toBe('pass');
-      expect(result?.title).toContain('~1 of 1 API route files');
+      expect(result?.title).toContain('~1 of 1 API route file');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
