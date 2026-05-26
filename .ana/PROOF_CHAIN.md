@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 126 active · 5 promoted · 821 closed
+168 runs · 125 active · 5 promoted · 822 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 88 | 2026-05-26 |
+| cli | 117 | 87 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/src/engine/census.ts | 5 | 5 |
+| packages/cli/tests/engine/findings/rules/validation.test.ts | 4 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 126 total)
+## Active Findings (30 shown of 125 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -49,7 +49,6 @@
 
 ### packages/cli/src/engine/census.ts
 
-- **code:** census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific — *Fix deploy platform detection for monorepos*
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
@@ -98,6 +97,10 @@
 ### packages/cli/tests/engine/detectors/ci-detection.test.ts
 
 - **test:** No negative test for primaryPath matching wrong sourceRootPath substring (e.g., 'apps/we' partial match) — *Fix deploy platform detection for monorepos*
+
+### packages/cli/tests/engine/detectors/dependencies.test.ts
+
+- **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
 
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
