@@ -98,7 +98,7 @@ function countFindings(result: EngineResult): number {
  * @param options.rootPath - The directory that was scanned (for ancestor-walk fallback message)
  * @returns Formatted terminal output string
  */
-function formatHumanReadable(
+export function formatHumanReadable(
   result: EngineResult,
   options: { isFunnel: boolean; rootPath: string }
 ): string {
@@ -329,6 +329,11 @@ function formatHumanReadable(
       const icon = f.severity === 'critical' ? chalk.red('●') : chalk.yellow('⚠');
       const text = f.severity === 'critical' ? chalk.red(f.title) : f.title;
       lines.push(`  ${icon} ${text}`);
+      if (f.detail) {
+        for (const detailLine of f.detail.split('\n')) {
+          lines.push(`    ${chalk.gray(detailLine)}`);
+        }
+      }
     }
   } else if (options.isFunnel) {
     // In funnel mode, acknowledge clean check in one line
