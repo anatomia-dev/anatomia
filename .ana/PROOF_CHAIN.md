@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 118 active · 5 promoted · 829 closed
+168 runs · 117 active · 5 promoted · 830 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 80 | 2026-05-26 |
+| cli | 117 | 79 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 118 total)
+## Active Findings (30 shown of 117 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -70,6 +70,7 @@
 - **code:** testing field included in three-tier resolution despite spec saying 'stays on allDeps' — *Monorepo Three-Tier Dependency Resolution*
 - **code:** hasDep uses truthy check (||) — empty string version would be treated as absent — *Monorepo Three-Tier Dependency Resolution*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
+- **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
 ### packages/cli/src/utils/proof-health.ts
 
@@ -103,10 +104,6 @@
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
 - **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
-
-### packages/cli/tests/engine/findings/rules/validation.test.ts
-
-- **test:** No test asserts absence of tilde in pass title — A007 verified only by source inspection — *Qualify Validation Finding Title*
 
 ### packages/cli/tests/engine/parsers/python.test.ts
 
