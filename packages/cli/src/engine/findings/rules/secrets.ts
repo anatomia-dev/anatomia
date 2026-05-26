@@ -2,7 +2,7 @@
  * Hardcoded secret detection rule.
  *
  * Scans all source files (not just the 500-file sample) for API keys,
- * tokens, database credentials, and weak signing secrets. This is the
+ * tokens, and database credentials. This is the
  * one rule that reads the filesystem directly — secrets can be in any
  * file, not just sampled ones.
  *
@@ -31,7 +31,7 @@ interface SecretPattern {
 const DB_URL_PLACEHOLDERS = [
   'password', 'changeme', 'your-password', 'your_password', 'placeholder',
   'example', 'secret', 'pass', 'test', 'root', 'admin', 'xxx', 'yyy',
-  'postgres', 'mysql', 'redis',
+  'postgres', 'mysql', 'redis', 'pw', 'pwd',
 ];
 
 /** Structural template patterns — anchored to match the ENTIRE password. */
@@ -40,6 +40,8 @@ const TEMPLATE_PATTERNS: RegExp[] = [
   /^\{\{[^}]+\}\}$/,      // {{db_pass}}
   /^\$\{[^}]+\}$/,        // ${dbPassword}, ${process.env.DB_URL}
   /^<[a-z][a-z_-]*>$/,    // <your_password>, <your-password>
+  /^\[[^\]]+\]$/,          // [password], [your_password]
+  /^[a-z_-]+\]$/,          // trailing bracket artifact from DB URL colon splitting (e.g., password])
 ];
 
 /**
@@ -78,7 +80,9 @@ export const SECRET_PATTERNS: SecretPattern[] = [
   { regex: /sk-ant-[a-zA-Z0-9_-]{90,}/g, type: 'Anthropic API key', severity: 'critical' },
 
   // AWS access keys — fixed 20-char format, very reliable
-  { regex: /AKIA[A-Z0-9]{16}/g, type: 'AWS access key', severity: 'critical' },
+  { regex: /AKIA[A-Z0-9]{16}/g, type: 'AWS access key', severity: 'critical',
+    validate: (match: string) => match !== 'AKIAIOSFODNN7EXAMPLE',
+  },
 
   // GitHub tokens — fixed prefixes
   { regex: /ghp_[a-zA-Z0-9]{36}/g, type: 'GitHub personal access token', severity: 'critical',
@@ -102,11 +106,6 @@ export const SECRET_PATTERNS: SecretPattern[] = [
   { regex: /re_[a-zA-Z0-9]{20,}/g, type: 'Resend API key', severity: 'critical' },
   { regex: /SG\.[a-zA-Z0-9_-]{20,}\.[a-zA-Z0-9_-]{20,}/g, type: 'SendGrid API key', severity: 'critical' },
   { regex: /SK[a-f0-9]{32}/g, type: 'Twilio API key', severity: 'critical' },
-  { regex: /phc_[a-zA-Z0-9]{20,}/g, type: 'PostHog project key', severity: 'warn' },
-
-  // Weak JWT signing secrets — exact known-bad values
-  { regex: /(jwt|secret|signing)[\w]*\s*[:=]\s*['"](?:supersecretkey|supersecret|secret|password|changeme|your[_-]?secret)['"]/gi,
-    type: 'Weak signing secret', severity: 'critical' },
 ];
 
 const SECRET_GLOB_IGNORE = [

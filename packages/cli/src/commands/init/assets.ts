@@ -453,6 +453,7 @@ async function generateAgentsMd(cwd: string, engineResult: EngineResult | null):
   };
 
   if (engineResult && engineResult.findings.length > 0) {
+    const seenConstraints = new Set<string>();
     for (const f of engineResult.findings) {
       if (f.severity !== 'critical' && f.severity !== 'warn') continue;
       const instruction = findingInstructions[f.id];
@@ -461,7 +462,11 @@ async function generateAgentsMd(cwd: string, engineResult: EngineResult | null):
           '{lib}',
           getPatternLibrary(engineResult.patterns?.validation) || 'a schema validator'
         );
-        constraintLines.push(`- ${line}`);
+        const rendered = `- ${line}`;
+        if (!seenConstraints.has(rendered)) {
+          seenConstraints.add(rendered);
+          constraintLines.push(rendered);
+        }
       }
     }
   }

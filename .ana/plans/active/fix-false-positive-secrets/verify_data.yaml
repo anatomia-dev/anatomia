@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Vacuously true test — __tests__ exclusion still uses removed phc_ pattern"
+    file: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    line: 137
+    severity: debt
+    suggested_action: scope
+    related_assertions: []
+  - category: code
+    summary: "Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ]"
+    file: "packages/cli/src/engine/findings/rules/secrets.ts"
+    line: 44
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "Dedup assertions test extracted logic, not actual generateAgentsMd code path"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    line: 293
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A010", "A011"]
+  - category: test
+    summary: "@ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "fix-scanner-trust-output-C1 still present — A007 old test asserts 'at least one critical' without verifying both URLs fire"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    line: 169
+    severity: observation
+    suggested_action: monitor
