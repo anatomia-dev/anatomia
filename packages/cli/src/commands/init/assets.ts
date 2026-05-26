@@ -334,10 +334,11 @@ async function copyClaudeMd(cwd: string, templatesDir: string, engineResult: Eng
  * AGENTS.md is the Linux Foundation standard read by Cursor, Copilot,
  * Codex, Windsurf, and other AI coding tools. Does not overwrite existing.
  *
+ * @internal Exported for testing only — call via createClaudeConfiguration.
  * @param cwd - Project root directory
  * @param engineResult - Engine result for stack/convention interpolation
  */
-async function generateAgentsMd(cwd: string, engineResult: EngineResult | null): Promise<void> {
+export async function generateAgentsMd(cwd: string, engineResult: EngineResult | null): Promise<void> {
   const destPath = path.join(cwd, 'AGENTS.md');
   if (await fileExists(destPath)) return;
 
@@ -388,6 +389,22 @@ async function generateAgentsMd(cwd: string, engineResult: EngineResult | null):
     }
   }
 
+  // Surfaces section — shows monorepo surfaces with path and framework.
+  if (engineResult && engineResult.surfaces.length > 0) {
+    const MAX_SURFACE_DISPLAY = 4;
+    const display = engineResult.surfaces.slice(0, MAX_SURFACE_DISPLAY);
+    lines.push('## Surfaces');
+    for (const s of display) {
+      const fw = s.framework ? ` — ${s.framework}` : '';
+      lines.push(`- ${s.name} (${s.path})${fw}`);
+    }
+    if (engineResult.surfaces.length > MAX_SURFACE_DISPLAY) {
+      const remaining = engineResult.surfaces.length - MAX_SURFACE_DISPLAY;
+      lines.push(`+${remaining} more`);
+    }
+    lines.push('');
+  }
+
   if (engineResult?.conventions) {
     const convLines: string[] = [];
     const naming = engineResult.conventions.naming;
@@ -423,8 +440,15 @@ async function generateAgentsMd(cwd: string, engineResult: EngineResult | null):
   // Services — dedup against stack roles (same pattern as scan.ts display).
   // Services that fulfill a stack role (database, auth, payments, aiSdk,
   // deployment) already appear in the header line — don't repeat them.
+  // AI sub-provider variants (e.g. "Vercel AI (OpenAI)") are collapsed —
+  // the SDK itself already appears via stack role.
   if (engineResult && engineResult.externalServices.length > 0) {
-    const standalone = engineResult.externalServices.filter(svc => svc.stackRoles.length === 0);
+    const aiSdkPrefix = engineResult.stack.aiSdk ? `${engineResult.stack.aiSdk} (` : null;
+    const standalone = engineResult.externalServices.filter(svc => {
+      if (svc.stackRoles.length > 0) return false;
+      if (aiSdkPrefix && svc.name.startsWith(aiSdkPrefix)) return false;
+      return true;
+    });
     if (standalone.length > 0) {
       lines.push('## Services');
       for (const svc of standalone) {
