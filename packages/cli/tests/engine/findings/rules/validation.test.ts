@@ -133,7 +133,7 @@ describe('checkApiValidation', () => {
 
       const finding = await checkApiValidation(makeCtx(tmpDir));
       expect(finding).not.toBeNull();
-      expect(finding!.detail).toContain('wrapper-based');
+      expect(finding!.detail).toContain('Wrapper-based');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -163,7 +163,7 @@ describe('checkApiValidation', () => {
 
       const finding = await checkApiValidation(makeCtx(tmpDir));
       expect(finding).not.toBeNull();
-      expect(finding!.detail).toBe('Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected.');
+      expect(finding!.detail).toBe('Heuristic: checks imports in first 30 lines. Wrapper-based or middleware validation may not be detected.');
       expect(finding!.detail).not.toContain('\n');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
