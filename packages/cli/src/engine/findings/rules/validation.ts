@@ -113,7 +113,7 @@ export async function checkApiValidation(ctx: FindingContext): Promise<Finding |
     id: 'api-validation',
     severity,
     title: `${unvalidated}/${routeFiles.length} API routes have no validation imports`,
-    detail: 'Checked top-of-file imports for validation libraries. Routes using\nwrapper-based or middleware-based validation may not be detected.',
+    detail: 'Heuristic: checks imports in first 30 lines. Checks imports in first 30 lines; wrapper-based or middleware validation may not be detected.',
     category: 'security',
   };
 }
