@@ -43755,7 +43755,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "fix-false-positive-secrets-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Systemic tag collision — A001-A007 IDs duplicated from fix-scanner-trust-output cycle in secrets.test.ts. Same established pattern documented and closed throughout the proof chain.",
+          "closed_at": "2026-05-26T22:09:29.670Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 121 active · 5 promoted · 826 closed
+168 runs · 120 active · 5 promoted · 827 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 83 | 2026-05-26 |
+| cli | 117 | 82 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 121 total)
+## Active Findings (30 shown of 120 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -105,9 +105,9 @@
 - **test:** No test asserts 'detected' keyword in pass title — A006 verified only by source inspection — *Qualify Validation Finding Title*
 - **test:** No test asserts absence of tilde in pass title — A007 verified only by source inspection — *Qualify Validation Finding Title*
 
-### packages/cli/tests/engine/findings/secrets.test.ts
+### packages/cli/tests/engine/parsers/python.test.ts
 
-- **test:** @ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle — *Fix False Positive Secret Detection*
+- **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### packages/cli/tests/engine/three-tier-detection.test.ts
 
