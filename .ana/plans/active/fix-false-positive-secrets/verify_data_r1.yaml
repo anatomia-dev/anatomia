@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Removing PostHog phc_ pattern broke commit-hygiene tests that use phc_ keys as fixtures"
+    file: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    line: 103
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A002"]
+  - category: code
+    summary: "Module docstring still mentions 'weak signing secrets' after pattern removal"
+    file: "packages/cli/src/engine/findings/rules/secrets.ts"
+    line: 5
+    severity: debt
+    suggested_action: accept
+  - category: code
+    summary: "Trailing bracket regex /^[a-z_-]+\\]$/ is broader than needed — matches any lowercase word ending in ] not just template artifacts"
+    file: "packages/cli/src/engine/findings/rules/secrets.ts"
+    line: 44
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "Dedup tests (A010/A011) use extracted local function, not the actual generateAgentsMd code path in assets.ts"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    line: 293
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A010", "A011"]
+  - category: test
+    summary: "@ana tag namespace collision — pre-existing A001-A007 tags from fix-scanner-trust-output coexist with new tags for this contract"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    severity: observation
+    suggested_action: monitor
