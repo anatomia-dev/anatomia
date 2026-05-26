@@ -44476,7 +44476,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "scan-polish-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is incorrect — lines.push('') at assets.ts:405 IS inside the outer surfaces block (line 393) but OUTSIDE the overflow if (line 401). The empty line executes unconditionally when surfaces exist, providing a trailing newline separator after both the normal list and the overflow '+N more' line.",
+          "closed_at": "2026-05-26T22:57:19.330Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

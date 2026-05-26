@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-169 runs · 116 active · 5 promoted · 836 closed
+169 runs · 115 active · 5 promoted · 837 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 118 | 78 | 2026-05-26 |
+| cli | 118 | 77 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,15 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 116 total)
+## Active Findings (30 shown of 115 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
-
-### packages/cli/src/commands/init/assets.ts
-
-- **code:** Surfaces section has no trailing newline after +N more line when overflow triggers — the empty string push is inside the outer if block but the overflow text has no blank line separator from next section — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -91,6 +87,10 @@
 
 - **test:** A003 and A004 tests use conditional assertions — silently pass if section absent — *CLI Polish*
 - **test:** A005 assertion checks for any double space, not trailing gap before right border — *CLI Polish*
+
+### packages/cli/tests/engine/census-primary.test.ts
+
+- **test:** No test for the Policy 1 + Policy 0 interaction: an apps/ package in a non-product path (e.g., 'examples/apps/web') — would Policy 0 filter it before Policy 1 can match? — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/tests/engine/census.test.ts
 
