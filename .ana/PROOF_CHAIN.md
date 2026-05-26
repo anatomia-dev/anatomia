@@ -1,20 +1,20 @@
 # Proof Chain Dashboard
 
-163 runs · 110 active · 5 promoted · 813 closed
+163 runs · 109 active · 5 promoted · 814 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 112 | 72 | 2026-05-26 |
+| cli | 112 | 71 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 8 | 5 |
+| packages/cli/src/commands/work.ts | 7 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 110 total)
+## Active Findings (30 shown of 109 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,6 +33,7 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
+- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
 
@@ -45,7 +46,6 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** getNextAction not moved to work-state.ts — 9 functions instead of contract's 10 — *Decompose work.ts*
-- **code:** _branchPrefix parameter in getNextAction still unused after refactor — pre-existing issue now more visible — *Decompose work.ts*
 - **test:** No dedicated test for the backfill guard's empty-string behavior — only verified by source inspection — *Fix Risk Findings*
 
 ### packages/cli/src/engine/census.ts

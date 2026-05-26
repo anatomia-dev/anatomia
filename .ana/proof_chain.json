@@ -43202,7 +43202,10 @@
           "suggested_action": "accept",
           "related_assertions": [],
           "id": "decompose-work-ts-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — _branchPrefix at work.ts:78 uses underscore prefix (TypeScript convention for intentionally unused). JSDoc at line 74 says 'kept for API compat.' Removing it changes the function signature and requires updating all callers. Zero runtime cost.",
+          "closed_at": "2026-05-26T00:38:10.812Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
