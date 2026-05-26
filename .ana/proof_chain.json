@@ -43742,7 +43742,10 @@
             "A011"
           ],
           "id": "fix-false-positive-secrets-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Data model testing is valid — test at secrets.test.ts:293 verifies the dedup algorithm in isolation rather than through the full generateAgentsMd pipeline. Testing the extracted logic directly is correct when the logic IS the behavioral contract. Same pattern closed for add-doctor-command-C1 and scan-surface-detection-C3.",
+          "closed_at": "2026-05-26T22:09:20.202Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

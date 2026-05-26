@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 122 active · 5 promoted · 825 closed
+168 runs · 121 active · 5 promoted · 826 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 84 | 2026-05-26 |
+| cli | 117 | 83 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 122 total)
+## Active Findings (30 shown of 121 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -68,6 +68,7 @@
 
 - **code:** testing field included in three-tier resolution despite spec saying 'stays on allDeps' — *Monorepo Three-Tier Dependency Resolution*
 - **code:** hasDep uses truthy check (||) — empty string version would be treated as absent — *Monorepo Three-Tier Dependency Resolution*
+- **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 
 ### packages/cli/src/utils/proof-health.ts
 
@@ -106,7 +107,6 @@
 
 ### packages/cli/tests/engine/findings/secrets.test.ts
 
-- **test:** Dedup assertions test extracted logic, not actual generateAgentsMd code path — *Fix False Positive Secret Detection*
 - **test:** @ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle — *Fix False Positive Secret Detection*
 
 ### packages/cli/tests/engine/three-tier-detection.test.ts
