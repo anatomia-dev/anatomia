@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "Trailing bracket regex /^[a-z_-]+\\]$/ could suppress passwords like mytoken]"
+    file: "packages/cli/src/engine/findings/rules/secrets.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "A010/A011 dedup tests replicate loop logic rather than calling actual function"
+    file: "packages/cli/tests/engine/findings/secrets.test.ts"
+    severity: debt
+    suggested_action: scope

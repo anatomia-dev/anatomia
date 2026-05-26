@@ -30,5 +30,28 @@
         "hash": "sha256:894fc5e1cf2024a451307ff0881b0a42ff5bf2262dadf7e8b674c7cbdd2e84ee"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-26T20:01:20.677Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T20:08:02.503Z",
+    "hash": "sha256:626bd70df541ba3b9be6f00822ad1b200e28741d31f489c4ea692a21b5c0ad38"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T20:08:02.504Z",
+    "hash": "sha256:a89c225337e73de0c4e4ec8cdffe2ed4b00e1d9dd01010c381e1d69e5468671b"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/engine/findings/rules/secrets.ts",
+    "packages/cli/tests/engine/findings/secrets.test.ts"
+  ],
+  "commit_hygiene": [
+    {
+      "check": "secret-detected",
+      "file": "packages/cli/src/engine/findings/rules/secrets.ts",
+      "severity": "warn",
+      "message": "possible secret in packages/cli/src/engine/findings/rules/secrets.ts (AWS access key)"
+    }
+  ]
 }
