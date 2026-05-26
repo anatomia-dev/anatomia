@@ -40,5 +40,20 @@
     "packages/cli/tests/engine/three-tier-detection.test.ts",
     "packages/cli/tests/engine/types/census.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-26T20:38:34.597Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:3e1618b8a7d7289de78b98ed110d4e61abcab699c688d753e17cc8bf0948e9ce",
+    "run_at": "2026-05-26T20:44:36.030Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T20:44:36.071Z",
+    "hash": "sha256:c179fe74d841c9b00cff402fbbafed874c921a92791d6ac38e93f325dafd4140"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T20:44:36.071Z",
+    "hash": "sha256:5655ad6ed17f773ecda364fb6f582246b52a5902e2c913ac404503e5b2f057d9"
+  }
 }
