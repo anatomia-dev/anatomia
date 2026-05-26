@@ -1,0 +1,29 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Validation detail text contains redundant repetition — 'checks imports in first 30 lines' appears twice in the same sentence"
+    file: "packages/cli/src/engine/findings/rules/validation.ts"
+    line: 116
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A005"]
+  - category: code
+    summary: "formatHumanReadable exported solely for test access — increases public API surface"
+    file: "packages/cli/src/commands/scan.ts"
+    line: 101
+    severity: observation
+    suggested_action: accept
+  - category: test
+    summary: "A002 test verifies indentation but not chalk.gray ANSI styling — source inspection confirms gray is applied but test doesn't enforce it"
+    file: "packages/cli/tests/commands/scan-finding-details.test.ts"
+    line: 44
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A002"]
+  - category: test
+    summary: "A003 test checks next line isn't detail-indented rather than counting output lines — functionally equivalent but diverges from contract's 'outputLines.length equals 1' framing"
+    file: "packages/cli/tests/commands/scan-finding-details.test.ts"
+    line: 68
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A003"]
