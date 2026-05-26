@@ -30,5 +30,37 @@
         "hash": "sha256:f957a68828b1bae3fd429ffbf2ff11a6a86bf875f630569a0a6a8b705b73457d"
       }
     ]
+  },
+  "build_started_at": "2026-05-26T20:07:00.732Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T20:12:54.367Z",
+    "hash": "sha256:73bfc646db8d1b1e204120300cc45fa6ef5392dda9a70d74b9e287b5ce814fe2"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T20:12:54.368Z",
+    "hash": "sha256:94bdbdc3b22262cba5b50b67b6848a6d9c33dd4c205b5574b0da98b44a6dbfc8"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/engine/findings/rules/validation.ts",
+    "packages/cli/tests/commands/scan-finding-details.test.ts",
+    "packages/cli/tests/engine/findings/rules/validation.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-26T20:13:53.592Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:df547c88834aed2b22d5295431eaed9f35cc1ffbb84f4a0f4ef8ba478c5fc70e",
+    "run_at": "2026-05-26T20:19:38.271Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T20:19:38.304Z",
+    "hash": "sha256:628242bdc030979cf48c99cdfe57eb806547543635fb617fc7957e06844d2e86"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T20:19:38.304Z",
+    "hash": "sha256:f60ca3a5144c74fa072973d183e79e84ac54a3fdfaa0a5f81958d141e4a6d207"
   }
 }

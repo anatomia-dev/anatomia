@@ -133,7 +133,7 @@ describe('checkApiValidation', () => {
 
       const finding = await checkApiValidation(makeCtx(tmpDir));
       expect(finding).not.toBeNull();
-      expect(finding!.detail).toContain('wrapper-based');
+      expect(finding!.detail).toContain('Wrapper-based');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -149,6 +149,22 @@ describe('checkApiValidation', () => {
       const finding = await checkApiValidation(makeCtx(tmpDir));
       expect(finding).not.toBeNull();
       expect(finding!.severity).toBe('pass');
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
+    }
+  });
+
+  // @ana A005, A006
+  it('validation detail is a single concise line', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'val-'));
+    try {
+      writeRoute(tmpDir, 'app/api/validated/route.ts', `import { z } from 'zod';\nexport function POST() {}`);
+      writeRoute(tmpDir, 'app/api/unvalidated/route.ts', `export function POST() {}`);
+
+      const finding = await checkApiValidation(makeCtx(tmpDir));
+      expect(finding).not.toBeNull();
+      expect(finding!.detail).toBe('Heuristic: checks imports in first 30 lines. Wrapper-based or middleware validation may not be detected.');
+      expect(finding!.detail).not.toContain('\n');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
