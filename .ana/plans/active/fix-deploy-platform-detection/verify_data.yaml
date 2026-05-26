@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "AC5 wording says AGENTS.md contains Vercel guidance — guidance actually lands in deployment skill"
+    severity: observation
+    suggested_action: accept
+    related_assertions: []
+  - category: upstream
+    summary: "Contract A006 matcher is 'exists' but says field says 'returns null' — test correctly asserts null, matcher is imprecise"
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A006"]
+  - category: test
+    summary: "No @ana tag for A008 — assertion verified by source inspection only"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 924
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A008"]
+  - category: code
+    summary: "census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific"
+    file: "packages/cli/src/engine/census.ts"
+    line: 82
+    severity: debt
+    suggested_action: monitor
+  - category: test
+    summary: "No negative test for primaryPath matching wrong sourceRootPath substring (e.g., 'apps/we' partial match)"
+    file: "packages/cli/tests/engine/detectors/ci-detection.test.ts"
+    severity: observation
+    suggested_action: monitor

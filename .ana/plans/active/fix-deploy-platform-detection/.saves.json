@@ -41,5 +41,20 @@
     "packages/cli/src/engine/scan-engine.ts",
     "packages/cli/tests/engine/detectors/ci-detection.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-26T20:09:38.603Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:8f4602c851082f24ab8912f6d19e01455c11477970e095d991c7ba3c74cbf9f0",
+    "run_at": "2026-05-26T20:14:39.442Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T20:14:39.559Z",
+    "hash": "sha256:f79d660d914f1873bf215b953d880d0717b4a28d93beef49847c1e010639ac2a"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T20:14:39.559Z",
+    "hash": "sha256:c62bbe7099bc06cc5160cfcbaaec4d3b1edc59572b305e0ba09af8e18bde8d19"
+  }
 }
