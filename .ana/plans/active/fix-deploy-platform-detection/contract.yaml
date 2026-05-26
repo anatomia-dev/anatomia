@@ -1,0 +1,69 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix deploy platform detection for monorepos"
+
+assertions:
+  - id: A001
+    says: "Monorepo scan picks the primary package's deploy platform over alphabetically-first"
+    block: "prefers primary source root deployment over first entry"
+    target: "result.platform"
+    matcher: "equals"
+    value: "Vercel"
+
+  - id: A002
+    says: "Monorepo scan returns the primary package's config file path"
+    block: "prefers primary source root deployment over first entry"
+    target: "result.configFile"
+    matcher: "equals"
+    value: "apps/web/vercel.json"
+
+  - id: A003
+    says: "When the primary package has no deploy config, the first available platform is used"
+    block: "falls back to first entry when primary has no deployment"
+    target: "result.platform"
+    matcher: "equals"
+    value: "Docker"
+
+  - id: A004
+    says: "Single-repo projects still detect their deploy platform correctly"
+    block: "single-repo primaryPath matches all entries"
+    target: "result.platform"
+    matcher: "equals"
+    value: "Vercel"
+
+  - id: A005
+    says: "Calling without a primary path preserves the original first-match behavior"
+    block: "returns first deployment when multiple present"
+    target: "result.platform"
+    matcher: "equals"
+    value: "Docker"
+
+  - id: A006
+    says: "Empty deployment list still returns null platform"
+    block: "returns null when no deployments in census"
+    target: "result.platform"
+    matcher: "exists"
+
+  - id: A007
+    says: "Empty deployment list with a primary path still returns null"
+    block: "returns null when no deployments even with primaryPath"
+    target: "result.platform"
+    matcher: "equals"
+    value: null
+
+  - id: A008
+    says: "The scan engine passes the primary source root to deployment detection"
+    block: "scan-engine passes census.primarySourceRoot"
+    target: "detectDeployment call"
+    matcher: "contains"
+    value: "census.primarySourceRoot"
+
+file_changes:
+  - path: "src/engine/detectors/deployment.ts"
+    action: modify
+  - path: "src/engine/scan-engine.ts"
+    action: modify
+  - path: "src/engine/census.ts"
+    action: modify
+  - path: "tests/engine/detectors/ci-detection.test.ts"
+    action: modify
