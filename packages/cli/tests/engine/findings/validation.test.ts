@@ -44,7 +44,7 @@ describe('API validation rule', () => {
 
       const result = await checkApiValidation(makeContext(tmpDir));
       expect(result?.severity).toBe('pass');
-      expect(result?.title).toContain('All 2 API routes');
+      expect(result?.title).toContain('All 2 API route files');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -60,7 +60,7 @@ describe('API validation rule', () => {
 
       const result = await checkApiValidation(makeContext(tmpDir));
       expect(result?.severity).toBe('warn');
-      expect(result?.title).toContain('11/12');
+      expect(result?.title).toContain('~11 of 12 API route files');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -86,7 +86,7 @@ describe('API validation rule', () => {
 
       const result = await checkApiValidation(makeContext(tmpDir));
       expect(result?.severity).not.toBe('pass');
-      expect(result?.title).toContain('1/1');
+      expect(result?.title).toContain('~1 of 1 API route files');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }

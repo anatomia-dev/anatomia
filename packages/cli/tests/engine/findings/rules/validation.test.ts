@@ -37,7 +37,7 @@ describe('checkApiValidation', () => {
 
       const finding = await checkApiValidation(makeCtx(tmpDir));
       expect(finding).not.toBeNull();
-      expect(finding!.title).toContain('/15');
+      expect(finding!.title).toContain('of 15 API route files');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
@@ -118,7 +118,7 @@ describe('checkApiValidation', () => {
       const finding = await checkApiValidation(makeCtx(tmpDir));
       expect(finding).not.toBeNull();
       expect(finding!.title).not.toContain('sampled');
-      expect(finding!.title).toContain('12/12');
+      expect(finding!.title).toContain('~12 of 12 API route files');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, maxRetries: 3, retryDelay: 200 });
     }
