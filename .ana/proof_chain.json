@@ -43804,6 +43804,191 @@
         "base_commit": "f8eb0494e373e976722f14af5e065f1f8dbd8c61"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "qualify-validation-title",
+      "feature": "Qualify Validation Finding Title",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Warn title shows approximate count with tilde prefix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Warn title says 'route files' instead of 'routes'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Warn title uses 'may lack' language instead of 'have no'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Warn title uses 'of' separator instead of slash",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Pass title says 'route files' instead of 'routes'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Pass title includes 'detected' qualifier",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Pass title has no tilde since 100% coverage is exact",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Finding ID remains stable for downstream consumers",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 7,
+        "met": 6
+      },
+      "timing": {
+        "total_minutes": 26,
+        "think": 1,
+        "plan": 3,
+        "build": 3,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:768825726e9671d83e7bcc78bd4a1de72fd7afb9000aba4022f5a66ce3185bc5",
+        "contract": "sha256:ae36eca8dda8369f1e1010d11dc8ae59c5d20bf067b7fc30fbe7826760902cbe",
+        "plan": "sha256:477eb2bbcdbeddb21140f3cbdb03e0fb8b4a5dfaec995cc7b3c529bffd106284",
+        "spec": "sha256:90a781b9c2e7bc3fb82526e2d6914079d73f34b313c8f5643735f6c0dcf9aa00",
+        "build-report": "sha256:8756379b4c95e415c2f7f81b73fbea673e2a9c08cd021b130183880d3e85c3c0",
+        "build-data": "sha256:434251d3e75b9dd0e36e94d8c21c38eed5b71eb0c06ef753de55504f324c8bbf",
+        "verify-report": "sha256:d8f40dbba15e2517a049e9b31389d55e01f8eaffddc137bc27da4a6a72532b29",
+        "verify-data": "sha256:aa031f5f067bffe6f66d0bb408d7462447e585e22d467c4c0bca712b6ea00b54"
+      },
+      "completed_at": "2026-05-26T20:42:30.863Z",
+      "modules_touched": [
+        "packages/cli/src/engine/findings/rules/validation.ts",
+        "packages/cli/tests/engine/findings/rules/validation.test.ts",
+        "packages/cli/tests/engine/findings/validation.test.ts"
+      ],
+      "scope_summary": "The validation finding title presents heuristic-derived counts as exact numbers: `185/464 API routes have no validation imports`. The check is file-level import matching in the first 30 lines — a useful heuristic that's ~76% accurate on the numerator across our test repos. The title should communicate approximation, not false precision. Additionally, the terminology says \"routes\" when the check operates on route *files* — one file can export multiple HTTP method handlers.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "All 8 @ana tags are stale — inherited from prior build cycle, none map to this contract's assertions",
+          "file": "packages/cli/tests/engine/findings/rules/validation.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004",
+            "A005",
+            "A006",
+            "A007",
+            "A008"
+          ],
+          "id": "qualify-validation-title-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test asserts 'detected' keyword in pass title — A006 verified only by source inspection",
+          "file": "packages/cli/tests/engine/findings/rules/validation.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "qualify-validation-title-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No test asserts absence of tilde in pass title — A007 verified only by source inspection",
+          "file": "packages/cli/tests/engine/findings/rules/validation.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "qualify-validation-title-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Grammatically incorrect '1 API route files' in singular edge case — known, documented in spec as out of scope",
+          "file": "packages/cli/src/engine/findings/rules/validation.ts",
+          "anchor": null,
+          "line": 115,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "qualify-validation-title-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Tilde qualifier partially addresses known false-positive inaccuracy in validation detection",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [
+            "fix-deep-tier-sampling-C1"
+          ],
+          "id": "qualify-validation-title-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T20:42:30.863Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Existing @ana tags (A001-A008) map to a previous scope's contract, not this spec's contract assertions",
+          "file": "packages/cli/tests/engine/findings/rules/validation.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-26T20:07:53.855Z",
+        "completed_at": "2026-05-26T20:42:30.858Z",
+        "commit_count": 0,
+        "base_commit": "ab6a12c49e1b5b585d774d25073dd546b3dbab55"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

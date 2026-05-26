@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-166 runs · 119 active · 5 promoted · 818 closed
+167 runs · 123 active · 5 promoted · 819 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 115 | 81 | 2026-05-26 |
+| cli | 116 | 85 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 119 total)
+## Active Findings (30 shown of 123 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -55,7 +55,6 @@
 
 - **code:** census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific — *Fix deploy platform detection for monorepos*
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
-- **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -65,10 +64,13 @@
 
 - **code:** Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ] — *Fix False Positive Secret Detection*
 
+### packages/cli/src/engine/findings/rules/validation.ts
+
+- **code:** Grammatically incorrect '1 API route files' in singular edge case — known, documented in spec as out of scope — *Qualify Validation Finding Title*
+
 ### packages/cli/src/engine/scan-engine.ts
 
 - **test:** No @ana tag for A008 — assertion verified by source inspection only — *Fix deploy platform detection for monorepos*
-- **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 
 ### packages/cli/src/utils/proof-health.ts
 
@@ -104,18 +106,16 @@
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
 
-### packages/cli/tests/engine/detectors/surfaces.test.ts
+### packages/cli/tests/engine/findings/rules/validation.test.ts
 
-- **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
+- **test:** All 8 @ana tags are stale — inherited from prior build cycle, none map to this contract's assertions — *Qualify Validation Finding Title*
+- **test:** No test asserts 'detected' keyword in pass title — A006 verified only by source inspection — *Qualify Validation Finding Title*
+- **test:** No test asserts absence of tilde in pass title — A007 verified only by source inspection — *Qualify Validation Finding Title*
 
 ### packages/cli/tests/engine/findings/secrets.test.ts
 
 - **test:** Dedup assertions test extracted logic, not actual generateAgentsMd code path — *Fix False Positive Secret Detection*
 - **test:** @ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle — *Fix False Positive Secret Detection*
-
-### packages/cli/tests/engine/parsers/python.test.ts
-
-- **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
