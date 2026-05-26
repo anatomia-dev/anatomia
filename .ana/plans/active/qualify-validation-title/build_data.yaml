@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "Existing @ana tags (A001-A008) map to a previous scope's contract, not this spec's contract assertions"
+    file: "packages/cli/tests/engine/findings/rules/validation.test.ts"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
