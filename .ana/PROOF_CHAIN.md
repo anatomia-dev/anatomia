@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 127 active · 5 promoted · 820 closed
+168 runs · 126 active · 5 promoted · 821 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 89 | 2026-05-26 |
+| cli | 117 | 88 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 127 total)
+## Active Findings (30 shown of 126 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -52,6 +52,10 @@
 - **code:** census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific — *Fix deploy platform detection for monorepos*
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 
+### packages/cli/src/engine/detectors/dependencies.ts
+
+- **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
+
 ### packages/cli/src/engine/findings/rules/secrets.ts
 
 - **code:** Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ] — *Fix False Positive Secret Detection*
@@ -64,7 +68,6 @@
 
 - **code:** testing field included in three-tier resolution despite spec saying 'stays on allDeps' — *Monorepo Three-Tier Dependency Resolution*
 - **code:** hasDep uses truthy check (||) — empty string version would be treated as absent — *Monorepo Three-Tier Dependency Resolution*
-- **test:** No @ana tag for A008 — assertion verified by source inspection only — *Fix deploy platform detection for monorepos*
 
 ### packages/cli/src/utils/proof-health.ts
 
