@@ -79,7 +79,7 @@ Assertions to update:
 Assertions to update:
 - Line 47: `toContain('All 2 API routes')` → `toContain('All 2 API route files')`
 - Line 63: `toContain('11/12')` → `toContain('~11 of 12 API route files')`
-- Line 89: `toContain('1/1')` → `toContain('~1 of 1 API route file')`
+- Line 89: `toContain('1/1')` → `toContain('~1 of 1 API route files')`
 
 Note on line 89: This is 1 route file, singular. However — the current code uses `routeFiles.length` which produces "1 API route files" (plural). This is grammatically wrong but matches the existing pattern (no pluralization logic exists anywhere in the finding rules). Keep it plural to match codebase convention. The singular edge case is cosmetic and out of scope.
 
