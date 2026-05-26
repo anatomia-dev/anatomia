@@ -52,6 +52,7 @@ function makeCensus(overrides: {
     deps: {},
     devDeps: {},
     rootDevDeps: {},
+    rootDeps: {},
     primaryDeps: {},
     configs: {
       frameworkHints: overrides.frameworkHints ?? [],

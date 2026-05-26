@@ -31,6 +31,7 @@ function makeCensus(rootPath: string, roots: SourceRoot[]): ProjectCensus {
     deps: {},
     devDeps: {},
     rootDevDeps: {},
+    rootDeps: {},
     primaryDeps: {},
     configs: { frameworkHints: [], tsconfigs: [], schemas: [], deployments: [], ciWorkflows: [] },
     builtAt: new Date().toISOString(),

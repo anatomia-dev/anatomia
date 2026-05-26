@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import {
   DATABASE_PACKAGES,
   PAYMENT_PACKAGES,
+  ORM_PACKAGES,
   detectFromDeps,
   findStackProvenance,
 } from '../../../src/engine/detectors/dependencies.js';
@@ -57,6 +58,47 @@ describe('DATABASE_PACKAGES new entries', () => {
   // @ana A009
   it('contains mssql → SQL Server', () => {
     expect(DATABASE_PACKAGES['mssql']).toBe('SQL Server');
+  });
+});
+
+// ── ORM_PACKAGES ────────────────────────────────────────────────────
+
+// @ana A003
+describe('ORM_PACKAGES export', () => {
+  // @ana A004
+  it('contains all 9 ORM entries from DATABASE_PACKAGES', () => {
+    const expected = [
+      'prisma', '@prisma/client', 'drizzle-orm',
+      'typeorm', 'sequelize', 'mongoose',
+      'knex', 'kysely', '@mikro-orm/core',
+    ];
+    for (const pkg of expected) {
+      expect(ORM_PACKAGES.has(pkg)).toBe(true);
+    }
+    expect(ORM_PACKAGES.size).toBe(9);
+  });
+
+  // @ana A005
+  it('does not contain raw database drivers', () => {
+    expect(ORM_PACKAGES.has('pg')).toBe(false);
+    expect(ORM_PACKAGES.has('mysql2')).toBe(false);
+    expect(ORM_PACKAGES.has('better-sqlite3')).toBe(false);
+    expect(ORM_PACKAGES.has('mongodb')).toBe(false);
+    expect(ORM_PACKAGES.has('postgres')).toBe(false);
+  });
+
+  // @ana A006
+  it('does not contain BaaS packages', () => {
+    expect(ORM_PACKAGES.has('@supabase/supabase-js')).toBe(false);
+    expect(ORM_PACKAGES.has('firebase')).toBe(false);
+    expect(ORM_PACKAGES.has('@planetscale/database')).toBe(false);
+    expect(ORM_PACKAGES.has('convex')).toBe(false);
+  });
+
+  it('every ORM_PACKAGES entry exists in DATABASE_PACKAGES', () => {
+    for (const pkg of ORM_PACKAGES) {
+      expect(DATABASE_PACKAGES[pkg]).toBeDefined();
+    }
   });
 });
 
@@ -186,6 +228,7 @@ function makeCensus(roots: SourceRoot[]): ProjectCensus {
     deps: {},
     devDeps: {},
     rootDevDeps: {},
+    rootDeps: {},
     primaryDeps: {},
     configs: {
       frameworkHints: [],

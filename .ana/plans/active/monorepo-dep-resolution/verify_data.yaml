@@ -1,0 +1,38 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A022 uiSystem test is a hasDep proxy — doesn't call detectUiSystem"
+    file: "packages/cli/tests/engine/three-tier-detection.test.ts"
+    line: 237
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A022"]
+
+  - category: code
+    summary: "testing field included in three-tier resolution despite spec saying 'stays on allDeps'"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 696
+    severity: observation
+    suggested_action: accept
+    related_assertions: []
+
+  - category: test
+    summary: "resolveThreeTier helper duplicates scan-engine logic — drift risk if engine changes"
+    file: "packages/cli/tests/engine/three-tier-detection.test.ts"
+    line: 23
+    severity: debt
+    suggested_action: monitor
+
+  - category: code
+    summary: "hasDep uses truthy check (||) — empty string version would be treated as absent"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 136
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "detectAiSdk duplicate eliminated — resolves proof chain finding"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "setup-verification-hints-detectAiSdk-duplicate"
