@@ -43989,6 +43989,274 @@
         "base_commit": "ab6a12c49e1b5b585d774d25073dd546b3dbab55"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "monorepo-dep-resolution",
+      "feature": "Monorepo Three-Tier Dependency Resolution",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The census type includes root production dependencies",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Census builder populates root production deps from root package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "ORM package names are exported as a constant",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Prisma is recognized as an ORM",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Raw database drivers are not classified as ORMs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "BaaS packages are not classified as ORMs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Primary package database wins over integration package database",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Integration packages do not contaminate project identity",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Hoisted database dependencies are detected from root package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Hoisted auth dependencies are detected from root package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Hoisted payment dependencies are detected from root package.json",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "ORM in a shared package wins over raw driver in primary package",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The ORM merge rule prevents serverless adapters from shadowing ORMs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Single-repo projects detect databases the same as before",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Single-repo projects detect auth the same as before",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Hoisted Prisma dependency triggers schema detection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "hasDep returns false when package is absent from all tiers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "hasDep finds packages in primary deps",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Primary API auth wins over dashboard frontend auth",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "AI SDK is detected from root deps when absent from workspace packages",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Primary AI SDK wins over non-primary AI SDK",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "UI system is detected from root deps in hoisted monorepos",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "All tiers returning null produces null, not a crash",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "ORM in root deps beats raw driver in primary deps",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 35,
+        "think": 2,
+        "plan": 7,
+        "build": 9,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:41065fc4555703173121d6917efb99fea9fc6f6a1eeb3f1002bae81dda3c0b20",
+        "contract": "sha256:3e1618b8a7d7289de78b98ed110d4e61abcab699c688d753e17cc8bf0948e9ce",
+        "plan": "sha256:f48d3a4df285674f7c269bfcfbee3aacd2fedbb2ea7d7f5926a3f2701be911ea",
+        "spec": "sha256:0e5c85d784b77b8e25d339c992300ec433a3df1706f71762c9c5428d445f2055",
+        "build-report": "sha256:f32a7be6ce9094bc28d8239d65c8a06e178c1220ef182cff5c7801d6900789c4",
+        "build-data": "sha256:f12936f4da07161c72f57fc84532240f93de6301e2ca773296a7ef8e4826e1d6",
+        "verify-report": "sha256:c179fe74d841c9b00cff402fbbafed874c921a92791d6ac38e93f325dafd4140",
+        "verify-data": "sha256:5655ad6ed17f773ecda364fb6f582246b52a5902e2c913ac404503e5b2f057d9"
+      },
+      "completed_at": "2026-05-26T20:49:09.958Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/dependencies.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/src/engine/types/census.ts",
+        "packages/cli/tests/engine/detectors/dependencies.test.ts",
+        "packages/cli/tests/engine/detectors/surfaces.test.ts",
+        "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+        "packages/cli/tests/engine/three-tier-detection.test.ts",
+        "packages/cli/tests/engine/types/census.test.ts"
+      ],
+      "scope_summary": "Identity field detection (database, auth, payments, aiSdk) uses `allDeps` — a flat merge of all workspace package dependencies. This creates two opposite problems from one design decision:",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A022 uiSystem test is a hasDep proxy — doesn't call detectUiSystem",
+          "file": "packages/cli/tests/engine/three-tier-detection.test.ts",
+          "anchor": null,
+          "line": 237,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A022"
+          ],
+          "id": "monorepo-dep-resolution-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "testing field included in three-tier resolution despite spec saying 'stays on allDeps'",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 696,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "monorepo-dep-resolution-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "resolveThreeTier helper duplicates scan-engine logic — drift risk if engine changes",
+          "file": "packages/cli/tests/engine/three-tier-detection.test.ts",
+          "anchor": null,
+          "line": 23,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "monorepo-dep-resolution-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "hasDep uses truthy check (||) — empty string version would be treated as absent",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 136,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "monorepo-dep-resolution-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "detectAiSdk duplicate eliminated — resolves proof chain finding",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "setup-verification-hints-detectAiSdk-duplicate"
+          ],
+          "id": "monorepo-dep-resolution-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T20:49:09.958Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "detectUiSystem is private — A022 tested via hasDep proxy, not full uiSystem resolution",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "detectSchemas gained a 4th census parameter — structural change beyond spec",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-26T20:28:38.472Z",
+        "completed_at": "2026-05-26T20:49:09.953Z",
+        "commit_count": 0,
+        "base_commit": "91df27a463fb00903df39ad75d7d9fbe98ffa6b3"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-167 runs · 123 active · 5 promoted · 819 closed
+168 runs · 127 active · 5 promoted · 820 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 116 | 85 | 2026-05-26 |
+| cli | 117 | 89 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,11 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 123 total)
-
-### packages/cli/src/commands/artifact.ts
-
-- **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
+## Active Findings (30 shown of 127 total)
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -56,10 +52,6 @@
 - **code:** census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific — *Fix deploy platform detection for monorepos*
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 
-### packages/cli/src/engine/detectors/dependencies.ts
-
-- **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
-
 ### packages/cli/src/engine/findings/rules/secrets.ts
 
 - **code:** Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ] — *Fix False Positive Secret Detection*
@@ -70,6 +62,8 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
+- **code:** testing field included in three-tier resolution despite spec saying 'stays on allDeps' — *Monorepo Three-Tier Dependency Resolution*
+- **code:** hasDep uses truthy check (||) — empty string version would be treated as absent — *Monorepo Three-Tier Dependency Resolution*
 - **test:** No @ana tag for A008 — assertion verified by source inspection only — *Fix deploy platform detection for monorepos*
 
 ### packages/cli/src/utils/proof-health.ts
@@ -102,10 +96,6 @@
 
 - **test:** No negative test for primaryPath matching wrong sourceRootPath substring (e.g., 'apps/we' partial match) — *Fix deploy platform detection for monorepos*
 
-### packages/cli/tests/engine/detectors/dependencies.test.ts
-
-- **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
-
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
 - **test:** All 8 @ana tags are stale — inherited from prior build cycle, none map to this contract's assertions — *Qualify Validation Finding Title*
@@ -117,11 +107,12 @@
 - **test:** Dedup assertions test extracted logic, not actual generateAgentsMd code path — *Fix False Positive Secret Detection*
 - **test:** @ana tag namespace collision — A001-A007 duplicated from fix-scanner-trust-output cycle — *Fix False Positive Secret Detection*
 
+### packages/cli/tests/engine/three-tier-detection.test.ts
+
+- **test:** A022 uiSystem test is a hasDep proxy — doesn't call detectUiSystem — *Monorepo Three-Tier Dependency Resolution*
+- **test:** resolveThreeTier helper duplicates scan-engine logic — drift risk if engine changes — *Monorepo Three-Tier Dependency Resolution*
+
 ### website/lib/__tests__/docs-data/data-integrity.test.ts
 
 - **test:** No dedicated test verifies commands.json contains 'doctor' or 'learn' by name — relies on source inspection and shape tests — *CLI Polish*
-
-### website/lib/__tests__/docs-data/staleness.test.ts
-
-- **test:** Staleness tests replicate checkStaleDocs rather than testing the actual function — *Fix AnaDocs date freshness*
 
