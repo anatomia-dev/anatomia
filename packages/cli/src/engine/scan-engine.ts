@@ -397,6 +397,7 @@ async function detectSchemas(
       }
 
       let matches: string[] = [];
+      let fromCensus = false;
       if (censusDrizzle.length > 0) {
         // Census found schema paths from config — resolve to actual files.
         // A census path may be a file or a directory (glob pattern).
@@ -421,6 +422,7 @@ async function detectSchemas(
             matches.push(...globbed);
           }
         }
+        if (matches.length > 0) fromCensus = true;
       }
 
       // Glob fallback: broad patterns filtered by content (must contain Table( call)
@@ -473,6 +475,34 @@ async function detectSchemas(
         }
 
         if (best) {
+          // Barrel fallback: when census resolved to a barrel index with 0 direct
+          // tables, expand the directory and aggregate table counts from siblings.
+          if (best.modelCount === 0 && fromCensus) {
+            const dir = path.dirname(best.path);
+            try {
+              const dirFiles = (await glob(`${dir}/**/*.ts`, SCHEMA_GLOB_OPTS)).map(toPosix);
+              let totalPg = 0, totalMysql = 0, totalSqlite = 0;
+              for (const f of dirFiles) {
+                try {
+                  const content = await fs.readFile(path.join(rootPath, f), 'utf-8');
+                  totalPg += (content.match(/pgTable\s*\(/g) || []).length;
+                  totalMysql += (content.match(/mysqlTable\s*\(/g) || []).length;
+                  totalSqlite += (content.match(/sqliteTable\s*\(/g) || []).length;
+                } catch { /* skip unreadable */ }
+              }
+              const totalModels = totalPg + totalMysql + totalSqlite;
+              if (totalModels > 0) {
+                best.modelCount = totalModels;
+                const providerCounts = [
+                  { name: 'postgresql', count: totalPg },
+                  { name: 'mysql', count: totalMysql },
+                  { name: 'sqlite', count: totalSqlite },
+                ].sort((a, b) => b.count - a.count);
+                best.provider = providerCounts[0]!.count > 0 ? providerCounts[0]!.name : null;
+              }
+            } catch { /* directory expansion failed — keep original counts */ }
+          }
+
           // Dialect fallback: when table helpers didn't reveal a provider
           if (!best.provider && configDialect) {
             best.provider = configDialect;
@@ -721,7 +751,7 @@ export async function scanProject(
   // In monorepos, framework detection uses primary root deps
   // only. A demo site's Next.js shouldn't define the project identity when
   // the primary product is a CLI. Detection fields (database, auth, testing,
-  // payments, aiSdk, services) stay on allDeps — they're project-wide facts.
+  // payments, aiSdk) use three-tier resolution: primary → workspace → allDeps.
   const frameworkDeps = census.layout === 'monorepo' && projectTypeResult.type === 'node'
     ? Object.keys(census.primaryDeps)
     : deps;
@@ -730,7 +760,7 @@ export async function scanProject(
   // Project kind detection — uses primary source root signals + framework result.
   // Read main/module/exports from primary root's package.json (census doesn't
   // expose raw packageJson — these fields only matter for applicationShape).
-  // primaryRoot was resolved above (line ~504) for monorepo info.
+  // primaryRoot was resolved above (line ~659) for monorepo info.
   let hasMain = false;
   let hasExports = false;
   if (primaryRoot) {
@@ -960,6 +990,19 @@ export async function scanProject(
   }
   const { schemas, blindSpots } = await detectSchemas(allDeps, rootPath, census.configs.schemas, census);
   const secrets = await detectSecrets(rootPath);
+
+  // Env enrichment: in monorepos, .env.example may live in the primary
+  // source root rather than the repo root. Re-check if root didn't find one.
+  if (!secrets.envExampleExists && census.primarySourceRoot !== '.') {
+    try {
+      const primaryDir = path.join(rootPath, census.primarySourceRoot);
+      const primaryFiles = await fs.readdir(primaryDir);
+      secrets.envExampleExists = primaryFiles.some(f =>
+        (f.startsWith('.env') && f.endsWith('.example')) || f === '.env.template'
+      );
+    } catch { /* primary dir unreadable */ }
+  }
+
   const deployment = detectDeployment(census.configs.deployments, census.primarySourceRoot);
   const ci = detectCI(census.configs.ciWorkflows);
 
