@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-163 runs · 109 active · 5 promoted · 814 closed
+164 runs · 112 active · 5 promoted · 816 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 112 | 71 | 2026-05-26 |
+| cli | 113 | 74 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/src/engine/census.ts | 4 | 4 |
+| packages/cli/src/engine/census.ts | 5 | 5 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 109 total)
+## Active Findings (30 shown of 112 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -33,7 +33,6 @@
 ### packages/cli/src/commands/init/state.ts
 
 - **code:** Path escape handles single quotes only — dollar signs, backticks in paths still break inside single-quoted shell context — *Fix Risk Findings*
-- **code:** scripts['test'] !== undefined treats explicit null value as 'present' — a package.json with test: null would get script passthrough producing a broken pnpm run test — *Fix per-surface test command priority*
 
 ### packages/cli/src/commands/proof.ts
 
@@ -50,6 +49,7 @@
 
 ### packages/cli/src/engine/census.ts
 
+- **code:** census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific — *Fix deploy platform detection for monorepos*
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
@@ -63,12 +63,9 @@
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
 
-### packages/cli/src/engine/sampling/proportionalSampler.ts
-
-- **code:** Root-level allocation in sampleFilesProportional lines 140-143 has the same floor-1-without-remaining-guard pattern. Protected by final trim at line 172 but still wastes glob work. — *Fix sampler budget overflow*
-
 ### packages/cli/src/engine/scan-engine.ts
 
+- **test:** No @ana tag for A008 — assertion verified by source inspection only — *Fix deploy platform detection for monorepos*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*
 
@@ -97,6 +94,10 @@
 
 - **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
 
+### packages/cli/tests/engine/detectors/ci-detection.test.ts
+
+- **test:** No negative test for primaryPath matching wrong sourceRootPath substring (e.g., 'apps/we' partial match) — *Fix deploy platform detection for monorepos*
+
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
@@ -104,7 +105,6 @@
 ### packages/cli/tests/engine/detectors/polyglot.test.ts
 
 - **test:** Tauri Cargo.toml indicator push has no test assertion — existing Tauri tests assert pnpm-workspace.yaml but not Cargo.toml — *Polyglot detection hygiene*
-- **test:** Tier 4 Tauri test has no indicator assertions at all — only asserts type and confidence — *Polyglot detection hygiene*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 

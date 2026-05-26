@@ -43238,6 +43238,178 @@
         "base_commit": "3c3ce6803cf997a334150d2bebec46425c16d91a"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-deploy-platform-detection",
+      "feature": "Fix deploy platform detection for monorepos",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Monorepo scan picks the primary package's deploy platform over alphabetically-first",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Monorepo scan returns the primary package's config file path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "When the primary package has no deploy config, the first available platform is used",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Single-repo projects still detect their deploy platform correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Calling without a primary path preserves the original first-match behavior",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Empty deployment list still returns null platform",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Empty deployment list with a primary path still returns null",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The scan engine passes the primary source root to deployment detection",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 49,
+        "think": 1,
+        "plan": 23,
+        "build": 3,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:03b29fa1df674db42117f050fd2781b727d1d81948f4bb8c622f57c086c6642a",
+        "contract": "sha256:8f4602c851082f24ab8912f6d19e01455c11477970e095d991c7ba3c74cbf9f0",
+        "plan": "sha256:7c1dabafbfbce19e1324f5c0fee3207c0654b3383c830f6775dafdc4b7903a00",
+        "spec": "sha256:78623483604d93e3dee4f995ded1c572aa9c9dca61b0a9099f0c3777ae77dd47",
+        "build-report": "sha256:8ecb7905454d77937a857825a36b355706d509b0f7818a72c14e9cdad633f37f",
+        "build-data": "sha256:3ca3c45219427c5935daf806f0e0e1a38184ec44cbc889325aef258d4f51e1cd",
+        "verify-report": "sha256:f79d660d914f1873bf215b953d880d0717b4a28d93beef49847c1e010639ac2a",
+        "verify-data": "sha256:c62bbe7099bc06cc5160cfcbaaec4d3b1edc59572b305e0ba09af8e18bde8d19"
+      },
+      "completed_at": "2026-05-26T20:26:39.971Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/deployment.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/engine/detectors/ci-detection.test.ts"
+      ],
+      "scope_summary": "The scan shows the wrong deploy platform for monorepos where a secondary service's config file sorts alphabetically before the primary app's. inbox-zero deploys to Vercel but the scan says \"Cloudflare Workers\" because `apps/image-proxy/wrangler.jsonc` is discovered before `apps/web/vercel.json`. The wrong platform cascades into AGENTS.md (no Vercel serverless warnings), gotcha matching (Prisma + Vercel safety gotcha silently suppressed), deployment skill context, service dedup, and scaffold generators. The fix makes `detectDeployment` primary-aware so it prefers the primary package's deploy config.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "AC5 wording says AGENTS.md contains Vercel guidance — guidance actually lands in deployment skill",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "fix-deploy-platform-detection-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T20:26:39.971Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A006 matcher is 'exists' but says field says 'returns null' — test correctly asserts null, matcher is imprecise",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A006"
+          ],
+          "id": "fix-deploy-platform-detection-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-26T20:26:39.971Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "No @ana tag for A008 — assertion verified by source inspection only",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 924,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "fix-deploy-platform-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "census.ts comment claims V8 string-key insertion order — correct per ES2015+ spec, not V8-specific",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 82,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "fix-deploy-platform-detection-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No negative test for primaryPath matching wrong sourceRootPath substring (e.g., 'apps/we' partial match)",
+          "file": "packages/cli/tests/engine/detectors/ci-detection.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-deploy-platform-detection-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-26T20:04:35.259Z",
+        "completed_at": "2026-05-26T20:26:39.965Z",
+        "commit_count": 0,
+        "base_commit": "51c0fbde8ee78e798707e1bc8ed69ccf9cb903d2"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
