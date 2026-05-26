@@ -24,5 +24,22 @@
   "spec": {
     "saved_at": "2026-05-26T19:42:35.782Z",
     "hash": "sha256:78623483604d93e3dee4f995ded1c572aa9c9dca61b0a9099f0c3777ae77dd47"
-  }
+  },
+  "build_started_at": "2026-05-26T20:04:35.259Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T20:08:02.055Z",
+    "hash": "sha256:8ecb7905454d77937a857825a36b355706d509b0f7818a72c14e9cdad633f37f"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T20:08:02.056Z",
+    "hash": "sha256:3ca3c45219427c5935daf806f0e0e1a38184ec44cbc889325aef258d4f51e1cd"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/deployment.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/detectors/ci-detection.test.ts"
+  ],
+  "commit_hygiene": []
 }
