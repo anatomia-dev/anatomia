@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-169 runs · 119 active · 5 promoted · 833 closed
+169 runs · 118 active · 5 promoted · 834 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 118 | 81 | 2026-05-26 |
+| cli | 118 | 80 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 119 total)
+## Active Findings (30 shown of 118 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -56,6 +56,7 @@
 
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
+- **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -71,7 +72,6 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
-- **code:** Barrel expansion glob matches .d.ts files — benign since regex filters for table helpers, but could add exclusion — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 - **code:** Env enrichment pattern check is slightly different from detectSecrets — detectSecrets checks exact filenames while enrichment uses startsWith/endsWith heuristic — *Scan Polish — Detection Gaps + AGENTS.md Quality*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 

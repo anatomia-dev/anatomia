@@ -44430,7 +44430,10 @@
           "severity": "observation",
           "suggested_action": "accept",
           "id": "scan-polish-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Self-correcting — glob at scan-engine.ts:483 matches .d.ts files, but content filter at lines 488-490 only counts pgTable()/mysqlTable()/sqliteTable() calls. Type declaration files don't contain runtime table constructor calls. Over-matching the glob is harmless.",
+          "closed_at": "2026-05-26T22:56:44.616Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
