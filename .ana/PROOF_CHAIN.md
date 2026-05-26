@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-169 runs · 114 active · 5 promoted · 838 closed
+169 runs · 113 active · 5 promoted · 839 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 118 | 76 | 2026-05-26 |
+| cli | 118 | 75 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 114 total)
+## Active Findings (30 shown of 113 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -66,10 +66,6 @@
 
 - **code:** Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ] — *Fix False Positive Secret Detection*
 
-### packages/cli/src/engine/findings/rules/validation.ts
-
-- **code:** Grammatically incorrect '1 API route files' in singular edge case — known, documented in spec as out of scope — *Qualify Validation Finding Title*
-
 ### packages/cli/src/engine/scan-engine.ts
 
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
@@ -95,6 +91,10 @@
 ### packages/cli/tests/engine/census.test.ts
 
 - **test:** Fix A test does not assert deps/devDeps are separated correctly — only checks allDeps — *Fix Workspace Glob Fallback*
+
+### packages/cli/tests/engine/detectors/applicationShape.test.ts
+
+- **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/tests/engine/detectors/ci-detection.test.ts
 

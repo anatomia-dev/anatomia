@@ -43979,7 +43979,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "qualify-validation-title-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by direct commit 3ca2e477 — validation.ts:115 now uses pluralization ternary: file${routeFiles.length !== 1 ? 's' : ''}. Single-route projects show '1 API route file' instead of '1 API route files'. Test assertion updated at validation.test.ts:89 to match singular form.",
+          "closed_at": "2026-05-26T23:04:09.074Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
