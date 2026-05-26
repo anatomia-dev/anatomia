@@ -24,5 +24,37 @@
   "spec": {
     "saved_at": "2026-05-26T22:25:07.337Z",
     "hash": "sha256:eab39e6865b596c973aab0026814bd3e44b16841493eb2a5335826ddd0ddf16f"
+  },
+  "build_started_at": "2026-05-26T22:27:55.424Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-26T22:37:28.503Z",
+    "hash": "sha256:851318b5cbb6aaa21d863094d84b82f9ca123bb92ffb9310d880880f2b54e375"
+  },
+  "build-data": {
+    "saved_at": "2026-05-26T22:37:28.504Z",
+    "hash": "sha256:aec5d02c817ee2fb4a82e5b8a5b1fea14860f5d5f0c931e4210e5410a32fa835"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/commands/agents-md.test.ts",
+    "packages/cli/tests/engine/scanProject.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-26T22:40:44.638Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2769892e5435e2fdc0bae20e67cbfbd45cde6daf30633748b4b3d33e640a1c23",
+    "run_at": "2026-05-26T22:45:40.799Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T22:45:40.836Z",
+    "hash": "sha256:8b5d5309059d4ee1068617089c13b95b92b0bcc5bf820342174e6b74cfe848ef"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T22:45:40.836Z",
+    "hash": "sha256:8ab3d72de9e17fae480b89255c6a0ea56abd7b4f18e383d2416e67eb2ff5764e"
   }
 }

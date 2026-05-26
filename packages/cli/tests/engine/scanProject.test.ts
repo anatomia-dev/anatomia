@@ -605,6 +605,121 @@ export const comments = pgTable("comments", {});
     expect(result.schemas['supabase']!.found).toBe(true);
   });
 
+  // @ana A001, A002, A003
+  it('barrel-index Drizzle schema aggregates tables from sibling files', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { 'drizzle-orm': '0.30.0' },
+      }),
+      'drizzle.config.ts': `export default { schema: './src/db/schema/index.ts' };`,
+      'src/db/schema/index.ts': `
+export * from './users.js';
+export * from './posts.js';
+`,
+      'src/db/schema/users.ts': `
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+export const users = sqliteTable("users", { id: integer("id") });
+export const profiles = sqliteTable("profiles", { id: integer("id") });
+`,
+      'src/db/schema/posts.ts': `
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+export const posts = sqliteTable("posts", { id: integer("id") });
+`,
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['drizzle']!.found).toBe(true);
+    expect(result.schemas['drizzle']!.modelCount).toBeGreaterThan(0);
+    expect(result.schemas['drizzle']!.modelCount).toBe(3);
+    expect(result.schemas['drizzle']!.path).toContain('index.ts');
+    expect(result.schemas['drizzle']!.provider).toBe('sqlite');
+  });
+
+  // @ana A004
+  it('single-file schema with real tables is unchanged by barrel fallback', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { 'drizzle-orm': '0.30.0' },
+      }),
+      'drizzle.config.ts': `export default { schema: './src/db/schema.ts' };`,
+      'src/db/schema.ts': `
+export const users = pgTable("users", { id: serial("id") });
+export const posts = pgTable("posts", { id: serial("id") });
+export const comments = pgTable("comments", { id: serial("id") });
+`,
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['drizzle']!.modelCount).toBe(3);
+  });
+
+  // @ana A005
+  it('schema with no tables and no siblings reports modelCount 0', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { 'drizzle-orm': '0.30.0' },
+      }),
+      'drizzle.config.ts': `export default { schema: './src/db/schema.ts' };`,
+      'src/db/schema.ts': `
+// Empty schema — no table definitions
+import { pgTable } from 'drizzle-orm/pg-core';
+`,
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['drizzle']!.found).toBe(true);
+    expect(result.schemas['drizzle']!.modelCount).toBe(0);
+  });
+
+  // @ana A006
+  it('env example in monorepo primary source root detected', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test-mono',
+        private: true,
+        workspaces: ['packages/*'],
+      }),
+      'package-lock.json': JSON.stringify({ lockfileVersion: 3 }),
+      'packages/api/package.json': JSON.stringify({
+        name: '@test/api',
+        dependencies: { express: '4.0.0' },
+      }),
+      'packages/api/.env.example': 'DATABASE_URL=postgres://...',
+      'packages/api/src/index.ts': 'console.log("api");',
+      'packages/web/package.json': JSON.stringify({
+        name: '@test/web',
+        dependencies: { react: '18.0.0' },
+      }),
+      'packages/web/src/index.ts': 'console.log("web");',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.secrets.envExampleExists).toBe(true);
+  });
+
+  // @ana A007
+  it('env example at root still works when primary is root', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test-single',
+        dependencies: { express: '4.0.0' },
+      }),
+      '.env.example': 'DATABASE_URL=postgres://...',
+      'src/index.ts': 'console.log("app");',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.secrets.envExampleExists).toBe(true);
+  });
+
   it('handles empty directory gracefully', async () => {
     const result = await scanProject(tempDir, { depth: 'surface' });
 
