@@ -43557,7 +43557,10 @@
             "A002"
           ],
           "id": "show-finding-details-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Test correctly verifies functional behavior (indentation level at scan-finding-details.test.ts:44). ANSI color styling is a presentation detail — asserting specific escape sequences would couple the test to chalk's internal encoding. The test proves the output structure is correct.",
+          "closed_at": "2026-05-26T22:08:57.592Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

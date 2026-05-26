@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 124 active · 5 promoted · 823 closed
+168 runs · 123 active · 5 promoted · 824 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 86 | 2026-05-26 |
+| cli | 117 | 85 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 124 total)
+## Active Findings (30 shown of 123 total)
+
+### packages/cli/src/commands/artifact.ts
+
+- **code:** hasOpposingStageAdvanced reads .saves.json on every call — four calls per save mean four file reads of the same file — *Fix False Rejection Archives on Same-Session Re-Saves*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -83,7 +87,6 @@
 
 ### packages/cli/tests/commands/scan-finding-details.test.ts
 
-- **test:** A002 test verifies indentation but not chalk.gray ANSI styling — source inspection confirms gray is applied but test doesn't enforce it — *Show Finding Details in CLI Output*
 - **test:** A003 test checks next line isn't detail-indented rather than counting output lines — functionally equivalent but diverges from contract's 'outputLines.length equals 1' framing — *Show Finding Details in CLI Output*
 
 ### packages/cli/tests/engine/census.test.ts
