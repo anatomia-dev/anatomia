@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 117 active · 5 promoted · 830 closed
+168 runs · 116 active · 5 promoted · 831 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 79 | 2026-05-26 |
+| cli | 117 | 78 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 117 total)
+## Active Findings (30 shown of 116 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -52,6 +52,7 @@
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
+- **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -67,7 +68,6 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
-- **code:** testing field included in three-tier resolution despite spec saying 'stays on allDeps' — *Monorepo Three-Tier Dependency Resolution*
 - **code:** hasDep uses truthy check (||) — empty string version would be treated as absent — *Monorepo Three-Tier Dependency Resolution*
 - **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
 - **code:** Hardcoded subdirectory list inline in 900+ line function — *Fix TypeScript Language Detection for Monorepos and Multi-Directory Projects*

@@ -44216,7 +44216,10 @@
           "suggested_action": "accept",
           "related_assertions": [],
           "id": "monorepo-dep-resolution-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Beneficial deviation from spec — testing field at scan-engine.ts:696 uses primary-first tier resolution (same as auth, payments, database) instead of spec's allDeps-only approach. Primary-first is more accurate: reports the primary package's testing framework rather than a random workspace package's. Consistent with the tier resolution pattern applied to all other identity fields. Verify accepted.",
+          "closed_at": "2026-05-26T22:10:34.266Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
