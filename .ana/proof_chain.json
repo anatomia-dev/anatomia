@@ -43716,7 +43716,10 @@
           "suggested_action": "scope",
           "related_assertions": [],
           "id": "fix-false-positive-secrets-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed by direct commit 3ca2e477 — test at commit-hygiene.test.ts:137 updated from phc_ (removed pattern) to re_ (Resend, active pattern). The __tests__ exclusion test now exercises real detection instead of passing vacuously.",
+          "closed_at": "2026-05-26T23:03:55.575Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

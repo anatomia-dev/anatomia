@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-169 runs · 115 active · 5 promoted · 837 closed
+169 runs · 114 active · 5 promoted · 838 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 118 | 77 | 2026-05-26 |
+| cli | 118 | 76 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 115 total)
+## Active Findings (30 shown of 114 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -54,6 +54,10 @@
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
 
+### packages/cli/src/engine/detectors/applicationShape.ts
+
+- **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
+
 ### packages/cli/src/engine/detectors/dependencies.ts
 
 - **code:** No-primary-root edge case — findStackProvenance silently treats all roots as non-primary when no root.isPrimary is true — *Setup Verification Hints*
@@ -78,10 +82,6 @@
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** proofSummary.ts still 1285 lines — reduced from 2330 but remains the largest util module — *Decompose proofSummary.ts*
-
-### packages/cli/tests/commands/commit-hygiene.test.ts
-
-- **test:** Vacuously true test — __tests__ exclusion still uses removed phc_ pattern — *Fix False Positive Secret Detection*
 
 ### packages/cli/tests/commands/proof.test.ts
 
