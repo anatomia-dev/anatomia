@@ -41,5 +41,20 @@
     "packages/cli/tests/commands/agents-md.test.ts",
     "packages/cli/tests/engine/scanProject.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-26T22:40:44.638Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2769892e5435e2fdc0bae20e67cbfbd45cde6daf30633748b4b3d33e640a1c23",
+    "run_at": "2026-05-26T22:45:40.799Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T22:45:40.836Z",
+    "hash": "sha256:8b5d5309059d4ee1068617089c13b95b92b0bcc5bf820342174e6b74cfe848ef"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T22:45:40.836Z",
+    "hash": "sha256:8ab3d72de9e17fae480b89255c6a0ea56abd7b4f18e383d2416e67eb2ff5764e"
+  }
 }

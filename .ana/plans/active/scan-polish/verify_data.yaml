@@ -1,0 +1,36 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Barrel expansion glob matches .d.ts files — benign since regex filters for table helpers, but could add exclusion"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 483
+    severity: observation
+    suggested_action: accept
+
+  - category: code
+    summary: "Env enrichment pattern check is slightly different from detectSecrets — detectSecrets checks exact filenames while enrichment uses startsWith/endsWith heuristic"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 1000
+    severity: observation
+    suggested_action: monitor
+
+  - category: test
+    summary: "generateAgentsMd exported as public API for test access — documented with @internal JSDoc but TypeScript has no enforcement"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 340
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A008", "A010"]
+
+  - category: code
+    summary: "Surfaces section has no trailing newline after +N more line when overflow triggers — the empty string push is inside the outer if block but the overflow text has no blank line separator from next section"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 403
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "Contract A001 matcher is 'greater' (value 0) but test correctly uses both toBeGreaterThan(0) AND toBe(3) — contract could be tighter"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
