@@ -44,17 +44,61 @@ describe('Deployment detection', () => {
     expect(result.configFile).toBe('vercel.json');
   });
 
+  // @ana A006
   it('returns null when no deployments in census', () => {
     const result = detectDeployment([]);
     expect(result.platform).toBeNull();
     expect(result.configFile).toBeNull();
   });
 
+  // @ana A005
   it('returns first deployment when multiple present', () => {
     const result = detectDeployment([
       { platform: 'Docker', sourceRootPath: '.', path: 'Dockerfile' },
       { platform: 'Vercel', sourceRootPath: '.', path: 'vercel.json' },
     ]);
     expect(result.platform).toBe('Docker');
+  });
+
+  // @ana A001, A002
+  it('prefers primary source root deployment over first entry', () => {
+    const result = detectDeployment(
+      [
+        { platform: 'Cloudflare Workers', sourceRootPath: 'apps/image-proxy', path: 'apps/image-proxy/wrangler.toml' },
+        { platform: 'Vercel', sourceRootPath: 'apps/web', path: 'apps/web/vercel.json' },
+      ],
+      'apps/web',
+    );
+    expect(result.platform).toBe('Vercel');
+    expect(result.configFile).toBe('apps/web/vercel.json');
+  });
+
+  // @ana A003
+  it('falls back to first entry when primary has no deployment', () => {
+    const result = detectDeployment(
+      [
+        { platform: 'Docker', sourceRootPath: 'apps/worker', path: 'apps/worker/Dockerfile' },
+      ],
+      'apps/web',
+    );
+    expect(result.platform).toBe('Docker');
+  });
+
+  // @ana A004
+  it('single-repo primaryPath matches all entries', () => {
+    const result = detectDeployment(
+      [
+        { platform: 'Vercel', sourceRootPath: '.', path: 'vercel.json' },
+      ],
+      '.',
+    );
+    expect(result.platform).toBe('Vercel');
+  });
+
+  // @ana A007
+  it('returns null when no deployments even with primaryPath', () => {
+    const result = detectDeployment([], 'apps/web');
+    expect(result.platform).toBeNull();
+    expect(result.configFile).toBeNull();
   });
 });
