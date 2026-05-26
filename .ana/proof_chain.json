@@ -43946,7 +43946,10 @@
             "A006"
           ],
           "id": "qualify-validation-title-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Per testing-standards Rule 2: source-content assertions are acceptable as enforcement tests. A006 'detected' keyword in pass title verified by source inspection at validation.ts.",
+          "closed_at": "2026-05-26T22:09:49.171Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

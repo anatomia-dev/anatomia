@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-168 runs · 119 active · 5 promoted · 828 closed
+168 runs · 118 active · 5 promoted · 829 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 28 | 19 | 2026-05-25 |
-| cli | 117 | 81 | 2026-05-26 |
+| cli | 117 | 80 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 119 total)
+## Active Findings (30 shown of 118 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -51,6 +51,7 @@
 
 - **code:** rootDevDeps is empty in Fix B path — fallback devDeps only flow through sourceRoot.devDeps — *Fix Workspace Glob Fallback*
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
+- **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -105,7 +106,6 @@
 
 ### packages/cli/tests/engine/findings/rules/validation.test.ts
 
-- **test:** No test asserts 'detected' keyword in pass title — A006 verified only by source inspection — *Qualify Validation Finding Title*
 - **test:** No test asserts absence of tilde in pass title — A007 verified only by source inspection — *Qualify Validation Finding Title*
 
 ### packages/cli/tests/engine/parsers/python.test.ts
