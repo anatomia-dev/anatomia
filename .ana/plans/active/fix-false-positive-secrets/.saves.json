@@ -53,5 +53,20 @@
       "severity": "warn",
       "message": "possible secret in packages/cli/src/engine/findings/rules/secrets.ts (AWS access key)"
     }
-  ]
+  ],
+  "verify_started_at": "2026-05-26T20:08:50.898Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b29c1d9ddb1bf2268e5d28f847761cd947649193950ac9021fb5c1e81f8b9c72",
+    "run_at": "2026-05-26T20:16:08.740Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-26T20:16:08.772Z",
+    "hash": "sha256:3543968b9dce64b8ea20ec4d0956449fd16d99980d323d8629928cbecf37f58c"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-26T20:16:08.772Z",
+    "hash": "sha256:43761e75d518fe82dd7a1ddca5a4340cd159e0c3795207a49a3c18a7985b98fd"
+  }
 }
