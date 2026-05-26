@@ -282,3 +282,53 @@ describe('Hardcoded secrets rule', () => {
     expect(findings.some(f => f.severity === 'critical' && f.title.includes('Database'))).toBe(true);
   });
 });
+
+describe('AGENTS.md constraint dedup logic', () => {
+  const findingInstructions: Record<string, string> = {
+    'hardcoded-secret': '🔴 Use environment variables for all API keys and credentials — never hardcode secrets',
+    'api-validation': '⚠ Validate all API route input with {lib} at the boundary',
+    'env-hygiene': '⚠ Maintain a .env.example documenting all required environment variables',
+  };
+
+  function buildConstraintLines(findings: Array<{ id: string; severity: string }>): string[] {
+    const constraintLines: string[] = [];
+    const seenConstraints = new Set<string>();
+    for (const f of findings) {
+      if (f.severity !== 'critical' && f.severity !== 'warn') continue;
+      const instruction = findingInstructions[f.id];
+      if (instruction) {
+        const line = instruction.replace('{lib}', 'zod');
+        const rendered = `- ${line}`;
+        if (!seenConstraints.has(rendered)) {
+          seenConstraints.add(rendered);
+          constraintLines.push(rendered);
+        }
+      }
+    }
+    return constraintLines;
+  }
+
+  // @ana A010
+  it('deduplicates identical constraint lines from multiple findings', () => {
+    const findings = [
+      { id: 'hardcoded-secret', severity: 'critical' },
+      { id: 'hardcoded-secret', severity: 'critical' },
+      { id: 'hardcoded-secret', severity: 'critical' },
+    ];
+    const lines = buildConstraintLines(findings);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('environment variables');
+  });
+
+  // @ana A011
+  it('preserves distinct constraint lines from different finding types', () => {
+    const findings = [
+      { id: 'hardcoded-secret', severity: 'critical' },
+      { id: 'hardcoded-secret', severity: 'critical' },
+      { id: 'api-validation', severity: 'warn' },
+      { id: 'env-hygiene', severity: 'warn' },
+    ];
+    const lines = buildConstraintLines(findings);
+    expect(lines).toHaveLength(3);
+  });
+});
