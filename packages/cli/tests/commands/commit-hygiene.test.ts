@@ -100,7 +100,7 @@ describe('runCommitHygieneChecks', () => {
 
   // @ana A007
   it('detects secret in source file', async () => {
-    await createFile('src/config/stripe.ts', 'const key = "phc_testaaaaabbbbbcccccddddd";');
+    await createFile('src/config/stripe.ts', 'const key = "sk_live_abcdefghij1234567890";');
     writeSaves({ modules_touched: ['src/config/stripe.ts'] });
     runCommitHygieneChecks(tempDir, slugDir);
     const findings = getFindings();
@@ -111,7 +111,7 @@ describe('runCommitHygieneChecks', () => {
 
   // @ana A008
   it('excludes test files from secret scan', async () => {
-    await createFile('src/config/stripe.test.ts', 'const key = "phc_testaaaaabbbbbcccccddddd";');
+    await createFile('src/config/stripe.test.ts', 'const key = "sk_live_abcdefghij1234567890";');
     writeSaves({ modules_touched: ['src/config/stripe.test.ts'] });
     runCommitHygieneChecks(tempDir, slugDir);
     expect(getFindings()).toHaveLength(0);
@@ -119,8 +119,8 @@ describe('runCommitHygieneChecks', () => {
 
   // @ana A009
   it('resets regex lastIndex between files', async () => {
-    await createFile('src/a.ts', 'const key = "phc_testaaaaabbbbbcccccdddd1";');
-    await createFile('src/b.ts', 'const key = "phc_testaaaaabbbbbcccccdddd2";');
+    await createFile('src/a.ts', 'const key = "sk_live_abcdefghij1234567890";');
+    await createFile('src/b.ts', 'const key = "sk_live_zyxwvutsrq0987654321";');
     writeSaves({ modules_touched: ['src/a.ts', 'src/b.ts'] });
     runCommitHygieneChecks(tempDir, slugDir);
     expect(getFindings()).toHaveLength(2);

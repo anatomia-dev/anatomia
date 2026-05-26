@@ -2,7 +2,7 @@
  * Hardcoded secret detection rule.
  *
  * Scans all source files (not just the 500-file sample) for API keys,
- * tokens, database credentials, and weak signing secrets. This is the
+ * tokens, and database credentials. This is the
  * one rule that reads the filesystem directly — secrets can be in any
  * file, not just sampled ones.
  *
