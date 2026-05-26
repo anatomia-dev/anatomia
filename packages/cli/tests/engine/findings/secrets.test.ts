@@ -36,9 +36,10 @@ describe('Hardcoded secrets rule', () => {
     expect(findings.some(f => f.severity === 'critical' && f.title.includes('Live secret key'))).toBe(true);
   });
 
+  // @ana A004
   it('detects AWS access key', async () => {
     fs.writeFileSync(path.join(tmpDir, 'aws.ts'), `
-      const accessKey = "AKIAIOSFODNN7EXAMPLE1";
+      const accessKey = "AKIA1234567890ABCDEF";
     `);
     const findings = await checkHardcodedSecrets(makeContext(tmpDir));
     expect(findings.some(f => f.severity === 'critical' && f.title.includes('AWS'))).toBe(true);
@@ -63,12 +64,13 @@ describe('Hardcoded secrets rule', () => {
     expect(findings.some(f => f.severity === 'critical')).toBe(false);
   });
 
-  it('detects weak JWT signing secret', async () => {
+  // @ana A001
+  it('no longer contains weak signing secret pattern', async () => {
     fs.writeFileSync(path.join(tmpDir, 'auth.ts'), `
       const jwtSecret = "supersecretkey";
     `);
     const findings = await checkHardcodedSecrets(makeContext(tmpDir));
-    expect(findings.some(f => f.severity === 'critical' && f.title.includes('Weak signing'))).toBe(true);
+    expect(findings.some(f => f.title.includes('Weak signing'))).toBe(false);
   });
 
   it('returns pass finding when no secrets found', async () => {
@@ -203,5 +205,80 @@ describe('Hardcoded secrets rule', () => {
     `);
     const findings = await checkHardcodedSecrets(makeContext(tmpDir));
     expect(findings.some(f => f.severity === 'critical' && f.title.includes('GitHub'))).toBe(true);
+  });
+
+  // @ana A003
+  it('does not flag AWS documented example key', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'docs.ts'), `
+      const exampleKey = "AKIAIOSFODNN7EXAMPLE";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical' && f.title.includes('AWS'))).toBe(false);
+  });
+
+  // @ana A002
+  it('no longer flags PostHog public analytics keys', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'analytics.ts'), `
+      const key = "phc_abc123def456ghi789jkl0";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.title.includes('PostHog'))).toBe(false);
+  });
+
+  // @ana A005
+  it('filters [password] bracket template in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:[password]@host:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A006
+  it('filters pw placeholder in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:pw@localhost:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A012
+  it('filters pwd placeholder in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'config.ts'), `
+      const url = "postgres://user:pwd@localhost:5432/db";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A008
+  it('does not flag enum-style secret assignments', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'enum.ts'), `
+      export enum AuthType {
+        SECRET = "secret",
+        TOKEN = "token",
+      }
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical')).toBe(false);
+  });
+
+  // @ana A009
+  it('still detects Stripe live key', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'pay.ts'), `
+      const key = "sk_live_abcdefghij1234567890";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical' && f.title.includes('Live secret key'))).toBe(true);
+  });
+
+  // @ana A007
+  it('still detects real credentials in database URL', async () => {
+    fs.writeFileSync(path.join(tmpDir, 'prod.ts'), `
+      const url = "postgres://deploy:s3cureP@ss!@prod.db.example.com:5432/app";
+    `);
+    const findings = await checkHardcodedSecrets(makeContext(tmpDir));
+    expect(findings.some(f => f.severity === 'critical' && f.title.includes('Database'))).toBe(true);
   });
 });
