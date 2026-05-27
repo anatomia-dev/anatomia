@@ -8,46 +8,13 @@ Anatomia is the engineering judgment your AI doesn't have. Four agents scope, pl
 
 ## Scan any project in 10 seconds
 
+<img alt="ana scan running on dub — detecting TypeScript, Next.js, Prisma with 80 models, auth, AI, payments, and contributor activity" width="600" src="assets/demo/dub-scan.gif">
+
 ```bash
 npx anatomia-cli scan .
 ```
 
-No install. One command. Here's what you'll see:
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  inbox-zero                                                web-app  │
-│  TypeScript · Next.js · Prisma → PostgreSQL (63 models)             │
-└─────────────────────────────────────────────────────────────────────┘
-
-  Stack
-  ─────
-  Language     TypeScript
-  Framework    Next.js
-  Database     Prisma → PostgreSQL (63 models)
-  Auth         Better Auth
-  AI           Vercel AI · OpenAI
-  Payments     Stripe
-  Testing      Vitest
-  UI           Tailwind CSS
-  Services     Resend · Sentry · PostHog · Upstash (+2 more)
-  Deploy       Vercel · GitHub Actions
-
-  Surfaces
-  ────────
-  web          Next.js · Vitest
-  api          TypeScript · Vitest
-  cli          TypeScript
-
-  Intelligence
-  ────────────
-  Activity     7 contributors · 22→18→25→19 weekly
-  Hot files    clean.ts (14), ai-categorize.ts (11), schema.prisma (9)
-  Docs         README.md · CONTRIBUTING.md · .env.example + 2 more
-  Pre-commit   typecheck + lint
-
-  Run `ana init` to scaffold 8 skills (5 core + ai-patterns, data-access, api-patterns)
-```
+No install. One command. [See more examples →](https://anatomia.dev/docs)
 
 ## Install
 

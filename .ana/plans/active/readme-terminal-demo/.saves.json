@@ -24,5 +24,36 @@
   "spec": {
     "saved_at": "2026-05-27T07:08:29.567Z",
     "hash": "sha256:97d53879910c01625f51304315e603a05fb1d3a3f4a30915b9714cf75cdb5da2"
+  },
+  "build_started_at": "2026-05-27T07:11:45.235Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-27T07:16:18.989Z",
+    "hash": "sha256:bc198b13f1fb300f5bc55735e5cfdab39718511f8ce599ea1513cbef7f944db9"
+  },
+  "build-data": {
+    "saved_at": "2026-05-27T07:16:18.990Z",
+    "hash": "sha256:561016deb22e3994ac302564cbfb11d6d59ce4f21b582a919bf05c7388edea20"
+  },
+  "modules_touched": [
+    "README.md",
+    "assets/demo/dub-scan.gif",
+    "assets/demo/dub-scan.tape"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-27T17:28:41.788Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:2184442cfbad300cf7516c4e703729ec81c4d19593ec7053cd7143ad8e5700d4",
+    "run_at": "2026-05-27T17:32:25.768Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-27T17:32:25.804Z",
+    "hash": "sha256:0f58690ef7423fef81b044abf8e09ee3ec7bdc85d263e95bc4586477f0dc50bd"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-27T17:32:25.804Z",
+    "hash": "sha256:482dad54727e87554f566070910fba38287c3c9f603d2ad7df4c32c0b0d2fb10"
   }
 }

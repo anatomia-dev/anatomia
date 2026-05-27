@@ -1,0 +1,25 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Tape file comment says Output is relative to tape file location, but VHS resolves Output relative to CWD"
+    file: "assets/demo/dub-scan.tape"
+    line: 14
+    severity: debt
+    suggested_action: accept
+  - category: upstream
+    summary: "GIF uses relative src path — renders on GitHub but will break on npmjs.com where assets aren't bundled"
+    file: "README.md"
+    line: 11
+    severity: risk
+    suggested_action: scope
+    related_assertions: []
+  - category: upstream
+    summary: "AC8 (npm rendering) not codified in contract — npm image path issue is invisible to assertion checks"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "prepublishOnly copies root README to package dir but assets/demo/ is not in files array — GIF path dangling on npm"
+    file: "packages/cli/package.json"
+    line: 1
+    severity: risk
+    suggested_action: scope
