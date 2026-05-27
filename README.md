@@ -8,7 +8,7 @@ Anatomia is the engineering judgment your AI doesn't have. Four agents scope, pl
 
 ## Scan any project in 10 seconds
 
-<img alt="ana scan running on dub — detecting TypeScript, Next.js, Prisma with 80 models, auth, AI, payments, and contributor activity" width="600" src="assets/demo/dub-scan.gif">
+<img alt="ana scan running on dub — detecting TypeScript, Next.js, Prisma with 80 models, auth, AI, payments, and contributor activity" width="800" src="assets/demo/dub-scan.gif">
 
 ```bash
 npx anatomia-cli scan .
