@@ -6,7 +6,7 @@ description: "Invoke when writing tests, reviewing test quality, or setting up t
 # Testing Standards
 
 ## Detected
-- Framework: Vitest (131 test files)
+- Framework: Vitest (140 test files)
 - Test command: pnpm run test -- --run
 - Testing patterns: vitest
 - Test location: dedicated test directory

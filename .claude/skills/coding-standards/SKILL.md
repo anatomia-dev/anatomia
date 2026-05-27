@@ -6,13 +6,14 @@ description: "Invoke when implementing features, writing code, or reviewing code
 # Coding Standards
 
 ## Detected
-- Language: TypeScript (253 source files)
-- Functions: camelCase (84%, 763 sampled)
+- Language: TypeScript (259 source files)
+- Functions: camelCase (85%, 785 sampled)
 - Classes: PascalCase (50%)
-- Files: PascalCase (64%, 255 sampled)
-- Imports: mixed (65%)
+- Files: PascalCase (61%, 261 sampled)
+- Imports: mixed (66%)
 - Indentation: spaces, 2 wide
 - Error handling: exceptions (generic)
+- UI: Tailwind CSS
 
 ### Library Rules
 - All local imports use `.js` extensions (`import { foo } from "./bar.js"`). TypeScript compiles without them but ESM resolution crashes at runtime.
