@@ -1,0 +1,137 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "README Terminal Demo"
+
+assertions:
+  # AC2: Static code block removed
+  - id: A001
+    says: "The old static scan output is removed from the README"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "not_contains"
+    value: "Here's what you'll see"
+
+  - id: A002
+    says: "The inbox-zero scan example no longer appears in the README"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "not_contains"
+    value: "inbox-zero"
+
+  # AC4: GIF embed format
+  - id: A003
+    says: "The README embeds the demo GIF with an image tag"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: "<img"
+
+  - id: A004
+    says: "The demo image displays at 600 pixels wide"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: 'width="600"'
+
+  - id: A005
+    says: "The demo image points to the recorded GIF file"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: "assets/demo/dub-scan.gif"
+
+  - id: A006
+    says: "The demo image has descriptive alt text"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: "alt="
+
+  # AC3: npx command below GIF
+  - id: A007
+    says: "The npx install command appears in the README"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: "npx anatomia-cli scan ."
+
+  # AC9: See more examples link
+  - id: A008
+    says: "The README links to the docs site for more examples"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: "https://anatomia.dev/docs"
+
+  - id: A009
+    says: "The examples link uses inviting text"
+    block: "README hero section structure"
+    target: "readme.content"
+    matcher: "contains"
+    value: "See more examples"
+
+  # AC5: Tape file validity
+  - id: A010
+    says: "The VHS tape file sets the terminal output to GIF format"
+    block: "tape file structure"
+    target: "tape.content"
+    matcher: "contains"
+    value: "Output"
+
+  - id: A011
+    says: "The tape file configures terminal width for full scan output"
+    block: "tape file structure"
+    target: "tape.content"
+    matcher: "contains"
+    value: "Set Width 1200"
+
+  - id: A012
+    says: "The tape file uses the dark terminal theme"
+    block: "tape file structure"
+    target: "tape.content"
+    matcher: "contains"
+    value: "Catppuccin Mocha"
+
+  - id: A013
+    says: "The tape file types the scan command, not the npx variant"
+    block: "tape file structure"
+    target: "tape.content"
+    matcher: "contains"
+    value: 'ana scan .'
+
+  - id: A014
+    says: "The tape file documents that a full clone is required"
+    block: "tape file structure"
+    target: "tape.content"
+    matcher: "contains"
+    value: "full clone"
+
+  # AC6: GIF file exists
+  - id: A015
+    says: "The demo GIF file exists in the assets directory"
+    block: "GIF file"
+    target: "file.exists"
+    matcher: "truthy"
+
+  # AC10/AC11: No regressions
+  - id: A016
+    says: "The project builds without errors"
+    block: "regression check"
+    target: "build.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A017
+    says: "All existing tests continue to pass"
+    block: "regression check"
+    target: "test.exitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "assets/demo/dub-scan.tape"
+    action: create
+  - path: "assets/demo/dub-scan.gif"
+    action: create
+  - path: "README.md"
+    action: modify
