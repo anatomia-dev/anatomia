@@ -102,7 +102,7 @@ None — all resolved during investigation.
 ### Known Gotchas
 - The recording MUST be made from a full clone of dub, not the existing shallow clone at `test_repos/_handoff_30/dub`. The Intelligence section difference is the whole point.
 - VHS dimension: 1200×1000 pixels / font 18 / Catppuccin Mocha / TypingSpeed 50ms / Padding 20. These were tested across multiple variants and this combination fits the full output without scrolling. Do not change without visual verification.
-- The tape needs `Sleep 12s` after Enter — the dub scan takes ~5.4 seconds and needs buffer for output rendering plus a hold at the end before loop.
+- The tape needs `Sleep 25s` after Enter — the dub scan takes ~5.4 seconds, leaving ~19-20 seconds of hold on the final state. This gives viewers enough time to read the full output before the GIF loops. Most viewers will never see the loop — they read and scroll to the install command.
 - The `width="600"` in the `<img>` tag controls display size independent of the GIF's native 1200px resolution. This matches Charm's pattern and ensures the GIF doesn't dominate the page.
 
 ### Things to Investigate
