@@ -24,5 +24,21 @@
   "spec": {
     "saved_at": "2026-05-27T07:08:29.567Z",
     "hash": "sha256:97d53879910c01625f51304315e603a05fb1d3a3f4a30915b9714cf75cdb5da2"
-  }
+  },
+  "build_started_at": "2026-05-27T07:11:45.235Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-27T07:16:18.989Z",
+    "hash": "sha256:bc198b13f1fb300f5bc55735e5cfdab39718511f8ce599ea1513cbef7f944db9"
+  },
+  "build-data": {
+    "saved_at": "2026-05-27T07:16:18.990Z",
+    "hash": "sha256:561016deb22e3994ac302564cbfb11d6d59ce4f21b582a919bf05c7388edea20"
+  },
+  "modules_touched": [
+    "README.md",
+    "assets/demo/dub-scan.gif",
+    "assets/demo/dub-scan.tape"
+  ],
+  "commit_hygiene": []
 }

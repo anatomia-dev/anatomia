@@ -1,0 +1,12 @@
+schema: 1
+concerns:
+  - summary: "GIF rendering on GitHub/npm requires manual verification after push"
+    severity: observation
+    suggested_action: monitor
+  - summary: "VHS Output directive is CWD-relative, not tape-relative — documented in tape comments"
+    severity: observation
+    suggested_action: accept
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept
