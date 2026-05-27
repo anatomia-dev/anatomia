@@ -44528,6 +44528,218 @@
         "base_commit": "45d280423f1b5ba953345c0c1622a4f66bb7524d"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "readme-terminal-demo",
+      "feature": "README Terminal Demo",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 17,
+        "satisfied": 17,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The old static scan output is removed from the README",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The inbox-zero scan example no longer appears in the README",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The README embeds the demo GIF with an image tag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The demo image displays at 600 pixels wide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The demo image points to the recorded GIF file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The demo image has descriptive alt text",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The npx install command appears in the README",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The README links to the docs site for more examples",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The examples link uses inviting text",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The VHS tape file sets the terminal output to GIF format",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The tape file configures terminal width for full scan output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The tape file uses the dark terminal theme",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The tape file types the scan command, not the npx variant",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The tape file documents that a full clone is required",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The demo GIF file exists in the assets directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The project builds without errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "All existing tests continue to pass",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 760,
+        "think": 125,
+        "plan": 10,
+        "build": 5,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:557dd00b69b92358c0392080c374afb6c29b32c057b6c112eb6801c2b82575f9",
+        "contract": "sha256:2184442cfbad300cf7516c4e703729ec81c4d19593ec7053cd7143ad8e5700d4",
+        "plan": "sha256:fddbb38e6b7ae7b44dfaf5ec56a1b9530e1f86feb0ed7636f062793782637aa3",
+        "spec": "sha256:97d53879910c01625f51304315e603a05fb1d3a3f4a30915b9714cf75cdb5da2",
+        "build-report": "sha256:bc198b13f1fb300f5bc55735e5cfdab39718511f8ce599ea1513cbef7f944db9",
+        "build-data": "sha256:561016deb22e3994ac302564cbfb11d6d59ce4f21b582a919bf05c7388edea20",
+        "verify-report": "sha256:0f58690ef7423fef81b044abf8e09ee3ec7bdc85d263e95bc4586477f0dc50bd",
+        "verify-data": "sha256:482dad54727e87554f566070910fba38287c3c9f603d2ad7df4c32c0b0d2fb10"
+      },
+      "completed_at": "2026-05-27T17:54:14.121Z",
+      "modules_touched": [
+        "README.md",
+        "assets/demo/dub-scan.gif",
+        "assets/demo/dub-scan.tape"
+      ],
+      "scope_summary": "Replace the static code block in the README hero section with an animated terminal recording of `ana scan` running on dub (23K stars, YC company). The recording shows the command typed, the spinner running, and the full scan output resolving — framework, database with 80 models, auth, AI, payments, surfaces, intelligence with contributor activity and hot files. The static code block is removed. The demo is the product's front door: a developer sees the scan resolve a recognizable project's entire identity in seconds and thinks \"I need to try this on my repo.\"",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Tape file comment says Output is relative to tape file location, but VHS resolves Output relative to CWD",
+          "file": "assets/demo/dub-scan.tape",
+          "anchor": null,
+          "line": 14,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "readme-terminal-demo-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "GIF uses relative src path — renders on GitHub but will break on npmjs.com where assets aren't bundled",
+          "file": "README.md",
+          "anchor": null,
+          "line": 11,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [],
+          "id": "readme-terminal-demo-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-27T17:54:14.121Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "AC8 (npm rendering) not codified in contract — npm image path issue is invisible to assertion checks",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "readme-terminal-demo-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-27T17:54:14.121Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "prepublishOnly copies root README to package dir but assets/demo/ is not in files array — GIF path dangling on npm",
+          "file": "packages/cli/package.json",
+          "anchor": null,
+          "line": 1,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "readme-terminal-demo-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "GIF rendering on GitHub/npm requires manual verification after push",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "VHS Output directive is CWD-relative, not tape-relative — documented in tape comments",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-27T07:11:45.235Z",
+        "completed_at": "2026-05-27T17:54:14.115Z",
+        "commit_count": 0,
+        "base_commit": "edd2b284e27d47e129cc0745678d1782a1f66e7d"
+      }
     }
   ],
   "schema": 1,

@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-169 runs · 113 active · 5 promoted · 839 closed
+170 runs · 115 active · 5 promoted · 841 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 28 | 19 | 2026-05-25 |
+| Unscoped | 29 | 21 | 2026-05-27 |
 | cli | 118 | 75 | 2026-05-26 |
 | website | 23 | 19 | 2026-05-24 |
 
@@ -24,7 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 113 total)
+## Active Findings (30 shown of 115 total)
+
+### assets/demo/dub-scan.tape
+
+- **code:** Tape file comment says Output is relative to tape file location, but VHS resolves Output relative to CWD — *README Terminal Demo*
+
+### packages/cli/package.json
+
+- **code:** prepublishOnly copies root README to package dir but assets/demo/ is not in files array — GIF path dangling on npm — *README Terminal Demo*
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -53,10 +61,6 @@
 - **code:** No test for discoverSchemas non-product path filtering — Fix 1 relies solely on integration coverage — *Scan Quality Polish (6 Additive Fixes)*
 - **code:** FRAMEWORK_HINTS is not exported — no direct unit test can verify array ordering invariants without integration-level testing — *Fill Scan Detection Gaps*
 - **code:** Tier 4 (scoped+self-named) matches any package where bare === scope, regardless of projectDirName. @strapi/strapi matches in any repo whose packages include it, not just 'strapi' directories. — *Fix Primary Package Selection in Monorepos*
-
-### packages/cli/src/engine/detectors/applicationShape.ts
-
-- **code:** BROWSER_DEP_ALIASES Set is small (3 entries) and tightly coupled to BROWSER_FRAMEWORKS — if a new browser framework is added with a different package name, both must be updated in sync — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/src/engine/detectors/dependencies.ts
 
@@ -91,10 +95,6 @@
 ### packages/cli/tests/engine/census.test.ts
 
 - **test:** Fix A test does not assert deps/devDeps are separated correctly — only checks allDeps — *Fix Workspace Glob Fallback*
-
-### packages/cli/tests/engine/detectors/applicationShape.test.ts
-
-- **test:** No test for MCP + server framework + browser deps triple combination (e.g., Express + MCP + React → full-stack) — *Fix Application Shape Detection Priority Chain*
 
 ### packages/cli/tests/engine/detectors/ci-detection.test.ts
 
