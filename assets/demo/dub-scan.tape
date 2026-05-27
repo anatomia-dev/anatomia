@@ -16,7 +16,7 @@
 Output dub-scan.gif
 
 Set Width 1200
-Set Height 1000
+Set Height 900
 Set FontSize 18
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 50ms
