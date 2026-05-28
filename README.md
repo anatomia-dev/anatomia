@@ -123,62 +123,18 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 
 ## Commands
 
-### Scan and init
+```bash
+ana scan [path]              # detect stack, conventions, patterns
+ana init                     # generate context + agent definitions
+ana init commit              # persist infrastructure to git
+ana doctor                   # check project health
+ana work status              # show pipeline state for active work
+ana proof health             # quality trajectory dashboard
+ana proof audit              # active findings grouped by file
+ana proof <slug>             # display a proof chain entry
+```
 
-| Command | Description |
-|---------|-------------|
-| `ana scan [path]` | Detect stack, conventions, patterns. `--quick` for surface-only, `--json` for structured output |
-| `ana init` | Generate `.ana/` context and `.claude/` agent definitions. Re-run after CLI updates to refresh |
-| `ana init commit` | Commit infrastructure files to the artifact branch |
-| `ana doctor` | Check project health and configuration. `--json` for CI |
-| `ana config show` | Display current ana.json settings |
-| `ana config get <field>` | Get a config field value. Dot notation supported |
-| `ana config set <field> <value>` | Set a config field value |
-| `ana config delete <field>` | Remove a config field, reverting to detected default |
-
-### Pipeline
-
-| Command | Description |
-|---------|-------------|
-| `ana work start <slug>` | Start a work item, record timestamp |
-| `ana work status` | Show pipeline state for active work |
-| `ana work complete <slug>` | Archive plan, write proof chain entry |
-| `ana artifact save <type> <slug>` | Save pipeline artifact with hash verification |
-| `ana artifact save-all <slug>` | Save all artifacts in a plan directory atomically |
-| `ana verify pre-check <slug>` | Run contract seal verification |
-| `ana pr create <slug>` | Create PR from verified build |
-
-### Proof intelligence
-
-| Command | Description |
-|---------|-------------|
-| `ana proof <slug>` | Display proof chain entry |
-| `ana proof health` | Quality trajectory dashboard |
-| `ana proof audit` | Active findings grouped by file |
-| `ana proof close <ids...>` | Close resolved findings with reason |
-| `ana proof promote <ids...>` | Promote findings to skill rules |
-| `ana proof strengthen <ids...>` | Commit skill edits and close findings |
-
-| `ana proof audit --new` | Filter to findings since last learn session |
-| `ana proof audit --since <date>` | Filter to findings after ISO date |
-| `ana proof stale` | Show findings with staleness signals |
-| `ana proof context <files...>` | Query proof chain for file context |
-
-### Learn
-
-| Command | Description |
-|---------|-------------|
-| `ana learn end` | Mark session boundary — next Learn session knows what's new |
-
-### Setup
-
-| Command | Description |
-|---------|-------------|
-| `ana setup` | Enrich context with team knowledge (Claude Code agent) |
-| `ana setup check` | Validate context file quality |
-| `ana setup complete` | Validate context and finalize setup |
-| `ana agents` | Agent dashboard — list deployed agent definitions |
-| `ana agents model [agent] [model]` | Show or set agent model overrides |
+Pipeline agents invoke ~20 additional CLI commands — the toolbelt. When an agent saves an artifact, the CLI validates its structure, computes a content hash, and rejects malformed output. The agent can't skip a check. [Full CLI reference →](https://anatomia.dev/docs/reference/cli)
 
 ## Works with
 
