@@ -32,18 +32,17 @@ Requires Node.js 22+. To update: `npm update -g anatomia-cli`
 ana init                      # generate context + agents
 ana init commit               # persist to git (so teammates get it too)
 ana doctor                    # verify installation is healthy
-claude --agent ana            # start with "hey Ana" — context loads first
 claude --agent ana-setup      # enrich with your team's knowledge (optional, recommended, ~10 min)
+claude --agent ana            # start working — "hey Ana"
 ```
 
-`init commit` commits to the artifact branch — `staging`, `develop`, or your pre-production branch if one exists, otherwise `main`. Check with `ana config get artifactBranch` before your first commit.
-
-After updating the CLI, run `ana init` again to refresh scan data and skill detection. Your rules, context, and proof chain are preserved.
-
-`init` runs scan automatically and works standalone — no Claude Code required.
-The pipeline and setup require [Claude Code](https://claude.com/code).
-
 Tell Ana what you want to build. It'll investigate the codebase, surface tradeoffs, and push back if the approach has problems. When the scope is right, it hands off to Plan, Build, and Verify.
+
+> `init` runs scan automatically and works standalone — no Claude Code required. The pipeline and setup require [Claude Code](https://claude.com/code).
+>
+> `init commit` commits to the artifact branch — `staging`, `develop`, or your pre-production branch if one exists, otherwise `main`. Check with `ana config get artifactBranch` before your first commit.
+>
+> After updating the CLI, run `ana init` again to refresh scan data and skill detection. Your rules, context, and proof chain are preserved.
 
 ## Removing
 
