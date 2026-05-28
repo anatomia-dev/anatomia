@@ -36,6 +36,8 @@ claude --agent ana            # start with "hey Ana" — context loads first
 claude --agent ana-setup      # enrich with your team's knowledge (optional, recommended, ~10 min)
 ```
 
+`init commit` commits to the artifact branch — `staging`, `develop`, or your pre-production branch if one exists, otherwise `main`. Check with `ana config get artifactBranch` before your first commit.
+
 After updating the CLI, run `ana init` again to refresh scan data and skill detection. Your rules, context, and proof chain are preserved.
 
 `init` runs scan automatically and works standalone — no Claude Code required.
@@ -59,6 +61,7 @@ If Anatomia created your `CLAUDE.md` (check git blame), remove that too. If you 
 
 `ana init` writes that intelligence to files agents read:
 
+- `ana.json` — project config: build/test/lint commands, surfaces, artifact branch, branch prefix. Every agent and CLI command reads this.
 - `scan.json` — full structured scan data for agent consumption
 - `CLAUDE.md` and `AGENTS.md` — cross-tool project context
 - 5 core + 3 conditional skill templates with scan-driven Detected sections
