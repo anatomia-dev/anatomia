@@ -76,53 +76,7 @@ Setup (`claude --agent ana-setup`) bridges the gap between what scan detects and
 
 Every pipeline run writes a proof chain entry — here's one:
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  ana proof                                                          │
-│  Add Stripe Webhooks                                2026-04-29 11:07│
-└─────────────────────────────────────────────────────────────────────┘
-
-  Result: PASS
-  Surface: web
-
-  Contract
-  ────────
-  14/14 satisfied · 0 unsatisfied · 0 deviated
-
-  Assertions (6 of 14)
-  ──────────
-  ✓ Webhook endpoint verifies Stripe signature before processing
-  ✓ Events are processed idempotently using the Stripe event ID
-  ✓ Failed signature check returns 400, not 500
-  ✓ Unrecognized event types return 200 without processing
-  ✓ Migration adds idempotency_key column with unique constraint
-  ✓ Existing checkout and billing portal flows pass without modification
-
-  Timing
-  ──────
-  Total        52 min
-  Think        4 min
-  Plan         15 min
-  Build        22 min
-  Verify       11 min
-
-  Findings
-  ────────
-  [risk · scope] Signature verification uses direct string
-                 comparison — timing-safe equality not enforced
-  [debt · scope] No retry mechanism for failed event processing
-                 — transient DB errors will drop events silently
-  [observation · monitor] Webhook handler is 340 lines with a
-                          switch that will grow with each event
-
-  Build Concerns
-  ──────────────
-  [observation · accept] Idempotency check and event processing
-                         share one transaction — acceptable now,
-                         may need separation at scale
-  [observation · accept] Test payloads use static fixtures, not
-                         Stripe test mode events
-```
+<img alt="ana proof card showing 14/14 assertions satisfied, timing breakdown, findings, and build concerns for an Add Stripe Webhooks feature" src="assets/demo/proof-card.png" width="800">
 
 Each entry adds to a proof chain. `ana proof health` tracks the trajectory across runs — first-pass verification rate, risks per run, hot spots where findings cluster, and what to fix next. When patterns recur, `proof promote` turns them into skill rules that reach the next build. `proof audit` groups active findings by file. `proof stale` flags findings whose files changed since discovery.
 
