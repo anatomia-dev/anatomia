@@ -123,6 +123,8 @@ Each entry adds to a proof chain. `ana proof health` tracks the trajectory acros
 
 ## Commands
 
+These are the commands you'll run directly:
+
 ```bash
 ana scan [path]              # detect stack, conventions, patterns
 ana init                     # generate context + agent definitions
