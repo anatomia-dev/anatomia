@@ -44,14 +44,6 @@ Tell Ana what you want to build. It'll investigate the codebase, surface tradeof
 >
 > After updating the CLI, run `ana init` again to refresh scan data and skill detection. Your rules, context, and proof chain are preserved.
 
-## Removing
-
-```bash
-rm -rf .ana .claude/agents .claude/skills AGENTS.md
-```
-
-If Anatomia created your `CLAUDE.md` (check git blame), remove that too. If you ran `ana init commit`, revert that commit: `git revert <commit-hash>`. Your source code is never modified — only infrastructure files.
-
 ## What it does
 
 ### Scan + init
@@ -157,6 +149,22 @@ cd packages/cli && pnpm vitest run
 See [CONTRIBUTING.md](https://github.com/anatomia-dev/anatomia/blob/main/packages/cli/CONTRIBUTING.md) for extension guides and [ARCHITECTURE.md](https://github.com/anatomia-dev/anatomia/blob/main/packages/cli/ARCHITECTURE.md) for the module map.
 
 This project is built with Anatomia. The `.ana/` directory is the proof — every feature was scoped, planned, built, and verified through the same pipeline this tool installs for you.
+
+## Uninstalling
+
+```bash
+rm -rf .ana                        # all Anatomia data
+rm .claude/agents/ana*.md          # pipeline agents (your custom agents are untouched)
+rm AGENTS.md                       # generated project summary
+```
+
+Skill directories created by init: `coding-standards`, `testing-standards`, `git-workflow`, `deployment`, `troubleshooting`, and conditionally `ai-patterns`, `api-patterns`, `data-access`. Remove the ones init created; keep any you added yourself.
+
+If Anatomia created your `CLAUDE.md`, remove that too (`git blame CLAUDE.md` to check). If you ran `ana init commit`, revert: `git revert <commit-hash>`. Your source code is never modified.
+
+```bash
+npm uninstall -g anatomia-cli      # remove the CLI
+```
 
 ## License
 
