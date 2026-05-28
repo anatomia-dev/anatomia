@@ -108,14 +108,20 @@ Every pipeline run writes a proof chain entry — here's one:
 
   Findings
   ────────
-  [risk · scope] Signature verification uses direct string comparison — timing-safe equality not enforced
-  [debt · scope] No retry mechanism for failed event processing — transient DB errors will drop events silently
-  [observation · monitor] Webhook handler is 340 lines with a switch that will grow with every new event type
+  [risk · scope] Signature verification uses direct string
+                 comparison — timing-safe equality not enforced
+  [debt · scope] No retry mechanism for failed event processing
+                 — transient DB errors will drop events silently
+  [observation · monitor] Webhook handler is 340 lines with a
+                          switch that will grow with each event
 
   Build Concerns
   ──────────────
-  [observation · accept] Idempotency check and event processing share one transaction — fine now, may need separation at scale
-  [observation · accept] Test payloads use static fixtures, not Stripe test mode events
+  [observation · accept] Idempotency check and event processing
+                         share one transaction — acceptable now,
+                         may need separation at scale
+  [observation · accept] Test payloads use static fixtures, not
+                         Stripe test mode events
 ```
 
 Each entry adds to a proof chain. `ana proof health` tracks the trajectory across runs — first-pass verification rate, risks per run, hot spots where findings cluster, and what to fix next. When patterns recur, `proof promote` turns them into skill rules that reach the next build. `proof audit` groups active findings by file. `proof stale` flags findings whose files changed since discovery.
