@@ -136,7 +136,7 @@ ana proof audit              # active findings grouped by file
 ana proof <slug>             # display a proof chain entry
 ```
 
-Pipeline agents invoke ~20 additional CLI commands — the toolbelt. When an agent saves an artifact, the CLI validates its structure, computes a content hash, and rejects malformed output. The agent can't skip a check. [Full CLI reference →](https://anatomia.dev/docs/reference/cli)
+Pipeline agents invoke ~20 additional CLI commands — [the toolbelt](https://anatomia.dev/docs/concepts/toolbelt). When an agent saves an artifact, the CLI validates its structure, computes a content hash, and rejects malformed output. The agent can't skip a check. [Full CLI reference →](https://anatomia.dev/docs/reference/cli)
 
 ## Works with
 
