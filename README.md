@@ -83,6 +83,7 @@ Every pipeline run writes a proof chain entry — here's one:
 └─────────────────────────────────────────────────────────────────────┘
 
   Result: PASS
+  Surface: web
 
   Contract
   ────────
@@ -97,6 +98,14 @@ Every pipeline run writes a proof chain entry — here's one:
   ✓ Migration adds idempotency_key column with unique constraint
   ✓ Existing checkout and billing portal flows pass without modification
 
+  Timing
+  ──────
+  Total        52 min
+  Think        4 min
+  Plan         15 min
+  Build        22 min
+  Verify       11 min
+
   Findings
   ────────
   [risk · scope] Signature verification uses direct string comparison —
@@ -106,13 +115,13 @@ Every pipeline run writes a proof chain entry — here's one:
   [observation · monitor] Webhook handler is 340 lines with a switch
                           that will grow with every new event type
 
-  Timing
-  ──────
-  Total        52 min
-  Think        4 min
-  Plan         15 min
-  Build        22 min
-  Verify       11 min
+  Build Concerns
+  ──────────────
+  [observation · accept] Idempotency check and event processing share
+                         one transaction — fine now, may need separation
+                         at scale
+  [observation · accept] Test payloads use static fixtures, not Stripe
+                         test mode events
 ```
 
 Each entry adds to a proof chain. `ana proof health` tracks the trajectory across runs — first-pass verification rate, risks per run, hot spots where findings cluster, and what to fix next. When patterns recur, `proof promote` turns them into skill rules that reach the next build. `proof audit` groups active findings by file. `proof stale` flags findings whose files changed since discovery.
