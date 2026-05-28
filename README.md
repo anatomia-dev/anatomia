@@ -76,7 +76,7 @@ Setup (`claude --agent ana-setup`) bridges the gap between what scan detects and
 
 Every pipeline run writes a proof chain entry — here's one:
 
-<img alt="ana proof card showing 14/14 assertions satisfied, timing breakdown, findings, and build concerns for an Add Stripe Webhooks feature" src="assets/demo/proof-card.png" width="800">
+<img alt="ana proof card showing 14/14 assertions satisfied, timing breakdown, findings, and build concerns for an Add Stripe Webhooks feature" src="assets/demo/proof-card.png">
 
 Each entry adds to a proof chain. `ana proof health` tracks the trajectory across runs — first-pass verification rate, risks per run, hot spots where findings cluster, and what to fix next. When patterns recur, `proof promote` turns them into skill rules that reach the next build. `proof audit` groups active findings by file. `proof stale` flags findings whose files changed since discovery.
 
