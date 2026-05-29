@@ -32,7 +32,7 @@ import { getProjectName } from '../../utils/validators.js';
 import { isWorktreeDirectory } from '../../utils/worktree.js';
 import type { InitCommandOptions } from './types.js';
 import { validateInitPreconditions } from './preflight.js';
-import { registerInitCommitCommand } from './commit.js';
+import { registerInitCommitCommand, discoverGitignoredFiles } from './commit.js';
 import {
   createDirectoryStructure,
   generateScaffolds,
@@ -129,6 +129,20 @@ export function registerInitCommand(program: Command): void {
 
       // Create .claude/ configuration (outside .ana/ — merges with existing)
       await createClaudeConfiguration(cwd, engineResult, preflight.initState);
+
+      // Check for gitignored infrastructure files and warn before commit
+      try {
+        const gitignoredFiles = discoverGitignoredFiles(cwd, []);
+        if (gitignoredFiles.length > 0) {
+          preflight.warnings.push(
+            'Some infrastructure files under .claude/ are gitignored\n'
+            + 'ana init commit will force-add them for worktree compatibility.\n'
+            + 'Use --respect-gitignore to skip. See: ana init commit --help'
+          );
+        }
+      } catch {
+        // Silently skip — the warning is a nice-to-have, not a gate
+      }
 
       // Display success
       const scanTime = ((Date.now() - scanStart) / 1000).toFixed(1);

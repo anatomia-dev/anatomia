@@ -297,6 +297,57 @@ function resolveMonorepoAgentsMd(projectRoot: string): string | null {
 }
 
 /**
+ * Identify dirty infrastructure files that are also gitignored.
+ *
+ * Takes the output of `discoverDirtyFiles` and filters it through
+ * `git check-ignore --stdin` to find files that are tracked from a
+ * previous force-add but still match a gitignore rule. These files
+ * need `git add -f` on subsequent commits — plain `git add` may
+ * exit 1 for gitignored paths.
+ *
+ * This is the inverse of `discoverGitignoredFiles`: that function
+ * finds gitignored files NOT in the dirty set (for first-time
+ * force-add). This function finds dirty files that ARE gitignored
+ * (for subsequent force-add).
+ *
+ * @param projectRoot - Project root directory
+ * @param dirtyFiles - Files already discovered by `discoverDirtyFiles()`
+ * @returns Subset of dirtyFiles that are also gitignored
+ */
+export function discoverGitignoredDirtyFiles(projectRoot: string, dirtyFiles: string[]): string[] {
+  if (dirtyFiles.length === 0) {
+    return [];
+  }
+
+  // Batch-check against git check-ignore --no-index --stdin.
+  // --no-index is required because these files are already tracked
+  // (from a previous force-add). Without it, git check-ignore skips
+  // tracked files even if they match gitignore rules.
+  const checkResult = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+    cwd: projectRoot,
+    stdio: 'pipe',
+    encoding: 'utf-8',
+    input: dirtyFiles.join('\n'),
+  });
+
+  // Exit code 0 = at least one path ignored, 1 = no paths ignored, 128+ = error
+  if (checkResult.status !== null && checkResult.status >= 128) {
+    return [];
+  }
+
+  const stdout = checkResult.stdout ?? '';
+  if (!stdout.trim()) {
+    return [];
+  }
+
+  const ignoredPaths = new Set(
+    stdout.split('\n').map(line => line.trim()).filter(Boolean)
+  );
+
+  return dirtyFiles.filter(f => ignoredPaths.has(f));
+}
+
+/**
  * Determine the commit message based on whether ana.json is already tracked.
  *
  * @param projectRoot - Project root directory
@@ -415,9 +466,20 @@ export function registerInitCommitCommand(initCommand: Command): void {
       pullBeforeCommit(projectRoot);
 
       // Step 5: Discover dirty infrastructure files
-      const files = discoverDirtyFiles(projectRoot);
+      let files = discoverDirtyFiles(projectRoot);
 
-      // Step 5b: Discover gitignored infrastructure files
+      // Step 5a: Harden — identify dirty files that are also gitignored
+      // (tracked from a previous force-add). Move them to the force-add
+      // path so we don't rely on git's undocumented exit-1-but-still-stages
+      // behavior for `git add <tracked-but-gitignored-file>`.
+      const gitignoredDirtyFiles = discoverGitignoredDirtyFiles(projectRoot, files);
+      if (gitignoredDirtyFiles.length > 0) {
+        const gitignoredDirtySet = new Set(gitignoredDirtyFiles);
+        files = files.filter(f => !gitignoredDirtySet.has(f));
+      }
+
+      // Step 5b: Discover gitignored infrastructure files (not dirty —
+      // these are files that exist on disk but aren't in the dirty set)
       const gitignoredFiles = discoverGitignoredFiles(projectRoot, files);
 
       if (gitignoredFiles.length > 0 && options.respectGitignore) {
@@ -430,7 +492,10 @@ export function registerInitCommitCommand(initCommand: Command): void {
         console.log('');
       }
 
-      const filesToForceAdd = options.respectGitignore ? [] : gitignoredFiles;
+      const filesToForceAdd = [
+        ...gitignoredDirtyFiles,
+        ...(options.respectGitignore ? [] : gitignoredFiles),
+      ];
 
       // Step 6: Idempotent check
       if (files.length === 0 && filesToForceAdd.length === 0) {

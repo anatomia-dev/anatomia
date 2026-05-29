@@ -15,6 +15,7 @@ import { execSync } from 'node:child_process';
 import {
   discoverDirtyFiles,
   discoverGitignoredFiles,
+  discoverGitignoredDirtyFiles,
   isExcluded,
   determineCommitMessage,
 } from '../../../src/commands/init/commit.js';
@@ -802,6 +803,93 @@ describe('ana init commit', () => {
       const result = discoverGitignoredFiles(tempDir, dirtyFiles);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  // -------------------------------------------------------------------
+  // discoverGitignoredDirtyFiles (commit hardening)
+  // -------------------------------------------------------------------
+
+  describe('discoverGitignoredDirtyFiles', () => {
+    // @ana A005
+    it('identifies dirty files that are also gitignored', async () => {
+      await createProject();
+
+      // Create .gitignore that ignores .claude/
+      await fsp.writeFile(path.join(tempDir, '.gitignore'), '.claude/\n');
+      execSync('git add .gitignore && git commit -m "add gitignore"', { cwd: tempDir, stdio: 'ignore' });
+
+      // Create a .claude/ file, force-add it, commit
+      await fsp.mkdir(path.join(tempDir, '.claude'), { recursive: true });
+      await fsp.writeFile(path.join(tempDir, '.claude', 'settings.json'), '{}');
+      execSync('git add -f .claude/settings.json && git commit -m "force-add"', { cwd: tempDir, stdio: 'ignore' });
+
+      // Modify the tracked-but-gitignored file — it shows as dirty
+      await fsp.writeFile(path.join(tempDir, '.claude', 'settings.json'), '{"updated": true}');
+
+      const dirtyFiles = discoverDirtyFiles(tempDir);
+      expect(dirtyFiles).toContain('.claude/settings.json');
+
+      const result = discoverGitignoredDirtyFiles(tempDir, dirtyFiles);
+      expect(result).toContain('.claude/settings.json');
+    });
+
+    // @ana A006
+    it('does not flag non-gitignored dirty files', async () => {
+      await createProject();
+
+      // Modify ana.json — dirty but not gitignored
+      await fsp.writeFile(path.join(tempDir, '.ana', 'ana.json'), '{"updated": true}');
+
+      const dirtyFiles = discoverDirtyFiles(tempDir);
+      expect(dirtyFiles.length).toBeGreaterThan(0);
+
+      const result = discoverGitignoredDirtyFiles(tempDir, dirtyFiles);
+      expect(result.length).toBe(0);
+    });
+
+    // @ana A007
+    it('returns empty array for empty dirty set', async () => {
+      await createProject();
+
+      const result = discoverGitignoredDirtyFiles(tempDir, []);
+      expect(result).toEqual([]);
+    });
+
+    // @ana A015
+    it('handles git check-ignore errors gracefully', async () => {
+      // Non-git directory — spawnSync returns non-zero
+      const nonGitDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'non-git-'));
+      try {
+        const result = discoverGitignoredDirtyFiles(nonGitDir, ['some-file.txt']);
+        expect(result).toEqual([]);
+      } finally {
+        await fsp.rm(nonGitDir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns only the gitignored subset when mixed dirty files exist', async () => {
+      await createProject();
+
+      // Gitignore .claude/
+      await fsp.writeFile(path.join(tempDir, '.gitignore'), '.claude/\n');
+      execSync('git add .gitignore && git commit -m "add gitignore"', { cwd: tempDir, stdio: 'ignore' });
+
+      // Force-add a .claude/ file
+      await fsp.mkdir(path.join(tempDir, '.claude'), { recursive: true });
+      await fsp.writeFile(path.join(tempDir, '.claude', 'settings.json'), '{}');
+      execSync('git add -f .claude/settings.json && git commit -m "force-add"', { cwd: tempDir, stdio: 'ignore' });
+
+      // Modify both: tracked-but-gitignored AND normal file
+      await fsp.writeFile(path.join(tempDir, '.claude', 'settings.json'), '{"v2": true}');
+      await fsp.writeFile(path.join(tempDir, '.ana', 'scan.json'), '{"updated": true}');
+
+      const dirtyFiles = discoverDirtyFiles(tempDir);
+      const result = discoverGitignoredDirtyFiles(tempDir, dirtyFiles);
+
+      // Only the gitignored one should be in the result
+      expect(result).toContain('.claude/settings.json');
+      expect(result).not.toContain('.ana/scan.json');
     });
   });
 

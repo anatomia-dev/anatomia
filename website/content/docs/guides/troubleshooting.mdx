@@ -49,6 +49,15 @@ Anatomia scans the full repository, not individual packages. Init detects surfac
 
 ## Pipeline problems
 
+<TroubleCard title="Unknown skill errors or missing agents in pipeline">
+
+1. **Symptom:** "Unknown skill: git-workflow" or agents can&apos;t find skills/context during pipeline runs.
+2. **Cause:** Your host repo&apos;s `.gitignore` blocks `.claude/` or `.ana/` directories. Worktrees inherit the gitignore — files that weren&apos;t committed are invisible to pipeline agents.
+3. **Diagnosis:** Run `git ls-files .claude/skills/` — if it returns nothing, the files are gitignored and were never committed.
+4. **Fix:** Upgrade to latest Anatomia (`npm install -g anatomia-cli`). Recent versions auto-detect gitignored infrastructure and force-add it during `ana init commit`. After upgrading, run `ana init commit` to persist the files.
+
+</TroubleCard>
+
 <TroubleCard title="My verify failed">
 
 FAIL means Verify found issues — this is the pipeline working as designed. <DocsStat value="rejections" /> of our <DocsStat value="proofCount" /> proofs had rejection cycles.
