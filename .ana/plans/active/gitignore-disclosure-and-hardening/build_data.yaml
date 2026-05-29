@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "--respect-gitignore flag semantics split: controls first-time force-add but not subsequent force-add of already-tracked files"
+    file: "packages/cli/src/commands/init/commit.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "A001-A004 init-time disclosure has no automated tests (spec says skip integration tests)"
+    severity: observation
+    suggested_action: accept

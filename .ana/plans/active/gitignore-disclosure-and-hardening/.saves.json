@@ -24,5 +24,22 @@
   "spec": {
     "saved_at": "2026-05-29T18:43:03.879Z",
     "hash": "sha256:f8235082cb6a014f10ccca7162a6e3009f009c81ba7324703553b8b0e5b4bb02"
-  }
+  },
+  "build_started_at": "2026-05-29T19:27:53.200Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-29T19:34:38.117Z",
+    "hash": "sha256:fa8a4546c6103b9d107ce0e0dd733b330582cdc16fd4012300881f2d5b55c9ad"
+  },
+  "build-data": {
+    "saved_at": "2026-05-29T19:34:38.118Z",
+    "hash": "sha256:11aa26897b6d4eca3f89e766a361eec8f1c5f0df5dd33803374117d23ffef243"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/tests/commands/init/commit.test.ts",
+    "website/content/docs/guides/troubleshooting.mdx"
+  ],
+  "commit_hygiene": []
 }
