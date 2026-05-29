@@ -1,0 +1,125 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Gitignore disclosure at init time, commit hardening, and docs"
+
+assertions:
+  # --- AC1: Init-time disclosure when gitignored files detected ---
+  - id: A001
+    says: "Init warns users when their gitignore blocks infrastructure files"
+    block: "adds gitignore warning to init success output"
+    target: "initOutput"
+    matcher: "contains"
+    value: "gitignored"
+
+  - id: A002
+    says: "The warning appears in the Pipeline readiness section"
+    block: "adds gitignore warning to init success output"
+    target: "initOutput"
+    matcher: "contains"
+    value: "Pipeline readiness"
+
+  # --- AC2: Warning explains WHY force-add is necessary ---
+  - id: A003
+    says: "The warning explains force-add is for worktree compatibility"
+    block: "adds gitignore warning to init success output"
+    target: "warningText"
+    matcher: "contains"
+    value: "worktree"
+
+  # --- AC3: No warning when nothing is gitignored ---
+  - id: A004
+    says: "No gitignore warning appears when nothing is gitignored"
+    block: "skips gitignore warning when no files are gitignored"
+    target: "initOutput"
+    matcher: "not_contains"
+    value: "gitignored"
+
+  # --- AC4: Commit hardening — dirty+gitignored files use force-add ---
+  - id: A005
+    says: "Tracked-but-gitignored dirty files are identified for force-add"
+    block: "identifies gitignored dirty files"
+    target: "result"
+    matcher: "contains"
+    value: ".claude/settings.json"
+
+  - id: A006
+    says: "Non-gitignored dirty files are not flagged for force-add"
+    block: "excludes non-gitignored dirty files"
+    target: "result.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A007
+    says: "Empty dirty set produces no force-add candidates"
+    block: "returns empty for empty dirty set"
+    target: "result"
+    matcher: "equals"
+    value: []
+
+  - id: A008
+    says: "Subsequent commits with tracked-but-gitignored files succeed"
+    block: "force-adds gitignored dirty files on subsequent commit"
+    target: "commitResult.exitCode"
+    matcher: "not_equals"
+    value: 1
+
+  - id: A009
+    says: "Force-added files appear in the git log after subsequent commit"
+    block: "force-adds gitignored dirty files on subsequent commit"
+    target: "gitLog"
+    matcher: "contains"
+    value: ".claude/settings.json"
+
+  - id: A010
+    says: "Normal dirty files still commit alongside force-added files"
+    block: "force-adds gitignored dirty files on subsequent commit"
+    target: "gitLog"
+    matcher: "contains"
+    value: ".ana/scan.json"
+
+  # --- AC5: Troubleshooting docs ---
+  - id: A011
+    says: "Troubleshooting page covers the Unknown skill symptom"
+    block: "troubleshooting docs contain gitignore section"
+    target: "docsContent"
+    matcher: "contains"
+    value: "Unknown skill"
+
+  - id: A012
+    says: "Troubleshooting page explains gitignore as the cause"
+    block: "troubleshooting docs contain gitignore section"
+    target: "docsContent"
+    matcher: "contains"
+    value: "gitignore"
+
+  - id: A013
+    says: "Troubleshooting page includes the diagnosis command"
+    block: "troubleshooting docs contain gitignore section"
+    target: "docsContent"
+    matcher: "contains"
+    value: "git ls-files"
+
+  # --- AC6: No regressions ---
+  - id: A014
+    says: "All existing commit tests continue to pass"
+    block: "existing commit tests pass"
+    target: "testSuite.failures"
+    matcher: "equals"
+    value: 0
+
+  - id: A015
+    says: "Git check-ignore errors are handled gracefully"
+    block: "handles git check-ignore failure gracefully"
+    target: "result"
+    matcher: "equals"
+    value: []
+
+file_changes:
+  - path: "packages/cli/src/commands/init/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/commit.ts"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "packages/cli/tests/commands/init/commit.test.ts"
+    action: modify
