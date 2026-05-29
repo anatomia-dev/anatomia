@@ -24,5 +24,20 @@
   "spec": {
     "saved_at": "2026-05-29T08:04:49.597Z",
     "hash": "sha256:85a31e5fc7a392246137ba79514e9d48982bb47bdc85ad4b84fd5814fa8f3ef4"
-  }
+  },
+  "build_started_at": "2026-05-29T08:08:29.476Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-29T08:14:50.253Z",
+    "hash": "sha256:d81dbddecf3d1f28b8ccc8876b4a78a278e38ccb792a77475b95d66f32ae3c0e"
+  },
+  "build-data": {
+    "saved_at": "2026-05-29T08:14:50.255Z",
+    "hash": "sha256:94a716e798b84e400958aa86a79440d26c61b3be211b13eb70fc20e753102842"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/tests/commands/init/commit.test.ts"
+  ],
+  "commit_hygiene": []
 }
