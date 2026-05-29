@@ -1,0 +1,34 @@
+schema: 1
+findings:
+  - category: code
+    summary: "discoverGitignoredFiles calls resolveMonorepoAgentsMd independently — duplicated scan.json read"
+    file: "packages/cli/src/commands/init/commit.ts"
+    line: 218
+    severity: debt
+    suggested_action: accept
+    related_assertions: []
+  - category: code
+    summary: "No guard for symlinks under .claude/ — readdirSync with recursive follows symlinks into arbitrary directories"
+    file: "packages/cli/src/commands/init/commit.ts"
+    line: 197
+    severity: risk
+    suggested_action: monitor
+    related_assertions: []
+  - category: test
+    summary: "A020 test is indirect — exercises exit-code-1 path but the file created is dirty, not a clean non-ignored candidate"
+    file: "packages/cli/tests/commands/init/commit.test.ts"
+    line: 792
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A020"]
+  - category: code
+    summary: "lstatSync called per-file during candidate enumeration — O(n) syscalls on large .claude/ trees"
+    file: "packages/cli/src/commands/init/commit.ts"
+    line: 207
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Proof chain finding init-commit-C2 (no integration test for pull conflict abort path) still present — unrelated to this build"
+    severity: observation
+    suggested_action: monitor
+    resolves: []

@@ -169,6 +169,108 @@ export function discoverDirtyFiles(projectRoot: string): string[] {
 }
 
 /**
+ * Discover infrastructure files that exist on disk but are gitignored.
+ *
+ * Enumerates actual files under KNOWN_ROOTS and KNOWN_ROOT_FILES using
+ * `fs.readdirSync({ recursive: true })`, filters through `isExcluded()`,
+ * batch-checks against `git check-ignore --stdin`, and returns the
+ * gitignored subset. Files already in `dirtyFiles` are excluded to
+ * prevent double-staging.
+ *
+ * @param projectRoot - Project root directory
+ * @param dirtyFiles - Files already discovered by `discoverDirtyFiles()`
+ * @returns Array of repo-relative paths to gitignored infrastructure files
+ */
+export function discoverGitignoredFiles(projectRoot: string, dirtyFiles: string[]): string[] {
+  const dirtySet = new Set(dirtyFiles);
+
+  // Collect candidate files from known roots (recursive enumeration)
+  const candidates: string[] = [];
+  const roots = [...KNOWN_ROOTS];
+
+  for (const root of roots) {
+    const absRoot = path.join(projectRoot, root);
+    if (!fs.existsSync(absRoot)) continue;
+
+    let entries: string[];
+    try {
+      entries = fs.readdirSync(absRoot, { recursive: true, encoding: 'utf-8' }) as string[];
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      const repoRelative = path.posix.join(root, entry.replace(/\\/g, '/'));
+      // Filter to files only (skip directories)
+      const absPath = path.join(projectRoot, repoRelative);
+      try {
+        if (!fs.lstatSync(absPath).isFile()) continue;
+      } catch {
+        continue;
+      }
+      if (isExcluded(repoRelative)) continue;
+      if (dirtySet.has(repoRelative)) continue;
+      candidates.push(repoRelative);
+    }
+  }
+
+  // Check root-level files
+  const monorepoAgentsMd = resolveMonorepoAgentsMd(projectRoot);
+  const rootFiles = [...KNOWN_ROOT_FILES];
+  if (monorepoAgentsMd) {
+    rootFiles.push(monorepoAgentsMd);
+  }
+
+  for (const rootFile of rootFiles) {
+    if (isExcluded(rootFile)) continue;
+    if (dirtySet.has(rootFile)) continue;
+    const absPath = path.join(projectRoot, rootFile);
+    if (fs.existsSync(absPath)) {
+      candidates.push(rootFile);
+    }
+  }
+
+  if (candidates.length === 0) {
+    return [];
+  }
+
+  // Batch-check against git check-ignore --stdin
+  const checkResult = spawnSync('git', ['check-ignore', '--stdin'], {
+    cwd: projectRoot,
+    stdio: 'pipe',
+    encoding: 'utf-8',
+    input: candidates.join('\n'),
+  });
+
+  // Exit code 0 = at least one path ignored, 1 = no paths ignored, 128+ = error
+  if (checkResult.status !== null && checkResult.status >= 128) {
+    return [];
+  }
+
+  const stdout = checkResult.stdout ?? '';
+  if (!stdout.trim()) {
+    return [];
+  }
+
+  const ignoredPaths = new Set(
+    stdout.split('\n').map(line => line.trim()).filter(Boolean)
+  );
+
+  // Also exclude files whose parent directory is already in the dirty set
+  // (e.g., dirtyFiles has ".claude/" which means git add will already pick up children)
+  const result = candidates.filter(c => {
+    if (!ignoredPaths.has(c)) return false;
+    // Check if any dirty entry is a directory prefix covering this file
+    for (const dp of dirtyFiles) {
+      if (dp.endsWith('/') && c.startsWith(dp)) return false;
+    }
+    return true;
+  });
+
+  return result.sort();
+}
+
+/**
  * Resolve the monorepo primary package AGENTS.md path from scan.json.
  *
  * @param projectRoot - Project root directory
@@ -282,7 +384,8 @@ export function registerInitCommitCommand(initCommand: Command): void {
   initCommand
     .command('commit')
     .description('Commit infrastructure files to the artifact branch')
-    .action(() => {
+    .option('--respect-gitignore', 'Do not force-add gitignored infrastructure files')
+    .action((options: { respectGitignore?: boolean }) => {
       // Guard 1: Reject worktree
       if (isWorktreeDirectory()) {
         console.error(chalk.red('Error: Run init commit from the main project directory, not from a worktree.'));
@@ -314,10 +417,34 @@ export function registerInitCommitCommand(initCommand: Command): void {
       // Step 5: Discover dirty infrastructure files
       const files = discoverDirtyFiles(projectRoot);
 
+      // Step 5b: Discover gitignored infrastructure files
+      const gitignoredFiles = discoverGitignoredFiles(projectRoot, files);
+
+      if (gitignoredFiles.length > 0 && options.respectGitignore) {
+        // Warn about skipped gitignored files
+        console.log(chalk.yellow(`  ⚠ ${gitignoredFiles.length} infrastructure file${gitignoredFiles.length !== 1 ? 's are' : ' is'} gitignored and ${gitignoredFiles.length !== 1 ? 'were' : 'was'} NOT committed:`));
+        for (const f of gitignoredFiles) {
+          console.log(`    ${f}`);
+        }
+        console.log("  These files won't be available in worktrees. Pipeline builds may fail.");
+        console.log('');
+      }
+
+      const filesToForceAdd = options.respectGitignore ? [] : gitignoredFiles;
+
       // Step 6: Idempotent check
-      if (files.length === 0) {
+      if (files.length === 0 && filesToForceAdd.length === 0) {
         console.log('Context is up to date.');
         return;
+      }
+
+      // Print force-add notice
+      if (filesToForceAdd.length > 0) {
+        console.log(chalk.yellow('  ⚠ Gitignored infrastructure files detected — force-adding for worktree compatibility:'));
+        for (const f of filesToForceAdd) {
+          console.log(`    ${f}`);
+        }
+        console.log('');
       }
 
       // Step 7: Stage and commit
@@ -325,9 +452,18 @@ export function registerInitCommitCommand(initCommand: Command): void {
       const coAuthor = readCoAuthor(projectRoot);
       const commitMessage = `${message}\n\nCo-authored-by: ${coAuthor}`;
 
-      runGit(['add', ...files], { cwd: projectRoot });
+      // Stage dirty files normally
+      if (files.length > 0) {
+        runGit(['add', ...files], { cwd: projectRoot });
+      }
 
-      const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...files], {
+      // Force-add gitignored files separately
+      if (filesToForceAdd.length > 0) {
+        runGit(['add', '-f', ...filesToForceAdd], { cwd: projectRoot });
+      }
+
+      const allFiles = [...files, ...filesToForceAdd];
+      const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...allFiles], {
         stdio: 'pipe',
         cwd: projectRoot,
       });
@@ -339,7 +475,8 @@ export function registerInitCommitCommand(initCommand: Command): void {
         process.exit(1);
       }
 
-      console.log(chalk.green(`✓ Infrastructure committed to ${artifactBranch} (${files.length} file${files.length !== 1 ? 's' : ''})`));
+      const totalCount = allFiles.length;
+      console.log(chalk.green(`✓ Infrastructure committed to ${artifactBranch} (${totalCount} file${totalCount !== 1 ? 's' : ''})`));
       console.log('');
       console.log(`  ${message}`);
       console.log('');

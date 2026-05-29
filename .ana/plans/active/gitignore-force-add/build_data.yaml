@@ -1,0 +1,6 @@
+schema: 1
+concerns:
+  - summary: "A020 test exercises empty-result path but not the specific git check-ignore exit-code-1 code path with actual candidates"
+    file: "packages/cli/tests/commands/init/commit.test.ts"
+    severity: observation
+    suggested_action: accept
