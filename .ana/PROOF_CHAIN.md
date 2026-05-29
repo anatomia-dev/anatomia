@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-171 runs · 119 active · 5 promoted · 842 closed
+172 runs · 122 active · 5 promoted · 843 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 29 | 21 | 2026-05-27 |
+| Unscoped | 30 | 24 | 2026-05-29 |
 | cli | 119 | 79 | 2026-05-29 |
 | website | 23 | 19 | 2026-05-24 |
 
@@ -17,14 +17,14 @@
 | packages/cli/src/commands/work.ts | 7 | 5 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
+| packages/cli/src/commands/init/commit.ts | 5 | 3 |
 | packages/cli/src/commands/init/state.ts | 5 | 5 |
-| packages/cli/src/commands/init/commit.ts | 4 | 2 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 119 total)
+## Active Findings (30 shown of 122 total)
 
 ### assets/demo/dub-scan.tape
 
@@ -40,9 +40,14 @@
 
 ### packages/cli/src/commands/init/commit.ts
 
+- **code:** discoverGitignoredDirtyFiles correctly uses --no-index for tracked files — improvement over existing discoverGitignoredFiles pattern — *Gitignore disclosure at init time, commit hardening, and docs*
 - **code:** discoverGitignoredFiles calls resolveMonorepoAgentsMd independently — duplicated scan.json read — *Force-add gitignored infrastructure in init commit*
 - **code:** No guard for symlinks under .claude/ — readdirSync with recursive follows symlinks into arbitrary directories — *Force-add gitignored infrastructure in init commit*
 - **code:** lstatSync called per-file during candidate enumeration — O(n) syscalls on large .claude/ trees — *Force-add gitignored infrastructure in init commit*
+
+### packages/cli/src/commands/init/index.ts
+
+- **code:** Warning text hardcodes '.claude/' but detection covers both .claude/ and .ana/ — *Gitignore disclosure at init time, commit hardening, and docs*
 
 ### packages/cli/src/commands/init/state.ts
 
@@ -74,10 +79,6 @@
 
 - **code:** Trailing bracket regex broader than [password] intent — matches any lowercase word ending in ] — *Fix False Positive Secret Detection*
 
-### packages/cli/src/engine/scan-engine.ts
-
-- **code:** readPythonDependencies called twice for Python projects — line 673 (production) and line 76 inside detectNonNodeTesting (all), both performing fresh filesystem reads of the same pyproject.toml — *Separate Python production deps from dev deps*
-
 ### packages/cli/src/utils/proof-health.ts
 
 - **code:** proof-health.ts at 893 lines is already above comfort threshold — health computation could decompose further — *Decompose proofSummary.ts*
@@ -88,6 +89,7 @@
 
 ### packages/cli/tests/commands/init/commit.test.ts
 
+- **test:** No integration test for subsequent-commit hardening scenario (A008-A010) — *Gitignore disclosure at init time, commit hardening, and docs*
 - **test:** A020 test is indirect — exercises exit-code-1 path but the file created is dirty, not a clean non-ignored candidate — *Force-add gitignored infrastructure in init commit*
 
 ### packages/cli/tests/commands/proof.test.ts
@@ -106,14 +108,6 @@
 ### packages/cli/tests/engine/detectors/dependencies.test.ts
 
 - **test:** makeRoot/makeCensus helpers duplicated locally instead of extracted to shared test helper — *Setup Verification Hints*
-
-### packages/cli/tests/engine/detectors/surfaces.test.ts
-
-- **test:** Svelte/Nuxt ordering test (A020) constructs hints with Svelte first — passes regardless of actual FRAMEWORK_HINTS array order in census.ts — *Fill Scan Detection Gaps*
-
-### packages/cli/tests/engine/parsers/python.test.ts
-
-- **test:** A010 include-group test passes trivially — inline table syntax never matches extractFromArray regex — *Fix Python pyproject.toml parser — 3 bugs*
 
 ### packages/cli/tests/engine/three-tier-detection.test.ts
 

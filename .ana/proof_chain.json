@@ -44973,6 +44973,206 @@
         "base_commit": "f8f9658d4d9ffbbf3c381608216cf118dd3d2d76"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "gitignore-disclosure-and-hardening",
+      "feature": "Gitignore disclosure at init time, commit hardening, and docs",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 15,
+        "satisfied": 15,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Init warns users when their gitignore blocks infrastructure files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The warning appears in the Pipeline readiness section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The warning explains force-add is for worktree compatibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "No gitignore warning appears when nothing is gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Tracked-but-gitignored dirty files are identified for force-add",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Non-gitignored dirty files are not flagged for force-add",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Empty dirty set produces no force-add candidates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Subsequent commits with tracked-but-gitignored files succeed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Force-added files appear in the git log after subsequent commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Normal dirty files still commit alongside force-added files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Troubleshooting page covers the Unknown skill symptom",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Troubleshooting page explains gitignore as the cause",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Troubleshooting page includes the diagnosis command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "All existing commit tests continue to pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Git check-ignore errors are handled gracefully",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 1391,
+        "think": 1211,
+        "plan": 74,
+        "build": 7,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:b9e40fdd535d98fb6980a175da2c52f4edb3c69c7753e351f8a18e4e9d7e3b16",
+        "contract": "sha256:dc63cde0269c3374f042892fc74f26e6adf577bb73329fa83d7ff15b3b37dbd8",
+        "plan": "sha256:ca9f6897735a698467f4a7d0ca49ba5540e544835c2737608fa6ddeb0495ce3b",
+        "spec": "sha256:f8235082cb6a014f10ccca7162a6e3009f009c81ba7324703553b8b0e5b4bb02",
+        "build-report": "sha256:fa8a4546c6103b9d107ce0e0dd733b330582cdc16fd4012300881f2d5b55c9ad",
+        "build-data": "sha256:11aa26897b6d4eca3f89e766a361eec8f1c5f0df5dd33803374117d23ffef243",
+        "verify-report": "sha256:81063c0f24a212379f9ff1e5d91e8f0e6589fc4a8b48b1aac5fe857a48cd9c46",
+        "verify-data": "sha256:775018ec984e4090b25162e17fe47e35d6c2d651ad6b7f1a9ae35dff38679afe"
+      },
+      "completed_at": "2026-05-29T20:50:42.070Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/commit.ts",
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/tests/commands/init/commit.test.ts",
+        "website/content/docs/guides/troubleshooting.mdx"
+      ],
+      "scope_summary": "The force-add fix shipped (PR #226). It solves the mechanical problem — gitignored infrastructure files now get committed. But there are three gaps:",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Warning text hardcodes '.claude/' but detection covers both .claude/ and .ana/",
+          "file": "packages/cli/src/commands/init/index.ts",
+          "anchor": null,
+          "line": 138,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "gitignore-disclosure-and-hardening-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No integration test for subsequent-commit hardening scenario (A008-A010)",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A008",
+            "A009",
+            "A010"
+          ],
+          "id": "gitignore-disclosure-and-hardening-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Pre-existing @ana tags from gitignore-force-add contract reuse IDs A001-A021 — ambiguous with this contract's A001-A015",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "gitignore-disclosure-and-hardening-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-29T20:50:42.070Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "discoverGitignoredDirtyFiles correctly uses --no-index for tracked files — improvement over existing discoverGitignoredFiles pattern",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 326,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "gitignore-disclosure-and-hardening-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "--respect-gitignore flag semantics split: controls first-time force-add but not subsequent force-add of already-tracked files",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A001-A004 init-time disclosure has no automated tests (spec says skip integration tests)",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-29T19:27:53.200Z",
+        "completed_at": "2026-05-29T20:50:42.062Z",
+        "commit_count": 0,
+        "base_commit": "b6c1ec51c8e7826aa7d317e0083a53c407829a28"
+      }
     }
   ],
   "schema": 1,
