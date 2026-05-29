@@ -29,7 +29,7 @@ Add a second discovery pass after `discoverDirtyFiles()` that checks whether exp
 The existing `discoverDirtyFiles()` stays unchanged — it handles the normal case. The new function handles the gitignore edge case. Two separate file lists, two separate `git add` calls (normal and forced).
 
 ## Acceptance Criteria
-- AC1: When `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `CLAUDE.md`, or `AGENTS.md` exist on disk but are gitignored, `ana init commit` force-adds them and includes them in the commit.
+- AC1: When any infrastructure file under KNOWN_ROOTS (`.ana/`, `.claude/`) or KNOWN_ROOT_FILES (`CLAUDE.md`, `AGENTS.md`) exists on disk but is gitignored, `ana init commit` force-adds it and includes it in the commit. Detection enumerates actual files on disk — not a hardcoded filename list — so ENRICHMENT.md files, future skill additions, nested agent files, and any other infrastructure files are covered automatically.
 - AC2: Force-added files appear in the committed changeset (verifiable via `git log --name-only`).
 - AC3: Console output explicitly names the force-added files and explains why (pipeline worktree compatibility).
 - AC4: `--respect-gitignore` flag skips force-add and prints a warning that these files won't be available in worktrees.
@@ -96,11 +96,22 @@ None. All design questions resolved during scoping conversation.
 - Export the new function for direct testing (same as `discoverDirtyFiles` and `isExcluded`)
 - Test pattern: create `.gitignore` with relevant entries in the temp git repo, create files on disk, verify they appear in the gitignored discovery set
 
+### Critical Design Constraint: Enumerate Files on Disk, Not a Static List
+The function MUST walk the filesystem under KNOWN_ROOTS (`.ana/`, `.claude/`) and KNOWN_ROOT_FILES (`CLAUDE.md`, `AGENTS.md`, plus monorepo AGENTS.md) to collect candidate paths, then batch-check them against `git check-ignore --stdin`. Do NOT hardcode a list of expected filenames like `['.claude/skills/coding-standards/SKILL.md', '.claude/agents/ana.md', ...]`. The file enumeration must be dynamic because:
+- Skills have both SKILL.md and ENRICHMENT.md files
+- New skills may be added to templates in future releases
+- Users may add custom skill directories
+- Agent file names may change
+- `.ana/` contains nested directories (context/, scan.json, ana.json, learn/)
+
+The approach: `fs.readdirSync` (recursive) on each KNOWN_ROOT that exists on disk, convert to repo-relative paths, filter through `isExcluded()`, then batch-check the survivors against `git check-ignore --stdin`. This mirrors how `discoverDirtyFiles` works with KNOWN_ROOTS — same roots, different detection mechanism.
+
 ### Known Gotchas
 - `git check-ignore` exits 1 when NO paths are ignored (not an error — it means nothing matched). Don't treat exit code 1 as failure.
 - The `--stdin` flag reads paths from stdin, one per line. Output contains only the paths that ARE ignored. Parse output lines, not exit code, to get the actual ignored paths.
 - `git status --porcelain` reports untracked directories as `?? .claude/` (trailing slash, directory entry) not individual files. The force-add pass needs to enumerate actual files on disk, not rely on git status output.
 - The `registerInitCommitCommand` function registers a Commander action. The `--respect-gitignore` option needs to be added to the command definition before `.action()`.
+- `fs.readdirSync` with `{ recursive: true }` returns all nested entries. Filter to files only (not directories) since `git add` operates on files.
 
 ### Things to Investigate
 - Whether `git add -f` on a gitignored file that's inside an untracked parent directory (e.g., `.claude/` is entirely new and ignored) requires the parent to exist in the index first, or handles it automatically. Test this in the spec's contract.
