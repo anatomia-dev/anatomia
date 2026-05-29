@@ -1,0 +1,165 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Force-add gitignored infrastructure in init commit"
+
+assertions:
+  # --- AC1: Gitignored files are detected and force-added ---
+  - id: A001
+    says: "Infrastructure files hidden by gitignore are detected during init commit"
+    block: "discovers gitignored infrastructure files under known roots"
+    target: "result"
+    matcher: "contains"
+    value: ".claude/settings.json"
+
+  - id: A002
+    says: "All infrastructure files in a gitignored directory are found, not just a hardcoded list"
+    block: "discovers all files recursively under gitignored known root"
+    target: "result.length"
+    matcher: "greater"
+    value: 1
+
+  - id: A003
+    says: "Root-level infrastructure files like CLAUDE.md are detected when gitignored"
+    block: "discovers gitignored root-level infrastructure files"
+    target: "result"
+    matcher: "contains"
+    value: "CLAUDE.md"
+
+  # --- AC2: Force-added files appear in the commit ---
+  - id: A004
+    says: "Force-added files are included in the git commit"
+    block: "force-adds gitignored files so they appear in the commit"
+    target: "gitLog"
+    matcher: "contains"
+    value: ".claude/settings.json"
+
+  - id: A005
+    says: "Both normal and force-added files appear in the same commit"
+    block: "commits both dirty and gitignored files together"
+    target: "gitLog"
+    matcher: "contains"
+    value: ".ana/scan.json"
+
+  # --- AC3: Console output explains what happened ---
+  - id: A006
+    says: "Console output names the force-added files"
+    block: "prints force-added file names in output"
+    target: "stdout"
+    matcher: "contains"
+    value: ".claude/settings.json"
+
+  - id: A007
+    says: "Console output explains force-add is for worktree compatibility"
+    block: "prints force-added file names in output"
+    target: "stdout"
+    matcher: "contains"
+    value: "worktree"
+
+  # --- AC4: --respect-gitignore flag ---
+  - id: A008
+    says: "The respect-gitignore flag prevents force-adding gitignored files"
+    block: "skips force-add when --respect-gitignore is set"
+    target: "gitLog"
+    matcher: "not_contains"
+    value: ".claude/settings.json"
+
+  - id: A009
+    says: "The respect-gitignore flag warns about worktree implications"
+    block: "skips force-add when --respect-gitignore is set"
+    target: "output"
+    matcher: "contains"
+    value: "won't be available in worktrees"
+
+  - id: A010
+    says: "The respect-gitignore flag still commits non-gitignored dirty files"
+    block: "skips force-add when --respect-gitignore is set"
+    target: "gitLog"
+    matcher: "contains"
+    value: ".ana/scan.json"
+
+  # --- AC5: No change when nothing is gitignored ---
+  - id: A011
+    says: "No extra output appears when no infrastructure files are gitignored"
+    block: "produces no gitignore output when nothing is gitignored"
+    target: "stdout"
+    matcher: "not_contains"
+    value: "force-add"
+
+  - id: A012
+    says: "The function returns empty when no files are gitignored"
+    block: "returns empty array when no infrastructure files are gitignored"
+    target: "result"
+    matcher: "equals"
+    value: []
+
+  # --- AC6: Excluded files are not force-added ---
+  - id: A013
+    says: "Agent memory files are never force-added even when gitignored"
+    block: "excludes agent-memory from gitignored discovery"
+    target: "result"
+    matcher: "not_contains"
+    value: ".claude/agent-memory/session.json"
+
+  - id: A014
+    says: "Local settings are never force-added even when gitignored"
+    block: "excludes settings.local.json from gitignored discovery"
+    target: "result"
+    matcher: "not_contains"
+    value: ".claude/settings.local.json"
+
+  - id: A015
+    says: "Plan files are never force-added even when gitignored"
+    block: "excludes .ana/plans/ from gitignored discovery"
+    target: "result"
+    matcher: "not_contains"
+    value: ".ana/plans/"
+
+  - id: A016
+    says: "State files are never force-added even when gitignored"
+    block: "excludes .ana/state/ from gitignored discovery"
+    target: "result"
+    matcher: "not_contains"
+    value: ".ana/state/"
+
+  # --- AC7: Nested gitignore scenarios ---
+  - id: A017
+    says: "Force-add works when the root gitignore ignores the entire .claude directory"
+    block: "handles entire .claude/ directory being gitignored"
+    target: "result.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A018
+    says: "Force-add respects nested gitignore exclusions within .claude/"
+    block: "respects .claude/.gitignore exclusions during force-add discovery"
+    target: "result"
+    matcher: "not_contains"
+    value: ".claude/agent-memory/"
+
+  # --- Edge cases ---
+  - id: A019
+    says: "Files already found by normal discovery are not duplicated in the gitignored set"
+    block: "excludes files already in the dirty set"
+    target: "result"
+    matcher: "not_contains"
+    value: ".ana/scan.json"
+
+  - id: A020
+    says: "Git check-ignore exit code 1 is handled as no-matches, not as an error"
+    block: "handles git check-ignore exit code 1 gracefully"
+    target: "result"
+    matcher: "equals"
+    value: []
+
+  - id: A021
+    says: "The success message file count includes both normal and force-added files"
+    block: "force-adds gitignored files so they appear in the commit"
+    target: "stdout"
+    matcher: "contains"
+    value: "file"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/commit.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/commit.test.ts"
+    action: modify
