@@ -44740,6 +44740,239 @@
         "commit_count": 0,
         "base_commit": "edd2b284e27d47e129cc0745678d1782a1f66e7d"
       }
+    },
+    {
+      "slug": "gitignore-force-add",
+      "feature": "Force-add gitignored infrastructure in init commit",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 21,
+        "satisfied": 21,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Infrastructure files hidden by gitignore are detected during init commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "All infrastructure files in a gitignored directory are found, not just a hardcoded list",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Root-level infrastructure files like CLAUDE.md are detected when gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Force-added files are included in the git commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Both normal and force-added files appear in the same commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Console output names the force-added files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Console output explains force-add is for worktree compatibility",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The respect-gitignore flag prevents force-adding gitignored files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The respect-gitignore flag warns about worktree implications",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The respect-gitignore flag still commits non-gitignored dirty files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "No extra output appears when no infrastructure files are gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The function returns empty when no files are gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Agent memory files are never force-added even when gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Local settings are never force-added even when gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Plan files are never force-added even when gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "State files are never force-added even when gitignored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Force-add works when the root gitignore ignores the entire .claude directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Force-add respects nested gitignore exclusions within .claude/",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Files already found by normal discovery are not duplicated in the gitignored set",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Git check-ignore exit code 1 is handled as no-matches, not as an error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The success message file count includes both normal and force-added files",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 72,
+        "think": 40,
+        "plan": 9,
+        "build": 6,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:266c8f4ffc237bcdb9dddf294966abdcb822644465c6b9af3838fe2fcc2a6029",
+        "contract": "sha256:8552ccfc9f71526792f5388fae4685e5e467bb3f2a94b8358c3e4f164b37bf33",
+        "plan": "sha256:e2a01309e972fc3b008e996090c94b8e7e94ba5945772075aac871e1d643c4d7",
+        "spec": "sha256:85a31e5fc7a392246137ba79514e9d48982bb47bdc85ad4b84fd5814fa8f3ef4",
+        "build-report": "sha256:d81dbddecf3d1f28b8ccc8876b4a78a278e38ccb792a77475b95d66f32ae3c0e",
+        "build-data": "sha256:94a716e798b84e400958aa86a79440d26c61b3be211b13eb70fc20e753102842",
+        "verify-report": "sha256:984217d71bc004e665abff2a4d2af4ad16ed07f79b219b0f3dbabe185fa87407",
+        "verify-data": "sha256:da60ff34e4e04b328aaa7d583cdc56e4450dd2b1905d5119bbc0fa7c36895a18"
+      },
+      "completed_at": "2026-05-29T08:30:54.965Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/commit.ts",
+        "packages/cli/tests/commands/init/commit.test.ts"
+      ],
+      "scope_summary": "When a host repo gitignores paths under `.claude/`, `ana init commit` silently drops infrastructure files from the commit. Skills, agents, settings.json, and hooks vanish from git — and therefore from worktrees where Build and Verify actually run. The pipeline degrades or breaks entirely without warning.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "discoverGitignoredFiles calls resolveMonorepoAgentsMd independently — duplicated scan.json read",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 218,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "gitignore-force-add-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "No guard for symlinks under .claude/ — readdirSync with recursive follows symlinks into arbitrary directories",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 197,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [],
+          "id": "gitignore-force-add-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A020 test is indirect — exercises exit-code-1 path but the file created is dirty, not a clean non-ignored candidate",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "anchor": null,
+          "line": 792,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "gitignore-force-add-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "lstatSync called per-file during candidate enumeration — O(n) syscalls on large .claude/ trees",
+          "file": "packages/cli/src/commands/init/commit.ts",
+          "anchor": null,
+          "line": 207,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "gitignore-force-add-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof chain finding init-commit-C2 (no integration test for pull conflict abort path) still present — unrelated to this build",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "resolves": [],
+          "id": "gitignore-force-add-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-29T08:30:54.965Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A020 test exercises empty-result path but not the specific git check-ignore exit-code-1 code path with actual candidates",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-29T08:08:29.476Z",
+        "completed_at": "2026-05-29T08:30:54.956Z",
+        "commit_count": 0,
+        "base_commit": "f8f9658d4d9ffbbf3c381608216cf118dd3d2d76"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
