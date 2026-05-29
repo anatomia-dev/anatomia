@@ -38,7 +38,7 @@ Three additions, each independent:
 
 ## Acceptance Criteria
 - AC1: When `ana init` detects gitignored infrastructure files under `.claude/`, the success output includes a warning in the Pipeline readiness section explaining that `ana init commit` will force-add them.
-- AC2: The warning mentions `--respect-gitignore` as an opt-out.
+- AC2: The warning explains WHY the force-add is necessary (worktree compatibility for Build and Verify agents).
 - AC3: When no `.claude/` files are gitignored, no warning appears (existing behavior unchanged).
 - AC4: On subsequent `ana init commit` calls where tracked infrastructure files are gitignored, those files are staged with `git add -f` instead of the normal `git add`.
 - AC5: The troubleshooting docs page has a section covering gitignore-related skill/agent issues with symptom, cause, diagnosis, and fix.
