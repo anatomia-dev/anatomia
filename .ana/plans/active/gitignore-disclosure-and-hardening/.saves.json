@@ -41,5 +41,20 @@
     "packages/cli/tests/commands/init/commit.test.ts",
     "website/content/docs/guides/troubleshooting.mdx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-29T20:18:25.397Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:dc63cde0269c3374f042892fc74f26e6adf577bb73329fa83d7ff15b3b37dbd8",
+    "run_at": "2026-05-29T20:23:40.399Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-29T20:23:40.452Z",
+    "hash": "sha256:81063c0f24a212379f9ff1e5d91e8f0e6589fc4a8b48b1aac5fe857a48cd9c46"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-29T20:23:40.452Z",
+    "hash": "sha256:775018ec984e4090b25162e17fe47e35d6c2d651ad6b7f1a9ae35dff38679afe"
+  }
 }

@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Warning text hardcodes '.claude/' but detection covers both .claude/ and .ana/"
+    file: "packages/cli/src/commands/init/index.ts"
+    line: 138
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001"]
+  - category: test
+    summary: "No integration test for subsequent-commit hardening scenario (A008-A010)"
+    file: "packages/cli/tests/commands/init/commit.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A008", "A009", "A010"]
+  - category: upstream
+    summary: "Pre-existing @ana tags from gitignore-force-add contract reuse IDs A001-A021 — ambiguous with this contract's A001-A015"
+    file: "packages/cli/tests/commands/init/commit.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "discoverGitignoredDirtyFiles correctly uses --no-index for tracked files — improvement over existing discoverGitignoredFiles pattern"
+    file: "packages/cli/src/commands/init/commit.ts"
+    line: 326
+    severity: observation
+    suggested_action: accept
