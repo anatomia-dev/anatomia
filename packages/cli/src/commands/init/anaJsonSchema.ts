@@ -61,6 +61,16 @@ export const AnaJsonSchema = z
     packageManager: z.string().nullable().default(null).catch(null),
     commands: z.record(z.string(), z.unknown()).optional().catch(undefined),
     surfaces: z.record(z.string(), surfaceObjectSchema).optional().default({}).catch({}),
+    platforms: z
+      .array(z.string())
+      .optional()
+      .default(['claude'])
+      .catch(['claude']),
+    platformFlags: z
+      .record(z.string(), z.array(z.string()).catch([]))
+      .optional()
+      .default({})
+      .catch({}),
     coAuthor: z.string().nullable().optional().catch(undefined),
     artifactBranch: z.string().optional().catch(undefined),
     branchPrefix: z

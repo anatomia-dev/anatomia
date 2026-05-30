@@ -49,6 +49,8 @@ const KNOWN_FIELDS = new Set([
   'packageManager',
   'commands',
   'surfaces',
+  'platforms',
+  'platformFlags',
   'coAuthor',
   'artifactBranch',
   'branchPrefix',

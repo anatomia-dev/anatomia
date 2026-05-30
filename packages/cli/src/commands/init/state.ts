@@ -20,6 +20,7 @@ import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
 import { getCurrentBranch } from '../../utils/git-operations.js';
 import { isNonProductPath } from '../../engine/detectors/surfaces.js';
+import { getSkillsDirRel } from '../platform.js';
 
 /**
  * Prompt user for confirmation
@@ -559,6 +560,8 @@ export async function createAnaJson(
     packageManager: result.commands.packageManager,
     commands,
     ...(Object.keys(surfaces).length > 0 ? { surfaces } : {}),
+    platforms: ['claude'],
+    platformFlags: {},
     coAuthor: 'Ana <build@anatomia.dev>',
     artifactBranch: detectArtifactBranch(result),
     branchPrefix: 'feature/',
@@ -958,7 +961,7 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
     const coreSkills: string[] = [...CORE_SKILLS];
     const conditionalSkills = manifest.filter(s => !coreSkills.includes(s));
 
-    console.log(chalk.green(`✓ Skills → .claude/skills/ (${manifest.length} skills)`));
+    console.log(chalk.green(`✓ Skills → ${getSkillsDirRel()}/ (${manifest.length} skills)`));
     console.log(`    ${chalk.gray('Core:')}      ${coreSkills.join(', ')}`);
     if (conditionalSkills.length > 0) {
       console.log(`    ${chalk.gray('Detected:')}  ${conditionalSkills.join(', ')}`);
