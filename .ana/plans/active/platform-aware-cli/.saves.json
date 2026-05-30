@@ -55,14 +55,27 @@
     "packages/cli/src/commands/agents.ts",
     "packages/cli/src/commands/check.ts",
     "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/doctor.ts",
     "packages/cli/src/commands/init/anaJsonSchema.ts",
     "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/src/commands/init/skills.ts",
     "packages/cli/src/commands/init/state.ts",
     "packages/cli/src/commands/platform.ts",
+    "packages/cli/src/commands/pr.ts",
     "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/setup.ts",
     "packages/cli/src/commands/symbol-index.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/commands/work.ts",
     "packages/cli/src/engine/sampling/proportionalSampler.ts",
-    "packages/cli/tests/commands/platform.test.ts"
+    "packages/cli/src/index.ts",
+    "packages/cli/tests/commands/check-dashboard.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/platform.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/commands/work-ci-mocked.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
   ],
   "commit_hygiene": [],
   "build-report-1": {
@@ -87,5 +100,13 @@
   "verify-data-1": {
     "saved_at": "2026-05-30T22:36:14.151Z",
     "hash": "sha256:1674144521692b4712cb5eef4a9181fd94b44cf9789bb6abc359a02785e023cb"
+  },
+  "build-report-2": {
+    "saved_at": "2026-05-30T23:44:04.327Z",
+    "hash": "sha256:487dcf97c29669bc9c9fb75795609d7a56cd77c841d65ea54b486bd38db5f99c"
+  },
+  "build-data-2": {
+    "saved_at": "2026-05-30T23:44:04.328Z",
+    "hash": "sha256:982b15c7ffc5cc006752ba3390921eb90aa1ccbcb4cf69b16736c9e275d7c0fe"
   }
 }

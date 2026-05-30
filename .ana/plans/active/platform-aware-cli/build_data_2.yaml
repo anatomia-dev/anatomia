@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Advisory pipeline check reads .saves.json directly instead of using determineStage() — stage field may be stale"
+    file: "packages/cli/src/commands/run.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "CLAUDE.md template still shows claude --agent syntax — deferred to Scope 2"
+    severity: observation
+    suggested_action: monitor
