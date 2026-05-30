@@ -40,5 +40,29 @@
         "hash": "sha256:e41f926f3fda1706ba4539ad570d2f50645af861d7b40c90ffce1d004a631c03"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-05-30T21:42:56.525Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-30T21:52:17.564Z",
+    "hash": "sha256:f486a357194046684d44d52f359edc78f405822011a166806e0f6e2405654b57"
+  },
+  "build-data": {
+    "saved_at": "2026-05-30T21:52:17.564Z",
+    "hash": "sha256:8c15f25cc1bc3481988ae82ac8115f33ea09077feb5778381fe35a9bdd8079f1"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/agents.ts",
+    "packages/cli/src/commands/check.ts",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/platform.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/symbol-index.ts",
+    "packages/cli/src/engine/sampling/proportionalSampler.ts",
+    "packages/cli/tests/commands/platform.test.ts"
+  ],
+  "commit_hygiene": []
 }
