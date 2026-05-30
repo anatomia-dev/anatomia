@@ -24,6 +24,7 @@ import { generateProofSummary, computeChainHealth, wrapJsonResponse, wrapJsonErr
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { isWorktreeDirectory, detectWorktreeSlug, worktreeExists, getWorktreeInfo, createWorktree, removeWorktree, getWorktreePath } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
+import { agentCommand } from './platform.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
 import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
@@ -81,7 +82,7 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
   }
 
   if (stage === 'ready-for-plan') {
-    return 'claude --agent ana-plan';
+    return agentCommand('plan');
   }
 
   if (stage === 'verify-in-progress') {
@@ -89,23 +90,23 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
   }
 
   if (stage === 'ready-for-build') {
-    return 'claude --agent ana-build';
+    return agentCommand('build');
   }
 
   if (stage === 'build-in-progress') {
-    return 'claude --agent ana-build';
+    return agentCommand('build');
   }
 
   if (stage === 'ready-for-verify') {
-    return 'claude --agent ana-verify';
+    return agentCommand('verify');
   }
 
   if (stage === 'ready-for-re-verify') {
-    return 'claude --agent ana-verify';
+    return agentCommand('verify');
   }
 
   if (stage === 'needs-fixes') {
-    return 'claude --agent ana-build';
+    return agentCommand('build');
   }
 
   if (stage === 'ready-to-merge') {
@@ -121,23 +122,23 @@ function getNextAction(stage: string, slug: string, _branchPrefix: string, artif
   }
 
   if (stage.includes('ready-for-build')) {
-    return 'claude --agent ana-build';
+    return agentCommand('build');
   }
 
   if (stage.includes('ready-for-re-verify')) {
-    return 'claude --agent ana-verify';
+    return agentCommand('verify');
   }
 
   if (stage.includes('ready-for-verify')) {
-    return 'claude --agent ana-verify';
+    return agentCommand('verify');
   }
 
   if (stage.includes('build-in-progress')) {
-    return 'claude --agent ana-build';
+    return agentCommand('build');
   }
 
   if (stage.includes('needs-fixes')) {
-    return 'claude --agent ana-build';
+    return agentCommand('build');
   }
 
   return '(unknown stage)';
@@ -184,7 +185,7 @@ function printHumanReadable(output: StatusOutput): void {
 
   if (output.items.length === 0) {
     printNotifications(output);
-    console.log(chalk.gray('No active work. Run: claude --agent ana to scope new work.'));
+    console.log(chalk.gray(`No active work. Run: ${agentCommand('')} to scope new work.`));
     return;
   }
 
@@ -263,7 +264,7 @@ function printHumanReadable(output: StatusOutput): void {
   }
 
   printNotifications(output);
-  console.log(chalk.gray('Scope new work: claude --agent ana'));
+  console.log(chalk.gray(`Scope new work: ${agentCommand('')}`));
 }
 
 /**
@@ -362,7 +363,7 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
         scanStale: scanFreshness?.isStale ? scanFreshness : null,
         items: [],
       });
-      console.log(chalk.gray('\nNo active work. Run: claude --agent ana to scope new work.'));
+      console.log(chalk.gray(`\nNo active work. Run: ${agentCommand('')} to scope new work.`));
     }
     return;
   }
@@ -871,7 +872,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     // Check if verify report exists
     if (!fs.existsSync(verifyReportPath)) {
       console.error(chalk.red(`Error: Phase ${phaseNum} has no verify report. Cannot complete.`));
-      console.error(chalk.gray('Run `claude --agent ana-verify` to verify first.'));
+      console.error(chalk.gray(`Run \`${agentCommand('verify')}\` to verify first.`));
       process.exit(1);
     }
 
@@ -1077,7 +1078,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     if (healthChange.changed && healthChange.details.length > 0) {
       let healthLine = `  Health: ${healthChange.details.join(' · ')}`;
       if (healthChange.triggers.includes('new_candidates')) {
-        healthLine += ' → claude --agent ana-learn';
+        healthLine += ` → ${agentCommand('learn')}`;
       } else if (healthChange.triggers.includes('trend_worsened')) {
         healthLine += ' → ana proof audit';
       }
@@ -1308,7 +1309,7 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
 
     await writeTimestamp(activePath, 'plan_started_at', 'ana-plan', true);
     commitSaves(projectRoot, slug, `[${slug}] Start plan phase`);
-    console.log(`Resuming \`${slug}\` — Plan phase. Run \`claude --agent ana-plan\`.`);
+    console.log(`Resuming \`${slug}\` — Plan phase. Run \`${agentCommand('plan')}\`.`);
     return;
   }
 

@@ -20,7 +20,7 @@ import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
 import { getCurrentBranch } from '../../utils/git-operations.js';
 import { isNonProductPath } from '../../engine/detectors/surfaces.js';
-import { getSkillsDirRel } from '../platform.js';
+import { getSkillsDirRel, agentCommand } from '../platform.js';
 
 /**
  * Prompt user for confirmation
@@ -1055,11 +1055,11 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
 
   console.log('  Next:');
   if (isNonNode && !initTestCmd) {
-    console.log(chalk.cyan('    claude --agent ana-setup') + '    Configure commands + enrich context (~10 min)');
-    console.log(chalk.cyan('    claude --agent ana') + '          Start working (after setup)');
+    console.log(chalk.cyan(`    ${agentCommand('setup')}`) + '       Configure commands + enrich context (~10 min)');
+    console.log(chalk.cyan(`    ${agentCommand('')}`) + '             Start working (after setup)');
   } else {
-    console.log(chalk.cyan('    claude --agent ana') + '          Start working (Ana knows your stack)');
-    console.log(chalk.cyan('    claude --agent ana-setup') + '    Enrich with your team\'s knowledge (optional, ~10 min)');
+    console.log(chalk.cyan(`    ${agentCommand('')}`) + '             Start working (Ana knows your stack)');
+    console.log(chalk.cyan(`    ${agentCommand('setup')}`) + '       Enrich with your team\'s knowledge (optional, ~10 min)');
   }
 
   // Commit-readiness indicator
