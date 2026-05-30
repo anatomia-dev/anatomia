@@ -728,6 +728,22 @@ Widget, Gadget, Thingamajig.
     expect(result.symbol).toContain('○');
   });
 
+  // @ana A026, A027
+  it('scaffold detection matches both old (claude --agent) and new (ana run setup) patterns', async () => {
+    const contextDir = path.join(tmpDir, '.ana', 'context');
+    await fs.mkdir(contextDir, { recursive: true });
+    // Use the NEW ana run setup pattern in scaffold text
+    await fs.writeFile(
+      path.join(contextDir, 'design-principles.md'),
+      `# Design Principles\n\n*Not yet captured. Run \`ana run setup\` to fill this.*\n`
+    );
+
+    const { checkContextForDashboard } = await import('../../src/commands/check.js');
+    const result = await checkContextForDashboard(tmpDir, 'design-principles.md');
+    // Must be detected as scaffold (○), not real content
+    expect(result.symbol).toContain('○');
+  });
+
   it('project-context with multiline comment in critical section reports empty', async () => {
     // The old dashboard used hasNonTemplateContent which didn't track
     // multiline HTML comment state, so a multiline comment was treated as

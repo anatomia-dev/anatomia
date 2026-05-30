@@ -238,6 +238,32 @@ describe('getPlatformFlags', () => {
   });
 });
 
+describe('scaffold detection dual-pattern', () => {
+  // @ana A026
+  it('isScaffoldTemplateLine matches claude --agent pattern', async () => {
+    // isScaffoldTemplateLine is private in check.ts. Verify by reading source
+    // for the dual-pattern condition.
+    const checkSource = await import('node:fs').then(f =>
+      f.readFileSync(
+        new URL('../../src/commands/check.ts', import.meta.url).pathname,
+        'utf-8'
+      )
+    );
+    expect(checkSource).toContain("trimmed.includes('Run `claude --agent ana-setup`')");
+  });
+
+  // @ana A027
+  it('isScaffoldTemplateLine matches ana run setup pattern', async () => {
+    const checkSource = await import('node:fs').then(f =>
+      f.readFileSync(
+        new URL('../../src/commands/check.ts', import.meta.url).pathname,
+        'utf-8'
+      )
+    );
+    expect(checkSource).toContain("trimmed.includes('Run `ana run setup`')");
+  });
+});
+
 describe('symbol-index exclusion patterns', () => {
   // @ana A017, A018
   it('ignorePatterns includes codex and agents patterns', async () => {

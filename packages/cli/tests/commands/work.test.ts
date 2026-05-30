@@ -176,7 +176,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-plan');
-      expect(output).toContain('claude --agent ana-plan');
+      expect(output).toContain('ana run plan');
     });
 
     it('scope + spec (no plan) → ready-for-plan', async () => {
@@ -203,7 +203,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-build');
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
     });
 
     it('with feature branch, no build_report → build-in-progress', async () => {
@@ -219,7 +219,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('build-in-progress');
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
@@ -237,7 +237,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-verify');
-      expect(output).toContain('claude --agent ana-verify');
+      expect(output).toContain('ana run verify');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
@@ -280,7 +280,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('needs-fixes');
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
@@ -876,7 +876,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       // Next action should NOT contain git checkout anymore
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
       expect(output).not.toContain('git checkout dev/');
     });
 
@@ -1461,7 +1461,7 @@ describe('ana work status', () => {
 
         console.error = originalError;
         const errorOutput = errors.join('\n');
-        expect(errorOutput).toContain('claude --agent ana-build');
+        expect(errorOutput).toContain('ana run build');
         expect(errorOutput).toContain('FAIL');
         mockExit.mockRestore();
       });
@@ -1511,7 +1511,7 @@ describe('ana work status', () => {
         console.error = originalError;
         const errorOutput = errors.join('\n');
         expect(errorOutput).toContain('FAIL');
-        expect(errorOutput).toContain('ana-build');
+        expect(errorOutput).toContain('ana run build');
         mockExit.mockRestore();
       });
 
@@ -3104,7 +3104,7 @@ file_changes:
 
         console.log = originalLog;
         const output = logs.join('\n');
-        expect(output).toContain('claude --agent ana-learn');
+        expect(output).toContain('ana run learn');
       });
 
       // @ana A012
@@ -3257,7 +3257,7 @@ file_changes:
         console.log = originalLog;
         const output = logs.join('\n');
         // new_candidates takes priority over trend_worsened
-        expect(output).toContain('claude --agent ana-learn');
+        expect(output).toContain('ana run learn');
         expect(output).not.toContain('ana proof audit');
       });
 

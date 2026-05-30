@@ -647,7 +647,7 @@ describe('ana init', () => {
       program.parse(['setup'], { from: 'user' });
 
       const output = logs.join('\n');
-      const agentIndex = output.indexOf('claude --agent ana-setup');
+      const agentIndex = output.indexOf('ana run setup');
       const guideIndex = output.indexOf(DOCS_SETUP_GUIDE);
       const subcommandsIndex = output.indexOf('Subcommands:');
       expect(agentIndex).toBeGreaterThan(-1);
