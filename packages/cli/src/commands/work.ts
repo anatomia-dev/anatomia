@@ -279,12 +279,12 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
 
   // Write session marker for think-time capture (best-effort, silent on failure)
   if (options.session) {
-    const claudePid = getClaudePid();
-    if (claudePid !== null) {
+    const agentPid = getAgentPid();
+    if (agentPid !== null) {
       try {
         const stateDir = path.join(projectRoot, '.ana', 'state');
         await fsPromises.mkdir(stateDir, { recursive: true });
-        const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+        const sessionPath = path.join(stateDir, `session-${agentPid}.json`);
         await fsPromises.writeFile(sessionPath, JSON.stringify({ timestamp: new Date().toISOString() }), 'utf-8');
       } catch {
         // Silent failure — session marker is best-effort
@@ -1241,9 +1241,9 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
 
     // Read and consume session file for think-time capture (delete-then-use)
     let sessionTimestamp: string | undefined;
-    const claudePid = getClaudePid();
-    if (claudePid !== null) {
-      const sessionPath = path.join(projectRoot, '.ana', 'state', `session-${claudePid}.json`);
+    const agentPid = getAgentPid();
+    if (agentPid !== null) {
+      const sessionPath = path.join(projectRoot, '.ana', 'state', `session-${agentPid}.json`);
       try {
         const raw = fs.readFileSync(sessionPath, 'utf-8');
         // Delete immediately — consumed regardless of parse/downstream outcome
@@ -1539,14 +1539,14 @@ function printExistingWorktree(
 }
 
 /**
- * Resolve the Claude Code process PID from the current process tree.
+ * Resolve the agent host process PID from the current process tree.
  *
- * Process tree: claude → shell → node. `process.ppid` gives the shell PID.
- * The Claude PID is the shell's parent: `ps -o ppid= -p ${process.ppid}`.
+ * Process tree: agent → shell → node. `process.ppid` gives the shell PID.
+ * The agent PID is the shell's parent: `ps -o ppid= -p ${process.ppid}`.
  *
- * @returns The Claude Code PID, or null if resolution fails
+ * @returns The agent host PID, or null if resolution fails
  */
-export function getClaudePid(): number | null {
+export function getAgentPid(): number | null {
   try {
     const result = spawnSync('ps', ['-o', 'ppid=', '-p', String(process.ppid)], {
       encoding: 'utf-8',

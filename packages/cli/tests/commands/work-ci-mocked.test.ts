@@ -31,9 +31,9 @@ vi.mock('node:child_process', async (importOriginal) => {
   };
 });
 
-import { completeWork, getClaudePid } from '../../src/commands/work.js';
+import { completeWork, getAgentPid } from '../../src/commands/work.js';
 
-describe('getClaudePid (mocked)', () => {
+describe('getAgentPid (mocked)', () => {
   beforeEach(() => {
     // Default: pass all spawnSync calls through to real implementation
     spawnMock.mockImplementation((...args: Parameters<typeof realSpawnSync>) => {
@@ -54,7 +54,7 @@ describe('getClaudePid (mocked)', () => {
       return realSpawnSync(command, args, options);
     }) as typeof realSpawnSync);
 
-    const pid = getClaudePid();
+    const pid = getAgentPid();
     expect(pid).toBe(12345);
   });
 
@@ -67,7 +67,7 @@ describe('getClaudePid (mocked)', () => {
       return realSpawnSync(command, args, options);
     }) as typeof realSpawnSync);
 
-    const pid = getClaudePid();
+    const pid = getAgentPid();
     expect(pid).toBeNull();
   });
 
@@ -80,7 +80,7 @@ describe('getClaudePid (mocked)', () => {
       return realSpawnSync(command, args, options);
     }) as typeof realSpawnSync);
 
-    const pid = getClaudePid();
+    const pid = getAgentPid();
     expect(pid).toBeNull();
   });
 });
