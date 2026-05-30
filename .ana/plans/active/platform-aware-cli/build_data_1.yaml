@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "A004 contract expects empty array → ['claude'] but schema spec doesn't transform valid empty arrays"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
