@@ -1,0 +1,312 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Platform-Aware CLI"
+
+assertions:
+  # --- Spec 1: Schema & Config ---
+  - id: A001
+    says: "Fresh projects get a default platform list of Claude"
+    block: "creates ana.json with platforms field"
+    target: "anaJson.platforms"
+    matcher: "equals"
+    value: ["claude"]
+
+  - id: A002
+    says: "Fresh projects get an empty platform flags object"
+    block: "creates ana.json with platformFlags field"
+    target: "anaJson.platformFlags"
+    matcher: "equals"
+    value: {}
+
+  - id: A003
+    says: "Missing platforms field defaults to Claude instead of crashing"
+    block: "schema defaults platforms to claude"
+    target: "parsed.platforms"
+    matcher: "equals"
+    value: ["claude"]
+
+  - id: A004
+    says: "Empty platforms array defaults to Claude instead of leaving empty"
+    block: "schema catches empty platforms array"
+    target: "parsed.platforms"
+    matcher: "equals"
+    value: ["claude"]
+
+  - id: A005
+    says: "A malformed flag entry for one platform does not wipe other platforms' flags"
+    block: "schema inner catch prevents cross-contamination"
+    target: "parsed.platformFlags.claude"
+    matcher: "equals"
+    value: ["--dangerously-skip-permissions"]
+
+  - id: A006
+    says: "User-set platforms survive re-initialization"
+    block: "preserveUserState preserves platforms"
+    target: "merged.platforms"
+    matcher: "equals"
+    value: ["claude", "codex"]
+
+  - id: A007
+    says: "User-set platformFlags survive re-initialization"
+    block: "preserveUserState preserves platformFlags"
+    target: "merged.platformFlags.claude"
+    matcher: "equals"
+    value: ["--dangerously-skip-permissions"]
+
+  - id: A008
+    says: "New platform fields are recognized by config set without warnings"
+    block: "KNOWN_FIELDS includes platforms and platformFlags"
+    target: "knownFields"
+    matcher: "contains"
+    value: "platforms"
+
+  - id: A009
+    says: "New platform fields are recognized by config set without warnings"
+    block: "KNOWN_FIELDS includes platforms and platformFlags"
+    target: "knownFields"
+    matcher: "contains"
+    value: "platformFlags"
+
+  # --- Spec 1: Platform Helpers ---
+  - id: A010
+    says: "Agent directory resolves to the Claude Code agents path"
+    block: "getAgentsDir returns correct path"
+    target: "result"
+    matcher: "contains"
+    value: ".claude/agents"
+
+  - id: A011
+    says: "Skills directory resolves to the Claude Code skills path"
+    block: "getSkillsDir returns correct path"
+    target: "result"
+    matcher: "contains"
+    value: ".claude/skills"
+
+  - id: A012
+    says: "Relative skills path works for glob patterns"
+    block: "getSkillsDirRel returns relative path"
+    target: "result"
+    matcher: "equals"
+    value: ".claude/skills"
+
+  # --- Spec 1: Exclusion Patterns ---
+  - id: A013
+    says: "Infrastructure commits include Codex directories when they exist"
+    block: "KNOWN_ROOTS includes codex and agents directories"
+    target: "knownRoots"
+    matcher: "contains"
+    value: ".codex/"
+
+  - id: A014
+    says: "Infrastructure commits include generic agent directories when they exist"
+    block: "KNOWN_ROOTS includes codex and agents directories"
+    target: "knownRoots"
+    matcher: "contains"
+    value: ".agents/"
+
+  - id: A015
+    says: "Scan sampling excludes Codex directories"
+    block: "proportionalSampler excludes codex"
+    target: "excludedPatterns"
+    matcher: "contains"
+    value: "**/.codex/**"
+
+  - id: A016
+    says: "Scan sampling excludes generic agent directories"
+    block: "proportionalSampler excludes agents"
+    target: "excludedPatterns"
+    matcher: "contains"
+    value: "**/.agents/**"
+
+  - id: A017
+    says: "Symbol index excludes Codex directories"
+    block: "symbol-index excludes codex"
+    target: "ignorePatterns"
+    matcher: "contains"
+    value: ".codex/**"
+
+  - id: A018
+    says: "Symbol index excludes generic agent directories"
+    block: "symbol-index excludes agents"
+    target: "ignorePatterns"
+    matcher: "contains"
+    value: ".agents/**"
+
+  # --- Spec 2: Display String Migration ---
+  - id: A019
+    says: "Pipeline status shows ana run instead of claude --agent for next actions"
+    block: "getNextAction returns ana run syntax for ready-for-plan"
+    target: "nextAction"
+    matcher: "equals"
+    value: "ana run plan"
+
+  - id: A020
+    says: "Pipeline status shows ana run instead of claude --agent for build stage"
+    block: "getNextAction returns ana run syntax for ready-for-build"
+    target: "nextAction"
+    matcher: "equals"
+    value: "ana run build"
+
+  - id: A021
+    says: "Pipeline status shows ana run instead of claude --agent for verify stage"
+    block: "getNextAction returns ana run syntax for ready-for-verify"
+    target: "nextAction"
+    matcher: "equals"
+    value: "ana run verify"
+
+  - id: A022
+    says: "Pipeline status shows ana run instead of claude --agent for needs-fixes stage"
+    block: "getNextAction returns ana run syntax for needs-fixes"
+    target: "nextAction"
+    matcher: "equals"
+    value: "ana run build"
+
+  - id: A023
+    says: "Pipeline status shows ana run instead of claude --agent for multi-phase build"
+    block: "getNextAction returns ana run syntax for phase-N ready-for-build"
+    target: "nextAction"
+    matcher: "equals"
+    value: "ana run build"
+
+  # --- Spec 2: agentCommand ---
+  - id: A024
+    says: "Agent command helper produces the correct run invocation for named agents"
+    block: "agentCommand returns ana run syntax"
+    target: "result"
+    matcher: "equals"
+    value: "ana run build"
+
+  - id: A025
+    says: "Running ana without an agent name invokes the Think agent"
+    block: "agentCommand with empty string returns ana run"
+    target: "result"
+    matcher: "equals"
+    value: "ana run"
+
+  # --- Spec 2: Scaffold Detection ---
+  - id: A026
+    says: "Scaffold detection recognizes the old Claude Code setup prompt"
+    block: "isScaffoldTemplateLine matches claude --agent pattern"
+    target: "result"
+    matcher: "truthy"
+
+  - id: A027
+    says: "Scaffold detection recognizes the new ana run setup prompt"
+    block: "isScaffoldTemplateLine matches ana run setup pattern"
+    target: "result"
+    matcher: "truthy"
+
+  # --- Spec 2: ana run command ---
+  - id: A028
+    says: "Ana run maps the build argument to claude --agent ana-build"
+    block: "ana run build spawns correct command"
+    target: "spawnArgs"
+    matcher: "contains"
+    value: "--agent"
+
+  - id: A029
+    says: "Ana run without arguments invokes the Think agent"
+    block: "ana run spawns claude --agent ana"
+    target: "spawnArgs"
+    matcher: "contains"
+    value: "ana"
+
+  - id: A030
+    says: "Platform flags from config are automatically appended to the agent command"
+    block: "ana run appends platformFlags"
+    target: "spawnArgs"
+    matcher: "contains"
+    value: "--dangerously-skip-permissions"
+
+  - id: A031
+    says: "Extra flags after -- are passed through to the underlying agent"
+    block: "ana run passes through -- args"
+    target: "spawnArgs"
+    matcher: "contains"
+    value: "--extra-flag"
+
+  - id: A032
+    says: "Platform flags containing --agent are rejected to prevent silent conflicts"
+    block: "ana run rejects --agent in platformFlags"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A033
+    says: "Running ana run without a project shows a helpful setup message"
+    block: "ana run errors without .ana directory"
+    target: "errorMessage"
+    matcher: "contains"
+    value: "ana init"
+
+  # --- Spec 2: Rename ---
+  - id: A034
+    says: "Process ID helper uses the platform-neutral name"
+    block: "getAgentPid is exported and callable"
+    target: "typeof getAgentPid"
+    matcher: "equals"
+    value: "function"
+
+  - id: A035
+    says: "The old Claude-specific process ID helper name no longer exists"
+    block: "getClaudePid export is removed"
+    target: "typeof getClaudePid"
+    matcher: "equals"
+    value: "undefined"
+
+file_changes:
+  # Spec 1
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/platform.ts"
+    action: create
+  - path: "packages/cli/src/commands/agents.ts"
+    action: modify
+  - path: "packages/cli/src/commands/check.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/commit.ts"
+    action: modify
+  - path: "packages/cli/src/engine/sampling/proportionalSampler.ts"
+    action: modify
+  - path: "packages/cli/src/commands/symbol-index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  # Spec 2
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/doctor.ts"
+    action: modify
+  - path: "packages/cli/src/commands/setup.ts"
+    action: modify
+  - path: "packages/cli/src/commands/pr.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/skills.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/run.ts"
+    action: create
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  # Test files
+  - path: "packages/cli/tests/commands/platform.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/run.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/check-dashboard.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "packages/cli/tests/e2e/init-flow.test.ts"
+    action: modify
