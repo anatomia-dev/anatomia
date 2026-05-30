@@ -337,6 +337,8 @@ export async function buildSymbolIndex(
     'coverage/**',
     '.ana/**',
     '.claude/**',
+    '.codex/**',
+    '.agents/**',
     '**/*.d.ts',
     '**/*.test.*',
     '**/*.spec.*',

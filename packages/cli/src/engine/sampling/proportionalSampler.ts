@@ -34,6 +34,8 @@ const GLOB_IGNORE = [
   '**/coverage/**',
   '**/.ana/**',
   '**/.claude/**',
+  '**/.codex/**',
+  '**/.agents/**',
   '**/*.d.ts',
   '**/.git/**',
   '**/.turbo/**',
