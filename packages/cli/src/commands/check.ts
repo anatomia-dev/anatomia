@@ -1199,7 +1199,7 @@ function isScaffoldTemplateLine(trimmed: string): boolean {
   if (
     trimmed.startsWith('*') &&
     trimmed.endsWith('*') &&
-    trimmed.includes('Run `claude --agent ana-setup`')
+    (trimmed.includes('Run `claude --agent ana-setup`') || trimmed.includes('Run `ana run setup`'))
   ) {
     return true;
   }
