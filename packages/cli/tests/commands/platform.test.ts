@@ -11,7 +11,9 @@
 
 import { describe, it, expect } from 'vitest';
 import * as path from 'node:path';
-import { getAgentsDir, getSkillsDir, getSkillsDirRel } from '../../src/commands/platform.js';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import { getAgentsDir, getSkillsDir, getSkillsDirRel, agentCommand, getPlatformFlags } from '../../src/commands/platform.js';
 import { AnaJsonSchema } from '../../src/commands/init/anaJsonSchema.js';
 
 describe('platform helpers', () => {
@@ -181,6 +183,58 @@ describe('proportionalSampler exclusion patterns', () => {
     );
     expect(samplerSource).toContain("'**/.codex/**'");
     expect(samplerSource).toContain("'**/.agents/**'");
+  });
+});
+
+describe('agentCommand', () => {
+  // @ana A024
+  it('returns ana run syntax for named agents', () => {
+    expect(agentCommand('build')).toBe('ana run build');
+    expect(agentCommand('plan')).toBe('ana run plan');
+    expect(agentCommand('verify')).toBe('ana run verify');
+    expect(agentCommand('setup')).toBe('ana run setup');
+    expect(agentCommand('learn')).toBe('ana run learn');
+  });
+
+  // @ana A025
+  it('returns ana run without trailing space for empty string', () => {
+    const result = agentCommand('');
+    expect(result).toBe('ana run');
+    expect(result).not.toMatch(/ $/);
+  });
+});
+
+describe('getPlatformFlags', () => {
+  it('returns flags for the active platform', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'platform-flags-'));
+    const anaDir = path.join(tempDir, '.ana');
+    fs.mkdirSync(anaDir, { recursive: true });
+    fs.writeFileSync(path.join(anaDir, 'ana.json'), JSON.stringify({
+      name: 'test',
+      platforms: ['claude'],
+      platformFlags: { claude: ['--dangerously-skip-permissions'] },
+    }));
+    expect(getPlatformFlags(tempDir)).toEqual(['--dangerously-skip-permissions']);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('returns empty array when ana.json missing', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'platform-flags-'));
+    expect(getPlatformFlags(tempDir)).toEqual([]);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('returns empty array when platformFlags has no entry for active platform', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'platform-flags-'));
+    const anaDir = path.join(tempDir, '.ana');
+    fs.mkdirSync(anaDir, { recursive: true });
+    fs.writeFileSync(path.join(anaDir, 'ana.json'), JSON.stringify({
+      name: 'test',
+      platforms: ['claude'],
+      platformFlags: {},
+    }));
+    expect(getPlatformFlags(tempDir)).toEqual([]);
+    fs.rmSync(tempDir, { recursive: true, force: true });
   });
 });
 
