@@ -72,5 +72,20 @@
   "build-data-1": {
     "saved_at": "2026-05-30T22:29:07.226Z",
     "hash": "sha256:8c15f25cc1bc3481988ae82ac8115f33ea09077feb5778381fe35a9bdd8079f1"
+  },
+  "verify_started_at": "2026-05-30T22:30:01.557Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:436b8bf1d8ab1928fc8e0954a90ac21c59f71739563d76c1b4f5203d1246f8f6",
+    "run_at": "2026-05-30T22:36:14.103Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-05-30T22:36:14.151Z",
+    "hash": "sha256:87cafa053b0e19213b5c05cf12646aa87122a2bea8e844ac18018cbfd0234c2f"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-05-30T22:36:14.151Z",
+    "hash": "sha256:1674144521692b4712cb5eef4a9181fd94b44cf9789bb6abc359a02785e023cb"
   }
 }

@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A004 contract assertion contradicted by implementation — schema .catch() does not fire on valid empty arrays"
+    file: "packages/cli/tests/commands/platform.test.ts"
+    line: 57
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004"]
+  - category: test
+    summary: "A001 test mis-tagged — tests schema preservation of explicit values, not fresh-project default"
+    file: "packages/cli/tests/commands/platform.test.ts"
+    line: 64
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A001"]
+  - category: test
+    summary: "Six assertions (A008-A009, A013-A018) use source-content inspection instead of behavioral tests"
+    file: "packages/cli/tests/commands/platform.test.ts"
+    line: 131
+    severity: debt
+    suggested_action: accept
+  - category: code
+    summary: "Residual hardcoded .claude/skills/ display string in check.ts not migrated to helper"
+    file: "packages/cli/src/commands/check.ts"
+    line: 1411
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Contract A004 value stale — Zod .catch() cannot intercept valid empty arrays, only parse errors"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004"]
