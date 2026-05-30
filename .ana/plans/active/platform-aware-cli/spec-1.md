@@ -42,9 +42,9 @@ Re-init of an existing project preserves user-set `platforms` and `platformFlags
 Place `platforms` after `surfaces` and before `coAuthor`. Place `platformFlags` immediately after `platforms`.
 
 ### `packages/cli/src/commands/init/state.ts` (modify)
-**What changes:** Add `platforms: ['claude']` and `platformFlags: {}` to the `anaConfig` object in `createAnaJson()`.
-**Pattern to follow:** The existing `branchPrefix: 'feature/'` line (line 564) in the `anaConfig` object literal.
-**Why:** Without this, fresh inits produce ana.json missing the new fields. The schema defaults would catch it on read, but the write side must match the read side (cross-check documented in schema header comment).
+**What changes:** Two changes: (1) Add `platforms: ['claude']` and `platformFlags: {}` to the `anaConfig` object in `createAnaJson()`. (2) Replace the hardcoded `.claude/skills/` display string at line 961 in init success output with a `getSkillsDirRel()` call. The value is identical today, but using the helper means Scope 2 gets correct display for non-CC platforms for free.
+**Pattern to follow:** The existing `branchPrefix: 'feature/'` line (line 564) in the `anaConfig` object literal. For the display string, it's a path.basename-style display — just swap the literal for the helper return value.
+**Why:** Without the schema fields, fresh inits produce ana.json missing the new fields. Without the display string change, Scope 2 would need to grep for another hardcoded `.claude/skills/` reference.
 
 Place `platforms` after the `surfaces` spread (line 561) and before `coAuthor` (line 562). Place `platformFlags` immediately after `platforms`.
 

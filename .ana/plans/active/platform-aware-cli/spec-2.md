@@ -137,7 +137,7 @@ Display string sites outside `getNextAction()`:
 **Why:** Work-proof error output is user-facing guidance.
 
 ### `packages/cli/src/commands/init/state.ts` (modify)
-**What changes:** Replace `claude --agent` display strings in init success output. Five sites in two clusters: (1) Line 961 `.claude/skills/` display string — leave unchanged, this is a literal path display, not an agent invocation. (2) Lines 1055-1059: four `claude --agent` strings in the "Next:" post-init output.
+**What changes:** Replace `claude --agent` display strings in init success output. Lines 1055-1059: four `claude --agent` strings in the "Next:" post-init output. (Line 961's `.claude/skills/` path display was already updated to use `getSkillsDirRel()` in Spec 1.)
 **Pattern to follow:** Existing `chalk.cyan()` formatting for the "Next:" lines.
 **Why:** Post-init output tells users what to run next. Must show `ana run` syntax.
 
