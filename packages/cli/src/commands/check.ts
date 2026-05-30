@@ -22,6 +22,7 @@ import { parseEngineResultPartial } from '../engine/types/engineResult-partial.j
 import { AnaJsonSchema, type AnaJson } from './init/anaJsonSchema.js';
 import { findProjectRoot } from '../utils/validators.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
+import { getSkillsDir } from './platform.js';
 
 /**
  * The 6 canonical sections of project-context.md.
@@ -793,7 +794,7 @@ export function checkSkillSections(content: string): { valid: boolean; missing: 
  * @returns Sorted array of skill directory names
  */
 export async function discoverSkills(cwd: string): Promise<string[]> {
-  const skillsDir = path.join(cwd, '.claude', 'skills');
+  const skillsDir = getSkillsDir(cwd);
   try {
     const entries = await fs.readdir(skillsDir, { withFileTypes: true });
     return entries.filter(e => e.isDirectory()).map(e => e.name).sort();
@@ -809,7 +810,7 @@ export async function discoverSkills(cwd: string): Promise<string[]> {
  * @returns Skill check result with symbol and description
  */
 export async function checkSkill(cwd: string, skillName: string): Promise<SkillCheckResult> {
-  const filePath = path.join(cwd, '.claude', 'skills', skillName, 'SKILL.md');
+  const filePath = path.join(getSkillsDir(cwd), skillName, 'SKILL.md');
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     const sections = checkSkillSections(content);
@@ -949,7 +950,7 @@ export async function checkConsistency(
   const commands = anaJson.commands as Record<string, unknown> | undefined;
 
   // Read skill Detected sections for cross-reference
-  const skillsDir = path.join(cwd, '.claude', 'skills');
+  const skillsDir = getSkillsDir(cwd);
 
   const isUnpopulated = (section: string | null): boolean => {
     if (!section) return true;
@@ -1259,7 +1260,6 @@ function fileHasRealContent(content: string): boolean {
 export async function validateSetupCompletion(cwd: string): Promise<SetupValidationResult> {
   const warnings: string[] = [];
   const contextPath = path.join(cwd, '.ana', 'context');
-  const claudePath = path.join(cwd, '.claude');
 
   // --- 1. CRITICAL: "What This Project Does" has real content ---
   let criticalSectionPopulated = false;
@@ -1298,7 +1298,7 @@ export async function validateSetupCompletion(cwd: string): Promise<SetupValidat
   skillsCalibrated = skills.length;
 
   for (const skill of skills) {
-    const filePath = path.join(claudePath, 'skills', skill, 'SKILL.md');
+    const filePath = path.join(getSkillsDir(cwd), skill, 'SKILL.md');
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       const { valid, missing } = checkSkillSections(content);
