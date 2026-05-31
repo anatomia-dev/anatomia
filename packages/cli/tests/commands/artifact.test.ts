@@ -5,6 +5,7 @@ import * as os from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey } from '../../src/commands/artifact.js';
+import { determineStage } from '../../src/commands/work-state.js';
 
 /**
  * Tests for `ana artifact save` command
@@ -4211,7 +4212,8 @@ findings:
     suggested_action: scope`;
   }
 
-  async function setupFeatureBranch(): Promise<string> {
+  async function setupFeatureBranch(options: { specs?: 'none' | 'single' | 'multi' } = {}): Promise<string> {
+    const specs = options.specs ?? 'none';
     execSync('git init', { cwd: tempDir, stdio: 'ignore' });
     execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
     execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
@@ -4225,12 +4227,270 @@ findings:
     );
     execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
     execSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
-    execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
 
     const slugDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+    if (specs !== 'none') {
+      await fs.mkdir(slugDir, { recursive: true });
+      const planContent = specs === 'multi'
+        ? `# Plan
+## Phases
+- [ ] Phase 1
+  Spec: spec-1.md
+- [ ] Phase 2
+  Spec: spec-2.md`
+        : `# Plan
+## Phases
+- [ ] Phase 1
+  Spec: spec.md`;
+      await fs.writeFile(path.join(slugDir, 'plan.md'), planContent, 'utf-8');
+      if (specs === 'multi') {
+        await fs.writeFile(path.join(slugDir, 'spec-1.md'), '# Spec 1\n\nfile_changes:\n  - path: test.ts\n    action: modify\n\n## Build Brief\nRules.\n', 'utf-8');
+        await fs.writeFile(path.join(slugDir, 'spec-2.md'), '# Spec 2\n\nfile_changes:\n  - path: test.ts\n    action: modify\n\n## Build Brief\nRules.\n', 'utf-8');
+      } else {
+        await fs.writeFile(path.join(slugDir, 'spec.md'), '# Spec\n\nfile_changes:\n  - path: test.ts\n    action: modify\n\n## Build Brief\nRules.\n', 'utf-8');
+      }
+      execSync('git add -A && git commit -m "add planning artifacts"', { cwd: tempDir, stdio: 'ignore' });
+    }
+
+    execSync('git checkout -b feature/test-slug', { cwd: tempDir, stdio: 'ignore' });
+
     await fs.mkdir(slugDir, { recursive: true });
     return slugDir;
   }
+
+  function getLastCommitMessage(): string {
+    return execSync('git log -1 --pretty=%B', { cwd: tempDir, encoding: 'utf-8' }).trim();
+  }
+
+  async function captureOutput(fn: () => void | Promise<void>): Promise<string> {
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const output: string[] = [];
+
+    console.log = (...args: unknown[]) => {
+      output.push(args.map(String).join(' '));
+    };
+    console.warn = (...args: unknown[]) => {
+      output.push(args.map(String).join(' '));
+    };
+
+    try {
+      await fn();
+      return output.join('\n');
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+    }
+  }
+
+  function captureError(fn: () => void): string {
+    const originalExit = process.exit;
+    const originalError = console.error;
+    const errors: string[] = [];
+
+    console.error = (...args: unknown[]) => {
+      errors.push(args.map(String).join(' '));
+    };
+    process.exit = ((code?: number) => {
+      throw new Error(`process.exit(${code})`);
+    }) as typeof process.exit;
+
+    try {
+      fn();
+      return errors.join('\n');
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('process.exit')) {
+        return errors.join('\n');
+      }
+      throw error;
+    } finally {
+      console.error = originalError;
+      process.exit = originalExit;
+    }
+  }
+
+  async function writeSaves(slugDir: string, saves: Record<string, { saved_at: string; hash?: string }>): Promise<void> {
+    await fs.writeFile(
+      path.join(slugDir, '.saves.json'),
+      JSON.stringify(Object.fromEntries(
+        Object.entries(saves).map(([key, value]) => [key, { hash: value.hash ?? `sha256:${key}`, saved_at: value.saved_at }])
+      ), null, 2),
+      'utf-8'
+    );
+  }
+
+  // @ana A001, A002, A003, A004
+  it('corrects unnumbered build report for first multi-phase build', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    const output = await captureOutput(() => saveArtifact('build-report', 'test-slug'));
+
+    expect(await fs.stat(path.join(slugDir, 'build_report_1.md'))).toBeDefined();
+    expect(output).toContain('saving as build-report-1');
+
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['build-report-1'].saved_at).toBeDefined();
+    expect(saves['build-data-1'].saved_at).toBeDefined();
+    expect(getLastCommitMessage()).toContain('Build report 1');
+  });
+
+  // @ana A005, A006, A007, A008
+  it('corrects unnumbered verify report for ready phase', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent(), 'utf-8');
+
+    const output = await captureOutput(() => saveArtifact('verify-report', 'test-slug'));
+
+    expect(await fs.stat(path.join(slugDir, 'verify_report_1.md'))).toBeDefined();
+    expect(output).toContain('saving as verify-report-1');
+
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['verify-report-1'].saved_at).toBeDefined();
+    expect(saves['verify-data-1'].saved_at).toBeDefined();
+    expect(getLastCommitMessage()).toContain('Verify report 1');
+  });
+
+  // @ana A009, A010
+  it('leaves single-spec build report unnumbered', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'single' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    const output = await captureOutput(() => saveArtifact('build-report', 'test-slug'));
+
+    expect(await fs.stat(path.join(slugDir, 'build_report.md'))).toBeDefined();
+    await expect(fs.stat(path.join(slugDir, 'build_report_1.md'))).rejects.toThrow();
+    expect(output).not.toContain('saving as build-report-1');
+
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['build-report'].saved_at).toBeDefined();
+    expect(saves['build-report-1']).toBeUndefined();
+  });
+
+  // @ana A011
+  it('advances status after corrected build report save', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+    await captureOutput(() => saveArtifact('build-report', 'test-slug'));
+
+    const workStatusOutput = determineStage('test-slug', {
+      scope: { exists: true, location: 'main' },
+      plan: { exists: true, location: 'main' },
+      specs: [
+        { file: 'spec-1.md', exists: true, location: 'main' },
+        { file: 'spec-2.md', exists: true, location: 'main' },
+      ],
+      buildReports: [{ file: 'build_report_1.md', exists: true, location: 'feature/test-slug' }],
+      verifyReports: [],
+    }, 'feature/test-slug', tempDir);
+    expect(workStatusOutput).toContain('phase-1-ready-for-verify');
+  });
+
+  // @ana A012, A013
+  it('renames unnumbered build report after correcting type', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    const output = await captureOutput(() => saveArtifact('build-report', 'test-slug'));
+    const normalizedOutput = output.replaceAll('→', '->');
+
+    expect(normalizedOutput).toContain('build_report.md -> build_report_1.md');
+    expect(normalizedOutput).toContain('build_data.yaml -> build_data_1.yaml');
+    await expect(fs.stat(path.join(slugDir, 'build_report.md'))).rejects.toThrow();
+    await expect(fs.stat(path.join(slugDir, 'build_data.yaml'))).rejects.toThrow();
+  });
+
+  // @ana A014
+  it('corrects fix-cycle build report to failed phase', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), '# Verify Report\n\n**Result:** FAIL\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_report.md'), '# Build Report\n\nfix build\n\n## Deviations\nNone.\n\n## Open Issues\nNone.\n\n## Acceptance Criteria\nAll met.\n\n## PR Summary\nReady.', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+    await writeSaves(slugDir, {
+      'build-report-1': { saved_at: '2026-01-01T10:00:00Z' },
+      'verify-report-1': { saved_at: '2026-01-01T11:00:00Z' },
+    });
+
+    await captureOutput(() => saveArtifact('build-report', 'test-slug'));
+
+    const content = await fs.readFile(path.join(slugDir, 'build_report_1.md'), 'utf-8');
+    expect(content).toContain('fix build');
+    await expect(fs.stat(path.join(slugDir, 'build_report_2.md'))).rejects.toThrow();
+  });
+
+  // @ana A015
+  it('corrects fix-cycle verify report to failed phase', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), '# Verify Report\n\n**Result:** FAIL\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report.md'), '# Verify Report\n\nfix verify\n\n**Result:** PASS\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_data.yaml'), getValidVerifyDataContent(), 'utf-8');
+    await writeSaves(slugDir, {
+      'verify-report-1': { saved_at: '2026-01-01T10:00:00Z' },
+      'build-report-1': { saved_at: '2026-01-01T11:00:00Z' },
+    });
+
+    await captureOutput(() => saveArtifact('verify-report', 'test-slug'));
+
+    const content = await fs.readFile(path.join(slugDir, 'verify_report_1.md'), 'utf-8');
+    expect(content).toContain('fix verify');
+    await expect(fs.stat(path.join(slugDir, 'verify_report_2.md'))).rejects.toThrow();
+  });
+
+  // @ana A016
+  it('preserves explicit numbered report type', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report_2.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_2.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    const output = await captureOutput(() => saveArtifact('build-report-2', 'test-slug'));
+
+    expect(await fs.stat(path.join(slugDir, 'build_report_2.md'))).toBeDefined();
+    expect(output).not.toContain('saving as build-report');
+    expect(getLastCommitMessage()).toContain('Build report 2');
+  });
+
+  // @ana A017
+  it('errors when no multi-phase report target can be inferred', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report_1.md'), '# Verify Report\n\n**Result:** PASS\n', 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_report_2.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'verify_report_2.md'), '# Verify Report\n\n**Result:** PASS\n', 'utf-8');
+
+    const error = captureError(() => saveArtifact('build-report', 'test-slug'));
+    expect(error).toContain('Cannot infer a target phase');
+  });
+
+  // @ana A018
+  it('save-all still discovers numbered reports by filename', async () => {
+    const slugDir = await setupFeatureBranch({ specs: 'multi' });
+
+    await fs.writeFile(path.join(slugDir, 'build_report_1.md'), getValidBuildReportContent(), 'utf-8');
+    await fs.writeFile(path.join(slugDir, 'build_data_1.yaml'), getValidBuildDataContent(), 'utf-8');
+
+    const output = await captureOutput(() => saveAllArtifacts('test-slug'));
+
+    expect(output).toContain('Build report 1');
+    const saves = JSON.parse(await fs.readFile(path.join(slugDir, '.saves.json'), 'utf-8'));
+    expect(saves['build-report-1'].saved_at).toBeDefined();
+  });
 
   // @ana A004
   it('auto-rename overwrites numbered with unnumbered content during fix cycle', async () => {
