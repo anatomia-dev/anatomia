@@ -283,7 +283,7 @@ describe('ana run', () => {
       const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
       const cmd = spawnCall![0] as string;
-      expect(cmd).toContain('exec');
+      expect(cmd).not.toContain('exec');
       expect(cmd).toContain('--model');
       expect(cmd).toContain('gpt-5.5');
       expect(cmd).toContain('--sandbox');
@@ -313,24 +313,24 @@ describe('ana run', () => {
       expect(cmd).not.toContain('exec');
     });
 
-    it('uses exec mode for Plan agent', () => {
+    it('uses interactive mode for Plan agent', () => {
       createCodexProject();
       runAndGetExit('plan');
 
       const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
       const cmd = spawnCall![0] as string;
-      expect(cmd).toContain('exec');
+      expect(cmd).not.toContain('exec');
     });
 
-    it('uses exec mode for Verify agent', () => {
+    it('uses interactive mode for Verify agent', () => {
       createCodexProject();
       runAndGetExit('verify');
 
       const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
       const cmd = spawnCall![0] as string;
-      expect(cmd).toContain('exec');
+      expect(cmd).not.toContain('exec');
     });
 
     // @ana A035
@@ -418,12 +418,15 @@ describe('ana run', () => {
       expect(fs.existsSync(learnToml)).toBe(false);
     });
 
-    it('prints launch message for non-interactive Codex agents', () => {
+    it('all Codex agents use interactive mode (no exec)', () => {
       createCodexProject();
       runAndGetExit('build');
 
-      const logOutput = logSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
-      expect(logOutput).toContain('Launching ana-build on Codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
+      expect(spawnCall).toBeDefined();
+      const cmd = spawnCall![0] as string;
+      expect(cmd).not.toContain('exec');
+      expect(cmd).toContain('developer_instructions');
     });
   });
 

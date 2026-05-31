@@ -47,7 +47,10 @@ const AGENT_MAP: Record<string, string> = {
  * conversation. Non-interactive agents use `codex exec` with
  * developer_instructions piped via `$(cat)`.
  */
-const INTERACTIVE_AGENTS = new Set(['', 'setup']);
+// All Codex agents run in interactive TUI mode — same experience as Claude Code.
+// codex exec was attempted but it's single-turn (fire and forget), which
+// doesn't work for pipeline agents that need to read files, write code,
+// run tests, and iterate.
 
 /** Platforms recognized by ana run. Unknown values are rejected. */
 const KNOWN_PLATFORMS = new Set(['claude', 'codex']);
@@ -189,39 +192,20 @@ function dispatchToCodex(
     process.exit(1);
   }
 
-  const isInteractive = INTERACTIVE_AGENTS.has(agentSuffix);
-
   // Read platform flags for codex
   const flags = getPlatformFlags(projectRoot, 'codex');
 
-  if (isInteractive) {
-    // Interactive mode: build as a single shell string so $(cat) expands correctly
-    // The developer_instructions value contains the entire agent prompt — shell must
-    // handle the expansion as one quoted argument, not split on whitespace.
-    const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
-    const cmd = `codex --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr}`;
+  // All agents run in interactive TUI mode — same experience as Claude Code.
+  const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
+  const cmd = `codex --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr}`;
 
-    const result = spawnSync(cmd, {
-      stdio: 'inherit',
-      cwd: projectRoot,
-      shell: true,
-    });
+  const result = spawnSync(cmd, {
+    stdio: 'inherit',
+    cwd: projectRoot,
+    shell: true,
+  });
 
-    process.exit(result.status ?? 1);
-  } else {
-    // Non-interactive mode: build as a single shell string so $(cat) expands correctly
-    console.log(`Launching ${agentName} on Codex...`);
-    const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
-    const cmd = `codex exec --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr} "You are running in non-interactive mode. Do NOT ask questions or wait for confirmation — complete the entire task autonomously. Follow your developer_instructions. Start by running ana work status, then do all the work your role requires, and save all artifacts before exiting."`.trim();
-
-    const result = spawnSync(cmd, {
-      stdio: 'inherit',
-      cwd: projectRoot,
-      shell: true,
-    });
-
-    process.exit(result.status ?? 1);
-  }
+  process.exit(result.status ?? 1);
 }
 
 /**
