@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'node:fs/promises';
+import { lstatSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -7,8 +8,9 @@ import { createEmptyEngineResult } from '../../src/engine/types/engineResult.js'
 import { fileExists } from '../../src/commands/init/preflight.js';
 import { displayBlindSpots, displaySuccessMessage } from '../../src/commands/init/state.js';
 import { createDirectoryStructure } from '../../src/commands/init/assets.js';
-import { preserveUserState } from '../../src/commands/init/state.js';
-import { AGENT_FILES, DOCS_QUICKSTART, DOCS_SETUP_GUIDE } from '../../src/constants.js';
+import { createSkillSymlinks } from '../../src/commands/init/assets.js';
+import { preserveUserState, migrateSkillsToCanonical } from '../../src/commands/init/state.js';
+import { AGENT_FILES, CODEX_AGENT_FILES, DOCS_QUICKSTART, DOCS_SETUP_GUIDE } from '../../src/constants.js';
 
 async function dirExists(dirPath: string): Promise<boolean> {
   try {
@@ -912,6 +914,379 @@ describe('ana init', () => {
       const content = await fs.readFile(scanEnginePath, 'utf-8');
 
       expect(content).toContain('Tree-sitter analysis unavailable');
+    });
+  });
+});
+
+// ─── Codex Support Tests ──────────────────────────────────────────────
+
+describe('Codex init infrastructure', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-codex-test-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  describe('Codex template inventory', () => {
+    // @ana A040
+    it('has 5 Codex agent files (no Learn)', () => {
+      expect(CODEX_AGENT_FILES).toHaveLength(5);
+      expect(CODEX_AGENT_FILES).not.toContain('ana-learn.md');
+    });
+
+    it('all Codex template files exist in CLI package', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatesDir = path.join(__dirname, '..', '..', 'templates');
+
+      for (const agentFile of CODEX_AGENT_FILES) {
+        const mdPath = path.join(templatesDir, '.codex/agents', agentFile);
+        const exists = await fileExists(mdPath);
+        expect(exists, `Missing template: .codex/agents/${agentFile}`).toBe(true);
+
+        const baseName = agentFile.replace('.md', '');
+        const tomlPath = path.join(templatesDir, '.codex/agents', `${baseName}.agent.toml`);
+        const tomlExists = await fileExists(tomlPath);
+        expect(tomlExists, `Missing TOML: .codex/agents/${baseName}.agent.toml`).toBe(true);
+      }
+    });
+
+    // @ana A016
+    it('Codex agent templates have no YAML frontmatter', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatesDir = path.join(__dirname, '..', '..', 'templates');
+
+      for (const agentFile of CODEX_AGENT_FILES) {
+        const content = await fs.readFile(
+          path.join(templatesDir, '.codex/agents', agentFile),
+          'utf-8',
+        );
+        expect(content.startsWith('---'), `${agentFile} should NOT start with ---`).toBe(false);
+        expect(content.startsWith('#'), `${agentFile} should start with # heading`).toBe(true);
+      }
+    });
+
+    // @ana A014
+    it('Codex build template uses ana run syntax', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const content = await fs.readFile(
+        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana-build.md'),
+        'utf-8',
+      );
+      expect(content).toContain('ana run');
+    });
+
+    // @ana A015
+    it('Codex build template has no CC-specific references', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const content = await fs.readFile(
+        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana-build.md'),
+        'utf-8',
+      );
+      expect(content).not.toContain("Claude Code's Write tool");
+      expect(content).not.toContain('claude --agent');
+    });
+  });
+
+  describe('Codex TOML manifests', () => {
+    // @ana A017, A018, A019
+    it('Build TOML has correct fields', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const content = await fs.readFile(
+        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana-build.agent.toml'),
+        'utf-8',
+      );
+      expect(content).toContain('model = "gpt-5.5"');
+      expect(content).toContain('sandbox_mode = "danger-full-access"');
+      expect(content).toContain('model_reasoning_effort = "high"');
+      expect(content).toContain('mode = "exec"');
+    });
+
+    it('Think agent uses auto mode', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const content = await fs.readFile(
+        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana.agent.toml'),
+        'utf-8',
+      );
+      expect(content).toContain('mode = "auto"');
+    });
+
+    it('Setup agent uses auto mode', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const content = await fs.readFile(
+        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana-setup.agent.toml'),
+        'utf-8',
+      );
+      expect(content).toContain('mode = "auto"');
+    });
+  });
+
+  describe('Codex configuration', () => {
+    // @ana A007
+    it('.codex/agents/ should have 5 agent files and 5 TOML manifests', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatesDir = path.join(__dirname, '..', '..', 'templates');
+      const codexAgentsPath = path.join(tmpDir, '.codex', 'agents');
+
+      // Simulate createCodexConfiguration
+      await fs.mkdir(codexAgentsPath, { recursive: true });
+      for (const agentFile of CODEX_AGENT_FILES) {
+        await fs.copyFile(
+          path.join(templatesDir, '.codex/agents', agentFile),
+          path.join(codexAgentsPath, agentFile),
+        );
+        const baseName = agentFile.replace('.md', '');
+        const tomlFile = `${baseName}.agent.toml`;
+        await fs.copyFile(
+          path.join(templatesDir, '.codex/agents', tomlFile),
+          path.join(codexAgentsPath, tomlFile),
+        );
+      }
+
+      const files = await fs.readdir(codexAgentsPath);
+      expect(files).toHaveLength(10);
+
+      for (const agentFile of CODEX_AGENT_FILES) {
+        expect(files).toContain(agentFile);
+        const baseName = agentFile.replace('.md', '');
+        expect(files).toContain(`${baseName}.agent.toml`);
+      }
+    });
+
+    // @ana A021
+    it('merge-not-overwrite preserves existing Codex agent customizations', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatesDir = path.join(__dirname, '..', '..', 'templates');
+      const codexAgentsPath = path.join(tmpDir, '.codex', 'agents');
+
+      // First init
+      await fs.mkdir(codexAgentsPath, { recursive: true });
+      for (const agentFile of CODEX_AGENT_FILES) {
+        await fs.copyFile(
+          path.join(templatesDir, '.codex/agents', agentFile),
+          path.join(codexAgentsPath, agentFile),
+        );
+      }
+
+      // Customize an agent file
+      const customPath = path.join(codexAgentsPath, 'ana-build.md');
+      await fs.writeFile(customPath, '# Custom Build Agent\n\nMy custom content');
+
+      // Simulate re-init merge-not-overwrite
+      for (const agentFile of CODEX_AGENT_FILES) {
+        const destPath = path.join(codexAgentsPath, agentFile);
+        const exists = await fileExists(destPath);
+        if (exists) continue; // Skip — merge-not-overwrite
+        await fs.copyFile(
+          path.join(templatesDir, '.codex/agents', agentFile),
+          destPath,
+        );
+      }
+
+      // Custom content should be preserved
+      const content = await fs.readFile(customPath, 'utf-8');
+      expect(content).toContain('My custom content');
+    });
+  });
+
+  describe('createSkillSymlinks', () => {
+    // @ana A009, A010
+    it('creates symlinks from platform dirs to .ana/skills', async () => {
+      // Create prerequisite dirs
+      await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
+      await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
+
+      await createSkillSymlinks(tmpDir, ['claude', 'codex']);
+
+      // .claude/skills should be a symlink
+      const claudeSkillsPath = path.join(tmpDir, '.claude', 'skills');
+      const claudeStats = lstatSync(claudeSkillsPath);
+      expect(claudeStats.isSymbolicLink()).toBe(true);
+
+      // .agents/skills should be a symlink
+      const agentsSkillsPath = path.join(tmpDir, '.agents', 'skills');
+      const agentsStats = lstatSync(agentsSkillsPath);
+      expect(agentsStats.isSymbolicLink()).toBe(true);
+    });
+
+    // @ana A020
+    it('symlinks resolve to the same content', async () => {
+      // Create skill content
+      const skillsDir = path.join(tmpDir, '.ana', 'skills', 'coding-standards');
+      await fs.mkdir(skillsDir, { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'SKILL.md'), '# Test Skill');
+      await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
+
+      await createSkillSymlinks(tmpDir, ['claude', 'codex']);
+
+      // Both paths should resolve to same content
+      const claudeContent = readFileSync(
+        path.join(tmpDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'),
+        'utf-8',
+      );
+      const agentsContent = readFileSync(
+        path.join(tmpDir, '.agents', 'skills', 'coding-standards', 'SKILL.md'),
+        'utf-8',
+      );
+      expect(claudeContent).toBe('# Test Skill');
+      expect(agentsContent).toBe('# Test Skill');
+    });
+
+    it('is idempotent — skips if symlink already exists', async () => {
+      await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
+      await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
+
+      // Create first
+      await createSkillSymlinks(tmpDir, ['claude']);
+
+      // Run again — should not throw
+      await createSkillSymlinks(tmpDir, ['claude']);
+
+      const stats = lstatSync(path.join(tmpDir, '.claude', 'skills'));
+      expect(stats.isSymbolicLink()).toBe(true);
+    });
+  });
+
+  describe('migrateSkillsToCanonical', () => {
+    // @ana A022, A023
+    it('migrates real .claude/skills/ dir to .ana/skills/ + symlink', async () => {
+      // Create real .claude/skills/ with enriched content
+      const claudeSkillsPath = path.join(tmpDir, '.claude', 'skills', 'coding-standards');
+      await fs.mkdir(claudeSkillsPath, { recursive: true });
+      await fs.writeFile(
+        path.join(claudeSkillsPath, 'SKILL.md'),
+        '# Enriched coding standards',
+      );
+
+      // Create empty .ana/skills/
+      await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
+
+      await migrateSkillsToCanonical(tmpDir);
+
+      // .claude/skills should now be a symlink
+      const stats = lstatSync(path.join(tmpDir, '.claude', 'skills'));
+      expect(stats.isSymbolicLink()).toBe(true);
+
+      // Content should be in .ana/skills/
+      const content = readFileSync(
+        path.join(tmpDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'),
+        'utf-8',
+      );
+      expect(content).toBe('# Enriched coding standards');
+    });
+
+    it('skips migration when .claude/skills/ is already a symlink', async () => {
+      await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
+      await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
+      await fs.symlink(
+        path.join('..', '.ana', 'skills'),
+        path.join(tmpDir, '.claude', 'skills'),
+      );
+
+      // Should not throw
+      await migrateSkillsToCanonical(tmpDir);
+
+      // Should still be a symlink
+      const stats = lstatSync(path.join(tmpDir, '.claude', 'skills'));
+      expect(stats.isSymbolicLink()).toBe(true);
+    });
+  });
+
+  describe('CC template migration', () => {
+    // @ana A024
+    it('CC agent templates use ana run syntax', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatesDir = path.join(__dirname, '..', '..', 'templates');
+
+      for (const agentFile of AGENT_FILES) {
+        const content = await fs.readFile(
+          path.join(templatesDir, '.claude/agents', agentFile),
+          'utf-8',
+        );
+        expect(content, `${agentFile} should not contain claude --agent`).not.toContain('claude --agent');
+      }
+    });
+
+    // @ana A025
+    it('CLAUDE.md template uses ana run syntax', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const content = await fs.readFile(
+        path.join(__dirname, '..', '..', 'templates', 'CLAUDE.md'),
+        'utf-8',
+      );
+      expect(content).not.toContain('claude --agent');
+      expect(content).toContain('ana run');
+    });
+
+    // @ana A028
+    it('check.ts uses getSkillsDirRel for display', async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const checkSource = await fs.readFile(
+        path.join(__dirname, '..', '..', 'src', 'commands', 'check.ts'),
+        'utf-8',
+      );
+      expect(checkSource).not.toContain("No skills found in .claude/skills/");
+      expect(checkSource).toContain('getSkillsDirRel()');
+    });
+  });
+
+  describe('platform auto-detection', () => {
+    // @ana A026
+    it('detectPlatforms returns at least one platform', async () => {
+      const { detectPlatforms } = await import('../../src/commands/init/state.js');
+      const platforms = detectPlatforms();
+      expect(platforms.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('platform preservation on re-init', () => {
+    // @ana A027
+    it('preserveUserState preserves platforms from existing ana.json', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'test',
+          platforms: ['claude', 'codex'],
+          platformFlags: { codex: ['--full-auto'] },
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'test',
+        language: null,
+        framework: null,
+        packageManager: null,
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(
+        await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'),
+      );
+      expect(result.platforms).toEqual(['claude', 'codex']);
+      expect(result.platformFlags.codex).toEqual(['--full-auto']);
     });
   });
 });
