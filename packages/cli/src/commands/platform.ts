@@ -71,17 +71,6 @@ export function agentCommand(agentSuffix: string): string {
 }
 
 /**
- * Read platform flags for the active platform from ana.json.
- *
- * Reads `platformFlags[activePlatform]` from `.ana/ana.json` at the
- * given project root. Returns an empty array on any failure (missing
- * file, parse error, missing field) — consistent with the fail-soft
- * convention used throughout the CLI.
- *
- * @param cwd - Project root directory
- * @returns Array of flag strings for the active platform
- */
-/**
  * Read platform flags for a specific or active platform from ana.json.
  *
  * When `platform` is provided, reads `platformFlags[platform]` directly.
