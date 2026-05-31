@@ -194,14 +194,25 @@ function dispatchToCodex(
   // Read platform flags for codex
   const flags = getPlatformFlags(projectRoot, 'codex');
 
-  // All agents run in interactive TUI mode — same experience as Claude Code.
-  const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
-  const cmd = `codex --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr}`;
+  // Read prompt file content directly — no shell expansion, no $(cat),
+  // no command injection risk. The content is passed as a single argv
+  // entry to codex's -c flag. Validated with 29KB prompts.
+  const promptContent = fs.readFileSync(promptPath, 'utf-8');
 
-  const result = spawnSync(cmd, {
+  // All agents run in interactive TUI mode — same experience as Claude Code.
+  // Uses spawnSync with array args (no shell: true) — matches the Claude
+  // dispatch pattern and eliminates the shell injection class from v1.0.1.
+  const args = [
+    '--model', model,
+    '--sandbox', sandboxMode,
+    '-c', `developer_instructions=${promptContent}`,
+    ...flags,
+    ...passthroughArgs,
+  ];
+
+  const result = spawnSync('codex', args, {
     stdio: 'inherit',
     cwd: projectRoot,
-    shell: true,
   });
 
   process.exit(result.status ?? 1);
