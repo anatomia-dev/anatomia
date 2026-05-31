@@ -1,0 +1,23 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Phase inference adds a second .saves.json reader instead of sharing the existing metadata read path"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 498
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A003", "A007", "A014", "A015"]
+  - category: test
+    summary: "Work-status progression test calls determineStage with constructed state instead of exercising ana work status discovery"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 4385
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A011"]
+  - category: test
+    summary: "No-target error test asserts only the headline message, not the exit code or explicit numbered-command guidance"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 4477
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A017"]

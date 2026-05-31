@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "A011 is verified through determineStage rather than full getWorkStatus output because the artifact test fixture does not model remote discovery cleanly"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Workspace lint still reports pre-existing warnings outside this build's changed lines"
+    severity: debt
+    suggested_action: scope

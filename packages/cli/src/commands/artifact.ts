@@ -495,6 +495,77 @@ function parseArtifactType(type: string): ArtifactTypeInfo | null {
   return { category, fileName, displayName, baseType, artifactType: type };
 }
 
+function readSaveMetadata(slugDir: string): Record<string, SaveMetadata> {
+  const savesPath = path.join(slugDir, '.saves.json');
+  if (!fs.existsSync(savesPath)) return {};
+
+  try {
+    return JSON.parse(fs.readFileSync(savesPath, 'utf-8')) as Record<string, SaveMetadata>;
+  } catch {
+    return {};
+  }
+}
+
+function getPhaseSavedAt(saves: Record<string, SaveMetadata>, key: string, phase: number): string | undefined {
+  return (saves[`${key}-${phase}`] ?? (phase === 1 ? saves[key] : undefined))?.saved_at;
+}
+
+function buildWasSavedAfterVerify(saves: Record<string, SaveMetadata>, phase: number): boolean {
+  const buildSavedAt = getPhaseSavedAt(saves, 'build-report', phase);
+  const verifySavedAt = getPhaseSavedAt(saves, 'verify-report', phase);
+  return Boolean(buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt));
+}
+
+function readLocalVerifyResult(filePath: string): 'PASS' | 'FAIL' | 'unknown' {
+  if (!fs.existsSync(filePath)) return 'unknown';
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
+  if (!match?.[1]) return 'unknown';
+  return match[1].toUpperCase() as 'PASS' | 'FAIL';
+}
+
+function getNumberedSpecPhases(slugDir: string): number[] {
+  if (!fs.existsSync(slugDir)) return [];
+
+  return fs.readdirSync(slugDir)
+    .map(entry => entry.match(/^spec-(\d+)\.md$/)?.[1])
+    .filter((phase): phase is string => Boolean(phase))
+    .map(phase => parseInt(phase, 10))
+    .sort((a, b) => a - b);
+}
+
+function inferMultiPhaseReportType(type: string, projectRoot: string, slug: string): string | null {
+  if (type !== 'build-report' && type !== 'verify-report') return type;
+
+  const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+  const phases = getNumberedSpecPhases(slugDir);
+  if (phases.length === 0) return type;
+
+  const saves = readSaveMetadata(slugDir);
+
+  for (const phase of phases) {
+    const buildPath = path.join(slugDir, `build_report_${phase}.md`);
+    const verifyPath = path.join(slugDir, `verify_report_${phase}.md`);
+    const hasBuild = fs.existsSync(buildPath);
+    const hasVerify = fs.existsSync(verifyPath);
+    const verifyResult = hasVerify ? readLocalVerifyResult(verifyPath) : 'unknown';
+
+    if (type === 'build-report') {
+      if (!hasBuild) return `build-report-${phase}`;
+      if (verifyResult === 'FAIL' && !buildWasSavedAfterVerify(saves, phase)) {
+        return `build-report-${phase}`;
+      }
+    } else if (hasBuild) {
+      if (!hasVerify) return `verify-report-${phase}`;
+      if (verifyResult === 'FAIL' && buildWasSavedAfterVerify(saves, phase)) {
+        return `verify-report-${phase}`;
+      }
+    }
+  }
+
+  return null;
+}
+
 
 
 /**
@@ -686,7 +757,7 @@ export function saveArtifact(type: string, slug: string): void {
   }
 
   // 1. Parse type
-  const typeInfo = parseArtifactType(type);
+  let typeInfo = parseArtifactType(type);
   if (!typeInfo) {
     console.error(chalk.red(`Error: Unknown artifact type \`${type}\`.`));
     console.error(chalk.gray('Valid types: scope, plan, spec, spec-N, contract, build-report, build-report-N, verify-report, verify-report-N'));
@@ -695,6 +766,20 @@ export function saveArtifact(type: string, slug: string): void {
 
   // 2. Resolve project root early — needed for readArtifactBranch and throughout
   const projectRoot = findProjectRoot();
+
+  const correctedType = inferMultiPhaseReportType(type, projectRoot, slug);
+  if (!correctedType) {
+    console.error(chalk.red(`Error: Cannot infer a target phase for ${type} on multi-phase work item \`${slug}\`.`));
+    console.error(chalk.gray(`Run \`ana work status\` or use an explicit numbered type like \`ana artifact save ${type}-2 ${slug}\`.`));
+    process.exit(1);
+  }
+  if (correctedType !== type) {
+    const correctedTypeInfo = parseArtifactType(correctedType);
+    if (correctedTypeInfo) {
+      console.warn(chalk.yellow(`⚠ ${type} is unnumbered for a multi-phase work item; saving as ${correctedType}.`));
+      typeInfo = correctedTypeInfo;
+    }
+  }
 
   // 3. Read artifactBranch from ana.json
   const artifactBranch = readArtifactBranch(projectRoot);
@@ -970,7 +1055,7 @@ export function saveArtifact(type: string, slug: string): void {
     }
 
     // Special case: verify-report also stages plan.md if it exists
-    if (type.startsWith('verify-report')) {
+    if (typeInfo.baseType === 'verify-report') {
       const relPlanPath = path.join('.ana', 'plans', 'active', slug, 'plan.md');
       if (fs.existsSync(path.join(projectRoot, relPlanPath))) {
         runGit(['add', relPlanPath], { cwd: projectRoot });

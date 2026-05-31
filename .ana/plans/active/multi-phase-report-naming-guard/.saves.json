@@ -18,5 +18,35 @@
   "spec": {
     "saved_at": "2026-05-31T18:50:19.810Z",
     "hash": "sha256:b940f1b58e1e189f0a4100ed7ff1e1df4cb02b9fd8866822e018f8bb4ab43690"
+  },
+  "build_started_at": "2026-05-31T18:58:43.482Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-31T19:09:13.410Z",
+    "hash": "sha256:bc968906bd7dfd3c35e7a431927ca3c2ffa468214fb461348bb164590826c8ba"
+  },
+  "build-data": {
+    "saved_at": "2026-05-31T19:09:13.411Z",
+    "hash": "sha256:deef6cdb542aadfc8ff393a9d9f20d7e2c5d9f3c6654d69a0723be1b495eed7a"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/tests/commands/artifact.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-31T19:12:57.809Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:074f36697d15291b3735ae1c307b3449742b0e2f2ef7f9da48441de65f7c7ba0",
+    "run_at": "2026-05-31T19:16:36.373Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-31T19:16:36.403Z",
+    "hash": "sha256:0e45b70b7538cb3d7534e30d4beaaf5c791ebd237cc48ff781b865775ff0aa25"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-31T19:16:36.403Z",
+    "hash": "sha256:f5c6d8eab6354eff88e658ff2e41319ccc0305b05db9a882f1594578b280ae6b"
   }
 }
