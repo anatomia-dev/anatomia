@@ -1,0 +1,132 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Multi-Phase Report Naming Guard"
+
+assertions:
+  - id: A001
+    says: "An unnumbered build report save on a multi-phase item is redirected to the first build phase"
+    block: "corrects unnumbered build report for first multi-phase build"
+    target: "saved.files"
+    matcher: "contains"
+    value: "build_report_1.md"
+
+  - id: A002
+    says: "The corrected build report save tells the user what numbered report type was used"
+    block: "corrects unnumbered build report for first multi-phase build"
+    target: "output.warning"
+    matcher: "contains"
+    value: "saving as build-report-1"
+
+  - id: A003
+    says: "The corrected build report save records numbered report metadata"
+    block: "corrects unnumbered build report for first multi-phase build"
+    target: "saves.build-report-1.saved_at"
+    matcher: "exists"
+
+  - id: A004
+    says: "The corrected build companion is saved with the matching phase number"
+    block: "corrects unnumbered build report for first multi-phase build"
+    target: "saves.build-data-1.saved_at"
+    matcher: "exists"
+
+  - id: A005
+    says: "An unnumbered verify report save on a multi-phase item is redirected to the phase ready for verification"
+    block: "corrects unnumbered verify report for ready phase"
+    target: "saved.files"
+    matcher: "contains"
+    value: "verify_report_1.md"
+
+  - id: A006
+    says: "The corrected verify report save tells the user what numbered report type was used"
+    block: "corrects unnumbered verify report for ready phase"
+    target: "output.warning"
+    matcher: "contains"
+    value: "saving as verify-report-1"
+
+  - id: A007
+    says: "The corrected verify report save records numbered report metadata"
+    block: "corrects unnumbered verify report for ready phase"
+    target: "saves.verify-report-1.saved_at"
+    matcher: "exists"
+
+  - id: A008
+    says: "The corrected verify companion is saved with the matching phase number"
+    block: "corrects unnumbered verify report for ready phase"
+    target: "saves.verify-data-1.saved_at"
+    matcher: "exists"
+
+  - id: A009
+    says: "Single-spec build report saves continue to use the unnumbered report file"
+    block: "leaves single-spec build report unnumbered"
+    target: "saved.files"
+    matcher: "contains"
+    value: "build_report.md"
+
+  - id: A010
+    says: "Single-spec build report saves do not create a numbered report file"
+    block: "leaves single-spec build report unnumbered"
+    target: "saved.files"
+    matcher: "not_contains"
+    value: "build_report_1.md"
+
+  - id: A011
+    says: "Saving an unnumbered build report on a multi-phase item advances work status to verification"
+    block: "advances status after corrected build report save"
+    target: "workStatus.output"
+    matcher: "contains"
+    value: "phase-1-ready-for-verify"
+
+  - id: A012
+    says: "The correction composes with report file auto-rename"
+    block: "renames unnumbered build report after correcting type"
+    target: "renamed.files"
+    matcher: "contains"
+    value: "build_report.md -> build_report_1.md"
+
+  - id: A013
+    says: "The correction composes with companion file auto-rename"
+    block: "renames unnumbered build report after correcting type"
+    target: "renamed.files"
+    matcher: "contains"
+    value: "build_data.yaml -> build_data_1.yaml"
+
+  - id: A014
+    says: "A failed phase is selected again for a fix build instead of moving to the next phase"
+    block: "corrects fix-cycle build report to failed phase"
+    target: "saved.files"
+    matcher: "contains"
+    value: "build_report_1.md"
+
+  - id: A015
+    says: "A failed phase with a newer build is selected for re-verification"
+    block: "corrects fix-cycle verify report to failed phase"
+    target: "saved.files"
+    matcher: "contains"
+    value: "verify_report_1.md"
+
+  - id: A016
+    says: "An explicit numbered build report save is not changed by the guard"
+    block: "preserves explicit numbered report type"
+    target: "saved.files"
+    matcher: "contains"
+    value: "build_report_2.md"
+
+  - id: A017
+    says: "When every phase is complete, the command refuses to invent an off-plan report target"
+    block: "errors when no multi-phase report target can be inferred"
+    target: "error.message"
+    matcher: "contains"
+    value: "Cannot infer a target phase"
+
+  - id: A018
+    says: "Save-all behavior remains filename-driven and unchanged"
+    block: "save-all still discovers numbered reports by filename"
+    target: "saved.types"
+    matcher: "contains"
+    value: "Build report 1"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
