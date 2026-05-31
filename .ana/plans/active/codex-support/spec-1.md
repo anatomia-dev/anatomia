@@ -10,7 +10,7 @@ This spec establishes the unified skill architecture (`.ana/skills/` as canonica
 
 The structural analog is `createClaudeConfiguration()` in `assets.ts` — `createCodexConfiguration()` mirrors its shape with the same parameters, same merge-not-overwrite pattern, and same delegation to `scaffoldAndSeedSkills()`.
 
-The key architectural decision: skills live in `.ana/skills/` (one location, works for all platforms). Both `.claude/skills` and `.agents/skills` become symlinks pointing to `../../.ana/skills` (relative path — survives clone). `getSkillsDir()` and `getSkillsDirRel()` change return values; all 12+ consumer sites auto-update.
+The key architectural decision: skills live in `.ana/skills/` (one location, works for all platforms). Both `.claude/skills` and `.agents/skills` become symlinks pointing to `../.ana/skills` (relative path — survives clone). `getSkillsDir()` and `getSkillsDirRel()` change return values; all 12+ consumer sites auto-update.
 
 ## Output Mockups
 
@@ -59,7 +59,7 @@ No `.claude/` directory created. No CLAUDE.md generated.
     ...
 .claude/
   agents/ana.md, ana-build.md, ...
-  skills → ../../.ana/skills        (symlink)
+  skills → ../.ana/skills            (symlink)
   settings.json
   .gitignore
 .codex/
@@ -267,7 +267,7 @@ mode = "exec"
 
 ## Constraints
 
-- Symlinks must use relative paths (`../../.ana/skills` from `.claude/skills`, `../.ana/skills` from `.agents/skills`). Absolute paths break on clone.
+- Symlinks must use relative paths (`../.ana/skills` from both `.claude/skills` and `.agents/skills`). Absolute paths break on clone.
 - Git stores symlinks as mode 120000 blobs. `git add .claude/skills` stages the symlink pointer, `git add .ana/skills/` stages the content. No double-staging.
 - Template source path stays `templates/.claude/skills/` — this is where the CLI's bundled templates live. Only the destination changes.
 - Test count must not decrease (baseline: 3041 passed, 129 test files).
