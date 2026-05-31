@@ -45173,6 +45173,491 @@
         "commit_count": 0,
         "base_commit": "b6c1ec51c8e7826aa7d317e0083a53c407829a28"
       }
+    },
+    {
+      "slug": "platform-aware-cli",
+      "feature": "Platform-Aware CLI",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 35,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Fresh projects get a default platform list of Claude",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Fresh projects get an empty platform flags object",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Missing platforms field defaults to Claude instead of crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Empty platforms array defaults to Claude instead of leaving empty",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A malformed flag entry for one platform does not wipe other platforms' flags",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "User-set platforms survive re-initialization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "User-set platformFlags survive re-initialization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "New platform fields are recognized by config set without warnings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "New platform fields are recognized by config set without warnings",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Agent directory resolves to the Claude Code agents path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Skills directory resolves to the Claude Code skills path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Relative skills path works for glob patterns",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Infrastructure commits include Codex directories when they exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Infrastructure commits include generic agent directories when they exist",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Scan sampling excludes Codex directories",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Scan sampling excludes generic agent directories",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Symbol index excludes Codex directories",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Symbol index excludes generic agent directories",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Pipeline status shows ana run instead of claude --agent for next actions",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Pipeline status shows ana run instead of claude --agent for build stage",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Pipeline status shows ana run instead of claude --agent for verify stage",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Pipeline status shows ana run instead of claude --agent for needs-fixes stage",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Pipeline status shows ana run instead of claude --agent for multi-phase build",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Agent command helper produces the correct run invocation for named agents",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Running ana without an agent name invokes the Think agent",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Scaffold detection recognizes the old Claude Code setup prompt",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Scaffold detection recognizes the new ana run setup prompt",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Ana run maps the build argument to claude --agent ana-build",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Ana run without arguments invokes the Think agent",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Platform flags from config are automatically appended to the agent command",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Extra flags after -- are passed through to the underlying agent",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A032",
+          "says": "Platform flags containing --agent are rejected to prevent silent conflicts",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A033",
+          "says": "Running ana run without a project shows a helpful setup message",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A034",
+          "says": "Process ID helper uses the platform-neutral name",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A035",
+          "says": "The old Claude-specific process ID helper name no longer exists",
+          "status": "UNVERIFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 303,
+        "think": 51,
+        "plan": 17,
+        "build": 188,
+        "verify": 32,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 51
+          },
+          {
+            "stage": "plan",
+            "minutes": 17
+          },
+          {
+            "stage": "build",
+            "minutes": 120,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 68,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 25,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:cc16f2c11050aa72a2fd5d76de17b63ed38b98ed7403f7ef222578288844903d",
+        "contract": "sha256:436b8bf1d8ab1928fc8e0954a90ac21c59f71739563d76c1b4f5203d1246f8f6",
+        "plan": "sha256:90d298de97e1a346d448e3f5cc04fdd9c0780493970ac86f2ab88dba27d21978",
+        "spec-1": "sha256:c4d540574686768d23bb00415c31fb60019fb702a53195722a761e834270f205",
+        "spec-2": "sha256:b44514b1ca15c35104d2cc7c9d0274052b5cf16bfdbe08fdb9e7b38ae7b9372d",
+        "build-report": "sha256:f486a357194046684d44d52f359edc78f405822011a166806e0f6e2405654b57",
+        "build-data": "sha256:8c15f25cc1bc3481988ae82ac8115f33ea09077feb5778381fe35a9bdd8079f1",
+        "build-report-1": "sha256:f486a357194046684d44d52f359edc78f405822011a166806e0f6e2405654b57",
+        "build-data-1": "sha256:8c15f25cc1bc3481988ae82ac8115f33ea09077feb5778381fe35a9bdd8079f1",
+        "verify-report-1": "sha256:87cafa053b0e19213b5c05cf12646aa87122a2bea8e844ac18018cbfd0234c2f",
+        "verify-data-1": "sha256:1674144521692b4712cb5eef4a9181fd94b44cf9789bb6abc359a02785e023cb",
+        "build-report-2": "sha256:487dcf97c29669bc9c9fb75795609d7a56cd77c841d65ea54b486bd38db5f99c",
+        "build-data-2": "sha256:982b15c7ffc5cc006752ba3390921eb90aa1ccbcb4cf69b16736c9e275d7c0fe",
+        "verify-report-2": "sha256:263464d1d704835a84a70d4b82043ebed68e9cfa64302615b2916129b3e1a1e0",
+        "verify-data-2": "sha256:afe4adc9cc88a66844643f48e3ad8f6c40dc412d8f6521e365e04ec0beaba963"
+      },
+      "completed_at": "2026-05-31T00:30:02.061Z",
+      "modules_touched": [
+        "packages/cli/src/commands/agents.ts",
+        "packages/cli/src/commands/check.ts",
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/doctor.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/commit.ts",
+        "packages/cli/src/commands/init/skills.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/platform.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/commands/setup.ts",
+        "packages/cli/src/commands/symbol-index.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/engine/sampling/proportionalSampler.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/tests/commands/check-dashboard.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/platform.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/commands/work-ci-mocked.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "The Anatomia CLI hardcodes Claude Code as the only platform in 20 source files (~140 references). Three commands (`ana agents`, `ana setup check`, `ana proof promote/strengthen`) read agent and skill files from hardcoded `.claude/` paths — they are functionally broken on any non-CC platform. The pipeline state machine (`ana work status`) outputs `claude --agent ana-build` strings that are serialized into the `--json` output contract. There is no `ana run` command — the universal invocation surface that makes platform choice invisible to the developer.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A004 contract assertion contradicted by implementation — schema .catch() does not fire on valid empty arrays",
+          "file": "packages/cli/tests/commands/platform.test.ts",
+          "anchor": null,
+          "line": 57,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "platform-aware-cli-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A001 test mis-tagged — tests schema preservation of explicit values, not fresh-project default",
+          "file": "packages/cli/tests/commands/platform.test.ts",
+          "anchor": null,
+          "line": 64,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "platform-aware-cli-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Six assertions (A008-A009, A013-A018) use source-content inspection instead of behavioral tests",
+          "file": "packages/cli/tests/commands/platform.test.ts",
+          "anchor": null,
+          "line": 131,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "platform-aware-cli-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Residual hardcoded .claude/skills/ display string in check.ts not migrated to helper",
+          "file": "packages/cli/src/commands/check.ts",
+          "anchor": null,
+          "line": 1411,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "platform-aware-cli-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A004 value stale — Zod .catch() cannot intercept valid empty arrays, only parse errors",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "platform-aware-cli-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-31T00:30:02.061Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A004 value stale — says empty platforms defaults to ['claude'] but Zod .catch() does not fire on valid empty arrays",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "platform-aware-cli-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-31T00:30:02.061Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Advisory pipeline check reads .saves.json stage field directly — couples to internal format",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 107,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "platform-aware-cli-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "advisoryPipelineCheck stage.includes() match is broad — 'ready-for-build' would match 'phase-2-ready-for-build' (intended) but also any future stage containing that substring",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 109,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "platform-aware-cli-C8",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A004 tagged test asserts opposite of contract value — test says [] but contract says ['claude']. Test is correct for Zod behavior, contract assertion is wrong",
+          "file": "packages/cli/tests/commands/platform.test.ts",
+          "anchor": null,
+          "line": 62,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "platform-aware-cli-C9",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "findRunProjectRoot walks up from process.cwd() but executeRun is called after Commander parses — if user runs ana from a subdirectory, project root resolves correctly; no issue found",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 44,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "platform-aware-cli-C10",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "init-flow e2e test still asserts CLAUDE.md contains 'claude --agent ana' — templates are Scope 2, so this is expected but will need updating",
+          "file": "packages/cli/tests/e2e/init-flow.test.ts",
+          "anchor": null,
+          "line": 157,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "id": "platform-aware-cli-C11",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-31T00:30:02.061Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "getNextAction still in work.ts — known from decompose-work-ts-C1, not changed by this build",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 79,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [],
+          "id": "platform-aware-cli-C12",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A004 contract expects empty array → ['claude'] but schema spec doesn't transform valid empty arrays",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "A004 contract expects empty array → ['claude'] but schema spec doesn't transform valid empty arrays",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 — unused eslint-disable directive",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Advisory pipeline check reads .saves.json directly instead of using determineStage() — stage field may be stale",
+          "file": "packages/cli/src/commands/run.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "CLAUDE.md template still shows claude --agent syntax — deferred to Scope 2",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-30T21:42:56.525Z",
+        "completed_at": "2026-05-31T00:30:02.054Z",
+        "commit_count": 0,
+        "base_commit": "f8fc400b2bec7868ac46a45c3d49bcfcbda76a6b"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
