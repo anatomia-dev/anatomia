@@ -189,11 +189,11 @@ function dispatchToCodex(
   const flags = getPlatformFlags(projectRoot, 'codex');
 
   if (isInteractive) {
-    // Interactive mode: codex --model <model> --sandbox <sandbox> -i "$(cat <prompt>)" [...flags] [...passthrough]
+    // Interactive mode: codex --model <model> --sandbox <sandbox> -c "developer_instructions=$(cat <prompt>)" [...flags] [...passthrough]
     const args = [
       '--model', model,
       '--sandbox', sandboxMode,
-      '-i', `$(cat "${promptPath}")`,
+      '-c', `developer_instructions=$(cat "${promptPath}")`,
       ...flags,
       ...passthroughArgs,
     ];
@@ -206,13 +206,13 @@ function dispatchToCodex(
 
     process.exit(result.status ?? 1);
   } else {
-    // Non-interactive mode: codex exec --model <model> --sandbox <sandbox> -i "$(cat <prompt>)" [...flags] [...passthrough]
+    // Non-interactive mode: codex exec --model <model> --sandbox <sandbox> -c "developer_instructions=$(cat <prompt>)" [...flags] [...passthrough]
     console.log(`Launching ${agentName} on Codex...`);
     const args = [
       'exec',
       '--model', model,
       '--sandbox', sandboxMode,
-      '-i', `$(cat "${promptPath}")`,
+      '-c', `developer_instructions=$(cat "${promptPath}")`,
       ...flags,
       ...passthroughArgs,
     ];
