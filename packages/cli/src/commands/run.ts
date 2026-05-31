@@ -49,6 +49,9 @@ const AGENT_MAP: Record<string, string> = {
  */
 const INTERACTIVE_AGENTS = new Set(['', 'setup']);
 
+/** Platforms recognized by ana run. Unknown values are rejected. */
+const KNOWN_PLATFORMS = new Set(['claude', 'codex']);
+
 /**
  * Parse a simple TOML file (key = "value" pairs, no nested tables).
  *
@@ -170,6 +173,9 @@ function dispatchToCodex(
     console.error(chalk.red('  Install: https://openai.com/codex'));
     process.exit(1);
   }
+
+  // Advisory pipeline state check (same as Claude dispatch)
+  advisoryPipelineCheck(projectRoot, agentSuffix);
 
   // Read TOML manifest
   const toml = readAgentToml(projectRoot, agentName);
@@ -333,6 +339,13 @@ export function executeRun(agentSuffix: string, passthroughArgs: string[], platf
 
   // 3. Resolve platform
   const platform = resolvePlatform(projectRoot, platformFlag);
+
+  // 3b. Validate platform
+  if (!KNOWN_PLATFORMS.has(platform)) {
+    console.error(chalk.red(`Error: Unknown platform "${platform}".`));
+    console.error(chalk.gray(`Available platforms: ${[...KNOWN_PLATFORMS].join(', ')}`));
+    process.exit(1);
+  }
 
   // 4. Dispatch to platform
   if (platform === 'codex') {

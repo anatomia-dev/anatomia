@@ -91,10 +91,9 @@ describe('ana run', () => {
 
     const agents = ['ana', 'ana-build', 'ana-plan', 'ana-verify', 'ana-setup'];
     for (const agent of agents) {
-      const mode = (agent === 'ana' || agent === 'ana-setup') ? 'auto' : 'exec';
       fs.writeFileSync(
         path.join(agentsDir, `${agent}.agent.toml`),
-        `model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmodel_reasoning_effort = "high"\nmode = "${mode}"\n`,
+        `model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmodel_reasoning_effort = "high"\n`,
       );
       fs.writeFileSync(
         path.join(agentsDir, `${agent}.md`),
@@ -436,7 +435,7 @@ describe('ana run', () => {
       // Also need codex agents for dispatch
       const agentsDir = path.join(tempDir, '.codex', 'agents');
       fs.mkdirSync(agentsDir, { recursive: true });
-      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmode = "exec"\n');
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmodel_reasoning_effort = "high"\n');
       fs.writeFileSync(path.join(agentsDir, 'ana-build.md'), '# build prompt');
 
       runAndGetExit('build', [], 'codex');
@@ -450,7 +449,7 @@ describe('ana run', () => {
       createProject({ platforms: ['claude', 'codex'] });
       const agentsDir = path.join(tempDir, '.codex', 'agents');
       fs.mkdirSync(agentsDir, { recursive: true });
-      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmode = "exec"\n');
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmodel_reasoning_effort = "high"\n');
       fs.writeFileSync(path.join(agentsDir, 'ana-build.md'), '# build prompt');
 
       const originalEnv = process.env['ANA_PLATFORM'];
@@ -472,7 +471,7 @@ describe('ana run', () => {
       createProject({ platforms: ['claude', 'codex'] });
       const agentsDir = path.join(tempDir, '.codex', 'agents');
       fs.mkdirSync(agentsDir, { recursive: true });
-      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmode = "exec"\n');
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmodel_reasoning_effort = "high"\n');
       fs.writeFileSync(path.join(agentsDir, 'ana-build.md'), '# build prompt');
 
       const originalEnv = process.env['ANA_PLATFORM'];

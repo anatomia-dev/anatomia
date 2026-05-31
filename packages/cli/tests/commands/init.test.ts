@@ -1007,27 +1007,7 @@ describe('Codex init infrastructure', () => {
       expect(content).toContain('model = "gpt-5.5"');
       expect(content).toContain('sandbox_mode = "danger-full-access"');
       expect(content).toContain('model_reasoning_effort = "high"');
-      expect(content).toContain('mode = "exec"');
-    });
-
-    it('Think agent uses auto mode', async () => {
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-      const content = await fs.readFile(
-        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana.agent.toml'),
-        'utf-8',
-      );
-      expect(content).toContain('mode = "auto"');
-    });
-
-    it('Setup agent uses auto mode', async () => {
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-      const content = await fs.readFile(
-        path.join(__dirname, '..', '..', 'templates', '.codex/agents/ana-setup.agent.toml'),
-        'utf-8',
-      );
-      expect(content).toContain('mode = "auto"');
+      expect(content).not.toMatch(/^mode\s*=/m);
     });
   });
 
