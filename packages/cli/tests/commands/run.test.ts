@@ -252,9 +252,11 @@ describe('ana run', () => {
 
   it('shows advisory warning when no work item at expected stage', () => {
     createProject();
+    // Create a work item with scope only — not ready for build
     const plansDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
     fs.mkdirSync(plansDir, { recursive: true });
-    fs.writeFileSync(path.join(plansDir, '.saves.json'), JSON.stringify({ stage: 'ready-for-verify' }));
+    fs.writeFileSync(path.join(plansDir, 'scope.md'), '# Scope');
+    // No plan.md → not ready for build
 
     runAndGetExit('build');
 
@@ -264,11 +266,26 @@ describe('ana run', () => {
 
   it('does not warn when work item is at the correct stage', () => {
     createProject();
+    // Create a work item with scope + plan → plausibly ready for build
     const plansDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
     fs.mkdirSync(plansDir, { recursive: true });
-    fs.writeFileSync(path.join(plansDir, '.saves.json'), JSON.stringify({ stage: 'ready-for-build' }));
+    fs.writeFileSync(path.join(plansDir, 'scope.md'), '# Scope');
+    fs.writeFileSync(path.join(plansDir, 'plan.md'), '# Plan');
 
     runAndGetExit('build');
+
+    const logOutput = logSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+    expect(logOutput).not.toContain('No work item');
+  });
+
+  it('does not warn for plan when scope exists without plan', () => {
+    createProject();
+    const plansDir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+    fs.mkdirSync(plansDir, { recursive: true });
+    fs.writeFileSync(path.join(plansDir, 'scope.md'), '# Scope');
+    // No plan.md → ready for plan
+
+    runAndGetExit('plan');
 
     const logOutput = logSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
     expect(logOutput).not.toContain('No work item');

@@ -248,16 +248,8 @@ function isExecutableInPath(name: string): boolean {
  * @param agentSuffix - The agent suffix being invoked
  */
 function advisoryPipelineCheck(projectRoot: string, agentSuffix: string): void {
-  // Map agent suffix to expected pipeline stages
-  const stageMap: Record<string, string[]> = {
-    plan: ['ready-for-plan'],
-    build: ['ready-for-build', 'build-in-progress', 'needs-fixes'],
-    verify: ['ready-for-verify', 'ready-for-re-verify'],
-  };
-
-  const expectedStages = stageMap[agentSuffix];
-  if (!expectedStages) {
-    // No pipeline stage expectation for this agent (setup, learn, think)
+  // Only check for agents with pipeline stage expectations
+  if (!['plan', 'build', 'verify'].includes(agentSuffix)) {
     return;
   }
 
@@ -269,20 +261,24 @@ function advisoryPipelineCheck(projectRoot: string, agentSuffix: string): void {
       .filter(d => d.isDirectory())
       .map(d => d.name);
 
-    // Check if ANY work item is at an appropriate stage
-    // We do a lightweight check: look for .saves.json stage markers
+    // Lightweight file-existence check: does any work item have the
+    // right artifact state for this agent? No .saves.json reads, no
+    // timestamps, no git — just files on disk.
     for (const slug of slugDirs) {
-      const savesPath = path.join(plansDir, slug, '.saves.json');
-      if (!fs.existsSync(savesPath)) continue;
+      const slugDir = path.join(plansDir, slug);
+      const hasScope = fs.existsSync(path.join(slugDir, 'scope.md'));
+      const hasPlan = fs.existsSync(path.join(slugDir, 'plan.md'));
 
-      try {
-        const saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
-        const stage = saves.stage as string | undefined;
-        if (stage && expectedStages.some(s => stage.includes(s))) {
-          return; // Found a matching stage, no warning needed
-        }
-      } catch {
-        // Skip malformed saves files
+      if (agentSuffix === 'plan' && hasScope && !hasPlan) {
+        return; // scope exists, plan missing → ready for plan
+      }
+
+      if (agentSuffix === 'build' && hasPlan) {
+        return; // plan exists → plausibly ready for build (or in progress)
+      }
+
+      if (agentSuffix === 'verify' && hasPlan) {
+        return; // plan exists → plausibly ready for verify (build may be done)
       }
     }
 
