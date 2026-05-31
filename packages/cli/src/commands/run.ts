@@ -147,10 +147,9 @@ function readAgentToml(projectRoot: string, agentName: string): Record<string, s
 /**
  * Dispatch an agent invocation to Codex.
  *
- * For interactive agents (Think, Setup): opens the Codex TUI with
- * developer_instructions loaded from the agent's prompt file.
- * For non-interactive agents (Build, Plan, Verify): runs `codex exec`
- * with the prompt injected via `$(cat)`.
+ * Opens the Codex interactive TUI with developer_instructions loaded
+ * from the agent's prompt file. All agents run in interactive mode —
+ * same experience as Claude Code.
  *
  * @param projectRoot - Project root directory
  * @param agentSuffix - Agent suffix (e.g. 'build', '')
