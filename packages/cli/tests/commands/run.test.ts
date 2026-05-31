@@ -281,14 +281,14 @@ describe('ana run', () => {
       createCodexProject();
       runAndGetExit('build');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
-      const spawnArgs = spawnCall![1] as string[];
-      expect(spawnArgs).toContain('exec');
-      expect(spawnArgs).toContain('--model');
-      expect(spawnArgs).toContain('gpt-5.5');
-      expect(spawnArgs).toContain('--sandbox');
-      expect(spawnArgs).toContain('danger-full-access');
+      const cmd = spawnCall![0] as string;
+      expect(cmd).toContain('exec');
+      expect(cmd).toContain('--model');
+      expect(cmd).toContain('gpt-5.5');
+      expect(cmd).toContain('--sandbox');
+      expect(cmd).toContain('danger-full-access');
     });
 
     // @ana A033
@@ -296,42 +296,42 @@ describe('ana run', () => {
       createCodexProject();
       runAndGetExit('');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
-      const spawnArgs = spawnCall![1] as string[];
-      expect(spawnArgs).not.toContain('exec');
-      expect(spawnArgs).toContain('--model');
-      expect(spawnArgs).toContain('--sandbox');
+      const cmd = spawnCall![0] as string;
+      expect(cmd).not.toContain('exec');
+      expect(cmd).toContain('--model');
+      expect(cmd).toContain('--sandbox');
     });
 
     it('opens interactive mode for Setup agent (no exec)', () => {
       createCodexProject();
       runAndGetExit('setup');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
-      const spawnArgs = spawnCall![1] as string[];
-      expect(spawnArgs).not.toContain('exec');
+      const cmd = spawnCall![0] as string;
+      expect(cmd).not.toContain('exec');
     });
 
     it('uses exec mode for Plan agent', () => {
       createCodexProject();
       runAndGetExit('plan');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
-      const spawnArgs = spawnCall![1] as string[];
-      expect(spawnArgs).toContain('exec');
+      const cmd = spawnCall![0] as string;
+      expect(cmd).toContain('exec');
     });
 
     it('uses exec mode for Verify agent', () => {
       createCodexProject();
       runAndGetExit('verify');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
-      const spawnArgs = spawnCall![1] as string[];
-      expect(spawnArgs).toContain('exec');
+      const cmd = spawnCall![0] as string;
+      expect(cmd).toContain('exec');
     });
 
     // @ana A035
@@ -348,21 +348,22 @@ describe('ana run', () => {
       createCodexProject();
       runAndGetExit('build');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
-      const spawnOpts = spawnCall![2] as Record<string, unknown>;
+      // With single-string command, options are in spawnCall[1]
+      const spawnOpts = spawnCall![1] as unknown as Record<string, unknown>;
       expect(spawnOpts['shell']).toBe(true);
     });
 
-    it('includes developer_instructions via $(cat) in args', () => {
+    it('includes developer_instructions via $(cat) in command', () => {
       createCodexProject();
       runAndGetExit('build');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
-      const spawnArgs = spawnCall![1] as string[];
-      const catArg = spawnArgs.find(a => typeof a === 'string' && a.includes('$(cat'));
-      expect(catArg).toBeDefined();
-      expect(catArg).toContain('ana-build.md');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
+      expect(spawnCall).toBeDefined();
+      const cmd = spawnCall![0] as string;
+      expect(cmd).toContain('developer_instructions=$(cat');
+      expect(cmd).toContain('ana-build.md');
     });
 
     it('errors when codex is not in PATH', () => {
@@ -402,9 +403,10 @@ describe('ana run', () => {
       });
       runAndGetExit('build');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
-      const spawnArgs = spawnCall![1] as string[];
-      expect(spawnArgs).toContain('--full-auto');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
+      expect(spawnCall).toBeDefined();
+      const cmd = spawnCall![0] as string;
+      expect(cmd).toContain('--full-auto');
     });
 
     // @ana A040
@@ -439,7 +441,7 @@ describe('ana run', () => {
 
       runAndGetExit('build', [], 'codex');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
     });
 
@@ -455,7 +457,7 @@ describe('ana run', () => {
       process.env['ANA_PLATFORM'] = 'claude';
       try {
         runAndGetExit('build', [], 'codex');
-        const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+        const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
         expect(spawnCall).toBeDefined();
       } finally {
         if (originalEnv === undefined) {
@@ -477,7 +479,7 @@ describe('ana run', () => {
       process.env['ANA_PLATFORM'] = 'codex';
       try {
         runAndGetExit('build');
-        const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+        const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
         expect(spawnCall).toBeDefined();
       } finally {
         if (originalEnv === undefined) {
@@ -492,7 +494,7 @@ describe('ana run', () => {
       createCodexProject();
       runAndGetExit('build');
 
-      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => typeof c[0] === 'string' && c[0].startsWith('codex'));
       expect(spawnCall).toBeDefined();
     });
 

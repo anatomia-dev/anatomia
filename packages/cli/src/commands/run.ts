@@ -189,16 +189,13 @@ function dispatchToCodex(
   const flags = getPlatformFlags(projectRoot, 'codex');
 
   if (isInteractive) {
-    // Interactive mode: codex --model <model> --sandbox <sandbox> -c "developer_instructions=$(cat <prompt>)" [...flags] [...passthrough]
-    const args = [
-      '--model', model,
-      '--sandbox', sandboxMode,
-      '-c', `developer_instructions=$(cat "${promptPath}")`,
-      ...flags,
-      ...passthroughArgs,
-    ];
+    // Interactive mode: build as a single shell string so $(cat) expands correctly
+    // The developer_instructions value contains the entire agent prompt — shell must
+    // handle the expansion as one quoted argument, not split on whitespace.
+    const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
+    const cmd = `codex --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr}`;
 
-    const result = spawnSync('codex', args, {
+    const result = spawnSync(cmd, {
       stdio: 'inherit',
       cwd: projectRoot,
       shell: true,
@@ -206,18 +203,12 @@ function dispatchToCodex(
 
     process.exit(result.status ?? 1);
   } else {
-    // Non-interactive mode: codex exec --model <model> --sandbox <sandbox> -c "developer_instructions=$(cat <prompt>)" [...flags] [...passthrough]
+    // Non-interactive mode: build as a single shell string so $(cat) expands correctly
     console.log(`Launching ${agentName} on Codex...`);
-    const args = [
-      'exec',
-      '--model', model,
-      '--sandbox', sandboxMode,
-      '-c', `developer_instructions=$(cat "${promptPath}")`,
-      ...flags,
-      ...passthroughArgs,
-    ];
+    const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
+    const cmd = `codex exec --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr}`;
 
-    const result = spawnSync('codex', args, {
+    const result = spawnSync(cmd, {
       stdio: 'inherit',
       cwd: projectRoot,
       shell: true,
