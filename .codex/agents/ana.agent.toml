@@ -1,0 +1,3 @@
+model = "gpt-5.5"
+sandbox_mode = "danger-full-access"
+model_reasoning_effort = "high"

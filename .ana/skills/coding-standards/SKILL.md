@@ -6,11 +6,11 @@ description: "Invoke when implementing features, writing code, or reviewing code
 # Coding Standards
 
 ## Detected
-- Language: TypeScript (259 source files)
-- Functions: camelCase (85%, 785 sampled)
+- Language: TypeScript (261 source files)
+- Functions: camelCase (85%, 809 sampled)
 - Classes: PascalCase (50%)
-- Files: PascalCase (61%, 261 sampled)
-- Imports: mixed (66%)
+- Files: PascalCase (61%, 263 sampled)
+- Imports: mixed (67%)
 - Indentation: spaces, 2 wide
 - Error handling: exceptions (generic)
 - UI: Tailwind CSS

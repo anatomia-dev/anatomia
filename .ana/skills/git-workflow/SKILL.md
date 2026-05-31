@@ -7,7 +7,7 @@ description: "Invoke before any git operations — branching, committing, mergin
 
 ## Detected
 - Default branch: main
-- Contributors: 3
+- Contributors: 4
 - Ana CLI: pipeline artifacts committed via `ana artifact save` with [slug] prefix. Build agent creates `{branchPrefix}{slug}` branches (read `branchPrefix` from `.ana/ana.json`, default `feature/`). Co-author from ana.json.
 
 ## Rules

@@ -34,9 +34,18 @@
       }
     }
   },
+  "platforms": [
+    "claude",
+    "codex"
+  ],
+  "platformFlags": {
+    "claude": [
+      "--dangerously-skip-permissions"
+    ]
+  },
   "coAuthor": "Ana <build@anatomia.dev>",
   "artifactBranch": "main",
   "branchPrefix": "feature/",
-  "lastScanAt": "2026-05-27T01:45:48.335Z",
+  "lastScanAt": "2026-05-31T05:37:37.733Z",
   "custom": {}
 }
