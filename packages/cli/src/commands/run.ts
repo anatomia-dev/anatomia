@@ -94,27 +94,28 @@ export function resolvePlatform(projectRoot: string, platformFlag: string | unde
   }
 
   // 3. Sole platform in ana.json
+  let platforms: string[] = ['claude'];
   try {
     const raw = fs.readFileSync(path.join(projectRoot, '.ana', 'ana.json'), 'utf-8');
     const parsed = AnaJsonSchema.parse(JSON.parse(raw));
-    const platforms = parsed.platforms ?? ['claude'];
-
-    if (platforms.length === 1 && platforms[0] !== undefined) {
-      return platforms[0];
-    }
-
-    if (platforms.length > 1) {
-      console.error(chalk.red(`Error: Multiple platforms configured (${platforms.join(', ')}). Specify which to use:`));
-      console.error(chalk.red(`  ana run build --platform codex`));
-      console.error(chalk.red(`  or set ANA_PLATFORM=codex`));
-      process.exit(1);
-    }
-
-    // Empty platforms — fall through to default
-    return 'claude';
+    platforms = parsed.platforms ?? ['claude'];
   } catch {
     return 'claude';
   }
+
+  if (platforms.length === 1 && platforms[0] !== undefined) {
+    return platforms[0];
+  }
+
+  if (platforms.length > 1) {
+    console.error(chalk.red(`Error: Multiple platforms configured (${platforms.join(', ')}). Specify which to use:`));
+    console.error(chalk.red(`  ana run build --platform codex`));
+    console.error(chalk.red(`  or set ANA_PLATFORM=codex`));
+    process.exit(1);
+  }
+
+  // Empty platforms — fall through to default
+  return 'claude';
 }
 
 /**
