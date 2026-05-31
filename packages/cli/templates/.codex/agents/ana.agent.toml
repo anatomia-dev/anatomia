@@ -1,3 +1,6 @@
+name = "ana"
+description = "Ana — project-aware thinking partner. Scopes, navigates, advises."
+developer_instructions = "Full instructions in ana.md. Invoke via: ana run"
 model = "gpt-5.5"
 sandbox_mode = "danger-full-access"
 model_reasoning_effort = "high"

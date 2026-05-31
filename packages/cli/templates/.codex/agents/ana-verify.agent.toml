@@ -1,3 +1,6 @@
+name = "ana-verify"
+description = "AnaVerify — fault-finder and code reviewer. Independent verification."
+developer_instructions = "Full instructions in ana-verify.md. Invoke via: ana run"
 model = "gpt-5.5"
 sandbox_mode = "danger-full-access"
 model_reasoning_effort = "high"
