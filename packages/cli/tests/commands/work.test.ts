@@ -11,7 +11,7 @@ vi.mock('node:child_process', async (importOriginal) => {
   const mod = await importOriginal<typeof import('node:child_process')>();
   return { ...mod, spawnSync: vi.fn(mod.spawnSync) };
 });
-import { getWorkStatus, completeWork, startWork, getClaudePid, checkConcurrencyGuard } from '../../src/commands/work.js';
+import { getWorkStatus, completeWork, startWork, getAgentPid, checkConcurrencyGuard } from '../../src/commands/work.js';
 
 /**
  * Tests for `ana work status` and `ana work complete` commands
@@ -176,7 +176,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-plan');
-      expect(output).toContain('claude --agent ana-plan');
+      expect(output).toContain('ana run plan');
     });
 
     it('scope + spec (no plan) → ready-for-plan', async () => {
@@ -203,7 +203,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-build');
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
     });
 
     it('with feature branch, no build_report → build-in-progress', async () => {
@@ -219,7 +219,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('build-in-progress');
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
@@ -237,7 +237,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('ready-for-verify');
-      expect(output).toContain('claude --agent ana-verify');
+      expect(output).toContain('ana run verify');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
@@ -280,7 +280,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).toContain('needs-fixes');
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
       expect(output).not.toContain('git checkout feature/test-slug && claude');
     });
 
@@ -876,7 +876,7 @@ describe('ana work status', () => {
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       // Next action should NOT contain git checkout anymore
-      expect(output).toContain('claude --agent ana-build');
+      expect(output).toContain('ana run build');
       expect(output).not.toContain('git checkout dev/');
     });
 
@@ -1461,7 +1461,7 @@ describe('ana work status', () => {
 
         console.error = originalError;
         const errorOutput = errors.join('\n');
-        expect(errorOutput).toContain('claude --agent ana-build');
+        expect(errorOutput).toContain('ana run build');
         expect(errorOutput).toContain('FAIL');
         mockExit.mockRestore();
       });
@@ -1511,7 +1511,7 @@ describe('ana work status', () => {
         console.error = originalError;
         const errorOutput = errors.join('\n');
         expect(errorOutput).toContain('FAIL');
-        expect(errorOutput).toContain('ana-build');
+        expect(errorOutput).toContain('ana run build');
         mockExit.mockRestore();
       });
 
@@ -3104,7 +3104,7 @@ file_changes:
 
         console.log = originalLog;
         const output = logs.join('\n');
-        expect(output).toContain('claude --agent ana-learn');
+        expect(output).toContain('ana run learn');
       });
 
       // @ana A012
@@ -3257,7 +3257,7 @@ file_changes:
         console.log = originalLog;
         const output = logs.join('\n');
         // new_candidates takes priority over trend_worsened
-        expect(output).toContain('claude --agent ana-learn');
+        expect(output).toContain('ana run learn');
         expect(output).not.toContain('ana proof audit');
       });
 
@@ -4881,7 +4881,7 @@ describe('session marker and think-time capture', () => {
     it('creates session file when --session flag is set', async () => {
       await createSessionTestProject();
 
-      const claudePid = getClaudePid();
+      const agentPid = getAgentPid();
       // Suppress console output during getWorkStatus
       const originalLog = console.log;
       console.log = () => {};
@@ -4891,8 +4891,8 @@ describe('session marker and think-time capture', () => {
         console.log = originalLog;
       }
 
-      if (claudePid !== null) {
-        const sessionPath = path.join(tempDir, '.ana', 'state', `session-${claudePid}.json`);
+      if (agentPid !== null) {
+        const sessionPath = path.join(tempDir, '.ana', 'state', `session-${agentPid}.json`);
         expect(fsSync.existsSync(sessionPath)).toBe(true);
         const content = JSON.parse(fsSync.readFileSync(sessionPath, 'utf-8'));
         expect(content.timestamp).toBeDefined();
@@ -4946,8 +4946,8 @@ describe('session marker and think-time capture', () => {
     it('uses session timestamp for work_started_at', async () => {
       await createSessionTestProject();
 
-      const claudePid = getClaudePid();
-      if (claudePid === null) {
+      const agentPid = getAgentPid();
+      if (agentPid === null) {
         // Can't test session consumption without a resolvable PID
         return;
       }
@@ -4956,7 +4956,7 @@ describe('session marker and think-time capture', () => {
       const stateDir = path.join(tempDir, '.ana', 'state');
       await fs.mkdir(stateDir, { recursive: true });
       await fs.writeFile(
-        path.join(stateDir, `session-${claudePid}.json`),
+        path.join(stateDir, `session-${agentPid}.json`),
         JSON.stringify({ timestamp: knownTimestamp }),
         'utf-8'
       );
@@ -4973,12 +4973,12 @@ describe('session marker and think-time capture', () => {
     it('deletes session file before using timestamp', async () => {
       await createSessionTestProject();
 
-      const claudePid = getClaudePid();
-      if (claudePid === null) return;
+      const agentPid = getAgentPid();
+      if (agentPid === null) return;
 
       const stateDir = path.join(tempDir, '.ana', 'state');
       await fs.mkdir(stateDir, { recursive: true });
-      const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+      const sessionPath = path.join(stateDir, `session-${agentPid}.json`);
       await fs.writeFile(
         sessionPath,
         JSON.stringify({ timestamp: '2026-01-15T10:00:00.000Z' }),
@@ -5010,14 +5010,14 @@ describe('session marker and think-time capture', () => {
     it('writeTimestamp uses provided timestamp', async () => {
       await createSessionTestProject();
 
-      const claudePid = getClaudePid();
-      if (claudePid === null) return;
+      const agentPid = getAgentPid();
+      if (agentPid === null) return;
 
       const knownTimestamp = '2026-01-15T10:00:00.000Z';
       const stateDir = path.join(tempDir, '.ana', 'state');
       await fs.mkdir(stateDir, { recursive: true });
       await fs.writeFile(
-        path.join(stateDir, `session-${claudePid}.json`),
+        path.join(stateDir, `session-${agentPid}.json`),
         JSON.stringify({ timestamp: knownTimestamp }),
         'utf-8'
       );
@@ -5048,12 +5048,12 @@ describe('session marker and think-time capture', () => {
     it('handles corrupted session file gracefully', async () => {
       await createSessionTestProject();
 
-      const claudePid = getClaudePid();
-      if (claudePid === null) return;
+      const agentPid = getAgentPid();
+      if (agentPid === null) return;
 
       const stateDir = path.join(tempDir, '.ana', 'state');
       await fs.mkdir(stateDir, { recursive: true });
-      const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+      const sessionPath = path.join(stateDir, `session-${agentPid}.json`);
       await fs.writeFile(sessionPath, 'not valid json!!!', 'utf-8');
 
       const before = Date.now();
@@ -5075,12 +5075,12 @@ describe('session marker and think-time capture', () => {
     it('existing slug path does not consume session files', async () => {
       await createSessionTestProject({ activeSlugs: ['existing-slug'] });
 
-      const claudePid = getClaudePid();
-      if (claudePid === null) return;
+      const agentPid = getAgentPid();
+      if (agentPid === null) return;
 
       const stateDir = path.join(tempDir, '.ana', 'state');
       await fs.mkdir(stateDir, { recursive: true });
-      const sessionPath = path.join(stateDir, `session-${claudePid}.json`);
+      const sessionPath = path.join(stateDir, `session-${agentPid}.json`);
       await fs.writeFile(
         sessionPath,
         JSON.stringify({ timestamp: '2026-01-15T10:00:00.000Z' }),

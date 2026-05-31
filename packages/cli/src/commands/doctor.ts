@@ -23,6 +23,7 @@ import { isWorktreeDirectory } from '../utils/worktree.js';
 import { worktreeExists } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
+import { agentCommand } from './platform.js';
 import {
   checkSkill,
   readSetupProgress,
@@ -573,11 +574,11 @@ function formatTerminalOutput(results: DoctorResults): string {
   if (d.context.sections_populated === d.context.sections_total) {
     lines.push(`  ${chalk.green('✓')} Context — ${d.context.sections_populated}/${d.context.sections_total} sections populated`);
   } else if (d.context.setup_state === 'in-progress') {
-    lines.push(`  ${chalk.yellow('○')} Context — setup in progress (resume: claude --agent ana-setup)`);
+    lines.push(`  ${chalk.yellow('○')} Context — setup in progress (resume: ${agentCommand('setup')})`);
   } else if (d.context.setup_state === 'complete' && d.context.sections_populated < d.context.sections_total) {
     lines.push(`  ${chalk.yellow('○')} Context — ${d.context.sections_populated}/${d.context.sections_total} sections (setup completed but sections thin)`);
   } else {
-    lines.push(`  ${chalk.yellow('○')} Context — scaffold (run: claude --agent ana-setup)`);
+    lines.push(`  ${chalk.yellow('○')} Context — scaffold (run: ${agentCommand('setup')})`);
   }
 
   // Skills
@@ -653,11 +654,11 @@ function formatFooter(results: DoctorResults): string {
   }
 
   if (results.maturity === 'new') {
-    return `\nEverything's set up. Next: claude --agent ana-setup`;
+    return `\nEverything's set up. Next: ${agentCommand('setup')}`;
   }
 
   if (results.maturity === 'setup') {
-    return `\nReady for your first pipeline run. Next: claude --agent ana`;
+    return `\nReady for your first pipeline run. Next: ${agentCommand('')}`;
   }
 
   return `\nAll healthy.`;

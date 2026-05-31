@@ -23,6 +23,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain } from '../types/proof.js';
+import { getSkillsDir, getSkillsDirRel } from './platform.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import {
   getProofContext,
@@ -1155,7 +1156,7 @@ async function handleProofPromote(
   const useJson = options.json || parentJson;
 
   // Discover available skills for contextual help
-  const skillGlobs = globSync('.claude/skills/*/SKILL.md', { cwd: proofRoot });
+  const skillGlobs = globSync(`${getSkillsDirRel()}/*/SKILL.md`, { cwd: proofRoot });
   const availableSkills = skillGlobs.map((p) => path.basename(path.dirname(p)));
 
   // @ana A010
@@ -1224,8 +1225,8 @@ async function handleProofPromote(
 
   // Validate skill exists
   const skillName = options.skill;
-  const skillRelPath = `.claude/skills/${skillName}/SKILL.md`;
-  const skillAbsPath = path.join(proofRoot, '.claude', 'skills', skillName, 'SKILL.md');
+  const skillRelPath = `${getSkillsDirRel()}/${skillName}/SKILL.md`;
+  const skillAbsPath = path.join(getSkillsDir(proofRoot), skillName, 'SKILL.md');
   if (!fs.existsSync(skillAbsPath)) {
     exitError('SKILL_NOT_FOUND', `Skill "${skillName}" not found.`);
     return;
@@ -1551,7 +1552,7 @@ async function handleProofStrengthen(
     },
     formatHint: (code, context) => {
       if (code === 'SKILL_NOT_FOUND') {
-        const skillsDir = path.join(proofRoot, '.claude', 'skills');
+        const skillsDir = getSkillsDir(proofRoot);
         if (fs.existsSync(skillsDir)) {
           const available = fs
             .readdirSync(skillsDir)
@@ -1619,8 +1620,8 @@ async function handleProofStrengthen(
 
   // Validate skill exists
   const skillName = options.skill;
-  const skillRelPath = `.claude/skills/${skillName}/SKILL.md`;
-  const skillAbsPath = path.join(proofRoot, '.claude', 'skills', skillName, 'SKILL.md');
+  const skillRelPath = `${getSkillsDirRel()}/${skillName}/SKILL.md`;
+  const skillAbsPath = path.join(getSkillsDir(proofRoot), skillName, 'SKILL.md');
   if (!fs.existsSync(skillAbsPath)) {
     exitError('SKILL_NOT_FOUND', `Skill "${skillName}" not found.`);
     return;

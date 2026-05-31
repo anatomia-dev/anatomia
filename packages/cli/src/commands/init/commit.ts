@@ -52,6 +52,10 @@ const EXCLUDED_PREFIXES = [
   '.ana/worktrees/',
   '.claude/settings.local.json',
   '.claude/agent-memory/',
+  '.codex/settings.local.json',
+  '.codex/agent-memory/',
+  '.agents/settings.local.json',
+  '.agents/agent-memory/',
 ];
 
 /**
@@ -60,6 +64,8 @@ const EXCLUDED_PREFIXES = [
 const KNOWN_ROOTS = [
   '.ana/',
   '.claude/',
+  '.codex/',
+  '.agents/',
 ];
 
 /**

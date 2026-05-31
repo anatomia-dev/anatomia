@@ -40,5 +40,81 @@
         "hash": "sha256:e41f926f3fda1706ba4539ad570d2f50645af861d7b40c90ffce1d004a631c03"
       }
     ]
+  },
+  "build_started_at": "2026-05-30T21:42:56.525Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-05-30T21:52:17.564Z",
+    "hash": "sha256:f486a357194046684d44d52f359edc78f405822011a166806e0f6e2405654b57"
+  },
+  "build-data": {
+    "saved_at": "2026-05-30T21:52:17.564Z",
+    "hash": "sha256:8c15f25cc1bc3481988ae82ac8115f33ea09077feb5778381fe35a9bdd8079f1"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/agents.ts",
+    "packages/cli/src/commands/check.ts",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/doctor.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/src/commands/init/skills.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/platform.ts",
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/setup.ts",
+    "packages/cli/src/commands/symbol-index.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/engine/sampling/proportionalSampler.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/tests/commands/check-dashboard.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/platform.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/commands/work-ci-mocked.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "commit_hygiene": [],
+  "build-report-1": {
+    "saved_at": "2026-05-30T22:29:07.225Z",
+    "hash": "sha256:f486a357194046684d44d52f359edc78f405822011a166806e0f6e2405654b57"
+  },
+  "build-data-1": {
+    "saved_at": "2026-05-30T22:29:07.226Z",
+    "hash": "sha256:8c15f25cc1bc3481988ae82ac8115f33ea09077feb5778381fe35a9bdd8079f1"
+  },
+  "verify_started_at": "2026-05-30T22:30:01.557Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:436b8bf1d8ab1928fc8e0954a90ac21c59f71739563d76c1b4f5203d1246f8f6",
+    "run_at": "2026-05-31T00:09:00.986Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-05-30T22:36:14.151Z",
+    "hash": "sha256:87cafa053b0e19213b5c05cf12646aa87122a2bea8e844ac18018cbfd0234c2f"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-05-30T22:36:14.151Z",
+    "hash": "sha256:1674144521692b4712cb5eef4a9181fd94b44cf9789bb6abc359a02785e023cb"
+  },
+  "build-report-2": {
+    "saved_at": "2026-05-30T23:44:04.327Z",
+    "hash": "sha256:487dcf97c29669bc9c9fb75795609d7a56cd77c841d65ea54b486bd38db5f99c"
+  },
+  "build-data-2": {
+    "saved_at": "2026-05-30T23:44:04.328Z",
+    "hash": "sha256:982b15c7ffc5cc006752ba3390921eb90aa1ccbcb4cf69b16736c9e275d7c0fe"
+  },
+  "verify-report-2": {
+    "saved_at": "2026-05-31T00:09:01.026Z",
+    "hash": "sha256:263464d1d704835a84a70d4b82043ebed68e9cfa64302615b2916129b3e1a1e0"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-05-31T00:09:01.026Z",
+    "hash": "sha256:afe4adc9cc88a66844643f48e3ad8f6c40dc412d8f6521e365e04ec0beaba963"
   }
 }

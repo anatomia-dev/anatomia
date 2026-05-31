@@ -13,6 +13,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
+import { agentCommand } from './platform.js';
 import * as path from 'node:path';
 import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { generateProofSummary, type ProofSummary } from '../utils/proofSummary.js';
@@ -255,7 +256,7 @@ export function createPr(slug: string): void {
       verifyReportPath = path.join(planDir, verifyReports[verifyReports.length - 1]!);
     } else {
       console.error(chalk.red('No verify report found.'));
-      console.error(chalk.gray('Run `claude --agent ana-verify` first.'));
+      console.error(chalk.gray(`Run \`${agentCommand('verify')}\` first.`));
       process.exit(1);
     }
   }
@@ -287,7 +288,7 @@ export function createPr(slug: string): void {
       buildReportPath = path.join(planDir, buildReports[buildReports.length - 1]!);
     } else {
       console.error(chalk.red('No build report found.'));
-      console.error(chalk.gray('Run `claude --agent ana-build` first.'));
+      console.error(chalk.gray(`Run \`${agentCommand('build')}\` first.`));
       process.exit(1);
     }
   }

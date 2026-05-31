@@ -1,0 +1,51 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract A004 value stale — says empty platforms defaults to ['claude'] but Zod .catch() does not fire on valid empty arrays"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004"]
+
+  - category: code
+    summary: "Advisory pipeline check reads .saves.json stage field directly — couples to internal format"
+    file: "packages/cli/src/commands/run.ts"
+    line: 107
+    severity: debt
+    suggested_action: monitor
+
+  - category: code
+    summary: "advisoryPipelineCheck stage.includes() match is broad — 'ready-for-build' would match 'phase-2-ready-for-build' (intended) but also any future stage containing that substring"
+    file: "packages/cli/src/commands/run.ts"
+    line: 109
+    severity: observation
+    suggested_action: accept
+
+  - category: test
+    summary: "A004 tagged test asserts opposite of contract value — test says [] but contract says ['claude']. Test is correct for Zod behavior, contract assertion is wrong"
+    file: "packages/cli/tests/commands/platform.test.ts"
+    line: 62
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004"]
+
+  - category: code
+    summary: "findRunProjectRoot walks up from process.cwd() but executeRun is called after Commander parses — if user runs ana from a subdirectory, project root resolves correctly; no issue found"
+    file: "packages/cli/src/commands/run.ts"
+    line: 44
+    severity: observation
+    suggested_action: accept
+
+  - category: upstream
+    summary: "init-flow e2e test still asserts CLAUDE.md contains 'claude --agent ana' — templates are Scope 2, so this is expected but will need updating"
+    file: "packages/cli/tests/e2e/init-flow.test.ts"
+    line: 157
+    severity: observation
+    suggested_action: scope
+
+  - category: code
+    summary: "getNextAction still in work.ts — known from decompose-work-ts-C1, not changed by this build"
+    file: "packages/cli/src/commands/work.ts"
+    line: 79
+    severity: observation
+    suggested_action: accept
+    resolves: []

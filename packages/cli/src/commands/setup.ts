@@ -13,6 +13,7 @@ import * as fs from 'node:fs/promises';
 import { pathExists, findProjectRoot } from '../utils/validators.js';
 import { isWorktreeDirectory } from '../utils/worktree.js';
 import { createCheckCommand } from './check.js';
+import { agentCommand } from './platform.js';
 import { createIndexCommand } from './symbol-index.js';
 import { validateSetupCompletion } from './check.js';
 
@@ -40,7 +41,7 @@ export function registerSetupCommand(program: Command): void {
   // generated help gives the user nothing actionable.
   setupCommand.action(() => {
     console.log(chalk.bold('\nSetup is an interactive agent flow.\n'));
-    console.log(`  ${chalk.cyan('claude --agent ana-setup')}`);
+    console.log(`  ${chalk.cyan(agentCommand('setup'))}`);
     console.log();
     console.log(`  ${chalk.bold('Guide')}  ${chalk.gray(DOCS_SETUP_GUIDE)}`);
     console.log();
@@ -130,7 +131,7 @@ export function registerSetupCommand(program: Command): void {
       console.log(`  Principles: ${stats.principlesCaptured ? 'captured' : 'skipped'}`);
       console.log();
       console.log(`  Ana now knows your team. Start working:`);
-      console.log(`  claude --agent ana`);
+      console.log(`  ${agentCommand('')}`);
       console.log();
     } else {
       console.log(chalk.yellow('✓ Setup complete (partial)\n'));
@@ -139,7 +140,7 @@ export function registerSetupCommand(program: Command): void {
       }
       console.log();
       console.log(`  Run ${chalk.cyan('ana setup')} to fill remaining sections.`);
-      console.log(`  claude --agent ana`);
+      console.log(`  ${agentCommand('')}`);
       console.log();
     }
   });

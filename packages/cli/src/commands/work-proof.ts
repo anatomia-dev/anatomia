@@ -13,6 +13,7 @@ import { globSync } from 'glob';
 import { resolveFindingPaths, generateDashboard, computeChainHealth } from '../utils/proofSummary.js';
 import type { ProofSummary } from '../utils/proofSummary.js';
 import type { ProofChainEntry, ProofChain, ProofChainStats } from '../types/proof.js';
+import { agentCommand } from './platform.js';
 import { countPhases } from './work-state.js';
 
 /**
@@ -27,7 +28,7 @@ export function guardFailResult(result: string, context?: string): void {
     const prefix = context ? `${context}: ` : '';
     console.error(chalk.red(`Error: ${prefix}Cannot complete work with a FAIL verification result.`));
     console.error(chalk.gray('The verify report says FAIL. Fix the issues and re-verify before completing.'));
-    console.error(chalk.gray('Run: claude --agent ana-build to fix, then claude --agent ana-verify'));
+    console.error(chalk.gray(`Run: ${agentCommand('build')} to fix, then ${agentCommand('verify')}`));
     process.exit(1);
   }
 }

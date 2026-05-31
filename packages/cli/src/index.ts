@@ -25,6 +25,7 @@ import { registerLearnCommand } from './commands/learn.js';
 import { registerVerifyCommand } from './commands/verify.js';
 import { registerConfigCommand } from './commands/config.js';
 import { registerDoctorCommand } from './commands/doctor.js';
+import { registerRunCommand } from './commands/run.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8'));
 
@@ -60,6 +61,7 @@ registerDoctorCommand(program);
 
 program.commandsGroup('PIPELINE');
 registerWorkCommand(program);
+registerRunCommand(program);
 registerArtifactCommand(program);
 registerVerifyCommand(program);
 registerPrCommand(program);

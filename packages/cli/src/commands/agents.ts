@@ -18,6 +18,7 @@ import chalk from 'chalk';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { findProjectRoot } from '../utils/validators.js';
+import { getAgentsDir, getSkillsDir } from './platform.js';
 import type { AgentInfo } from '../utils/agent-config.js';
 import {
   parseFrontmatter,
@@ -85,8 +86,8 @@ function formatNumber(n: number): string {
  */
 export function listAgents(): void {
   const root = findProjectRoot();
-  const agentsDir = path.join(root, '.claude/agents');
-  const skillsDir = path.join(root, '.claude/skills');
+  const agentsDir = getAgentsDir(root);
+  const skillsDir = getSkillsDir(root);
 
   if (!fs.existsSync(agentsDir)) {
     throw new Error('No agents directory found. Run `ana init` first.');
@@ -319,8 +320,8 @@ export function registerAgentsCommand(program: Command): void {
     .action((agent: string | undefined, model: string | undefined, options: { default?: boolean; all?: boolean }) => {
       try {
         const root = findProjectRoot();
-        const agentsDir = path.join(root, '.claude/agents');
-        const skillsDir = path.join(root, '.claude/skills');
+        const agentsDir = getAgentsDir(root);
+        const skillsDir = getSkillsDir(root);
 
         if (!fs.existsSync(agentsDir)) {
           throw new Error('No agents directory found. Run `ana init` first.');

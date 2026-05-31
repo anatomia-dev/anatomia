@@ -30,6 +30,7 @@ import { getPatternLibrary, isMultiPattern } from '../../engine/types/patterns.j
 import { matchGotchas, matchTriggers } from '../../utils/gotchas.js';
 import { RULES } from '../../data/rules-library.js';
 import { COMMON_ISSUES } from '../../data/troubleshooting-library.js';
+import { agentCommand } from '../platform.js';
 import { TEST_DIRECTORY_NAMES, computeSkillManifest } from '../../constants.js';
 import type { InitState } from './types.js';
 import { fileExists } from './preflight.js';
@@ -164,7 +165,7 @@ export async function scaffoldAndSeedSkills(
         const lang = engineResult.stack.language;
         if (lang !== 'TypeScript' && lang !== 'Node.js') {
           content = replaceRulesSection(content,
-            '*Rules not yet configured for this stack. Run `claude --agent ana-setup` to add conventions for your project.*\n');
+            `*Rules not yet configured for this stack. Run \`${agentCommand('setup')}\` to add conventions for your project.*\n`);
         }
       }
     }
