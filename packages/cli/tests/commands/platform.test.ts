@@ -17,24 +17,37 @@ import { getAgentsDir, getSkillsDir, getSkillsDirRel, agentCommand, getPlatformF
 import { AnaJsonSchema } from '../../src/commands/init/anaJsonSchema.js';
 
 describe('platform helpers', () => {
-  // @ana A010
-  it('getAgentsDir returns correct path', () => {
+  // @ana A001
+  it('getSkillsDir returns .ana/skills path', () => {
+    const result = getSkillsDir('/projects/my-app');
+    expect(result).toBe(path.join('/projects/my-app', '.ana', 'skills'));
+    expect(result).toContain('.ana/skills');
+  });
+
+  // @ana A002
+  it('getSkillsDirRel returns .ana/skills', () => {
+    const result = getSkillsDirRel();
+    expect(result).toBe('.ana/skills');
+  });
+
+  // @ana A004
+  it('getAgentsDir defaults to .claude/agents', () => {
     const result = getAgentsDir('/projects/my-app');
     expect(result).toBe(path.join('/projects/my-app', '.claude', 'agents'));
     expect(result).toContain('.claude/agents');
   });
 
-  // @ana A011
-  it('getSkillsDir returns correct path', () => {
-    const result = getSkillsDir('/projects/my-app');
-    expect(result).toBe(path.join('/projects/my-app', '.claude', 'skills'));
-    expect(result).toContain('.claude/skills');
+  // @ana A005
+  it('getAgentsDir returns .claude/agents for claude platform', () => {
+    const result = getAgentsDir('/projects/my-app', 'claude');
+    expect(result).toContain('.claude/agents');
   });
 
-  // @ana A012
-  it('getSkillsDirRel returns relative path', () => {
-    const result = getSkillsDirRel();
-    expect(result).toBe('.claude/skills');
+  // @ana A003
+  it('getAgentsDir returns .codex/agents for codex platform', () => {
+    const result = getAgentsDir('/projects/my-app', 'codex');
+    expect(result).toBe(path.join('/projects/my-app', '.codex', 'agents'));
+    expect(result).toContain('.codex/agents');
   });
 
   it('getAgentsDir handles paths with spaces', () => {
@@ -44,7 +57,7 @@ describe('platform helpers', () => {
 
   it('getSkillsDir handles paths with spaces', () => {
     const result = getSkillsDir('/my projects/cool app');
-    expect(result).toBe(path.join('/my projects/cool app', '.claude', 'skills'));
+    expect(result).toBe(path.join('/my projects/cool app', '.ana', 'skills'));
   });
 });
 
@@ -234,6 +247,24 @@ describe('getPlatformFlags', () => {
       platformFlags: {},
     }));
     expect(getPlatformFlags(tempDir)).toEqual([]);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  // @ana A038
+  it('returns flags for a specific platform parameter', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'platform-flags-'));
+    const anaDir = path.join(tempDir, '.ana');
+    fs.mkdirSync(anaDir, { recursive: true });
+    fs.writeFileSync(path.join(anaDir, 'ana.json'), JSON.stringify({
+      name: 'test',
+      platforms: ['claude'],
+      platformFlags: {
+        claude: ['--dangerously-skip-permissions'],
+        codex: ['--full-auto'],
+      },
+    }));
+    expect(getPlatformFlags(tempDir, 'codex')).toEqual(['--full-auto']);
+    expect(getPlatformFlags(tempDir, 'claude')).toEqual(['--dangerously-skip-permissions']);
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 });

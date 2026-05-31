@@ -158,7 +158,7 @@ export const REQUIRED_CONTEXT_FILES = [
   'context/design-principles.md',
 ] as const;
 
-/** Agent definition files */
+/** Agent definition files (Claude Code) */
 export const AGENT_FILES = [
   'ana.md',
   'ana-plan.md',
@@ -166,6 +166,15 @@ export const AGENT_FILES = [
   'ana-build.md',
   'ana-verify.md',
   'ana-learn.md',
+] as const;
+
+/** Agent definition files for Codex (no Learn agent) */
+export const CODEX_AGENT_FILES = [
+  'ana.md',
+  'ana-plan.md',
+  'ana-setup.md',
+  'ana-build.md',
+  'ana-verify.md',
 ] as const;
 
 
