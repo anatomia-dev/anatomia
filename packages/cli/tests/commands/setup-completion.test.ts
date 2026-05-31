@@ -73,7 +73,7 @@ async function createProjectStructure(
   const anaPath = path.join(tmpDir, '.ana');
   const contextPath = path.join(anaPath, 'context');
   const statePath = path.join(anaPath, 'state');
-  const skillsPath = path.join(tmpDir, '.claude', 'skills');
+  const skillsPath = path.join(tmpDir, '.ana', 'skills');
 
   await fs.mkdir(contextPath, { recursive: true });
   await fs.mkdir(statePath, { recursive: true });

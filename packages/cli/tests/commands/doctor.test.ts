@@ -31,7 +31,7 @@ async function createMinimalProject(dir: string, overrides?: {
 }): Promise<void> {
   const anaDir = path.join(dir, '.ana');
   const contextDir = path.join(anaDir, 'context');
-  const skillsDir = path.join(dir, '.claude', 'skills');
+  const skillsDir = path.join(dir, '.ana', 'skills');
 
   await fs.mkdir(contextDir, { recursive: true });
   await fs.mkdir(path.join(anaDir, 'plans', 'active'), { recursive: true });

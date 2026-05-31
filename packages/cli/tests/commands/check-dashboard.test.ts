@@ -238,7 +238,7 @@ content
 
 describe('skill check', () => {
   it('returns ✓ for skill with Detected entries', async () => {
-    const skillDir = path.join(tmpDir, '.claude', 'skills', 'coding-standards');
+    const skillDir = path.join(tmpDir, '.ana', 'skills', 'coding-standards');
     await fs.mkdir(skillDir, { recursive: true });
     await fs.writeFile(
       path.join(skillDir, 'SKILL.md'),
@@ -264,7 +264,7 @@ describe('skill check', () => {
   });
 
   it('returns ○ for skill with 0 Rules (valid)', async () => {
-    const skillDir = path.join(tmpDir, '.claude', 'skills', 'testing-standards');
+    const skillDir = path.join(tmpDir, '.ana', 'skills', 'testing-standards');
     await fs.mkdir(skillDir, { recursive: true });
     await fs.writeFile(
       path.join(skillDir, 'SKILL.md'),
@@ -287,7 +287,7 @@ describe('skill check', () => {
   });
 
   it('returns ○ for troubleshooting stub', async () => {
-    const skillDir = path.join(tmpDir, '.claude', 'skills', 'troubleshooting');
+    const skillDir = path.join(tmpDir, '.ana', 'skills', 'troubleshooting');
     await fs.mkdir(skillDir, { recursive: true });
     await fs.writeFile(
       path.join(skillDir, 'SKILL.md'),
@@ -309,7 +309,7 @@ describe('skill check', () => {
   });
 
   it('returns ✗ for skill missing a section', async () => {
-    const skillDir = path.join(tmpDir, '.claude', 'skills', 'broken-skill');
+    const skillDir = path.join(tmpDir, '.ana', 'skills', 'broken-skill');
     await fs.mkdir(skillDir, { recursive: true });
     await fs.writeFile(
       path.join(skillDir, 'SKILL.md'),
@@ -341,7 +341,7 @@ describe('consistency checks', () => {
     // behavior silently reported "aligned" here, which was phantom
     // verification: the check was skipped because there was nothing to
     // compare against, but the ✓ symbol implied verification had passed.
-    const codingDir = path.join(tmpDir, '.claude', 'skills', 'coding-standards');
+    const codingDir = path.join(tmpDir, '.ana', 'skills', 'coding-standards');
     await fs.mkdir(codingDir, { recursive: true });
     await fs.writeFile(
       path.join(codingDir, 'SKILL.md'),
@@ -359,7 +359,7 @@ describe('consistency checks', () => {
   });
 
   it('reports mismatch when Detected content contradicts ana.json', async () => {
-    const codingDir = path.join(tmpDir, '.claude', 'skills', 'coding-standards');
+    const codingDir = path.join(tmpDir, '.ana', 'skills', 'coding-standards');
     await fs.mkdir(codingDir, { recursive: true });
     await fs.writeFile(
       path.join(codingDir, 'SKILL.md'),

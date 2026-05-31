@@ -62,7 +62,7 @@ If work is found: summarize what the spec will build (the file changes at a high
 
 If resuming after verify failure: "Found verify report for {name} with failures. Ready to fix?"
 
-If no work: "No specs ready for building. Open `claude --agent ana-plan` to create one."
+If no work: "No specs ready for building. Open `ana run plan` to create one."
 
 ---
 
@@ -276,7 +276,7 @@ If a test fails: fix the implementation, not the test. If a contract assertion g
 
 ## Build Report Format
 
-Determine the absolute path with `pwd` before writing — Claude Code's Write tool resolves paths against the main tree, not the worktree.
+Determine the absolute path with `pwd` before writing — file write tools may resolve paths against the main tree, not the worktree.
 
 Write `.ana/plans/active/{slug}/build_report.md` with ALL of these sections:
 
@@ -514,7 +514,7 @@ ana artifact save build-report-1 {slug}
 
 4. After saving, output a brief summary in the conversation: deviations count, open issues count, test results, and the file path. Example: "Build report saved to `.ana/plans/active/{slug}/build_report.md` — 0 deviations, 2 open issues, 47 tests passing." NOT the full report — a one-line summary so the developer knows where to look.
 
-5. Tell the user: "Build complete. Open `claude --agent ana-verify` to verify."
+5. Tell the user: "Build complete. Open `ana run verify` to verify."
 
 ---
 

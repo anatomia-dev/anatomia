@@ -4786,7 +4786,7 @@ describe('agent template pwd hints', () => {
     const templatePath = path.join(__dirname, '..', '..', 'templates', '.claude', 'agents', 'ana-build.md');
     const templateContent = fsSync.readFileSync(templatePath, 'utf-8');
     expect(templateContent).toContain('pwd');
-    expect(templateContent).toContain('Write tool resolves paths against the main tree');
+    expect(templateContent).toContain('file write tools may resolve paths against the main tree');
   });
 
   // @ana A014
@@ -4794,7 +4794,7 @@ describe('agent template pwd hints', () => {
     const templatePath = path.join(__dirname, '..', '..', 'templates', '.claude', 'agents', 'ana-verify.md');
     const templateContent = fsSync.readFileSync(templatePath, 'utf-8');
     expect(templateContent).toContain('pwd');
-    expect(templateContent).toContain('Write tool resolves paths against the main tree');
+    expect(templateContent).toContain('file write tools may resolve paths against the main tree');
   });
 });
 

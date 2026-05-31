@@ -8,7 +8,8 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import * as fs from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, lstatSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
@@ -852,6 +853,22 @@ export async function preserveUserState(
     // No active plans — keep the fresh .gitkeep
   }
 
+  // 8. Copy skills/ (user-enriched skills — must survive re-init)
+  // Skills now live in .ana/skills/ (canonical location). User enrichments
+  // (Rules, Gotchas, Examples) must survive. scaffoldAndSeedSkills will
+  // refresh the Detected section post-swap.
+  const skillsSrc = path.join(existingAnaPath, 'skills');
+  const skillsDst = path.join(tmpAnaPath, 'skills');
+  try {
+    const stats = await fs.stat(skillsSrc);
+    if (stats.isDirectory()) {
+      await fs.rm(skillsDst, { recursive: true, force: true });
+      await fs.cp(skillsSrc, skillsDst, { recursive: true });
+    }
+  } catch {
+    // No skills directory — scaffoldAndSeedSkills will create fresh
+  }
+
   return mergedConfig;
 }
 
@@ -1075,4 +1092,102 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
   // Documentation link
   console.log(`  ${chalk.bold('Quickstart')}  ${chalk.gray(DOCS_QUICKSTART)}`);
   console.log('');
+}
+
+/**
+ * Detect available AI coding platforms from the system PATH.
+ *
+ * Checks for `claude` and `codex` executables. Returns at least
+ * `['claude']` as a default if nothing is detected (safe fallback).
+ *
+ * @returns Array of detected platform names
+ */
+export function detectPlatforms(): string[] {
+  const platforms: string[] = [];
+  const cmd = process.platform === 'win32' ? 'where' : 'which';
+
+  for (const name of ['claude', 'codex']) {
+    const result = spawnSync(cmd, [name], { encoding: 'utf-8', stdio: 'pipe' });
+    if (result.status === 0) {
+      platforms.push(name);
+    }
+  }
+
+  // Default to claude if nothing detected
+  return platforms.length > 0 ? platforms : ['claude'];
+}
+
+/**
+ * Migrate enriched skills from .claude/skills/ to .ana/skills/.
+ *
+ * On re-init, if `.claude/skills/` is a real directory (not a symlink),
+ * moves its content to `.ana/skills/` and replaces the real directory
+ * with a symlink. Conflict resolution uses mtime — newer file wins.
+ *
+ * @param cwd - Project root directory
+ */
+export async function migrateSkillsToCanonical(cwd: string): Promise<void> {
+  const claudeSkillsPath = path.join(cwd, '.claude', 'skills');
+  const canonicalPath = path.join(cwd, '.ana', 'skills');
+
+  try {
+    const stats = lstatSync(claudeSkillsPath);
+    // If it's already a symlink, skip migration
+    if (stats.isSymbolicLink()) return;
+    if (!stats.isDirectory()) return;
+  } catch {
+    // .claude/skills/ doesn't exist — nothing to migrate
+    return;
+  }
+
+  // Ensure canonical destination exists
+  await fs.mkdir(canonicalPath, { recursive: true });
+
+  // Copy contents, resolve conflicts by mtime
+  const entries = await fs.readdir(claudeSkillsPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(claudeSkillsPath, entry.name);
+    const dstPath = path.join(canonicalPath, entry.name);
+
+    if (entry.isDirectory()) {
+      // Recurse into skill directories
+      const subEntries = await fs.readdir(srcPath);
+      await fs.mkdir(dstPath, { recursive: true });
+      for (const subEntry of subEntries) {
+        const subSrc = path.join(srcPath, subEntry);
+        const subDst = path.join(dstPath, subEntry);
+        await copyIfNewer(subSrc, subDst);
+      }
+    } else {
+      await copyIfNewer(srcPath, dstPath);
+    }
+  }
+
+  // Replace real directory with symlink
+  await fs.rm(claudeSkillsPath, { recursive: true, force: true });
+  await fs.symlink(path.join('..', '.ana', 'skills'), claudeSkillsPath);
+}
+
+/**
+ * Copy file if source is newer than destination (or destination doesn't exist).
+ *
+ * @param src - Source file path
+ * @param dst - Destination file path
+ */
+async function copyIfNewer(src: string, dst: string): Promise<void> {
+  try {
+    const srcStat = await fs.stat(src);
+    try {
+      const dstStat = await fs.stat(dst);
+      // Both exist — copy only if source is newer
+      if (srcStat.mtimeMs > dstStat.mtimeMs) {
+        await fs.copyFile(src, dst);
+      }
+    } catch {
+      // Destination doesn't exist — copy
+      await fs.copyFile(src, dst);
+    }
+  } catch {
+    // Source doesn't exist — skip
+  }
 }
