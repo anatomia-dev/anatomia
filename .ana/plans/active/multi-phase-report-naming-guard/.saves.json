@@ -33,5 +33,20 @@
     "packages/cli/src/commands/artifact.ts",
     "packages/cli/tests/commands/artifact.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-31T19:12:57.809Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:074f36697d15291b3735ae1c307b3449742b0e2f2ef7f9da48441de65f7c7ba0",
+    "run_at": "2026-05-31T19:16:36.373Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-05-31T19:16:36.403Z",
+    "hash": "sha256:0e45b70b7538cb3d7534e30d4beaaf5c791ebd237cc48ff781b865775ff0aa25"
+  },
+  "verify-data": {
+    "saved_at": "2026-05-31T19:16:36.403Z",
+    "hash": "sha256:f5c6d8eab6354eff88e658ff2e41319ccc0305b05db9a882f1594578b280ae6b"
+  }
 }
