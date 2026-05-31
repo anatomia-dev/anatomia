@@ -45658,6 +45658,550 @@
       },
       "surface": "cli",
       "phases": 2
+    },
+    {
+      "slug": "codex-support",
+      "feature": "Codex Support",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 40,
+        "satisfied": 40,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Skills are stored in a single canonical location that works for all platforms",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Relative skills path points to the canonical location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Agent files are found in the right directory for each platform",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Claude agent path is unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Default agent path is Claude when no platform specified",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Dual-platform init creates the Claude configuration directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Dual-platform init creates the Codex configuration directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Skills are written to the canonical location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Claude skills directory is a symlink to the canonical location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Agents skills directory is a symlink to the canonical location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Codex-only projects do not create Claude configuration",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Codex-only projects do not generate a CLAUDE.md file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Codex-only projects still get the cross-tool AGENTS.md file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Codex Build agent uses the unified invocation syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Codex Build agent does not reference Claude Code specific tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Codex agent templates do not have YAML frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Codex Build manifest specifies the correct model",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Codex Build runs with full access for git operations",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Codex Build runs in exec mode for non-interactive pipeline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Both platform skill paths resolve to the same underlying file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "User customizations to Codex agent files survive re-initialization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Existing enriched skills are migrated to the canonical location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "After migration the old skills directory becomes a symlink",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Claude Code agent templates use the unified invocation syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The CLAUDE.md template uses the unified invocation syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "First-time init auto-detects available platforms from the system PATH",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Re-initialization preserves the previously configured platforms",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Setup check displays the correct skills directory path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Init flow test validates the current template syntax",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Running an agent on Codex launches the correct Codex process",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Codex dispatch passes the sandbox flag from the manifest",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "Codex dispatch passes the model from the manifest",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "Think agent opens interactive mode instead of exec",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "Explicit platform flag selects the correct dispatch target",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Learn agent shows a helpful message instead of failing on Codex",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A036",
+          "says": "Platform flag takes priority over environment variable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A037",
+          "says": "Multiple platforms without explicit selection shows guidance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A038",
+          "says": "Platform flags can be read for a specific platform",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A039",
+          "says": "All existing tests continue to pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A040",
+          "says": "Codex does not include a Learn agent template",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 158,
+        "think": 36,
+        "plan": 10,
+        "build": 69,
+        "verify": 41,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 36
+          },
+          {
+            "stage": "plan",
+            "minutes": 10
+          },
+          {
+            "stage": "build",
+            "minutes": 47,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 19,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 22,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 22,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:cb5d6ddd632b9e7ecaaeb638bdac00f4e578fe2a3a05a7aed5dd1232b08a6cd5",
+        "contract": "sha256:5e81db6a68903af056d21ea6aa883cf1425370f5e4dacacb882bae95d1d82473",
+        "plan": "sha256:56559da4126f3b374698a9155347ab7415a09ee6123da399fb68f73a745af51b",
+        "spec-1": "sha256:4d7c5dc4ac0d1b432a7a83af8ff2381926e7a6a56923f2eb6e8f3e2af4e28d9f",
+        "spec-2": "sha256:c6afc781e23ca067c3a8601bf98d38183d42c76fb7a2ee16dda99ab752e6da3e",
+        "build-report-1": "sha256:e9d0d7808c7f2759bdd71593c2c8ee224eeaba815016b76ac5f858885670d68c",
+        "build-data-1": "sha256:0590f8e0edc49048767bd223b05a9cf9ce646aff4ee631a74a4963c686e6dce4",
+        "verify-report-1": "sha256:73bbc700635f9febaa0063a27a5bb6417ee94fb4743227080b8477045ae51e36",
+        "verify-data-1": "sha256:c38669f903378b55a287b69ed34141a12093ecfaa0c10c54dc8115ce6e1bc541",
+        "build-report-2": "sha256:95de62566b87d047dde20dfc2af09ad7674fda9b824e29ac93d8e180c42d7ecf",
+        "build-data-2": "sha256:e45575a1478c970394cb0609cde6d3b8f8384aabb410259311170d99a96d6afc",
+        "verify-report-2": "sha256:4c2834955fbe519d0c37e17f173ad8be731181743c6a77e790bee9b2f086d86e",
+        "verify-data-2": "sha256:641dccc37e7f679e42e10bcff9f17beabcea81336c7dabc1e6beeec060032032"
+      },
+      "completed_at": "2026-05-31T04:00:22.432Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-learn.md",
+        ".claude/agents/ana-plan.md",
+        ".claude/agents/ana-setup.md",
+        ".claude/agents/ana-verify.md",
+        ".claude/agents/ana.md",
+        "packages/cli/src/commands/check.ts",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/init/types.ts",
+        "packages/cli/src/commands/platform.ts",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/constants.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/templates/.claude/agents/ana-plan.md",
+        "packages/cli/templates/.claude/agents/ana-setup.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/templates/.claude/skills/deployment/SKILL.md",
+        "packages/cli/templates/.codex/agents/ana-build.agent.toml",
+        "packages/cli/templates/.codex/agents/ana-build.md",
+        "packages/cli/templates/.codex/agents/ana-plan.agent.toml",
+        "packages/cli/templates/.codex/agents/ana-plan.md",
+        "packages/cli/templates/.codex/agents/ana-setup.agent.toml",
+        "packages/cli/templates/.codex/agents/ana-setup.md",
+        "packages/cli/templates/.codex/agents/ana-verify.agent.toml",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana.agent.toml",
+        "packages/cli/templates/.codex/agents/ana.md",
+        "packages/cli/templates/CLAUDE.md",
+        "packages/cli/tests/commands/check-dashboard.test.ts",
+        "packages/cli/tests/commands/doctor.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/platform.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/commands/setup-complete-integration.test.ts",
+        "packages/cli/tests/commands/setup-completion.test.ts",
+        "packages/cli/tests/commands/skill-seeding.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/e2e/init-flow.test.ts"
+      ],
+      "scope_summary": "Anatomia's pipeline cannot run on Codex. A developer who uses Codex instead of Claude Code gets scan intelligence and AGENTS.md, but not the pipeline (Think, Plan, Build, Verify). The pipeline is the product. Without it, Anatomia is a linter with opinions.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "No test for codex-only init path — A011/A012/A013 verified by source inspection only",
+          "file": "packages/cli/tests/commands/init.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A011",
+            "A012",
+            "A013"
+          ],
+          "id": "codex-support-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A029 (init-flow.test.ts asserts ana run) lacks @ana tag — verified by source inspection",
+          "file": "packages/cli/tests/e2e/init-flow.test.ts",
+          "anchor": null,
+          "line": 157,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A029"
+          ],
+          "id": "codex-support-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Duplicate JSDoc block on getPlatformFlags — old block left above new block",
+          "file": "packages/cli/src/commands/platform.ts",
+          "anchor": null,
+          "line": 83,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "codex-support-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A026 test asserts length > 0, not that correct platforms were detected — weak assertion for auto-detection",
+          "file": "packages/cli/tests/commands/init.test.ts",
+          "anchor": null,
+          "line": 1252,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "related_assertions": [
+            "A026"
+          ],
+          "id": "codex-support-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "createSkillSymlinks silently skips real directories — falls through to nothing when lstat succeeds but isSymbolicLink is false",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": "createSkillSymlinks",
+          "line": 669,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "codex-support-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A011-A013 block 'codex-only init' has no integration test — unit functions are tested individually but the combined codex-only path is not exercised",
+          "file": null,
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A011",
+            "A012",
+            "A013"
+          ],
+          "id": "codex-support-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-31T04:00:22.432Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "TOML mode field is dead data — dispatch uses hardcoded INTERACTIVE_AGENTS set instead",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 50,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A033"
+          ],
+          "id": "codex-support-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Duplicate JSDoc block on getPlatformFlags — old docstring not removed when new one added",
+          "file": "packages/cli/src/commands/platform.ts",
+          "anchor": null,
+          "line": 73,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "codex-support-C8",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "resolvePlatform accepts arbitrary platform strings without validation — --platform foo dispatches to unknown code path",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 84,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "codex-support-C9",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "parseSimpleToml silently drops lines with unquoted values, inline comments, or multiline strings",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 61,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "codex-support-C10",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana tag collisions — A028-A033 tags on pre-existing CC dispatch tests match different contract assertions from a prior plan",
+          "file": "packages/cli/tests/commands/run.test.ts",
+          "anchor": null,
+          "line": 117,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "codex-support-C11",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A029 test exists in init-flow.test.ts but lacks @ana tag — verified by source inspection",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "id": "codex-support-C12",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-05-31T04:00:22.432Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "advisoryPipelineCheck not called for Codex dispatch — only Claude path runs the advisory check",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 154,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "related_assertions": [],
+          "id": "codex-support-C13",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "No Codex-only E2E test — platform-conditional gating relies on unit test coverage only",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "createClaudeConfiguration no longer creates .claude/skills/ — depends on createSkillSymlinks ordering",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "getTemplatesDir() dev-mode path resolution is fragile — breaks when functions are imported directly in tests",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "TOML mode field written but not read — INTERACTIVE_AGENTS set hardcodes dispatch shape",
+          "file": "packages/cli/src/commands/run.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "model_reasoning_effort from TOML not mapped to Codex CLI flag",
+          "file": "packages/cli/src/commands/run.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-31T02:02:15.350Z",
+        "completed_at": "2026-05-31T04:00:22.425Z",
+        "commit_count": 0,
+        "base_commit": "5a994d12c9fcbc5156bfd3a735527b2cfb51edab"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
