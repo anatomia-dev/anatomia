@@ -1,0 +1,44 @@
+schema: 1
+findings:
+  - category: code
+    summary: "TOML mode field is dead data — dispatch uses hardcoded INTERACTIVE_AGENTS set instead"
+    file: "packages/cli/src/commands/run.ts"
+    line: 50
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A033"]
+  - category: code
+    summary: "Duplicate JSDoc block on getPlatformFlags — old docstring not removed when new one added"
+    file: "packages/cli/src/commands/platform.ts"
+    line: 73
+    severity: debt
+    suggested_action: accept
+  - category: code
+    summary: "resolvePlatform accepts arbitrary platform strings without validation — --platform foo dispatches to unknown code path"
+    file: "packages/cli/src/commands/run.ts"
+    line: 84
+    severity: risk
+    suggested_action: scope
+  - category: code
+    summary: "parseSimpleToml silently drops lines with unquoted values, inline comments, or multiline strings"
+    file: "packages/cli/src/commands/run.ts"
+    line: 61
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "@ana tag collisions — A028-A033 tags on pre-existing CC dispatch tests match different contract assertions from a prior plan"
+    file: "packages/cli/tests/commands/run.test.ts"
+    line: 117
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "A029 test exists in init-flow.test.ts but lacks @ana tag — verified by source inspection"
+    severity: observation
+    suggested_action: accept
+  - category: code
+    summary: "advisoryPipelineCheck not called for Codex dispatch — only Claude path runs the advisory check"
+    file: "packages/cli/src/commands/run.ts"
+    line: 154
+    severity: observation
+    suggested_action: scope
+    related_assertions: []
