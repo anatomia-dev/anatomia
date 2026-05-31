@@ -206,7 +206,7 @@ function dispatchToCodex(
     // Non-interactive mode: build as a single shell string so $(cat) expands correctly
     console.log(`Launching ${agentName} on Codex...`);
     const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
-    const cmd = `codex exec --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr}`;
+    const cmd = `codex exec --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr} "Follow your developer_instructions. Run ana work status to see the current pipeline state and begin."`.trim();
 
     const result = spawnSync(cmd, {
       stdio: 'inherit',
