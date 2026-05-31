@@ -652,7 +652,7 @@ Then: "Any other files to review, or accept the rest?"
 ### Writing enriched files
 
 After the user accepts:
-- Write each enriched skill file using Claude Code's file writing tools
+- Write each enriched skill file using the available file writing tools
 - Preserve `## Detected` — machine-owned, do not modify
 - Add/modify rules in `## Rules` section only
 - Leave `## Gotchas` and `## Examples` unchanged
@@ -696,13 +696,13 @@ If skills were enriched (option 1):
   - skills — [N] files enriched with project-specific patterns
 
   Your agents will use these immediately.
-  Start working: claude --agent ana
+  Start working: ana run
 
   Your context grows over time — proof chain entries from pipeline runs, 
   debugging sessions added to troubleshooting, and re-running setup all 
   make your context richer.
 
-  To add more detail later, run claude --agent ana-setup again.
+  To add more detail later, run ana run setup again.
 ```
 
 If skills were skipped (option 3) or kept at defaults:
@@ -715,13 +715,13 @@ If skills were skipped (option 3) or kept at defaults:
   - skills — [N] files with defaults and library rules
 
   Your agents will use these immediately.
-  Start working: claude --agent ana
+  Start working: ana run
 
   Your context grows over time — proof chain entries from pipeline runs, 
   debugging sessions added to troubleshooting, and re-running setup all 
   make your context richer.
 
-  To enrich skills or add more detail, run claude --agent ana-setup again.
+  To enrich skills or add more detail, run ana run setup again.
 ```
 
 ---

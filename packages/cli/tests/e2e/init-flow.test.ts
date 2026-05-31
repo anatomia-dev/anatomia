@@ -154,7 +154,7 @@ describe('ana init E2E', () => {
     expect(claudeMdExists).toBe(true);
 
     const claudeMdContent = await fs.readFile(path.join(tmpProject, 'CLAUDE.md'), 'utf-8');
-    expect(claudeMdContent).toContain('claude --agent ana');
+    expect(claudeMdContent).toContain('ana run');
   }, 30000); // 30s timeout
 
   it('re-init preserves context/ files (user enrichment) but refreshes state/', async () => {

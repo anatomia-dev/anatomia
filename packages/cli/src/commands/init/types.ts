@@ -11,6 +11,7 @@
 export interface InitCommandOptions {
   force?: boolean;
   yes?: boolean;
+  platforms?: string;
 }
 
 /** Installation state detected during pre-scan validation */

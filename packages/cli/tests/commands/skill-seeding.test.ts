@@ -52,7 +52,7 @@ describe('skill seeding', () => {
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
     const content = await fs.readFile(
-      path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'),
+      path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'),
       'utf-8'
     );
     expect(content).toContain('## Detected');
@@ -63,7 +63,7 @@ describe('skill seeding', () => {
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
     const content = await fs.readFile(
-      path.join(tempDir, '.claude', 'skills', 'testing-standards', 'SKILL.md'),
+      path.join(tempDir, '.ana', 'skills', 'testing-standards', 'SKILL.md'),
       'utf-8'
     );
     expect(content).toContain('## Detected');
@@ -74,7 +74,7 @@ describe('skill seeding', () => {
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
     const content = await fs.readFile(
-      path.join(tempDir, '.claude', 'skills', 'git-workflow', 'SKILL.md'),
+      path.join(tempDir, '.ana', 'skills', 'git-workflow', 'SKILL.md'),
       'utf-8'
     );
     expect(content).toContain('## Detected');
@@ -89,7 +89,7 @@ describe('skill seeding', () => {
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
     const content = await fs.readFile(
-      path.join(tempDir, '.claude', 'skills', 'testing-standards', 'SKILL.md'),
+      path.join(tempDir, '.ana', 'skills', 'testing-standards', 'SKILL.md'),
       'utf-8'
     );
     const detectedCount = (content.match(/## Detected/g) || []).length;
@@ -114,12 +114,14 @@ describe('skill seeding', () => {
     // on the fresh-install path.
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
-    const skillPath = path.join(tempDir, '.claude', 'skills', 'testing-standards', 'SKILL.md');
+    const skillPath = path.join(tempDir, '.ana', 'skills', 'testing-standards', 'SKILL.md');
     const afterFirstInit = await fs.readFile(skillPath, 'utf-8');
     expect(afterFirstInit).toContain('watch mode');  // gotcha was injected
 
-    // Simulate user editing ## Gotchas with their own content + delete .ana/
-    // to put the project in the "partial install" Path B state.
+    // Simulate user editing ## Gotchas with their own content.
+    // Skills now live in .ana/skills/ (canonical location), so re-init
+    // preserves them via preserveUserState rather than the old Path B
+    // scenario (skill file outside .ana/).
     const customGotchas = '- CUSTOM GOTCHA: do not mock the database in integration tests\n- CUSTOM GOTCHA: tests that touch /tmp must clean up in afterEach';
     const gotchasIdx = afterFirstInit.indexOf('## Gotchas');
     const nextSectionAfterGotchas = afterFirstInit.indexOf('\n## ', gotchasIdx + 1);
@@ -127,9 +129,8 @@ describe('skill seeding', () => {
     const afterGotchas = nextSectionAfterGotchas === -1 ? '' : afterFirstInit.slice(nextSectionAfterGotchas);
     const customContent = beforeGotchas + '## Gotchas\n' + customGotchas + '\n' + afterGotchas;
     await fs.writeFile(skillPath, customContent, 'utf-8');
-    await fs.rm(path.join(tempDir, '.ana'), { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
 
-    // Re-init: Path B (skill file exists, .ana/ missing). Should preserve
+    // Re-init: .ana/ exists with user-edited skills. Should preserve
     // custom gotchas and refresh Detected, but NOT re-inject vitest-watch-mode.
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
@@ -159,7 +160,7 @@ describe('skill seeding', () => {
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
     const content = await fs.readFile(
-      path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'),
+      path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'),
       'utf-8'
     );
     // TypeScript project → ESM .js extension rule should be injected
@@ -171,7 +172,7 @@ describe('skill seeding', () => {
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
     const content = await fs.readFile(
-      path.join(tempDir, '.claude', 'skills', 'troubleshooting', 'SKILL.md'),
+      path.join(tempDir, '.ana', 'skills', 'troubleshooting', 'SKILL.md'),
       'utf-8'
     );
     // Next.js + Vitest + Prisma project → should have common issues
@@ -184,7 +185,7 @@ describe('skill seeding', () => {
     // First init — creates skill files with scan data
     await execFileAsync('node', [cliPath, 'init', '--force'], { cwd: tempDir });
 
-    const skillPath = path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md');
+    const skillPath = path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md');
 
     // Read the initial content to get the original Detected section
     const initialContent = await fs.readFile(skillPath, 'utf-8');

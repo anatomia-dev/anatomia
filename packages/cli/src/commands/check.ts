@@ -22,7 +22,7 @@ import { parseEngineResultPartial } from '../engine/types/engineResult-partial.j
 import { AnaJsonSchema, type AnaJson } from './init/anaJsonSchema.js';
 import { findProjectRoot } from '../utils/validators.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
-import { getSkillsDir } from './platform.js';
+import { getSkillsDir, getSkillsDirRel } from './platform.js';
 
 /**
  * The 6 canonical sections of project-context.md.
@@ -1408,7 +1408,7 @@ async function displaySetupDashboard(cwd: string): Promise<boolean> {
     console.log(`  ${chalk.yellow('⚠')} ${name.padEnd(22)} missing (expected core skill)`);
   }
   if (skills.length === 0 && missingCore.length === 0) {
-    console.log(chalk.gray('  No skills found in .claude/skills/'));
+    console.log(chalk.gray(`  No skills found in ${getSkillsDirRel()}/`));
   } else {
     for (const skill of skills) {
       const result = await checkSkill(cwd, skill);

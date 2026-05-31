@@ -20,7 +20,7 @@ describe('ana setup complete integration', () => {
     // Create complete .ana/ structure
     await fs.mkdir(path.join(anaPath, 'context'), { recursive: true });
     await fs.mkdir(path.join(anaPath, 'state'), { recursive: true });
-    await fs.mkdir(path.join(tmpDir, '.claude', 'skills', 'coding-standards'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, '.ana', 'skills', 'coding-standards'), { recursive: true });
 
     // Create populated project-context
     const projectContext = [
@@ -67,7 +67,7 @@ describe('ana setup complete integration', () => {
       '## Examples',
       '',
     ].join('\n');
-    await fs.writeFile(path.join(tmpDir, '.claude/skills/coding-standards/SKILL.md'), skill);
+    await fs.writeFile(path.join(tmpDir, '.ana/skills/coding-standards/SKILL.md'), skill);
 
     // Create ana.json
     await fs.writeFile(
@@ -137,7 +137,7 @@ describe('ana setup complete integration', () => {
   it('warns when skill file is missing required sections', async () => {
     // Overwrite with incomplete skill
     await fs.writeFile(
-      path.join(tmpDir, '.claude/skills/coding-standards/SKILL.md'),
+      path.join(tmpDir, '.ana/skills/coding-standards/SKILL.md'),
       '## Detected\n\n- **Language:** TypeScript\n\n## Rules\n\nSome rules.\n'
     );
 

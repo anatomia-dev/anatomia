@@ -41,7 +41,7 @@ If one scope awaits: name it and ask before starting. Wait for explicit confirma
 
 If multiple scopes await: list them, ask which one.
 
-If no scopes exist: tell the user to open `claude --agent ana` to scope work first.
+If no scopes exist: tell the user to open `ana run` to scope work first.
 
 ### 2. Load Context (after user confirms which scope to work on)
 
@@ -212,7 +212,7 @@ The `## Phases` heading and `- [ ]` checkbox format is mandatory — the CLI par
 2. Write `spec-2.md` — second phase, self-contained
 3. Continue for each phase (max 5 specs)
 
-If you need more than 5 specs, the scope is too large. Tell the user: "This scope should be split into multiple scopes. Return to `claude --agent ana` to decompose."
+If you need more than 5 specs, the scope is too large. Tell the user: "This scope should be split into multiple scopes. Return to `ana run` to decompose."
 
 ### Step 7: Write the Contract
 
@@ -322,9 +322,9 @@ One contract per plan. Saved with all specs. The contract covers all phases.
 
 ### Step 9: Route
 
-Tell the user: "Spec saved. Review it, then open `claude --agent ana-build` to implement."
+Tell the user: "Spec saved. Review it, then open `ana run build` to implement."
 
-For multi-phase: "Plan and specs saved. Review plan.md for the sequence. When ready, open `claude --agent ana-build`."
+For multi-phase: "Plan and specs saved. Review plan.md for the sequence. When ready, open `ana run build`."
 
 ---
 

@@ -35,11 +35,11 @@ import {
   generateProjectContextScaffold,
   generateDesignPrinciplesTemplate,
 } from '../../utils/scaffold-generators.js';
-import { AGENT_FILES, getStackSummary } from '../../constants.js';
+import { AGENT_FILES, CODEX_AGENT_FILES, getStackSummary } from '../../constants.js';
 import type { InitState } from './types.js';
 import { dirExists, fileExists } from './preflight.js';
 import { getTemplatesDir, makeTestCommandNonInteractive } from './state.js';
-import { scaffoldAndSeedSkills } from './skills.js';
+// scaffoldAndSeedSkills is now called from the init orchestrator (index.ts)
 import { getPatternLibrary } from '../../engine/types/patterns.js';
 
 /**
@@ -164,15 +164,14 @@ async function copyAndVerifyFile(
  *
  * @param cwd - Project root directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
- * @param initState - Installation state from pre-scan validation
+ * @param _initState - Installation state (unused — skills scaffolding moved to orchestrator)
  */
-export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, initState: InitState): Promise<void> {
+export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState): Promise<void> {
   const spinner = ora('Creating .claude/ configuration...').start();
 
   const claudePath = path.join(cwd, '.claude');
   const settingsPath = path.join(claudePath, 'settings.json');
   const agentsPath = path.join(claudePath, 'agents');
-  const skillsPath = path.join(claudePath, 'skills');
   const templatesDir = getTemplatesDir();
 
   // Load our template settings
@@ -194,20 +193,14 @@ settings.local.json
     // First run: create everything fresh
     await fs.mkdir(claudePath, { recursive: true });
     await fs.mkdir(agentsPath, { recursive: true });
-    await fs.mkdir(skillsPath, { recursive: true });
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
     await fs.writeFile(claudeGitignorePath, claudeGitignoreContent, 'utf-8');
 
     // Copy all agent files
     await copyAgentFiles(agentsPath, templatesDir);
 
-    // Copy and seed skill files (dynamic manifest)
-    await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, 'fresh');
-
     // Copy CLAUDE.md to project root
     await copyClaudeMd(cwd, templatesDir, engineResult);
-    await generateAgentsMd(cwd, engineResult);  // Cross-tool AI standard
-    await generatePrimaryPackageAgentsMd(cwd, engineResult);  // Primary package AGENTS.md for monorepos
 
     spinner.succeed('Created .claude/ configuration');
     return;
@@ -244,22 +237,11 @@ settings.local.json
     await fs.mkdir(agentsPath, { recursive: true });
   }
 
-  // Create skills/ if it doesn't exist
-  const skillsExists = await dirExists(skillsPath);
-  if (!skillsExists) {
-    await fs.mkdir(skillsPath, { recursive: true });
-  }
-
   // Copy agent files (merge-not-overwrite)
   await copyAgentFiles(agentsPath, templatesDir);
 
-  // Copy and seed skill files (dynamic manifest, re-init aware)
-  await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, initState);
-
-  // Copy CLAUDE.md + AGENTS.md to project root (merge-not-overwrite)
+  // Copy CLAUDE.md to project root (merge-not-overwrite)
   await copyClaudeMd(cwd, templatesDir, engineResult);
-  await generateAgentsMd(cwd, engineResult);
-  await generatePrimaryPackageAgentsMd(cwd, engineResult);  // Primary package AGENTS.md for monorepos
 
   spinner.succeed('Created .claude/ configuration (merged)');
 }
@@ -575,6 +557,122 @@ function hookEntryMatches(a: HookEntry, b: HookEntry): boolean {
   const bCommands = (b.hooks || []).map((h) => h.command);
 
   return bCommands.some((cmd) => aCommands.includes(cmd));
+}
+
+/**
+ * Create .codex/ configuration
+ *
+ * Creates .codex/agents/ directory with Codex agent templates and TOML manifests.
+ * Mirrors createClaudeConfiguration shape: merge-not-overwrite for existing agent files.
+ *
+ * @param cwd - Project root directory
+ * @param _initState - Installation state (unused — reserved for future merge logic)
+ */
+export async function createCodexConfiguration(cwd: string, _initState: InitState): Promise<void> {
+  const spinner = ora('Creating .codex/ configuration...').start();
+
+  const codexPath = path.join(cwd, '.codex');
+  const agentsPath = path.join(codexPath, 'agents');
+  const templatesDir = getTemplatesDir();
+
+  const codexExists = await dirExists(codexPath);
+
+  if (!codexExists) {
+    // First run: create fresh
+    await fs.mkdir(codexPath, { recursive: true });
+    await fs.mkdir(agentsPath, { recursive: true });
+
+    // Copy agent .md files and .agent.toml manifests
+    await copyCodexAgentFiles(agentsPath, templatesDir);
+
+    spinner.succeed('Created .codex/ configuration');
+    return;
+  }
+
+  // .codex/ exists — merge (don't overwrite user customizations)
+  const agentsExists = await dirExists(agentsPath);
+  if (!agentsExists) {
+    await fs.mkdir(agentsPath, { recursive: true });
+  }
+
+  await copyCodexAgentFiles(agentsPath, templatesDir);
+
+  spinner.succeed('Created .codex/ configuration (merged)');
+}
+
+/**
+ * Copy Codex agent files to .codex/agents/
+ *
+ * Copies agent definition files (.md) and TOML manifests (.agent.toml)
+ * from templates without overwriting existing ones.
+ *
+ * @param agentsPath - Path to .codex/agents/ directory
+ * @param templatesDir - Path to CLI templates directory
+ */
+async function copyCodexAgentFiles(agentsPath: string, templatesDir: string): Promise<void> {
+  for (const agentFile of CODEX_AGENT_FILES) {
+    // Copy .md file
+    const mdSource = path.join(templatesDir, '.codex/agents', agentFile);
+    const mdDest = path.join(agentsPath, agentFile);
+    if (!(await fileExists(mdDest))) {
+      await copyAndVerifyFile(mdSource, mdDest, `.codex/agents/${agentFile}`);
+    }
+
+    // Copy .agent.toml manifest
+    const baseName = agentFile.replace('.md', '');
+    const tomlFile = `${baseName}.agent.toml`;
+    const tomlSource = path.join(templatesDir, '.codex/agents', tomlFile);
+    const tomlDest = path.join(agentsPath, tomlFile);
+    if (!(await fileExists(tomlDest))) {
+      await copyAndVerifyFile(tomlSource, tomlDest, `.codex/agents/${tomlFile}`);
+    }
+  }
+}
+
+/**
+ * Create skill symlinks for platform directories.
+ *
+ * Creates symlinks from `.claude/skills` and `.agents/skills` to the
+ * canonical `.ana/skills/` directory. Uses relative paths so symlinks
+ * survive clone. Idempotent — skips if symlink already exists.
+ *
+ * @param cwd - Project root directory
+ * @param platforms - Array of active platforms
+ */
+export async function createSkillSymlinks(cwd: string, platforms: string[]): Promise<void> {
+  const symlinks: Array<{ linkPath: string; target: string }> = [];
+
+  if (platforms.includes('claude')) {
+    symlinks.push({
+      linkPath: path.join(cwd, '.claude', 'skills'),
+      target: path.join('..', '.ana', 'skills'),
+    });
+  }
+
+  if (platforms.includes('codex')) {
+    // .agents/skills → ../.ana/skills
+    const agentsDir = path.join(cwd, '.agents');
+    await fs.mkdir(agentsDir, { recursive: true });
+    symlinks.push({
+      linkPath: path.join(agentsDir, 'skills'),
+      target: path.join('..', '.ana', 'skills'),
+    });
+  }
+
+  for (const { linkPath, target } of symlinks) {
+    try {
+      const stats = await fs.lstat(linkPath);
+      if (stats.isSymbolicLink()) {
+        // Already a symlink — skip (idempotent)
+        continue;
+      }
+      // It's a real directory — will be handled by skill migration in state.ts
+    } catch {
+      // Doesn't exist — create the symlink
+      await fs.mkdir(path.dirname(linkPath), { recursive: true });
+      await fs.symlink(target, linkPath);
+    }
+  }
 }
 
 /**

@@ -17,7 +17,7 @@ vi.mock('node:child_process', () => ({
 }));
 
 import { spawnSync } from 'node:child_process';
-import { executeRun } from '../../src/commands/run.js';
+import { executeRun, resolvePlatform, parseSimpleToml } from '../../src/commands/run.js';
 
 const mockedSpawnSync = vi.mocked(spawnSync);
 
@@ -40,7 +40,7 @@ describe('ana run', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     mockedSpawnSync.mockReset();
-    // Default: `which` succeeds (claude is in PATH), `claude` exits 0
+    // Default: `which` succeeds (claude and codex are in PATH), spawned processes exit 0
     mockedSpawnSync.mockImplementation(((cmd: string) => {
       if (cmd === 'which' || cmd === 'where') {
         return { status: 0, stdout: '/usr/bin/claude\n', stderr: '' };
@@ -71,10 +71,42 @@ describe('ana run', () => {
     );
   }
 
+  /** Create a Codex-configured project with TOML manifests and prompt files. */
+  function createCodexProject(config?: Record<string, unknown>): void {
+    const anaDir = path.join(tempDir, '.ana');
+    fs.mkdirSync(anaDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({
+        name: 'test',
+        platforms: ['codex'],
+        platformFlags: {},
+        ...config,
+      }),
+    );
+
+    // Create .codex/agents/ with TOML manifests and prompt files
+    const agentsDir = path.join(tempDir, '.codex', 'agents');
+    fs.mkdirSync(agentsDir, { recursive: true });
+
+    const agents = ['ana', 'ana-build', 'ana-plan', 'ana-verify', 'ana-setup'];
+    for (const agent of agents) {
+      const mode = (agent === 'ana' || agent === 'ana-setup') ? 'auto' : 'exec';
+      fs.writeFileSync(
+        path.join(agentsDir, `${agent}.agent.toml`),
+        `model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmodel_reasoning_effort = "high"\nmode = "${mode}"\n`,
+      );
+      fs.writeFileSync(
+        path.join(agentsDir, `${agent}.md`),
+        `# ${agent} prompt\nYou are ${agent}.`,
+      );
+    }
+  }
+
   /** Run executeRun and return the exit code from the thrown error. */
-  function runAndGetExit(suffix: string, args: string[] = []): number {
+  function runAndGetExit(suffix: string, args: string[] = [], platformFlag?: string): number {
     try {
-      executeRun(suffix, args);
+      executeRun(suffix, args, platformFlag);
       return -1; // Should not reach here
     } catch (e) {
       const match = (e as Error).message.match(/process\.exit\((\d+)\)/);
@@ -241,5 +273,308 @@ describe('ana run', () => {
 
     const logOutput = logSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
     expect(logOutput).not.toContain('No work item');
+  });
+
+  describe('Codex dispatch', () => {
+    // @ana A030, A031, A032
+    it('dispatches codex exec with model and sandbox from TOML', () => {
+      createCodexProject();
+      runAndGetExit('build');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).toContain('exec');
+      expect(spawnArgs).toContain('--model');
+      expect(spawnArgs).toContain('gpt-5.5');
+      expect(spawnArgs).toContain('--sandbox');
+      expect(spawnArgs).toContain('danger-full-access');
+    });
+
+    // @ana A033
+    it('opens interactive mode for Think agent (no exec)', () => {
+      createCodexProject();
+      runAndGetExit('');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).not.toContain('exec');
+      expect(spawnArgs).toContain('--model');
+      expect(spawnArgs).toContain('--sandbox');
+    });
+
+    it('opens interactive mode for Setup agent (no exec)', () => {
+      createCodexProject();
+      runAndGetExit('setup');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).not.toContain('exec');
+    });
+
+    it('uses exec mode for Plan agent', () => {
+      createCodexProject();
+      runAndGetExit('plan');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).toContain('exec');
+    });
+
+    it('uses exec mode for Verify agent', () => {
+      createCodexProject();
+      runAndGetExit('verify');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).toContain('exec');
+    });
+
+    // @ana A035
+    it('shows helpful error for Learn agent on Codex', () => {
+      createCodexProject();
+      const code = runAndGetExit('learn');
+      expect(code).toBe(1);
+      const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(errorOutput).toContain('not yet available on Codex');
+      expect(errorOutput).toContain('claude --agent ana-learn');
+    });
+
+    it('uses shell: true for codex spawn', () => {
+      createCodexProject();
+      runAndGetExit('build');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnOpts = spawnCall![2] as Record<string, unknown>;
+      expect(spawnOpts['shell']).toBe(true);
+    });
+
+    it('includes developer_instructions via $(cat) in args', () => {
+      createCodexProject();
+      runAndGetExit('build');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnArgs = spawnCall![1] as string[];
+      const catArg = spawnArgs.find(a => typeof a === 'string' && a.includes('$(cat'));
+      expect(catArg).toBeDefined();
+      expect(catArg).toContain('ana-build.md');
+    });
+
+    it('errors when codex is not in PATH', () => {
+      createCodexProject();
+      mockedSpawnSync.mockImplementation(((cmd: string, args?: string[]) => {
+        if (cmd === 'which' || cmd === 'where') {
+          const target = args?.[0];
+          if (target === 'codex') {
+            return { status: 1, stdout: '', stderr: '' };
+          }
+          return { status: 0, stdout: '/usr/bin/claude\n', stderr: '' };
+        }
+        return { status: 0, stdout: '', stderr: '' };
+      }) as typeof spawnSync);
+
+      const code = runAndGetExit('build');
+      expect(code).toBe(1);
+      const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(errorOutput).toContain('codex not found');
+      expect(errorOutput).toContain('https://openai.com/codex');
+    });
+
+    it('errors when agent prompt file is missing', () => {
+      createCodexProject();
+      // Remove the prompt file for ana-build
+      fs.unlinkSync(path.join(tempDir, '.codex', 'agents', 'ana-build.md'));
+
+      const code = runAndGetExit('build');
+      expect(code).toBe(1);
+      const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(errorOutput).toContain('Agent prompt not found');
+    });
+
+    it('passes through platform flags for codex', () => {
+      createCodexProject({
+        platformFlags: { codex: ['--full-auto'] },
+      });
+      runAndGetExit('build');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).toContain('--full-auto');
+    });
+
+    // @ana A040
+    it('no codex learn template exists (Learn not in agent list)', () => {
+      // Verify that createCodexProject does not create a learn prompt
+      createCodexProject();
+      const learnPrompt = path.join(tempDir, '.codex', 'agents', 'ana-learn.md');
+      const learnToml = path.join(tempDir, '.codex', 'agents', 'ana-learn.agent.toml');
+      expect(fs.existsSync(learnPrompt)).toBe(false);
+      expect(fs.existsSync(learnToml)).toBe(false);
+    });
+
+    it('prints launch message for non-interactive Codex agents', () => {
+      createCodexProject();
+      runAndGetExit('build');
+
+      const logOutput = logSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(logOutput).toContain('Launching ana-build on Codex');
+    });
+  });
+
+  describe('platform resolution', () => {
+    // @ana A034
+    it('--platform flag selects codex dispatch', () => {
+      // Project configured for claude, but --platform codex overrides
+      createProject();
+      // Also need codex agents for dispatch
+      const agentsDir = path.join(tempDir, '.codex', 'agents');
+      fs.mkdirSync(agentsDir, { recursive: true });
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmode = "exec"\n');
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.md'), '# build prompt');
+
+      runAndGetExit('build', [], 'codex');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+    });
+
+    // @ana A036
+    it('--platform flag takes priority over ANA_PLATFORM env', () => {
+      createProject({ platforms: ['claude', 'codex'] });
+      const agentsDir = path.join(tempDir, '.codex', 'agents');
+      fs.mkdirSync(agentsDir, { recursive: true });
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmode = "exec"\n');
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.md'), '# build prompt');
+
+      const originalEnv = process.env['ANA_PLATFORM'];
+      process.env['ANA_PLATFORM'] = 'claude';
+      try {
+        runAndGetExit('build', [], 'codex');
+        const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+        expect(spawnCall).toBeDefined();
+      } finally {
+        if (originalEnv === undefined) {
+          delete process.env['ANA_PLATFORM'];
+        } else {
+          process.env['ANA_PLATFORM'] = originalEnv;
+        }
+      }
+    });
+
+    it('ANA_PLATFORM env selects platform when no flag', () => {
+      createProject({ platforms: ['claude', 'codex'] });
+      const agentsDir = path.join(tempDir, '.codex', 'agents');
+      fs.mkdirSync(agentsDir, { recursive: true });
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.agent.toml'), 'model = "gpt-5.5"\nsandbox_mode = "danger-full-access"\nmode = "exec"\n');
+      fs.writeFileSync(path.join(agentsDir, 'ana-build.md'), '# build prompt');
+
+      const originalEnv = process.env['ANA_PLATFORM'];
+      process.env['ANA_PLATFORM'] = 'codex';
+      try {
+        runAndGetExit('build');
+        const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+        expect(spawnCall).toBeDefined();
+      } finally {
+        if (originalEnv === undefined) {
+          delete process.env['ANA_PLATFORM'];
+        } else {
+          process.env['ANA_PLATFORM'] = originalEnv;
+        }
+      }
+    });
+
+    it('sole platform in ana.json auto-selects', () => {
+      createCodexProject();
+      runAndGetExit('build');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+    });
+
+    // @ana A037
+    it('multiple platforms without flag shows error with guidance', () => {
+      createProject({ platforms: ['claude', 'codex'] });
+      const originalEnv = process.env['ANA_PLATFORM'];
+      delete process.env['ANA_PLATFORM'];
+      try {
+        const code = runAndGetExit('build');
+        expect(code).toBe(1);
+        const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+        expect(errorOutput).toContain('--platform');
+        expect(errorOutput).toContain('ANA_PLATFORM');
+      } finally {
+        if (originalEnv !== undefined) {
+          process.env['ANA_PLATFORM'] = originalEnv;
+        }
+      }
+    });
+
+    it('CC dispatch unchanged when platform is claude', () => {
+      createProject();
+      runAndGetExit('build');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'claude');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).toContain('--agent');
+      expect(spawnArgs).toContain('ana-build');
+    });
+  });
+
+  describe('parseSimpleToml', () => {
+    it('parses key-value pairs', () => {
+      const result = parseSimpleToml('model = "gpt-5.5"\nsandbox_mode = "danger-full-access"');
+      expect(result).toEqual({ model: 'gpt-5.5', sandbox_mode: 'danger-full-access' });
+    });
+
+    it('ignores comments and blank lines', () => {
+      const result = parseSimpleToml('# comment\n\nmodel = "gpt-5.5"\n');
+      expect(result).toEqual({ model: 'gpt-5.5' });
+    });
+
+    it('returns empty object for empty content', () => {
+      expect(parseSimpleToml('')).toEqual({});
+    });
+  });
+
+  describe('resolvePlatform', () => {
+    it('returns flag value when provided', () => {
+      createProject();
+      expect(resolvePlatform(tempDir, 'codex')).toBe('codex');
+    });
+
+    it('falls back to ANA_PLATFORM env', () => {
+      createProject({ platforms: ['claude', 'codex'] });
+      const originalEnv = process.env['ANA_PLATFORM'];
+      process.env['ANA_PLATFORM'] = 'codex';
+      try {
+        expect(resolvePlatform(tempDir, undefined)).toBe('codex');
+      } finally {
+        if (originalEnv === undefined) {
+          delete process.env['ANA_PLATFORM'];
+        } else {
+          process.env['ANA_PLATFORM'] = originalEnv;
+        }
+      }
+    });
+
+    it('returns sole platform from ana.json', () => {
+      createProject({ platforms: ['codex'] });
+      expect(resolvePlatform(tempDir, undefined)).toBe('codex');
+    });
+
+    it('defaults to claude when no ana.json', () => {
+      const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'resolve-test-'));
+      try {
+        expect(resolvePlatform(emptyDir, undefined)).toBe('claude');
+      } finally {
+        fs.rmSync(emptyDir, { recursive: true, force: true });
+      }
+    });
   });
 });

@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "No Codex-only E2E test — platform-conditional gating relies on unit test coverage only"
+    severity: debt
+    suggested_action: scope
+  - summary: "createClaudeConfiguration no longer creates .claude/skills/ — depends on createSkillSymlinks ordering"
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "getTemplatesDir() dev-mode path resolution is fragile — breaks when functions are imported directly in tests"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept

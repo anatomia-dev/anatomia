@@ -26,6 +26,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { getProjectName } from '../../utils/validators.js';
@@ -37,6 +38,10 @@ import {
   createDirectoryStructure,
   generateScaffolds,
   createClaudeConfiguration,
+  createCodexConfiguration,
+  createSkillSymlinks,
+  generateAgentsMd,
+  generatePrimaryPackageAgentsMd,
 } from './assets.js';
 import {
   runAnalyzer,
@@ -46,7 +51,11 @@ import {
   atomicRename,
   displaySuccessMessage,
   preserveUserState,
+  detectPlatforms,
+  migrateSkillsToCanonical,
+  getTemplatesDir,
 } from './state.js';
+import { scaffoldAndSeedSkills } from './skills.js';
 
 /**
  * Register the `init` command.
@@ -58,7 +67,8 @@ export function registerInitCommand(program: Command): void {
     .description('Scan project and generate agent context')
     .option('-f, --force', 'Skip confirmation prompts for existing installations')
     .option('-y, --yes', 'Skip confirmation prompts (non-interactive mode)')
-    .addHelpText('after', '\nEXAMPLES\n  $ ana init\n  $ ana init --yes')
+    .option('--platforms <platforms>', 'Comma-separated list of platforms (claude,codex)')
+    .addHelpText('after', '\nEXAMPLES\n  $ ana init\n  $ ana init --yes\n  $ ana init --platforms claude,codex')
     .action(async (options: InitCommandOptions, command: Command) => {
     // Reject running from a worktree
     if (isWorktreeDirectory()) {
@@ -127,8 +137,44 @@ export function registerInitCommand(program: Command): void {
         await fs.rm(oldPath, { recursive: true, force: true });
       }
 
-      // Create .claude/ configuration (outside .ana/ — merges with existing)
-      await createClaudeConfiguration(cwd, engineResult, preflight.initState);
+      // Determine platforms — flag > existing ana.json > auto-detect
+      const platforms = resolvePlatforms(options, preflight.anaExisted, cwd);
+
+      // Update ana.json with resolved platforms
+      const anaJsonPath = path.join(anaPath, 'ana.json');
+      try {
+        const anaJsonContent = JSON.parse(await fs.readFile(anaJsonPath, 'utf-8'));
+        anaJsonContent.platforms = platforms;
+        await fs.writeFile(anaJsonPath, JSON.stringify(anaJsonContent, null, 2), 'utf-8');
+      } catch {
+        // ana.json missing or malformed — platforms will be default
+      }
+
+      // Migrate .claude/skills/ real dir → .ana/skills/ + symlink (re-init only)
+      if (preflight.anaExisted) {
+        await migrateSkillsToCanonical(cwd);
+      }
+
+      // Skills go to .ana/skills/ (canonical location, shared by all platforms)
+      const skillsPath = path.join(anaPath, 'skills');
+      const templatesDir = getTemplatesDir();
+      await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState);
+
+      // Platform-conditional configuration
+      if (platforms.includes('claude')) {
+        await createClaudeConfiguration(cwd, engineResult, preflight.initState);
+      }
+      if (platforms.includes('codex')) {
+        await createCodexConfiguration(cwd, preflight.initState);
+      }
+
+      // Cross-tool files — always generated regardless of platform
+      // CLAUDE.md is handled inside createClaudeConfiguration (Claude-specific)
+      await generateAgentsMd(cwd, engineResult);
+      await generatePrimaryPackageAgentsMd(cwd, engineResult);
+
+      // Skill symlinks — connect platform dirs to canonical .ana/skills/
+      await createSkillSymlinks(cwd, platforms);
 
       // Check for gitignored infrastructure files and warn before commit
       try {
@@ -190,4 +236,39 @@ export function registerInitCommand(program: Command): void {
 
   registerInitCommitCommand(initCommand);
   program.addCommand(initCommand);
+}
+
+/**
+ * Resolve which platforms to configure.
+ *
+ * Priority: --platforms flag > existing ana.json > auto-detect from PATH.
+ * Re-init preserves platforms from existing ana.json if no flag is given.
+ *
+ * @param options - Command options (may contain platforms flag)
+ * @param anaExisted - Whether .ana/ existed before init
+ * @param cwd - Project root directory
+ * @returns Array of platform names
+ */
+function resolvePlatforms(options: InitCommandOptions, anaExisted: boolean, cwd: string): string[] {
+  // Explicit flag takes priority
+  if (options.platforms) {
+    const platforms = options.platforms.split(',').map((p: string) => p.trim()).filter(Boolean);
+    if (platforms.length > 0) return platforms;
+  }
+
+  // Re-init: preserve from existing ana.json
+  if (anaExisted) {
+    try {
+      const anaJsonPath = path.join(cwd, '.ana', 'ana.json');
+      const raw = JSON.parse(readFileSync(anaJsonPath, 'utf-8'));
+      if (Array.isArray(raw.platforms) && raw.platforms.length > 0) {
+        return raw.platforms;
+      }
+    } catch {
+      // Fall through to auto-detect
+    }
+  }
+
+  // Auto-detect from PATH
+  return detectPlatforms();
 }

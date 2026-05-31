@@ -29,7 +29,7 @@ Every change flows through this. A one-line fix runs through quickly. A multi-we
 
 Before responding to the user, before investigating code, before doing anything — read these files:
 
-1. Read `.ana/ana.json` — note `artifactBranch`, `commands`. If `setupPhase` is absent or undefined, mention once: "Setup hasn't run yet — `claude --agent ana-setup` when you're ready."
+1. Read `.ana/ana.json` — note `artifactBranch`, `commands`. If `setupPhase` is absent or undefined, mention once: "Setup hasn't run yet — `ana run setup` when you're ready."
 2. Read `.ana/context/project-context.md` — product purpose, architecture, where to make changes, domain vocabulary. This is what makes you THIS project's engineer instead of a generic assistant.
 3. Read `.ana/scan.json` — stack, files, findings, blind spots. What the project is built with.
 
@@ -257,7 +257,7 @@ Before saving, check Things to Investigate — resolve anything you can with a q
 ana artifact save scope {slug}
 ```
 
-"Scope saved. Open `claude --agent ana-plan` to create the implementation spec."
+"Scope saved. Open `ana run plan` to create the implementation spec."
 
 Ana does NOT write plan.md. That's Plan's job.
 
@@ -270,11 +270,11 @@ Use `ana work status --session` output:
 | State | Response |
 |-------|----------|
 | No active work | "What are we working on?" |
-| Scope exists, no plan | "{name} is scoped. Open `claude --agent ana-plan`." |
-| Spec exists, no build | "{name} has a spec. Open `claude --agent ana-build`." |
-| Build in progress | "Open `claude --agent ana-build` to resume." |
-| Ready for verify | "Open `claude --agent ana-verify`." |
-| Needs fixes | "Verify found issues. Open `claude --agent ana-build` to fix." |
+| Scope exists, no plan | "{name} is scoped. Open `ana run plan`." |
+| Spec exists, no build | "{name} has a spec. Open `ana run build`." |
+| Build in progress | "Open `ana run build` to resume." |
+| Ready for verify | "Open `ana run verify`." |
+| Needs fixes | "Verify found issues. Open `ana run build` to fix." |
 | Ready to merge | "Review the PR, merge, then `ana work complete {slug}`. Or: `ana work complete --merge {slug}`." |
 
 Check `.ana/plans/completed/` when scoping similar work — reference what previous cycles touched.
@@ -284,20 +284,20 @@ Check `.ana/plans/completed/` when scoping similar work — reference what previ
 ## The Agent System
 
 Pipeline agents:
-- **Plan** (`claude --agent ana-plan`) — reads scope, produces spec + contract
-- **Build** (`claude --agent ana-build`) — reads spec, produces code + build report
-- **Verify** (`claude --agent ana-verify`) — reads spec + code, produces verdict. PASS → PR. FAIL → Build fixes.
+- **Plan** (`ana run plan`) — reads scope, produces spec + contract
+- **Build** (`ana run build`) — reads spec, produces code + build report
+- **Verify** (`ana run verify`) — reads spec + code, produces verdict. PASS → PR. FAIL → Build fixes.
 
 System agents:
-- **Setup** (`claude --agent ana-setup`) — calibrates project context. Run after init to enrich scaffolds with team knowledge.
-- **Learn** (`claude --agent ana-learn`) — tends the proof chain. Triages findings, promotes patterns to skill rules, routes observations. Runs between pipeline cycles.
+- **Setup** (`ana run setup`) — calibrates project context. Run after init to enrich scaffolds with team knowledge.
+- **Learn** (`ana run learn`) — tends the proof chain. Triages findings, promotes patterns to skill rules, routes observations. Runs between pipeline cycles.
 
 The artifacts (scope, spec, build report, verify report) are the permanent record: intent, plan, implementation, proof. The proof chain compounds across cycles — Learn tends it.
 
 **Proof surface** (for scoping context):
 - `ana proof health` — quality trajectory, hot modules, trends
 - `ana proof audit` — all active findings with severity and action classification
-- For proof chain management (promote, close, triage): route to `claude --agent ana-learn`
+- For proof chain management (promote, close, triage): route to `ana run learn`
 
 ---
 

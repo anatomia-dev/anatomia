@@ -2891,7 +2891,7 @@ describe('ana proof', () => {
 
     // Create skill file (unless noSkill is set)
     if (!options?.noSkill) {
-      const skillDir = path.join(tempDir, '.claude', 'skills', skillName);
+      const skillDir = path.join(tempDir, '.ana', 'skills', skillName);
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), skillContent);
     }
@@ -2918,7 +2918,7 @@ describe('ana proof', () => {
       { id: 'F001', category: 'validation', summary: 'Missing request validation', file: 'src/api/payments.ts', anchor: 'validateInput', status: 'active', severity: 'risk', suggested_action: 'promote' },
       { id: 'F002', category: 'testing', summary: 'No test for edge case', file: 'src/api/payments.ts', anchor: null, status: 'active' },
       { id: 'F003', category: 'code', summary: 'Redundant import', file: 'src/utils/helpers.ts', anchor: null, status: 'closed', closed_by: 'mechanical', closed_at: '2026-04-22T10:00:00Z', closed_reason: 'auto-closed' },
-      { id: 'F004', category: 'code', summary: 'Already promoted item', file: 'src/api.ts', anchor: null, status: 'promoted', promoted_to: '.claude/skills/coding-standards/SKILL.md' },
+      { id: 'F004', category: 'code', summary: 'Already promoted item', file: 'src/api.ts', anchor: null, status: 'promoted', promoted_to: '.ana/skills/coding-standards/SKILL.md' },
     ],
     rejection_cycles: 0,
     previous_failures: [],
@@ -2940,7 +2940,7 @@ describe('ana proof', () => {
       const chain = JSON.parse(await fs.readFile(path.join(tempDir, '.ana', 'proof_chain.json'), 'utf-8'));
       const finding = chain.entries[0].findings.find((f: { id: string }) => f.id === 'F001');
       expect(finding.status).toBe('promoted');
-      expect(finding.promoted_to).toBe('.claude/skills/coding-standards/SKILL.md');
+      expect(finding.promoted_to).toBe('.ana/skills/coding-standards/SKILL.md');
 
       // Verify PROOF_CHAIN.md was regenerated
       const dashboard = await fs.readFile(path.join(tempDir, '.ana', 'PROOF_CHAIN.md'), 'utf-8');
@@ -2961,7 +2961,7 @@ describe('ana proof', () => {
       const { exitCode } = runProof(['promote', 'F001', '--skill', 'coding-standards']);
       expect(exitCode).toBe(0);
 
-      const skillContent = await fs.readFile(path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
+      const skillContent = await fs.readFile(path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
       expect(skillContent).toContain('- Missing request validation');
       // Existing rule still present
       expect(skillContent).toContain('- Existing rule about naming conventions');
@@ -2977,7 +2977,7 @@ describe('ana proof', () => {
       const { exitCode } = runProof(['promote', 'F001', '--skill', 'coding-standards', '--text', '"Always validate request bodies before processing"']);
       expect(exitCode).toBe(0);
 
-      const skillContent = await fs.readFile(path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
+      const skillContent = await fs.readFile(path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
       expect(skillContent).toContain('- Always validate request bodies before processing');
     });
 
@@ -3048,7 +3048,7 @@ describe('ana proof', () => {
       const { exitCode } = runProof(['promote', 'F001', '--skill', 'coding-standards', '--section', 'gotchas']);
       expect(exitCode).toBe(0);
 
-      const skillContent = await fs.readFile(path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
+      const skillContent = await fs.readFile(path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
 
       // Rule should be in Gotchas section
       const gotchasIdx = skillContent.indexOf('## Gotchas');
@@ -3079,7 +3079,7 @@ describe('ana proof', () => {
       // Human mode shows promoted_to path
       const { stderr } = runProof(['promote', 'F004', '--skill', 'coding-standards']);
       const output = stderr;
-      expect(output).toContain('.claude/skills/');
+      expect(output).toContain('.ana/skills/');
     });
   });
 
@@ -3204,7 +3204,7 @@ describe('ana proof', () => {
       const { exitCode } = runProof(['promote', 'F001', '--skill', 'coding-standards']);
       expect(exitCode).toBe(0);
 
-      const updatedSkill = await fs.readFile(path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
+      const updatedSkill = await fs.readFile(path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
       expect(updatedSkill).not.toContain('*Not yet captured');
       expect(updatedSkill).toContain('- Missing request validation');
     });
@@ -3303,7 +3303,7 @@ describe('ana proof', () => {
       expect(f2.status).toBe('promoted');
 
       // Only one rule appended (first finding's summary)
-      const skillContent = await fs.readFile(path.join(tempDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
+      const skillContent = await fs.readFile(path.join(tempDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'), 'utf-8');
       const ruleMatches = skillContent.match(/- Missing request validation/g);
       expect(ruleMatches).toHaveLength(1);
 
@@ -3330,7 +3330,7 @@ describe('ana proof', () => {
         path.join(anaDir, 'proof_chain.json'),
         JSON.stringify({ entries: [promoteEntry] }, null, 2),
       );
-      const skillDir = path.join(tempDir, '.claude', 'skills', 'coding-standards');
+      const skillDir = path.join(tempDir, '.ana', 'skills', 'coding-standards');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), `# coding-standards\n\n## Rules\n- Existing rule\n\n## Gotchas\n- Watch out\n`);
 
@@ -3403,7 +3403,7 @@ describe('ana proof', () => {
 
     // Create skill file (unless noSkill is set)
     if (!options?.noSkill) {
-      const skillDir = path.join(tempDir, '.claude', 'skills', skillName);
+      const skillDir = path.join(tempDir, '.ana', 'skills', skillName);
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), skillContent);
     }
@@ -3414,7 +3414,7 @@ describe('ana proof', () => {
 
     // Add uncommitted changes to the skill file (unless noUncommittedChanges)
     if (!options?.noSkill && !options?.noUncommittedChanges) {
-      const skillFilePath = path.join(tempDir, '.claude', 'skills', skillName, 'SKILL.md');
+      const skillFilePath = path.join(tempDir, '.ana', 'skills', skillName, 'SKILL.md');
       const currentContent = await fs.readFile(skillFilePath, 'utf-8');
       await fs.writeFile(skillFilePath, currentContent + '- New rule added by Learn\n');
     }
@@ -3437,7 +3437,7 @@ describe('ana proof', () => {
       { id: 'F001', category: 'validation', summary: 'Missing request validation', file: 'src/api/payments.ts', anchor: 'validateInput', status: 'active', severity: 'risk', suggested_action: 'promote' },
       { id: 'F002', category: 'testing', summary: 'No test for edge case', file: 'src/api/payments.ts', anchor: null, status: 'active' },
       { id: 'F003', category: 'code', summary: 'Redundant import', file: 'src/utils/helpers.ts', anchor: null, status: 'closed', closed_by: 'mechanical', closed_at: '2026-04-22T10:00:00Z', closed_reason: 'auto-closed' },
-      { id: 'F004', category: 'code', summary: 'Already promoted item', file: 'src/api.ts', anchor: null, status: 'promoted', promoted_to: '.claude/skills/coding-standards/SKILL.md' },
+      { id: 'F004', category: 'code', summary: 'Already promoted item', file: 'src/api.ts', anchor: null, status: 'promoted', promoted_to: '.ana/skills/coding-standards/SKILL.md' },
     ],
     rejection_cycles: 0,
     previous_failures: [],
@@ -3459,7 +3459,7 @@ describe('ana proof', () => {
       const chain = JSON.parse(await fs.readFile(path.join(tempDir, '.ana', 'proof_chain.json'), 'utf-8'));
       const finding = chain.entries[0].findings.find((f: { id: string }) => f.id === 'F001');
       expect(finding.status).toBe('promoted');
-      expect(finding.promoted_to).toBe('.claude/skills/coding-standards/SKILL.md');
+      expect(finding.promoted_to).toBe('.ana/skills/coding-standards/SKILL.md');
 
       // Verify PROOF_CHAIN.md was regenerated
       const dashboard = await fs.readFile(path.join(tempDir, '.ana', 'PROOF_CHAIN.md'), 'utf-8');
@@ -3607,7 +3607,7 @@ describe('ana proof', () => {
       expect(json.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}/);
       expect(json.results).toBeTypeOf('object');
       expect(json.results.skill).toBe('coding-standards');
-      expect(json.results.skill_path).toBe('.claude/skills/coding-standards/SKILL.md');
+      expect(json.results.skill_path).toBe('.ana/skills/coding-standards/SKILL.md');
       expect(json.results.reason).toBe('Added rule');
       expect(json.results.strengthened).toHaveLength(1);
       expect(json.meta).toBeTypeOf('object');
@@ -3651,7 +3651,7 @@ describe('ana proof', () => {
       runProof(['strengthen', 'F001', '--skill', 'coding-standards', '--reason', 'test']);
 
       const files = execSync('git diff --name-only HEAD~1', { cwd: tempDir, encoding: 'utf-8' });
-      expect(files).toContain('.claude/skills/coding-standards/SKILL.md');
+      expect(files).toContain('.ana/skills/coding-standards/SKILL.md');
       expect(files).toContain('.ana/proof_chain.json');
       expect(files).toContain('.ana/PROOF_CHAIN.md');
     });

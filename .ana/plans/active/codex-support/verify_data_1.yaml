@@ -1,0 +1,45 @@
+schema: 1
+findings:
+  - category: test
+    summary: "No test for codex-only init path — A011/A012/A013 verified by source inspection only"
+    file: "packages/cli/tests/commands/init.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A011", "A012", "A013"]
+
+  - category: test
+    summary: "A029 (init-flow.test.ts asserts ana run) lacks @ana tag — verified by source inspection"
+    file: "packages/cli/tests/e2e/init-flow.test.ts"
+    line: 157
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A029"]
+
+  - category: code
+    summary: "Duplicate JSDoc block on getPlatformFlags — old block left above new block"
+    file: "packages/cli/src/commands/platform.ts"
+    line: 83
+    severity: debt
+    suggested_action: scope
+
+  - category: test
+    summary: "A026 test asserts length > 0, not that correct platforms were detected — weak assertion for auto-detection"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 1252
+    severity: observation
+    suggested_action: accept
+    related_assertions: ["A026"]
+
+  - category: code
+    summary: "createSkillSymlinks silently skips real directories — falls through to nothing when lstat succeeds but isSymbolicLink is false"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 669
+    severity: observation
+    suggested_action: monitor
+    anchor: "createSkillSymlinks"
+
+  - category: upstream
+    summary: "Contract A011-A013 block 'codex-only init' has no integration test — unit functions are tested individually but the combined codex-only path is not exercised"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A011", "A012", "A013"]
