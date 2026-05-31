@@ -34,5 +34,59 @@
   "spec-2": {
     "saved_at": "2026-05-31T01:53:44.092Z",
     "hash": "sha256:c6afc781e23ca067c3a8601bf98d38183d42c76fb7a2ee16dda99ab752e6da3e"
-  }
+  },
+  "build_started_at": "2026-05-31T02:02:15.350Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-05-31T02:40:46.130Z",
+    "hash": "sha256:e9d0d7808c7f2759bdd71593c2c8ee224eeaba815016b76ac5f858885670d68c"
+  },
+  "build-data-1": {
+    "saved_at": "2026-05-31T02:40:46.131Z",
+    "hash": "sha256:0590f8e0edc49048767bd223b05a9cf9ce646aff4ee631a74a4963c686e6dce4"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-learn.md",
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-setup.md",
+    ".claude/agents/ana-verify.md",
+    ".claude/agents/ana.md",
+    "packages/cli/src/commands/check.ts",
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/init/types.ts",
+    "packages/cli/src/commands/platform.ts",
+    "packages/cli/src/constants.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-learn.md",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-setup.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/templates/.claude/skills/deployment/SKILL.md",
+    "packages/cli/templates/.codex/agents/ana-build.agent.toml",
+    "packages/cli/templates/.codex/agents/ana-build.md",
+    "packages/cli/templates/.codex/agents/ana-plan.agent.toml",
+    "packages/cli/templates/.codex/agents/ana-plan.md",
+    "packages/cli/templates/.codex/agents/ana-setup.agent.toml",
+    "packages/cli/templates/.codex/agents/ana-setup.md",
+    "packages/cli/templates/.codex/agents/ana-verify.agent.toml",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana.agent.toml",
+    "packages/cli/templates/.codex/agents/ana.md",
+    "packages/cli/templates/CLAUDE.md",
+    "packages/cli/tests/commands/check-dashboard.test.ts",
+    "packages/cli/tests/commands/doctor.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/platform.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/setup-complete-integration.test.ts",
+    "packages/cli/tests/commands/setup-completion.test.ts",
+    "packages/cli/tests/commands/skill-seeding.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/e2e/init-flow.test.ts"
+  ],
+  "commit_hygiene": []
 }
