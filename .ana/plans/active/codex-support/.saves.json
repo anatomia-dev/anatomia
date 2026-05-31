@@ -58,6 +58,7 @@
     "packages/cli/src/commands/init/state.ts",
     "packages/cli/src/commands/init/types.ts",
     "packages/cli/src/commands/platform.ts",
+    "packages/cli/src/commands/run.ts",
     "packages/cli/src/constants.ts",
     "packages/cli/templates/.claude/agents/ana-build.md",
     "packages/cli/templates/.claude/agents/ana-learn.md",
@@ -82,6 +83,7 @@
     "packages/cli/tests/commands/init.test.ts",
     "packages/cli/tests/commands/platform.test.ts",
     "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
     "packages/cli/tests/commands/setup-complete-integration.test.ts",
     "packages/cli/tests/commands/setup-completion.test.ts",
     "packages/cli/tests/commands/skill-seeding.test.ts",
@@ -103,5 +105,13 @@
   "verify-data-1": {
     "saved_at": "2026-05-31T02:59:57.135Z",
     "hash": "sha256:c38669f903378b55a287b69ed34141a12093ecfaa0c10c54dc8115ce6e1bc541"
+  },
+  "build-report-2": {
+    "saved_at": "2026-05-31T03:21:32.329Z",
+    "hash": "sha256:95de62566b87d047dde20dfc2af09ad7674fda9b824e29ac93d8e180c42d7ecf"
+  },
+  "build-data-2": {
+    "saved_at": "2026-05-31T03:21:32.330Z",
+    "hash": "sha256:e45575a1478c970394cb0609cde6d3b8f8384aabb410259311170d99a96d6afc"
   }
 }

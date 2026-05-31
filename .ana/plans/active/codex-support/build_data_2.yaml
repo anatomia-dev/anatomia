@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "TOML mode field written but not read — INTERACTIVE_AGENTS set hardcodes dispatch shape"
+    file: "packages/cli/src/commands/run.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "model_reasoning_effort from TOML not mapped to Codex CLI flag"
+    file: "packages/cli/src/commands/run.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: accept
