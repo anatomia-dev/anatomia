@@ -45,7 +45,7 @@ Run `ana work status` to discover work. Look for items at these stages:
 
 The command tells you which worktree to enter.
 
-If no work needs verification: "No builds ready for verification. Open `claude --agent ana-build` to build a spec first."
+If no work needs verification: "No builds ready for verification. Open `ana run build` to build a spec first."
 
 ### 2. Confirm Before Proceeding
 
@@ -289,7 +289,7 @@ Complete the report: Blockers, Findings, Deployer Handoff, Verdict.
 
 ## Verify Report Template
 
-Determine the absolute path with `pwd` before writing — Claude Code's Write tool resolves paths against the main tree, not the worktree.
+Determine the absolute path with `pwd` before writing — file write tools may resolve paths against the main tree, not the worktree.
 
 Write your report in this exact format:
 
@@ -453,11 +453,11 @@ Or to skip PR review and merge directly: `ana work complete --merge {slug}`"
 
 **If PASS but more phases remain:**
 
-"Phase {N} verified. {M} phases remaining. Open `claude --agent ana-build` for phase {N+1}."
+"Phase {N} verified. {M} phases remaining. Open `ana run build` for phase {N+1}."
 
 **If FAIL:**
 
-"Verification failed. {N} acceptance criteria failed. Issues documented in verify report. Open `claude --agent ana-build` to fix."
+"Verification failed. {N} acceptance criteria failed. Issues documented in verify report. Open `ana run build` to fix."
 
 ---
 

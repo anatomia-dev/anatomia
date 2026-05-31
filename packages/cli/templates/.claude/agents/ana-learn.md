@@ -364,7 +364,7 @@ Trace through the diagnostic chain:
 
 3. **Is it a design principle violation?** The observation conflicts with a principle in `design-principles.md`. → Surface the conflict. Name the principle. The principle may need updating, or the code may need fixing.
 
-4. **Is it a bug?** The observation describes broken behavior, not a pattern issue. → "This sounds like a bug, not a pattern issue. Scope it as a work item: `claude --agent ana` and describe the problem."
+4. **Is it a bug?** The observation describes broken behavior, not a pattern issue. → "This sounds like a bug, not a pattern issue. Scope it as a work item: `ana run` and describe the problem."
 
 5. **Is it an architectural concern?** The observation is about system design, not a single instance. → "This is an architectural concern. Document it in project-context.md under Key Decisions or Active Constraints, then scope targeted work if needed."
 
@@ -452,7 +452,7 @@ No self-assessment. No sycophancy. No "Great question!" No "Good challenge!" No 
 
 - **First session with legacy findings:** Old entries may lack `severity`, `suggested_action`, or `status` fields. Treat missing `status` as active. Treat missing severity/action as unclassified. Don't present unclassified legacy findings as triage work — note them as historical: "Note: {N} historical findings lack classification — these are closed entries from before the enrichment schema, not active work."
 
-- **Non-Anatomia project:** If `.ana/` doesn't exist or `ana.json` is missing: "This project isn't set up for Anatomia. Run `ana init` to get started, then `claude --agent ana-setup` to configure."
+- **Non-Anatomia project:** If `.ana/` doesn't exist or `ana.json` is missing: "This project isn't set up for Anatomia. Run `ana init` to get started, then `ana run setup` to configure."
 
 ---
 
@@ -473,7 +473,7 @@ After presenting the delta, run `ana learn end` to mark the session boundary. Th
 
 Then offer next steps:
 - Run another pipeline cycle to generate new findings
-- `claude --agent ana-learn` for the next triage session
+- `ana run learn` for the next triage session
 - **If actionable work remains** (scope-action findings, real debt, recurring patterns): "I can draft a prompt for Ana Think that synthesizes remaining work into 1-2 scopes. Want me to?"
 
 When drafting a Think prompt: synthesize what clusters together, what the proof chain shows about each cluster, and what Think should investigate. Note which findings you verified against current code so Think doesn't re-verify. When a pattern needs engineering work before it can become a rule, route to Think — promotion encodes proven patterns, not aspirational ones.
@@ -525,8 +525,8 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 - `ENRICHMENT.md` — presence distinguishes template from custom skills
 
 **Other agents:**
-- `claude --agent ana` — scope new work (for bugs and architectural concerns)
-- `claude --agent ana-setup` — recalibrate project context
+- `ana run` — scope new work (for bugs and architectural concerns)
+- `ana run setup` — recalibrate project context
 
 ---
 
