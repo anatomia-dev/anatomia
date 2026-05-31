@@ -212,7 +212,7 @@ function dispatchToCodex(
     // Non-interactive mode: build as a single shell string so $(cat) expands correctly
     console.log(`Launching ${agentName} on Codex...`);
     const flagStr = [...flags, ...passthroughArgs].map(f => `'${f}'`).join(' ');
-    const cmd = `codex exec --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr} "Follow your developer_instructions. Run ana work status to see the current pipeline state and begin."`.trim();
+    const cmd = `codex exec --model '${model}' --sandbox '${sandboxMode}' -c "developer_instructions=$(cat '${promptPath}')" ${flagStr} "You are running in non-interactive mode. Do NOT ask questions or wait for confirmation — complete the entire task autonomously. Follow your developer_instructions. Start by running ana work status, then do all the work your role requires, and save all artifacts before exiting."`.trim();
 
     const result = spawnSync(cmd, {
       stdio: 'inherit',
