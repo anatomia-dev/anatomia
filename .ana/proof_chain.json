@@ -46202,6 +46202,212 @@
       },
       "surface": "cli",
       "phases": 2
+    },
+    {
+      "slug": "multi-phase-report-naming-guard",
+      "feature": "Multi-Phase Report Naming Guard",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 18,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "An unnumbered build report save on a multi-phase item is redirected to the first build phase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The corrected build report save tells the user what numbered report type was used",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The corrected build report save records numbered report metadata",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The corrected build companion is saved with the matching phase number",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "An unnumbered verify report save on a multi-phase item is redirected to the phase ready for verification",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The corrected verify report save tells the user what numbered report type was used",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The corrected verify report save records numbered report metadata",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The corrected verify companion is saved with the matching phase number",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Single-spec build report saves continue to use the unnumbered report file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Single-spec build report saves do not create a numbered report file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Saving an unnumbered build report on a multi-phase item advances work status to verification",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The correction composes with report file auto-rename",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The correction composes with companion file auto-rename",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A failed phase is selected again for a fix build instead of moving to the next phase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A failed phase with a newer build is selected for re-verification",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "An explicit numbered build report save is not changed by the guard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "When every phase is complete, the command refuses to invent an off-plan report target",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Save-all behavior remains filename-driven and unchanged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 68,
+        "think": 1,
+        "plan": 9,
+        "build": 10,
+        "verify": 4
+      },
+      "hashes": {
+        "scope": "sha256:63d3d326ba10041bf3bd8f2e5f014668faff9cc27de5f91782e068d6f36791a6",
+        "contract": "sha256:074f36697d15291b3735ae1c307b3449742b0e2f2ef7f9da48441de65f7c7ba0",
+        "plan": "sha256:d647dbf4b88b13d8a1053033c18a13fd5aad1324185db6f65c92e93a8fda2c5c",
+        "spec": "sha256:b940f1b58e1e189f0a4100ed7ff1e1df4cb02b9fd8866822e018f8bb4ab43690",
+        "build-report": "sha256:bc968906bd7dfd3c35e7a431927ca3c2ffa468214fb461348bb164590826c8ba",
+        "build-data": "sha256:deef6cdb542aadfc8ff393a9d9f20d7e2c5d9f3c6654d69a0723be1b495eed7a",
+        "verify-report": "sha256:0e45b70b7538cb3d7534e30d4beaaf5c791ebd237cc48ff781b865775ff0aa25",
+        "verify-data": "sha256:f5c6d8eab6354eff88e658ff2e41319ccc0305b05db9a882f1594578b280ae6b"
+      },
+      "completed_at": "2026-05-31T19:25:57.285Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/tests/commands/artifact.test.ts"
+      ],
+      "scope_summary": "Fix issue #232: on a multi-phase work item, `ana artifact save build-report {slug}` and `ana artifact save verify-report {slug}` should not silently save unnumbered reports when the phase structure requires numbered reports.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Phase inference adds a second .saves.json reader instead of sharing the existing metadata read path",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 498,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A003",
+            "A007",
+            "A014",
+            "A015"
+          ],
+          "id": "multi-phase-report-naming-guard-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Work-status progression test calls determineStage with constructed state instead of exercising ana work status discovery",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 4385,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "multi-phase-report-naming-guard-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No-target error test asserts only the headline message, not the exit code or explicit numbered-command guidance",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 4477,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A017"
+          ],
+          "id": "multi-phase-report-naming-guard-C3",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A011 is verified through determineStage rather than full getWorkStatus output because the artifact test fixture does not model remote discovery cleanly",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Workspace lint still reports pre-existing warnings outside this build's changed lines",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "scope"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-05-31T18:58:43.482Z",
+        "completed_at": "2026-05-31T19:25:57.278Z",
+        "commit_count": 0,
+        "base_commit": "59671a4212dd0fd2d1acdb4ea1330f356f0a2d5c"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

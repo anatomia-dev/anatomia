@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-174 runs · 142 active · 5 promoted · 848 closed
+175 runs · 145 active · 5 promoted · 848 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 30 | 24 | 2026-05-29 |
-| cli | 121 | 99 | 2026-05-31 |
+| cli | 122 | 102 | 2026-05-31 |
 | website | 23 | 19 | 2026-05-24 |
 
 ## Hot Modules
@@ -18,21 +18,17 @@
 | packages/cli/src/commands/run.ts | 7 | 2 |
 | packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
-| packages/cli/src/commands/init/commit.ts | 5 | 3 |
+| packages/cli/tests/commands/artifact.test.ts | 5 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 142 total)
+## Active Findings (30 shown of 145 total)
 
-### assets/demo/dub-scan.tape
+### packages/cli/src/commands/artifact.ts
 
-- **code:** Tape file comment says Output is relative to tape file location, but VHS resolves Output relative to CWD — *README Terminal Demo*
-
-### packages/cli/package.json
-
-- **code:** prepublishOnly copies root README to package dir but assets/demo/ is not in files array — GIF path dangling on npm — *README Terminal Demo*
+- **code:** Phase inference adds a second .saves.json reader instead of sharing the existing metadata read path — *Multi-Phase Report Naming Guard*
 
 ### packages/cli/src/commands/check.ts
 
@@ -72,6 +68,11 @@
 
 - **code:** getNextAction still in work.ts — known from decompose-work-ts-C1, not changed by this build — *Platform-Aware CLI*
 
+### packages/cli/tests/commands/artifact.test.ts
+
+- **test:** Work-status progression test calls determineStage with constructed state instead of exercising ana work status discovery — *Multi-Phase Report Naming Guard*
+- **test:** No-target error test asserts only the headline message, not the exit code or explicit numbered-command guidance — *Multi-Phase Report Naming Guard*
+
 ### packages/cli/tests/commands/init.test.ts
 
 - **test:** No test for codex-only init path — A011/A012/A013 verified by source inspection only — *Codex Support*
@@ -96,8 +97,4 @@
 ### packages/cli/tests/e2e/init-flow.test.ts
 
 - **test:** A029 (init-flow.test.ts asserts ana run) lacks @ana tag — verified by source inspection — *Codex Support*
-
-### packages/cli/tests/engine/three-tier-detection.test.ts
-
-- **test:** A022 uiSystem test is a hasDep proxy — doesn't call detectUiSystem — *Monorepo Three-Tier Dependency Resolution*
 
