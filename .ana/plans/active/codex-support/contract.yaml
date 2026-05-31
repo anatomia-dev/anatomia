@@ -1,0 +1,355 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Codex Support"
+
+assertions:
+  # AC16: getSkillsDir returns canonical .ana/skills path
+  - id: A001
+    says: "Skills are stored in a single canonical location that works for all platforms"
+    block: "getSkillsDir returns .ana/skills path"
+    target: "result"
+    matcher: "contains"
+    value: ".ana/skills"
+
+  - id: A002
+    says: "Relative skills path points to the canonical location"
+    block: "getSkillsDirRel returns .ana/skills"
+    target: "result"
+    matcher: "equals"
+    value: ".ana/skills"
+
+  # AC17: getAgentsDir returns platform-specific path
+  - id: A003
+    says: "Agent files are found in the right directory for each platform"
+    block: "getAgentsDir returns platform-specific path"
+    target: "result.codex"
+    matcher: "contains"
+    value: ".codex/agents"
+
+  - id: A004
+    says: "Claude agent path is unchanged"
+    block: "getAgentsDir returns platform-specific path"
+    target: "result.claude"
+    matcher: "contains"
+    value: ".claude/agents"
+
+  - id: A005
+    says: "Default agent path is Claude when no platform specified"
+    block: "getAgentsDir defaults to claude"
+    target: "result"
+    matcher: "contains"
+    value: ".claude/agents"
+
+  # AC1: Dual-platform init generates both directories and symlinks
+  - id: A006
+    says: "Dual-platform init creates the Claude configuration directory"
+    block: "dual-platform init generates both platforms"
+    target: "claudeDir.exists"
+    matcher: "truthy"
+
+  - id: A007
+    says: "Dual-platform init creates the Codex configuration directory"
+    block: "dual-platform init generates both platforms"
+    target: "codexDir.exists"
+    matcher: "truthy"
+
+  - id: A008
+    says: "Skills are written to the canonical location"
+    block: "dual-platform init generates both platforms"
+    target: "anaSkillsDir.exists"
+    matcher: "truthy"
+
+  - id: A009
+    says: "Claude skills directory is a symlink to the canonical location"
+    block: "dual-platform init generates both platforms"
+    target: "claudeSkillsSymlink"
+    matcher: "truthy"
+
+  - id: A010
+    says: "Agents skills directory is a symlink to the canonical location"
+    block: "dual-platform init generates both platforms"
+    target: "agentsSkillsSymlink"
+    matcher: "truthy"
+
+  # AC2: Codex-only init
+  - id: A011
+    says: "Codex-only projects do not create Claude configuration"
+    block: "codex-only init does not create .claude/ or CLAUDE.md"
+    target: "claudeDir.exists"
+    matcher: "equals"
+    value: false
+
+  - id: A012
+    says: "Codex-only projects do not generate a CLAUDE.md file"
+    block: "codex-only init does not create .claude/ or CLAUDE.md"
+    target: "claudeMd.exists"
+    matcher: "equals"
+    value: false
+
+  - id: A013
+    says: "Codex-only projects still get the cross-tool AGENTS.md file"
+    block: "codex-only init does not create .claude/ or CLAUDE.md"
+    target: "agentsMd.exists"
+    matcher: "truthy"
+
+  # AC3: Codex Build template content
+  - id: A014
+    says: "Codex Build agent uses the unified invocation syntax"
+    block: "codex build template uses ana run syntax"
+    target: "content"
+    matcher: "contains"
+    value: "ana run"
+
+  - id: A015
+    says: "Codex Build agent does not reference Claude Code specific tools"
+    block: "codex build template has no CC-specific references"
+    target: "content"
+    matcher: "not_contains"
+    value: "Claude Code's Write tool"
+
+  - id: A016
+    says: "Codex agent templates do not have YAML frontmatter"
+    block: "codex build template has no YAML frontmatter"
+    target: "firstLine"
+    matcher: "not_equals"
+    value: "---"
+
+  # AC4: Codex TOML manifest
+  - id: A017
+    says: "Codex Build manifest specifies the correct model"
+    block: "codex build TOML has correct fields"
+    target: "toml.model"
+    matcher: "equals"
+    value: "gpt-5.5"
+
+  - id: A018
+    says: "Codex Build runs with full access for git operations"
+    block: "codex build TOML has correct fields"
+    target: "toml.sandbox_mode"
+    matcher: "equals"
+    value: "danger-full-access"
+
+  - id: A019
+    says: "Codex Build runs in exec mode for non-interactive pipeline"
+    block: "codex build TOML has correct fields"
+    target: "toml.mode"
+    matcher: "equals"
+    value: "exec"
+
+  # AC5: Symlink resolution
+  - id: A020
+    says: "Both platform skill paths resolve to the same underlying file"
+    block: "skill symlinks resolve to canonical .ana/skills content"
+    target: "contentMatch"
+    matcher: "truthy"
+
+  # AC10: Re-init merge-not-overwrite for Codex
+  - id: A021
+    says: "User customizations to Codex agent files survive re-initialization"
+    block: "re-init preserves codex agent customizations"
+    target: "customContent.preserved"
+    matcher: "truthy"
+
+  # AC11: Skill migration on re-init
+  - id: A022
+    says: "Existing enriched skills are migrated to the canonical location"
+    block: "re-init migrates .claude/skills/ real dir to .ana/skills/ + symlink"
+    target: "migratedContent.exists"
+    matcher: "truthy"
+
+  - id: A023
+    says: "After migration the old skills directory becomes a symlink"
+    block: "re-init migrates .claude/skills/ real dir to .ana/skills/ + symlink"
+    target: "claudeSkills.isSymlink"
+    matcher: "truthy"
+
+  # AC14 + AC15: CC template migration
+  - id: A024
+    says: "Claude Code agent templates use the unified invocation syntax"
+    block: "CC agent templates use ana run syntax"
+    target: "templates"
+    matcher: "not_contains"
+    value: "claude --agent"
+
+  - id: A025
+    says: "The CLAUDE.md template uses the unified invocation syntax"
+    block: "CLAUDE.md template uses ana run syntax"
+    target: "claudeMdTemplate"
+    matcher: "not_contains"
+    value: "claude --agent"
+
+  # AC18: Platform auto-detection
+  - id: A026
+    says: "First-time init auto-detects available platforms from the system PATH"
+    block: "first init auto-detects platforms from PATH"
+    target: "detectedPlatforms"
+    matcher: "exists"
+
+  - id: A027
+    says: "Re-initialization preserves the previously configured platforms"
+    block: "re-init preserves platforms from existing ana.json"
+    target: "platforms"
+    matcher: "exists"
+
+  # Scope 1 residuals
+  - id: A028
+    says: "Setup check displays the correct skills directory path"
+    block: "check.ts uses getSkillsDirRel for display"
+    target: "source"
+    matcher: "not_contains"
+    value: "No skills found in .claude/skills/"
+
+  - id: A029
+    says: "Init flow test validates the current template syntax"
+    block: "init-flow.test.ts asserts ana run pattern"
+    target: "testSource"
+    matcher: "contains"
+    value: "ana run"
+
+  # AC6: Codex runtime dispatch
+  - id: A030
+    says: "Running an agent on Codex launches the correct Codex process"
+    block: "ana run build on Codex dispatches codex exec"
+    target: "spawnArgs.command"
+    matcher: "equals"
+    value: "codex"
+
+  - id: A031
+    says: "Codex dispatch passes the sandbox flag from the manifest"
+    block: "ana run build on Codex dispatches codex exec"
+    target: "spawnArgs.args"
+    matcher: "contains"
+    value: "--sandbox"
+
+  - id: A032
+    says: "Codex dispatch passes the model from the manifest"
+    block: "ana run build on Codex dispatches codex exec"
+    target: "spawnArgs.args"
+    matcher: "contains"
+    value: "--model"
+
+  # AC7: Interactive mode
+  - id: A033
+    says: "Think agent opens interactive mode instead of exec"
+    block: "ana run on Codex opens interactive mode"
+    target: "spawnArgs.args"
+    matcher: "not_contains"
+    value: "exec"
+
+  # AC12: --platform flag
+  - id: A034
+    says: "Explicit platform flag selects the correct dispatch target"
+    block: "ana run build --platform codex uses codex dispatch"
+    target: "spawnArgs.command"
+    matcher: "equals"
+    value: "codex"
+
+  # AC13: Learn on Codex
+  - id: A035
+    says: "Learn agent shows a helpful message instead of failing on Codex"
+    block: "ana run learn on Codex shows helpful error"
+    target: "errorMessage"
+    matcher: "contains"
+    value: "not yet available on Codex"
+
+  # Platform resolution chain
+  - id: A036
+    says: "Platform flag takes priority over environment variable"
+    block: "platform resolution chain respects priority order"
+    target: "resolvedPlatform"
+    matcher: "equals"
+    value: "codex"
+
+  - id: A037
+    says: "Multiple platforms without explicit selection shows guidance"
+    block: "multiple platforms without flag shows error"
+    target: "errorMessage"
+    matcher: "contains"
+    value: "--platform"
+
+  # getPlatformFlags with platform parameter
+  - id: A038
+    says: "Platform flags can be read for a specific platform"
+    block: "getPlatformFlags accepts platform parameter"
+    target: "flags"
+    matcher: "exists"
+
+  # AC20: No regression
+  - id: A039
+    says: "All existing tests continue to pass"
+    block: "existing CC tests pass unchanged"
+    target: "testResult"
+    matcher: "equals"
+    value: "pass"
+
+  # No Learn template for Codex
+  - id: A040
+    says: "Codex does not include a Learn agent template"
+    block: "no codex learn template exists"
+    target: "learnTemplate.exists"
+    matcher: "equals"
+    value: false
+
+file_changes:
+  # Spec 1 — Init infrastructure
+  - path: "packages/cli/src/commands/platform.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/skills.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/check.ts"
+    action: modify
+  - path: "packages/cli/src/constants.ts"
+    action: modify
+  - path: "packages/cli/templates/CLAUDE.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-setup.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-learn.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/skills/deployment/SKILL.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana.md"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana.agent.toml"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-build.agent.toml"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-plan.md"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-plan.agent.toml"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-verify.agent.toml"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-setup.md"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-setup.agent.toml"
+    action: create
+  - path: "packages/cli/tests/commands/platform.test.ts"
+    action: modify
+  - path: "packages/cli/tests/e2e/init-flow.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  # Spec 2 — Runtime dispatch
+  - path: "packages/cli/src/commands/run.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/run.test.ts"
+    action: modify
