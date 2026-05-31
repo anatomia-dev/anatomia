@@ -88,5 +88,20 @@
     "packages/cli/tests/commands/work.test.ts",
     "packages/cli/tests/e2e/init-flow.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-05-31T02:51:38.472Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:5e81db6a68903af056d21ea6aa883cf1425370f5e4dacacb882bae95d1d82473",
+    "run_at": "2026-05-31T02:59:57.092Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-05-31T02:59:57.135Z",
+    "hash": "sha256:73bbc700635f9febaa0063a27a5bb6417ee94fb4743227080b8477045ae51e36"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-05-31T02:59:57.135Z",
+    "hash": "sha256:c38669f903378b55a287b69ed34141a12093ecfaa0c10c54dc8115ce6e1bc541"
+  }
 }
