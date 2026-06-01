@@ -53,7 +53,6 @@ describe('AnaJsonSchema', () => {
   });
 
   describe('passthrough preserves unknown fields', () => {
-    // @ana A001
     it('preserves unknown top-level keys through parse', () => {
       const input = {
         anaVersion: '0.1.0',
@@ -93,8 +92,6 @@ describe('AnaJsonSchema', () => {
       expect(parsed.coAuthor).toBe('Ana <build@anatomia.dev>');
       expect(parsed.artifactBranch).toBe('main');
     });
-
-    // @ana A002
     it('preserves setupMode and setupCompletedAt fossils', () => {
       const input = {
         name: 'anatomia',
@@ -106,8 +103,6 @@ describe('AnaJsonSchema', () => {
       expect('setupCompletedAt' in parsed).toBe(true);
       expect((parsed as Record<string, unknown>)['setupMode']).toBe('complete');
     });
-
-    // @ana A003
     it('catches invalid setupPhase with passthrough active', () => {
       const parsed = AnaJsonSchema.parse({
         name: 'test',
@@ -117,8 +112,6 @@ describe('AnaJsonSchema', () => {
       expect(parsed.setupPhase).toBeUndefined();
       expect((parsed as Record<string, unknown>)['unknownKey']).toBe('should-survive');
     });
-
-    // @ana A005
     it('passthrough and catch coexistence', () => {
       const parsed = AnaJsonSchema.parse({
         name: 'test',
@@ -133,7 +126,6 @@ describe('AnaJsonSchema', () => {
   });
 
   describe('custom namespace', () => {
-    // @ana A004
     it('round-trips custom data through parse and defaults to empty', () => {
       const withCustom = AnaJsonSchema.parse({
         name: 'test',
@@ -211,6 +203,25 @@ describe('AnaJsonSchema', () => {
     it('catches invalid value and defaults to undefined', () => {
       const parsed = AnaJsonSchema.parse({ setupPhase: 'invalid' });
       expect(parsed.setupPhase).toBeUndefined();
+    });
+  });
+
+  describe('mergeStrategy enum values', () => {
+    // @ana A017, A018, A019
+    it('parses valid merge strategies', () => {
+      expect(AnaJsonSchema.parse({ mergeStrategy: 'merge' }).mergeStrategy).toBe('merge');
+      expect(AnaJsonSchema.parse({ mergeStrategy: 'squash' }).mergeStrategy).toBe('squash');
+      expect(AnaJsonSchema.parse({ mergeStrategy: 'rebase' }).mergeStrategy).toBe('rebase');
+    });
+    // @ana A020
+    it('ignores invalid merge strategy in schema', () => {
+      const parsed = AnaJsonSchema.parse({ mergeStrategy: 'fast-forward' });
+      expect(parsed.mergeStrategy).toBeUndefined();
+    });
+
+    it('defaults absent merge strategy to undefined', () => {
+      const parsed = AnaJsonSchema.parse({});
+      expect(parsed.mergeStrategy).toBeUndefined();
     });
   });
 });

@@ -25,6 +25,11 @@ Settings the CLI manages for you. Change them with commands or `ana.json` edits 
 <div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set commands.test "pnpm test -- --run"</div>
 </div>
 <div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
+<div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Merge strategy</div>
+<div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>Set the GitHub PR merge method for <code>ana work complete --merge</code>. Valid values: <code>merge</code>, <code>squash</code>, <code>rebase</code>.</div>
+<div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set mergeStrategy "squash"</div>
+</div>
+<div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
 <div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Custom data</div>
 <div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>The <code>custom</code> namespace stores arbitrary team data. Collision-safe.</div>
 <div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set custom.teamId "anatomia"</div>
@@ -60,6 +65,7 @@ The `path`, `language`, and `framework` fields on each surface are machine-manag
   "branchPrefix": "feature/",
   "coAuthor": "Ana <build@anatomia.dev>",
   "artifactBranch": "main",
+  "mergeStrategy": "squash",
   "commands": {
     "build": "pnpm run build",
     "test": "pnpm test -- --run",
@@ -69,7 +75,7 @@ The `path`, `language`, and `framework` fields on each surface are machine-manag
 }
 ```
 
-<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>User fields (`branchPrefix`, `coAuthor`, `artifactBranch`, `commands`, `custom`) are yours. Machine fields (`anaVersion`, `lastScanAt`, `language`, `framework`) refresh on `ana init`. Unknown top-level keys you add are preserved across re-init.</p>
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>User fields (`branchPrefix`, `coAuthor`, `artifactBranch`, `mergeStrategy`, `commands`, `custom`) are yours. Machine fields (`anaVersion`, `lastScanAt`, `language`, `framework`) refresh on `ana init`. Unknown top-level keys you add are preserved across re-init.</p>
 
 ## Edit the files
 

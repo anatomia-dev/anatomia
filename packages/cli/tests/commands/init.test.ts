@@ -36,12 +36,8 @@ describe('ana init', () => {
     it('creates all required directories', async () => {
       const anaPath = path.join(tmpDir, '.ana');
       await fs.mkdir(anaPath);
-
-      // Simulate Phase 3
       await fs.mkdir(path.join(anaPath, 'context'), { recursive: true });
       await fs.mkdir(path.join(anaPath, 'state'), { recursive: true });
-
-      // Verify all exist
       const dirs = [
         'context',
         'state',
@@ -56,23 +52,18 @@ describe('ana init', () => {
 
   describe('template inventory', () => {
     it('all template files exist in CLI package', async () => {
-      // Get templates directory using same logic as init.ts
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
 
       const expectedFiles = [
-        // 1 settings template
         '.claude/settings.json',
-        // Agent files (from AGENT_FILES constant)
         ...AGENT_FILES.map(f => '.claude/agents/' + f),
-        // 5 core skill files
         '.claude/skills/testing-standards/SKILL.md',
         '.claude/skills/coding-standards/SKILL.md',
         '.claude/skills/git-workflow/SKILL.md',
         '.claude/skills/deployment/SKILL.md',
         '.claude/skills/troubleshooting/SKILL.md',
-        // CLAUDE.md entry point
         'CLAUDE.md',
       ];
 
@@ -87,9 +78,9 @@ describe('ana init', () => {
   });
 
   describe('ana.json', () => {
+    // @ana A021
     it('creates valid initial ana.json from EngineResult', async () => {
       const engineResult = createEmptyEngineResult();
-      // Simulate what createAnaJson does from an EngineResult
       const meta = {
         anaVersion: '1.0.0',
         name: engineResult.overview.project,
@@ -108,16 +99,12 @@ describe('ana init', () => {
       };
 
       expect(meta.name).toBe('unknown');
-      // createEmptyEngineResult defaults packageManager to null because a
-      // project with no detected lockfile has no package manager in the Node
-      // sense. Previously this was 'npm', which was a semantic lie for
-      // Python/Go/Rust projects.
       expect(meta.packageManager).toBeNull();
       expect(meta.framework).toBeNull();
       expect(meta.anaVersion).toBeDefined();
       expect(meta.lastScanAt).toBeDefined();
-      // setupPhase is NOT set by createAnaJson — only by the setup agent
       expect(meta).not.toHaveProperty('setupPhase');
+      expect(meta).not.toHaveProperty('mergeStrategy');
     });
 
     it('has all required fields for D1 schema', () => {
@@ -156,26 +143,14 @@ describe('ana init', () => {
     it('preserves state/ when overwriting', async () => {
       const anaPath = path.join(tmpDir, '.ana');
       const statePath = path.join(anaPath, 'state');
-
-      // Create existing .ana/ with state/
       await fs.mkdir(statePath, { recursive: true });
       await fs.writeFile(path.join(statePath, 'snapshot.json'), '{"test":"data"}');
-
-      // Simulate --force: backup state/
       const backup = path.join(os.tmpdir(), `.ana-state-backup-${Date.now()}`);
       await fs.cp(statePath, backup, { recursive: true });
-
-      // Delete .ana/
       await fs.rm(anaPath, { recursive: true, maxRetries: 3, retryDelay: 200 });
-
-      // Recreate .ana/
       await fs.mkdir(statePath, { recursive: true });
-
-      // Restore state/
       await fs.rm(statePath, { recursive: true, maxRetries: 3, retryDelay: 200 });
       await fs.rename(backup, statePath);
-
-      // Verify snapshot preserved
       const content = await fs.readFile(path.join(statePath, 'snapshot.json'), 'utf-8');
       expect(JSON.parse(content)).toEqual({ test: 'data' });
     });
@@ -183,10 +158,6 @@ describe('ana init', () => {
 
   describe('.claude/ configuration', () => {
     it('ships empty hooks object in settings template', async () => {
-      // PostToolUse hook chain removed (it computed validation results then
-      // discarded them). Template ships with empty hooks object as placeholder;
-      // if future hooks are added the merge logic in mergeHooksSettings
-      // handles user-settings merging.
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
@@ -201,16 +172,10 @@ describe('ana init', () => {
     it(`creates .claude/agents/ directory with ${AGENT_FILES.length} agent files`, async () => {
       const claudePath = path.join(tmpDir, '.claude');
       const agentsPath = path.join(claudePath, 'agents');
-
-      // Simulate init creating .claude/agents/
       await fs.mkdir(agentsPath, { recursive: true });
-
-      // Get templates directory
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
-
-      // Copy agent files
       for (const agentFile of AGENT_FILES) {
         const sourcePath = path.join(templatesDir, '.claude/agents', agentFile);
         const destPath = path.join(agentsPath, agentFile);
@@ -219,8 +184,6 @@ describe('ana init', () => {
 
       const exists = await dirExists(agentsPath);
       expect(exists).toBe(true);
-
-      // Should have all agent files
       const files = await fs.readdir(agentsPath);
       expect(files).toHaveLength(AGENT_FILES.length);
       for (const agentFile of AGENT_FILES) {
@@ -236,22 +199,14 @@ describe('ana init', () => {
       for (const agentFile of AGENT_FILES) {
         const filePath = path.join(templatesDir, '.claude/agents', agentFile);
         const content = await fs.readFile(filePath, 'utf-8');
-
-        // Check frontmatter markers
         expect(content.startsWith('---'), `${agentFile} should start with ---`).toBe(true);
         const secondDashIndex = content.indexOf('---', 3);
         expect(secondDashIndex).toBeGreaterThan(3);
 
         const frontmatter = content.slice(3, secondDashIndex).trim();
-
-        // Check required fields
         expect(frontmatter).toContain('name:');
         expect(frontmatter).toContain('model:');
         expect(frontmatter).toContain('description:');
-
-        // ana.md, ana-plan.md, and ana-setup.md use opus
-        // ana.md has memory:, others don't
-        // sub-agents use sonnet/haiku and have tools:
         if (agentFile === 'ana.md') {
           expect(frontmatter).toContain('model: opus');
           expect(frontmatter).toContain('memory:');
@@ -274,31 +229,20 @@ describe('ana init', () => {
     it('re-init does not duplicate agent files', async () => {
       const claudePath = path.join(tmpDir, '.claude');
       const agentsPath = path.join(claudePath, 'agents');
-
-      // Simulate first init
       await fs.mkdir(agentsPath, { recursive: true });
-
-      // Get templates directory
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
-
-      // Copy agent files (first init)
       for (const agentFile of AGENT_FILES) {
         const sourcePath = path.join(templatesDir, '.claude/agents', agentFile);
         const destPath = path.join(agentsPath, agentFile);
         await fs.copyFile(sourcePath, destPath);
       }
-
-      // Simulate re-init: check if file exists before copying
       for (const agentFile of AGENT_FILES) {
         const destPath = path.join(agentsPath, agentFile);
         const exists = await fileExists(destPath);
-        // Should skip copy if exists
         expect(exists).toBe(true);
       }
-
-      // Should still have exactly AGENT_FILES.length files, not double
       const files = await fs.readdir(agentsPath);
       expect(files).toHaveLength(AGENT_FILES.length);
     });
@@ -306,8 +250,6 @@ describe('ana init', () => {
     it('merges into existing .claude/settings.json without duplicates', async () => {
       const claudePath = path.join(tmpDir, '.claude');
       const settingsPath = path.join(claudePath, 'settings.json');
-
-      // Create existing settings with custom hook
       await fs.mkdir(claudePath, { recursive: true });
       const existingSettings = {
         hooks: {
@@ -320,8 +262,6 @@ describe('ana init', () => {
         },
       };
       await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2));
-
-      // Simulate merge logic
       const templateSettings = {
         hooks: {
           PostToolUse: [
@@ -338,29 +278,19 @@ describe('ana init', () => {
           ],
         },
       };
-
-      // Merge
       const merged = { ...existingSettings };
       merged.hooks = { ...existingSettings.hooks, ...templateSettings.hooks };
       await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2));
-
-      // Verify merged content
       const content = await fs.readFile(settingsPath, 'utf-8');
       const result = JSON.parse(content);
-
-      // Should have both hook types
       expect(result.hooks.PreToolUse).toBeDefined();
       expect(result.hooks.PostToolUse).toBeDefined();
-
-      // Custom hook preserved
       expect(result.hooks.PreToolUse[0].hooks[0].command).toBe('custom-hook.sh');
     });
 
     it('does not duplicate hooks on re-init', async () => {
       const claudePath = path.join(tmpDir, '.claude');
       const settingsPath = path.join(claudePath, 'settings.json');
-
-      // Create settings with our hooks already present
       await fs.mkdir(claudePath, { recursive: true });
       const settingsWithOurHooks = {
         hooks: {
@@ -379,11 +309,7 @@ describe('ana init', () => {
         },
       };
       await fs.writeFile(settingsPath, JSON.stringify(settingsWithOurHooks, null, 2));
-
-      // Simulate re-init merge (should detect duplicates)
       const _templateSettings = { ...settingsWithOurHooks };
-
-      // Check if hook already exists by command path
       const existingPostToolUse = settingsWithOurHooks.hooks.PostToolUse;
 
       const postToolUseHasOurHook = existingPostToolUse.some(
@@ -392,21 +318,14 @@ describe('ana init', () => {
       );
 
       expect(postToolUseHasOurHook).toBe(true);
-
-      // Since hook exists, we wouldn't add it again
-      // Final count should be 1
       expect(settingsWithOurHooks.hooks.PostToolUse).toHaveLength(1);
     });
 
     it('overwrites malformed .claude/settings.json with Anatomia defaults', async () => {
       const claudePath = path.join(tmpDir, '.claude');
       const settingsPath = path.join(claudePath, 'settings.json');
-
-      // Create malformed settings.json
       await fs.mkdir(claudePath, { recursive: true });
       await fs.writeFile(settingsPath, '{ invalid json here }');
-
-      // Simulate the try/catch behavior in createClaudeConfiguration
       const templateSettings = {
         hooks: {
           PostToolUse: [
@@ -423,21 +342,16 @@ describe('ana init', () => {
           ],
         },
       };
-
-      // Try to parse, catch error, overwrite
       let didOverwrite = false;
       try {
         const content = await fs.readFile(settingsPath, 'utf-8');
         JSON.parse(content); // This should throw
       } catch {
-        // Malformed JSON - overwrite with defaults
         await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2));
         didOverwrite = true;
       }
 
       expect(didOverwrite).toBe(true);
-
-      // Verify the file is now valid JSON with our hooks
       const content = await fs.readFile(settingsPath, 'utf-8');
       const result = JSON.parse(content);
       expect(result.hooks.PostToolUse).toBeDefined();
@@ -447,7 +361,6 @@ describe('ana init', () => {
     });
   });
   describe('blind spot display', () => {
-    // @ana A008
     it('shows nothing when blind spots array is empty', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -457,8 +370,6 @@ describe('ana init', () => {
       expect(logs.join('\n')).not.toContain('Blind spots');
       spy.mockRestore();
     });
-
-    // @ana A004, A005
     it('translates Analyzer blind spot to human-readable message', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -473,8 +384,6 @@ describe('ana init', () => {
       expect(output).toContain('Blind spots');
       spy.mockRestore();
     });
-
-    // @ana A006, A007
     it('displays non-Analyzer blind spots with their fields directly', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -506,11 +415,7 @@ describe('ana init', () => {
     });
   });
 
-  // runAnalyzer spinner messages — tested in init-spinner.test.ts
-  // (requires vi.mock for ora and scan-engine at module level)
-
   describe('displaySuccessMessage pipeline readiness', () => {
-    // @ana A016
     it('shows Pipeline readiness section when warnings exist', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -526,8 +431,6 @@ describe('ana init', () => {
       expect(output).toContain('git user.name not configured');
       spy.mockRestore();
     });
-
-    // @ana A017
     it('hides Pipeline readiness when no warnings', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -572,7 +475,6 @@ describe('ana init', () => {
   });
 
   describe('displaySuccessMessage quickstart URL', () => {
-    // @ana A001, A002
     it('shows quickstart URL with label', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -586,8 +488,6 @@ describe('ana init', () => {
       expect(output).toContain('Quickstart');
       spy.mockRestore();
     });
-
-    // @ana A003
     it('shows quickstart URL after Next steps block', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -603,8 +503,6 @@ describe('ana init', () => {
       expect(quickstartIndex).toBeGreaterThan(nextIndex);
       spy.mockRestore();
     });
-
-    // @ana A011
     it('shows quickstart URL even when engineResult is null', () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -618,7 +516,6 @@ describe('ana init', () => {
   });
 
   describe('setup bare command guide URL', () => {
-    // @ana A004, A005
     it('shows guide URL with label', async () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -635,8 +532,6 @@ describe('ana init', () => {
       expect(output).toContain('Guide');
       spy.mockRestore();
     });
-
-    // @ana A006
     it('shows guide URL between agent command and subcommands', async () => {
       const logs: string[] = [];
       const spy = vi.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args.join(' ')); });
@@ -660,22 +555,15 @@ describe('ana init', () => {
   });
 
   describe('URL constants', () => {
-    // @ana A007
     it('DOCS_QUICKSTART has correct value', () => {
       expect(DOCS_QUICKSTART).toBe('https://anatomia.dev/docs/start');
     });
-
-    // @ana A008
     it('DOCS_SETUP_GUIDE has correct value', () => {
       expect(DOCS_SETUP_GUIDE).toBe('https://anatomia.dev/docs/guides/using-ana-setup');
     });
   });
 
-  // PreflightResult warnings — tested in init-preflight.test.ts
-  // (requires vi.mock for git-operations and child_process at module level)
-
   describe('setup agent template', () => {
-    // @ana A018, A019, A020
     it('includes environment validation commands and safety guardrail', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -686,8 +574,6 @@ describe('ana init', () => {
       expect(content).toContain('git config user.name');
       expect(content).toContain('Do not install software');
     });
-
-    // @ana A009
     it('includes design principles guide URL in Step 6 block', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -699,7 +585,6 @@ describe('ana init', () => {
   });
 
   describe('using-ana-setup docs page', () => {
-    // @ana A010
     it('links to design principles reference section', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -709,10 +594,6 @@ describe('ana init', () => {
       expect(content).toContain('/docs/reference/context#design-principles');
     });
   });
-
-  // ─── Learn Directory Tests ──────────────────────────────────────────
-
-  // @ana A001
   describe('init creates learn directory with seeded state.json', () => {
     it('creates .ana/learn/state.json with null last_session_at', async () => {
       const anaPath = path.join(tmpDir, '.ana');
@@ -728,11 +609,8 @@ describe('ana init', () => {
       expect(state.last_session_at).toBe(null);
     });
   });
-
-  // @ana A002
   describe('re-init preserves learn state.json', () => {
     it('preserves existing learn state with non-null timestamp', async () => {
-      // Set up existing .ana with a learn state that has a timestamp
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
       await fs.mkdir(path.join(existingAnaPath, 'learn'), { recursive: true });
       const existingTimestamp = '2026-05-15T14:30:00Z';
@@ -740,36 +618,24 @@ describe('ana init', () => {
         path.join(existingAnaPath, 'learn', 'state.json'),
         JSON.stringify({ last_session_at: existingTimestamp }),
       );
-
-      // Create tmp .ana with fresh seed
       const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
       await createDirectoryStructure(tmpAnaPath);
-
-      // Verify fresh seed has null
       const freshState = JSON.parse(
         await fs.readFile(path.join(tmpAnaPath, 'learn', 'state.json'), 'utf-8'),
       );
       expect(freshState.last_session_at).toBe(null);
-
-      // Create minimal ana.json for preserveUserState
       await fs.writeFile(
         path.join(existingAnaPath, 'ana.json'),
         JSON.stringify({ artifactBranch: 'main' }),
       );
       const newConfig = { anaVersion: '1.0.0', lastScanAt: new Date().toISOString() };
-
-      // Run preserveUserState
       await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
-
-      // Verify the timestamp was preserved
       const preservedState = JSON.parse(
         await fs.readFile(path.join(tmpAnaPath, 'learn', 'state.json'), 'utf-8'),
       );
       expect(preservedState.last_session_at).toBe(existingTimestamp);
     });
   });
-
-  // @ana A001, A002, A003, A004, A005, A006
   describe('re-init refreshes metadata fields from new scan', () => {
     it('refreshes name, language, framework, packageManager from new config', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
@@ -806,22 +672,18 @@ describe('ana init', () => {
       const result = JSON.parse(
         await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'),
       );
-      // Metadata fields refresh from new scan
       expect(result.name).toBe('fresh-project-name');
       expect(result.language).toBe('Python');
       expect(result.framework).toBe('Django');
       expect(result.packageManager).toBe('pip');
-      // Commands preserve from old config
       expect(result.commands.test).toBe('my-custom-test');
       expect(result.commands.build).toBe('my-build');
-      // Passthrough key survives
       expect(result.myCustomKey).toBe(true);
     });
   });
-
-  // @ana A007, A008, A009, A010
   describe('preserves user-owned fields during metadata refresh', () => {
-    it('preserves coAuthor, artifactBranch, branchPrefix, custom', async () => {
+    // @ana A022
+    it('preserves coAuthor, artifactBranch, branchPrefix, mergeStrategy, custom', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
       await fs.mkdir(existingAnaPath, { recursive: true });
       await fs.writeFile(
@@ -834,6 +696,7 @@ describe('ana init', () => {
           coAuthor: 'My Team <team@example.com>',
           artifactBranch: 'develop',
           branchPrefix: 'fix/',
+          mergeStrategy: 'rebase',
           custom: { myFlag: true },
           commands: { test: 'go test ./...' },
         }),
@@ -859,14 +722,12 @@ describe('ana init', () => {
       expect(result.coAuthor).toBe('My Team <team@example.com>');
       expect(result.artifactBranch).toBe('develop');
       expect(result.branchPrefix).toBe('fix/');
+      expect(result.mergeStrategy).toBe('rebase');
       expect(result.custom.myFlag).toBe(true);
-      // Metadata did refresh
       expect(result.name).toBe('new-name');
       expect(result.language).toBe('Rust');
     });
   });
-
-  // @ana A011, A012
   describe('refreshes null values from scan without preserving stale data', () => {
     it('null scan results overwrite non-null old values', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
@@ -906,7 +767,6 @@ describe('ana init', () => {
   });
 
   describe('scan engine blind spot messages', () => {
-    // @ana A022
     it('scan-engine blind spot message is not modified', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -917,8 +777,6 @@ describe('ana init', () => {
     });
   });
 });
-
-// ─── Codex Support Tests ──────────────────────────────────────────────
 
 describe('Codex init infrastructure', () => {
   let tmpDir: string;
@@ -932,7 +790,6 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('Codex template inventory', () => {
-    // @ana A040
     it('has 5 Codex agent files (no Learn)', () => {
       expect(CODEX_AGENT_FILES).toHaveLength(5);
       expect(CODEX_AGENT_FILES).not.toContain('ana-learn.md');
@@ -954,8 +811,6 @@ describe('Codex init infrastructure', () => {
         expect(tomlExists, `Missing TOML: .codex/agents/${baseName}.agent.toml`).toBe(true);
       }
     });
-
-    // @ana A016
     it('Codex agent templates have no YAML frontmatter', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -970,8 +825,6 @@ describe('Codex init infrastructure', () => {
         expect(content.startsWith('#'), `${agentFile} should start with # heading`).toBe(true);
       }
     });
-
-    // @ana A014
     it('Codex build template uses ana run syntax', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -981,8 +834,6 @@ describe('Codex init infrastructure', () => {
       );
       expect(content).toContain('ana run');
     });
-
-    // @ana A015
     it('Codex build template has no CC-specific references', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -996,7 +847,6 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('Codex TOML manifests', () => {
-    // @ana A017, A018, A019
     it('Build TOML has correct fields', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -1012,14 +862,11 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('Codex configuration', () => {
-    // @ana A007
     it('.codex/agents/ should have 5 agent files and 5 TOML manifests', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
       const codexAgentsPath = path.join(tmpDir, '.codex', 'agents');
-
-      // Simulate createCodexConfiguration
       await fs.mkdir(codexAgentsPath, { recursive: true });
       for (const agentFile of CODEX_AGENT_FILES) {
         await fs.copyFile(
@@ -1043,15 +890,11 @@ describe('Codex init infrastructure', () => {
         expect(files).toContain(`${baseName}.agent.toml`);
       }
     });
-
-    // @ana A021
     it('merge-not-overwrite preserves existing Codex agent customizations', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
       const codexAgentsPath = path.join(tmpDir, '.codex', 'agents');
-
-      // First init
       await fs.mkdir(codexAgentsPath, { recursive: true });
       for (const agentFile of CODEX_AGENT_FILES) {
         await fs.copyFile(
@@ -1059,12 +902,8 @@ describe('Codex init infrastructure', () => {
           path.join(codexAgentsPath, agentFile),
         );
       }
-
-      // Customize an agent file
       const customPath = path.join(codexAgentsPath, 'ana-build.md');
       await fs.writeFile(customPath, '# Custom Build Agent\n\nMy custom content');
-
-      // Simulate re-init merge-not-overwrite
       for (const agentFile of CODEX_AGENT_FILES) {
         const destPath = path.join(codexAgentsPath, agentFile);
         const exists = await fileExists(destPath);
@@ -1074,44 +913,31 @@ describe('Codex init infrastructure', () => {
           destPath,
         );
       }
-
-      // Custom content should be preserved
       const content = await fs.readFile(customPath, 'utf-8');
       expect(content).toContain('My custom content');
     });
   });
 
   describe('createSkillSymlinks', () => {
-    // @ana A009, A010
     it('creates symlinks from platform dirs to .ana/skills', async () => {
-      // Create prerequisite dirs
       await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
       await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
 
       await createSkillSymlinks(tmpDir, ['claude', 'codex']);
-
-      // .claude/skills should be a symlink
       const claudeSkillsPath = path.join(tmpDir, '.claude', 'skills');
       const claudeStats = lstatSync(claudeSkillsPath);
       expect(claudeStats.isSymbolicLink()).toBe(true);
-
-      // .agents/skills should be a symlink
       const agentsSkillsPath = path.join(tmpDir, '.agents', 'skills');
       const agentsStats = lstatSync(agentsSkillsPath);
       expect(agentsStats.isSymbolicLink()).toBe(true);
     });
-
-    // @ana A020
     it('symlinks resolve to the same content', async () => {
-      // Create skill content
       const skillsDir = path.join(tmpDir, '.ana', 'skills', 'coding-standards');
       await fs.mkdir(skillsDir, { recursive: true });
       await fs.writeFile(path.join(skillsDir, 'SKILL.md'), '# Test Skill');
       await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
 
       await createSkillSymlinks(tmpDir, ['claude', 'codex']);
-
-      // Both paths should resolve to same content
       const claudeContent = readFileSync(
         path.join(tmpDir, '.claude', 'skills', 'coding-standards', 'SKILL.md'),
         'utf-8',
@@ -1127,11 +953,7 @@ describe('Codex init infrastructure', () => {
     it('is idempotent — skips if symlink already exists', async () => {
       await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
       await fs.mkdir(path.join(tmpDir, '.claude'), { recursive: true });
-
-      // Create first
       await createSkillSymlinks(tmpDir, ['claude']);
-
-      // Run again — should not throw
       await createSkillSymlinks(tmpDir, ['claude']);
 
       const stats = lstatSync(path.join(tmpDir, '.claude', 'skills'));
@@ -1140,26 +962,18 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('migrateSkillsToCanonical', () => {
-    // @ana A022, A023
     it('migrates real .claude/skills/ dir to .ana/skills/ + symlink', async () => {
-      // Create real .claude/skills/ with enriched content
       const claudeSkillsPath = path.join(tmpDir, '.claude', 'skills', 'coding-standards');
       await fs.mkdir(claudeSkillsPath, { recursive: true });
       await fs.writeFile(
         path.join(claudeSkillsPath, 'SKILL.md'),
         '# Enriched coding standards',
       );
-
-      // Create empty .ana/skills/
       await fs.mkdir(path.join(tmpDir, '.ana', 'skills'), { recursive: true });
 
       await migrateSkillsToCanonical(tmpDir);
-
-      // .claude/skills should now be a symlink
       const stats = lstatSync(path.join(tmpDir, '.claude', 'skills'));
       expect(stats.isSymbolicLink()).toBe(true);
-
-      // Content should be in .ana/skills/
       const content = readFileSync(
         path.join(tmpDir, '.ana', 'skills', 'coding-standards', 'SKILL.md'),
         'utf-8',
@@ -1174,18 +988,13 @@ describe('Codex init infrastructure', () => {
         path.join('..', '.ana', 'skills'),
         path.join(tmpDir, '.claude', 'skills'),
       );
-
-      // Should not throw
       await migrateSkillsToCanonical(tmpDir);
-
-      // Should still be a symlink
       const stats = lstatSync(path.join(tmpDir, '.claude', 'skills'));
       expect(stats.isSymbolicLink()).toBe(true);
     });
   });
 
   describe('CC template migration', () => {
-    // @ana A024
     it('CC agent templates use ana run syntax', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -1199,8 +1008,6 @@ describe('Codex init infrastructure', () => {
         expect(content, `${agentFile} should not contain claude --agent`).not.toContain('claude --agent');
       }
     });
-
-    // @ana A025
     it('CLAUDE.md template uses ana run syntax', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -1211,8 +1018,6 @@ describe('Codex init infrastructure', () => {
       expect(content).not.toContain('claude --agent');
       expect(content).toContain('ana run');
     });
-
-    // @ana A028
     it('check.ts uses getSkillsDirRel for display', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -1226,7 +1031,6 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('platform auto-detection', () => {
-    // @ana A026
     it('detectPlatforms returns at least one platform', async () => {
       const { detectPlatforms } = await import('../../src/commands/init/state.js');
       const platforms = detectPlatforms();
@@ -1235,7 +1039,6 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('platform preservation on re-init', () => {
-    // @ana A027
     it('preserveUserState preserves platforms from existing ana.json', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
       await fs.mkdir(existingAnaPath, { recursive: true });
@@ -1270,6 +1073,3 @@ describe('Codex init infrastructure', () => {
     });
   });
 });
-
-// Uses Node.js built-in fileURLToPath from 'node:url' (imported at top)
-// to correctly handle Windows drive letter paths.

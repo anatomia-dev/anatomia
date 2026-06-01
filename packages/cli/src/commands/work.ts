@@ -30,6 +30,7 @@ import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, resolvePhase, compareTimestamp, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
 import type { ArtifactState } from './work-state.js';
 import { writeProofChain, guardFailResult } from './work-proof.js';
+import { AnaJsonSchema } from './init/anaJsonSchema.js';
 
 // Re-exports from work-proof for backward compatibility
 export { deriveSurface } from './work-proof.js';
@@ -65,6 +66,146 @@ interface StatusOutput {
   projectMismatch: { cliVersion: string; projectVersion: string } | null;
   scanStale: ScanFreshnessResult | null;
   items: WorkItem[];
+}
+
+type MergeStrategy = 'merge' | 'squash' | 'rebase';
+
+interface MergeStrategyResolution {
+  strategy: MergeStrategy;
+  source: 'configured' | 'discovered';
+}
+
+const MERGE_STRATEGY_FLAGS: Record<MergeStrategy, string> = {
+  merge: '--merge',
+  squash: '--squash',
+  rebase: '--rebase',
+};
+
+const MERGE_METHOD_FIELDS: Array<{ field: string; strategy: MergeStrategy }> = [
+  { field: 'allow_merge_commit', strategy: 'merge' },
+  { field: 'allow_squash_merge', strategy: 'squash' },
+  { field: 'allow_rebase_merge', strategy: 'rebase' },
+];
+
+function printMergeStrategyConfigurationGuidance(slug: string): void {
+  console.error(chalk.gray('Choose the method this repository should use:'));
+  console.error(chalk.gray('  ana config set mergeStrategy merge'));
+  console.error(chalk.gray('  ana config set mergeStrategy squash'));
+  console.error(chalk.gray('  ana config set mergeStrategy rebase'));
+  console.error('');
+  console.error(chalk.gray(`Then retry: ana work complete --merge ${slug}`));
+}
+
+function exitMergeStrategyAmbiguous(slug: string, options?: { json?: boolean }): never {
+  const message = 'Multiple GitHub merge methods are enabled and no mergeStrategy is configured.';
+  console.error(chalk.red(`Error: ${message}`));
+  printMergeStrategyConfigurationGuidance(slug);
+  if (options?.json) {
+    console.log(JSON.stringify(wrapJsonError('work complete', 'MERGE_STRATEGY_AMBIGUOUS', message, {}, null), null, 2));
+  }
+  process.exit(1);
+}
+
+function exitMergeStrategyDiscoveryUnavailable(slug: string, options?: { json?: boolean }): never {
+  const message = 'Could not determine the repository merge strategy automatically.';
+  console.error(chalk.red(`Error: ${message}`));
+  console.error(chalk.gray('Set the repository default once:'));
+  console.error(chalk.gray('  ana config set mergeStrategy squash'));
+  console.error('');
+  console.error(chalk.gray(`Then retry: ana work complete --merge ${slug}`));
+  if (options?.json) {
+    console.log(JSON.stringify(wrapJsonError('work complete', 'MERGE_STRATEGY_DISCOVERY_UNAVAILABLE', message, {}, null), null, 2));
+  }
+  process.exit(1);
+}
+
+function exitMergeStrategyUnsupported(
+  slug: string,
+  strategy: MergeStrategy,
+  options?: { json?: boolean },
+): never {
+  const message = `Configured mergeStrategy "${strategy}" is not allowed for this repository.`;
+  console.error(chalk.red(`Error: ${message}`));
+  console.error(chalk.gray('Update the setting to an allowed method:'));
+  for (const method of Object.keys(MERGE_STRATEGY_FLAGS)) {
+    if (method !== strategy) {
+      console.error(chalk.gray(`  ana config set mergeStrategy ${method}`));
+    }
+  }
+  console.error('');
+  console.error(chalk.gray(`Then retry: ana work complete --merge ${slug}`));
+  if (options?.json) {
+    console.log(JSON.stringify(wrapJsonError('work complete', 'MERGE_STRATEGY_UNSUPPORTED', message, {}, null), null, 2));
+  }
+  process.exit(1);
+}
+
+function resolveMergeStrategy(
+  projectRoot: string,
+  slug: string,
+  options?: { json?: boolean },
+): MergeStrategyResolution {
+  let configuredStrategy: MergeStrategy | undefined;
+  try {
+    const rawConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, '.ana', 'ana.json'), 'utf-8')) as unknown;
+    configuredStrategy = AnaJsonSchema.parse(rawConfig).mergeStrategy;
+  } catch {
+    configuredStrategy = undefined;
+  }
+
+  if (configuredStrategy) {
+    return { strategy: configuredStrategy, source: 'configured' };
+  }
+
+  const repoResult = spawnSync('gh', ['api', 'repos/{owner}/{repo}'], {
+    cwd: projectRoot, encoding: 'utf-8', stdio: 'pipe',
+  });
+  if (repoResult.status !== 0) {
+    exitMergeStrategyDiscoveryUnavailable(slug, options);
+  }
+
+  let repoData: unknown;
+  try {
+    repoData = JSON.parse(repoResult.stdout.trim());
+  } catch {
+    exitMergeStrategyDiscoveryUnavailable(slug, options);
+  }
+
+  if (repoData === null || typeof repoData !== 'object' || Array.isArray(repoData)) {
+    exitMergeStrategyDiscoveryUnavailable(slug, options);
+  }
+
+  const repo = repoData as Record<string, unknown>;
+  const enabled: MergeStrategy[] = [];
+  for (const { field, strategy } of MERGE_METHOD_FIELDS) {
+    const value = repo[field];
+    if (typeof value !== 'boolean') {
+      exitMergeStrategyDiscoveryUnavailable(slug, options);
+    }
+    if (value) {
+      enabled.push(strategy);
+    }
+  }
+
+  if (enabled.length !== 1) {
+    if (enabled.length > 1) {
+      exitMergeStrategyAmbiguous(slug, options);
+    }
+    exitMergeStrategyDiscoveryUnavailable(slug, options);
+  }
+
+  return { strategy: enabled[0]!, source: 'discovered' };
+}
+
+function isUnsupportedMergeStrategyOutput(output: string): boolean {
+  const normalized = output.toLowerCase();
+  return (
+    normalized.includes('merge strategy') ||
+    normalized.includes('merge method') ||
+    normalized.includes('not allowed') ||
+    normalized.includes('disabled') ||
+    normalized.includes('unsupported')
+  );
 }
 
 /**
@@ -524,11 +665,14 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
         process.exit(1);
       }
 
+      const mergeStrategy = resolveMergeStrategy(projectRoot, slug, options);
+      const mergeStrategyFlag = MERGE_STRATEGY_FLAGS[mergeStrategy.strategy];
+
       // Attempt merge
       if (!options?.json) {
         console.log('Merging PR...');
       }
-      const mergeResult = spawnSync('gh', ['pr', 'merge', workBranchName], {
+      const mergeResult = spawnSync('gh', ['pr', 'merge', mergeStrategyFlag, workBranchName], {
         cwd: projectRoot, encoding: 'utf-8', stdio: 'pipe',
       });
 
@@ -568,19 +712,16 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
           process.exit(1);
         }
 
-        // Multiple merge strategies
+        // Multiple merge strategies / unsupported configured strategy
         if (mergeOutput.includes('merge strategy') || mergeOutput.includes('multiple merge methods')) {
-          console.error(chalk.red('Error: Multiple merge strategies are enabled with no default.'));
-          console.error(chalk.gray('Merge manually via GitHub or specify a strategy:'));
-          console.error(chalk.gray('  gh pr merge --merge    (merge commit)'));
-          console.error(chalk.gray('  gh pr merge --squash   (squash)'));
-          console.error(chalk.gray('  gh pr merge --rebase   (rebase)'));
-          console.error('');
-          console.error(chalk.gray(`After merging: ana work complete ${slug}`));
-          if (options?.json) {
-            console.log(JSON.stringify(wrapJsonError('work complete', 'MULTIPLE_STRATEGIES', 'Multiple merge strategies are enabled with no default. Merge the PR manually or specify a strategy.', {}, null), null, 2));
+          if (mergeStrategy.source === 'configured') {
+            exitMergeStrategyUnsupported(slug, mergeStrategy.strategy, options);
           }
-          process.exit(1);
+          exitMergeStrategyAmbiguous(slug, options);
+        }
+
+        if (mergeStrategy.source === 'configured' && isUnsupportedMergeStrategyOutput(mergeOutput)) {
+          exitMergeStrategyUnsupported(slug, mergeStrategy.strategy, options);
         }
 
         // Unknown error — show raw output with guidance

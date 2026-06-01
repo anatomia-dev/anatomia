@@ -11,8 +11,6 @@ import * as fs from 'node:fs/promises';
 import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-
-// Capture real implementations before vi.mock hoists
 const { realExecSync, realSpawnSync } = vi.hoisted(() => {
   const cp = require('node:child_process');
   return {
@@ -56,8 +54,6 @@ describe('ana work complete --merge', () => {
     originalError = console.error;
     console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
     console.error = (...args: unknown[]) => { errors.push(args.join(' ')); };
-
-    // Default: pass all spawnSync calls through to real implementation
     spawnMock.mockImplementation((...args: Parameters<typeof realSpawnSync>) => {
       return realSpawnSync(...args);
     });
@@ -75,7 +71,10 @@ describe('ana work complete --merge', () => {
   /**
    * Create a merged project scenario matching createMergedProject from work.test.ts
    */
-  async function createMergedProject(slug: string): Promise<void> {
+  async function createMergedProject(
+    slug: string,
+    anaJson: Record<string, unknown> = { artifactBranch: 'main', mergeStrategy: 'merge' },
+  ): Promise<void> {
     realExecSync('git init', { cwd: tempDir, stdio: 'ignore' });
     realExecSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
     realExecSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
@@ -84,7 +83,7 @@ describe('ana work complete --merge', () => {
     await fs.mkdir(anaDir, { recursive: true });
     await fs.writeFile(
       path.join(anaDir, 'ana.json'),
-      JSON.stringify({ artifactBranch: 'main' }),
+      JSON.stringify(anaJson),
       'utf-8'
     );
 
@@ -120,14 +119,24 @@ describe('ana work complete --merge', () => {
       if (command === 'gh') {
         return handler(args as string[]);
       }
-      // Pass through to real spawnSync for git and everything else
       return realSpawnSync(command, args, options);
     }) as typeof realSpawnSync);
   }
 
-  // @ana A001, A002, A003, A018
-  it('merges PR and completes work item', async () => {
-    await createMergedProject('test-slug');
+  function repositoryMergeSettings(settings: {
+    merge: boolean;
+    squash: boolean;
+    rebase: boolean;
+  }): string {
+    return JSON.stringify({
+      allow_merge_commit: settings.merge,
+      allow_squash_merge: settings.squash,
+      allow_rebase_merge: settings.rebase,
+    });
+  }
+  // @ana A001, A002, A003
+  it('uses configured squash merge strategy', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main', mergeStrategy: 'squash' });
 
     const ghCalls: string[][] = [];
     mockGh((args) => {
@@ -146,21 +155,93 @@ describe('ana work complete --merge', () => {
 
     const output = logs.join('\n');
     expect(output).toContain('PR merged.');
-
-    // Verify no --squash, --delete-branch, or --admin in merge call
     const mergeCall = ghCalls.find(a => a[0] === 'pr' && a[1] === 'merge');
     expect(mergeCall).toBeDefined();
-    expect(mergeCall).not.toContain('--squash');
+    expect(mergeCall).toContain('--squash');
+    expect(mergeCall).not.toContain('--merge');
     expect(mergeCall).not.toContain('--rebase');
     expect(mergeCall).not.toContain('--delete-branch');
     expect(mergeCall).not.toContain('--admin');
-
-    // Completion happened
+    expect(ghCalls.filter(a => a[0] === 'api')).toHaveLength(0);
     const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
     expect(fsSync.existsSync(completedPath)).toBe(true);
   });
+  // @ana A004
+  it('infers merge strategy from single allowed method', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
 
-  // @ana A005, A006
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: repositoryMergeSettings({ merge: true, squash: false, rebase: false }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await completeWork('test-slug', { merge: true });
+
+    const mergeCall = ghCalls.find(a => a[0] === 'pr' && a[1] === 'merge');
+    expect(mergeCall).toContain('--merge');
+  });
+  // @ana A005
+  it('infers squash strategy from single allowed method', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
+
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: repositoryMergeSettings({ merge: false, squash: true, rebase: false }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await completeWork('test-slug', { merge: true });
+
+    const mergeCall = ghCalls.find(a => a[0] === 'pr' && a[1] === 'merge');
+    expect(mergeCall).toContain('--squash');
+  });
+  // @ana A006
+  it('infers rebase strategy from single allowed method', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
+
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: repositoryMergeSettings({ merge: false, squash: false, rebase: true }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await completeWork('test-slug', { merge: true });
+
+    const mergeCall = ghCalls.find(a => a[0] === 'pr' && a[1] === 'merge');
+    expect(mergeCall).toContain('--rebase');
+  });
+  // @ana A027
   it('shows branch protection guidance when checks are pending', async () => {
     await createMergedProject('test-slug');
 
@@ -183,8 +264,7 @@ describe('ana work complete --merge', () => {
     expect(output).toContain('--admin');
     expect(output).toContain('ana work complete test-slug');
   });
-
-  // @ana A007
+  // @ana A027
   it('shows branch protection guidance when policy prohibits merge', async () => {
     await createMergedProject('test-slug');
 
@@ -223,8 +303,7 @@ describe('ana work complete --merge', () => {
     const output = errors.join('\n');
     expect(output).toContain('Failed to parse');
   });
-
-  // @ana A008, A009, A010
+  // @ana A028
   it('shows rebase instructions when branch is behind', async () => {
     await createMergedProject('test-slug');
 
@@ -246,8 +325,7 @@ describe('ana work complete --merge', () => {
     expect(output).toContain('--force-with-lease');
     expect(output).toContain('approvals');
   });
-
-  // @ana A011
+  // @ana A029
   it('skips merge when PR is already merged', async () => {
     await createMergedProject('test-slug');
 
@@ -268,7 +346,6 @@ describe('ana work complete --merge', () => {
     expect(fsSync.existsSync(completedPath)).toBe(true);
   });
 
-  // @ana A012, A017
   it('exits when no PR exists', async () => {
     await createMergedProject('test-slug');
 
@@ -284,23 +361,22 @@ describe('ana work complete --merge', () => {
 
     const output = errors.join('\n');
     expect(output).toContain('ana pr create');
-
-    // Completion should NOT have happened (no archive)
     const activePath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
     expect(fsSync.existsSync(activePath)).toBe(true);
   });
-
-  // @ana A013
+  // @ana A007, A008
   it('reports multiple merge strategies', async () => {
-    await createMergedProject('test-slug');
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
 
     mockGh((args) => {
+      ghCalls.push(args);
       if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
       if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
         return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
       }
-      if (args[0] === 'pr' && args[1] === 'merge') {
-        return { status: 1, stdout: '', stderr: 'multiple merge methods enabled: merge strategy required' };
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: repositoryMergeSettings({ merge: true, squash: true, rebase: false }), stderr: '' };
       }
       return { status: 1, stdout: '', stderr: '' };
     });
@@ -308,10 +384,145 @@ describe('ana work complete --merge', () => {
     await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
 
     const output = errors.join('\n');
-    expect(output).toContain('Merge manually');
+    expect(output).toContain('Multiple GitHub merge methods');
+    expect(output).toContain('ana config set mergeStrategy');
+    expect(ghCalls.filter(a => a[0] === 'pr' && a[1] === 'merge')).toHaveLength(0);
+  });
+  // @ana A009
+  it('rejects unavailable merge strategy discovery', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
+
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 1, stdout: '', stderr: 'auth failed' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
+
+    expect(errors.join('\n')).toContain('Could not determine');
+    expect(ghCalls.filter(a => a[0] === 'pr' && a[1] === 'merge')).toHaveLength(0);
+  });
+  // @ana A010
+  it('rejects malformed merge strategy discovery', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
+
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: 'not json', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
+
+    expect(ghCalls.filter(a => a[0] === 'pr' && a[1] === 'merge')).toHaveLength(0);
+  });
+  // @ana A011
+  it('rejects unreliable merge strategy discovery', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+    const ghCalls: string[][] = [];
+
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return {
+          status: 0,
+          stdout: JSON.stringify({ allow_merge_commit: true, allow_squash_merge: false }),
+          stderr: '',
+        };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { merge: true })).rejects.toThrow('process.exit');
+
+    expect(ghCalls.filter(a => a[0] === 'pr' && a[1] === 'merge')).toHaveLength(0);
+  });
+  // @ana A012, A015, A016
+  it('reports unsupported configured merge strategy', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main', mergeStrategy: 'squash' });
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 1, stdout: '', stderr: 'squash merge is not allowed for this repository' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { json: true, merge: true })).rejects.toThrow('process.exit');
+
+    const json = JSON.parse(logs.join('\n'));
+    expect(json.error.code).toBe('MERGE_STRATEGY_UNSUPPORTED');
+    expect(errors.join('\n')).toContain('mergeStrategy');
+    expect(logs.join('\n')).not.toContain('Merging PR');
+  });
+  // @ana A013, A016
+  it('returns JSON error for ambiguous merge strategy', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: repositoryMergeSettings({ merge: true, squash: true, rebase: false }), stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { json: true, merge: true })).rejects.toThrow('process.exit');
+
+    const output = logs.join('\n');
+    const json = JSON.parse(output);
+    expect(json.error.code).toBe('MERGE_STRATEGY_AMBIGUOUS');
+    expect(output).not.toContain('Merging PR');
+  });
+  // @ana A014, A016
+  it('returns JSON error for unavailable merge strategy discovery', async () => {
+    await createMergedProject('test-slug', { artifactBranch: 'main' });
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'api' && args[1] === 'repos/{owner}/{repo}') {
+        return { status: 0, stdout: 'not json', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await expect(completeWork('test-slug', { json: true, merge: true })).rejects.toThrow('process.exit');
+
+    const output = logs.join('\n');
+    const json = JSON.parse(output);
+    expect(json.error.code).toBe('MERGE_STRATEGY_DISCOVERY_UNAVAILABLE');
+    expect(output).not.toContain('Merging PR');
   });
 
-  // @ana A014
   it('shows raw stderr for unknown errors', async () => {
     await createMergedProject('test-slug');
 
@@ -332,7 +543,6 @@ describe('ana work complete --merge', () => {
     expect(output).toContain('unexpected gh error text');
   });
 
-  // @ana A015
   it('exits when base branch does not match artifact branch', async () => {
     await createMergedProject('test-slug');
 
@@ -350,7 +560,6 @@ describe('ana work complete --merge', () => {
     expect(output).toContain('must target');
   });
 
-  // @ana A016
   it('exits when gh is not installed', async () => {
     await createMergedProject('test-slug');
 
@@ -363,8 +572,7 @@ describe('ana work complete --merge', () => {
     const output = errors.join('\n');
     expect(output).toContain('https://cli.github.com/');
   });
-
-  // @ana A001, A002, A003, A004, A007
+  // @ana A029
   it('already-merged path with --json produces valid JSON', async () => {
     await createMergedProject('test-slug');
 
@@ -380,16 +588,13 @@ describe('ana work complete --merge', () => {
 
     console.log = originalLog;
     const output = logs.join('\n');
-
-    // Should be clean JSON — no human-readable text before the envelope
     const json = JSON.parse(output);
     expect(json.command).toBe('work complete');
     expect(json.results.slug).toBe('test-slug');
     expect(json.meta).toBeTypeOf('object');
     expect(output).not.toContain('already merged');
   });
-
-  // @ana A005, A006, A008
+  // @ana A003
   it('merge-succeeded path with --json produces valid JSON', async () => {
     await createMergedProject('test-slug');
 
@@ -408,8 +613,6 @@ describe('ana work complete --merge', () => {
 
     console.log = originalLog;
     const output = logs.join('\n');
-
-    // Should be clean JSON — no human-readable text before the envelope
     const json = JSON.parse(output);
     expect(json.command).toBe('work complete');
     expect(json.results.slug).toBe('test-slug');

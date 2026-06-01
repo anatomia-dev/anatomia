@@ -54,6 +54,7 @@ const KNOWN_FIELDS = new Set([
   'coAuthor',
   'artifactBranch',
   'branchPrefix',
+  'mergeStrategy',
   'setupPhase',
   'lastScanAt',
   'custom',
@@ -407,6 +408,12 @@ export function registerConfigCommand(program: Command): void {
 
         const config = readRawConfig(root);
         const value = parseValue(rawValue);
+
+        if (field === 'mergeStrategy' && !['merge', 'squash', 'rebase'].includes(String(value))) {
+          console.error(chalk.red('Invalid mergeStrategy. Expected one of: merge, squash, rebase.'));
+          process.exitCode = 1;
+          return;
+        }
 
         // Reject empty strings for command fields — never a valid command
         const COMMAND_FIELDS = ['commands.test', 'commands.build', 'commands.lint', 'commands.dev'];
