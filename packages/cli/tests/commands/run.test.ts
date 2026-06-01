@@ -89,7 +89,7 @@ describe('ana run', () => {
     const agentsDir = path.join(tempDir, '.codex', 'agents');
     fs.mkdirSync(agentsDir, { recursive: true });
 
-    const agents = ['ana', 'ana-build', 'ana-plan', 'ana-verify', 'ana-setup'];
+    const agents = ['ana', 'ana-build', 'ana-plan', 'ana-verify', 'ana-setup', 'ana-learn'];
     for (const agent of agents) {
       fs.writeFileSync(
         path.join(agentsDir, `${agent}.agent.toml`),
@@ -350,14 +350,18 @@ describe('ana run', () => {
       expect(spawnArgs).not.toContain('exec');
     });
 
-    // @ana A035
-    it('shows helpful error for Learn agent on Codex', () => {
+    // @ana A001, A002, A003
+    it('dispatches Learn agent on Codex', () => {
       createCodexProject();
-      const code = runAndGetExit('learn');
-      expect(code).toBe(1);
-      const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
-      expect(errorOutput).toContain('not yet available on Codex');
-      expect(errorOutput).toContain('claude --agent ana-learn');
+      runAndGetExit('learn');
+
+      const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'codex');
+      expect(spawnCall).toBeDefined();
+      const spawnArgs = spawnCall![1] as string[];
+      expect(spawnArgs).not.toContain('exec');
+      const diArg = spawnArgs.find(a => typeof a === 'string' && a.startsWith('developer_instructions='));
+      expect(diArg).toBeDefined();
+      expect(diArg).toContain('# ana-learn prompt');
     });
 
     it('does not use shell for codex spawn (security: no command injection)', () => {
@@ -426,14 +430,13 @@ describe('ana run', () => {
       expect(spawnArgs).toContain('--full-auto');
     });
 
-    // @ana A040
-    it('no codex learn template exists (Learn not in agent list)', () => {
-      // Verify that createCodexProject does not create a learn prompt
+    // @ana A004, A005
+    it('codex learn template and TOML exist', () => {
       createCodexProject();
       const learnPrompt = path.join(tempDir, '.codex', 'agents', 'ana-learn.md');
       const learnToml = path.join(tempDir, '.codex', 'agents', 'ana-learn.agent.toml');
-      expect(fs.existsSync(learnPrompt)).toBe(false);
-      expect(fs.existsSync(learnToml)).toBe(false);
+      expect(fs.existsSync(learnPrompt)).toBe(true);
+      expect(fs.existsSync(learnToml)).toBe(true);
     });
 
     it('all Codex agents use interactive mode (no exec)', () => {
