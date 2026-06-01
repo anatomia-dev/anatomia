@@ -162,7 +162,7 @@ describe('Platform setup guide', () => {
     expect(guide).toContain('sandbox_mode');
     expect(guide).toContain('ana config set platformFlags.claude');
     expect(guide).toContain('To add Codex to a Claude Code project');
-    expect(guide).toContain('Codex Learn is not yet available');
+    expect(guide).toContain('Both platforms support every pipeline stage');
   });
 });
 
@@ -199,7 +199,7 @@ describe('Codex limitations and troubleshooting', () => {
     const learn = readRepoFile('website/content/docs/guides/using-ana-learn.mdx');
     const troubleshooting = readRepoFile('website/content/docs/guides/troubleshooting.mdx');
 
-    expect(learn).toContain('Codex Learn is not yet available');
+    expect(learn).not.toContain('Codex Learn is not yet available');
     expect(troubleshooting).toContain('codex not found');
     expect(troubleshooting).toContain('manifest');
   });
