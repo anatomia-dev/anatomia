@@ -54,5 +54,20 @@
     "website/lib/__tests__/docs-platform-content.test.ts",
     "website/lib/copy.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-01T01:00:15.506Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b874a9cd520d9d07a42b877e589d10f3dedb993eca50444069991a84e0c97c28",
+    "run_at": "2026-06-01T01:04:27.148Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-01T01:04:27.177Z",
+    "hash": "sha256:6ce578757e025bc26e6bfadecca277b8fcf04afca1ffc0ec9368bd10f68e75b3"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-01T01:04:27.177Z",
+    "hash": "sha256:fab58c1070014fa4b2967f1786c69ec4c12855bdddeaef7daa58d95752233ea6"
+  }
 }

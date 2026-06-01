@@ -1,0 +1,23 @@
+schema: 1
+findings:
+  - category: test
+    summary: "ForPlatform pairing test only compares total block counts"
+    file: "website/lib/__tests__/docs-platform-content.test.ts"
+    line: 151
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A027"]
+  - category: test
+    summary: "Generated search index can still surface stale direct Claude agent command text"
+    file: "website/public/search-index.json"
+    line: 1373
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007", "A035"]
+  - category: code
+    summary: "Platform flags guide shows Codex sandbox as platformFlags even though run dispatch already passes sandbox mode"
+    file: "website/content/docs/guides/platform-setup.mdx"
+    line: 41
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A024", "A026"]
