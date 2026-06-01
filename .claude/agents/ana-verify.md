@@ -129,12 +129,12 @@ findings:
       - "previous-slug-C2"
 ```
 
-**Required fields:** `category` (code/test/upstream), `summary` (non-empty string), `severity` (risk/debt/observation), `suggested_action` (promote/scope/monitor/accept)
+**Required fields:** `category` (code/test/upstream), `summary` (non-empty string), `severity` (risk/debt/observation), `suggested_action` (promote/scope/monitor/acknowledge)
 **Optional fields:** `file` (repo-relative path), `line` (display only), `related_assertions` (array of assertion IDs), `anchor` (code construct), `resolves` (array of finding IDs this upstream finding claims to resolve — use finding IDs from proof context output, e.g., `["old-slug-C3"]`)
 
 **Severity** classifies impact: `risk` = could hurt you (reliability, security, correctness), `debt` = making the codebase worse (maintainability, duplication, unclear intent), `observation` = information worth recording (patterns, upstream behavior, context).
 
-**Suggested action** recommends what to do: `promote` = encode as a skill rule so agents learn, `scope` = needs engineering work as a future task, `monitor` = watch but take no action now, `accept` = acknowledged and can be closed.
+**Suggested action** recommends what to do: `promote` = encode as a skill rule so agents learn, `scope` = needs engineering work as a future task, `monitor` = watch but take no action now, `acknowledge` = acknowledged, no action needed.
 
 The YAML is authoritative for machines — it's what enters the proof chain. The `## Findings` section is analysis for humans — reasoning, context, severity justification. Both must be consistent, but the YAML is the structured source of truth.
 
