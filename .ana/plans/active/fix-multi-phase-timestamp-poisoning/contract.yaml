@@ -164,7 +164,20 @@ assertions:
     value: "verify-in-progress"
 
   - id: A025
-    says: "isTimestampRecent consolidation eliminates duplicate logic"
+    says: "Single-spec re-verify writes the verify timestamp, not the build timestamp"
+    block: "single-spec FAIL re-verify writes verify_started_at not build_started_at"
+    target: "saves.verify_started_at"
+    matcher: "exists"
+
+  - id: A026
+    says: "Single-spec re-verify does not write the build timestamp"
+    block: "single-spec FAIL re-verify does not write build_started_at for re-verify entry"
+    target: "saves.build_started_at_overwritten"
+    matcher: "not_equals"
+    value: "re-verify-timestamp"
+
+  - id: A027
+    says: "Duplicate timestamp logic is consolidated into one path"
     block: "isTimestampRecent delegates to shared timestamp comparison"
     target: "isTimestampRecent.delegatesToSharedLogic"
     matcher: "truthy"

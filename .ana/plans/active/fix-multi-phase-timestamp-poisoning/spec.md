@@ -33,7 +33,7 @@ Pipeline Status (artifact branch: main)
     Phase 1: ✓ built ✓ verified
     Phase 2: ✓ built ✗ not verified
     Stage: phase-2-ready-for-verify
-    → claude --agent ana-verify
+    → ana run verify
 ```
 
 ### `.saves.json` after Phase 2 verify start (multi-phase)
@@ -97,6 +97,7 @@ Pipeline Status (artifact branch: main)
 - [ ] AC12: The phase resolver receives or loads `.saves.json` save metadata (`build-report-N.saved_at`, `verify-report-N.saved_at`) and uses it for defense-in-depth freshness checks and re-verify detection. It does not rely solely on `ArtifactState` filename/existence data.
 - [ ] AC13: Phase-scoped keys work for arbitrary N, not just Phase 2. Given a 4-phase scope where phases 1-3 have PASS verify reports, phase 4 has `build_report_4.md` and no `verify_report_4.md`, and recent `verify_started_at_1`/`verify_started_at_2`/`verify_started_at_3` exist: `ana work status` returns `phase-4-ready-for-verify` and `ana work start` writes `verify_started_at_4`.
 - [ ] AC14: Re-verify works for arbitrary N. Given a 4-phase scope where phase 4 has a FAIL `verify_report_4.md` and a newer `build_report_4.md`: `ana work status` returns `phase-4-ready-for-re-verify` and `ana work start` writes `verify_started_at_4`, not `build_started_at_4`.
+- [ ] AC15: Single-spec FAIL verify + newer build report → `startWork` writes `verify_started_at` (not `build_started_at`). Re-verify is a verify session regardless of phase count.
 - [ ] Tests pass with `(cd 'packages/cli' && pnpm vitest run)`
 - [ ] No build errors with `(cd 'packages/cli' && pnpm run build)`
 - [ ] Lint passes with `(cd 'packages/cli' && pnpm run lint)`
@@ -142,7 +143,7 @@ Pipeline Status (artifact branch: main)
 - **`isTimestampRecent` reads from filesystem path.** It's called from `determineStage` with the worktree path. When consolidating with `checkConcurrencyGuard`, preserve this filesystem-path-based interface for `determineStage`'s usage. The consolidation is internal — the call signature for `isTimestampRecent` stays the same.
 - **`determineStage` currently reads `.saves.json` via `readFileOnBranch` (git show).** For the defense-in-depth check, it needs `build-report-N.saved_at` from `.saves.json` on the work branch. This data is already being read in the multi-phase FAIL check (line 460-468). Extract this read to happen once per slug, pass it to both the phase resolver and the FAIL-check logic.
 - **Main-tree `startWork` can't see worktree artifacts on the filesystem** (they're committed on the work branch, not checked out on the artifact branch). But it CAN read them via `gatherArtifactState` which uses `fileExistsOnBranch` / `readFileOnBranch`. For `.saves.json` timestamps, the main-tree path should read from the worktree filesystem (via `getWorktreePath`) since timestamps are written there, not committed to the work branch.
-- **Re-verify writes `verify_started_at_N`, not `build_started_at_N`.** The scope explicitly calls this out (AC5). The current single-phase re-verify path writes `build_started_at` — this is also wrong for single-phase but hasn't been noticed because the fix path routes to build. For multi-phase, the distinction matters: re-verify is a verify session. Update both single-phase and multi-phase re-verify to write the verify key.
+- **Re-verify writes `verify_started_at_N`, not `build_started_at_N`.** The scope explicitly calls this out (AC5). The current single-phase re-verify path writes `build_started_at` (work.ts line 1177) — this is also wrong for single-phase but hasn't been noticed because the fix path routes to build. For multi-phase, the distinction matters: re-verify is a verify session. Update both single-phase and multi-phase re-verify to write the verify key. AC15 enforces this for single-phase.
 
 ## Build Brief
 
