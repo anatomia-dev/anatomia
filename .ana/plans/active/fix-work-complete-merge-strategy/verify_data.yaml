@@ -1,0 +1,22 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance"
+    file: "packages/cli/src/commands/work.ts"
+    line: 200
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A012", "A015", "A027", "A028"]
+  - category: test
+    summary: "Diff removes many pre-existing @ana tags and explanatory comments from unrelated tests, weakening future contract traceability"
+    file: "packages/cli/tests/commands/config.test.ts"
+    line: 98
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv"
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    line: 597
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003"]

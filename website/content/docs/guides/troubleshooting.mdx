@@ -135,7 +135,7 @@ Usually means the spec was too vague. Vague specs produce vague implementations,
 
 <TroubleCard title="ana work complete failed">
 
-Must run from the main project directory on the artifact branch (usually `main`), not from inside a worktree. If using `--merge`: requires `gh` CLI, requires a PR to exist, and branch protection rules on GitHub can block the merge. Without `--merge`: merge the PR on GitHub first, then run `ana work complete <slug>`.
+Must run from the main project directory on the artifact branch (usually `main`), not from inside a worktree. If using `--merge`: requires `gh` CLI, requires a PR to exist, and branch protection rules on GitHub can block the merge. If Anatomia cannot determine which GitHub merge method to use, set the repository default once: `ana config set mergeStrategy squash` (or `merge` / `rebase`), then retry `ana work complete --merge <slug>`. Without `--merge`: merge the PR on GitHub first, then run `ana work complete <slug>`.
 
 </TroubleCard>
 
