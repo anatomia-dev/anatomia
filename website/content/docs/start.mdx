@@ -9,16 +9,16 @@ readingTime: 8
 - Node.js 22 or later
 - Git with `user.name` and `user.email` configured
 - A Git repository with at least one commit
-- [Claude Code](https://claude.ai/code) or Codex — needed for pipeline agents (Steps 3–4)
-- [GitHub CLI](https://cli.github.com/) (`gh`) — used by Verify to create PRs after a passing run
 
 <ForPlatform platform="claude-code">
-Claude Code users need the `claude` executable available on PATH before running pipeline agents. If you use stricter permission prompts, configure Claude Code flags after init.
+- [Claude Code](https://claude.ai/code) with an active subscription — needed for pipeline agents (Steps 3–4). The `claude` executable must be available on PATH. If you use stricter permission prompts, configure Claude Code flags after init.
 </ForPlatform>
 
 <ForPlatform platform="codex">
-Codex users need the `codex` executable available on PATH before running pipeline agents. Codex projects use generated `.codex/agents/*.agent.toml` manifests for agent delivery.
+- [Codex](https://openai.com/index/introducing-codex/) — needed for pipeline agents (Steps 3–4). The `codex` executable must be available on PATH. Codex projects use generated `.codex/agents/*.agent.toml` manifests for agent delivery.
 </ForPlatform>
+
+- [GitHub CLI](https://cli.github.com/) (`gh`) — used by Verify to create PRs after a passing run
 
 ## Step 1: Install
 
