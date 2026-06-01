@@ -1,0 +1,87 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Conditional Test No-Ops"
+
+assertions:
+  - id: A001
+    says: "Session file creation test always verifies the file exists, even in CI"
+    block: "creates session file when --session flag is set"
+    target: "assertion.unconditional"
+    matcher: "truthy"
+
+  - id: A002
+    says: "Session timestamp test always checks the written value"
+    block: "uses session timestamp for work_started_at"
+    target: "assertion.unconditional"
+    matcher: "truthy"
+
+  - id: A003
+    says: "Session file deletion test always verifies the file was removed"
+    block: "deletes session file before using timestamp"
+    target: "assertion.unconditional"
+    matcher: "truthy"
+
+  - id: A004
+    says: "Provided timestamp test always asserts the exact timestamp value"
+    block: "writeTimestamp uses provided timestamp"
+    target: "assertion.unconditional"
+    matcher: "truthy"
+
+  - id: A005
+    says: "Corrupted session file test always verifies fallback and cleanup"
+    block: "handles corrupted session file gracefully"
+    target: "assertion.unconditional"
+    matcher: "truthy"
+
+  - id: A006
+    says: "Existing slug test always verifies session file was not consumed"
+    block: "existing slug path does not consume session files"
+    target: "assertion.unconditional"
+    matcher: "truthy"
+
+  - id: A007
+    says: "No session test silently skips when the agent PID is unavailable"
+    block: "no conditional PID skip pattern"
+    target: "pattern.absent"
+    matcher: "not_contains"
+    value: "if (agentPid === null) return"
+
+  - id: A008
+    says: "Parse timing test visibly skips instead of phantom-passing when no files exist"
+    block: "parses 20 files in ≤5 seconds"
+    target: "skip.visible"
+    matcher: "truthy"
+
+  - id: A009
+    says: "Cache speedup test visibly skips instead of phantom-passing when no files exist"
+    block: "achieves ≥80% cache speedup on second run"
+    target: "skip.visible"
+    matcher: "truthy"
+
+  - id: A010
+    says: "Memory usage test visibly skips instead of phantom-passing when no files exist"
+    block: "memory usage stays ≤500MB during parsing"
+    target: "skip.visible"
+    matcher: "truthy"
+
+  - id: A011
+    says: "All existing tests still pass after the refactor"
+    block: "full test suite regression"
+    target: "testSuite.passed"
+    matcher: "greater"
+    value: 3131
+
+  - id: A012
+    says: "Test count does not decrease from the refactor"
+    block: "full test suite regression"
+    target: "testSuite.totalTests"
+    matcher: "greater"
+    value: 3131
+
+file_changes:
+  - path: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/performance/parsing-performance.test.ts"
+    action: modify
