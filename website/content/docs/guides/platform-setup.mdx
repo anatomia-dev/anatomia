@@ -85,25 +85,17 @@ Claude Code still receives the selected Anatomia agent through `ana run`; do not
 Codex users most often use generated `.agent.toml` manifests for model and sandbox policy. Use `platformFlags.codex` only for extra Codex CLI flags that are not already encoded in the manifest.
 </ForPlatform>
 
-## Codex manifests
+## Codex agent delivery
 
-Codex agent delivery uses one `.agent.toml` manifest per Anatomia agent under `.codex/agents/`. Those manifests point Codex at generated instructions for Think, Plan, Build, Verify, Setup, and Learn where supported.
-
-<ForPlatform platform="claude-code">
-Claude Code users receive markdown agent files under `.claude/agents/`. The `ana run build` command dispatches to the Claude Code agent file and applies any `platformFlags.claude` values from `ana.json`.
-</ForPlatform>
-
-<ForPlatform platform="codex">
-Codex users receive paired files under `.codex/agents/`: an agent prompt markdown file plus an `.agent.toml` manifest. The manifest can set `model`, `developer_instructions`, `sandbox_mode`, and reasoning effort:
+Each Codex agent gets two files under `.codex/agents/`: a markdown prompt file with the agent instructions and an `.agent.toml` manifest that configures Codex. The manifest sets model, sandbox policy, and a pointer to the prompt:
 
 ```toml
 model = "gpt-5.5"
 developer_instructions = "Full instructions in ana-build.md. Invoke via: ana run"
 sandbox_mode = "danger-full-access"
 ```
-</ForPlatform>
 
-Codex Build and Verify need filesystem access to the worktree so they can edit files, run tests, and write reports. The generated Codex configuration uses `danger-full-access` sandbox mode for pipeline agents because restricted sandboxes cannot complete those stages reliably.
+Build and Verify need filesystem access to the worktree so they can edit files, run tests, and write reports. The generated configuration uses `danger-full-access` sandbox mode for pipeline agents because restricted sandboxes cannot complete those stages reliably.
 
 If Codex reports that a manifest is missing or opens the wrong instructions, regenerate platform files:
 
@@ -111,7 +103,7 @@ If Codex reports that a manifest is missing or opens the wrong instructions, reg
 ana init --platforms codex
 ```
 
-Then confirm the manifest exists:
+Then confirm the manifests exist:
 
 ```bash
 ls .codex/agents/*.agent.toml
@@ -150,6 +142,8 @@ The platform files are delivery details. The durable pipeline state is shared:
 - `.ana/context/` — project context and design principles
 - `.ana/ana.json` — commands, artifact branch, co-author, surfaces, platform settings
 - `AGENTS.md` and `CLAUDE.md` — markdown project summaries for tools that read them
+
+Platform-specific skill directories (`.claude/skills/`, `.agents/skills/`) are symlinks to `.ana/skills/` — edit either path and you&apos;re editing the same file.
 
 This split lets Claude Code and Codex use the same proof chain without duplicating the system of record.
 
