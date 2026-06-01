@@ -24,5 +24,36 @@
   "spec": {
     "saved_at": "2026-06-01T16:47:48.971Z",
     "hash": "sha256:c0f8b9d397c0aa3a4eaa2e7da7218fdda6a0b2c353ec606b252dd74b8a613faa"
+  },
+  "build_started_at": "2026-06-01T17:36:42.599Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-01T17:43:42.535Z",
+    "hash": "sha256:e7d67afa85c8f947143e00a5de29db3e809c34d9673e07cba06c82d64fb747a5"
+  },
+  "build-data": {
+    "saved_at": "2026-06-01T17:43:42.536Z",
+    "hash": "sha256:274d939e955c80cdc41bc4c798d17ce30fb6aa56c13d2e68ab353e1d59fd7747"
+  },
+  "modules_touched": [
+    "packages/cli/tests/commands/work-ci-mocked.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/engine/performance/parsing-performance.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-01T17:56:38.396Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:fdcc70d7d3e4cfdbd44921149940ba6dc8cf852029a0ee3cb03c34a2c8513530",
+    "run_at": "2026-06-01T18:03:15.027Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-01T18:03:15.063Z",
+    "hash": "sha256:bea355dc7a51fd8ecc866b1dc856aa6d72ff688d522e6b4fff400462e44fce2b"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-01T18:03:15.063Z",
+    "hash": "sha256:0556c27f582a0df09eda4f62ad4eb585ef16ad79501541ae72e3cb345a556041"
   }
 }
