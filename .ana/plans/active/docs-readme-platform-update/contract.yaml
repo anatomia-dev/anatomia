@@ -1,0 +1,294 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Docs, Website, and README Multi-Platform Update"
+
+assertions:
+  - id: A001
+    says: "The docs switcher lets users select Codex"
+    block: "platform switcher enables Codex"
+    target: "PlatformSwitcher.platforms.codex.disabled"
+    matcher: "equals"
+    value: false
+
+  - id: A002
+    says: "Unsupported future platforms remain marked as unavailable"
+    block: "platform switcher keeps unsupported platforms disabled"
+    target: "PlatformSwitcher.platforms.future.disabled"
+    matcher: "equals"
+    value: true
+
+  - id: A003
+    says: "The README opens with the approved multi-platform positioning"
+    block: "README uses locked opening"
+    target: "README.opening"
+    matcher: "equals"
+    value: "Anatomia is a CLI that runs every code change through a five-agent pipeline — scope, spec, contract, build, and independent verification. It works with Claude Code and Codex."
+
+  - id: A004
+    says: "The README quickstart starts setup through the universal command"
+    block: "README quickstart uses ana run setup"
+    target: "README.quickstart"
+    matcher: "contains"
+    value: "ana run setup"
+
+  - id: A005
+    says: "The README quickstart starts work through the universal command"
+    block: "README quickstart uses ana run"
+    target: "README.quickstart"
+    matcher: "contains"
+    value: "ana run"
+
+  - id: A006
+    says: "The README Works with section names both supported pipeline platforms"
+    block: "README works with includes Claude Code and Codex"
+    target: "README.worksWith"
+    matcher: "contains"
+    value: "Claude Code and Codex"
+
+  - id: A007
+    says: "Existing user-facing docs no longer teach direct Claude agent commands"
+    block: "existing docs reject claude agent instructions"
+    target: "docs.userFacingText"
+    matcher: "not_contains"
+    value: "claude --agent"
+
+  - id: A008
+    says: "The Quickstart explains that ana run dispatches to the configured platform"
+    block: "quickstart explains platform dispatch"
+    target: "start.dispatchExplanation"
+    matcher: "contains"
+    value: "ana run"
+
+  - id: A009
+    says: "The Quickstart mockup shows canonical Anatomia skills"
+    block: "quickstart init mockup uses canonical skill path"
+    target: "start.terminalMockup"
+    matcher: "contains"
+    value: "Skills → .ana/skills/"
+
+  - id: A010
+    says: "The Quickstart mockup shows the current start-working command"
+    block: "quickstart init mockup uses ana run"
+    target: "start.terminalMockup"
+    matcher: "contains"
+    value: "ana run"
+
+  - id: A011
+    says: "The Quickstart mockup shows the current setup command"
+    block: "quickstart init mockup uses ana run setup"
+    target: "start.terminalMockup"
+    matcher: "contains"
+    value: "ana run setup"
+
+  - id: A012
+    says: "The landing page describes native support for Claude Code and Codex"
+    block: "landing copy names supported native platforms"
+    target: "copy.compatibility"
+    matcher: "contains"
+    value: "Claude Code and Codex"
+
+  - id: A013
+    says: "The landing page no longer presents Claude skills as the canonical skill location"
+    block: "landing skills tree uses canonical skills path"
+    target: "copy.system.skills.tree.folder"
+    matcher: "equals"
+    value: ".ana/skills/"
+
+  - id: A014
+    says: "The installing audience card no longer says Claude Code is required"
+    block: "AudienceCards install card is multi-platform"
+    target: "AudienceCards.installing.description"
+    matcher: "not_contains"
+    value: "Requires Claude Code"
+
+  - id: A015
+    says: "The Verify guide tells users to run Verify through ana run"
+    block: "verify guide uses ana run verify"
+    target: "verifyingChanges.content"
+    matcher: "contains"
+    value: "ana run verify"
+
+  - id: A016
+    says: "The Verify guide tells users to return failed work through ana run build"
+    block: "verify guide uses ana run build"
+    target: "verifyingChanges.content"
+    matcher: "contains"
+    value: "ana run build"
+
+  - id: A017
+    says: "Pipeline concept prose is platform-neutral"
+    block: "pipeline concept avoids Claude-only sessions"
+    target: "pipeline.content"
+    matcher: "not_contains"
+    value: "separate Claude Code session"
+
+  - id: A018
+    says: "Skills concept prose points custom skills to the canonical skills directory"
+    block: "skills concept uses canonical custom skill path"
+    target: "skills.content"
+    matcher: "contains"
+    value: ".ana/skills/"
+
+  - id: A019
+    says: "The Platform setup guide exists"
+    block: "platform setup guide file exists"
+    target: "website/content/docs/guides/platform-setup.mdx"
+    matcher: "exists"
+
+  - id: A020
+    says: "The Guides navigation links to Platform setup near onboarding"
+    block: "guides nav includes platform setup after setup"
+    target: "guidesMeta.pages"
+    matcher: "contains"
+    value: "using-ana-setup,platform-setup,verifying-changes"
+
+  - id: A021
+    says: "The Platform setup guide documents explicit platform selection"
+    block: "platform setup guide covers run platform flag"
+    target: "platformSetup.content"
+    matcher: "contains"
+    value: "ana run build --platform codex"
+
+  - id: A022
+    says: "The Platform setup guide documents environment-based platform selection"
+    block: "platform setup guide covers ANA_PLATFORM"
+    target: "platformSetup.content"
+    matcher: "contains"
+    value: "ANA_PLATFORM"
+
+  - id: A023
+    says: "The Platform setup guide documents platform initialization"
+    block: "platform setup guide covers init platforms"
+    target: "platformSetup.content"
+    matcher: "contains"
+    value: "ana init --platforms"
+
+  - id: A024
+    says: "The Platform setup guide documents platform flags"
+    block: "platform setup guide covers platformFlags"
+    target: "platformSetup.content"
+    matcher: "contains"
+    value: "platformFlags"
+
+  - id: A025
+    says: "The Platform setup guide documents Codex agent manifests"
+    block: "platform setup guide covers Codex manifests"
+    target: "platformSetup.content"
+    matcher: "contains"
+    value: ".agent.toml"
+
+  - id: A026
+    says: "The Platform setup guide documents Codex sandbox mode"
+    block: "platform setup guide covers Codex sandbox"
+    target: "platformSetup.content"
+    matcher: "contains"
+    value: "danger-full-access"
+
+  - id: A027
+    says: "Every Claude Code conditional docs block has a Codex counterpart"
+    block: "ForPlatform blocks are paired"
+    target: "docs.ForPlatformPairs"
+    matcher: "equals"
+    value: "paired"
+
+  - id: A028
+    says: "Codex users are told Learn is not available yet"
+    block: "learn docs disclose Codex limitation"
+    target: "usingAnaLearn.content"
+    matcher: "contains"
+    value: "Codex Learn is not yet available"
+
+  - id: A029
+    says: "Troubleshooting includes Codex executable recovery"
+    block: "troubleshooting covers Codex not installed"
+    target: "troubleshooting.content"
+    matcher: "contains"
+    value: "codex not found"
+
+  - id: A030
+    says: "Troubleshooting includes Codex sandbox or manifest recovery"
+    block: "troubleshooting covers Codex manifest and sandbox issues"
+    target: "troubleshooting.content"
+    matcher: "contains"
+    value: "manifest"
+
+  - id: A031
+    says: "Configurability teaches the canonical custom skill location"
+    block: "configurability custom skill path is canonical"
+    target: "configurability.content"
+    matcher: "contains"
+    value: "mkdir -p .ana/skills/billing"
+
+  - id: A032
+    says: "Configurability describes platform-specific custom agent delivery"
+    block: "configurability custom agents are platform-specific"
+    target: "configurability.content"
+    matcher: "contains"
+    value: ".codex/agents/"
+
+  - id: A033
+    says: "Generated search data includes the Platform setup guide"
+    block: "search index includes platform setup"
+    target: "website/public/search-index.json"
+    matcher: "contains"
+    value: "/docs/guides/platform-setup"
+
+  - id: A034
+    says: "Generated LLM docs include the Platform setup guide"
+    block: "llms docs include platform setup"
+    target: "website/public/llms.txt"
+    matcher: "contains"
+    value: "Platform setup"
+
+  - id: A035
+    says: "Generated full LLM docs no longer teach direct Claude agent commands"
+    block: "llms full excludes stale Claude instructions"
+    target: "website/public/llms-full.txt"
+    matcher: "not_contains"
+    value: "claude --agent"
+
+file_changes:
+  - path: "README.md"
+    action: modify
+  - path: "website/content/docs/start.mdx"
+    action: modify
+  - path: "website/content/docs/guides/platform-setup.mdx"
+    action: create
+  - path: "website/content/docs/guides/meta.json"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/content/docs/guides/verifying-changes.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-setup.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: modify
+  - path: "website/content/docs/guides/reading-a-proof.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/context.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/findings.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/pipeline.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/toolbelt.mdx"
+    action: modify
+  - path: "website/content/docs/concepts/skills.mdx"
+    action: modify
+  - path: "website/components/docs/layout/PlatformSwitcher.tsx"
+    action: modify
+  - path: "website/components/docs/content/AudienceCards.tsx"
+    action: modify
+  - path: "website/lib/copy.ts"
+    action: modify
+  - path: "website/lib/__tests__/docs-platform-content.test.ts"
+    action: create
+  - path: "website/public/search-index.json"
+    action: modify
+  - path: "website/public/llms.txt"
+    action: modify
+  - path: "website/public/llms-full.txt"
+    action: modify
