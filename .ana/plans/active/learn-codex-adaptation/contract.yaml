@@ -1,0 +1,160 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Learn Agent Codex Adaptation"
+
+assertions:
+  - id: A001
+    says: "Running Learn on Codex dispatches successfully instead of erroring"
+    block: "dispatches Learn agent on Codex"
+    target: "spawnCall"
+    matcher: "exists"
+
+  - id: A002
+    says: "The Learn hard block no longer exists in dispatch code"
+    block: "dispatches Learn agent on Codex"
+    target: "exitCode"
+    matcher: "not_equals"
+    value: 1
+
+  - id: A003
+    says: "Codex Learn prompt content is passed to the codex CLI"
+    block: "dispatches Learn agent on Codex"
+    target: "spawnArgs.developerInstructions"
+    matcher: "contains"
+    value: "Ana Learn"
+
+  - id: A004
+    says: "Init generates a Codex Learn prompt file"
+    block: "codex learn template and TOML exist"
+    target: "ana-learn.md"
+    matcher: "exists"
+
+  - id: A005
+    says: "Init generates a Codex Learn TOML manifest"
+    block: "codex learn template and TOML exist"
+    target: "ana-learn.agent.toml"
+    matcher: "exists"
+
+  - id: A006
+    says: "The agent file list now includes Learn"
+    block: "has 6 Codex agent files including Learn"
+    target: "CODEX_AGENT_FILES.length"
+    matcher: "equals"
+    value: 6
+
+  - id: A007
+    says: "The agent file list contains the Learn entry"
+    block: "has 6 Codex agent files including Learn"
+    target: "CODEX_AGENT_FILES"
+    matcher: "contains"
+    value: "ana-learn.md"
+
+  - id: A008
+    says: "The Codex Learn template has no YAML frontmatter"
+    block: "Codex Learn template has no frontmatter"
+    target: "templateContent"
+    matcher: "not_contains"
+    value: "---"
+
+  - id: A009
+    says: "The Codex Learn template uses the correct skill path"
+    block: "Codex Learn template uses .ana/skills/ paths"
+    target: "templateContent"
+    matcher: "not_contains"
+    value: ".claude/skills/"
+
+  - id: A010
+    says: "The Codex Learn template has no CC-specific frontmatter diagnostic language"
+    block: "Codex Learn template uses Codex diagnostic language"
+    target: "templateContent"
+    matcher: "not_contains"
+    value: "frontmatter `skills:`"
+
+  - id: A011
+    says: "The Codex Learn template references Plan's prompt file for diagnostics"
+    block: "Codex Learn template uses Codex diagnostic language"
+    target: "templateContent"
+    matcher: "contains"
+    value: ".codex/agents/ana-plan.md"
+
+  - id: A012
+    says: "The Codex Learn template notes that promoted rules require re-init"
+    block: "Codex Learn template uses Codex diagnostic language"
+    target: "templateContent"
+    matcher: "contains"
+    value: "ana init"
+
+  - id: A013
+    says: "The CC Learn template no longer references .claude/skills/"
+    block: "CC Learn template paths are corrected"
+    target: "ccTemplateContent"
+    matcher: "not_contains"
+    value: ".claude/skills/"
+
+  - id: A014
+    says: "The CC Learn template uses the canonical .ana/skills/ path"
+    block: "CC Learn template paths are corrected"
+    target: "ccTemplateContent"
+    matcher: "contains"
+    value: ".ana/skills/"
+
+  - id: A015
+    says: "Docs no longer mention Learn being unavailable on Codex"
+    block: "docs remove Learn limitation language"
+    target: "allDocsContent"
+    matcher: "not_contains"
+    value: "Codex Learn is not yet available"
+
+  - id: A016
+    says: "ForPlatform blocks remain balanced across all docs"
+    block: "ForPlatform pairing stays balanced"
+    target: "claudeCodeBlockCount"
+    matcher: "equals"
+    value: "codexBlockCount"
+
+  - id: A017
+    says: "The using-ana-learn terminal example no longer shows the limitation message"
+    block: "docs remove Learn limitation language"
+    target: "learnGuideContent"
+    matcher: "not_contains"
+    value: "use Claude Code for Learn sessions"
+
+  - id: A018
+    says: "Dogfood installation includes the Codex Learn prompt"
+    block: "dogfood codex agents include Learn"
+    target: ".codex/agents/ana-learn.md"
+    matcher: "exists"
+
+  - id: A019
+    says: "Dogfood installation includes the Codex Learn TOML"
+    block: "dogfood codex agents include Learn"
+    target: ".codex/agents/ana-learn.agent.toml"
+    matcher: "exists"
+
+file_changes:
+  - path: "packages/cli/templates/.codex/agents/ana-learn.md"
+    action: create
+  - path: "packages/cli/templates/.codex/agents/ana-learn.agent.toml"
+    action: create
+  - path: "packages/cli/src/commands/run.ts"
+    action: modify
+  - path: "packages/cli/src/constants.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-learn.md"
+    action: modify
+  - path: ".codex/agents/ana-learn.md"
+    action: create
+  - path: ".codex/agents/ana-learn.agent.toml"
+    action: create
+  - path: "packages/cli/tests/commands/run.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "website/lib/__tests__/docs-platform-content.test.ts"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: modify
+  - path: "website/content/docs/guides/platform-setup.mdx"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
