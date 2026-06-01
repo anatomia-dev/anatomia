@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Main-tree startWork multi-phase routing limited by filesystem visibility — reports on feature branch not visible"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "startBuildPhaseWithKey has unused _buildAgentKey parameter for API symmetry"
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: accept
+  - summary: "Pre-existing unused eslint-disable directive in git-operations.ts"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: accept
