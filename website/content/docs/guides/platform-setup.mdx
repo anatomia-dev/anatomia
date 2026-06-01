@@ -63,13 +63,12 @@ Platform-specific CLI flags live in `ana.json` under `platformFlags`. The genera
 ```json
 {
   "platformFlags": {
-    "claude": ["--dangerously-skip-permissions"],
-    "codex": ["--sandbox", "danger-full-access"]
+    "claude": ["--dangerously-skip-permissions"]
   }
 }
 ```
 
-These flags are host-tool flags, not Anatomia flags. Keep them narrow and review them like any other execution policy.
+These flags are host-tool flags, not Anatomia flags. Keep them narrow and review them like any other execution policy. Codex sandbox mode is already set in each `.agent.toml` manifest — don&apos;t duplicate it in `platformFlags`.
 
 <ForPlatform platform="claude-code">
 Claude Code users most often use `platformFlags.claude` for permission mode flags. If your pipeline agents need to run without interactive permission prompts, configure the Claude Code flag once:
