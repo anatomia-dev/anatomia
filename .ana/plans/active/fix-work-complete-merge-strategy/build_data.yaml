@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Full project test command still has pre-existing scan/package-manager detector failures outside this scope"
+    file: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Full project lint reports pre-existing warnings in untouched website Hero and CLI git-operations files"
+    severity: observation
+    suggested_action: monitor
