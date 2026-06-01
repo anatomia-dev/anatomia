@@ -16,5 +16,17 @@
     ]
   },
   "plan_started_at": "2026-06-01T02:38:54.302Z",
-  "plan_agent": "ana-plan"
+  "plan_agent": "ana-plan",
+  "contract": {
+    "saved_at": "2026-06-01T03:04:10.354Z",
+    "hash": "sha256:bc6bf4007591605394a9de3e5195e682f585383e96c2f65b5327ecfa28e47a7b"
+  },
+  "plan": {
+    "saved_at": "2026-06-01T03:04:10.355Z",
+    "hash": "sha256:ef295e5e990a5226f3a500f6ec4984506caf490e32120294fe83e6971ea44de7"
+  },
+  "spec": {
+    "saved_at": "2026-06-01T03:04:10.355Z",
+    "hash": "sha256:e398cb5232f43771a2abe70df00f3385236dfab2cb7222bafea0801a876c1054"
+  }
 }

@@ -1,0 +1,182 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Multi-Phase Timestamp Poisoning"
+
+assertions:
+  - id: A001
+    says: "Phase 2 status is not blocked by Phase 1's verify timestamp"
+    block: "returns phase-2-ready-for-verify when Phase 1 has recent verify_started_at"
+    target: "stage"
+    matcher: "equals"
+    value: "phase-2-ready-for-verify"
+
+  - id: A002
+    says: "Phase 2 verify start writes a phase-specific timestamp"
+    block: "startWork for Phase 2 verify writes verify_started_at_2"
+    target: "saves.verify_started_at_2"
+    matcher: "exists"
+
+  - id: A003
+    says: "Phase 2 verify start writes a phase-specific agent key"
+    block: "startWork for Phase 2 verify writes verify_agent_2"
+    target: "saves.verify_agent_2"
+    matcher: "equals"
+    value: "ana-verify"
+
+  - id: A004
+    says: "Phase 2 verify start does not write the generic verify timestamp"
+    block: "startWork for Phase 2 verify does not write generic verify_started_at"
+    target: "saves.verify_started_at"
+    matcher: "not_equals"
+    value: "exists"
+
+  - id: A005
+    says: "Single-spec work still detects verify-in-progress correctly"
+    block: "single-spec with recent verify_started_at returns verify-in-progress"
+    target: "stage"
+    matcher: "equals"
+    value: "verify-in-progress"
+
+  - id: A006
+    says: "Phase 1's verify timestamp is ignored when evaluating Phase 2"
+    block: "recent verify_started_at_1 does not affect Phase 2 status"
+    target: "stage"
+    matcher: "not_contains"
+    value: "verify-in-progress"
+
+  - id: A007
+    says: "Phase 2 re-verify writes the verify timestamp, not the build timestamp"
+    block: "Phase 2 FAIL re-verify writes verify_started_at_2 not build_started_at_2"
+    target: "saves.verify_started_at_2"
+    matcher: "exists"
+
+  - id: A008
+    says: "Phase 2 re-verify correctly detects the ready-for-re-verify stage"
+    block: "Phase 2 FAIL with newer build report returns phase-2-ready-for-re-verify"
+    target: "stage"
+    matcher: "equals"
+    value: "phase-2-ready-for-re-verify"
+
+  - id: A009
+    says: "Old saves files without suffixed keys work for single-spec"
+    block: "backward compat single-spec with generic keys works correctly"
+    target: "stage"
+    matcher: "not_equals"
+    value: "unknown"
+
+  - id: A010
+    says: "Old saves files fall back to unsuffixed keys for Phase 1 only"
+    block: "multi-phase Phase 1 falls back to unsuffixed keys"
+    target: "stage"
+    matcher: "contains"
+    value: "phase-1"
+
+  - id: A011
+    says: "Old saves files do not fall back to unsuffixed keys for Phase 2"
+    block: "multi-phase Phase 2 does not fall back to unsuffixed keys"
+    target: "stage"
+    matcher: "equals"
+    value: "phase-2-needs-fixes"
+
+  - id: A012
+    says: "A phase resolver function is exported from work-state.ts"
+    block: "resolvePhase is exported and callable"
+    target: "resolvePhase"
+    matcher: "exists"
+
+  - id: A013
+    says: "The phase resolver returns phase number and correct timestamp keys"
+    block: "resolvePhase returns phaseNumber and timestampKey for Phase 2 verify"
+    target: "result.phaseNumber"
+    matcher: "equals"
+    value: 2
+
+  - id: A014
+    says: "Both determineStage and startWork use the phase resolver"
+    block: "no independent hasNumberedVerifyReport routing in startWork"
+    target: "startWork.usesResolver"
+    matcher: "truthy"
+
+  - id: A015
+    says: "Phase 2 build start writes a phase-specific build timestamp"
+    block: "startWork for Phase 2 build writes build_started_at_2"
+    target: "saves.build_started_at_2"
+    matcher: "exists"
+
+  - id: A016
+    says: "Phase 2 build start writes a phase-specific agent key"
+    block: "startWork for Phase 2 build writes build_agent_2"
+    target: "saves.build_agent_2"
+    matcher: "equals"
+    value: "ana-build"
+
+  - id: A017
+    says: "Phase-scoped keys work for 4-phase workflows"
+    block: "4-phase: phases 1-3 PASS, phase 4 build exists, returns phase-4-ready-for-verify"
+    target: "stage"
+    matcher: "equals"
+    value: "phase-4-ready-for-verify"
+
+  - id: A018
+    says: "Phase-scoped keys write correctly for arbitrary phase numbers"
+    block: "4-phase: startWork writes verify_started_at_4"
+    target: "saves.verify_started_at_4"
+    matcher: "exists"
+
+  - id: A019
+    says: "Re-verify works for arbitrary phase numbers"
+    block: "4-phase: phase 4 FAIL with newer build returns phase-4-ready-for-re-verify"
+    target: "stage"
+    matcher: "equals"
+    value: "phase-4-ready-for-re-verify"
+
+  - id: A020
+    says: "Timing uses per-phase start keys when available"
+    block: "computeTiming uses build_started_at_1 for Phase 1 build duration"
+    target: "timing.build"
+    matcher: "exists"
+
+  - id: A021
+    says: "Timing falls back to segment timing when per-phase keys are absent"
+    block: "computeTiming without per-phase start keys produces segment-based timing"
+    target: "timing.build"
+    matcher: "exists"
+
+  - id: A022
+    says: "Stale per-phase start keys are rejected by sanity validation"
+    block: "build_started_at_N after build-report-N falls back to segment timing"
+    target: "timing.build"
+    matcher: "greater"
+    value: 0
+
+  - id: A023
+    says: "Main-tree and worktree startWork produce the same phase decision"
+    block: "main-tree and worktree startWork write same timestamp key for Phase 2"
+    target: "timestampKey"
+    matcher: "equals"
+    value: "verify_started_at_2"
+
+  - id: A024
+    says: "Defense-in-depth rejects verify timestamp that predates build report"
+    block: "verify_started_at_2 before build-report-2.saved_at is treated as stale"
+    target: "stage"
+    matcher: "not_contains"
+    value: "verify-in-progress"
+
+  - id: A025
+    says: "isTimestampRecent consolidation eliminates duplicate logic"
+    block: "isTimestampRecent delegates to shared timestamp comparison"
+    target: "isTimestampRecent.delegatesToSharedLogic"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/commands/work-state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
