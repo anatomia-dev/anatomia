@@ -166,8 +166,9 @@ describe('Platform setup guide', () => {
   });
 });
 
-// @ana A027
+// @ana A027, A016
 describe('ForPlatform docs blocks', () => {
+  // @ana A016
   it('has no unpaired Claude Code conditional docs blocks', () => {
     const docsContent = migratedDocs
       .filter((path) => path.startsWith('website/content/docs/'))
@@ -193,13 +194,14 @@ describe('ForPlatform docs blocks', () => {
   });
 });
 
-// @ana A028, A029, A030
+// @ana A028, A029, A030, A015, A017
 describe('Codex limitations and troubleshooting', () => {
-  it('documents Learn limitation and Codex recovery paths', () => {
+  it('docs remove Learn limitation language', () => {
     const learn = readRepoFile('website/content/docs/guides/using-ana-learn.mdx');
     const troubleshooting = readRepoFile('website/content/docs/guides/troubleshooting.mdx');
 
     expect(learn).not.toContain('Codex Learn is not yet available');
+    expect(learn).not.toContain('use Claude Code for Learn sessions');
     expect(troubleshooting).toContain('codex not found');
     expect(troubleshooting).toContain('manifest');
   });
