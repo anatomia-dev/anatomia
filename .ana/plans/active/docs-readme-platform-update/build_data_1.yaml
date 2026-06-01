@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Root lint reports pre-existing warnings in untouched CLI and website files"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Generated website public docs assets are verified by build but are not tracked files in this worktree"
+    severity: observation
+    suggested_action: accept
