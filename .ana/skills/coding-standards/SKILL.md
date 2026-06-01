@@ -7,7 +7,7 @@ description: "Invoke when implementing features, writing code, or reviewing code
 
 ## Detected
 - Language: TypeScript (261 source files)
-- Functions: camelCase (85%, 809 sampled)
+- Functions: camelCase (85%, 827 sampled)
 - Classes: PascalCase (50%)
 - Files: PascalCase (61%, 263 sampled)
 - Imports: mixed (67%)

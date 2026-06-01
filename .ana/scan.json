@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-05-31T05:37:37.733Z",
+    "scannedAt": "2026-06-01T21:15:55.547Z",
     "depth": "deep"
   },
   "stack": {
@@ -43,9 +43,9 @@
   },
   "files": {
     "source": 261,
-    "test": 142,
+    "test": 143,
     "config": 20,
-    "total": 423
+    "total": 424
   },
   "structure": [
     {
@@ -82,11 +82,11 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "6d63466b",
+    "head": "de2d6413",
     "branch": "main",
-    "commitCount": 3415,
-    "lastCommitAt": "2026-05-30T22:00:22-06:00",
-    "uncommittedChanges": true,
+    "commitCount": 3506,
+    "lastCommitAt": "2026-06-01T15:07:08-06:00",
+    "uncommittedChanges": false,
     "contributorCount": 4,
     "defaultBranch": "main",
     "branches": [
@@ -126,19 +126,27 @@
       "windowDays": 14,
       "highChurnFiles": [
         {
-          "path": "packages/cli/src/commands/init/state.ts",
-          "commits": 17
-        },
-        {
           "path": "packages/cli/src/engine/scan-engine.ts",
-          "commits": 15
+          "commits": 13
         },
         {
-          "path": "packages/cli/src/commands/proof.ts",
-          "commits": 11
+          "path": "packages/cli/src/commands/run.ts",
+          "commits": 12
         },
         {
           "path": "packages/cli/src/commands/work.ts",
+          "commits": 11
+        },
+        {
+          "path": "packages/cli/tests/commands/work.test.ts",
+          "commits": 11
+        },
+        {
+          "path": "packages/cli/src/commands/init/state.ts",
+          "commits": 10
+        },
+        {
+          "path": "packages/cli/src/commands/proof.ts",
           "commits": 9
         },
         {
@@ -146,32 +154,24 @@
           "commits": 8
         },
         {
-          "path": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
-          "commits": 8
-        },
-        {
-          "path": "packages/cli/tests/commands/work.test.ts",
+          "path": "packages/cli/tests/commands/run.test.ts",
           "commits": 7
         },
         {
-          "path": "packages/cli/tests/commands/proof.test.ts",
-          "commits": 6
+          "path": "packages/cli/tests/commands/init/monorepoCommandScoping.test.ts",
+          "commits": 7
         },
         {
-          "path": "packages/cli/src/engine/detectors/dependencies.ts",
-          "commits": 6
-        },
-        {
-          "path": "packages/cli/src/engine/detectors/surfaces.ts",
+          "path": "packages/cli/src/utils/proofSummary.ts",
           "commits": 6
         }
       ],
       "activeContributors": 3,
       "weeklyCommits": [
-        290,
-        651,
-        900,
-        359
+        332,
+        569,
+        1000,
+        349
       ]
     }
   },
@@ -222,7 +222,7 @@
           "smoke",
           "postinstall"
         ],
-        "sourceFiles": 146
+        "sourceFiles": 147
       }
     ],
     "primaryPackage": {
@@ -251,7 +251,7 @@
       "testing": [
         "Vitest"
       ],
-      "sourceFiles": 146
+      "sourceFiles": 147
     }
   ],
   "externalServices": [
@@ -340,7 +340,7 @@
       ]
     },
     "sampledFiles": 263,
-    "detectionTime": 1,
+    "detectionTime": 2,
     "threshold": 0.7
   },
   "conventions": {
@@ -358,13 +358,13 @@
       },
       "functions": {
         "majority": "camelCase",
-        "confidence": 0.8515625,
+        "confidence": 0.8549618320610687,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.8571428571428571,
-          "PascalCase": 0.14285714285714285
+          "camelCase": 0.8604353393085787,
+          "PascalCase": 0.13956466069142126
         },
-        "sampleSize": 809
+        "sampleSize": 827
       },
       "classes": {
         "majority": "PascalCase",
@@ -377,31 +377,31 @@
       },
       "variables": {
         "majority": "camelCase",
-        "confidence": 0.905497664390945,
+        "confidence": 0.906558533145275,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.9071274298056156,
-          "PascalCase": 0.011519078473722102,
-          "SCREAMING_SNAKE_CASE": 0.08135349172066235
+          "camelCase": 0.9081596608972095,
+          "PascalCase": 0.01130342635111268,
+          "SCREAMING_SNAKE_CASE": 0.08053691275167785
         },
-        "sampleSize": 4655
+        "sampleSize": 4720
       },
       "constants": {
         "majority": "SCREAMING_SNAKE_CASE",
-        "confidence": 0.9783549783549783,
+        "confidence": 0.9785407725321889,
         "mixed": false,
         "distribution": {
           "SCREAMING_SNAKE_CASE": 1
         },
-        "sampleSize": 226
+        "sampleSize": 228
       }
     },
     "imports": {
       "style": "mixed",
-      "confidence": 0.670549084858569,
+      "confidence": 0.6710963455149501,
       "distribution": {
-        "absolute": 0.32945091514143093,
-        "relative": 0.670549084858569
+        "absolute": 0.3289036544850498,
+        "relative": 0.6710963455149501
       },
       "aliasPattern": "@/"
     },
@@ -424,23 +424,23 @@
       "emptyCatches": {
         "empty": 0,
         "commented": 52,
-        "total": 144
+        "total": 145
       },
       "defaultExports": {
         "count": 3,
         "totalFiles": 30
       },
       "nullStyle": {
-        "nullCount": 103,
-        "optionalCount": 95,
+        "nullCount": 108,
+        "optionalCount": 100,
         "preference": "mixed"
       }
     },
     "sampledFiles": 263,
-    "detectionTime": 431
+    "detectionTime": 424
   },
   "readme": {
-    "description": "Anatomia is a CLI and agent harness for Claude Code. It scans your codebase — detecting your stack, conventions, and patterns — then runs every change through a five-agent pipeline that saves every artifact: scope, spec, contract, build report, and independent verification. Other harnesses are prompt libraries. This one has an engine. The cost of building is near zero. The cost of building the wrong thing is the same as it ever was. AI agents rush to implementation — they don't push back on your approach, surface tradeoffs you missed, or record why one design was chosen over another. Anatomia enforces the thinking that fast building skips.",
+    "description": "Anatomia is a CLI and agent harness for Claude Code and Codex. It scans your codebase — detecting your stack, conventions, and patterns — then runs every change through a five-agent pipeline that saves every artifact: scope, spec, contract, build report, and independent verification. Other harnesses are prompt libraries. This one has an engine. The cost of building is near zero. The cost of building the wrong thing is the same as it ever was. AI agents rush to implementation — they don't push back on your approach, surface tradeoffs you missed, or record why one design was chosen over another. Anatomia enforces the thinking that fast building skips.",
     "architecture": null,
     "setup": "Install globally to use the `ana` command directly:\n\n```bash\nnpm install -g anatomia-cli\n```\n\nRequires Node.js 22+. To update: `npm update -g anatomia-cli`",
     "source": "pre-section"
@@ -450,56 +450,56 @@
       {
         "path": "README.md",
         "category": "project-docs",
-        "sizeBytes": 7370,
-        "lastModifiedDays": 3
+        "sizeBytes": 7568,
+        "lastModifiedDays": 0
       },
       {
         "path": "CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 418,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 17
       },
       {
         "path": "SECURITY.md",
         "category": "guides",
         "sizeBytes": 1016,
-        "lastModifiedDays": 27
+        "lastModifiedDays": 28
       },
       {
         "path": "CODE_OF_CONDUCT.md",
         "category": "guides",
         "sizeBytes": 5477,
-        "lastModifiedDays": 27
+        "lastModifiedDays": 28
       },
       {
         "path": "CHANGELOG.md",
         "category": "changelog",
-        "sizeBytes": 23381,
-        "lastModifiedDays": 4
+        "sizeBytes": 27289,
+        "lastModifiedDays": 0
       },
       {
         "path": ".github/PULL_REQUEST_TEMPLATE.md",
         "category": "templates",
         "sizeBytes": 309,
-        "lastModifiedDays": 25
+        "lastModifiedDays": 26
       },
       {
         "path": ".github/ISSUE_TEMPLATE",
         "category": "templates",
         "sizeBytes": 0,
-        "lastModifiedDays": 27
+        "lastModifiedDays": 28
       },
       {
         "path": "packages/cli/ARCHITECTURE.md",
         "category": "guides",
         "sizeBytes": 15017,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 17
       },
       {
         "path": "packages/cli/CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 19216,
-        "lastModifiedDays": 15
+        "lastModifiedDays": 17
       }
     ],
     "docsDirectory": null,
