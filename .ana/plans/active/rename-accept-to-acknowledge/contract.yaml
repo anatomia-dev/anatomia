@@ -1,0 +1,196 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Rename finding action accept to acknowledge"
+
+assertions:
+  - id: A001
+    says: "The finding action type no longer includes 'accept' as a valid value"
+    block: "type unions use acknowledge"
+    target: "proof.ts.suggested_action_union"
+    matcher: "not_contains"
+    value: "'accept'"
+
+  - id: A002
+    says: "Finding action type includes 'acknowledge' as a valid value"
+    block: "type unions use acknowledge"
+    target: "proof.ts.suggested_action_union"
+    matcher: "contains"
+    value: "'acknowledge'"
+
+  - id: A003
+    says: "Health computation counts acknowledge actions correctly"
+    block: "proof-health counts acknowledge"
+    target: "health.findings.by_action.acknowledge"
+    matcher: "exists"
+
+  - id: A004
+    says: "Health computation no longer has an accept key in action counts"
+    block: "proof-health counts acknowledge"
+    target: "health.findings.by_action"
+    matcher: "not_contains"
+    value: "accept"
+
+  - id: A005
+    says: "Proof audit JSON output uses acknowledge as the action key"
+    block: "JSON output uses acknowledge key"
+    target: "auditJson.by_action.acknowledge"
+    matcher: "exists"
+
+  - id: A006
+    says: "Proof health JSON output uses acknowledge as the action key"
+    block: "JSON output uses acknowledge key"
+    target: "healthJson.by_action.acknowledge"
+    matcher: "exists"
+
+  - id: A007
+    says: "Terminal display shows acknowledge without a parenthetical suffix"
+    block: "display label is plain acknowledge"
+    target: "displayOutput"
+    matcher: "contains"
+    value: "acknowledge"
+
+  - id: A008
+    says: "Terminal display no longer shows the accept (closeable) label"
+    block: "display label is plain acknowledge"
+    target: "displayOutput"
+    matcher: "not_contains"
+    value: "accept (closeable)"
+
+  - id: A009
+    says: "The artifact validator accepts findings with acknowledge action"
+    block: "validator accepts acknowledge"
+    target: "validation.result"
+    matcher: "equals"
+    value: null
+
+  - id: A010
+    says: "The artifact validator still accepts findings with the old accept action"
+    block: "validator tolerates old accept value"
+    target: "validation.result"
+    matcher: "equals"
+    value: null
+
+  - id: A011
+    says: "The backfill migration renames accept to acknowledge in existing findings"
+    block: "backfill migration renames findings"
+    target: "chain.entries[0].findings[0].suggested_action"
+    matcher: "equals"
+    value: "acknowledge"
+
+  - id: A012
+    says: "The backfill migration also renames accept in build concerns"
+    block: "backfill migration renames build concerns"
+    target: "chain.entries[0].build_concerns[0].suggested_action"
+    matcher: "equals"
+    value: "acknowledge"
+
+  - id: A013
+    says: "The backfill migration sets the accept_to_acknowledge marker"
+    block: "backfill migration sets marker"
+    target: "chain.migrations.accept_to_acknowledge"
+    matcher: "equals"
+    value: true
+
+  - id: A014
+    says: "The backfill does not re-process when the migration marker already exists"
+    block: "backfill is idempotent"
+    target: "secondRunModified"
+    matcher: "equals"
+    value: false
+
+  - id: A015
+    says: "The backfill handles entries with no findings array without crashing"
+    block: "backfill handles missing arrays"
+    target: "result"
+    matcher: "truthy"
+
+  - id: A016
+    says: "Test fixtures use acknowledge instead of accept for suggested actions"
+    block: "test fixtures updated"
+    target: "fixtureActions"
+    matcher: "not_contains"
+    value: "accept"
+
+  - id: A017
+    says: "Product verify template defines acknowledge as a valid action"
+    block: "product templates use acknowledge"
+    target: "templateContent"
+    matcher: "contains"
+    value: "acknowledge"
+
+  - id: A018
+    says: "Product learn template guidance references acknowledge not accept"
+    block: "product templates use acknowledge"
+    target: "learnTemplateContent"
+    matcher: "contains"
+    value: "acknowledge"
+
+  - id: A019
+    says: "Findings documentation shows acknowledge in the action table"
+    block: "docs use acknowledge"
+    target: "findingsMdx"
+    matcher: "contains"
+    value: "acknowledge"
+
+  - id: A020
+    says: "Learn guide terminal mockup shows observation/acknowledge"
+    block: "docs use acknowledge"
+    target: "learnGuideMdx"
+    matcher: "contains"
+    value: "observation/acknowledge"
+
+  - id: A021
+    says: "All existing tests pass after the rename"
+    block: "no regressions"
+    target: "testSuite.result"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A022
+    says: "The CLI builds without type errors"
+    block: "no build errors"
+    target: "build.result"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proof-health.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-learn.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
+  - path: ".claude/agents/ana-build.md"
+    action: modify
+  - path: ".claude/agents/ana-learn.md"
+    action: modify
+  - path: ".codex/agents/ana-verify.md"
+    action: modify
+  - path: ".codex/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/tests/utils/proof-health.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "website/content/docs/concepts/findings.mdx"
+    action: modify
+  - path: "website/content/docs/guides/using-ana-learn.mdx"
+    action: modify
