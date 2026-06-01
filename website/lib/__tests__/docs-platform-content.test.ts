@@ -49,7 +49,7 @@ describe('README multi-platform command surface', () => {
   it('uses the locked opening and universal quickstart commands', () => {
     const readme = readRepoFile('README.md');
     const lockedOpening =
-      'Anatomia is a CLI that runs every code change through a five-agent pipeline — scope, spec, contract, build, and independent verification. It works with Claude Code and Codex.';
+      'Anatomia is a CLI and agent harness for Claude Code and Codex. It scans your codebase — detecting your stack, conventions, and patterns — then runs every change through a five-agent pipeline that saves every artifact: scope, spec, contract, build report, and independent verification. Other harnesses are prompt libraries. This one has an engine.';
 
     expect(readme.split('\n')[6]).toBe(lockedOpening);
     expect(readme).toContain('ana run setup                 # enrich with your team\'s knowledge');
