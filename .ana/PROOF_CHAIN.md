@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-177 runs · 156 active · 5 promoted · 851 closed
+178 runs · 159 active · 5 promoted · 853 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 30 | 24 | 2026-05-29 |
+| Unscoped | 31 | 27 | 2026-06-01 |
 | cli | 123 | 108 | 2026-06-01 |
 | website | 24 | 24 | 2026-06-01 |
 
@@ -15,7 +15,7 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 12 | 7 |
-| packages/cli/tests/commands/work.test.ts | 7 | 6 |
+| packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/commands/run.ts | 7 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/tests/commands/artifact.test.ts | 5 | 3 |
@@ -24,15 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 156 total)
+## Active Findings (30 shown of 159 total)
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** Phase inference adds a second .saves.json reader instead of sharing the existing metadata read path — *Multi-Phase Report Naming Guard*
-
-### packages/cli/src/commands/check.ts
-
-- **code:** Residual hardcoded .claude/skills/ display string in check.ts not migrated to helper — *Platform-Aware CLI*
 
 ### packages/cli/src/commands/init/assets.ts
 
@@ -49,7 +45,10 @@
 - **code:** resolvePlatform accepts arbitrary platform strings without validation — --platform foo dispatches to unknown code path — *Codex Support*
 - **code:** parseSimpleToml silently drops lines with unquoted values, inline comments, or multiline strings — *Codex Support*
 - **code:** advisoryPipelineCheck not called for Codex dispatch — only Claude path runs the advisory check — *Codex Support*
-- **code:** Advisory pipeline check reads .saves.json stage field directly — couples to internal format — *Platform-Aware CLI*
+
+### packages/cli/src/commands/work-proof.ts
+
+- **code:** Backfill migration uses `as string` cast to compare old accept values against narrowed type — *Rename finding action accept to acknowledge*
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -76,7 +75,6 @@
 
 - **test:** A004 contract assertion contradicted by implementation — schema .catch() does not fire on valid empty arrays — *Platform-Aware CLI*
 - **test:** A001 test mis-tagged — tests schema preservation of explicit values, not fresh-project default — *Platform-Aware CLI*
-- **test:** Six assertions (A008-A009, A013-A018) use source-content inspection instead of behavioral tests — *Platform-Aware CLI*
 
 ### packages/cli/tests/commands/run.test.ts
 
@@ -84,6 +82,7 @@
 
 ### packages/cli/tests/commands/work.test.ts
 
+- **test:** A015 edge-case test uses toBeGreaterThanOrEqual(1) — weak assertion on entry count — *Rename finding action accept to acknowledge*
 - **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/tests/e2e/init-flow.test.ts
@@ -103,4 +102,8 @@
 ### website/public/search-index.json
 
 - **test:** Generated search index can still surface stale direct Claude agent command text — *Docs, Website, and README Multi-Platform Update*
+
+### General
+
+- **code:** JSON API shape change: by_action key renamed from accept to acknowledge — breaking for any external consumer — *Rename finding action accept to acknowledge*
 
