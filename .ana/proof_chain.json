@@ -46813,6 +46813,320 @@
       },
       "surface": "website",
       "phases": 2
+    },
+    {
+      "slug": "fix-multi-phase-timestamp-poisoning",
+      "feature": "Fix Multi-Phase Timestamp Poisoning",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 27,
+        "satisfied": 27,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Phase 2 status is not blocked by Phase 1's verify timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Phase 2 verify start writes a phase-specific timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Phase 2 verify start writes a phase-specific agent key",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Phase 2 verify start does not write the generic verify timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Single-spec work still detects verify-in-progress correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Phase 1's verify timestamp is ignored when evaluating Phase 2",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Phase 2 re-verify writes the verify timestamp, not the build timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Phase 2 re-verify correctly detects the ready-for-re-verify stage",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Old saves files without suffixed keys work for single-spec",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Old saves files fall back to unsuffixed keys for Phase 1 only",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Old saves files do not fall back to unsuffixed keys for Phase 2",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A phase resolver function is exported from work-state.ts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The phase resolver returns phase number and correct timestamp keys",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Both determineStage and startWork use the phase resolver",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Phase 2 build start writes a phase-specific build timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Phase 2 build start writes a phase-specific agent key",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Phase-scoped keys work for 4-phase workflows",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Phase-scoped keys write correctly for arbitrary phase numbers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Re-verify works for arbitrary phase numbers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Timing uses per-phase start keys when available",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Timing falls back to segment timing when per-phase keys are absent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Stale per-phase start keys are rejected by sanity validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Main-tree and worktree startWork produce the same phase decision",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Defense-in-depth rejects verify timestamp that predates build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Single-spec re-verify writes the verify timestamp, not the build timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Single-spec re-verify does not write the build timestamp",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Duplicate timestamp logic is consolidated into one path",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 21,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 133,
+        "think": 10,
+        "plan": 30,
+        "build": 28,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:2cdda3552adbc12cffe78925dc6f0d698f958880e380f5f2128662a3e3a4f14b",
+        "contract": "sha256:dcd0c02dba63bbd0f56223c6d7f26ee0b3e4493767c6fedb20c8f1052bcb28eb",
+        "plan": "sha256:ef295e5e990a5226f3a500f6ec4984506caf490e32120294fe83e6971ea44de7",
+        "spec": "sha256:cc483d7adc5f4a0507db83167f523a0eae72e28c0d56f99e8cf84378c5d7f2dc",
+        "build-report": "sha256:49118bd99d35776bb4a56afc5fb8a4255d876b9ee25c0bbe4b94d49c36e58995",
+        "build-data": "sha256:4a64b17dafc2616abd20a7b2f674c922df43dc814b3b0238ffd461e85c302f97",
+        "verify-report": "sha256:9536c4bc91dd9578e191f05015cf9c5a72abe01b7e6d262a6ca3e50d8e9f4d25",
+        "verify-data": "sha256:0799beeb26a94133db28237a8833c0f7c96a01c52c3bbfb3fcc89c78487b610a"
+      },
+      "completed_at": "2026-06-01T03:59:37.899Z",
+      "modules_touched": [
+        "packages/cli/src/commands/work-state.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "Fix a state-model bug where `.saves.json` session timestamps are work-item-scoped but the pipeline state machine applies them per-phase. In multi-phase workflows, Phase 1's `verify_started_at` timestamp persists and causes `ana work status` to misclassify Phase 2 as \"verify-in-progress\" for up to one hour after Phase 1 verification completes. Discovered during the first multi-phase Codex pipeline run (`docs-readme-platform-update`).",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Dead conditional — verifyAgent always equals 'ana-verify' on both branches",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1336,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "related_assertions": [],
+          "id": "fix-multi-phase-timestamp-poisoning-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1502,
+          "severity": "debt",
+          "suggested_action": "accept",
+          "id": "fix-multi-phase-timestamp-poisoning-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate",
+          "file": "packages/cli/src/commands/work-state.ts",
+          "anchor": null,
+          "line": 373,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-multi-phase-timestamp-poisoning-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1487,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "fix-multi-phase-timestamp-poisoning-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 6841,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A023"
+          ],
+          "id": "fix-multi-phase-timestamp-poisoning-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1167,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-multi-phase-timestamp-poisoning-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "pipeline-concurrency-guards-C2 resolved — isTimestampRecent and checkConcurrencyGuard now both delegate to compareTimestamp",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "accept",
+          "resolves": [
+            "pipeline-concurrency-guards-C2"
+          ],
+          "id": "fix-multi-phase-timestamp-poisoning-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-01T03:59:37.899Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "decompose-work-ts-C4 partially addressed — multi-phase loop extracted to resolvePhase but determineStage still large",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-multi-phase-timestamp-poisoning-C8",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-01T03:59:37.899Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Main-tree startWork multi-phase routing limited by filesystem visibility — reports on feature branch not visible",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "startBuildPhaseWithKey has unused _buildAgentKey parameter for API symmetry",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "debt",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Pre-existing unused eslint-disable directive in git-operations.ts",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "accept"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-01T03:11:09.276Z",
+        "completed_at": "2026-06-01T03:59:37.892Z",
+        "commit_count": 0,
+        "base_commit": "d57e9901175c5207bbc8c9a66f488aa5b2c7668a"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

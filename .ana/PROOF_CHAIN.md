@@ -1,22 +1,22 @@
 # Proof Chain Dashboard
 
-176 runs · 150 active · 5 promoted · 849 closed
+177 runs · 156 active · 5 promoted · 851 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 30 | 24 | 2026-05-29 |
-| cli | 122 | 102 | 2026-05-31 |
+| cli | 123 | 108 | 2026-06-01 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 8 | 6 |
+| packages/cli/src/commands/work.ts | 12 | 7 |
+| packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/commands/run.ts | 7 | 2 |
-| packages/cli/tests/commands/work.test.ts | 6 | 5 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 | packages/cli/tests/commands/artifact.test.ts | 5 | 3 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 150 total)
+## Active Findings (30 shown of 156 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -38,10 +38,6 @@
 
 - **code:** createSkillSymlinks silently skips real directories — falls through to nothing when lstat succeeds but isSymbolicLink is false — *Codex Support*
 
-### packages/cli/src/commands/init/index.ts
-
-- **code:** Warning text hardcodes '.claude/' but detection covers both .claude/ and .ana/ — *Gitignore disclosure at init time, commit hardening, and docs*
-
 ### packages/cli/src/commands/platform.ts
 
 - **code:** Duplicate JSDoc block on getPlatformFlags — old block left above new block — *Codex Support*
@@ -54,12 +50,17 @@
 - **code:** parseSimpleToml silently drops lines with unquoted values, inline comments, or multiline strings — *Codex Support*
 - **code:** advisoryPipelineCheck not called for Codex dispatch — only Claude path runs the advisory check — *Codex Support*
 - **code:** Advisory pipeline check reads .saves.json stage field directly — couples to internal format — *Platform-Aware CLI*
-- **code:** advisoryPipelineCheck stage.includes() match is broad — 'ready-for-build' would match 'phase-2-ready-for-build' (intended) but also any future stage containing that substring — *Platform-Aware CLI*
-- **code:** findRunProjectRoot walks up from process.cwd() but executeRun is called after Commander parses — if user runs ana from a subdirectory, project root resolves correctly; no issue found — *Platform-Aware CLI*
+
+### packages/cli/src/commands/work-state.ts
+
+- **code:** resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/commands/work.ts
 
-- **code:** getNextAction still in work.ts — known from decompose-work-ts-C1, not changed by this build — *Platform-Aware CLI*
+- **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/tests/commands/artifact.test.ts
 
@@ -71,20 +72,19 @@
 - **test:** No test for codex-only init path — A011/A012/A013 verified by source inspection only — *Codex Support*
 - **test:** A026 test asserts length > 0, not that correct platforms were detected — weak assertion for auto-detection — *Codex Support*
 
-### packages/cli/tests/commands/init/commit.test.ts
-
-- **test:** No integration test for subsequent-commit hardening scenario (A008-A010) — *Gitignore disclosure at init time, commit hardening, and docs*
-
 ### packages/cli/tests/commands/platform.test.ts
 
 - **test:** A004 contract assertion contradicted by implementation — schema .catch() does not fire on valid empty arrays — *Platform-Aware CLI*
 - **test:** A001 test mis-tagged — tests schema preservation of explicit values, not fresh-project default — *Platform-Aware CLI*
 - **test:** Six assertions (A008-A009, A013-A018) use source-content inspection instead of behavioral tests — *Platform-Aware CLI*
-- **test:** A004 tagged test asserts opposite of contract value — test says [] but contract says ['claude']. Test is correct for Zod behavior, contract assertion is wrong — *Platform-Aware CLI*
 
 ### packages/cli/tests/commands/run.test.ts
 
 - **test:** @ana tag collisions — A028-A033 tags on pre-existing CC dispatch tests match different contract assertions from a prior plan — *Codex Support*
+
+### packages/cli/tests/commands/work.test.ts
+
+- **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/tests/e2e/init-flow.test.ts
 
