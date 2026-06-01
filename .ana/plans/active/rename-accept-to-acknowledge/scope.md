@@ -17,11 +17,11 @@ Rename the finding action `accept` to `acknowledge` everywhere. The word "accept
   - `packages/cli/src/commands/proof.ts` — matrix counts, display order, label (3 locations)
   - `packages/cli/src/commands/artifact-validators.ts` — VALID_FINDING_ACTIONS (1 location)
   - `packages/cli/src/commands/work-proof.ts` — backfill migration
-  - `templates/.claude/agents/ana-verify.md` — action definition (2 locations)
-  - `templates/.claude/agents/ana-build.md` — action definition (2 locations)
-  - `templates/.claude/agents/ana-learn.md` — action guidance (4 locations)
-  - `templates/.codex/agents/ana-verify.md` — action definition (2 locations)
-  - `templates/.codex/agents/ana-build.md` — action definition (2 locations)
+  - `packages/cli/templates/.claude/agents/ana-verify.md` — action definition (2 locations)
+  - `packages/cli/templates/.claude/agents/ana-build.md` — action definition (2 locations)
+  - `packages/cli/templates/.claude/agents/ana-learn.md` — action guidance (6+ locations: action list at line 155, closure reason examples at lines 203-205, action-adjacent prose at line 227)
+  - `packages/cli/templates/.codex/agents/ana-verify.md` — action definition (2 locations)
+  - `packages/cli/templates/.codex/agents/ana-build.md` — action definition (2 locations)
   - Dogfood templates: `.claude/agents/` and `.codex/agents/` (same files, our installation)
   - `packages/cli/tests/utils/proof-health.test.ts` — fixture data (5 locations)
   - `packages/cli/tests/commands/proof.test.ts` — fixture data (9 locations)
@@ -56,6 +56,8 @@ The variable `actAccept` in `proof-health.ts` becomes `actAcknowledge`. The disp
 **Proof chain entries written by old Verify templates.** Existing customer installations have old templates (merge-not-overwrite). Their Verify still writes `accept`. The validator tolerance handles this — `accept` is allowed on write. The backfill handles it on `work complete`. No intermediate breakage.
 
 **AnaDocs generated assets.** Changing `findings.mdx` content regenerates `search-index.json`, `llms.txt`, `llms-full.txt`. The website build handles this automatically.
+
+**JSON output key rename.** `proof.ts` lines 2037 and 2340 build object literals with `accept:` as a property key for `--json` output (`ana proof audit --json`, `ana proof health --json`). Renaming to `acknowledge:` changes the JSON shape. Zero customers makes this safe, but Build should handle it deliberately — rename the key, not just the value lookup.
 
 ## Rejected Approaches
 **Elaborate backward compat with dual display logic.** No customers exist to justify `case 'accept': case 'acknowledge':` fallthrough in every display path. The validator tolerance is sufficient. If a customer surfaces, their `work complete` runs the backfill.
@@ -95,7 +97,7 @@ For the string replacement, there is no structural analog — it's a mechanical 
 - `packages/cli/src/types/proof.ts:77,92` — action union types
 - `packages/cli/src/utils/proofSummary.ts:68,78,994,1052,1096,1128,1137` — type definitions and casts
 - `packages/cli/src/utils/proof-health.ts:829` — `actAccept` counting
-- `packages/cli/src/commands/proof.ts:2037,2340,2413,2418` — matrix counts, display
+- `packages/cli/src/commands/proof.ts:2037,2340,2413,2418` — matrix counts, display, and JSON output object property keys (lines 2037, 2340 are property key names in `--json` output, not just string lookups)
 - `packages/cli/src/commands/artifact-validators.ts:44` — VALID_FINDING_ACTIONS
 - `packages/cli/src/commands/work-proof.ts:226` — migration insertion point
 - `website/content/docs/concepts/findings.mdx:14,27` — action table
@@ -107,7 +109,7 @@ For the string replacement, there is no structural analog — it's a mechanical 
 - Template action definitions: `acknowledge = noted, evaluate in Learn`
 
 ### Known Gotchas
-- `ana-learn.md` has 4 locations with `accept` as an action value, plus prose like "Evaluate each accept finding on its own merits" — that prose changes to reference `acknowledge`.
+- `ana-learn.md` has 6+ locations with `accept` as an action value: line 155 (action list and "Accept means Verify didn't block shipping" prose), lines 203-205 (three `"accept: intentional behavior"` closure reason examples that reference the action name), and line 227 (action-adjacent prose). All need updating — the closure reason examples become `"acknowledge: intentional behavior"` etc.
 - `ana-setup.md` uses "accept" in English prose ("accept it", "accept the rest") — these are NOT action values, do not rename.
 - `findings.mdx` inline JSX has the terminal mockup string — the `observation/accept` substring needs updating inside the JSX string literal.
 - The Codex Learn template doesn't exist (Learn is CC-only), so no Codex Learn template to update.
