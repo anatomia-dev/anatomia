@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Anatomia — Verified AI development",
   description:
     "Your AI doesn't know your codebase. Ana does. Four sealed agents, one verified diff.",
-  metadataBase: new URL("https://anatomia.dev"),
+  metadataBase: new URL("https://www.anatomia.dev"),
   openGraph: {
     title: "Anatomia — Verified AI development",
     description: "The independent verification layer for AI-written code.",
