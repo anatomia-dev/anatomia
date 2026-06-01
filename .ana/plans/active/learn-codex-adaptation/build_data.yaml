@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "A003 test uses stub content ('# ana-learn prompt') instead of real template content ('Ana Learn') — unit test limitation, not a gap in real system behavior"
+    file: "packages/cli/tests/commands/run.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "A008 contract value '---' is too broad — matches markdown section dividers in all agent templates. Test uses startsWith check as proxy for frontmatter detection."
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "staleness.test.ts has day-boundary flake (89 vs 90 days) — pre-existing, not introduced by this build"
+    file: "website/lib/__tests__/docs-data/staleness.test.ts"
+    severity: debt
+    suggested_action: scope
