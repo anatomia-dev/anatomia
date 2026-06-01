@@ -40,5 +40,20 @@
     "website/content/docs/guides/configurability.mdx",
     "website/content/docs/guides/troubleshooting.mdx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-01T20:42:00.791Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:639a665e041c53d96c2f4e7f14e0b5de16ea88dcb9f5347c2886d8c48556e027",
+    "run_at": "2026-06-01T20:46:31.685Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-01T20:46:31.719Z",
+    "hash": "sha256:40f39e6933874937a2586938db31423dcd85e7683f4256e109af694f6de6a8cd"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-01T20:46:31.719Z",
+    "hash": "sha256:4d1557c8ea3d77895dc1ee8c30a925e42d7108ec8b293465400094b2bfd7c270"
+  }
 }
