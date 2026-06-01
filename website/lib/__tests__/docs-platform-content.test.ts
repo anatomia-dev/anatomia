@@ -33,14 +33,15 @@ const migratedDocs = [
 
 // @ana A001, A002
 describe('PlatformSwitcher platform availability', () => {
-  it('enables Codex while keeping future platforms disabled', () => {
+  it('shows only supported platforms', () => {
     const source = readRepoFile('website/components/docs/layout/PlatformSwitcher.tsx');
 
+    expect(source).toContain('{ id: "claude-code", label: "Claude Code", disabled: false }');
     expect(source).toContain('{ id: "codex", label: "Codex", disabled: false }');
-    expect(source).toContain('{ id: "cursor", label: "Cursor", disabled: true }');
-    expect(source).toContain('{ id: "windsurf", label: "Windsurf", disabled: true }');
-    expect(source).toContain('{ id: "copilot", label: "Copilot", disabled: true }');
-    expect(source).toContain('{ id: "cline", label: "Cline", disabled: true }');
+    expect(source).not.toContain('"cursor"');
+    expect(source).not.toContain('"windsurf"');
+    expect(source).not.toContain('"copilot"');
+    expect(source).not.toContain('"cline"');
   });
 });
 
