@@ -64,8 +64,8 @@ Setup (`ana run setup`) bridges the gap between what scan detects and what your 
 
 ### The pipeline
 
-| Stage | Command | Role | Produces |
-|-------|---------|------|----------|
+| Stage | Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Role | Produces |
+|-------|------|------|----------|
 | Think | `ana run` | Thinking partner — scope, investigate, advise, push back | `scope.md` |
 | Plan | `ana run plan` | Architect — design + sealed contract | `spec.md` + `contract.yaml` + `plan.md` |
 | Build | `ana run build` | Builder — implement spec, prove it works | Code + tests + `build_report.md` |
