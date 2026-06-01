@@ -1,0 +1,210 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix work complete merge strategy"
+
+assertions:
+  - id: A001
+    says: "A configured squash strategy merges the pull request with squash and skips repository discovery"
+    block: "uses configured squash merge strategy"
+    target: "gh.merge.args"
+    matcher: "contains"
+    value: "--squash"
+  - id: A002
+    says: "A configured squash strategy does not call GitHub to discover allowed merge methods"
+    block: "uses configured squash merge strategy"
+    target: "gh.api.calls"
+    matcher: "equals"
+    value: 0
+  - id: A003
+    says: "Every attempted merge includes one explicit merge method"
+    block: "uses explicit merge method for merge attempts"
+    target: "gh.merge.strategyFlag"
+    matcher: "exists"
+  - id: A004
+    says: "A repository with only merge commits enabled is merged with the merge method"
+    block: "infers merge strategy from single allowed method"
+    target: "gh.merge.args"
+    matcher: "contains"
+    value: "--merge"
+  - id: A005
+    says: "A repository with only squash enabled is merged with the squash method"
+    block: "infers squash strategy from single allowed method"
+    target: "gh.merge.args"
+    matcher: "contains"
+    value: "--squash"
+  - id: A006
+    says: "A repository with only rebase enabled is merged with the rebase method"
+    block: "infers rebase strategy from single allowed method"
+    target: "gh.merge.args"
+    matcher: "contains"
+    value: "--rebase"
+  - id: A007
+    says: "Multiple allowed merge methods stop the command before merging"
+    block: "rejects ambiguous repository merge methods"
+    target: "gh.merge.calls"
+    matcher: "equals"
+    value: 0
+  - id: A008
+    says: "Multiple allowed merge methods tell the user how to configure the team default"
+    block: "rejects ambiguous repository merge methods"
+    target: "stderr"
+    matcher: "contains"
+    value: "ana config set mergeStrategy"
+  - id: A009
+    says: "Failed strategy discovery stops the command before merging"
+    block: "rejects unavailable merge strategy discovery"
+    target: "gh.merge.calls"
+    matcher: "equals"
+    value: 0
+  - id: A010
+    says: "Malformed strategy discovery stops the command before merging"
+    block: "rejects malformed merge strategy discovery"
+    target: "gh.merge.calls"
+    matcher: "equals"
+    value: 0
+  - id: A011
+    says: "Missing merge-method fields stop the command before merging"
+    block: "rejects unreliable merge strategy discovery"
+    target: "gh.merge.calls"
+    matcher: "equals"
+    value: 0
+  - id: A012
+    says: "A stale configured strategy tells the user to update the setting"
+    block: "reports unsupported configured merge strategy"
+    target: "stderr"
+    matcher: "contains"
+    value: "mergeStrategy"
+  - id: A013
+    says: "Ambiguous strategy failures return a structured JSON error code"
+    block: "returns JSON error for ambiguous merge strategy"
+    target: "json.error.code"
+    matcher: "equals"
+    value: "MERGE_STRATEGY_AMBIGUOUS"
+  - id: A014
+    says: "Unavailable strategy discovery returns a structured JSON error code"
+    block: "returns JSON error for unavailable merge strategy discovery"
+    target: "json.error.code"
+    matcher: "equals"
+    value: "MERGE_STRATEGY_DISCOVERY_UNAVAILABLE"
+  - id: A015
+    says: "Unsupported configured strategy returns a structured JSON error code"
+    block: "returns JSON error for unsupported configured merge strategy"
+    target: "json.error.code"
+    matcher: "equals"
+    value: "MERGE_STRATEGY_UNSUPPORTED"
+  - id: A016
+    says: "JSON strategy failures do not include human progress text before the JSON envelope"
+    block: "keeps JSON merge strategy failures clean"
+    target: "stdout"
+    matcher: "not_contains"
+    value: "Merging PR"
+  - id: A017
+    says: "The schema accepts merge as a configured strategy"
+    block: "parses valid merge strategies"
+    target: "parsed.mergeStrategy"
+    matcher: "equals"
+    value: "merge"
+  - id: A018
+    says: "The schema accepts squash as a configured strategy"
+    block: "parses valid merge strategies"
+    target: "parsed.mergeStrategy"
+    matcher: "equals"
+    value: "squash"
+  - id: A019
+    says: "The schema accepts rebase as a configured strategy"
+    block: "parses valid merge strategies"
+    target: "parsed.mergeStrategy"
+    matcher: "equals"
+    value: "rebase"
+  - id: A020
+    says: "Invalid hand-edited merge strategies are ignored instead of crashing"
+    block: "ignores invalid merge strategy in schema"
+    target: "parsed.mergeStrategy"
+    matcher: "equals"
+    value: null
+  - id: A021
+    says: "Fresh initialization does not add a merge strategy by default"
+    block: "does not emit mergeStrategy on fresh init config"
+    target: "anaJson.mergeStrategy"
+    matcher: "equals"
+    value: null
+  - id: A022
+    says: "Configured merge strategy survives re-initialization"
+    block: "preserves mergeStrategy during re-init"
+    target: "merged.mergeStrategy"
+    matcher: "equals"
+    value: "rebase"
+  - id: A023
+    says: "The config command writes a valid merge strategy"
+    block: "sets mergeStrategy through config command"
+    target: "anaJson.mergeStrategy"
+    matcher: "equals"
+    value: "squash"
+  - id: A024
+    says: "The config command rejects invalid merge strategies"
+    block: "rejects invalid mergeStrategy through config command"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+  - id: A025
+    says: "Invalid merge strategy writes leave the existing config unchanged"
+    block: "rejects invalid mergeStrategy through config command"
+    target: "anaJson.mergeStrategy"
+    matcher: "equals"
+    value: "merge"
+  - id: A026
+    says: "Valid merge strategy writes do not show an unknown-field warning"
+    block: "sets mergeStrategy through config command"
+    target: "stderr"
+    matcher: "not_contains"
+    value: "not a known ana.json field"
+  - id: A027
+    says: "Branch protection failures still show branch protection guidance"
+    block: "preserves branch protection merge failure behavior"
+    target: "stderr"
+    matcher: "contains"
+    value: "branch protection"
+  - id: A028
+    says: "Branches behind the base branch still show rebase guidance"
+    block: "preserves branch behind merge failure behavior"
+    target: "stderr"
+    matcher: "contains"
+    value: "rebase"
+  - id: A029
+    says: "Already merged pull requests continue completion without another merge"
+    block: "preserves already merged behavior"
+    target: "gh.merge.calls"
+    matcher: "equals"
+    value: 0
+  - id: A030
+    says: "Troubleshooting docs explain how to recover from merge strategy selection failure"
+    block: "documents mergeStrategy recovery"
+    target: "docs.troubleshooting"
+    matcher: "contains"
+    value: "ana config set mergeStrategy"
+  - id: A031
+    says: "Configurability docs list mergeStrategy as a user-owned setting"
+    block: "documents mergeStrategy configuration"
+    target: "docs.configurability"
+    matcher: "contains"
+    value: "mergeStrategy"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work-merge.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/config.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/anaJsonSchema.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "website/content/docs/guides/troubleshooting.mdx"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
