@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "createSessionTestProject is the third duplicated test helper (alongside two createMergedProject copies)"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "A007 contract assertion is structural (pattern absence) — verified by code inspection, not runtime test"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
