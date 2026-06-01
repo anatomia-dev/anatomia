@@ -4,11 +4,11 @@
 **Date:** 2026-06-01
 
 ## Intent
-Fix 7 tests that silently pass as no-ops when `getAgentPid()` returns null. These tests call `getAgentPid()`, check if the result is null, and `return` — making the test pass without testing anything. In CI, in most dev environments, and in Codex sessions, the PID resolution fails because the process tree (agent → shell → node) doesn't exist. The test count (3132) includes phantom passes that don't verify behavior.
+Fix 6 tests that silently pass as no-ops when `getAgentPid()` returns null. These tests call `getAgentPid()`, check if the result is null, and `return` — making the test pass without testing anything. In CI, in most dev environments, and in Codex sessions, the PID resolution fails because the process tree (agent → shell → node) doesn't exist. The test count (3132) includes phantom passes that don't verify behavior.
 
 ## Complexity Assessment
 - **Kind:** fix
-- **Size:** small — 7 tests in one file need their PID guard replaced with a mock
+- **Size:** small — 6 tests in one file need their PID guard replaced with a mock
 - **Surface:** cli
 - **Files affected:**
   - `packages/cli/tests/commands/work.test.ts` — 7 tests in two describe blocks (lines 4885-5100)
@@ -35,7 +35,7 @@ One additional finding: the first test (`creates session file when --session fla
 Also found: 2 tests in `parsing-performance.test.ts` have `if (files.length === 0) return` guards. These are different — they guard against environments with no source files, not a mock-worthy condition. They should use `test.skipIf` with a message instead of silent return.
 
 ## Acceptance Criteria
-- AC1: All 7 session-related tests in `work.test.ts` that previously guarded on `getAgentPid() === null` now run with a mocked PID and execute their full assertion set.
+- AC1: All 6 session-related tests in `work.test.ts` that previously guarded on `getAgentPid() === null` now run with a mocked PID and execute their full assertion set.
 - AC2: The `creates session file when --session flag is set` test (line 4885) always executes its file-existence and content assertions, not conditionally.
 - AC3: No test uses `if (agentPid === null) return` or `if (agentPid !== null)` as a conditional skip pattern.
 - AC4: The 2 parsing-performance tests use `test.skipIf` or `describe.skipIf` with a reason string instead of silent `return`.
