@@ -23,11 +23,13 @@ describe.skipIf(!wasmAvailable)('Tree-sitter performance', () => {
     await ParserManager.getInstance().initialize();
   });
 
-  it('parses 20 files in ≤5 seconds', async () => {
+  // @ana A008
+  it('parses 20 files in ≤5 seconds', async (ctx) => {
     const projectRoot = process.cwd();
     const files = await sampleSourceFiles(projectRoot, 20);
 
     if (files.length === 0) {
+      ctx.skip();
       return;
     }
 
@@ -44,13 +46,14 @@ describe.skipIf(!wasmAvailable)('Tree-sitter performance', () => {
     expect(elapsed).toBeLessThan(5000);
   }, 10000);
 
-  it('achieves ≥80% cache speedup on second run', async () => {
+  // @ana A009
+  it('achieves ≥80% cache speedup on second run', async (ctx) => {
     const projectRoot = process.cwd();
     const cache = new ASTCache(projectRoot);
     await cache.clear();
 
     const files = await sampleSourceFiles(projectRoot, 20);
-    if (files.length === 0) return;
+    if (files.length === 0) { ctx.skip(); return; }
 
     // Run 1: Cold
     const start1 = performance.now();
@@ -78,10 +81,11 @@ describe.skipIf(!wasmAvailable)('Tree-sitter performance', () => {
     expect(speedup).toBeGreaterThanOrEqual(0.80);
   }, 15000);
 
-  it('memory usage stays ≤500MB during parsing', async () => {
+  // @ana A010
+  it('memory usage stays ≤500MB during parsing', async (ctx) => {
     const projectRoot = process.cwd();
     const files = await sampleSourceFiles(projectRoot, 20);
-    if (files.length === 0) return;
+    if (files.length === 0) { ctx.skip(); return; }
 
     if (global.gc) global.gc();
     const memBefore = process.memoryUsage().heapUsed;
