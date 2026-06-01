@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-178 runs · 159 active · 5 promoted · 853 closed
+179 runs · 162 active · 5 promoted · 855 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 31 | 27 | 2026-06-01 |
-| cli | 123 | 108 | 2026-06-01 |
+| cli | 124 | 111 | 2026-06-01 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/src/commands/work.ts | 12 | 7 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/commands/run.ts | 7 | 2 |
+| packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
-| packages/cli/tests/commands/artifact.test.ts | 5 | 3 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 159 total)
+## Active Findings (30 shown of 162 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -44,7 +44,6 @@
 - **code:** TOML mode field is dead data — dispatch uses hardcoded INTERACTIVE_AGENTS set instead — *Codex Support*
 - **code:** resolvePlatform accepts arbitrary platform strings without validation — --platform foo dispatches to unknown code path — *Codex Support*
 - **code:** parseSimpleToml silently drops lines with unquoted values, inline comments, or multiline strings — *Codex Support*
-- **code:** advisoryPipelineCheck not called for Codex dispatch — only Claude path runs the advisory check — *Codex Support*
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -71,14 +70,15 @@
 - **test:** No test for codex-only init path — A011/A012/A013 verified by source inspection only — *Codex Support*
 - **test:** A026 test asserts length > 0, not that correct platforms were detected — weak assertion for auto-detection — *Codex Support*
 
-### packages/cli/tests/commands/platform.test.ts
-
-- **test:** A004 contract assertion contradicted by implementation — schema .catch() does not fire on valid empty arrays — *Platform-Aware CLI*
-- **test:** A001 test mis-tagged — tests schema preservation of explicit values, not fresh-project default — *Platform-Aware CLI*
-
 ### packages/cli/tests/commands/run.test.ts
 
 - **test:** @ana tag collisions — A028-A033 tags on pre-existing CC dispatch tests match different contract assertions from a prior plan — *Codex Support*
+
+### packages/cli/tests/commands/work-ci-mocked.test.ts
+
+- **test:** Duplicate @ana tags A001-A006 in work-ci-mocked.test.ts — old getAgentPid/conflict tests and new session tests share tag IDs from different contracts — *Fix Conditional Test No-Ops*
+- **test:** createSessionTestProject helper is now triplicated — work.test.ts (removed), work-ci-mocked.test.ts (added), plus createMergedProject as similar pattern — *Fix Conditional Test No-Ops*
+- **code:** A002 and A004 are semantically identical tests — both create session file with known timestamp, call startWork, assert saves.work_started_at equals that timestamp — *Fix Conditional Test No-Ops*
 
 ### packages/cli/tests/commands/work.test.ts
 
