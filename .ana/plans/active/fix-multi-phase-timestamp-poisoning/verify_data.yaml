@@ -1,0 +1,57 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Dead conditional — verifyAgent always equals 'ana-verify' on both branches"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1336
+    severity: debt
+    suggested_action: accept
+    related_assertions: []
+
+  - category: code
+    summary: "startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1502
+    severity: debt
+    suggested_action: accept
+
+  - category: code
+    summary: "resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate"
+    file: "packages/cli/src/commands/work-state.ts"
+    line: 373
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1487
+    severity: debt
+    suggested_action: scope
+
+  - category: test
+    summary: "A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 6841
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A023"]
+
+  - category: code
+    summary: "Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1167
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "pipeline-concurrency-guards-C2 resolved — isTimestampRecent and checkConcurrencyGuard now both delegate to compareTimestamp"
+    severity: observation
+    suggested_action: accept
+    resolves:
+      - "pipeline-concurrency-guards-C2"
+
+  - category: upstream
+    summary: "decompose-work-ts-C4 partially addressed — multi-phase loop extracted to resolvePhase but determineStage still large"
+    severity: observation
+    suggested_action: monitor
