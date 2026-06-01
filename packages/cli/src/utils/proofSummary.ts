@@ -676,14 +676,32 @@ function computeTiming(saves: SavesData, slugDir: string): ProofSummary['timing'
       const verifyPhase = verifyPhases[i];
       const phaseNum = buildPhase.phase;
 
-      // Build segment: previous verify (or contract for phase 1) → this build
+      // Build segment: try per-phase start key first, fall back to segment timing
       const prevVerify = verifyPhases[i - 1];
       const segStart = i === 0
         ? contractTime
         : prevVerify ? getTime(prevVerify.key) : null;
       const segEnd = getTime(buildPhase.key);
 
-      if (segStart !== null && segEnd !== null) {
+      let usedBuildStartedAt = false;
+      if (segEnd !== null) {
+        // Try per-phase build_started_at_N
+        const phaseBuildStartedAt = readRawTimestamp(`build_started_at_${phaseNum}`);
+        if (phaseBuildStartedAt !== null) {
+          // Sanity: must be after previous phase boundary and before this build report
+          const prevBoundary = segStart;
+          if (prevBoundary !== null && phaseBuildStartedAt >= prevBoundary && phaseBuildStartedAt <= segEnd) {
+            const durationMs = segEnd - phaseBuildStartedAt;
+            if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
+              buildMs += durationMs;
+              segments.push({ stage: 'build', minutes: Math.round(durationMs / 60000), phase: phaseNum });
+              usedBuildStartedAt = true;
+            }
+          }
+        }
+      }
+
+      if (!usedBuildStartedAt && segStart !== null && segEnd !== null) {
         const durationMs = segEnd - segStart;
         if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
           buildMs += durationMs;
@@ -691,11 +709,28 @@ function computeTiming(saves: SavesData, slugDir: string): ProofSummary['timing'
         }
       }
 
-      // Verify segment: this build → this verify
+      // Verify segment: try per-phase start key first, fall back to segment timing
       if (verifyPhase) {
         const vStart = getTime(buildPhase.key);
         const vEnd = getTime(verifyPhase.key);
-        if (vStart !== null && vEnd !== null) {
+
+        let usedVerifyStartedAt = false;
+        if (vEnd !== null) {
+          const phaseVerifyStartedAt = readRawTimestamp(`verify_started_at_${phaseNum}`);
+          if (phaseVerifyStartedAt !== null && vStart !== null) {
+            // Sanity: must be after build-report-N.saved_at and before verify-report-N.saved_at
+            if (phaseVerifyStartedAt >= vStart && phaseVerifyStartedAt <= vEnd) {
+              const durationMs = vEnd - phaseVerifyStartedAt;
+              if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
+                verifyMs += durationMs;
+                segments.push({ stage: 'verify', minutes: Math.round(durationMs / 60000), phase: verifyPhase.phase });
+                usedVerifyStartedAt = true;
+              }
+            }
+          }
+        }
+
+        if (!usedVerifyStartedAt && vStart !== null && vEnd !== null) {
           const durationMs = vEnd - vStart;
           if (durationMs >= 0 && durationMs <= MAX_PHASE_MS) {
             verifyMs += durationMs;

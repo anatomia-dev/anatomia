@@ -2473,3 +2473,156 @@ describe('buildGanttBars', () => {
     expect(ganttBars[3]!.label).toBe('Verify');
   });
 });
+
+describe('computeTiming with per-phase start keys', () => {
+  let tempDir: string;
+  let slugDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'phase-timing-'));
+    slugDir = path.join(tempDir, 'test-timing');
+    await fs.promises.mkdir(slugDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  // @ana A020
+  it('uses build_started_at_1 for Phase 1 build duration when valid', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      build_started_at_1: '2026-04-01T10:35:00Z',  // 5min after contract
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },  // 25min after start
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:40:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Phase 1 build: used build_started_at_1 → 25min (not 30min segment)
+    // Phase 2 build: no start key → segment timing verify-report-1 → build-report-2 = 20min
+    expect(summary.timing.build).toBe(45); // 25 + 20
+  });
+
+  // @ana A021
+  it('falls back to segment timing when per-phase start keys are absent', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      // No build_started_at_N keys
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:40:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Segment timing: Phase 1 build = contract → build-report-1 = 30min
+    // Phase 2 build = verify-report-1 → build-report-2 = 20min
+    expect(summary.timing.build).toBe(50); // 30 + 20
+  });
+
+  // @ana A022
+  it('stale build_started_at_N (after build-report-N) falls back to segment timing', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      build_started_at_1: '2026-04-01T12:00:00Z',  // AFTER build-report-1 (stale/clock skew)
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:40:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Phase 1 should fall back to segment timing (30min), not use stale start key
+    // Phase 2 segment: 20min
+    expect(summary.timing.build).toBe(50); // 30 + 20
+    expect(summary.timing.build).toBeGreaterThan(0);
+  });
+
+  it('uses verify_started_at_N for Phase verify duration when valid', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      verify_started_at_1: '2026-04-01T11:02:00Z',  // 2min after build-report-1
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z' },  // 8min after verify start
+      'build-report-2': { saved_at: '2026-04-01T11:30:00Z' },
+      verify_started_at_2: '2026-04-01T11:32:00Z',  // 2min after build-report-2
+      'verify-report-2': { saved_at: '2026-04-01T11:40:00Z' },  // 8min after verify start
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Phase 1 verify: verify_started_at_1 → verify-report-1 = 8min (not 10min segment)
+    // Phase 2 verify: verify_started_at_2 → verify-report-2 = 8min (not 10min segment)
+    expect(summary.timing.verify).toBe(16); // 8 + 8
+  });
+
+  it('mixed: some phases have start keys, others do not', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      build_started_at_1: '2026-04-01T10:35:00Z',  // Phase 1 has start key
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z' },
+      // Phase 2 has no start key — falls back to segment
+      'build-report-2': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:40:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Phase 1: build_started_at_1 → build-report-1 = 25min
+    // Phase 2: segment verify-report-1 → build-report-2 = 20min
+    expect(summary.timing.build).toBe(45); // 25 + 20
+  });
+
+  it('stale verify_started_at_N (before build-report-N) falls back to segment', async () => {
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      verify_started_at_1: '2026-04-01T10:50:00Z',  // BEFORE build-report-1 (stale)
+      'verify-report-1': { saved_at: '2026-04-01T11:10:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:30:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:40:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    // Phase 1 verify should fall back to segment: build-report-1 → verify-report-1 = 10min
+    // Phase 2 verify: segment = 10min
+    expect(summary.timing.verify).toBe(20); // 10 + 10
+  });
+
+  it('old saves without per-phase keys still produce correct segment timing', async () => {
+    // This is the same as existing multi-phase test — no start keys at all
+    const saves = {
+      scope: { saved_at: '2026-04-01T10:00:00Z' },
+      contract: { saved_at: '2026-04-01T10:30:00Z' },
+      'build-report-1': { saved_at: '2026-04-01T11:00:00Z' },
+      'verify-report-1': { saved_at: '2026-04-01T11:08:00Z' },
+      'build-report-2': { saved_at: '2026-04-01T11:23:00Z' },
+      'verify-report-2': { saved_at: '2026-04-01T11:37:00Z' },
+    };
+    fs.writeFileSync(path.join(slugDir, '.saves.json'), JSON.stringify(saves));
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.timing.build).toBe(45); // 30 + 15
+    expect(summary.timing.verify).toBe(22); // 8 + 14
+  });
+});

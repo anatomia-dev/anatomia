@@ -12,6 +12,8 @@ vi.mock('node:child_process', async (importOriginal) => {
   return { ...mod, spawnSync: vi.fn(mod.spawnSync) };
 });
 import { getWorkStatus, completeWork, startWork, getAgentPid, checkConcurrencyGuard } from '../../src/commands/work.js';
+import { resolvePhase, isTimestampRecent, compareTimestamp } from '../../src/commands/work-state.js';
+import type { ArtifactState } from '../../src/commands/work-state.js';
 
 /**
  * Tests for `ana work status` and `ana work complete` commands
@@ -4211,7 +4213,7 @@ describe('work start early-return phase detection', () => {
     expect(saves.verify_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
   });
 
-  it('early-return writes build_started_at during Fix phase (FAIL verify)', async () => {
+  it('early-return writes verify_started_at during Fix/re-verify phase (FAIL verify)', async () => {
     const slugDir = await createWorktreeTestProject('my-feature', {
       scope: true, plan: true, spec: true, contract: true,
       buildReport: true, verifyReport: true, verifyResult: 'FAIL',
@@ -4223,9 +4225,11 @@ describe('work start early-return phase detection', () => {
 
     const savesPath = path.join(slugDir, '.saves.json');
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    expect(saves.build_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
-    expect(saves.build_agent).toBe('ana-build');
-    const ts = new Date(saves.build_started_at).getTime();
+    // Re-verify is a verify session — writes verify key, not build key (AC15, AC25)
+    expect(saves.verify_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    expect(saves.verify_agent).toBe('ana-verify');
+    expect(saves.build_started_at).toBeUndefined();
+    const ts = new Date(saves.verify_started_at).getTime();
     expect(ts).toBeGreaterThanOrEqual(before);
     expect(ts).toBeLessThanOrEqual(after);
   });
@@ -4252,25 +4256,25 @@ describe('work start early-return phase detection', () => {
   });
 
   // @ana A012
-  it('force parameter overwrites existing timestamp', async () => {
+  it('force parameter overwrites existing verify timestamp on re-verify', async () => {
     const slugDir = await createWorktreeTestProject('my-feature', {
       scope: true, plan: true, spec: true, contract: true,
       buildReport: true, verifyReport: true, verifyResult: 'FAIL',
     });
 
-    // Pre-write a build_started_at timestamp
+    // Pre-write a verify_started_at timestamp
     const savesPath = path.join(slugDir, '.saves.json');
     const oldTimestamp = '2026-04-01T10:00:00Z';
     await fs.writeFile(savesPath, JSON.stringify({
-      build_started_at: oldTimestamp,
-      build_agent: 'ana-build',
+      verify_started_at: oldTimestamp,
+      verify_agent: 'ana-verify',
     }), 'utf-8');
 
     await startWork('my-feature');
 
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    // FAIL→Fix path uses force: true, so build_started_at should be overwritten
-    expect(saves.build_started_at).not.toBe(oldTimestamp);
+    // FAIL→Fix path uses force: true for verify key, so verify_started_at should be overwritten (AC15)
+    expect(saves.verify_started_at).not.toBe(oldTimestamp);
   });
 
   // @ana A013
@@ -6040,5 +6044,836 @@ file_changes:
     // even though modules_touched derives to 'cli' via surfaces config
     expect(chain.entries[0].surface).toBe('website');
     expect(chain.migrations.surface_backfill).toBe(true);
+  });
+});
+
+describe('phase-scoped timestamps', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'phase-scoped-test-'));
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    try {
+      const result = execSync('git worktree list --porcelain', {
+        cwd: tempDir,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
+      const worktrees = result
+        .split('\n')
+        .filter(l => l.startsWith('worktree '))
+        .map(l => l.replace('worktree ', ''));
+      for (const wt of worktrees) {
+        if (wt !== tempDir) {
+          try {
+            execSync(`git worktree remove "${wt}" --force`, { cwd: tempDir, stdio: 'ignore' });
+          } catch { /* ignore */ }
+        }
+      }
+    } catch { /* ignore */ }
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  async function createTestProject(options: {
+    artifactBranch?: string;
+    branchPrefix?: string;
+    slugs?: Array<{
+      slug: string;
+      artifacts: string[];
+      planContent?: string;
+      featureBranch?: boolean;
+      worktree?: boolean;
+      featureArtifacts?: Array<{ file: string; content?: string }>;
+    }>;
+  }): Promise<void> {
+    const artifactBranch = options.artifactBranch || 'main';
+    const branchPrefix = options.branchPrefix;
+
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch, ...(branchPrefix !== undefined && { branchPrefix }) }),
+      'utf-8'
+    );
+
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    execSync(`git branch -M ${artifactBranch}`, { cwd: tempDir, stdio: 'ignore' });
+
+    if (options.slugs) {
+      for (const slug of options.slugs) {
+        const slugPath = path.join(tempDir, '.ana', 'plans', 'active', slug.slug);
+        await fs.mkdir(slugPath, { recursive: true });
+
+        for (const artifact of slug.artifacts) {
+          let content = `# ${artifact}`;
+          if (artifact === 'plan.md' && slug.planContent) {
+            content = slug.planContent;
+          }
+          await fs.writeFile(path.join(slugPath, artifact), content, 'utf-8');
+        }
+
+        execSync('git add -A && git commit -m "add artifacts"', { cwd: tempDir, stdio: 'ignore' });
+
+        if (slug.featureBranch) {
+          const prefix = branchPrefix !== undefined ? branchPrefix : 'feature/';
+          execSync(`git checkout -b ${prefix}${slug.slug}`, { cwd: tempDir, stdio: 'ignore' });
+
+          if (slug.featureArtifacts) {
+            for (const artifact of slug.featureArtifacts) {
+              const content = artifact.content || `# ${artifact.file}`;
+              await fs.writeFile(path.join(slugPath, artifact.file), content, 'utf-8');
+            }
+            execSync('git add -A && git commit -m "add feature artifacts"', { cwd: tempDir, stdio: 'ignore' });
+          }
+
+          execSync(`git checkout ${artifactBranch}`, { cwd: tempDir, stdio: 'ignore' });
+        }
+
+        if (slug.worktree) {
+          const prefix = branchPrefix !== undefined ? branchPrefix : 'feature/';
+          const branchName = `${prefix}${slug.slug}`;
+          const wtPath = path.join(tempDir, '.ana', 'worktrees', slug.slug);
+          await fs.mkdir(path.join(tempDir, '.ana', 'worktrees'), { recursive: true });
+          execSync(`git worktree add "${wtPath}" -b ${branchName}`, { cwd: tempDir, stdio: 'ignore' });
+
+          if (slug.featureArtifacts) {
+            const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', slug.slug);
+            await fs.mkdir(wtSlugPath, { recursive: true });
+            for (const artifact of slug.featureArtifacts) {
+              const content = artifact.content || `# ${artifact.file}`;
+              await fs.writeFile(path.join(wtSlugPath, artifact.file), content, 'utf-8');
+            }
+            execSync('git add -A && git commit -m "add feature artifacts"', { cwd: wtPath, stdio: 'ignore' });
+          }
+
+          process.chdir(tempDir);
+        }
+      }
+    }
+  }
+
+  async function captureOutput(fn: () => void | Promise<void>): Promise<string> {
+    const originalLog = console.log;
+    const logs: string[] = [];
+    console.log = (...args: unknown[]) => { logs.push(args.join(' ')); };
+    await fn();
+    console.log = originalLog;
+    return logs.join('\n');
+  }
+
+  describe('resolvePhase unit tests', () => {
+    // @ana A012
+    it('is exported from work-state.ts and callable', () => {
+      expect(typeof resolvePhase).toBe('function');
+    });
+
+    // @ana A013
+    it('returns phaseNumber and correct timestamp keys for Phase 2 verify', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+          { file: 'build_report_2.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'PASS' },
+        ],
+      };
+
+      const result = resolvePhase(artifacts, null);
+      expect(result).not.toBeNull();
+      expect(result!.phaseNumber).toBe(2);
+      expect(result!.stage).toBe('ready-for-verify');
+      expect(result!.verifyTimestampKey).toBe('verify_started_at_2');
+      expect(result!.buildTimestampKey).toBe('build_started_at_2');
+      expect(result!.buildAgentKey).toBe('build_agent_2');
+      expect(result!.verifyAgentKey).toBe('verify_agent_2');
+    });
+
+    it('returns null for single-spec work', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [{ file: 'spec.md', exists: true }],
+        buildReports: [{ file: 'build_report.md', exists: true }],
+        verifyReports: [],
+      };
+
+      expect(resolvePhase(artifacts, null)).toBeNull();
+    });
+
+    it('returns null when all phases passed', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+          { file: 'build_report_2.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_2.md', exists: true, result: 'PASS' },
+        ],
+      };
+
+      expect(resolvePhase(artifacts, null)).toBeNull();
+    });
+
+    it('detects FAIL with re-verify when build saved after verify', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+          { file: 'build_report_2.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_2.md', exists: true, result: 'FAIL' },
+        ],
+      };
+
+      const saves = {
+        'build-report-2': { saved_at: '2026-05-12T10:00:00Z' },
+        'verify-report-2': { saved_at: '2026-05-12T09:00:00Z' },
+      };
+
+      const result = resolvePhase(artifacts, saves);
+      expect(result).not.toBeNull();
+      expect(result!.phaseNumber).toBe(2);
+      expect(result!.stage).toBe('ready-for-re-verify');
+      expect(result!.isReVerify).toBe(true);
+      expect(result!.verifyTimestampKey).toBe('verify_started_at_2');
+    });
+
+    // @ana A017
+    it('works for 4-phase workflow — phase 4 ready for verify', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+          { file: 'spec-3.md', exists: true },
+          { file: 'spec-4.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+          { file: 'build_report_2.md', exists: true },
+          { file: 'build_report_3.md', exists: true },
+          { file: 'build_report_4.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_2.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_3.md', exists: true, result: 'PASS' },
+        ],
+      };
+
+      const result = resolvePhase(artifacts, null);
+      expect(result).not.toBeNull();
+      expect(result!.phaseNumber).toBe(4);
+      expect(result!.stage).toBe('ready-for-verify');
+      expect(result!.verifyTimestampKey).toBe('verify_started_at_4');
+    });
+
+    // @ana A019
+    it('4-phase re-verify on phase 4 returns ready-for-re-verify', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+          { file: 'spec-3.md', exists: true },
+          { file: 'spec-4.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+          { file: 'build_report_2.md', exists: true },
+          { file: 'build_report_3.md', exists: true },
+          { file: 'build_report_4.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_2.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_3.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_4.md', exists: true, result: 'FAIL' },
+        ],
+      };
+
+      const saves = {
+        'build-report-4': { saved_at: '2026-05-12T10:00:00Z' },
+        'verify-report-4': { saved_at: '2026-05-12T09:00:00Z' },
+      };
+
+      const result = resolvePhase(artifacts, saves);
+      expect(result).not.toBeNull();
+      expect(result!.phaseNumber).toBe(4);
+      expect(result!.stage).toBe('ready-for-re-verify');
+      expect(result!.verifyTimestampKey).toBe('verify_started_at_4');
+    });
+
+    // @ana A010
+    it('Phase 1 falls back to unsuffixed saves keys', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'FAIL' },
+        ],
+      };
+
+      // Unsuffixed keys — should fall back for Phase 1
+      const saves = {
+        'build-report': { saved_at: '2026-05-12T10:00:00Z' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z' },
+      };
+
+      const result = resolvePhase(artifacts, saves);
+      expect(result).not.toBeNull();
+      expect(result!.phaseNumber).toBe(1);
+      expect(result!.stage).toBe('ready-for-re-verify');
+    });
+
+    // @ana A011
+    it('Phase 2 does not fall back to unsuffixed saves keys', () => {
+      const artifacts: ArtifactState = {
+        scope: { exists: true },
+        plan: { exists: true },
+        specs: [
+          { file: 'spec-1.md', exists: true },
+          { file: 'spec-2.md', exists: true },
+        ],
+        buildReports: [
+          { file: 'build_report_1.md', exists: true },
+          { file: 'build_report_2.md', exists: true },
+        ],
+        verifyReports: [
+          { file: 'verify_report_1.md', exists: true, result: 'PASS' },
+          { file: 'verify_report_2.md', exists: true, result: 'FAIL' },
+        ],
+      };
+
+      // Only unsuffixed keys — Phase 2 should NOT use them
+      const saves = {
+        'build-report': { saved_at: '2026-05-12T10:00:00Z' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z' },
+      };
+
+      const result = resolvePhase(artifacts, saves);
+      expect(result).not.toBeNull();
+      expect(result!.phaseNumber).toBe(2);
+      expect(result!.stage).toBe('needs-fixes');
+    });
+  });
+
+  describe('compareTimestamp consolidation', () => {
+    // @ana A027
+    it('isTimestampRecent delegates to shared compareTimestamp logic', () => {
+      // compareTimestamp is the shared core used by both isTimestampRecent and checkConcurrencyGuard
+      expect(typeof compareTimestamp).toBe('function');
+
+      // Valid timestamp returns elapsed ms
+      const recent = new Date().toISOString();
+      const elapsed = compareTimestamp(recent);
+      expect(elapsed).not.toBeNull();
+      expect(elapsed!).toBeLessThan(1000);
+
+      // Invalid inputs return null
+      expect(compareTimestamp(undefined)).toBeNull();
+      expect(compareTimestamp(42)).toBeNull();
+      expect(compareTimestamp('not-a-date')).toBeNull();
+
+      // isTimestampRecent uses the same logic internally
+      const dir = path.join(tempDir, 'test-saves');
+      fsSync.mkdirSync(dir, { recursive: true });
+      fsSync.writeFileSync(path.join(dir, '.saves.json'), JSON.stringify({
+        test_started_at: recent,
+      }));
+      expect(isTimestampRecent(dir, 'test_started_at')).toBe(true);
+    });
+  });
+
+  describe('determineStage with phase-scoped keys', () => {
+    // @ana A001
+    it('returns phase-2-ready-for-verify when Phase 1 has recent verify_started_at', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+          ],
+        }],
+      });
+
+      // Write a recent verify_started_at_1 in the worktree (Phase 1's timestamp)
+      const wtSlugPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug', '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(wtSlugPath, { recursive: true });
+      await fs.writeFile(
+        path.join(wtSlugPath, '.saves.json'),
+        JSON.stringify({ verify_started_at_1: new Date().toISOString() }),
+        'utf-8',
+      );
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      // Phase 1's verify timestamp should NOT cause phase-2-verify-in-progress
+      expect(output).toContain('phase-2-ready-for-verify');
+      expect(output).not.toContain('verify-in-progress');
+    });
+
+    // @ana A005
+    it('single-spec with recent verify_started_at returns verify-in-progress', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [{ file: 'build_report.md' }],
+        }],
+      });
+
+      const wtSlugPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug', '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(wtSlugPath, { recursive: true });
+      await fs.writeFile(
+        path.join(wtSlugPath, '.saves.json'),
+        JSON.stringify({ verify_started_at: new Date().toISOString() }),
+        'utf-8',
+      );
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('verify-in-progress');
+    });
+
+    // @ana A006
+    it('recent verify_started_at_1 does not affect Phase 2 status', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+          ],
+        }],
+      });
+
+      // Write verify_started_at_1 (not _2) — should not affect Phase 2
+      const wtSlugPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug', '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(wtSlugPath, { recursive: true });
+      await fs.writeFile(
+        path.join(wtSlugPath, '.saves.json'),
+        JSON.stringify({
+          verify_started_at_1: new Date().toISOString(),
+        }),
+        'utf-8',
+      );
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).not.toContain('verify-in-progress');
+      expect(output).toContain('phase-2-ready-for-verify');
+    });
+
+    // @ana A024
+    it('verify_started_at_2 before build-report-2.saved_at is treated as stale', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const savesJson = JSON.stringify({
+        'build-report-2': { saved_at: '2026-05-30T12:00:00Z', hash: 'sha256:abc' },
+      });
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      // Write a verify_started_at_2 that predates build-report-2.saved_at
+      const wtSlugPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug', '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(wtSlugPath, { recursive: true });
+      await fs.writeFile(
+        path.join(wtSlugPath, '.saves.json'),
+        JSON.stringify({
+          verify_started_at_2: '2026-05-30T11:00:00Z', // Before build-report-2.saved_at
+        }),
+        'utf-8',
+      );
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      // Should NOT show verify-in-progress — timestamp is stale
+      expect(output).not.toContain('verify-in-progress');
+      expect(output).toContain('phase-2-ready-for-verify');
+    });
+
+    // @ana A009
+    it('backward compat: single-spec with generic keys works correctly', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const verifyContent = `# Verify\n\n**Result:** FAIL`;
+      const savesJson = JSON.stringify({
+        'build-report': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: verifyContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('ready-for-re-verify');
+      // Stage should not be 'unknown' (the pipeline stage itself)
+      expect(output).not.toContain('Stage: unknown');
+      expect(output).not.toContain('verify-status-unknown');
+    });
+
+    // @ana A008
+    it('Phase 2 FAIL with newer build report returns phase-2-ready-for-re-verify', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+      const savesJson = JSON.stringify({
+        'build-report-2': { saved_at: '2026-05-12T10:00:00Z', hash: 'sha256:abc' },
+        'verify-report-2': { saved_at: '2026-05-12T09:00:00Z', hash: 'sha256:def' },
+      });
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: failContent },
+            { file: '.saves.json', content: savesJson },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('phase-2-ready-for-re-verify');
+    });
+
+    // @ana A017
+    it('4-phase workflow returns phase-4-ready-for-verify', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md\n- [ ] Phase 3\n  Spec: spec-3.md\n- [ ] Phase 4\n  Spec: spec-4.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md', 'spec-3.md', 'spec-4.md'],
+          planContent,
+          featureBranch: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: passContent },
+            { file: 'build_report_3.md' },
+            { file: 'verify_report_3.md', content: passContent },
+            { file: 'build_report_4.md' },
+          ],
+        }],
+      });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('phase-4-ready-for-verify');
+    });
+  });
+
+  describe('startWork phase-scoped key writes', () => {
+    // @ana A002, A003, A004
+    it('Phase 2 verify writes verify_started_at_2 and verify_agent_2 (inside worktree)', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+          ],
+        }],
+      });
+
+      // Run from inside the worktree (inside-worktree resume path)
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug');
+      process.chdir(wtPath);
+
+      const originalLog = console.log;
+      console.log = () => {};
+      await startWork('test-slug');
+      console.log = originalLog;
+
+      process.chdir(tempDir);
+
+      const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', 'test-slug');
+      const savesPath = path.join(wtSlugPath, '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+
+      expect(saves.verify_started_at_2).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(saves.verify_agent_2).toBe('ana-verify');
+      // Should NOT write generic verify_started_at
+      expect(saves.verify_started_at).toBeUndefined();
+    });
+
+    // @ana A015, A016
+    it('Phase 2 build writes build_started_at_2 and build_agent_2 (inside worktree)', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            // No build_report_2.md → phase 2 build
+          ],
+        }],
+      });
+
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug');
+      process.chdir(wtPath);
+
+      const originalLog = console.log;
+      console.log = () => {};
+      await startWork('test-slug');
+      console.log = originalLog;
+
+      process.chdir(tempDir);
+
+      const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', 'test-slug');
+      const savesPath = path.join(wtSlugPath, '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+
+      expect(saves.build_started_at_2).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(saves.build_agent_2).toBe('ana-build');
+      // Should NOT write generic build_started_at
+      expect(saves.build_started_at).toBeUndefined();
+    });
+
+    // @ana A007
+    it('Phase 2 re-verify writes verify_started_at_2 not build_started_at_2 (inside worktree)', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: failContent },
+          ],
+        }],
+      });
+
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug');
+      process.chdir(wtPath);
+
+      const originalLog = console.log;
+      console.log = () => {};
+      await startWork('test-slug');
+      console.log = originalLog;
+
+      process.chdir(tempDir);
+
+      const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', 'test-slug');
+      const savesPath = path.join(wtSlugPath, '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+
+      // Re-verify is a verify session — writes verify key
+      expect(saves.verify_started_at_2).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(saves.verify_agent_2).toBe('ana-verify');
+      expect(saves.build_started_at_2).toBeUndefined();
+    });
+
+    // @ana A025, A026
+    it('single-spec FAIL re-verify writes verify_started_at not build_started_at (inside worktree)', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
+      const failContent = `# Verify\n\n**Result:** FAIL`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report.md' },
+            { file: 'verify_report.md', content: failContent },
+          ],
+        }],
+      });
+
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug');
+      process.chdir(wtPath);
+
+      const originalLog = console.log;
+      console.log = () => {};
+      await startWork('test-slug');
+      console.log = originalLog;
+
+      process.chdir(tempDir);
+
+      const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', 'test-slug');
+      const savesPath = path.join(wtSlugPath, '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+
+      expect(saves.verify_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(saves.verify_agent).toBe('ana-verify');
+      // Should NOT write build_started_at for re-verify
+      expect(saves.build_started_at).toBeUndefined();
+    });
+
+    // @ana A018
+    it('4-phase startWork writes verify_started_at_4 (inside worktree)', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md\n- [ ] Phase 3\n  Spec: spec-3.md\n- [ ] Phase 4\n  Spec: spec-4.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md', 'spec-3.md', 'spec-4.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+            { file: 'verify_report_2.md', content: passContent },
+            { file: 'build_report_3.md' },
+            { file: 'verify_report_3.md', content: passContent },
+            { file: 'build_report_4.md' },
+          ],
+        }],
+      });
+
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug');
+      process.chdir(wtPath);
+
+      const originalLog = console.log;
+      console.log = () => {};
+      await startWork('test-slug');
+      console.log = originalLog;
+
+      process.chdir(tempDir);
+
+      const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', 'test-slug');
+      const savesPath = path.join(wtSlugPath, '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+
+      expect(saves.verify_started_at_4).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(saves.verify_agent_4).toBe('ana-verify');
+    });
+
+    // @ana A014, A023
+    it('main-tree and worktree startWork produce same phase decision for Phase 2 verify', async () => {
+      const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec-1.md\n- [ ] Phase 2\n  Spec: spec-2.md`;
+      const passContent = `# Verify\n\n**Result:** PASS`;
+      await createTestProject({
+        slugs: [{
+          slug: 'test-slug',
+          artifacts: ['scope.md', 'plan.md', 'spec-1.md', 'spec-2.md'],
+          planContent,
+          worktree: true,
+          featureArtifacts: [
+            { file: 'build_report_1.md' },
+            { file: 'verify_report_1.md', content: passContent },
+            { file: 'build_report_2.md' },
+          ],
+        }],
+      });
+
+      // Run from inside the worktree
+      const wtPath = path.join(tempDir, '.ana', 'worktrees', 'test-slug');
+      process.chdir(wtPath);
+
+      const originalLog = console.log;
+      console.log = () => {};
+      await startWork('test-slug');
+      console.log = originalLog;
+
+      process.chdir(tempDir);
+
+      const wtSlugPath = path.join(wtPath, '.ana', 'plans', 'active', 'test-slug');
+      const savesPath = path.join(wtSlugPath, '.saves.json');
+      const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
+
+      // Inside worktree should write verify_started_at_2
+      expect(saves.verify_started_at_2).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(saves.verify_agent_2).toBe('ana-verify');
+    });
   });
 });
