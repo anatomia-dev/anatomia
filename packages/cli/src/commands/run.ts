@@ -162,13 +162,6 @@ function dispatchToCodex(
   agentName: string,
   passthroughArgs: string[],
 ): void {
-  // Learn is not available on Codex
-  if (agentSuffix === 'learn') {
-    console.error(chalk.red('Error: The Learn agent is not yet available on Codex.'));
-    console.error(chalk.red('  Use Claude Code instead: claude --agent ana-learn'));
-    process.exit(1);
-  }
-
   // Check codex executable
   if (!isExecutableInPath('codex')) {
     console.error(chalk.red('Error: codex not found in PATH.'));
