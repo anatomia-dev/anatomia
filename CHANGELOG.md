@@ -7,6 +7,43 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-01
+
+### Added
+
+- **`ana run` — universal agent invocation.** One command for every pipeline stage: `ana run` (Think), `ana run plan`, `ana run build`, `ana run verify`, `ana run learn`, `ana run setup`. Dispatches to the configured platform automatically. Advisory pipeline state check warns when work isn't at the expected stage.
+- **Codex platform support.** `ana init --platforms codex` generates Codex agent templates with `.agent.toml` manifests under `.codex/agents/`. `ana run` dispatches to Codex interactive TUI with `danger-full-access` sandbox mode. Platform auto-detection from PATH on first init.
+- **`platformFlags` in `ana.json`.** Per-platform runtime flags applied automatically by `ana run`. Set `"claude": ["--dangerously-skip-permissions"]` once — never type the flag again.
+- **`--platform` flag on `ana run`.** Explicit platform override per invocation. Resolution chain: `--platform` flag → `ANA_PLATFORM` env → sole configured platform → guidance when ambiguous.
+- **Unified skill architecture.** Skills live in `.ana/skills/` — one canonical location shared across platforms. `.claude/skills/` and `.agents/skills/` are symlinks. Setup enriches through the symlink — zero change to existing setup workflows.
+- **Multi-phase report naming guard.** `ana artifact save build-report` on a multi-phase scope auto-corrects to the numbered type (`build-report-1`) with a warning. Prevents off-plan artifact creation.
+- **Phase-scoped pipeline timestamps.** Multi-phase work writes `build_started_at_N` and `verify_started_at_N` per phase. A centralized phase resolver ensures `ana work status` and `ana work start` agree on the current phase.
+- **Gitignore disclosure at init time.** `ana init` warns when infrastructure files are gitignored. `ana init commit` force-adds them to prevent worktree failures from missing agent files.
+
+### Fixed
+
+- **Multi-phase timestamp poisoning.** Phase 1's `verify_started_at` no longer incorrectly blocks Phase 2 status for up to one hour. Each phase gets its own timestamp key. Defense-in-depth: verify timestamps predating the current phase's build report are rejected as stale.
+- **Re-verify writes the correct timestamp.** Both single-phase and multi-phase FAIL→re-verify now write `verify_started_at` instead of `build_started_at`. Re-verify is a verify session, not a build session.
+- **Timestamp duplication eliminated.** `isTimestampRecent` and `checkConcurrencyGuard` consolidated into a shared comparison path.
+- **Advisory pipeline check false warnings.** Replaced `.saves.json` stage field read with file-existence checks. No more false warnings when starting agents.
+- **Invalid `--platform` values rejected.** `--platform codeex` (typo) now errors instead of silently falling through.
+- **Shell injection in Codex dispatch.** Eliminated `shell: true` — both platforms use safe `spawnSync` array arguments.
+- **`work.ts` decomposition.** Extracted `work-state.ts` and `work-proof.ts` from the 1700-line monolith.
+- **Gitignore force-add in init commit.** Tracked-but-gitignored infrastructure files detected and force-added.
+
+### Changed
+
+- All CLI display strings use `ana run` syntax instead of `claude --agent`
+- `getClaudePid()` renamed to `getAgentPid()` — platform-agnostic
+- `getSkillsDir()` returns `.ana/skills` (canonical location)
+- `getAgentsDir()` accepts optional `platform` parameter
+- `ana.json` gains `platforms` and `platformFlags` fields
+- `KNOWN_ROOTS` expanded to `['.ana/', '.claude/', '.codex/', '.agents/']`
+- `package.json` description: "four-agent" → "five-agent" pipeline
+- Scan/index exclusion patterns include `.codex/` and `.agents/`
+- `determineStage` uses phase-scoped timestamp keys for multi-phase concurrency
+- `startWork` uses centralized phase resolver instead of glob-based detection
+
 ## [1.1.5] - 2026-05-26
 
 ### Added
@@ -298,7 +335,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.1.5...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/anatomia-dev/anatomia/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/anatomia-dev/anatomia/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/anatomia-dev/anatomia/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/anatomia-dev/anatomia/compare/v1.1.2...v1.1.3
