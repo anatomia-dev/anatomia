@@ -77,6 +77,19 @@ describe('Quickstart init output', () => {
     expect(start).toContain('>ana run</span>{"             Start working (Ana knows your stack)');
     expect(start).toContain('>ana run setup</span>{"       Enrich with your team\'s knowledge');
   });
+
+  // @ana A027
+  it('uses paired platform guidance without wrapping the init terminal mockup', () => {
+    const start = readRepoFile('website/content/docs/start.mdx');
+    const terminalMockupStart = start.indexOf('<div style={{background:"var(--bg-card)"');
+    const terminalMockupEnd = start.indexOf('</div>', terminalMockupStart);
+    const terminalMockup = start.slice(terminalMockupStart, terminalMockupEnd);
+
+    expect(start).toContain('<ForPlatform platform="claude-code">');
+    expect(start).toContain('<ForPlatform platform="codex">');
+    expect(start).toContain('[Platform setup](/docs/guides/platform-setup)');
+    expect(terminalMockup).not.toContain('ForPlatform');
+  });
 });
 
 // @ana A012, A013
@@ -136,6 +149,20 @@ describe('Platform setup guide', () => {
     expect(guide).toContain('.agent.toml');
     expect(guide).toContain('danger-full-access');
   });
+
+  // @ana A021, A022, A023, A024, A025, A026, A028
+  it('documents resolution order, switching, manifest fields, and Learn support', () => {
+    const guide = readRepoFile('website/content/docs/guides/platform-setup.mdx');
+
+    expect(guide).toContain('Explicit `--platform`');
+    expect(guide).toContain('The sole configured platform in `.ana/ana.json`');
+    expect(guide).toContain('PATH auto-detection');
+    expect(guide).toContain('developer_instructions');
+    expect(guide).toContain('sandbox_mode');
+    expect(guide).toContain('ana config set platformFlags.claude');
+    expect(guide).toContain('To add Codex to a Claude Code project');
+    expect(guide).toContain('Codex Learn is not yet available');
+  });
 });
 
 // @ana A027
@@ -149,6 +176,19 @@ describe('ForPlatform docs blocks', () => {
     const codexBlocks = docsContent.match(/<ForPlatform platform="codex">/g) ?? [];
 
     expect(claudeBlocks).toHaveLength(codexBlocks.length);
+  });
+
+  // @ana A027
+  it('keeps platform-specific docs in adjacent Claude Code and Codex pairs', () => {
+    for (const path of migratedDocs.filter((file) => file.endsWith('.mdx'))) {
+      const source = readRepoFile(path);
+      const tags = [...source.matchAll(/<ForPlatform platform="(claude-code|codex)">/g)].map((match) => match[1]);
+
+      expect(tags.length % 2, path).toBe(0);
+      for (let index = 0; index < tags.length; index += 2) {
+        expect(tags.slice(index, index + 2), path).toEqual(['claude-code', 'codex']);
+      }
+    }
   });
 });
 

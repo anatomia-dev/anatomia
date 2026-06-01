@@ -58,6 +58,14 @@ Anatomia scans the full repository, not individual packages. Init detects surfac
 
 </TroubleCard>
 
+<ForPlatform platform="claude-code">
+Claude Code users should confirm `claude` is on PATH if `ana run` cannot start an agent. Run `which claude`, then restart the terminal after installing or updating Claude Code.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users should confirm `codex` is on PATH if `ana run` cannot start an agent. Run `which codex`, then restart the terminal after installing or updating Codex.
+</ForPlatform>
+
 <TroubleCard title="codex not found">
 
 1. **Symptom:** `ana run` selects Codex and exits with `codex not found`.
@@ -73,6 +81,14 @@ Codex agents use generated `.agent.toml` manifest files under `.codex/agents/`. 
 
 </TroubleCard>
 
+<ForPlatform platform="claude-code">
+Claude Code users usually recover permission failures by reviewing `platformFlags.claude` in `.ana/ana.json`. Remove stale flags, then run the same `ana run build` or `ana run verify` command again.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users usually recover sandbox or manifest failures by regenerating `.codex/agents/` with `ana init --platforms codex`. Check that the selected agent has an `.agent.toml` manifest and that pipeline stages use a sandbox mode with worktree write access.
+</ForPlatform>
+
 <TroubleCard title="My verify failed">
 
 FAIL means Verify found issues — this is the pipeline working as designed. <DocsStat value="rejections" /> of our <DocsStat value="proofCount" /> proofs had rejection cycles.
@@ -83,6 +99,14 @@ FAIL means Verify found issues — this is the pipeline working as designed. <Do
 4. Re-run `ana run verify`.
 
 </TroubleCard>
+
+<ForPlatform platform="claude-code">
+Claude Code users can run Learn normally with `ana run learn` when triaging findings between pipeline cycles.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users cannot run Learn yet. `ana run learn --platform codex` fails with a Claude Code fallback, so use Claude Code for proof-chain triage until Codex Learn is available.
+</ForPlatform>
 
 <TroubleCard title="My build never finishes">
 

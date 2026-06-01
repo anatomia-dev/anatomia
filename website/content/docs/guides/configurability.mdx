@@ -104,14 +104,27 @@ EOF
 
 Each agent declares which skills it loads in frontmatter. Platform-specific agent files deliver those declarations to the host tool; skills stay canonical in `.ana/skills/`. Plan loads `[coding-standards, testing-standards]`. Build loads `[git-workflow]`. Verify loads `[testing-standards, coding-standards]`. Add your skill to the agent that should know about it:
 
+<ForPlatform platform="claude-code">
+Claude Code users edit the markdown agent file under `.claude/agents/`:
+
 ```yaml
-# .claude/agents/ana-plan.md or .codex/agents/ana-plan.agent.toml
 ---
 name: ana-plan
 model: opus[1m]
 skills: [coding-standards, testing-standards, billing]
 ---
 ```
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users keep skill loading in the generated Codex prompt markdown and use `.agent.toml` only for Codex delivery settings such as model and sandbox mode:
+
+```toml
+developer_instructions = "Full instructions in ana-plan.md. Invoke via: ana run"
+model = "gpt-5.5"
+sandbox_mode = "danger-full-access"
+```
+</ForPlatform>
 
 <Callout variant="rule">Plan curates relevant skill rules into the Build Brief. A rule in a skill that Plan doesn't load won't appear in the Brief — Build can invoke skills manually, but won't see rules by default. If you add a custom skill, add it to Plan's frontmatter.</Callout>
 
@@ -132,6 +145,14 @@ It's open source. Everything below works but isn't governed by the CLI — no va
 ### Add a custom agent
 
 Drop a custom agent file in your platform's agent directory, such as `.claude/agents/` for Claude Code or `.codex/agents/` for Codex. A security reviewer, a migration planner, a domain expert — any role that doesn't need pipeline integration.
+
+<ForPlatform platform="claude-code">
+Claude Code custom agents are markdown files under `.claude/agents/`. They can load canonical `.ana/skills/` entries through frontmatter.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex custom agents live under `.codex/agents/`. Add a prompt markdown file, and add a matching `.agent.toml` manifest when you need Codex-specific model, `developer_instructions`, or `sandbox_mode` settings.
+</ForPlatform>
 
 ```bash
 # A reviewer that focuses on your API surface

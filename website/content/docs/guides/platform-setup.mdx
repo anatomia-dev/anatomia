@@ -8,7 +8,13 @@ readingTime: 7
 
 Anatomia keeps the pipeline contract in `.ana/` and delivers agent instructions to the host tool you choose. Claude Code receives markdown agents under `.claude/agents/`. Codex receives `.agent.toml` manifests under `.codex/agents/`. Skills stay canonical in `.ana/skills/` and are shared by supported platforms.
 
-Run `ana init` once to detect your stack and write the default platform files. To be explicit during setup, pass the platforms you want installed:
+Run `ana init` once to detect your stack and write the default platform files. Init chooses platforms in this order:
+
+1. `ana init --platforms` when you pass it explicitly
+2. Existing `platforms` in `.ana/ana.json` during re-init
+3. PATH auto-detection for installed host tools
+
+To be explicit during setup, pass the CLI platform IDs you want installed:
 
 ```bash
 ana init --platforms claude,codex
@@ -18,7 +24,14 @@ Re-run the same command after upgrading the CLI if you need to refresh generated
 
 ## Choosing a platform for a run
 
-`ana run` uses your configured platform by default. You can override a single invocation with `--platform`:
+`ana run` resolves the platform in the same order the CLI uses at runtime:
+
+1. Explicit `--platform`
+2. `ANA_PLATFORM`
+3. The sole configured platform in `.ana/ana.json`
+4. Guidance asking you to choose when multiple platforms are configured
+
+Override a single invocation with `--platform`:
 
 ```bash
 ana run --platform codex
@@ -36,6 +49,13 @@ ANA_PLATFORM=claude ana run verify
 
 Use explicit flags when you are switching back and forth during migration. Use `ANA_PLATFORM` when a terminal should consistently target one platform.
 
+If both Claude Code and Codex are configured and you omit a platform, Anatomia asks you to choose instead of guessing. Set a default by keeping one platform in `ana.json`, or be explicit per run:
+
+```bash
+ana config set platforms '["codex"]'
+ana run build --platform codex
+```
+
 ## Platform flags
 
 Platform-specific CLI flags live in `ana.json` under `platformFlags`. The generated config can pass required host-tool flags without changing every command you run:
@@ -51,9 +71,37 @@ Platform-specific CLI flags live in `ana.json` under `platformFlags`. The genera
 
 These flags are host-tool flags, not Anatomia flags. Keep them narrow and review them like any other execution policy.
 
+<ForPlatform platform="claude-code">
+Claude Code users most often use `platformFlags.claude` for permission mode flags. If your pipeline agents need to run without interactive permission prompts, configure the Claude Code flag once:
+
+```bash
+ana config set platformFlags.claude '["--dangerously-skip-permissions"]'
+```
+
+Claude Code still receives the selected Anatomia agent through `ana run`; do not put `--agent` in `platformFlags.claude`.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users most often use generated `.agent.toml` manifests for model and sandbox policy. Use `platformFlags.codex` only for extra Codex CLI flags that are not already encoded in the manifest.
+</ForPlatform>
+
 ## Codex manifests
 
 Codex agent delivery uses one `.agent.toml` manifest per Anatomia agent under `.codex/agents/`. Those manifests point Codex at generated instructions for Think, Plan, Build, Verify, Setup, and Learn where supported.
+
+<ForPlatform platform="claude-code">
+Claude Code users receive markdown agent files under `.claude/agents/`. The `ana run build` command dispatches to the Claude Code agent file and applies any `platformFlags.claude` values from `ana.json`.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users receive paired files under `.codex/agents/`: an agent prompt markdown file plus an `.agent.toml` manifest. The manifest can set `model`, `developer_instructions`, `sandbox_mode`, and reasoning effort:
+
+```toml
+model = "gpt-5.5"
+developer_instructions = "Full instructions in ana-build.md. Invoke via: ana run"
+sandbox_mode = "danger-full-access"
+```
+</ForPlatform>
 
 Codex Build and Verify need filesystem access to the worktree so they can edit files, run tests, and write reports. The generated Codex configuration uses `danger-full-access` sandbox mode for pipeline agents because restricted sandboxes cannot complete those stages reliably.
 
@@ -68,6 +116,30 @@ Then confirm the manifest exists:
 ```bash
 ls .codex/agents/*.agent.toml
 ```
+
+## Switching an existing project
+
+To add Codex to a Claude Code project, refresh platform files explicitly:
+
+```bash
+ana init --platforms claude,codex
+ana run build --platform codex
+```
+
+To return to Claude Code only, re-run init with one platform and commit the regenerated infrastructure:
+
+```bash
+ana init --platforms claude
+ana init commit
+```
+
+<ForPlatform platform="claude-code">
+Claude Code users can run every current pipeline stage, including Learn, through `ana run`.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users can run Think, Plan, Build, Verify, and Setup through `ana run`, but Codex Learn is not yet available. For now, run Learn through Claude Code when you need proof-chain triage.
+</ForPlatform>
 
 ## What stays shared
 

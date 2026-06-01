@@ -12,6 +12,14 @@ readingTime: 8
 - [Claude Code](https://claude.ai/code) or Codex — needed for pipeline agents (Steps 3–4)
 - [GitHub CLI](https://cli.github.com/) (`gh`) — used by Verify to create PRs after a passing run
 
+<ForPlatform platform="claude-code">
+Claude Code users need the `claude` executable available on PATH before running pipeline agents. If you use stricter permission prompts, configure Claude Code flags after init.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users need the `codex` executable available on PATH before running pipeline agents. Codex projects use generated `.codex/agents/*.agent.toml` manifests for agent delivery.
+</ForPlatform>
+
 ## Step 1: Install
 
 ```bash
@@ -45,6 +53,14 @@ Override any command: `ana config set commands.test "your-command"`.
 Monorepos with multiple surfaces: see [Configurability](/docs/guides/configurability) for per-surface overrides.
 </Callout>
 
+<ForPlatform platform="claude-code">
+Claude Code users can keep the default platform detection when Claude Code is the only installed host tool. To install both delivery paths, run `ana init --platforms claude,codex`.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users can select Codex explicitly during setup with `ana init --platforms codex`, or install both delivery paths with `ana init --platforms claude,codex`.
+</ForPlatform>
+
 <Callout variant="note">
 **Optional but recommended:** Run `ana run setup` to calibrate project knowledge (~10 min). Setup investigates your codebase, asks 2–3 questions, and writes rich context.
 </Callout>
@@ -75,6 +91,8 @@ ana run
 ```
 
 Start with a greeting — "hey Ana" — so the agent loads your project context before you describe the work. `ana run` dispatches to your configured platform: Claude Code projects start the Claude Code agents, and Codex projects open Codex with generated agent instructions.
+
+For full platform setup, switching, and troubleshooting details, see [Platform setup](/docs/guides/platform-setup).
 
 Ana investigates the codebase, surfaces tradeoffs, and writes a scope. You can scope several work items before building any of them — each runs through the pipeline independently. When you're ready to build, open a new terminal for each pipeline agent — agents must start fresh without state from previous runs:
 
