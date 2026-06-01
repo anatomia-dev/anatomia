@@ -302,9 +302,25 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
   // Supersession removed — same-file + same-category heuristic can't
   // distinguish same-issue from different-issue without semantic judgment.
 
+  // Backfill migration: rename suggested_action 'accept' → 'acknowledge'
+  if (!chain.migrations?.['accept_to_acknowledge']) {
+    for (const existing of chain.entries) {
+      for (const finding of existing.findings || []) {
+        if ((finding.suggested_action as string) === 'accept') {
+          finding.suggested_action = 'acknowledge';
+        }
+      }
+      for (const concern of existing.build_concerns || []) {
+        if ((concern.suggested_action as string) === 'accept') {
+          concern.suggested_action = 'acknowledge';
+        }
+      }
+    }
+  }
+
   chain.entries.push(entry);
   chain.schema = 1;
-  chain.migrations = { ...chain.migrations, surface_backfill: true };
+  chain.migrations = { ...chain.migrations, surface_backfill: true, accept_to_acknowledge: true };
   await fsPromises.writeFile(chainPath, JSON.stringify(chain, null, 2));
 
   // 2. Regenerate PROOF_CHAIN.md as quality dashboard

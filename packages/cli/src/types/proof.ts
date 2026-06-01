@@ -74,7 +74,7 @@ export interface ProofChainEntry {
     anchor: string | null;
     line?: number; // Display only. NOT used for matching or staleness.
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
     related_assertions?: string[];
     resolves?: string[];
     status?: 'active' | 'promoted' | 'closed';
@@ -89,7 +89,7 @@ export interface ProofChainEntry {
     summary: string;
     file: string | null;
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
   }>;
   commit_hygiene?: Array<{
     check: string;
