@@ -14,10 +14,10 @@ The same structural flaw exists for `build_started_at` and affects `startWork` p
 - **Surface:** cli
 - **Files affected:**
   - `packages/cli/src/commands/work-state.ts` — `determineStage`, `isTimestampRecent`, new phase resolver
-  - `packages/cli/src/commands/work.ts` — `startWork` worktree-resume path, `writeTimestamp` calls
+  - `packages/cli/src/commands/work.ts` — `startWork` worktree-resume path and main-tree path, `writeTimestamp` calls
   - `packages/cli/src/utils/proofSummary.ts` — `computeTiming` per-phase start keys
-  - `packages/cli/src/commands/work-state.test.ts` — new/modified tests
-  - `packages/cli/src/commands/work.test.ts` — new/modified tests
+  - `packages/cli/tests/commands/work.test.ts` — new/modified tests for `determineStage`, concurrency, phase routing
+  - `packages/cli/tests/utils/proofSummary.test.ts` — timing tests for per-phase start keys
 - **Blast radius:** `ana work status`, `ana work start`, `ana work complete` (reads `.saves.json`), proof chain timing. All pipeline agents call `work status` and `work start` on every session.
 - **Estimated effort:** 1 day
 - **Multi-phase:** no
@@ -31,30 +31,36 @@ Three parts:
 
 **1. Phase-scoped session keys.** For multi-phase work, write `build_started_at_1`, `verify_started_at_1`, `build_started_at_2`, `verify_started_at_2`. Keep unsuffixed keys for single-spec work and backward compatibility. The phase number comes from the centralized resolver.
 
-**2. Centralized phase resolver.** One function that examines the artifact state (specs, build reports, verify reports) and returns the current phase number, stage, and the correct `.saves.json` keys for that phase. Both `determineStage` and `startWork` use this resolver instead of duplicating phase logic with different implementations.
+**2. Centralized phase resolver.** One function exported from `work-state.ts` that examines the artifact state (specs, build reports, verify reports) and `.saves.json` metadata, then returns the current phase number, stage (`build`, `verify`, `fix`, `re-verify`, `merge`), and the correct `.saves.json` keys for that phase. Both `determineStage` and `startWork` call this resolver for all multi-phase build/verify/fix routing. No independent `hasNumberedVerifyReport` routing remains in `startWork`. The resolver receives or loads `.saves.json` save metadata (specifically `build-report-N.saved_at` and `verify-report-N.saved_at`) — it does not rely solely on `ArtifactState`, which only contains filenames and existence.
 
-**3. Defense-in-depth timestamp comparison.** Even with the correct per-phase key, verify that the timestamp postdates the current phase's `build-report-N.saved_at`. A `verify_started_at_2` that predates `build-report-2.saved_at` is provably stale (from a crash-and-restart or timing anomaly). This prevents edge cases the phase keys alone might miss.
+**3. Defense-in-depth timestamp comparison.** Even with the correct per-phase key, verify that the timestamp postdates the current phase's `build-report-N.saved_at`. A `verify_started_at_2` that predates `build-report-2.saved_at` is provably stale (from a crash-and-restart or timing anomaly). This prevents edge cases the phase keys alone might miss. For `computeTiming`, `build_started_at_N` is sane only when it is after the previous phase boundary and before `build-report-N.saved_at`; `verify_started_at_N` is sane only when after `build-report-N.saved_at` and before `verify-report-N.saved_at`. Invalid timestamps fall through to segment timing.
+
+**4. Main-tree `startWork` phase awareness.** When `startWork` runs from the main tree (not inside the worktree) and a worktree already exists, it must use the phase resolver to determine the current phase and write the correct phase-scoped timestamp with the correct phase label. The current behavior — always routing to `startBuildPhase()` and printing "Build" regardless of actual phase — is wrong for multi-phase. The main-tree and worktree paths must produce the same phase decision.
 
 `computeTiming` should prefer per-phase start keys when present (`build_started_at_1` for Phase 1 build duration, `verify_started_at_2` for Phase 2 verify duration) and fall back to segment timing (contract → build-report-N → verify-report-N intervals) when keys are absent. This preserves accuracy for old proof entries.
 
 ## Acceptance Criteria
 - AC1: `ana work status` returns `phase-2-ready-for-verify` (not `phase-2-verify-in-progress`) when Phase 1 has a recent `verify_started_at`, Phase 1 is PASS, Phase 2 build report exists, and Phase 2 verify report is missing.
-- AC2: `ana work start` for Phase 2 verify writes `verify_started_at_2` to `.saves.json`, not the generic `verify_started_at`.
+- AC2: `ana work start` for Phase 2 verify writes `verify_started_at_2` and `verify_agent_2` to `.saves.json`, not the generic `verify_started_at`.
 - AC3: A recent `verify_started_at_1` does not block Phase 2 status or entry.
 - AC4: Single-spec work with a recent generic `verify_started_at` still correctly returns `verify-in-progress`.
-- AC5: Phase 2 FAIL verify + newer Phase 2 build report returns `phase-2-ready-for-re-verify`. `startWork` writes `verify_started_at_2`, not `build_started_at`.
-- AC6: Existing old `.saves.json` files without suffixed keys behave correctly for single-spec and backward-compatible Phase 1 entries.
-- AC7: `computeTiming` uses per-phase start keys when present and falls back to segment timing when absent.
-- AC8: `determineStage` and `startWork` use the same phase resolver — no duplicated phase detection logic.
+- AC5: Phase 2 FAIL verify + newer Phase 2 build report returns `phase-2-ready-for-re-verify`. `startWork` writes `verify_started_at_2` (not `build_started_at` or `build_started_at_2`) — re-verify is a verify entry, not a build entry.
+- AC6: Existing old `.saves.json` files without suffixed keys behave correctly for single-spec work. For multi-phase backward compatibility, unsuffixed keys fall back only when Phase 1 is the phase being evaluated. Once Phase 1 has a PASS verify report and the resolver advances to Phase 2, unsuffixed keys are ignored entirely.
+- AC7: `computeTiming` uses per-phase start keys when present and falls back to segment timing when absent. Sanity: `build_started_at_N` is used only when after the previous phase boundary and before `build-report-N.saved_at`; `verify_started_at_N` is used only when after `build-report-N.saved_at` and before `verify-report-N.saved_at`.
+- AC8: A phase resolver is exported from `work-state.ts`. Both `determineStage` and `startWork` call it for multi-phase build/verify/fix/re-verify routing. No independent `hasNumberedVerifyReport` glob-based routing remains in `startWork` for phase detection.
+- AC9: `ana work start` for Phase 2 build writes `build_started_at_2` and `build_agent_2` to `.saves.json`, not the generic `build_started_at`.
+- AC10: Phase 2 build start is not blocked or misrouted by Phase 1's `build_started_at` or `verify_started_at`.
+- AC11: Main-tree `ana work start {slug}` and worktree `ana work start {slug}` produce the same phase decision for Phase 2 build, Phase 2 verify, and Phase 2 re-verify — same timestamp key written, same phase label printed.
+- AC12: The phase resolver receives or loads `.saves.json` save metadata (`build-report-N.saved_at`, `verify-report-N.saved_at`) and uses it for defense-in-depth freshness checks and re-verify detection. It does not rely solely on `ArtifactState` filename/existence data.
 
 ## Edge Cases & Risks
 **Clock consistency.** Both `build-report-N.saved_at` and `verify_started_at_N` come from `new Date().toISOString()` on the same machine. The defense-in-depth comparison is safe. Edge case: if a developer's clock jumps backward between build save and verify start, the comparison would incorrectly treat the verify timestamp as stale. The 1-hour concurrency window makes this extremely unlikely.
 
 **Crash between `work start` and `artifact save`.** If verify starts (writes `verify_started_at_2`) but crashes before saving `verify_report_2`, the timestamp remains as a valid concurrency guard. After 1 hour it expires. Same behavior as single-phase today — no regression.
 
-**Mixed old/new `.saves.json` format.** Old saves have unsuffixed keys. New saves for multi-phase have suffixed keys. The resolver should check suffixed first, fall back to unsuffixed for Phase 1 only. Phase 2+ with no suffixed key means no active session — return `ready-for-X`.
+**Mixed old/new `.saves.json` format.** Old saves have unsuffixed keys. New saves for multi-phase have suffixed keys. The resolver checks suffixed first, falls back to unsuffixed for Phase 1 only — and only when Phase 1 is the phase being evaluated. Once Phase 1 has a PASS verify report and the resolver advances past it, the unsuffixed `verify_started_at` must be ignored. A legacy Phase 1 timestamp must never poison Phase 2 through the fallback path.
 
-**`startWork` from main tree vs worktree.** The worktree resume path (inside the worktree) and the main-tree path read artifacts from different locations. The phase resolver should work with the artifacts it's given, not assume filesystem location. The existing split between artifact-branch reads and worktree reads is preserved.
+**`startWork` from main tree vs worktree.** The main-tree path reads artifacts from the artifact branch filesystem, where build/verify reports don't exist (they live on the work branch in the worktree). For multi-phase, this means the main-tree `startWork` currently can't determine the correct phase from its own artifact reads. The fix must make main-tree `startWork` phase-aware when a worktree exists — either by reading the worktree's artifact state or by using the phase resolver with data gathered from the worktree. Both entry points must produce the same phase decision and write the same timestamp key.
 
 **`isTimestampRecent` vs `checkConcurrencyGuard` duplication.** Proof findings `pipeline-concurrency-guards-C2` notes these duplicate logic. The phase resolver should consolidate them — one timestamp-checking path, phase-aware.
 
@@ -66,8 +72,7 @@ Three parts:
 **Phase-specific keys only, no timestamp comparison.** Correct for the normal case, but doesn't handle stale keys from crash-and-restart scenarios. Belt without suspenders.
 
 ## Open Questions
-- Should `checkConcurrencyGuard` be merged into the phase resolver or remain a separate utility that the resolver calls? The resolver needs to know the right key; the guard needs to check it. Separate concerns, but the duplication with `isTimestampRecent` should be eliminated.
-- Should `computeTiming` changes go in this scope or be deferred? The timing uses generic `build_started_at` for the build segment start, which is Phase 1's value for all phases. Fixing it here is complete; deferring it is lower risk.
+- Should `checkConcurrencyGuard` be merged into the phase resolver or remain a separate utility that the resolver calls? The resolver needs to know the right key; the guard needs to check it. Separate concerns, but the duplication with `isTimestampRecent` should be eliminated either way.
 
 ## Exploration Findings
 
@@ -89,9 +94,9 @@ Three parts:
 - [OBSERVED] Proof finding `pipeline-concurrency-guards-C3` already identified that inside-worktree resume writes `verify_started_at` without checking concurrency.
 
 ### Test Infrastructure
-- `packages/cli/tests/commands/work-status.test.ts`: Tests `determineStage` with mock artifact states. Tests single-phase and multi-phase stage detection. Does not test timestamp-based concurrency for multi-phase.
-- `packages/cli/tests/commands/work-concurrency.test.ts`: Tests `checkConcurrencyGuard` and `isTimestampRecent`. Does not test phase-aware timestamp behavior.
-- `packages/cli/tests/commands/work-complete.test.ts`: Tests phase-aware `.saves.json` reads for completeness checks.
+- `packages/cli/tests/commands/work.test.ts`: Primary test file for `determineStage`, `checkConcurrencyGuard`, `isTimestampRecent`, and `startWork` phase routing. Tests single-phase and multi-phase stage detection. Does not test timestamp-based concurrency for multi-phase — this is the gap.
+- `packages/cli/tests/commands/artifact.test.ts`: Tests artifact save operations including multi-phase naming. References `determineStage` and `isTimestampRecent` imports.
+- `packages/cli/tests/utils/proofSummary.test.ts`: Tests `computeTiming` including multi-phase segment timing. Tests would need extension for per-phase start keys.
 
 ## For AnaPlan
 
@@ -120,5 +125,5 @@ For the phase resolver, `packages/cli/src/commands/work-state.ts` `gatherArtifac
 - `computeTiming` is called from `generateProofSummary` which reads `.saves.json` from the completed plan directory. By completion time, all phases are done. The per-phase start keys improve accuracy but the segment-based fallback (contract → build-report-N intervals) is already correct for total duration.
 
 ### Things to Investigate
-- Whether `startWork` from the main tree (Bug 3 — can't see worktree artifacts) needs any adjustment, or whether agents always entering from the worktree makes it safe to defer.
 - Whether `checkConcurrencyGuard` and `isTimestampRecent` should be fully merged in this scope or just have `isTimestampRecent` delegate to the phase-aware check.
+- How main-tree `startWork` should gather worktree artifact state: read the worktree filesystem directly (it knows the path via `getWorktreePath`), or shell out to `git show` on the work branch. The former is simpler; the latter is consistent with how `determineStage` reads from branches.
