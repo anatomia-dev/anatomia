@@ -24,13 +24,13 @@ Verify can return FAIL. When it does, the work goes back to Build: fix the issue
 
 ## What each stage produces
 
-| Stage | Agent | Produces | Consumes |
-|-------|-------|----------|----------|
-| Think | `ana` | `scope.md` | Codebase, context, scan, proof chain |
-| Plan | `ana-plan` | `plan.md`, `spec.md`, `contract.yaml` | `scope.md`, codebase, context |
-| Build | `ana-build` | Code, tests, `build_report.md`, `build_data.yaml` | `spec.md`, `contract.yaml`, `plan.md`, scan |
-| Verify | `ana-verify` | `verify_report.md`, `verify_data.yaml` | `spec.md`, `contract.yaml`, `plan.md`, code |
-| Learn | `ana-learn` | Skill rules, closed findings | `proof_chain.json`, skill files, context |
+| Stage | Command | Produces | Consumes |
+|-------|---------|----------|----------|
+| Think | `ana run` | `scope.md` | Codebase, context, scan, proof chain |
+| Plan | `ana run plan` | `plan.md`, `spec.md`, `contract.yaml` | `scope.md`, codebase, context |
+| Build | `ana run build` | Code, tests, `build_report.md`, `build_data.yaml` | `spec.md`, `contract.yaml`, `plan.md`, scan |
+| Verify | `ana run verify` | `verify_report.md`, `verify_data.yaml` | `spec.md`, `contract.yaml`, `plan.md`, code |
+| Learn | `ana run learn` | Skill rules, closed findings | `proof_chain.json`, skill files, context |
 
 ## The Learn stage
 

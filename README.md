@@ -64,13 +64,13 @@ Setup (`ana run setup`) bridges the gap between what scan detects and what your 
 
 ### The pipeline
 
-| Stage | Agent | Role | Produces |
-|-------|-------|------|----------|
-| Think | Ana | Thinking partner — scope, investigate, advise, push back | `scope.md` |
-| Plan | AnaPlan | Architect — design + sealed contract | `spec.md` + `contract.yaml` + `plan.md` |
-| Build | AnaBuild | Builder — implement spec, prove it works | Code + tests + `build_report.md` |
-| Verify | AnaVerify | Fault-finder — reads spec and code, skips Build's report | `verify_report.md` |
-| Learn | AnaLearn | Proof analyst — runs between cycles | Stronger skills and system improvements |
+| Stage | Command | Role | Produces |
+|-------|---------|------|----------|
+| Think | `ana run` | Thinking partner — scope, investigate, advise, push back | `scope.md` |
+| Plan | `ana run plan` | Architect — design + sealed contract | `spec.md` + `contract.yaml` + `plan.md` |
+| Build | `ana run build` | Builder — implement spec, prove it works | Code + tests + `build_report.md` |
+| Verify | `ana run verify` | Fault-finder — reads spec and code, skips Build's report | `verify_report.md` |
+| Learn | `ana run learn` | Proof analyst — runs between cycles | Stronger skills and system improvements |
 
 ### Proof intelligence
 
