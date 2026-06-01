@@ -41,7 +41,7 @@ export interface ChainHealth {
       promote: number;
       scope: number;
       monitor: number;
-      accept: number;
+      acknowledge: number;
       unclassified: number;
     };
   };
@@ -801,7 +801,7 @@ export function computeChainHealth(chain: { entries: Array<{ findings?: Array<{ 
   let actPromote = 0;
   let actScope = 0;
   let actMonitor = 0;
-  let actAccept = 0;
+  let actAcknowledge = 0;
   let actUnclassified = 0;
 
   for (const e of chain.entries) {
@@ -826,7 +826,7 @@ export function computeChainHealth(chain: { entries: Array<{ findings?: Array<{ 
           case 'promote': actPromote++; break;
           case 'scope': actScope++; break;
           case 'monitor': actMonitor++; break;
-          case 'accept': actAccept++; break;
+          case 'acknowledge': actAcknowledge++; break;
           default: actUnclassified++; break;
         }
       }
@@ -838,7 +838,7 @@ export function computeChainHealth(chain: { entries: Array<{ findings?: Array<{ 
     findings: {
       active, closed, promoted, total,
       by_severity: { risk: sevRisk, debt: sevDebt, observation: sevObservation, unclassified: sevUnclassified },
-      by_action: { promote: actPromote, scope: actScope, monitor: actMonitor, accept: actAccept, unclassified: actUnclassified },
+      by_action: { promote: actPromote, scope: actScope, monitor: actMonitor, acknowledge: actAcknowledge, unclassified: actUnclassified },
     },
   };
 }

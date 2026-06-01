@@ -319,7 +319,7 @@ describe('computeChainHealth', () => {
           { status: 'active', severity: 'risk', suggested_action: 'scope' },
           { status: 'active', severity: 'risk', suggested_action: 'promote' },
           { status: 'active', severity: 'debt', suggested_action: 'monitor' },
-          { status: 'active', severity: 'observation', suggested_action: 'accept' },
+          { status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
         ],
       }],
     };
@@ -337,13 +337,13 @@ describe('computeChainHealth', () => {
           { status: 'active', severity: 'risk', suggested_action: 'scope' },
           { status: 'active', severity: 'risk', suggested_action: 'promote' },
           { status: 'active', severity: 'debt', suggested_action: 'monitor' },
-          { status: 'active', severity: 'observation', suggested_action: 'accept' },
+          { status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
         ],
       }],
     };
     const health = computeChainHealth(chain);
     expect(health.findings.by_action).toEqual({
-      promote: 1, scope: 1, monitor: 1, accept: 1, unclassified: 0,
+      promote: 1, scope: 1, monitor: 1, acknowledge: 1, unclassified: 0,
     });
   });
 
@@ -387,7 +387,7 @@ describe('computeChainHealth', () => {
       risk: 0, debt: 0, observation: 0, unclassified: 0,
     });
     expect(health.findings.by_action).toEqual({
-      promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0,
+      promote: 0, scope: 0, monitor: 0, acknowledge: 0, unclassified: 0,
     });
   });
 
@@ -406,7 +406,7 @@ describe('computeChainHealth', () => {
       entries: [{
         findings: [
           { status: 'active', severity: 'risk', suggested_action: 'scope' },
-          { status: 'closed', severity: 'debt', suggested_action: 'accept' },
+          { status: 'closed', severity: 'debt', suggested_action: 'acknowledge' },
           { status: 'closed', severity: 'observation', suggested_action: 'monitor' },
         ],
       }],
@@ -420,7 +420,7 @@ describe('computeChainHealth', () => {
     expect(health.findings.by_severity.debt).toBe(0);
     expect(health.findings.by_severity.observation).toBe(0);
     expect(health.findings.by_action.scope).toBe(1);
-    expect(health.findings.by_action.accept).toBe(0);
+    expect(health.findings.by_action.acknowledge).toBe(0);
     expect(health.findings.by_action.monitor).toBe(0);
   });
 
@@ -447,9 +447,9 @@ describe('computeChainHealth', () => {
         findings: [
           { status: 'active', severity: 'risk', suggested_action: 'promote' },
           { status: 'active', severity: 'debt', suggested_action: 'scope' },
-          { status: 'closed', severity: 'risk', suggested_action: 'accept' },
+          { status: 'closed', severity: 'risk', suggested_action: 'acknowledge' },
           { status: 'promoted', severity: 'debt', suggested_action: 'monitor' },
-          { status: 'closed', severity: 'observation', suggested_action: 'accept' },
+          { status: 'closed', severity: 'observation', suggested_action: 'acknowledge' },
         ],
       }],
     };
@@ -460,7 +460,7 @@ describe('computeChainHealth', () => {
     });
     // by_action should only count the 2 active findings
     expect(health.findings.by_action).toEqual({
-      promote: 1, scope: 1, monitor: 0, accept: 0, unclassified: 0,
+      promote: 1, scope: 1, monitor: 0, acknowledge: 0, unclassified: 0,
     });
     // status counts still include all
     expect(health.findings.total).toBe(5);

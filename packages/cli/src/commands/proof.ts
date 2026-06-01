@@ -205,7 +205,7 @@ const EMPTY_AUDIT_MATRIX = {
   actionable_count: 0,
   monitoring_count: 0,
   by_severity: { risk: 0, debt: 0, observation: 0, unclassified: 0 },
-  by_action: { promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 },
+  by_action: { promote: 0, scope: 0, monitor: 0, acknowledge: 0, unclassified: 0 },
   by_severity_action: {},
   recent_entries: [],
   stale_count: 0,
@@ -2034,7 +2034,7 @@ async function handleProofAudit(
       promote: matrixActionCounts['promote'] || 0,
       scope: matrixActionCounts['scope'] || 0,
       monitor: matrixActionCounts['monitor'] || 0,
-      accept: matrixActionCounts['accept'] || 0,
+      acknowledge: matrixActionCounts['acknowledge'] || 0,
       unclassified: matrixActionCounts['unclassified'] || 0,
     };
 
@@ -2268,7 +2268,7 @@ async function handleProofAudit(
             {
               total_active: 0,
               by_severity: { risk: 0, debt: 0, observation: 0, unclassified: 0 },
-              by_action: { promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 },
+              by_action: { promote: 0, scope: 0, monitor: 0, acknowledge: 0, unclassified: 0 },
               by_severity_action: {},
               by_file: [],
             },
@@ -2337,7 +2337,7 @@ async function handleProofAudit(
     promote: actionCounts['promote'] || 0,
     scope: actionCounts['scope'] || 0,
     monitor: actionCounts['monitor'] || 0,
-    accept: actionCounts['accept'] || 0,
+    acknowledge: actionCounts['acknowledge'] || 0,
     unclassified: actionCounts['unclassified'] || 0,
   };
 
@@ -2410,15 +2410,11 @@ async function handleProofAudit(
         console.log(chalk.dim(`  ${crossParts.join(' · ')}`));
       }
 
-      const actOrder = ['promote', 'scope', 'monitor', 'accept'];
+      const actOrder = ['promote', 'scope', 'monitor', 'acknowledge'];
       const actParts: string[] = [];
       for (const act of actOrder) {
         if ((actionCounts[act] || 0) > 0) {
-          const label =
-            act === 'accept'
-              ? `${actionCounts[act]} accept (closeable)`
-              : `${actionCounts[act]} ${act}`;
-          actParts.push(label);
+          actParts.push(`${actionCounts[act]} ${act}`);
         }
       }
       // Include any unknown action values not in actOrder (exclude 'unclassified' from display)

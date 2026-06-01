@@ -406,7 +406,7 @@ describe('ana proof', () => {
         findings: [],
         build_concerns: [
           { summary: 'Test coverage below threshold', file: 'src/payments.ts', severity: 'debt', suggested_action: 'scope' },
-          { summary: 'Hardcoded timeout', file: 'src/retry.ts', severity: 'observation', suggested_action: 'accept' },
+          { summary: 'Hardcoded timeout', file: 'src/retry.ts', severity: 'observation', suggested_action: 'acknowledge' },
         ],
       };
       await createProofChain([entryWithConcerns]);
@@ -1520,7 +1520,7 @@ describe('ana proof', () => {
       const findings = [
         { id: 'F001', category: 'code', summary: 'Obs first', file: 'src/app.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
         { id: 'F002', category: 'code', summary: 'Risk second', file: 'src/app.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
-        { id: 'F003', category: 'code', summary: 'Debt third', file: 'src/app.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'accept' },
+        { id: 'F003', category: 'code', summary: 'Debt third', file: 'src/app.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'acknowledge' },
       ];
       const entry = {
         slug: 'sort-test',
@@ -1574,7 +1574,7 @@ describe('ana proof', () => {
         { id: 'F002', category: 'code', summary: 'B', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
         { id: 'F003', category: 'code', summary: 'C', file: 'src/b.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'scope' },
         { id: 'F004', category: 'code', summary: 'D', file: 'src/b.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
-        { id: 'F005', category: 'code', summary: 'E', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+        { id: 'F005', category: 'code', summary: 'E', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
       ];
       const entry = {
         slug: 'summary-test', feature: 'Summary Test', result: 'PASS',
@@ -1638,13 +1638,13 @@ describe('ana proof', () => {
 
   // @ana A004, A005
   describe('displays action summary after severity line', () => {
-    it('shows action breakdown with closeable hint on accept', async () => {
+    it('shows action breakdown with acknowledge label', async () => {
       const findings = [
         { id: 'F001', category: 'code', summary: 'A', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'promote' },
         { id: 'F002', category: 'code', summary: 'B', file: 'src/a.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'scope' },
         { id: 'F003', category: 'code', summary: 'C', file: 'src/a.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'scope' },
         { id: 'F004', category: 'code', summary: 'D', file: 'src/b.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
-        { id: 'F005', category: 'code', summary: 'E', file: 'src/b.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+        { id: 'F005', category: 'code', summary: 'E', file: 'src/b.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
       ];
       const entry = {
         slug: 'action-test', feature: 'Action Test', result: 'PASS',
@@ -1668,7 +1668,7 @@ describe('ana proof', () => {
       expect(stdout).toContain('1 promote');
       expect(stdout).toContain('2 scope');
       expect(stdout).toContain('1 monitor');
-      expect(stdout).toContain('accept (closeable)');
+      expect(stdout).toContain('1 acknowledge');
     });
   });
 
@@ -1777,7 +1777,7 @@ describe('ana proof', () => {
         { id: 'F002', category: 'code', summary: 'B', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
         { id: 'F003', category: 'code', summary: 'C', file: 'src/b.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'scope' },
         { id: 'F004', category: 'code', summary: 'D', file: 'src/b.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
-        { id: 'F005', category: 'code', summary: 'E', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+        { id: 'F005', category: 'code', summary: 'E', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
       ];
       const entry = {
         slug: 'json-summary', feature: 'JSON Summary', result: 'PASS',
@@ -1813,7 +1813,7 @@ describe('ana proof', () => {
       expect(json.results.by_action.promote).toBe(1);
       expect(json.results.by_action.scope).toBe(2);
       expect(json.results.by_action.monitor).toBe(1);
-      expect(json.results.by_action.accept).toBe(1);
+      expect(json.results.by_action.acknowledge).toBe(1);
       expect(json.results.by_action.unclassified).toBe(0);
 
       // Old field names remain absent
@@ -1895,7 +1895,7 @@ describe('ana proof', () => {
       const json = JSON.parse(stdout);
       expect(json.results.total_active).toBe(0);
       expect(json.results.by_severity).toEqual({ risk: 0, debt: 0, observation: 0, unclassified: 0 });
-      expect(json.results.by_action).toEqual({ promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 });
+      expect(json.results.by_action).toEqual({ promote: 0, scope: 0, monitor: 0, acknowledge: 0, unclassified: 0 });
     });
   });
 
@@ -1941,7 +1941,7 @@ describe('ana proof', () => {
         { id: 'F002', category: 'code', summary: 'B', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
         { id: 'F003', category: 'code', summary: 'C', file: 'src/b.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'scope' },
         { id: 'F004', category: 'code', summary: 'D', file: 'src/b.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
-        { id: 'F005', category: 'code', summary: 'E', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+        { id: 'F005', category: 'code', summary: 'E', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
       ];
       const entry = {
         slug: 'terminal-test', feature: 'Terminal Test', result: 'PASS',
@@ -3727,7 +3727,7 @@ describe('ana proof', () => {
         findings: [
           { id: 'F001', category: 'code', summary: 'Missing request validation', file: 'src/api/payments.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
           { id: 'F002', category: 'test', summary: 'No test for edge case', file: 'src/api/payments.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
-          { id: 'F003', category: 'code', summary: 'No file finding', file: null, anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+          { id: 'F003', category: 'code', summary: 'No file finding', file: null, anchor: null, status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
         ],
         rejection_cycles: 0,
         previous_failures: [],
@@ -4075,7 +4075,7 @@ describe('ana proof', () => {
     it('risk-severity finding counts as actionable regardless of action', async () => {
       // Create a chain with a single risk-severity finding with accept action
       const findings = [
-        { id: 'F001', category: 'code', summary: 'Risk with accept', file: 'src/app.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'accept' },
+        { id: 'F001', category: 'code', summary: 'Risk with accept', file: 'src/app.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'acknowledge' },
         { id: 'F002', category: 'code', summary: 'Observation with monitor', file: 'src/app.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'monitor' },
       ];
       const entry = {
@@ -4210,7 +4210,7 @@ describe('ana proof', () => {
     findings: [
       { id: 'F001', category: 'code', summary: 'Risk finding', file: 'src/a.ts', anchor: null, status: 'active', severity: 'risk', suggested_action: 'scope' },
       { id: 'F002', category: 'code', summary: 'Debt finding', file: 'src/b.ts', anchor: null, status: 'active', severity: 'debt', suggested_action: 'monitor' },
-      { id: 'F003', category: 'code', summary: 'Observation finding', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'accept' },
+      { id: 'F003', category: 'code', summary: 'Observation finding', file: 'src/c.ts', anchor: null, status: 'active', severity: 'observation', suggested_action: 'acknowledge' },
       { id: 'F004', category: 'code', summary: 'Unclassified finding', file: 'src/d.ts', anchor: null, status: 'active' },
     ],
     rejection_cycles: 0,
@@ -4346,10 +4346,10 @@ describe('ana proof', () => {
   describe('audit JSON includes by_severity_action', () => {
     it('returns cross-tab with severity/action pairs and correct counts', async () => {
       // multiSeverityEntry has:
-      //   F001: risk/scope, F002: debt/monitor, F003: observation/accept, F004: unclassified
+      //   F001: risk/scope, F002: debt/monitor, F003: observation/acknowledge, F004: unclassified
       // secondEntry has:
       //   F010: risk/promote
-      // So: risk/scope=1, debt/monitor=1, observation/accept=1, risk/promote=1
+      // So: risk/scope=1, debt/monitor=1, observation/acknowledge=1, risk/promote=1
       await createProofChain([multiSeverityEntry, secondEntry]);
       process.chdir(tempDir);
       const { stdout, exitCode } = runProof(['audit', '--json']);
@@ -4358,7 +4358,7 @@ describe('ana proof', () => {
       expect(json.results.by_severity_action).toBeDefined();
       expect(json.results.by_severity_action['risk/scope']).toBe(1);
       expect(json.results.by_severity_action['debt/monitor']).toBe(1);
-      expect(json.results.by_severity_action['observation/accept']).toBe(1);
+      expect(json.results.by_severity_action['observation/acknowledge']).toBe(1);
       expect(json.results.by_severity_action['risk/promote']).toBe(1);
     });
   });

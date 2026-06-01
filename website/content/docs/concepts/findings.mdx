@@ -11,7 +11,7 @@ readingTime: 6
 <tbody>
 <tr><td><span style={{display:"inline-block",padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--fail-bg)",color:"var(--fail)"}}>risk</span></td><td>Could hurt you. Security flaw, data loss, silent failure.</td><td>Fix before merging — usually `scope`.</td></tr>
 <tr><td><span style={{display:"inline-block",padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--warn-bg)",color:"var(--warn)"}}>debt</span></td><td>Making the codebase worse. Duplication, fragile patterns, missing tests.</td><td>`scope` for follow-up or `promote` to a skill rule.</td></tr>
-<tr><td><span style={{display:"inline-block",padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--info-bg)",color:"var(--info)"}}>obs</span></td><td>Worth knowing. Not wrong, but useful for the next engineer.</td><td>`accept` or `monitor`.</td></tr>
+<tr><td><span style={{display:"inline-block",padding:"2px 7px",borderRadius:"3px",fontWeight:500,letterSpacing:"0.06em",fontSize:"10px",fontFamily:"var(--font-mono)",textTransform:"uppercase",background:"var(--info-bg)",color:"var(--info)"}}>obs</span></td><td>Worth knowing. Not wrong, but useful for the next engineer.</td><td>`acknowledge` or `monitor`.</td></tr>
 </tbody>
 </table>
 
@@ -24,7 +24,7 @@ Every finding carries a `suggested_action` — the classifier's recommendation f
 | `promote` | Encode as a permanent rule in a skill file. The pattern should never recur. |
 | `scope` | Needs engineering work. Create a new pipeline scope to address it. |
 | `monitor` | Watch across future cycles. Not urgent, but track for recurrence. |
-| `accept` | Acknowledged. Valid observation, no action needed. Can be closed. |
+| `acknowledge` | Acknowledged. Valid observation, no action needed. |
 
 ## Categories
 

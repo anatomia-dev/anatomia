@@ -24,5 +24,54 @@
   "spec": {
     "saved_at": "2026-06-01T07:05:33.340Z",
     "hash": "sha256:798469f547389ad91b2122433a41fedb745cfbe2973b306fe7f54352024e06b1"
+  },
+  "build_started_at": "2026-06-01T07:20:22.534Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-01T07:37:47.867Z",
+    "hash": "sha256:348bc00d64abb5c8689a9442ee22c1694d10401dcdd4aa3b05d62d16d08d72a4"
+  },
+  "build-data": {
+    "saved_at": "2026-06-01T07:37:47.868Z",
+    "hash": "sha256:6b14bc750781f510a0b2ee06d160da1b35e2bde87f5a55302ffe664447c3b5e6"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-learn.md",
+    ".claude/agents/ana-verify.md",
+    ".codex/agents/ana-build.md",
+    ".codex/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/proof-health.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-learn.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana-build.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/proof-health.test.ts",
+    "website/content/docs/concepts/findings.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-01T07:40:43.963Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:98522cf2d21509b5b8a64e85f57ccb9ae3eba77f5c098837c50f64af5a31a91c",
+    "run_at": "2026-06-01T07:47:34.560Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-01T07:47:34.594Z",
+    "hash": "sha256:1b61fce162180dc6246637f10db16136299eac7ac9f6a874a2919a692a59f5b4"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-01T07:47:34.594Z",
+    "hash": "sha256:3afac3f669ac2d57f9f0d25d929985d86238330faf58007584466afd1a3f1397"
   }
 }

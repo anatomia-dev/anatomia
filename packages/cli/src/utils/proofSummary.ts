@@ -65,7 +65,7 @@ export interface ProofSummary {
     anchor: string | null;
     line?: number;
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
     related_assertions?: string[];
     resolves?: string[];
   }>;
@@ -75,7 +75,7 @@ export interface ProofSummary {
     summary: string;
     file: string | null;
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
   }>;
   commit_hygiene?: Array<{
     check: string;
@@ -492,7 +492,7 @@ export function wrapJsonError(
       findings: {
         active: 0, closed: 0, promoted: 0, total: 0,
         by_severity: { risk: 0, debt: 0, observation: 0, unclassified: 0 },
-        by_action: { promote: 0, scope: 0, monitor: 0, accept: 0, unclassified: 0 },
+        by_action: { promote: 0, scope: 0, monitor: 0, acknowledge: 0, unclassified: 0 },
       },
     };
 
@@ -991,7 +991,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
               };
               if (typeof f['line'] === 'number') finding.line = f['line'];
               if (typeof f['severity'] === 'string') finding.severity = f['severity'] as 'risk' | 'debt' | 'observation';
-              if (typeof f['suggested_action'] === 'string') finding.suggested_action = f['suggested_action'] as 'promote' | 'scope' | 'monitor' | 'accept';
+              if (typeof f['suggested_action'] === 'string') finding.suggested_action = f['suggested_action'] as 'promote' | 'scope' | 'monitor' | 'acknowledge';
               if (Array.isArray(f['related_assertions'])) finding.related_assertions = f['related_assertions'] as string[];
               if (Array.isArray(f['resolves'])) finding.resolves = f['resolves'] as string[];
               allFindings.push(finding);
@@ -1049,7 +1049,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
                 file: typeof c['file'] === 'string' ? c['file'] : null,
               };
               if (typeof c['severity'] === 'string') concern.severity = c['severity'] as 'risk' | 'debt' | 'observation';
-              if (typeof c['suggested_action'] === 'string') concern.suggested_action = c['suggested_action'] as 'promote' | 'scope' | 'monitor' | 'accept';
+              if (typeof c['suggested_action'] === 'string') concern.suggested_action = c['suggested_action'] as 'promote' | 'scope' | 'monitor' | 'acknowledge';
               summary.build_concerns.push(concern);
             }
           }
@@ -1093,7 +1093,7 @@ export interface ProofContextResult {
     anchor: string | null;
     line?: number;
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
     related_assertions?: string[];
     resolves?: string[];
     from: string;
@@ -1125,7 +1125,7 @@ interface ProofChainEntryForContext {
     anchor: string | null;
     line?: number;
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
     related_assertions?: string[];
     resolves?: string[];
     status?: string;
@@ -1134,7 +1134,7 @@ interface ProofChainEntryForContext {
     summary: string;
     file: string | null;
     severity?: 'risk' | 'debt' | 'observation';
-    suggested_action?: 'promote' | 'scope' | 'monitor' | 'accept';
+    suggested_action?: 'promote' | 'scope' | 'monitor' | 'acknowledge';
   }>;
 }
 

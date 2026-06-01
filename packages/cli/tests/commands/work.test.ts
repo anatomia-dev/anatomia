@@ -6045,6 +6045,107 @@ file_changes:
     expect(chain.entries[0].surface).toBe('website');
     expect(chain.migrations.surface_backfill).toBe(true);
   });
+
+  // @ana A011, A012, A013
+  it('renames accept to acknowledge in findings and build concerns', async () => {
+    await createProofProjectWithChain('accept-rename-test', {
+      entries: [{
+        slug: 'old-entry',
+        feature: 'Old Entry',
+        result: 'PASS',
+        completed_at: '2026-03-01T00:00:00.000Z',
+        modules_touched: ['packages/cli/src/foo.ts'],
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Test finding', file: null, anchor: null, severity: 'observation', suggested_action: 'accept' },
+          { id: 'F002', category: 'code', summary: 'Monitor finding', file: null, anchor: null, severity: 'debt', suggested_action: 'monitor' },
+        ],
+        build_concerns: [
+          { summary: 'Old concern', file: null, severity: 'observation', suggested_action: 'accept' },
+        ],
+        assertions: [],
+        acceptance_criteria: [],
+        hashes: {},
+        author: { name: 'Test', email: 'test@test.com' },
+        rejection_cycles: 0,
+        previous_failures: [],
+      }],
+    });
+
+    await completeWork('accept-rename-test');
+
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+
+    // Findings with 'accept' renamed to 'acknowledge'
+    expect(chain.entries[0].findings[0].suggested_action).toBe('acknowledge');
+    // Non-accept findings unchanged
+    expect(chain.entries[0].findings[1].suggested_action).toBe('monitor');
+    // Build concerns also renamed
+    expect(chain.entries[0].build_concerns[0].suggested_action).toBe('acknowledge');
+    // Migration marker set
+    expect(chain.migrations.accept_to_acknowledge).toBe(true);
+  });
+
+  // @ana A014
+  it('does not re-process when accept_to_acknowledge marker already exists', async () => {
+    await createProofProjectWithChain('skip-accept-rename', {
+      migrations: { surface_backfill: true, accept_to_acknowledge: true },
+      entries: [{
+        slug: 'old-entry',
+        feature: 'Old Entry',
+        result: 'PASS',
+        completed_at: '2026-03-01T00:00:00.000Z',
+        modules_touched: ['packages/cli/src/foo.ts'],
+        findings: [
+          { id: 'F001', category: 'code', summary: 'Legacy accept', file: null, anchor: null, severity: 'observation', suggested_action: 'accept' },
+        ],
+        build_concerns: [],
+        assertions: [],
+        acceptance_criteria: [],
+        hashes: {},
+        author: { name: 'Test', email: 'test@test.com' },
+        rejection_cycles: 0,
+        previous_failures: [],
+      }],
+    });
+
+    await completeWork('skip-accept-rename');
+
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+
+    // Should NOT have renamed — marker was already present
+    expect(chain.entries[0].findings[0].suggested_action).toBe('accept');
+    expect(chain.migrations.accept_to_acknowledge).toBe(true);
+  });
+
+  // @ana A015
+  it('handles entries with no findings or build_concerns arrays', async () => {
+    await createProofProjectWithChain('empty-arrays-test', {
+      entries: [{
+        slug: 'old-entry',
+        feature: 'Old Entry',
+        result: 'PASS',
+        completed_at: '2026-03-01T00:00:00.000Z',
+        modules_touched: ['packages/cli/src/foo.ts'],
+        assertions: [],
+        acceptance_criteria: [],
+        hashes: {},
+        author: { name: 'Test', email: 'test@test.com' },
+        rejection_cycles: 0,
+        previous_failures: [],
+      }],
+    });
+
+    await completeWork('empty-arrays-test');
+
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+
+    // Should complete without crashing
+    expect(chain.migrations.accept_to_acknowledge).toBe(true);
+    expect(chain.entries.length).toBeGreaterThanOrEqual(1);
+  });
 });
 
 describe('phase-scoped timestamps', () => {

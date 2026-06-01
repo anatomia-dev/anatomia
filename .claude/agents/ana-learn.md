@@ -152,7 +152,7 @@ When diagnosing a "skill gap" — where a rule exists but agents don't follow it
 
 When reading findings, these fields inform your triage decisions:
 - **`severity`** (risk / debt / observation) — priority ordering. Risk findings need attention first.
-- **`suggested_action`** (promote / scope / monitor / accept) — what the classifier recommended. Accept means Verify didn't block shipping — it does NOT mean the finding should be closed. Evaluate each accept finding on its own merits.
+- **`suggested_action`** (promote / scope / monitor / acknowledge) — what the classifier recommended. Acknowledge means Verify didn't block shipping — it does NOT mean the finding should be closed. Evaluate each acknowledge finding on its own merits.
 - **`file`** — the file where the finding was observed. If the file no longer exists, the finding is likely closable.
 - **`anchor`** — a code construct (function name, variable, class) referenced by the finding. If present, used for staleness checking.
 - **`related_assertions`** — links findings to spec assertions. Multiple findings with the same assertion pattern suggest a spec quality issue.
@@ -200,9 +200,9 @@ Every close reason must describe what you verified, not restate the classificati
 Findings can be closed when a scope's spec explicitly addresses them — the fix is committed to the pipeline. Verify the spec covers the finding's specific claim, cite the scope name and which AC or spec section covers it. The finding is resolved once the scope ships.
 
 **Bad reasons:**
-- `"accept: intentional behavior"` — what behavior? what did you verify?
-- `"accept: known residual"` — known by whom? still present?
-- `"accept: cosmetic"` — cosmetic how? in what file?
+- `"acknowledge: intentional behavior"` — what behavior? what did you verify?
+- `"acknowledge: known residual"` — known by whom? still present?
+- `"acknowledge: cosmetic"` — cosmetic how? in what file?
 
 The reason should contain enough information that a developer reading the proof chain 6 months from now understands what was checked.
 
@@ -224,7 +224,7 @@ If the summary is too vague to form a precise question, note it: "Finding {ID}'s
 
 #### 2. Predict before reading
 
-For risk and debt findings with code references, predict before reading: "Based on git history and modules_touched, I predict this finding is {stale/still valid} because {reasoning}." This creates commitment that resists confirmation bias. Resolve each prediction after reading the code. For stale candidates, the staleness signal IS the prediction — verify the code changed before closing. For observations classified as accept/monitor, a targeted code check is sufficient unless the finding challenges an architectural assumption.
+For risk and debt findings with code references, predict before reading: "Based on git history and modules_touched, I predict this finding is {stale/still valid} because {reasoning}." This creates commitment that resists confirmation bias. Resolve each prediction after reading the code. For stale candidates, the staleness signal IS the prediction — verify the code changed before closing. For observations classified as acknowledge/monitor, a targeted code check is sufficient unless the finding challenges an architectural assumption.
 
 #### 3. Check for staleness
 

@@ -41,7 +41,7 @@ const VALUE_REQUIRED_MATCHERS = ['equals', 'contains', 'greater', 'not_equals', 
  */
 const VALID_FINDING_CATEGORIES = ['code', 'test', 'upstream'];
 const VALID_FINDING_SEVERITIES = ['risk', 'debt', 'observation'];
-const VALID_FINDING_ACTIONS = ['promote', 'scope', 'monitor', 'accept'];
+const VALID_FINDING_ACTIONS = ['promote', 'scope', 'monitor', 'acknowledge', 'accept'];
 
 /**
  * Validate plan.md format
