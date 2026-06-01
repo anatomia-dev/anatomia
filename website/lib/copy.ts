@@ -105,16 +105,16 @@ export const copy = {
         id: "agents",
         num: "01",
         name: "Agents",
-        teaser: "five sealed roles · markdown agents in your repo",
+        teaser: "five sealed roles · platform agents in your repo",
         meta: "5 agents",
         copy: [
-          "Init ships **five specialized agents** as markdown templates in your repo. Each has a role, a toolset, and an independence guarantee.",
+          "Init ships **five specialized agents** into platform-specific directories in your repo. Each has a role, a toolset, and an independence guarantee.",
           "Think doesn't implement. Build doesn't verify. **Verify never reads Build's self-report.** Two agents, two accounts of the same work.",
         ],
         tree: {
           root: "your-repo/",
-          folder: ".claude/agents/",
-          count: "5 files",
+          folder: ".claude/agents/ + .codex/agents/",
+          count: "5 agents",
           files: [
             { name: "ana", ext: ".md", anno: "scopes work, surfaces tradeoffs" },
             { name: "ana-plan", ext: ".md", anno: "writes spec + sealed contract" },
@@ -136,7 +136,7 @@ export const copy = {
         ],
         tree: {
           root: "your-repo/",
-          folder: ".claude/skills/",
+          folder: ".ana/skills/",
           count: "8 skills",
           files: [
             { name: "coding-standards/", anno: "TypeScript strict" },
@@ -405,7 +405,7 @@ export const copy = {
     compat: {
       num: "06", label: "Compatibility",
       title: "Works with your AI. Not against it.",
-      body: "Standard markdown. Git-tracked. Zero lock-in. Claude Code gets native pipeline integration — any tool that reads markdown gets the intelligence.",
+      body: "Standard markdown. Git-tracked. Zero lock-in. Claude Code and Codex get native pipeline integration — any tool that reads markdown gets the intelligence.",
       chips: [
         "Claude Code", "Cursor", "Codex", "Windsurf", "Copilot", "Cline",
       ],

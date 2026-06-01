@@ -1,0 +1,162 @@
+# Build Report: Docs and README Multi-Platform Migration
+
+**Created by:** AnaBuild
+**Date:** 2026-06-01
+**Spec:** .ana/plans/active/docs-readme-platform-update/spec-1.md
+**Branch:** feature/docs-readme-platform-update
+
+## What Was Built
+- README.md (modified): Replaced Claude-only positioning and quickstart commands with the locked Claude Code + Codex positioning and `ana run` command surface.
+- website/content/docs/start.mdx (modified): Updated prerequisites, init mockup, first-run instructions, stage handoffs, rejection loop, and dispatch explanation to use `ana run`.
+- website/content/docs/guides/platform-setup.mdx (created): Added platform selection, `ANA_PLATFORM`, `ana init --platforms`, `platformFlags`, Codex `.agent.toml`, and `danger-full-access` sandbox documentation required by the sealed contract.
+- website/content/docs/guides/meta.json (modified): Added Platform setup immediately after Using ana-setup.
+- website/content/docs/guides/*.mdx and website/content/docs/concepts/*.mdx (modified): Replaced stale direct Claude agent commands with `ana run`, made pipeline/toolbelt/skills prose platform-neutral, and moved canonical skill paths to `.ana/skills/`.
+- website/components/docs/layout/PlatformSwitcher.tsx (modified): Enabled Codex while leaving Cursor, Windsurf, Copilot, and Cline disabled.
+- website/components/docs/content/AudienceCards.tsx (modified): Replaced Claude-only install requirement copy with Claude Code or Codex support.
+- website/lib/copy.ts (modified): Updated landing compatibility copy and tree diagrams so agents are platform-specific and skills are canonical under `.ana/skills/`.
+- website/lib/__tests__/docs-platform-content.test.ts (created): Added source-content regression coverage for all 35 contract assertions with `@ana` tags.
+- website/public/search-index.json, website/public/llms.txt, website/public/llms-full.txt (verified generated): `website` prebuild regenerated them with Platform setup content and no stale `claude --agent` guidance in `llms-full.txt`; these files are not tracked in this worktree.
+
+## PR Summary
+- Updates README and website docs from direct `claude --agent ...` usage to the supported `ana run` command surface.
+- Enables Codex in the docs platform switcher while keeping future platforms marked unavailable.
+- Adds a Platform setup guide covering platform selection, environment selection, platform flags, and Codex manifests/sandbox behavior.
+- Moves public skills positioning to canonical `.ana/skills/` and keeps platform agent directories as delivery details.
+- Adds docs enforcement tests covering all sealed contract assertions and generated docs assets.
+
+## Acceptance Criteria Coverage
+- AC1 "PlatformSwitcher shows Codex as selectable..." -> docs-platform-content.test.ts "enables Codex while keeping future platforms disabled" (5 assertions)
+- AC6 "User-facing MDX prose and code examples no longer instruct users to run `claude --agent ...`" -> docs-platform-content.test.ts "does not teach direct Claude agent commands" (migrated docs set)
+- AC7 "README no longer claims Claude Code exclusivity..." -> docs-platform-content.test.ts "uses the locked opening and universal quickstart commands" (locked opening assertion)
+- AC8 "README quickstart uses `ana run setup` and `ana run`..." -> docs-platform-content.test.ts README test (3 assertions)
+- AC9 "Landing page copy includes Codex..." -> docs-platform-content.test.ts "names supported native platforms and uses canonical skills path" (2 assertions)
+- AC10 "AudienceCards no longer says installation requires Claude Code only" -> docs-platform-content.test.ts AudienceCards test (2 assertions)
+- AC15 "`verifying-changes.mdx` frontmatter description and examples use `ana run verify` / `ana run build`" -> docs-platform-content.test.ts Verify guide commands (2 assertions)
+- AC16 "Concept page prose is platform-neutral..." -> docs-platform-content.test.ts concept pages test (2 assertions)
+- AC18 "Reference page path displays and GitHub URLs are not changed solely for platform conditionality" -> Verified by scope: no reference page files were modified.
+- Tests pass with the website test command -> `cd 'website' && pnpm vitest run`: 81 passed.
+- Website build succeeds from `website/` -> `cd 'website' && pnpm run build`: succeeded, 223 static/SSG pages.
+- Root test baseline still passes after all phases -> `pnpm run test -- --run`: 3180 passed, 2 skipped.
+- New docs enforcement tests cover the migrated command surface and switcher state -> `docs-platform-content.test.ts`: 13 tests, 35/35 contract assertions tagged.
+
+## Implementation Decisions
+- The phase 1 spec prose said Platform setup belonged to phase 2, but the sealed contract includes A019-A026 and A033-A034 for the Platform setup guide and generated assets. I followed the contract as authoritative and built that guide in phase 1.
+- Generated docs assets under `website/public/` and `website/data/docs/` are present and regenerated by prebuild, but they are not tracked by git in this worktree. I verified their content through tests and build output rather than committing generated diffs.
+- I kept `ForPlatform` usage out of migrated docs. The contract requirement that Claude Code conditional docs blocks have Codex counterparts is satisfied by zero unpaired docs blocks.
+
+## Deviations from Contract
+None — contract followed exactly.
+
+Contract coverage: 35/35 assertions tagged.
+
+## Test Results
+
+### Baseline (before changes)
+Command: `pnpm run build`
+
+```text
+Tasks:    2 successful, 2 total
+Cached:    2 cached, 2 total
+Time:    32ms >>> FULL TURBO
+```
+
+Tests: build passed, 0 failed.
+
+Command: `cd 'website' && pnpm vitest run`
+
+```text
+Test Files  9 passed | 1 skipped (10)
+Tests       62 passed | 6 skipped (68)
+Duration    472ms
+```
+
+Tests: 62 passed, 0 failed, 6 skipped.
+
+Project-wide `commands.test` was reserved for final verification per AnaBuild instructions; checkpoint baseline used the website test command from the spec.
+
+### After Changes
+Command: `cd 'website' && pnpm vitest run`
+
+```text
+Test Files  11 passed (11)
+Tests       81 passed (81)
+Duration    319ms
+```
+
+Command: `cd 'website' && pnpm run build`
+
+```text
+✓ All data extracted successfully
+Search index: 245 entries
+✓ Compiled successfully in 2.4s
+✓ Generating static pages using 13 workers (223/223)
+Route includes /docs/[...slug] with /docs/start and [+13 more paths]
+```
+
+Command: `pnpm run build`
+
+```text
+Tasks:    2 successful, 2 total
+Cached:    1 cached, 2 total
+Time:    10.045s
+```
+
+Command: `pnpm run lint`
+
+```text
+Tasks:    2 successful, 2 total
+Warnings:
+packages/cli/src/utils/git-operations.ts:198:3 unused eslint-disable directive
+website/components/hero/Hero.tsx:3:24 formatAge unused
+website/components/hero/Hero.tsx:16:9 latest unused
+```
+
+Command: `pnpm run test -- --run`
+
+```text
+anatomia-cli:test:
+Test Files  129 passed (129)
+Tests       3099 passed | 2 skipped (3101)
+
+anatomia-website:test:
+Test Files  11 passed (11)
+Tests       81 passed (81)
+
+Tasks:    4 successful, 4 total
+Cached:    4 cached, 4 total
+Time:     37ms >>> FULL TURBO
+```
+
+Tests: 3180 passed, 0 failed, 2 skipped.
+
+### Comparison
+- Tests added: 13
+- Tests removed: 0
+- Regressions: none
+
+### New Tests Written
+- website/lib/__tests__/docs-platform-content.test.ts: Verifies README positioning/commands, absence of direct Claude agent commands in migrated docs, Codex switcher state, canonical skill paths, Platform setup guide content, Codex Learn/troubleshooting copy, and generated docs assets.
+
+## Verification Commands
+```bash
+pnpm run build
+cd 'website' && pnpm vitest run
+cd 'website' && pnpm run build
+pnpm run test -- --run
+pnpm run lint
+```
+
+## Git History
+```text
+d615d0a3 [docs-readme-platform-update:s1] Update docs for multi-platform support
+```
+
+## Open Issues
+- Pre-existing lint warnings remain in untouched files:
+  - `packages/cli/src/utils/git-operations.ts`: unused eslint-disable directive.
+  - `website/components/hero/Hero.tsx`: unused `formatAge` import and `latest` variable.
+- Generated docs assets are verified by prebuild/build/tests but are not tracked by git in this worktree, despite the spec listing `website/public/search-index.json`, `website/public/llms.txt`, and `website/public/llms-full.txt` as modified outputs.
+
+What did I notice during the build that I didn't write down? The initial concurrent root test run failed because it overlapped a separate Next build and hit Next's single-build lock; rerunning `pnpm run test -- --run` alone passed. No product issue remains.
+
+Verified complete by second pass.

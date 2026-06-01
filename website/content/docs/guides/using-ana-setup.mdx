@@ -13,7 +13,7 @@ Setup uses a **guess-and-confirm** pattern. It reads your scan data, README, doc
 <span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>bash</span>
 </div>
 <pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
-{"$ "}<span style={{color:"var(--pass)"}}>claude --agent ana-setup</span>{"\n\nHere's my understanding of your project:\n\n  Anatomia is an open-source pipeline that turns AI-generated code\n  into verified code. It runs locally, installs as sealed agents,\n  and produces a proof chain you can audit.\n\nIs this accurate? Anything you'd change or add?"}
+{"$ "}<span style={{color:"var(--pass)"}}>ana run setup</span>{"\n\nHere's my understanding of your project:\n\n  Anatomia is an open-source pipeline that turns AI-generated code\n  into verified code. It runs locally, installs as sealed agents,\n  and produces a proof chain you can audit.\n\nIs this accurate? Anything you'd change or add?"}
 </pre>
 </div>
 
@@ -125,7 +125,7 @@ If you're on a different branch, setup prints a reminder to switch and run `ana 
 
 ## Re-running setup
 
-Setup preserves what you wrote — sections with content aren't overwritten. To re-run after a previous setup, delete the `setupPhase` field from `.ana/ana.json` (or set it to `"not-started"`), then run `claude --agent ana-setup` again. Re-run when:
+Setup preserves what you wrote — sections with content aren't overwritten. To re-run after a previous setup, delete the `setupPhase` field from `.ana/ana.json` (or set it to `"not-started"`), then run `ana run setup` again. Re-run when:
 
 - Your project has grown and the architecture section is stale
 - You want to add design principles after using the pipeline
@@ -145,9 +145,9 @@ Setup preserves what you wrote — sections with content aren't overwritten. To 
 <NextCards cards={[
   {
     eyebrow: "Next guide",
-    title: "Verifying changes",
-    href: "/docs/guides/verifying-changes",
-    description: "What happens when Build finishes and Verify takes over."
+    title: "Platform setup",
+    href: "/docs/guides/platform-setup",
+    description: "Configure Claude Code and Codex delivery for ana run."
   },
   {
     eyebrow: "Reference",

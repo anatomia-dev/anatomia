@@ -22,5 +22,68 @@
   "spec-2": {
     "saved_at": "2026-06-01T00:24:06.679Z",
     "hash": "sha256:cd5aaaab0a0558de1b2b3b5a7f3623c1514845de4f9abc670e7c2299b27cb94c"
+  },
+  "build_started_at": "2026-06-01T00:47:06.897Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-01T00:56:53.880Z",
+    "hash": "sha256:fd47917ea2ae7c1b82488cf6fec0945aa45b54b6e749caf44203349e9f631eeb"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-01T00:56:53.881Z",
+    "hash": "sha256:bc0616d4bf8c23a1e6d14d0b168dbc037c07fdb94f12a47c85b58b0f1eaf72f7"
+  },
+  "modules_touched": [
+    "README.md",
+    "website/components/docs/content/AudienceCards.tsx",
+    "website/components/docs/layout/PlatformSwitcher.tsx",
+    "website/content/docs/concepts/context.mdx",
+    "website/content/docs/concepts/findings.mdx",
+    "website/content/docs/concepts/pipeline.mdx",
+    "website/content/docs/concepts/skills.mdx",
+    "website/content/docs/concepts/toolbelt.mdx",
+    "website/content/docs/guides/configurability.mdx",
+    "website/content/docs/guides/meta.json",
+    "website/content/docs/guides/platform-setup.mdx",
+    "website/content/docs/guides/reading-a-proof.mdx",
+    "website/content/docs/guides/troubleshooting.mdx",
+    "website/content/docs/guides/using-ana-learn.mdx",
+    "website/content/docs/guides/using-ana-setup.mdx",
+    "website/content/docs/guides/verifying-changes.mdx",
+    "website/content/docs/start.mdx",
+    "website/lib/__tests__/docs-platform-content.test.ts",
+    "website/lib/copy.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-01T01:00:15.506Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:b874a9cd520d9d07a42b877e589d10f3dedb993eca50444069991a84e0c97c28",
+    "run_at": "2026-06-01T01:53:45.410Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-01T01:04:27.177Z",
+    "hash": "sha256:6ce578757e025bc26e6bfadecca277b8fcf04afca1ffc0ec9368bd10f68e75b3"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-01T01:04:27.177Z",
+    "hash": "sha256:fab58c1070014fa4b2967f1786c69ec4c12855bdddeaef7daa58d95752233ea6"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-01T01:18:06.442Z",
+    "hash": "sha256:7bd040067089456bd25e923c2f6bf17c61ee576e46d025886f302f7d7bd7064a"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-01T01:18:06.443Z",
+    "hash": "sha256:ce61ad1ec40383067eb9aef487cb3d7fbb7554d6725eb59a46eddc064d5c41d0"
+  },
+  "verify-report-2": {
+    "saved_at": "2026-06-01T01:53:45.450Z",
+    "hash": "sha256:70d1752e7aa59871bf737dea0d2c58120ce9569d586fc2b8de555d9f183b8e68"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-01T01:53:45.450Z",
+    "hash": "sha256:e1463f4e1b9b675fad996ab0142d36b0ae41d08ab6ab4a9b730d2ddab043017a"
   }
 }

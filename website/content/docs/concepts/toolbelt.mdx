@@ -6,7 +6,7 @@ readingTime: 6
 
 ## What the toolbelt is
 
-Claude Code gives every agent baseline tools — file read, file write, bash, web fetch. The toolbelt is the Anatomia layer on top: the `ana` CLI commands agents invoke to manage work, save artifacts, verify seals, and create PRs. Agents still use git directly for code commits during Build — but pipeline operations go through the CLI, which validates structure and records integrity hashes.
+Each supported platform gives agents baseline tools — file read, file write, shell commands, web access. The toolbelt is the Anatomia layer on top: the `ana` CLI commands agents invoke to manage work, save artifacts, verify seals, and create PRs. Agents still use git directly for code commits during Build — but pipeline operations go through the CLI, which validates structure and records integrity hashes.
 
 The most common example: every agent runs `ana work status` on startup. One command tells the agent its pipeline stage, which worktree to enter, and what to do next. Without it, the agent would need to list directories, parse filenames, check git timestamps, and handle multi-phase numbering — every session, from scratch.
 

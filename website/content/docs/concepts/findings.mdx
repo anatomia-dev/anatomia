@@ -37,7 +37,7 @@ Every finding starts as **active**. From there, two terminal states:
 - **closed** — resolved or acknowledged. The `closed_by` field records who: `mechanical` (the referenced file was removed), `human` (developer decision), or `agent` (Learn triage).
 - **promoted** — the finding describes a recurring pattern. It becomes a rule in a skill file via `ana proof promote`. The `promoted_to` field records which skill received the rule.
 
-Between pipeline cycles, run `claude --agent ana-learn` to triage active findings. Learn presents them by severity, recommends actions, and executes closes and promotions with your approval.
+Between pipeline cycles, run `ana run learn` to triage active findings. Learn presents them by severity, recommends actions, and executes closes and promotions with your approval.
 
 <Callout variant="note">
 A finding without a follow-up is wasted. The lifecycle ensures every finding either informs the next cycle or is explicitly acknowledged.

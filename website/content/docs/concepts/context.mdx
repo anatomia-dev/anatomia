@@ -24,7 +24,7 @@ Context describes the project — what it does, who it serves, how it's organize
 
 1. **Scan** — `ana init` scans your project and writes `scan.json`. Machine-detected: language, framework, testing tools, patterns, file counts.
 2. **Init** — scaffolds `project-context.md` and `design-principles.md` with thin, accurate starting content seeded from the scan.
-3. **Setup** — `claude --agent ana-setup` investigates the codebase, asks 2–3 questions, and writes rich context. Guess-and-confirm: the agent presents its understanding, you correct, the correction becomes content.
+3. **Setup** — `ana run setup` investigates the codebase, asks 2–3 questions, and writes rich context. Guess-and-confirm: the agent presents its understanding, you correct, the correction becomes content.
 4. **Manual editing** — edit the files directly at any time. Setup is a starting point, not a lock. Your edits are always preserved.
 
 <Callout variant="note">
@@ -61,7 +61,7 @@ Think, Plan, and Learn read context files on every startup. Build and Verify do 
 
 Context files follow a create-enrich-persist lifecycle:
 
-1. **Init** creates the infrastructure locally — `.ana/`, `.claude/`, `CLAUDE.md`, `AGENTS.md`
+1. **Init** creates the infrastructure locally — `.ana/`, platform agent directories, `CLAUDE.md`, `AGENTS.md`
 2. **Setup** enriches context files, design principles, and skills with project-specific knowledge
 3. **`ana init commit`** persists everything to the artifact branch
 

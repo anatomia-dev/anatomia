@@ -27,7 +27,7 @@ const CARDS: AudienceCard[] = [
     tag: "Installing",
     heading: "I want to run this on my repo",
     description:
-      "Scan in three seconds, no login. Init ships the pipeline into your repo. Requires Claude Code.",
+      "Scan in three seconds, no login. Init ships the pipeline into your repo for Claude Code or Codex.",
     cta: "Quickstart",
     href: "/docs/start",
   },

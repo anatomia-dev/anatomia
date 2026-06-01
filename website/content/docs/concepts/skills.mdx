@@ -6,7 +6,7 @@ readingTime: 7
 
 ## What Anatomia adds
 
-You've used [Claude Code skills](https://code.claude.com/docs/en/skills). Anatomia generates them from your scan — matched to your stack, pre-populated with rules and gotchas, and structured so agents load them automatically. Five core skills install for every project. Up to three conditional skills install when the scan detects their triggers.
+Anatomia skills are canonical markdown files in `.ana/skills/`, generated from your scan — matched to your stack, pre-populated with rules and gotchas, and structured so supported platforms can load them automatically. Claude Code skills are one delivery path. Five core skills install for every project. Up to three conditional skills install when the scan detects their triggers.
 
 ## Four-section structure
 
@@ -21,13 +21,13 @@ Every skill file has the same four sections:
 
 **Detected** is machine-owned — refreshed on every `ana init` with current scan data. **Rules, Gotchas, and Examples** are yours — preserved across re-initialization. Your edits are safe. `ana init` will never overwrite a rule you added or a gotcha you customized.
 
-You can also create entirely new skills. Add a directory to `.claude/skills/` with a `SKILL.md` — any skill without an `ENRICHMENT.md` is treated as user-created. Learn won't auto-enrich it, but agents can load it via frontmatter.
+You can also create entirely new skills. Add a directory to `.ana/skills/` with a `SKILL.md` — any skill without an `ENRICHMENT.md` is treated as user-created. Learn won't auto-enrich it, but agents can load it via frontmatter.
 
 ## How skills grow
 
 **Init scaffolding.** Template rules ship on `ana init`. Universal, correct for any project, but not specific to yours. `coding-standards` starts with 7 rules. `testing-standards` starts with 5.
 
-**Setup enrichment.** Running `claude --agent ana-setup` investigates your actual codebase and adds project-specific rules. Each skill ships with an `ENRICHMENT.md` — the setup agent's investigation playbook for that skill. In Anatomia's own repo, setup took `coding-standards` from 7 template rules to 11 enriched rules.
+**Setup enrichment.** Running `ana run setup` investigates your actual codebase and adds project-specific rules. Each skill ships with an `ENRICHMENT.md` — the setup agent's investigation playbook for that skill. In Anatomia's own repo, setup took `coding-standards` from 7 template rules to 11 enriched rules.
 
 **Manual editing.** Skills are your files. Add rules, add gotchas, add examples. The files are markdown — edit them directly or let an agent help. Custom skills work the same way.
 

@@ -1,0 +1,162 @@
+---
+title: Platform setup
+description: "Configure Claude Code and Codex delivery, choose a platform for ana run, and understand how Anatomia writes platform-specific agent files."
+readingTime: 7
+---
+
+## What platforms mean
+
+Anatomia keeps the pipeline contract in `.ana/` and delivers agent instructions to the host tool you choose. Claude Code receives markdown agents under `.claude/agents/`. Codex receives `.agent.toml` manifests under `.codex/agents/`. Skills stay canonical in `.ana/skills/` and are shared by supported platforms.
+
+Run `ana init` once to detect your stack and write the default platform files. Init chooses platforms in this order:
+
+1. `ana init --platforms` when you pass it explicitly
+2. Existing `platforms` in `.ana/ana.json` during re-init
+3. PATH auto-detection for installed host tools
+
+To be explicit during setup, pass the CLI platform IDs you want installed:
+
+```bash
+ana init --platforms claude,codex
+```
+
+Re-run the same command after upgrading the CLI if you need to refresh generated agent files. Your `.ana/context/`, `.ana/skills/`, proof chain, and user config are preserved.
+
+## Choosing a platform for a run
+
+`ana run` resolves the platform in the same order the CLI uses at runtime:
+
+1. Explicit `--platform`
+2. `ANA_PLATFORM`
+3. The sole configured platform in `.ana/ana.json`
+4. Guidance asking you to choose when multiple platforms are configured
+
+Override a single invocation with `--platform`:
+
+```bash
+ana run --platform codex
+ana run plan --platform claude
+ana run build --platform codex
+ana run verify --platform codex
+```
+
+Environment selection works the same way for terminal sessions and scripts:
+
+```bash
+ANA_PLATFORM=codex ana run build
+ANA_PLATFORM=claude ana run verify
+```
+
+Use explicit flags when you are switching back and forth during migration. Use `ANA_PLATFORM` when a terminal should consistently target one platform.
+
+If both Claude Code and Codex are configured and you omit a platform, Anatomia asks you to choose instead of guessing. Set a default by keeping one platform in `ana.json`, or be explicit per run:
+
+```bash
+ana config set platforms '["codex"]'
+ana run build --platform codex
+```
+
+## Platform flags
+
+Platform-specific CLI flags live in `ana.json` under `platformFlags`. The generated config can pass required host-tool flags without changing every command you run:
+
+```json
+{
+  "platformFlags": {
+    "claude": ["--dangerously-skip-permissions"]
+  }
+}
+```
+
+These flags are host-tool flags, not Anatomia flags. Keep them narrow and review them like any other execution policy. Codex sandbox mode is already set in each `.agent.toml` manifest — don&apos;t duplicate it in `platformFlags`.
+
+<ForPlatform platform="claude-code">
+Claude Code users most often use `platformFlags.claude` for permission mode flags. If your pipeline agents need to run without interactive permission prompts, configure the Claude Code flag once:
+
+```bash
+ana config set platformFlags.claude '["--dangerously-skip-permissions"]'
+```
+
+Claude Code still receives the selected Anatomia agent through `ana run`; do not put `--agent` in `platformFlags.claude`.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users most often use generated `.agent.toml` manifests for model and sandbox policy. Use `platformFlags.codex` only for extra Codex CLI flags that are not already encoded in the manifest.
+</ForPlatform>
+
+## Codex agent delivery
+
+Each Codex agent gets two files under `.codex/agents/`: a markdown prompt file with the agent instructions and an `.agent.toml` manifest that configures Codex. The manifest sets model, sandbox policy, and a pointer to the prompt:
+
+```toml
+model = "gpt-5.5"
+developer_instructions = "Full instructions in ana-build.md. Invoke via: ana run"
+sandbox_mode = "danger-full-access"
+```
+
+All pipeline agents need filesystem access — Think and Plan read the codebase, Build edits files and runs tests, Verify runs tests independently, Setup writes enriched context. The generated configuration uses `danger-full-access` sandbox mode for every agent because restricted sandboxes cannot complete any stage reliably.
+
+If Codex reports that a manifest is missing or opens the wrong instructions, regenerate platform files:
+
+```bash
+ana init --platforms codex
+```
+
+Then confirm the manifests exist:
+
+```bash
+ls .codex/agents/*.agent.toml
+```
+
+## Switching an existing project
+
+To add Codex to a Claude Code project, refresh platform files explicitly:
+
+```bash
+ana init --platforms claude,codex
+ana run build --platform codex
+```
+
+To return to Claude Code only, re-run init with one platform and commit the regenerated infrastructure:
+
+```bash
+ana init --platforms claude
+ana init commit
+```
+
+<ForPlatform platform="claude-code">
+Claude Code users can run every current pipeline stage, including Learn, through `ana run`.
+</ForPlatform>
+
+<ForPlatform platform="codex">
+Codex users can run Think, Plan, Build, Verify, and Setup through `ana run`, but Codex Learn is not yet available. For now, run Learn through Claude Code when you need proof-chain triage.
+</ForPlatform>
+
+## What stays shared
+
+The platform files are delivery details. The durable pipeline state is shared:
+
+- `.ana/plans/active/` — scopes, specs, contracts, build reports, verify reports
+- `.ana/skills/` — canonical skills and custom skills
+- `.ana/context/` — project context and design principles
+- `.ana/ana.json` — commands, artifact branch, co-author, surfaces, platform settings
+- `AGENTS.md` and `CLAUDE.md` — markdown project summaries for tools that read them
+
+Platform-specific skill directories (`.claude/skills/`, `.agents/skills/`) are symlinks to `.ana/skills/` — edit either path and you&apos;re editing the same file.
+
+This split lets Claude Code and Codex use the same proof chain without duplicating the system of record.
+
+<NextCards cards={[
+  {
+    eyebrow: "Previous guide",
+    title: "Using ana-setup",
+    href: "/docs/guides/using-ana-setup",
+    description: "Calibrate project context and skills before your first pipeline run."
+  },
+  {
+    eyebrow: "Next guide",
+    title: "Verifying changes",
+    href: "/docs/guides/verifying-changes",
+    description: "What happens when Build finishes and Verify takes over."
+  }
+]} />

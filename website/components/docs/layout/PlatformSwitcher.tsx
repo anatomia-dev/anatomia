@@ -14,7 +14,7 @@ interface PlatformOption {
 const platforms: PlatformOption[] = [
   { id: "claude-code", label: "Claude Code", disabled: false },
   { id: "cursor", label: "Cursor", disabled: true },
-  { id: "codex", label: "Codex", disabled: true },
+  { id: "codex", label: "Codex", disabled: false },
   { id: "windsurf", label: "Windsurf", disabled: true },
   { id: "copilot", label: "Copilot", disabled: true },
   { id: "cline", label: "Cline", disabled: true },

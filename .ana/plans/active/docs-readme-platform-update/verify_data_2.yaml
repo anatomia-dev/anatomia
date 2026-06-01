@@ -1,0 +1,22 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Generated docs asset assertions read ignored prebuild outputs directly, so focused tests can depend on stale or missing local files"
+    file: "website/lib/__tests__/docs-platform-content.test.ts"
+    line: 219
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A033", "A034", "A035"]
+  - category: test
+    summary: "ForPlatform pairing test proves count and adjacency but not that paired blocks address the same user need"
+    file: "website/lib/__tests__/docs-platform-content.test.ts"
+    line: 170
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A027"]
+  - category: upstream
+    summary: "Phase 2 verify startup was obscured by existing phase-blind verify_started_at timestamp poisoning in work status"
+    file: "packages/cli/src/commands/work-state.ts"
+    line: 449
+    severity: risk
+    suggested_action: scope
