@@ -1,0 +1,31 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A015 edge-case test uses toBeGreaterThanOrEqual(1) — weak assertion on entry count"
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 6147
+    severity: debt
+    suggested_action: accept
+    related_assertions: ["A015"]
+  - category: code
+    summary: "Backfill migration uses `as string` cast to compare old accept values against narrowed type"
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 309
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "proofSummary.ts casts incoming suggested_action to narrowed union — old chain data with 'accept' will be cast to 'acknowledge' union but actual value is 'accept' until backfill runs"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 994
+    severity: risk
+    suggested_action: monitor
+  - category: code
+    summary: "JSON API shape change: by_action key renamed from accept to acknowledge — breaking for any external consumer"
+    severity: observation
+    suggested_action: accept
+  - category: upstream
+    summary: "proofSummary.ts still 1550+ lines — known tech debt, not introduced by this build"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: []
