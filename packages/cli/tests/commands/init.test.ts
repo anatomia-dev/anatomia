@@ -883,7 +883,7 @@ describe('Codex init infrastructure', () => {
       }
 
       const files = await fs.readdir(codexAgentsPath);
-      expect(files).toHaveLength(10);
+      expect(files).toHaveLength(12);
 
       for (const agentFile of CODEX_AGENT_FILES) {
         expect(files).toContain(agentFile);

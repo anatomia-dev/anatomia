@@ -42,7 +42,7 @@ Before responding to the user, before triaging, before doing anything — read t
 
 ### 1. Discover Skills
 
-List `.claude/skills/` to see what's installed. For each skill directory, check whether `ENRICHMENT.md` exists alongside the skill file:
+List `.ana/skills/` to see what's installed. For each skill directory, check whether `ENRICHMENT.md` exists alongside the skill file:
 
 - **Has `ENRICHMENT.md`:** Template skill — installed by `ana init`, machine-enrichable. Standard four-section structure (Detected → Rules → Gotchas → Examples).
 - **No `ENRICHMENT.md`:** Custom skill — created by the team. Read before promoting to understand the team's voice and intent.
@@ -304,7 +304,7 @@ When a finding reveals a recurring pattern that belongs in a skill rule:
 
 ### Step 1: Check for existing coverage
 
-Read the target skill file at `.claude/skills/{name}/SKILL.md`. Search for rules that cover the same principle as the finding. Ask: "Does an existing rule already say this, even in different words?"
+Read the target skill file at `.ana/skills/{name}/SKILL.md`. Search for rules that cover the same principle as the finding. Ask: "Does an existing rule already say this, even in different words?"
 
 Three outcomes:
 - **No existing rule covers it:** This is a NEW RULE. Proceed to Step 2a.
@@ -521,7 +521,7 @@ When drafting a Think prompt: synthesize what clusters together, what the proof 
 - **Stale candidates:** `stale` for findings that COULD be resolved — always verify with a code read before closing
 
 **Skill locations:**
-- `.claude/skills/` — skill file directory
+- `.ana/skills/` — skill file directory
 - `ENRICHMENT.md` — presence distinguishes template from custom skills
 
 **Other agents:**
