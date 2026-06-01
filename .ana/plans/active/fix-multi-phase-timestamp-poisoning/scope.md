@@ -29,7 +29,7 @@ The fix makes session timestamps phase-aware for multi-phase work and centralize
 
 Three parts:
 
-**1. Phase-scoped session keys.** For multi-phase work, write `build_started_at_1`, `verify_started_at_1`, `build_started_at_2`, `verify_started_at_2`. Keep unsuffixed keys for single-spec work and backward compatibility. The phase number comes from the centralized resolver.
+**1. Phase-scoped session keys.** For multi-phase work, write `build_started_at_N`, `verify_started_at_N`, `build_agent_N`, `verify_agent_N` for every numbered spec. The resolver generates keys for any phase number — not hard-coded to 2. Keep unsuffixed keys for single-spec work and backward compatibility. The phase number comes from the centralized resolver.
 
 **2. Centralized phase resolver.** One function exported from `work-state.ts` that examines the artifact state (specs, build reports, verify reports) and `.saves.json` metadata, then returns the current phase number, stage (`build`, `verify`, `fix`, `re-verify`, `merge`), and the correct `.saves.json` keys for that phase. Both `determineStage` and `startWork` call this resolver for all multi-phase build/verify/fix routing. No independent `hasNumberedVerifyReport` routing remains in `startWork`. The resolver receives or loads `.saves.json` save metadata (specifically `build-report-N.saved_at` and `verify-report-N.saved_at`) — it does not rely solely on `ArtifactState`, which only contains filenames and existence.
 
@@ -52,6 +52,8 @@ Three parts:
 - AC10: Phase 2 build start is not blocked or misrouted by Phase 1's `build_started_at` or `verify_started_at`.
 - AC11: Main-tree `ana work start {slug}` and worktree `ana work start {slug}` produce the same phase decision for Phase 2 build, Phase 2 verify, and Phase 2 re-verify — same timestamp key written, same phase label printed.
 - AC12: The phase resolver receives or loads `.saves.json` save metadata (`build-report-N.saved_at`, `verify-report-N.saved_at`) and uses it for defense-in-depth freshness checks and re-verify detection. It does not rely solely on `ArtifactState` filename/existence data.
+- AC13: Phase-scoped keys work for arbitrary N, not just Phase 2. Given a 4-phase scope where phases 1-3 have PASS verify reports, phase 4 has `build_report_4.md` and no `verify_report_4.md`, and recent `verify_started_at_1`/`verify_started_at_2`/`verify_started_at_3` exist: `ana work status` returns `phase-4-ready-for-verify` and `ana work start` writes `verify_started_at_4`.
+- AC14: Re-verify works for arbitrary N. Given a 4-phase scope where phase 4 has a FAIL `verify_report_4.md` and a newer `build_report_4.md`: `ana work status` returns `phase-4-ready-for-re-verify` and `ana work start` writes `verify_started_at_4`, not `build_started_at_4`.
 
 ## Edge Cases & Risks
 **Clock consistency.** Both `build-report-N.saved_at` and `verify_started_at_N` come from `new Date().toISOString()` on the same machine. The defense-in-depth comparison is safe. Edge case: if a developer's clock jumps backward between build save and verify start, the comparison would incorrectly treat the verify timestamp as stale. The 1-hour concurrency window makes this extremely unlikely.
