@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-175 runs · 145 active · 5 promoted · 848 closed
+176 runs · 150 active · 5 promoted · 849 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 30 | 24 | 2026-05-29 |
 | cli | 122 | 102 | 2026-05-31 |
-| website | 23 | 19 | 2026-05-24 |
+| website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 145 total)
+## Active Findings (30 shown of 150 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -37,13 +37,6 @@
 ### packages/cli/src/commands/init/assets.ts
 
 - **code:** createSkillSymlinks silently skips real directories — falls through to nothing when lstat succeeds but isSymbolicLink is false — *Codex Support*
-
-### packages/cli/src/commands/init/commit.ts
-
-- **code:** discoverGitignoredDirtyFiles correctly uses --no-index for tracked files — improvement over existing discoverGitignoredFiles pattern — *Gitignore disclosure at init time, commit hardening, and docs*
-- **code:** discoverGitignoredFiles calls resolveMonorepoAgentsMd independently — duplicated scan.json read — *Force-add gitignored infrastructure in init commit*
-- **code:** No guard for symlinks under .claude/ — readdirSync with recursive follows symlinks into arbitrary directories — *Force-add gitignored infrastructure in init commit*
-- **code:** lstatSync called per-file during candidate enumeration — O(n) syscalls on large .claude/ trees — *Force-add gitignored infrastructure in init commit*
 
 ### packages/cli/src/commands/init/index.ts
 
@@ -81,7 +74,6 @@
 ### packages/cli/tests/commands/init/commit.test.ts
 
 - **test:** No integration test for subsequent-commit hardening scenario (A008-A010) — *Gitignore disclosure at init time, commit hardening, and docs*
-- **test:** A020 test is indirect — exercises exit-code-1 path but the file created is dirty, not a clean non-ignored candidate — *Force-add gitignored infrastructure in init commit*
 
 ### packages/cli/tests/commands/platform.test.ts
 
@@ -97,4 +89,18 @@
 ### packages/cli/tests/e2e/init-flow.test.ts
 
 - **test:** A029 (init-flow.test.ts asserts ana run) lacks @ana tag — verified by source inspection — *Codex Support*
+
+### website/content/docs/guides/platform-setup.mdx
+
+- **code:** Platform flags guide shows Codex sandbox as platformFlags even though run dispatch already passes sandbox mode — *Docs, Website, and README Multi-Platform Update*
+
+### website/lib/__tests__/docs-platform-content.test.ts
+
+- **test:** ForPlatform pairing test only compares total block counts — *Docs, Website, and README Multi-Platform Update*
+- **test:** Generated docs asset assertions read ignored prebuild outputs directly, so focused tests can depend on stale or missing local files — *Docs, Website, and README Multi-Platform Update*
+- **test:** ForPlatform pairing test proves count and adjacency but not that paired blocks address the same user need — *Docs, Website, and README Multi-Platform Update*
+
+### website/public/search-index.json
+
+- **test:** Generated search index can still surface stale direct Claude agent command text — *Docs, Website, and README Multi-Platform Update*
 

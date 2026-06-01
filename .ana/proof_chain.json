@@ -46408,6 +46408,411 @@
         "base_commit": "59671a4212dd0fd2d1acdb4ea1330f356f0a2d5c"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "docs-readme-platform-update",
+      "feature": "Docs, Website, and README Multi-Platform Update",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 35,
+        "satisfied": 35,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The docs switcher lets users select Codex",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Unsupported future platforms remain marked as unavailable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The README opens with the approved multi-platform positioning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The README quickstart starts setup through the universal command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The README quickstart starts work through the universal command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The README Works with section names both supported pipeline platforms",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Existing user-facing docs no longer teach direct Claude agent commands",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The Quickstart explains that ana run dispatches to the configured platform",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The Quickstart mockup shows canonical Anatomia skills",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The Quickstart mockup shows the current start-working command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The Quickstart mockup shows the current setup command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The landing page describes native support for Claude Code and Codex",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The landing page no longer presents Claude skills as the canonical skill location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The installing audience card no longer says Claude Code is required",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The Verify guide tells users to run Verify through ana run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The Verify guide tells users to return failed work through ana run build",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Pipeline concept prose is platform-neutral",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Skills concept prose points custom skills to the canonical skills directory",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The Platform setup guide exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The Guides navigation links to Platform setup near onboarding",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The Platform setup guide documents explicit platform selection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The Platform setup guide documents environment-based platform selection",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The Platform setup guide documents platform initialization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The Platform setup guide documents platform flags",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The Platform setup guide documents Codex agent manifests",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The Platform setup guide documents Codex sandbox mode",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Every Claude Code conditional docs block has a Codex counterpart",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Codex users are told Learn is not available yet",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Troubleshooting includes Codex executable recovery",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Troubleshooting includes Codex sandbox or manifest recovery",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Configurability teaches the canonical custom skill location",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "Configurability describes platform-specific custom agent delivery",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "Generated search data includes the Platform setup guide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "Generated LLM docs include the Platform setup guide",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Generated full LLM docs no longer teach direct Claude agent commands",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 241,
+        "think": 91,
+        "plan": 28,
+        "build": 46,
+        "verify": 43,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 91
+          },
+          {
+            "stage": "plan",
+            "minutes": 28
+          },
+          {
+            "stage": "build",
+            "minutes": 33,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 8,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 14,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 36,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:59a7d6d4a34608f5b5f36deac874b07095edc8be4c7a8a0ed33ff086beb9f1e3",
+        "contract": "sha256:b874a9cd520d9d07a42b877e589d10f3dedb993eca50444069991a84e0c97c28",
+        "plan": "sha256:7801e719208d8104bf0a92d656b8414a87e71a554f0c46708800be7131ba143a",
+        "spec-1": "sha256:3ed88d8e92a75f54619e282e4752e5479ddc7e4428597ee046af68b887ff1b05",
+        "spec-2": "sha256:cd5aaaab0a0558de1b2b3b5a7f3623c1514845de4f9abc670e7c2299b27cb94c",
+        "build-report-1": "sha256:fd47917ea2ae7c1b82488cf6fec0945aa45b54b6e749caf44203349e9f631eeb",
+        "build-data-1": "sha256:bc0616d4bf8c23a1e6d14d0b168dbc037c07fdb94f12a47c85b58b0f1eaf72f7",
+        "verify-report-1": "sha256:6ce578757e025bc26e6bfadecca277b8fcf04afca1ffc0ec9368bd10f68e75b3",
+        "verify-data-1": "sha256:fab58c1070014fa4b2967f1786c69ec4c12855bdddeaef7daa58d95752233ea6",
+        "build-report-2": "sha256:7bd040067089456bd25e923c2f6bf17c61ee576e46d025886f302f7d7bd7064a",
+        "build-data-2": "sha256:ce61ad1ec40383067eb9aef487cb3d7fbb7554d6725eb59a46eddc064d5c41d0",
+        "verify-report-2": "sha256:70d1752e7aa59871bf737dea0d2c58120ce9569d586fc2b8de555d9f183b8e68",
+        "verify-data-2": "sha256:e1463f4e1b9b675fad996ab0142d36b0ae41d08ab6ab4a9b730d2ddab043017a"
+      },
+      "completed_at": "2026-06-01T02:37:25.230Z",
+      "modules_touched": [
+        "README.md",
+        "website/components/docs/content/AudienceCards.tsx",
+        "website/components/docs/layout/PlatformSwitcher.tsx",
+        "website/content/docs/concepts/context.mdx",
+        "website/content/docs/concepts/findings.mdx",
+        "website/content/docs/concepts/pipeline.mdx",
+        "website/content/docs/concepts/skills.mdx",
+        "website/content/docs/concepts/toolbelt.mdx",
+        "website/content/docs/guides/configurability.mdx",
+        "website/content/docs/guides/meta.json",
+        "website/content/docs/guides/platform-setup.mdx",
+        "website/content/docs/guides/reading-a-proof.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx",
+        "website/content/docs/guides/using-ana-setup.mdx",
+        "website/content/docs/guides/verifying-changes.mdx",
+        "website/content/docs/start.mdx",
+        "website/lib/__tests__/docs-platform-content.test.ts",
+        "website/lib/copy.ts"
+      ],
+      "scope_summary": "Update the public documentation, website copy, and README for the 1.2.0 multi-platform release. Anatomia now works with Claude Code and Codex through the universal `ana run` command, but user-facing content still teaches a Claude-only model with `claude --agent` commands and Claude-exclusive positioning.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "ForPlatform pairing test only compares total block counts",
+          "file": "website/lib/__tests__/docs-platform-content.test.ts",
+          "anchor": null,
+          "line": 151,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A027"
+          ],
+          "id": "docs-readme-platform-update-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Generated search index can still surface stale direct Claude agent command text",
+          "file": "website/public/search-index.json",
+          "anchor": null,
+          "line": 1373,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007",
+            "A035"
+          ],
+          "id": "docs-readme-platform-update-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Platform flags guide shows Codex sandbox as platformFlags even though run dispatch already passes sandbox mode",
+          "file": "website/content/docs/guides/platform-setup.mdx",
+          "anchor": null,
+          "line": 41,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A024",
+            "A026"
+          ],
+          "id": "docs-readme-platform-update-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Generated docs asset assertions read ignored prebuild outputs directly, so focused tests can depend on stale or missing local files",
+          "file": "website/lib/__tests__/docs-platform-content.test.ts",
+          "anchor": null,
+          "line": 219,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A033",
+            "A034",
+            "A035"
+          ],
+          "id": "docs-readme-platform-update-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "ForPlatform pairing test proves count and adjacency but not that paired blocks address the same user need",
+          "file": "website/lib/__tests__/docs-platform-content.test.ts",
+          "anchor": null,
+          "line": 170,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A027"
+          ],
+          "id": "docs-readme-platform-update-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Phase 2 verify startup was obscured by existing phase-blind verify_started_at timestamp poisoning in work status",
+          "file": "packages/cli/src/commands/work-state.ts",
+          "anchor": null,
+          "line": 449,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "id": "docs-readme-platform-update-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-01T02:37:25.230Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Root lint reports pre-existing warnings in untouched CLI and website files",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Generated website public docs assets are verified by build but are not tracked files in this worktree",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Website lint reports pre-existing unused variables in website/components/hero/Hero.tsx",
+          "file": "website/components/hero/Hero.tsx",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Generated public docs assets are regenerated by the website build but ignored by git",
+          "file": "website/.gitignore",
+          "severity": "observation",
+          "suggested_action": "accept"
+        },
+        {
+          "summary": "Next.js build warns that the fetched proof_chain.json exceeds the data cache item size",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-01T00:47:06.897Z",
+        "completed_at": "2026-06-01T02:37:25.223Z",
+        "commit_count": 0,
+        "base_commit": "62ed266945d2ba2dbe7b65c6e72e7cb4eba8638d"
+      },
+      "surface": "website",
+      "phases": 2
     }
   ],
   "schema": 1,
