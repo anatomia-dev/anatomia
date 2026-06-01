@@ -47604,6 +47604,280 @@
         "base_commit": "ccb29f9ec13c8cead2197dd45781f82916863efb"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-work-complete-merge-strategy",
+      "feature": "Fix work complete merge strategy",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 31,
+        "satisfied": 31,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A configured squash strategy merges the pull request with squash and skips repository discovery",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A configured squash strategy does not call GitHub to discover allowed merge methods",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Every attempted merge includes one explicit merge method",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A repository with only merge commits enabled is merged with the merge method",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A repository with only squash enabled is merged with the squash method",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A repository with only rebase enabled is merged with the rebase method",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Multiple allowed merge methods stop the command before merging",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Multiple allowed merge methods tell the user how to configure the team default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Failed strategy discovery stops the command before merging",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Malformed strategy discovery stops the command before merging",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Missing merge-method fields stop the command before merging",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A stale configured strategy tells the user to update the setting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Ambiguous strategy failures return a structured JSON error code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Unavailable strategy discovery returns a structured JSON error code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Unsupported configured strategy returns a structured JSON error code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "JSON strategy failures do not include human progress text before the JSON envelope",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The schema accepts merge as a configured strategy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The schema accepts squash as a configured strategy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The schema accepts rebase as a configured strategy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Invalid hand-edited merge strategies are ignored instead of crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Fresh initialization does not add a merge strategy by default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Configured merge strategy survives re-initialization",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The config command writes a valid merge strategy",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The config command rejects invalid merge strategies",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Invalid merge strategy writes leave the existing config unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Valid merge strategy writes do not show an unknown-field warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Branch protection failures still show branch protection guidance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "Branches behind the base branch still show rebase guidance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Already merged pull requests continue completion without another merge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Troubleshooting docs explain how to recover from merge strategy selection failure",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Configurability docs list mergeStrategy as a user-owned setting",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 66,
+        "think": 7,
+        "plan": 24,
+        "build": 10,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:f71307c0d5292b171cddbbfab26ddffadc368d86af8f505cc73219fa03b42d57",
+        "contract": "sha256:639a665e041c53d96c2f4e7f14e0b5de16ea88dcb9f5347c2886d8c48556e027",
+        "plan": "sha256:57e4b269a309ea5f5428eb5d9469fc95df73497b1087939d0bdd2d00fb387613",
+        "spec": "sha256:5bebe97b21cf37808f7e9396bf26de0eb8d1b284f82a206e4054fdc66d6762ae",
+        "build-report": "sha256:b27bcac70b82f79b8d8fc6b821220d7d795804cf5460bdf992cd80cc75dfce48",
+        "build-data": "sha256:e1de50608356729e43e9cab22ae658d203e5b70831139f65c82eb6bc29c7519a",
+        "verify-report": "sha256:40f39e6933874937a2586938db31423dcd85e7683f4256e109af694f6de6a8cd",
+        "verify-data": "sha256:4d1557c8ea3d77895dc1ee8c30a925e42d7108ec8b293465400094b2bfd7c270"
+      },
+      "completed_at": "2026-06-01T21:07:08.787Z",
+      "modules_touched": [
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/config.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "website/content/docs/guides/configurability.mdx",
+        "website/content/docs/guides/troubleshooting.mdx"
+      ],
+      "scope_summary": "`ana work complete --merge` should work in non-interactive contexts and across repositories with different GitHub merge-method settings. Today it calls `gh pr merge <branch>` without an explicit merge method, so GitHub CLI may prompt interactively or fail immediately when multiple merge methods are enabled. The fix should make the merge method deterministic while preserving zero-config behavior for repositories where GitHub exposes exactly one allowed method.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 200,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A012",
+            "A015",
+            "A027",
+            "A028"
+          ],
+          "id": "fix-work-complete-merge-strategy-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Diff removes many pre-existing @ana tags and explanatory comments from unrelated tests, weakening future contract traceability",
+          "file": "packages/cli/tests/commands/config.test.ts",
+          "anchor": null,
+          "line": 98,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "fix-work-complete-merge-strategy-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv",
+          "file": "packages/cli/tests/commands/work-merge.test.ts",
+          "anchor": null,
+          "line": 597,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "fix-work-complete-merge-strategy-C3",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Full project test command still has pre-existing scan/package-manager detector failures outside this scope",
+          "file": "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Full project lint reports pre-existing warnings in untouched website Hero and CLI git-operations files",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-01T20:20:27.550Z",
+        "completed_at": "2026-06-01T21:07:08.779Z",
+        "commit_count": 0,
+        "base_commit": "6b7ddecd231d0f4dabca27bcaeb33c2c79ec8c56"
+      }
     }
   ],
   "schema": 1,
