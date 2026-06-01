@@ -1,0 +1,97 @@
+---
+title: Platform setup
+description: "Configure Claude Code and Codex delivery, choose a platform for ana run, and understand how Anatomia writes platform-specific agent files."
+readingTime: 7
+---
+
+## What platforms mean
+
+Anatomia keeps the pipeline contract in `.ana/` and delivers agent instructions to the host tool you choose. Claude Code receives markdown agents under `.claude/agents/`. Codex receives `.agent.toml` manifests under `.codex/agents/`. Skills stay canonical in `.ana/skills/` and are shared by supported platforms.
+
+Run `ana init` once to detect your stack and write the default platform files. To be explicit during setup, pass the platforms you want installed:
+
+```bash
+ana init --platforms claude,codex
+```
+
+Re-run the same command after upgrading the CLI if you need to refresh generated agent files. Your `.ana/context/`, `.ana/skills/`, proof chain, and user config are preserved.
+
+## Choosing a platform for a run
+
+`ana run` uses your configured platform by default. You can override a single invocation with `--platform`:
+
+```bash
+ana run --platform codex
+ana run plan --platform claude
+ana run build --platform codex
+ana run verify --platform codex
+```
+
+Environment selection works the same way for terminal sessions and scripts:
+
+```bash
+ANA_PLATFORM=codex ana run build
+ANA_PLATFORM=claude ana run verify
+```
+
+Use explicit flags when you are switching back and forth during migration. Use `ANA_PLATFORM` when a terminal should consistently target one platform.
+
+## Platform flags
+
+Platform-specific CLI flags live in `ana.json` under `platformFlags`. The generated config can pass required host-tool flags without changing every command you run:
+
+```json
+{
+  "platformFlags": {
+    "claude": ["--dangerously-skip-permissions"],
+    "codex": ["--sandbox", "danger-full-access"]
+  }
+}
+```
+
+These flags are host-tool flags, not Anatomia flags. Keep them narrow and review them like any other execution policy.
+
+## Codex manifests
+
+Codex agent delivery uses one `.agent.toml` manifest per Anatomia agent under `.codex/agents/`. Those manifests point Codex at generated instructions for Think, Plan, Build, Verify, Setup, and Learn where supported.
+
+Codex Build and Verify need filesystem access to the worktree so they can edit files, run tests, and write reports. The generated Codex configuration uses `danger-full-access` sandbox mode for pipeline agents because restricted sandboxes cannot complete those stages reliably.
+
+If Codex reports that a manifest is missing or opens the wrong instructions, regenerate platform files:
+
+```bash
+ana init --platforms codex
+```
+
+Then confirm the manifest exists:
+
+```bash
+ls .codex/agents/*.agent.toml
+```
+
+## What stays shared
+
+The platform files are delivery details. The durable pipeline state is shared:
+
+- `.ana/plans/active/` — scopes, specs, contracts, build reports, verify reports
+- `.ana/skills/` — canonical skills and custom skills
+- `.ana/context/` — project context and design principles
+- `.ana/ana.json` — commands, artifact branch, co-author, surfaces, platform settings
+- `AGENTS.md` and `CLAUDE.md` — markdown project summaries for tools that read them
+
+This split lets Claude Code and Codex use the same proof chain without duplicating the system of record.
+
+<NextCards cards={[
+  {
+    eyebrow: "Previous guide",
+    title: "Using ana-setup",
+    href: "/docs/guides/using-ana-setup",
+    description: "Calibrate project context and skills before your first pipeline run."
+  },
+  {
+    eyebrow: "Next guide",
+    title: "Verifying changes",
+    href: "/docs/guides/verifying-changes",
+    description: "What happens when Build finishes and Verify takes over."
+  }
+]} />

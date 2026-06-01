@@ -100,7 +100,7 @@ Each finding has a severity and a suggested action, rendered as a two-part tag:
 
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>Security-hardening's findings focus on test coverage gaps. Other proofs surface different catches: `process.exit(1)` on a rebase conflict without running `git rebase --abort`, leaving dirty state. `JSON.parse` on CLI stdout with no try/catch — malformed response crashes. Path normalization that breaks on Windows backslashes. A race condition where a file deleted between filter and `readFileSync` crashes `completeWork`.</p>
 
-<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>To triage findings after shipping, run `claude --agent ana-learn`. See [Using ana-learn](/docs/guides/using-ana-learn).</p>
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>To triage findings after shipping, run `ana run learn`. See [Using ana-learn](/docs/guides/using-ana-learn).</p>
 
 ## The integrity seal
 

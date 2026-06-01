@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/v/anatomia-cli)](https://www.npmjs.com/package/anatomia-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Anatomia is a CLI and agent harness for Claude Code. It scans your codebase — detecting your stack, conventions, and patterns — then runs every change through a five-agent pipeline that saves every artifact: scope, spec, contract, build report, and independent verification. Other harnesses are prompt libraries. This one has an engine.
+Anatomia is a CLI that runs every code change through a five-agent pipeline — scope, spec, contract, build, and independent verification. It works with Claude Code and Codex.
 
 The cost of building is near zero. The cost of building the wrong thing is the same as it ever was. AI agents rush to implementation — they don't push back on your approach, surface tradeoffs you missed, or record why one design was chosen over another. Anatomia enforces the thinking that fast building skips.
 
@@ -34,13 +34,13 @@ Requires Node.js 22+. To update: `npm update -g anatomia-cli`
 ana init                      # generate context + agents
 ana init commit               # persist to git (so teammates get it too)
 ana doctor                    # verify installation is healthy
-claude --agent ana-setup      # enrich with your team's knowledge (optional, recommended, ~10 min)
-claude --agent ana            # start working — "hey Ana"
+ana run setup                 # enrich with your team's knowledge (optional, recommended, ~10 min)
+ana run                       # start working — "hey Ana"
 ```
 
 Tell Ana what you want to build. It'll investigate the codebase, surface tradeoffs, and push back if the approach has problems. When the scope is right, it hands off to Plan, Build, and Verify.
 
-> `init` runs scan automatically and works standalone — no Claude Code required. The pipeline and setup require [Claude Code](https://claude.com/code).
+> `init` runs scan automatically and works standalone. The pipeline and setup run through Claude Code or Codex, and scan output works with any markdown-aware AI tool.
 >
 > `init commit` commits to the artifact branch — `staging`, `develop`, or your pre-production branch if one exists, otherwise `main`. Check with `ana config get artifactBranch` before your first commit.
 >
@@ -60,7 +60,7 @@ Tell Ana what you want to build. It'll investigate the codebase, surface tradeof
 - 5 core + 3 conditional skill templates with scan-driven Detected sections
 - 16 stack-specific gotchas with compound triggers
 
-Setup (`claude --agent ana-setup`) bridges the gap between what scan detects and what your team knows. A ~10 minute session that investigates your codebase, asks 2-3 questions, and writes enriched context. After setup, agents understand your product and decisions — not just your stack.
+Setup (`ana run setup`) bridges the gap between what scan detects and what your team knows. A ~10 minute session that investigates your codebase, asks 2-3 questions, and writes enriched context. After setup, agents understand your product and decisions — not just your stack.
 
 ### The pipeline
 
@@ -99,7 +99,7 @@ Pipeline agents invoke ~20 additional CLI commands — [the toolbelt](https://an
 
 ## Works with
 
-Built for [Claude Code](https://claude.com/code). The pipeline, agents, and skills are Claude Code native.
+Native pipeline support for [Claude Code](https://claude.com/code) and Codex.
 
 Scan output (`AGENTS.md`, `CLAUDE.md`) works with any AI tool that reads markdown.
 
@@ -119,11 +119,12 @@ This project is built with Anatomia. The `.ana/` directory is the proof — ever
 
 ```bash
 rm -rf .ana                        # all Anatomia data
-rm .claude/agents/ana*.md          # pipeline agents (your custom agents are untouched)
+rm .claude/agents/ana*.md          # Claude Code pipeline agents, if installed
+rm -rf .codex/agents               # Codex agent manifests, if installed
 rm AGENTS.md                       # generated project summary
 ```
 
-Skill directories created by init: `coding-standards`, `testing-standards`, `git-workflow`, `deployment`, `troubleshooting`, and conditionally `ai-patterns`, `api-patterns`, `data-access`. Remove the ones init created; keep any you added yourself.
+Skill directories created by init live under `.ana/skills/`: `coding-standards`, `testing-standards`, `git-workflow`, `deployment`, `troubleshooting`, and conditionally `ai-patterns`, `api-patterns`, `data-access`. Remove the ones init created; keep any you added yourself.
 
 If Anatomia created your `CLAUDE.md`, remove that too (`git blame CLAUDE.md` to check). If you ran `ana init commit`, revert: `git revert <commit-hash>`. Your source code is never modified.
 

@@ -9,7 +9,7 @@ readingTime: 8
 - Node.js 22 or later
 - Git with `user.name` and `user.email` configured
 - A Git repository with at least one commit
-- [Claude Code](https://claude.ai/code) with an active subscription — needed for pipeline agents (Steps 3–4)
+- [Claude Code](https://claude.ai/code) or Codex — needed for pipeline agents (Steps 3–4)
 - [GitHub CLI](https://cli.github.com/) (`gh`) — used by Verify to create PRs after a passing run
 
 ## Step 1: Install
@@ -35,7 +35,7 @@ Init scans your project, detects your stack, and scaffolds the pipeline into you
 <span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>terminal</span>
 </div>
 <pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
-<span style={{color:"var(--pass)"}}>✓</span>{" Scanned my-saas-app "}<span style={{color:"var(--ink-45)"}}>{"(3.2s)"}</span>{"\n\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Stack:</span>{"    TypeScript · Next.js · Prisma → PostgreSQL · Vitest\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Deploy:</span>{"   Vercel\n\n"}<span style={{color:"var(--pass)"}}>✓</span>{" Context → .ana/context/ (2 files)\n"}<span style={{color:"var(--pass)"}}>✓</span>{" Skills → .claude/skills/ (7 skills)\n"}{"    "}<span style={{color:"var(--ink-45)"}}>Core:</span>{"      coding-standards, testing-standards, git-workflow,\n"}{"               deployment, troubleshooting\n"}{"    "}<span style={{color:"var(--ink-45)"}}>Detected:</span>{"  api-patterns, data-access\n"}{"  "}<span style={{color:"var(--pass)"}}>✓</span>{" 4 gotchas pre-populated\n"}{"  "}<span style={{color:"var(--pass)"}}>✓</span>{" Cross-tool: CLAUDE.md + AGENTS.md\n\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Branch:</span>{"   main\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Test:</span>{"     pnpm run test -- --run\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Build:</span>{"    pnpm run build\n\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Next:</span>{"\n"}{"    "}<span style={{color:"var(--info)"}}>claude --agent ana</span>{"          Start working\n"}{"    "}<span style={{color:"var(--info)"}}>claude --agent ana-setup</span>{"    Enrich with team knowledge (optional, ~10 min)"}
+<span style={{color:"var(--pass)"}}>✓</span>{" Scanned my-saas-app "}<span style={{color:"var(--ink-45)"}}>{"(3.2s)"}</span>{"\n\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Stack:</span>{"    TypeScript · Next.js · Prisma → PostgreSQL · Vitest\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Deploy:</span>{"   Vercel\n\n"}<span style={{color:"var(--pass)"}}>✓</span>{" Context → .ana/context/ (2 files)\n"}<span style={{color:"var(--pass)"}}>✓</span>{" Skills → .ana/skills/ (7 skills)\n"}{"  "}<span style={{color:"var(--pass)"}}>✓</span>{" Cross-tool: CLAUDE.md + AGENTS.md\n\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Branch:</span>{"   main\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Test:</span>{"     pnpm run test -- --run\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Build:</span>{"    pnpm run build\n\n"}{"  "}<span style={{color:"var(--brand-light)"}}>Next:</span>{"\n"}{"    "}<span style={{color:"var(--info)"}}>ana run</span>{"             Start working (Ana knows your stack)\n"}{"    "}<span style={{color:"var(--info)"}}>ana run setup</span>{"       Enrich with your team's knowledge (optional, ~10 min)\n"}{"    "}<span style={{color:"var(--info)"}}>ana init commit</span>{"     Save to main ✓"}
 </pre>
 </div>
 
@@ -46,7 +46,7 @@ Monorepos with multiple surfaces: see [Configurability](/docs/guides/configurabi
 </Callout>
 
 <Callout variant="note">
-**Optional but recommended:** Run `claude --agent ana-setup` to calibrate project knowledge (~10 min). Setup investigates your codebase, asks 2–3 questions, and writes rich context.
+**Optional but recommended:** Run `ana run setup` to calibrate project knowledge (~10 min). Setup investigates your codebase, asks 2–3 questions, and writes rich context.
 </Callout>
 
 ### Persist to git
@@ -68,25 +68,25 @@ Run `ana doctor` to verify the installation is healthy — it checks CLI version
 start them before running the pipeline — agents execute your test command as-is.
 </Callout>
 
-Describe a small change — a single-file fix or a feature you'd normally spend 30 minutes on.
+Describe a small change — a single-file fix or a feature you&apos;d normally spend 30 minutes on.
 
 ```bash
-claude --agent ana
+ana run
 ```
 
-Start with a greeting — "hey Ana" — so the agent loads your project context before you describe the work.
+Start with a greeting — "hey Ana" — so the agent loads your project context before you describe the work. `ana run` dispatches to your configured platform: Claude Code projects start the Claude Code agents, and Codex projects open Codex with generated agent instructions.
 
 Ana investigates the codebase, surfaces tradeoffs, and writes a scope. You can scope several work items before building any of them — each runs through the pipeline independently. When you're ready to build, open a new terminal for each pipeline agent — agents must start fresh without state from previous runs:
 
-1. **Plan:** `claude --agent ana-plan` — reads the scope, writes `spec.md`, and seals `contract.yaml`
-2. **Build:** `claude --agent ana-build` — implements the spec, writes tests tagged to contract assertions
-3. **Verify:** `claude --agent ana-verify` — independently verifies against the contract, writes findings, creates PR on pass
+1. **Plan:** `ana run plan` — reads the scope, writes `spec.md`, and seals `contract.yaml`
+2. **Build:** `ana run build` — implements the spec, writes tests tagged to contract assertions
+3. **Verify:** `ana run verify` — independently verifies against the contract, writes findings, creates PR on pass
 
 <Callout variant="note">
 Each agent runs CLI commands like `ana work start` and `ana artifact save` under the hood — managing worktrees, validating artifact structure, and computing integrity hashes. You don't run these manually.
 </Callout>
 
-If Verify finds issues, it produces a FAIL report. Run `claude --agent ana-build` to fix, then `claude --agent ana-verify` again. This is normal — <DocsStat value="rejections" /> of Anatomia's own <DocsStat value="proofCount" /> proofs had rejection cycles.
+If Verify finds issues, it produces a FAIL report. Run `ana run build` to fix, then `ana run verify` again. This is normal — <DocsStat value="rejections" /> of Anatomia&apos;s own <DocsStat value="proofCount" /> proofs had rejection cycles.
 
 ## Step 4: Review, merge, and complete
 

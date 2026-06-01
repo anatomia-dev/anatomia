@@ -1,4 +1,4 @@
 {
   "title": "Guides",
-  "pages": ["using-ana-setup", "verifying-changes", "reading-a-proof", "using-ana-learn", "configurability", "troubleshooting"]
+  "pages": ["using-ana-setup", "platform-setup", "verifying-changes", "reading-a-proof", "using-ana-learn", "configurability", "troubleshooting"]
 }

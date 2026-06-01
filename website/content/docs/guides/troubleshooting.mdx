@@ -31,13 +31,13 @@ Install dependencies first (`npm install` / `pnpm install`). Without `node_modul
 
 <TroubleCard title="Scan detected the wrong database/AI SDK/framework">
 
-Scan detects from your dependency manifest and reports the first match when multiple options exist. If a dependency is listed but unused, you'll see inaccurate detection. This doesn't affect your code — it affects what agents know about your stack. To correct: edit `.ana/context/project-context.md` (the file agents actually read for architecture decisions). To reduce noise on future scans, remove unused dependencies from your manifest. If wrong gotchas were seeded during init, edit or remove them from `.claude/skills/{name}/SKILL.md` under the Gotchas section.
+Scan detects from your dependency manifest and reports the first match when multiple options exist. If a dependency is listed but unused, you'll see inaccurate detection. This doesn't affect your code — it affects what agents know about your stack. To correct: edit `.ana/context/project-context.md` (the file agents actually read for architecture decisions). To reduce noise on future scans, remove unused dependencies from your manifest. If wrong gotchas were seeded during init, edit or remove them from `.ana/skills/{name}/SKILL.md` under the Gotchas section.
 
 </TroubleCard>
 
 <TroubleCard title="Setup produced thin context">
 
-Setup's quality depends on your answers. Don't describe your stack — describe your product, your users, the problem you solve. Take your time on design principles. You can always re-run: delete `setupPhase` from `ana.json` and run `claude --agent ana-setup` again. See [Using ana-setup](/docs/guides/using-ana-setup) for how to give great answers.
+Setup's quality depends on your answers. Don't describe your stack — describe your product, your users, the problem you solve. Take your time on design principles. You can always re-run: delete `setupPhase` from `ana.json` and run `ana run setup` again. See [Using ana-setup](/docs/guides/using-ana-setup) for how to give great answers.
 
 </TroubleCard>
 
@@ -53,8 +53,23 @@ Anatomia scans the full repository, not individual packages. Init detects surfac
 
 1. **Symptom:** "Unknown skill: git-workflow" or agents can&apos;t find skills/context during pipeline runs.
 2. **Cause:** Your host repo&apos;s `.gitignore` blocks `.claude/` or `.ana/` directories. Worktrees inherit the gitignore — files that weren&apos;t committed are invisible to pipeline agents.
-3. **Diagnosis:** Run `git ls-files .claude/skills/` — if it returns nothing, the files are gitignored and were never committed.
+3. **Diagnosis:** Run `git ls-files .ana/skills/` — if it returns nothing, the files are gitignored and were never committed.
 4. **Fix:** Upgrade to latest Anatomia (`npm install -g anatomia-cli`). Recent versions auto-detect gitignored infrastructure and force-add it during `ana init commit`. After upgrading, run `ana init commit` to persist the files.
+
+</TroubleCard>
+
+<TroubleCard title="codex not found">
+
+1. **Symptom:** `ana run` selects Codex and exits with `codex not found`.
+2. **Cause:** The Codex CLI is not installed or is not on your shell PATH.
+3. **Diagnosis:** Run `which codex` from the same terminal where you run Anatomia.
+4. **Fix:** Install Codex, restart your terminal, and re-run `ana doctor` before starting the pipeline.
+
+</TroubleCard>
+
+<TroubleCard title="Codex manifest or sandbox issues">
+
+Codex agents use generated `.agent.toml` manifest files under `.codex/agents/`. If Codex opens the wrong instructions, complains about a missing manifest, or refuses filesystem access, re-run `ana init --platforms codex` to regenerate manifests and confirm the generated agent uses the expected sandbox mode. Pipeline builds require a sandbox that can edit the worktree; the generated configuration uses `danger-full-access` for that reason.
 
 </TroubleCard>
 
@@ -64,17 +79,17 @@ FAIL means Verify found issues — this is the pipeline working as designed. <Do
 
 1. Read `verify_report.md`. It lists every UNSATISFIED assertion with evidence.
 2. Common causes: test tagged `@ana A003` but doesn't actually test what the contract says, missing test tags, tests that pass on both correct and incorrect implementations.
-3. Run `claude --agent ana-build` to fix. Build reads the verify report and addresses each failure.
-4. Re-run `claude --agent ana-verify`.
+3. Run `ana run build` to fix. Build reads the verify report and addresses each failure.
+4. Re-run `ana run verify`.
 
 </TroubleCard>
 
 <TroubleCard title="My build never finishes">
 
 1. Large specs can exceed the model's context window. Try multi-phase specs for big changes.
-2. `ana work status` shows pipeline state. If build is "in-progress," the previous session may have crashed — re-open `claude --agent ana-build` and it resumes.
+2. `ana work status` shows pipeline state. If build is "in-progress," the previous session may have crashed — re-open `ana run build` and it resumes.
 3. Check if tests are hanging. Vitest defaults to watch mode — the test command must include `--run`.
-4. If Claude Code itself stops responding, check your subscription status and API rate limits — these aren't Anatomia failures but they surface during pipeline runs.
+4. If your selected platform stops responding, check your subscription status and API rate limits — these aren't Anatomia failures but they surface during pipeline runs.
 
 </TroubleCard>
 
@@ -116,13 +131,13 @@ Commands that modify the proof chain (`close`, `promote`, `strengthen`) require 
 
 <TroubleCard title="I deleted .ana/ or .claude/">
 
-**Deleted `.ana/`?** Proof chain history and archived artifacts are gone permanently. `ana init` regenerates scan data and scaffolds but cannot recover proofs, context, or design principles. **Deleted `.claude/`?** Enriched skill rules are gone. `ana init` regenerates templates but enrichments need re-running setup. **Prevention:** run `ana init` instead of deleting — it refreshes everything and preserves your data.
+**Deleted `.ana/`?** Proof chain history, archived artifacts, context, and canonical skills are gone permanently. `ana init` regenerates scan data and scaffolds but cannot recover proofs, context, design principles, or enriched skills. **Deleted `.claude/` or `.codex/`?** Platform agent delivery files are gone. `ana init` regenerates templates but enrichments need re-running setup. **Prevention:** run `ana init` instead of deleting — it refreshes everything and preserves your data.
 
 </TroubleCard>
 
 <TroubleCard title="I want to remove Anatomia from my project">
 
-Remove Anatomia's generated content: `rm -rf .ana .claude/agents .claude/skills AGENTS.md`. If Anatomia created your CLAUDE.md, remove it too (check `git log --oneline CLAUDE.md`). Keep `.claude/settings.json` and `.claude/agent-memory/` if you use Claude Code — those are Claude Code native, not Anatomia. If you committed with `ana init commit`, revert: `git revert <commit-hash>`. Your source code is never modified — only infrastructure files.
+Remove Anatomia's generated content: `rm -rf .ana .claude/agents .codex/agents AGENTS.md`. If Anatomia created your CLAUDE.md, remove it too (check `git log --oneline CLAUDE.md`). Keep `.claude/settings.json` and `.claude/agent-memory/` if you use Claude Code — those are Claude Code native, not Anatomia. If you committed with `ana init commit`, revert: `git revert <commit-hash>`. Your source code is never modified — only infrastructure files.
 
 </TroubleCard>
 
@@ -147,7 +162,7 @@ If `ana work status` or `ana doctor` shows a version mismatch between your CLI a
 ## Best practices
 
 - **Start with a brief greeting.** "Hey" or "hi ana" lets the agent load project context before acting on your request. Complex first messages may be processed before all context files are read.
-- **One agent per terminal.** Each pipeline stage runs in its own Claude Code session. Running a second agent in the same session may inherit state from the previous run, breaking the independence guarantee. Open a new terminal for each stage.
+- **One agent per terminal.** Each pipeline stage starts a fresh platform session through `ana run`. Running a second agent in the same session may inherit state from the previous run, breaking the independence guarantee. Open a new terminal for each stage.
 - **Let `ana work status` be the first check.** Before scoping, building, or verifying — run `ana work status`. It tells you what's in progress, what stage it's at, and what to do next. Every agent does this on startup; you should too.
 - **Don't edit `proof_chain.json` by hand.** Use `ana proof close`, `ana proof promote`, `ana proof strengthen`. Manual edits can corrupt the chain — `ana proof health` reports incorrect trajectories, `ana proof audit` may skip entries. If the chain is corrupted, restore from git: `git checkout -- .ana/proof_chain.json`
 - **Re-init instead of deleting.** `ana init` refreshes scan data and templates while preserving your context, skills, proof chain, and config. Deleting `.ana/` loses proof history permanently.

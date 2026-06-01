@@ -14,7 +14,7 @@ Think understands what should change and why. Plan designs the solution and defi
 
 If one agent scopes, plans, builds, and verifies, it's grading its own homework. The pipeline splits work across agents that never share a session. The value isn't in the separation — it's in what the separation catches.
 
-Each agent runs in a separate Claude Code session with no shared memory. The contract seal (SHA-256 hash) prevents artifact tampering after Plan signs off.
+Each stage starts a fresh platform session through `ana run`, with no shared memory from the previous stage. The contract seal (SHA-256 hash) prevents artifact tampering after Plan signs off.
 
 > Build's report said all 14 assertions satisfied. Verify found independently: A003's test uses `toBeDefined()` — a matcher that passes on both correct and incorrect implementations. The discrepancy is what caught the bug. Independence prevents anchoring to Build's framing.
 

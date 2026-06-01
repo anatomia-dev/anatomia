@@ -1,6 +1,6 @@
 ---
 title: Verifying changes
-description: "Build finished. You're about to run claude --agent ana-verify. This guide covers what Verify does, what the report means, and what to do when it comes back FAIL."
+description: "Build finished. You're about to run ana run verify. This guide covers what Verify does, what the report means, and what to do when it comes back FAIL."
 readingTime: 8
 ---
 
@@ -66,8 +66,8 @@ After the ledger: **Findings** (categorized observations with severity and sugge
 FAIL sends the work back to Build. <DocsStat value="rejections" /> of Anatomia's own <DocsStat value="proofCount" /> proofs had rejection cycles.
 
 1. Read the verify report. It lists every UNSATISFIED assertion and every finding.
-2. Run `claude --agent ana-build`. Build reads the verify report and fixes exactly what failed.
-3. Run `claude --agent ana-verify` again. On re-verification, Verify reads its own previous report and addresses each prior issue explicitly in a **Previous Findings Resolution** section.
+2. Run `ana run build`. Build reads the verify report and fixes exactly what failed.
+3. Run `ana run verify` again. On re-verification, Verify reads its own previous report and addresses each prior issue explicitly in a **Previous Findings Resolution** section.
 
 Re-verification is a full pass. Every assertion is re-evaluated. The previous report provides a checklist, not a shortcut.
 
@@ -82,7 +82,7 @@ Verify runs in the worktree Build created — no branch switching or setup neede
 <span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>bash</span>
 </div>
 <pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
-<span style={{color:"var(--ink-45)"}}>{"# After Build finishes, open a new session:"}</span>{"\n$ "}<span style={{color:"var(--pass)"}}>claude --agent ana-verify</span>{"\n\n"}<span style={{color:"var(--ink-45)"}}>{"# Verify finds the work item, enters the worktree,"}</span>{"\n"}<span style={{color:"var(--ink-45)"}}>{"# runs the 8-step process, writes the report."}</span>{"\n"}<span style={{color:"var(--ink-45)"}}>{"# On PASS, it creates a PR for review."}</span>
+<span style={{color:"var(--ink-45)"}}>{"# After Build finishes, open a new session:"}</span>{"\n$ "}<span style={{color:"var(--pass)"}}>ana run verify</span>{"\n\n"}<span style={{color:"var(--ink-45)"}}>{"# Verify finds the work item, enters the worktree,"}</span>{"\n"}<span style={{color:"var(--ink-45)"}}>{"# runs the 8-step process, writes the report."}</span>{"\n"}<span style={{color:"var(--ink-45)"}}>{"# On PASS, it creates a PR for review."}</span>
 </pre>
 </div>
 
