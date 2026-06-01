@@ -135,10 +135,11 @@ export default function DocsOverview() {
             textWrap: "pretty",
           }}
         >
-          Every shipped change passes through the same five stages. Each stage is a
-          sealed agent with one job, specific inputs, and validated outputs.
-          What&apos;s left behind is permanent — the artifacts between stages are
-          your team&apos;s engineering memory, auditable and replayable.
+          Every shipped change passes through four pipeline stages — Think, Plan,
+          Build, and Verify — each a sealed agent with one job, specific inputs,
+          and validated outputs. A fifth agent, Learn, tends the proof chain between
+          cycles. What&apos;s left behind is permanent — the artifacts between stages
+          are your team&apos;s engineering memory, auditable and replayable.
         </p>
         <PipelineDiagram />
 
