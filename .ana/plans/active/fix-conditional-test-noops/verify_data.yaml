@@ -1,0 +1,38 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Duplicate @ana tags A001-A006 in work-ci-mocked.test.ts — old getAgentPid/conflict tests and new session tests share tag IDs from different contracts"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    line: 49
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A001", "A002", "A003", "A004", "A005", "A006"]
+
+  - category: upstream
+    summary: "Spec claims 11 session tests but only 10 exist (3 in --session flag + 7 in session consumption) — spec miscounted"
+    severity: observation
+    suggested_action: acknowledge
+
+  - category: test
+    summary: "createSessionTestProject helper is now triplicated — work.test.ts (removed), work-ci-mocked.test.ts (added), plus createMergedProject as similar pattern"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    line: 246
+    severity: debt
+    suggested_action: scope
+    resolves:
+      - "fix-ci-matrix-and-broken-tests-C2"
+
+  - category: code
+    summary: "A002 and A004 are semantically identical tests — both create session file with known timestamp, call startWork, assert saves.work_started_at equals that timestamp"
+    file: "packages/cli/tests/commands/work-ci-mocked.test.ts"
+    line: 349
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A002", "A004"]
+
+  - category: upstream
+    summary: "capture-think-time-C1 finding ('8 tests potential no-ops') is directly resolved by this build — all PID-dependent tests now run with mocked PID unconditionally"
+    severity: observation
+    suggested_action: monitor
+    resolves:
+      - "capture-think-time-C1"
