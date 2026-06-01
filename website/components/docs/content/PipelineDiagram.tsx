@@ -4,7 +4,7 @@ import Link from "next/link";
  * PipelineDiagram — matches supermock .pipeline-flow exactly.
  * 5-column grid with → arrows between cards.
  * Each card: number, name (serif), description, artifact code pills, agent name.
- * Agent name in brand-light with border-top separator.
+ * Agent name with border-top separator.
  * Footer: "Sealed" explanation + "How it works in depth →" link.
  */
 
@@ -169,7 +169,7 @@ export function PipelineDiagram({ variant = "overview" }: { variant?: "overview"
               style={{
                 fontFamily: "var(--font-mono)",
                 fontSize: "10.5px",
-                color: "var(--brand-light)",
+                color: "var(--ink-60)",
                 marginTop: "auto",
                 paddingTop: "8px",
                 borderTop: "1px solid var(--hairline)",
