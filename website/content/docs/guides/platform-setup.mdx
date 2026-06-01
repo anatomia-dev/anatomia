@@ -95,7 +95,7 @@ developer_instructions = "Full instructions in ana-build.md. Invoke via: ana run
 sandbox_mode = "danger-full-access"
 ```
 
-Build and Verify need filesystem access to the worktree so they can edit files, run tests, and write reports. The generated configuration uses `danger-full-access` sandbox mode for pipeline agents because restricted sandboxes cannot complete those stages reliably.
+All pipeline agents need filesystem access — Think and Plan read the codebase, Build edits files and runs tests, Verify runs tests independently, Setup writes enriched context. The generated configuration uses `danger-full-access` sandbox mode for every agent because restricted sandboxes cannot complete any stage reliably.
 
 If Codex reports that a manifest is missing or opens the wrong instructions, regenerate platform files:
 
