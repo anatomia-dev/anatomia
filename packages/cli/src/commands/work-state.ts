@@ -309,8 +309,24 @@ export function gatherArtifactState(
 }
 
 /**
+ * Compare a timestamp string against the concurrency timeout.
+ * Returns elapsed milliseconds if the timestamp is valid, or null if invalid/missing.
+ * This is the shared core logic used by both `isTimestampRecent` and `checkConcurrencyGuard`.
+ *
+ * @param timestamp - ISO timestamp string to check
+ * @returns Elapsed milliseconds since timestamp, or null if invalid
+ */
+export function compareTimestamp(timestamp: unknown): number | null {
+  if (typeof timestamp !== 'string') return null;
+  const startedAt = new Date(timestamp);
+  if (isNaN(startedAt.getTime())) return null;
+  return Date.now() - startedAt.getTime();
+}
+
+/**
  * Check if a timestamp key in a `.saves.json` is recent (< 1 hour old).
  * Reads from a filesystem path (not git). Returns false for missing/corrupted files.
+ * Delegates to `compareTimestamp` for the core comparison logic.
  *
  * @param savesDir - Directory containing `.saves.json`
  * @param timestampKey - The key to check
@@ -321,14 +337,135 @@ export function isTimestampRecent(savesDir: string, timestampKey: string): boole
     const savesPath = path.join(savesDir, '.saves.json');
     if (!fs.existsSync(savesPath)) return false;
     const saves = JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
-    const timestamp = saves[timestampKey];
-    if (typeof timestamp !== 'string') return false;
-    const startedAt = new Date(timestamp);
-    if (isNaN(startedAt.getTime())) return false;
-    return (Date.now() - startedAt.getTime()) < CONCURRENCY_TIMEOUT_MS;
+    const elapsed = compareTimestamp(saves[timestampKey]);
+    if (elapsed === null) return false;
+    return elapsed < CONCURRENCY_TIMEOUT_MS;
   } catch {
     return false;
   }
+}
+
+/**
+ * Result of phase resolution for a multi-phase work item.
+ * Describes the current phase, its stage, and the correct timestamp keys to use.
+ */
+export interface PhaseResolution {
+  /** Current phase number (1-indexed) */
+  phaseNumber: number;
+  /** Pipeline stage for this phase (e.g., 'ready-for-verify', 'needs-fixes') */
+  stage: string;
+  /** Timestamp key for build start (e.g., 'build_started_at_2') */
+  buildTimestampKey: string;
+  /** Timestamp key for verify start (e.g., 'verify_started_at_2') */
+  verifyTimestampKey: string;
+  /** Agent key for build (e.g., 'build_agent_2') */
+  buildAgentKey: string;
+  /** Agent key for verify (e.g., 'verify_agent_2') */
+  verifyAgentKey: string;
+  /** Whether this is a re-verify (FAIL verify + newer build report) */
+  isReVerify: boolean;
+}
+
+/**
+ * Resolve the current phase for a multi-phase work item.
+ * Pure function — takes pre-gathered artifact state and saves metadata.
+ * Both `determineStage` and `startWork` call this for consistent multi-phase routing.
+ *
+ * @param artifacts - Artifact state (specs, build reports, verify reports)
+ * @param savesMetadata - Parsed `.saves.json` content with artifact save timestamps
+ * @returns Phase resolution or null if single-spec or unable to determine
+ */
+export function resolvePhase(
+  artifacts: ArtifactState,
+  savesMetadata: Record<string, unknown> | null,
+): PhaseResolution | null {
+  const { specs, buildReports, verifyReports } = artifacts;
+  const totalPhases = specs.length;
+
+  if (totalPhases <= 1) return null;
+
+  const saves = savesMetadata ?? {};
+
+  for (let i = 0; i < totalPhases; i++) {
+    const phaseNum = i + 1;
+    const spec = specs[i];
+    if (!spec) continue;
+
+    const expectedBuildReport = spec.file === 'spec.md' ? 'build_report.md' : `build_report_${phaseNum}.md`;
+    const expectedVerifyReport = spec.file === 'spec.md' ? 'verify_report.md' : `verify_report_${phaseNum}.md`;
+
+    const phaseBuildReport = buildReports.find(r => r.file === expectedBuildReport);
+    const phaseVerifyReport = verifyReports.find(r => r.file === expectedVerifyReport);
+
+    const buildTimestampKey = `build_started_at_${phaseNum}`;
+    const verifyTimestampKey = `verify_started_at_${phaseNum}`;
+    const buildAgentKey = `build_agent_${phaseNum}`;
+    const verifyAgentKey = `verify_agent_${phaseNum}`;
+
+    if (!phaseBuildReport) {
+      return {
+        phaseNumber: phaseNum,
+        stage: phaseNum === 1 ? 'build-in-progress' : 'ready-for-build',
+        buildTimestampKey,
+        verifyTimestampKey,
+        buildAgentKey,
+        verifyAgentKey,
+        isReVerify: false,
+      };
+    }
+
+    if (phaseBuildReport && !phaseVerifyReport) {
+      return {
+        phaseNumber: phaseNum,
+        stage: 'ready-for-verify',
+        buildTimestampKey,
+        verifyTimestampKey,
+        buildAgentKey,
+        verifyAgentKey,
+        isReVerify: false,
+      };
+    }
+
+    if (phaseVerifyReport) {
+      const result = phaseVerifyReport.result;
+      if (result === 'FAIL') {
+        // Check if build report was saved after verify via saves metadata
+        const buildKey = `build-report-${phaseNum}`;
+        const verifyKey = `verify-report-${phaseNum}`;
+        const buildSavedAt = (saves[buildKey] as { saved_at?: string } | undefined)?.saved_at
+          ?? (phaseNum === 1 ? (saves['build-report'] as { saved_at?: string } | undefined)?.saved_at : undefined);
+        const verifySavedAt = (saves[verifyKey] as { saved_at?: string } | undefined)?.saved_at
+          ?? (phaseNum === 1 ? (saves['verify-report'] as { saved_at?: string } | undefined)?.saved_at : undefined);
+
+        const isReVerify = !!(buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt));
+
+        return {
+          phaseNumber: phaseNum,
+          stage: isReVerify ? 'ready-for-re-verify' : 'needs-fixes',
+          buildTimestampKey,
+          verifyTimestampKey,
+          buildAgentKey,
+          verifyAgentKey,
+          isReVerify,
+        };
+      } else if (result === 'PASS') {
+        continue;
+      } else {
+        return {
+          phaseNumber: phaseNum,
+          stage: 'verify-status-unknown',
+          buildTimestampKey,
+          verifyTimestampKey,
+          buildAgentKey,
+          verifyAgentKey,
+          isReVerify: false,
+        };
+      }
+    }
+  }
+
+  // All phases passed
+  return null;
 }
 
 /**
@@ -422,68 +559,63 @@ export function determineStage(slug: string, artifacts: ArtifactState, workBranc
       return 'phase-1-ready-for-build';
     }
 
-    // Determine which phase we're on
-    for (let i = 0; i < totalPhases; i++) {
-      const phaseNum = i + 1;
-      const spec = specs[i];
-      if (!spec) continue;
-      const expectedBuildReport = spec.file === 'spec.md' ? 'build_report.md' : `build_report_${phaseNum}.md`;
-      const expectedVerifyReport = spec.file === 'spec.md' ? 'verify_report.md' : `verify_report_${phaseNum}.md`;
+    // Read saves metadata once for phase resolver and defense-in-depth checks
+    let savesMetadata: Record<string, unknown> | null = null;
+    try {
+      const savesPath = `.ana/plans/active/${slug}/.saves.json`;
+      const savesContent = readFileOnBranch(workBranch, savesPath);
+      if (savesContent) {
+        savesMetadata = JSON.parse(savesContent) as Record<string, unknown>;
+      }
+    } catch { /* no saves */ }
 
-      const phaseBuildReport = buildReports.find(r => r.file === expectedBuildReport);
-      const phaseVerifyReport = verifyReports.find(r => r.file === expectedVerifyReport);
+    const resolution = resolvePhase(artifacts, savesMetadata);
+    if (!resolution) {
+      // All phases passed
+      return 'ready-to-merge';
+    }
 
-      if (!phaseBuildReport) {
-        // This phase not built yet
-        if (phaseNum === 1) {
-          return 'phase-1-build-in-progress';
-        } else {
-          return `phase-${phaseNum}-ready-for-build`;
-        }
+    const { phaseNumber, stage, verifyTimestampKey } = resolution;
+
+    // Check verify-in-progress via phase-scoped worktree timestamp
+    if (stage === 'ready-for-verify' && projectRoot && worktreeExists(projectRoot, slug)) {
+      const wtSavesDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
+
+      // Try phase-scoped key first, fall back to unsuffixed for Phase 1 backward compat
+      let isRecent = isTimestampRecent(wtSavesDir, verifyTimestampKey);
+      if (!isRecent && phaseNumber === 1) {
+        isRecent = isTimestampRecent(wtSavesDir, 'verify_started_at');
       }
 
-      if (phaseBuildReport && !phaseVerifyReport) {
-        // Check verify-in-progress via worktree timestamp
-        if (projectRoot && worktreeExists(projectRoot, slug)) {
-          const wtSavesDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
-          if (isTimestampRecent(wtSavesDir, 'verify_started_at')) {
-            return `phase-${phaseNum}-verify-in-progress`;
-          }
-        }
-        return `phase-${phaseNum}-ready-for-verify`;
-      }
+      if (isRecent) {
+        // Defense-in-depth: verify timestamp must postdate build-report-N.saved_at
+        const buildReportKey = `build-report-${phaseNumber}`;
+        const buildReportSavedAt = (savesMetadata?.[buildReportKey] as { saved_at?: string } | undefined)?.saved_at
+          ?? (phaseNumber === 1 ? (savesMetadata?.['build-report'] as { saved_at?: string } | undefined)?.saved_at : undefined);
 
-      if (phaseVerifyReport) {
-        const result = phaseVerifyReport.result;
-        if (result === 'FAIL') {
-          // Check if build report was saved after verify via .saves.json timestamps
+        if (buildReportSavedAt) {
+          // Read the actual verify timestamp to compare
           try {
-            const savesPath = `.ana/plans/active/${slug}/.saves.json`;
-            const savesContent = readFileOnBranch(workBranch, savesPath);
-            if (savesContent) {
-              const saves = JSON.parse(savesContent) as Record<string, { saved_at?: string }>;
-              // Try phase-numbered keys first, fall back to unnumbered for backward compat
-              const buildKey = `build-report-${phaseNum}`;
-              const verifyKey = `verify-report-${phaseNum}`;
-              const buildSavedAt = (saves[buildKey] ?? (phaseNum === 1 ? saves['build-report'] : undefined))?.saved_at;
-              const verifySavedAt = (saves[verifyKey] ?? (phaseNum === 1 ? saves['verify-report'] : undefined))?.saved_at;
-              if (buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt)) {
-                return `phase-${phaseNum}-ready-for-re-verify`;
+            const wtSavesPath = path.join(wtSavesDir, '.saves.json');
+            if (fs.existsSync(wtSavesPath)) {
+              const wtSaves = JSON.parse(fs.readFileSync(wtSavesPath, 'utf-8'));
+              const verifyTs = wtSaves[verifyTimestampKey] ?? (phaseNumber === 1 ? wtSaves['verify_started_at'] : undefined);
+              if (typeof verifyTs === 'string') {
+                const verifyTime = new Date(verifyTs).getTime();
+                const buildReportTime = new Date(buildReportSavedAt).getTime();
+                if (!isNaN(verifyTime) && !isNaN(buildReportTime) && verifyTime < buildReportTime) {
+                  // Stale — verify timestamp predates build report, treat as not in progress
+                  return `phase-${phaseNumber}-ready-for-verify`;
+                }
               }
             }
-          } catch { /* fall through */ }
-          return `phase-${phaseNum}-needs-fixes`;
-        } else if (result === 'PASS') {
-          // This phase passed, continue to next phase
-          continue;
-        } else {
-          return `phase-${phaseNum}-verify-status-unknown`;
+          } catch { /* fall through to in-progress */ }
         }
+        return `phase-${phaseNumber}-verify-in-progress`;
       }
     }
 
-    // All phases passed
-    return 'ready-to-merge';
+    return `phase-${phaseNumber}-${stage}`;
   }
 
   return 'unknown';

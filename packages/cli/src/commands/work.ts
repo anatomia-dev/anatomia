@@ -27,7 +27,7 @@ import { checkForUpdates } from '../utils/update-check.js';
 import { agentCommand } from './platform.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
 import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
-import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
+import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, resolvePhase, compareTimestamp, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
 import type { ArtifactState } from './work-state.js';
 import { writeProofChain, guardFailResult } from './work-proof.js';
 
@@ -1142,46 +1142,52 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
       const localActivePath = path.join(localProjectRoot, '.ana', 'plans', 'active', slug);
 
       if (fs.existsSync(localActivePath)) {
-        const hasSpec = fs.existsSync(path.join(localActivePath, 'spec.md'));
-        const hasContract = fs.existsSync(path.join(localActivePath, 'contract.yaml'));
-        const hasBuildReport = fs.existsSync(path.join(localActivePath, 'build_report.md'));
-        const hasVerifyReport = fs.existsSync(path.join(localActivePath, 'verify_report.md'));
+        // Gather local artifact state for phase resolution
+        const localArtifacts = gatherLocalArtifactState(localActivePath);
+        const localSaves = readLocalSaves(localActivePath);
+        const resolution = resolvePhase(localArtifacts, localSaves);
 
-        const hasNumberedSpec = globSync(path.join(localActivePath, 'spec-*.md')).length > 0;
-        const hasNumberedBuildReport = globSync(path.join(localActivePath, 'build_report_*.md')).length > 0;
-        const hasNumberedVerifyReport = globSync(path.join(localActivePath, 'verify_report_*.md')).length > 0;
-
-        const specExists = hasSpec || hasNumberedSpec;
-        const buildReportExists = hasBuildReport || hasNumberedBuildReport;
-        const verifyReportExists = hasVerifyReport || hasNumberedVerifyReport;
-
-        if (verifyReportExists) {
-          // Check if FAIL → Fix phase
-          let isFail = false;
-          const verifyPath = path.join(localActivePath, 'verify_report.md');
-          if (fs.existsSync(verifyPath)) {
-            const content = fs.readFileSync(verifyPath, 'utf-8');
-            isFail = /\*\*Result:\*\*\s*FAIL/i.test(content);
+        if (resolution) {
+          // Multi-phase: use phase-scoped keys
+          const { stage, buildTimestampKey, verifyTimestampKey, isReVerify } = resolution;
+          if (stage === 'needs-fixes' || isReVerify) {
+            // FAIL → re-verify writes verify key (AC5, AC14, AC15)
+            await writeTimestamp(localActivePath, verifyTimestampKey, 'ana-verify', true);
+          } else if (stage === 'ready-for-verify') {
+            await writeTimestamp(localActivePath, verifyTimestampKey, 'ana-verify', true);
+          } else if (stage === 'ready-for-build' || stage === 'build-in-progress') {
+            await writeTimestamp(localActivePath, buildTimestampKey, 'ana-build');
           }
-          if (!isFail) {
-            const numberedReports = globSync(path.join(localActivePath, 'verify_report_*.md'));
-            for (const report of numberedReports) {
-              const content = fs.readFileSync(report, 'utf-8');
-              if (/\*\*Result:\*\*\s*FAIL/i.test(content)) {
-                isFail = true;
-                break;
-              }
+        } else {
+          // Single-spec path
+          const hasSpec = fs.existsSync(path.join(localActivePath, 'spec.md'));
+          const hasContract = fs.existsSync(path.join(localActivePath, 'contract.yaml'));
+          const hasBuildReport = fs.existsSync(path.join(localActivePath, 'build_report.md'));
+          const hasVerifyReport = fs.existsSync(path.join(localActivePath, 'verify_report.md'));
+
+          const specExists = hasSpec || localArtifacts.specs.length > 0;
+          const buildReportExists = hasBuildReport || localArtifacts.buildReports.length > 0;
+          const verifyReportExists = hasVerifyReport || localArtifacts.verifyReports.length > 0;
+
+          if (verifyReportExists) {
+            // Check if FAIL → Fix/re-verify phase
+            let isFail = false;
+            const verifyPath = path.join(localActivePath, 'verify_report.md');
+            if (fs.existsSync(verifyPath)) {
+              const content = fs.readFileSync(verifyPath, 'utf-8');
+              isFail = /\*\*Result:\*\*\s*FAIL/i.test(content);
             }
+            if (isFail) {
+              // Re-verify writes verify key (AC15, AC25, AC26)
+              await writeTimestamp(localActivePath, 'verify_started_at', 'ana-verify', true);
+            }
+          } else if (buildReportExists) {
+            // Verify phase: build report exists, no verify report
+            await writeTimestamp(localActivePath, 'verify_started_at', 'ana-verify', true);
+          } else if (specExists || hasContract) {
+            // Build phase: spec/contract exists, no build report
+            await writeTimestamp(localActivePath, 'build_started_at', 'ana-build');
           }
-          if (isFail) {
-            await writeTimestamp(localActivePath, 'build_started_at', 'ana-build', true);
-          }
-        } else if (buildReportExists) {
-          // Verify phase: build report exists, no verify report
-          await writeTimestamp(localActivePath, 'verify_started_at', 'ana-verify', true);
-        } else if (specExists || hasContract) {
-          // Build phase: spec/contract exists, no build report
-          await writeTimestamp(localActivePath, 'build_started_at', 'ana-build');
         }
       } else if (!worktreeExists(projectRoot, slug)) {
         console.log(chalk.yellow('⚠') + ` Plan artifacts not found for \`${slug}\`. Timestamp skipped.`);
@@ -1315,15 +1321,24 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
 
   // Phase: spec+contract exists, no build report → Build (create worktree)
   if ((specExists || hasContract) && !buildReportExists) {
+    // For multi-phase, use the resolver to get the correct phase-scoped key
+    const mainTreeResolution = getMainTreeResolution(activePath, slug, hasNumberedSpec);
+    if (mainTreeResolution && mainTreeResolution.stage === 'ready-for-build') {
+      return await startBuildPhaseWithKey(projectRoot, activePath, slug, artifactBranch, mainTreeResolution.buildTimestampKey, mainTreeResolution.buildAgentKey);
+    }
     return await startBuildPhase(projectRoot, activePath, slug, artifactBranch);
   }
 
   // Phase: build report exists, no verify report → Verify (print worktree)
   if (buildReportExists && !verifyReportExists) {
-    // Concurrency guard: check verify_started_at in worktree before writing
+    const mainTreeResolution = getMainTreeResolution(activePath, slug, hasNumberedSpec);
+    const verifyKey = mainTreeResolution?.verifyTimestampKey ?? 'verify_started_at';
+    const verifyAgent = mainTreeResolution ? 'ana-verify' : 'ana-verify';
+
+    // Concurrency guard: check verify timestamp in worktree before writing
     if (worktreeExists(projectRoot, slug)) {
       const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
-      const verifyGuard = checkConcurrencyGuard(wtPlanDir, 'verify_started_at', slug);
+      const verifyGuard = checkConcurrencyGuard(wtPlanDir, verifyKey, slug);
       if (verifyGuard.blocked) {
         if (force) {
           console.log(chalk.yellow(`⚠ Overriding active verify session for \`${slug}\` (started ${verifyGuard.startedAgo}).`));
@@ -1332,14 +1347,14 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
           process.exit(1);
         }
       }
-      await writeTimestamp(wtPlanDir, 'verify_started_at', 'ana-verify', true);
+      await writeTimestamp(wtPlanDir, verifyKey, verifyAgent, true);
     } else {
       console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
     }
     return printExistingWorktree(projectRoot, slug, artifactBranch, 'Verify');
   }
 
-  // Phase: verify report exists with FAIL → Fix (print worktree)
+  // Phase: verify report exists with FAIL → Fix/Re-verify (print worktree)
   if (verifyReportExists) {
     // Check verify result
     let isFail = false;
@@ -1361,11 +1376,13 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
     }
 
     if (isFail) {
-      // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
-      // Force overwrite: FAIL→Fix is a new build session, so the old build_started_at is stale
+      // Re-verify writes the verify key, not the build key (AC5, AC15, AC25)
+      const mainTreeResolution = getMainTreeResolution(activePath, slug, hasNumberedSpec);
+      const verifyKey = mainTreeResolution?.verifyTimestampKey ?? 'verify_started_at';
+
       if (worktreeExists(projectRoot, slug)) {
         const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
-        await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build', true);
+        await writeTimestamp(wtPlanDir, verifyKey, 'ana-verify', true);
       } else {
         console.log(chalk.yellow('⚠') + ` Worktree not found for \`${slug}\`. Timestamp skipped.`);
       }
@@ -1383,6 +1400,125 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
 }
 
 /**
+ * Gather artifact state from local filesystem (for inside-worktree resolution).
+ * Reads spec, build report, and verify report files from the local plan directory.
+ *
+ * @param localActivePath - Path to the slug's plan directory in the worktree
+ * @returns ArtifactState built from filesystem inspection
+ */
+function gatherLocalArtifactState(localActivePath: string): ArtifactState {
+  const specs: ArtifactState['specs'] = [];
+  const buildReports: ArtifactState['buildReports'] = [];
+  const verifyReports: ArtifactState['verifyReports'] = [];
+
+  // Check plan.md for phase info
+  const planPath = path.join(localActivePath, 'plan.md');
+  if (fs.existsSync(planPath)) {
+    const planContent = fs.readFileSync(planPath, 'utf-8');
+    const { specs: specFiles } = countPhases(planContent);
+    for (const specFile of specFiles) {
+      const specPath = path.join(localActivePath, specFile);
+      specs.push({ file: specFile, exists: fs.existsSync(specPath) });
+    }
+  }
+
+  if (specs.length === 0) {
+    // Fallback: single spec
+    if (fs.existsSync(path.join(localActivePath, 'spec.md'))) {
+      specs.push({ file: 'spec.md', exists: true });
+    }
+  }
+
+  // Gather build reports
+  for (const spec of specs) {
+    let buildReportFile: string;
+    let verifyReportFile: string;
+    if (spec.file === 'spec.md') {
+      buildReportFile = 'build_report.md';
+      verifyReportFile = 'verify_report.md';
+    } else {
+      const match = spec.file.match(/spec-(\d+)\.md/);
+      if (!match) continue;
+      buildReportFile = `build_report_${match[1]}.md`;
+      verifyReportFile = `verify_report_${match[1]}.md`;
+    }
+
+    if (fs.existsSync(path.join(localActivePath, buildReportFile))) {
+      buildReports.push({ file: buildReportFile, exists: true });
+    }
+
+    const verifyPath = path.join(localActivePath, verifyReportFile);
+    if (fs.existsSync(verifyPath)) {
+      const content = fs.readFileSync(verifyPath, 'utf-8');
+      const result = getVerifyResult(content);
+      verifyReports.push({ file: verifyReportFile, exists: true, result });
+    }
+  }
+
+  return {
+    scope: { exists: fs.existsSync(path.join(localActivePath, 'scope.md')) },
+    plan: { exists: fs.existsSync(path.join(localActivePath, 'plan.md')) },
+    specs,
+    buildReports,
+    verifyReports,
+  };
+}
+
+/**
+ * Read .saves.json from a local directory.
+ *
+ * @param localActivePath - Path to the slug's plan directory
+ * @returns Parsed saves content or null
+ */
+function readLocalSaves(localActivePath: string): Record<string, unknown> | null {
+  try {
+    const savesPath = path.join(localActivePath, '.saves.json');
+    if (!fs.existsSync(savesPath)) return null;
+    return JSON.parse(fs.readFileSync(savesPath, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get phase resolution for the main-tree startWork path.
+ * Gathers local artifact state and uses resolvePhase for consistent routing.
+ *
+ * @param activePath - Path to the slug's plan directory on the artifact branch
+ * @param slug - Work item slug
+ * @param hasNumberedSpec - Whether numbered spec files exist
+ * @returns Phase resolution or null for single-spec
+ */
+function getMainTreeResolution(activePath: string, slug: string, hasNumberedSpec: boolean): ReturnType<typeof resolvePhase> {
+  if (!hasNumberedSpec) return null;
+  const artifacts = gatherLocalArtifactState(activePath);
+  const saves = readLocalSaves(activePath);
+  return resolvePhase(artifacts, saves);
+}
+
+/**
+ * Start the Build phase with a specific phase-scoped timestamp key.
+ *
+ * @param projectRoot - Project root directory
+ * @param activePath - Path to the active plan directory
+ * @param slug - Work item slug
+ * @param artifactBranch - Artifact branch name
+ * @param buildTimestampKey - Phase-scoped build timestamp key
+ * @param _buildAgentKey - Phase-scoped build agent key name (unused — agent value is 'ana-build')
+ * @returns Promise that resolves when the build phase is started
+ */
+async function startBuildPhaseWithKey(
+  projectRoot: string,
+  activePath: string,
+  slug: string,
+  artifactBranch: string,
+  buildTimestampKey: string,
+  _buildAgentKey: string,
+): Promise<void> {
+  return await startBuildPhase(projectRoot, activePath, slug, artifactBranch, buildTimestampKey);
+}
+
+/**
  * Start the Build phase: create or enter the worktree.
  *
  * Uses kind-resolved prefix for branch creation. Reads the scope's kind
@@ -1393,19 +1529,21 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
  * @param activePath - Path to the active plan directory
  * @param slug - Work item slug
  * @param artifactBranch - Artifact branch name
+ * @param buildTimestampKey - Optional phase-scoped build timestamp key (defaults to 'build_started_at')
  * @returns Promise that resolves when the build phase is started
  */
 async function startBuildPhase(
   projectRoot: string,
   activePath: string,
   slug: string,
-  artifactBranch: string
+  artifactBranch: string,
+  buildTimestampKey: string = 'build_started_at',
 ): Promise<void> {
   // Check if worktree already exists (resume case)
   if (worktreeExists(projectRoot, slug)) {
     // Write timestamp to worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
     const wtPlanDir = path.join(getWorktreePath(projectRoot, slug), '.ana', 'plans', 'active', slug);
-    await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
+    await writeTimestamp(wtPlanDir, buildTimestampKey, 'ana-build');
     return printExistingWorktree(projectRoot, slug, artifactBranch, 'Build');
   }
 
@@ -1490,9 +1628,9 @@ async function startBuildPhase(
     }
     console.log(`  Context: ${result.contextFileWritten ? 'worktree-context.md written' : 'not written'}`);
 
-    // Record build_started_at in the worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
+    // Record build timestamp in the worktree (not the artifact branch) to avoid dirty .saves.json blocking git pull
     const wtPlanDir = path.join(result.worktreePath, '.ana', 'plans', 'active', slug);
-    await writeTimestamp(wtPlanDir, 'build_started_at', 'ana-build');
+    await writeTimestamp(wtPlanDir, buildTimestampKey, 'ana-build');
 
     console.log(`\nWorktree ready. Run:`);
     console.log(`  cd ${path.relative(process.cwd(), result.worktreePath) || result.worktreePath}`);
@@ -1610,17 +1748,11 @@ export function checkConcurrencyGuard(
     return { blocked: false };
   }
 
-  const timestamp = saves[timestampKey];
-  if (typeof timestamp !== 'string') {
+  const elapsedMs = compareTimestamp(saves[timestampKey]);
+  if (elapsedMs === null) {
     return { blocked: false };
   }
 
-  const startedAt = new Date(timestamp);
-  if (isNaN(startedAt.getTime())) {
-    return { blocked: false };
-  }
-
-  const elapsedMs = Date.now() - startedAt.getTime();
   if (elapsedMs >= CONCURRENCY_TIMEOUT_MS) {
     return { blocked: false };
   }
@@ -1628,7 +1760,7 @@ export function checkConcurrencyGuard(
   // Format relative time
   const minutes = Math.floor(elapsedMs / 60000);
   const startedAgo = minutes < 1 ? 'less than a minute ago' : `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-  const phaseName = timestampKey.replace('_started_at', '');
+  const phaseName = timestampKey.replace(/_started_at(?:_\d+)?$/, '');
 
   return {
     blocked: true,

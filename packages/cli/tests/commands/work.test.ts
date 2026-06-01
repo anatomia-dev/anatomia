@@ -4211,7 +4211,7 @@ describe('work start early-return phase detection', () => {
     expect(saves.verify_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
   });
 
-  it('early-return writes build_started_at during Fix phase (FAIL verify)', async () => {
+  it('early-return writes verify_started_at during Fix/re-verify phase (FAIL verify)', async () => {
     const slugDir = await createWorktreeTestProject('my-feature', {
       scope: true, plan: true, spec: true, contract: true,
       buildReport: true, verifyReport: true, verifyResult: 'FAIL',
@@ -4223,9 +4223,11 @@ describe('work start early-return phase detection', () => {
 
     const savesPath = path.join(slugDir, '.saves.json');
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    expect(saves.build_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
-    expect(saves.build_agent).toBe('ana-build');
-    const ts = new Date(saves.build_started_at).getTime();
+    // Re-verify is a verify session — writes verify key, not build key (AC15, AC25)
+    expect(saves.verify_started_at).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    expect(saves.verify_agent).toBe('ana-verify');
+    expect(saves.build_started_at).toBeUndefined();
+    const ts = new Date(saves.verify_started_at).getTime();
     expect(ts).toBeGreaterThanOrEqual(before);
     expect(ts).toBeLessThanOrEqual(after);
   });
@@ -4252,25 +4254,25 @@ describe('work start early-return phase detection', () => {
   });
 
   // @ana A012
-  it('force parameter overwrites existing timestamp', async () => {
+  it('force parameter overwrites existing verify timestamp on re-verify', async () => {
     const slugDir = await createWorktreeTestProject('my-feature', {
       scope: true, plan: true, spec: true, contract: true,
       buildReport: true, verifyReport: true, verifyResult: 'FAIL',
     });
 
-    // Pre-write a build_started_at timestamp
+    // Pre-write a verify_started_at timestamp
     const savesPath = path.join(slugDir, '.saves.json');
     const oldTimestamp = '2026-04-01T10:00:00Z';
     await fs.writeFile(savesPath, JSON.stringify({
-      build_started_at: oldTimestamp,
-      build_agent: 'ana-build',
+      verify_started_at: oldTimestamp,
+      verify_agent: 'ana-verify',
     }), 'utf-8');
 
     await startWork('my-feature');
 
     const saves = JSON.parse(fsSync.readFileSync(savesPath, 'utf-8'));
-    // FAIL→Fix path uses force: true, so build_started_at should be overwritten
-    expect(saves.build_started_at).not.toBe(oldTimestamp);
+    // FAIL→Fix path uses force: true for verify key, so verify_started_at should be overwritten (AC15)
+    expect(saves.verify_started_at).not.toBe(oldTimestamp);
   });
 
   // @ana A013
