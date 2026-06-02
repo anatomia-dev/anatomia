@@ -1,0 +1,198 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix Vite Framework Detection and Service Detection Gaps"
+
+assertions:
+  # AC1: Vue 3 + Vite detection at stack level
+  - id: A001
+    says: "Vue apps are detected as Vue at the stack level"
+    block: "Vue detector identifies vue in dependencies"
+    target: "result.framework"
+    matcher: "equals"
+    value: "vue"
+
+  - id: A002
+    says: "Vue detection is blocked when Nuxt is present"
+    block: "Vue detector guards against Nuxt"
+    target: "result.framework"
+    matcher: "equals"
+    value: null
+
+  - id: A003
+    says: "Vue detection confidence increases with config file evidence"
+    block: "Vue detector boosts confidence with vue.config hint"
+    target: "result.confidence"
+    matcher: "greater"
+    value: 0.75
+
+  # AC2: Library guard prevents false positives
+  - id: A004
+    says: "Library packages with vite config are not detected as surfaces"
+    block: "library guard excludes vite config package with hasMain"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A005
+    says: "Library packages with exports field are not detected as surfaces"
+    block: "library guard excludes vite config package with hasExports"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 0
+
+  # AC3: Non-library vite packages ARE detected
+  - id: A006
+    says: "Deployable apps with vite config are detected as surfaces"
+    block: "vite config package without library markers is detected as surface"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 1
+
+  - id: A007
+    says: "The library guard only applies to vite configs, not other framework configs"
+    block: "non-vite strong config with hasMain is still detected as surface"
+    target: "surfaces.length"
+    matcher: "equals"
+    value: 1
+
+  # AC4: Dep-based framework resolution for vite hints
+  - id: A008
+    says: "Surfaces with vite config and Vue deps get the Vue framework label"
+    block: "vite hint resolves to Vue when vue is in deps"
+    target: "surface.framework"
+    matcher: "equals"
+    value: "Vue"
+
+  - id: A009
+    says: "Surfaces with vite config and React deps get the React framework label"
+    block: "vite hint resolves to React when react is in deps"
+    target: "surface.framework"
+    matcher: "equals"
+    value: "React"
+
+  - id: A010
+    says: "Surfaces with vite config but no framework deps get no framework label"
+    block: "vite hint resolves to null when no framework deps present"
+    target: "surface.framework"
+    matcher: "equals"
+    value: null
+
+  # AC5: MCP service detection
+  - id: A011
+    says: "MCP SDK is detected as an external service"
+    block: "EXTERNAL_SERVICE_PACKAGES includes MCP"
+    target: "service.name"
+    matcher: "equals"
+    value: "MCP Server"
+
+  - id: A012
+    says: "MCP is categorized as an AI service"
+    block: "EXTERNAL_SERVICE_PACKAGES includes MCP"
+    target: "service.category"
+    matcher: "equals"
+    value: "ai"
+
+  # AC6: Upstash service detection
+  - id: A013
+    says: "Upstash Ratelimit is detected as an external service"
+    block: "EXTERNAL_SERVICE_PACKAGES includes Upstash Ratelimit"
+    target: "service.name"
+    matcher: "equals"
+    value: "Upstash Ratelimit"
+
+  - id: A014
+    says: "Upstash Vector is detected as a vector database service"
+    block: "EXTERNAL_SERVICE_PACKAGES includes Upstash Vector"
+    target: "service.name"
+    matcher: "equals"
+    value: "Upstash Vector"
+
+  - id: A015
+    says: "Upstash Workflow is detected as a queue service"
+    block: "EXTERNAL_SERVICE_PACKAGES includes Upstash Workflow"
+    target: "service.name"
+    matcher: "equals"
+    value: "Upstash Workflow"
+
+  # AC7: No regressions
+  - id: A016
+    says: "Next.js detection is unchanged after adding Vue and vite support"
+    block: "existing Next.js detection still works"
+    target: "result.framework"
+    matcher: "equals"
+    value: "nextjs"
+
+  - id: A017
+    says: "React detection still guards against Next.js"
+    block: "React detector returns null when Next.js is present"
+    target: "result.framework"
+    matcher: "equals"
+    value: null
+
+  # AC8: Config sync
+  - id: A018
+    says: "Vite config files are recognized as strong framework indicators"
+    block: "STRONG_FRAMEWORK_CONFIGS includes vite configs"
+    target: "STRONG_FRAMEWORK_CONFIGS.has('vite.config.ts')"
+    matcher: "truthy"
+
+  - id: A019
+    says: "Vite config files are recognized as framework hints during census"
+    block: "FRAMEWORK_HINTS includes vite entries"
+    target: "viteHints.length"
+    matcher: "equals"
+    value: 3
+
+  # AC9: SourceRoot type extensions
+  - id: A020
+    says: "Census source roots include library marker fields"
+    block: "SourceRoot has hasMain and hasExports fields"
+    target: "root.hasMain"
+    matcher: "exists"
+
+  - id: A021
+    says: "Census source roots track package exports declarations"
+    block: "SourceRoot has hasMain and hasExports fields"
+    target: "root.hasExports"
+    matcher: "exists"
+
+  # AC10: Test helper compatibility
+  - id: A022
+    says: "Test helper defaults keep all existing tests passing"
+    block: "makeRoot defaults hasMain and hasExports to false"
+    target: "root.hasMain"
+    matcher: "equals"
+    value: false
+
+  - id: A023
+    says: "Existing surface detection tests pass with new SourceRoot fields"
+    block: "existing signal tests pass with updated makeRoot"
+    target: "surfaces.length"
+    matcher: "greater"
+    value: 0
+
+  # Vue detector edge cases
+  - id: A024
+    says: "Vue detection works with Vite as the build tool"
+    block: "Vue detector detects vue with vite in deps"
+    target: "result.framework"
+    matcher: "equals"
+    value: "vue"
+
+file_changes:
+  - path: "packages/cli/src/engine/types/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/node/vue.ts"
+    action: create
+  - path: "packages/cli/src/engine/detectors/node/framework-registry.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/node-frameworks.test.ts"
+    action: modify
