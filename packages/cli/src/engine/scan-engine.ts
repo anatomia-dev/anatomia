@@ -13,6 +13,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { glob } from 'glob';
 
 /** Normalize a path to forward slashes for cross-platform consistency. */
@@ -580,7 +581,12 @@ async function detectSchemas(
 
 // --- Secrets detection ---
 
-async function detectSecrets(rootPath: string): Promise<EngineResult['secrets']> {
+/**
+ * Detect environment file presence and gitignore coverage.
+ * @param rootPath - The root directory of the project to scan
+ * @returns Secret detection results including env file and gitignore status
+ */
+export async function detectSecrets(rootPath: string): Promise<EngineResult['secrets']> {
   let envFileExists = false;
   let envExampleExists = false;
   let gitignoreCoversEnv = false;
@@ -595,9 +601,12 @@ async function detectSecrets(rootPath: string): Promise<EngineResult['secrets']>
     );
   } catch { /* readdir failed */ }
   try {
-    const gitignore = await fs.readFile(path.join(rootPath, '.gitignore'), 'utf-8');
-    gitignoreCoversEnv = gitignore.includes('.env');
-  } catch { /* no .gitignore */ }
+    execSync('git check-ignore --no-index .env', { cwd: rootPath, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+    gitignoreCoversEnv = true;
+  } catch {
+    // Exit 1 = not ignored, exit 128 = not a git repo — both mean "not covered"
+    gitignoreCoversEnv = false;
+  }
 
   return { envFileExists, envExampleExists, gitignoreCoversEnv };
 }

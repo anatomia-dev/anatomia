@@ -273,7 +273,7 @@ export function formatHumanReadable(
   if (activity) {
     const parts: string[] = [];
     if (activity.activeContributors) {
-      parts.push(`${activity.activeContributors} contributor${activity.activeContributors === 1 ? '' : 's'}`);
+      parts.push(`${activity.activeContributors} active contributor${activity.activeContributors === 1 ? '' : 's'}`);
     }
     if (activity.weeklyCommits && activity.weeklyCommits.length > 0) {
       parts.push(activity.weeklyCommits.join(chalk.gray('→')) + ' weekly');

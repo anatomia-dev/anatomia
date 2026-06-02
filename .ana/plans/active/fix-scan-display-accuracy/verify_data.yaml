@@ -1,0 +1,46 @@
+schema: 1
+findings:
+  - category: test
+    summary: "git init without -b main in both new test files — CI runners with different init.defaultBranch may fail"
+    file: "packages/cli/tests/engine/scan-engine-secrets.test.ts"
+    line: 20
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A001", "A002", "A003", "A004"]
+
+  - category: test
+    summary: "git init without -b main in contributor display test"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1282
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A005", "A006", "A007"]
+
+  - category: test
+    summary: "A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1296
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A005"]
+
+  - category: test
+    summary: "Contributor display test gates assertion behind truthy check — if Activity line disappears from output, test silently passes"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1295
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A005", "A006"]
+
+  - category: code
+    summary: "Synchronous execSync in async function — documented as acceptable but adds subprocess overhead to every scan"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 604
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A001", "A002", "A003", "A004"]
+
+  - category: upstream
+    summary: "formatHumanReadable still not exported — display tests use integration approach (run dist/index.js) rather than unit testing the format function directly"
+    severity: observation
+    suggested_action: monitor
