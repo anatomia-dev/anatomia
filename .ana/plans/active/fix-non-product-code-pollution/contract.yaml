@@ -1,0 +1,122 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix non-product code pollution in findings, hot files, schema counts, and deploy detection"
+
+assertions:
+  # AC5: Single shared definition
+  - id: A001
+    says: "All non-product path exclusions come from one shared definition"
+    block: "NON_PRODUCT_GLOB_IGNORE derives from EXCLUDED_SEGMENTS"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "exists"
+
+  - id: A002
+    says: "The shared ignore list includes every non-product segment"
+    block: "NON_PRODUCT_GLOB_IGNORE contains all EXCLUDED_SEGMENTS entries"
+    target: "NON_PRODUCT_GLOB_IGNORE.length"
+    matcher: "greater"
+    value: 20
+
+  - id: A003
+    says: "The shared ignore list includes build artifact directories"
+    block: "NON_PRODUCT_GLOB_IGNORE contains build-artifact globs"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "contains"
+    value: "**/node_modules/**"
+
+  # AC1: Findings rules use shared constant
+  - id: A004
+    says: "Validation rule excludes template route files from its count"
+    block: "validation rule uses NON_PRODUCT_GLOB_IGNORE"
+    target: "validation.routeFiles"
+    matcher: "not_contains"
+    value: "templates/"
+
+  - id: A005
+    says: "Error boundary rule excludes template page files from its count"
+    block: "errorBoundaries rule uses NON_PRODUCT_GLOB_IGNORE"
+    target: "errorBoundaries.pageFiles"
+    matcher: "not_contains"
+    value: "examples/"
+
+  - id: A006
+    says: "Secret scanner excludes files under non-product directories"
+    block: "secrets rule uses NON_PRODUCT_GLOB_IGNORE"
+    target: "secrets.scannedFiles"
+    matcher: "not_contains"
+    value: "playground/"
+
+  # AC2: Hot file filtering
+  - id: A007
+    says: "Template config files do not appear in hot file results"
+    block: "hot file detection excludes non-product paths"
+    target: "highChurnFiles"
+    matcher: "not_contains"
+    value: "templates/"
+
+  - id: A008
+    says: "Legitimate source files still appear in hot file results"
+    block: "hot file detection preserves product paths"
+    target: "highChurnFiles[0].path"
+    matcher: "exists"
+
+  # AC3: Supabase schema filtering
+  - id: A009
+    says: "Example migration files are excluded from Supabase model count"
+    block: "Supabase detection filters non-product migration files"
+    target: "migrationFiles"
+    matcher: "not_contains"
+    value: "examples/"
+
+  - id: A010
+    says: "Schema directory points to a real product directory, not an example"
+    block: "Supabase schemaDir excludes non-product paths"
+    target: "schemaDir"
+    matcher: "not_contains"
+    value: "templates/"
+
+  - id: A011
+    says: "When all migrations are in example directories, Supabase reports not found"
+    block: "Supabase detection handles all-excluded case"
+    target: "schemas.supabase.found"
+    matcher: "equals"
+    value: false
+
+  # AC4: Deploy discovery filtering
+  - id: A012
+    says: "Template Dockerfiles do not register as the project deploy platform"
+    block: "deploy discovery skips non-product roots"
+    target: "deployEntries"
+    matcher: "not_contains"
+    value: "templates/"
+
+  - id: A013
+    says: "Deploy configs in product directories are still detected"
+    block: "deploy discovery preserves product roots"
+    target: "deployEntries[0].platform"
+    matcher: "exists"
+
+  - id: A014
+    says: "Example wrangler configs do not register as Cloudflare Workers"
+    block: "deploy discovery skips example roots"
+    target: "deployEntries"
+    matcher: "not_contains"
+    value: "examples/"
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/src/engine/findings/rules/validation.ts"
+    action: modify
+  - path: "packages/cli/src/engine/findings/rules/errorBoundaries.ts"
+    action: modify
+  - path: "packages/cli/src/engine/findings/rules/secrets.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/git.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/engine/census.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/non-product-filtering.test.ts"
+    action: create
