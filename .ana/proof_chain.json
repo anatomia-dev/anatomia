@@ -46150,7 +46150,10 @@
           "suggested_action": "scope",
           "related_assertions": [],
           "id": "codex-support-C13",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is wrong — advisoryPipelineCheck IS called for Codex dispatch at run.ts:173, inside dispatchToCodex. Both Claude (line 377) and Codex (line 173) paths call the advisory check.",
+          "closed_at": "2026-06-02T20:02:59.367Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
