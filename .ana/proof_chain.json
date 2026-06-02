@@ -46097,7 +46097,10 @@
           "severity": "risk",
           "suggested_action": "scope",
           "id": "codex-support-C9",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Fixed in same scope — KNOWN_PLATFORMS.has(platform) validation at run.ts:326-331 rejects unknown platforms with clear error before dispatch. resolvePlatform is resolution-only; caller validates.",
+          "closed_at": "2026-06-02T19:42:39.389Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
