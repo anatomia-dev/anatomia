@@ -1,0 +1,39 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A004-A006 verify glob array contents and isNonProductPath, not actual glob execution in findings rules"
+    file: "packages/cli/tests/engine/non-product-filtering.test.ts"
+    line: 53
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A004", "A005", "A006"]
+  - category: test
+    summary: "A007-A008 test isNonProductPath directly, not the git churn detection loop in git.ts"
+    file: "packages/cli/tests/engine/non-product-filtering.test.ts"
+    line: 75
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A007", "A008"]
+  - category: test
+    summary: "A011 simulates Supabase filtering inline instead of calling scan-engine detectSchemas"
+    file: "packages/cli/tests/engine/non-product-filtering.test.ts"
+    line: 117
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A011"]
+  - category: code
+    summary: "Redundant alias: GLOB_IGNORE = NON_PRODUCT_GLOB_IGNORE adds an unnecessary indirection"
+    file: "packages/cli/src/engine/findings/rules/errorBoundaries.ts"
+    line: 16
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "NON_PRODUCT_GLOB_IGNORE includes **/build/** which collides with legitimate 'build' directories in some monorepo layouts"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 107
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "AC6 regression bar (scan dub/langfuse/anatomia) is manual — no automated regression guard"
+    severity: observation
+    suggested_action: scope

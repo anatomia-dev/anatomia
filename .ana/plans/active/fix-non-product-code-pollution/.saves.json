@@ -24,5 +24,41 @@
   "spec": {
     "saved_at": "2026-06-02T17:56:59.319Z",
     "hash": "sha256:321adbf6827bb0936d268a60493d0018e70712ff6b29488c6ffb7e6b7badbd31"
+  },
+  "build_started_at": "2026-06-02T18:05:48.876Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-02T18:16:13.486Z",
+    "hash": "sha256:cdecc14dff5419c741002688ac261fe9c06a3b6a0d01b0f52c835e5be3ef7ac8"
+  },
+  "build-data": {
+    "saved_at": "2026-06-02T18:16:13.487Z",
+    "hash": "sha256:d395849aaa230350fc1f6302665d73245ad24e0457131596f62656e3e7106d32"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/git.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/src/engine/findings/rules/errorBoundaries.ts",
+    "packages/cli/src/engine/findings/rules/secrets.ts",
+    "packages/cli/src/engine/findings/rules/validation.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/non-product-filtering.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T18:27:46.196Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:078a984daa8960fd1cdc00c79f9e8a94d36e079976501fbcff76288382e512d5",
+    "run_at": "2026-06-02T18:32:23.078Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T18:32:23.112Z",
+    "hash": "sha256:a7acfeb7360787ff2d0c35fe5b0fc77ec106ee61c8a5aa130b9a9409719adfb2"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T18:32:23.112Z",
+    "hash": "sha256:eb02d46e4667b09059f9b13b6016491d8e1c4a379c28ea24b8559bb5814b838a"
   }
 }

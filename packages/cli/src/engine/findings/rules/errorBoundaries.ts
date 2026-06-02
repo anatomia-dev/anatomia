@@ -11,11 +11,9 @@
 
 import { glob } from 'glob';
 import type { Finding, FindingContext } from '../index.js';
+import { NON_PRODUCT_GLOB_IGNORE } from '../../detectors/surfaces.js';
 
-const GLOB_IGNORE = [
-  '**/node_modules/**', '**/dist/**', '**/build/**', '**/.next/**',
-  '**/.git/**', '**/.turbo/**', '**/out/**', '**/.cache/**',
-];
+const GLOB_IGNORE = NON_PRODUCT_GLOB_IGNORE;
 
 /**
  * Check for error boundary existence in Next.js App Router projects.

@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "Removing test/tests/e2e from SECRETS_EXTRA_IGNORE relies on EXCLUDED_SEGMENTS always containing those entries"
+    file: "packages/cli/src/engine/findings/rules/secrets.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "AC6 regression bar requires manual integration testing on external repos"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: scope

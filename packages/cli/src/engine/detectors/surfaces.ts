@@ -60,7 +60,7 @@ export const INFRA_PATTERNS = new Set([
  * from surface detection. Covers examples, templates, testing fixtures,
  * playgrounds, and similar non-shippable directories.
  */
-const EXCLUDED_SEGMENTS = new Set([
+export const EXCLUDED_SEGMENTS = new Set([
   'examples', 'example',
   'example-apps',
   'templates', 'template',
@@ -94,6 +94,20 @@ export function isNonProductPath(relativePath: string): boolean {
   if (lastSegment.toLowerCase().endsWith('-e2e')) return true;
   return false;
 }
+
+/**
+ * Glob ignore patterns for non-product and build-artifact directories.
+ * Combines build-artifact globs (node_modules, dist, etc.) with globs derived
+ * from EXCLUDED_SEGMENTS. Used by findings rules, schema detection, and any
+ * other subsystem that needs to skip non-product files during glob operations.
+ */
+export const NON_PRODUCT_GLOB_IGNORE: string[] = [
+  // Build artifacts
+  '**/node_modules/**', '**/dist/**', '**/build/**', '**/.next/**',
+  '**/.git/**', '**/.turbo/**', '**/out/**', '**/.cache/**',
+  // Non-product paths derived from EXCLUDED_SEGMENTS
+  ...[...EXCLUDED_SEGMENTS].map(s => `**/${s}/**`),
+];
 
 /** Minimum source files for a package to be considered as a surface. */
 export const MIN_SOURCE_FILES = 5;

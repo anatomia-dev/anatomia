@@ -532,8 +532,11 @@ async function detectSchemas(
   // Supabase migrations — count unique tables, not files
   if (hasDep('@supabase/supabase-js', census)) {
     try {
-      const migrationFiles = await glob('**/supabase/migrations/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]);
-      const schemaFiles = await glob('**/schema/**/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]);
+      // Filter out non-product paths (e2e/, examples/, fixtures/, etc.)
+      const migrationFiles = (await glob('**/supabase/migrations/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]))
+        .filter(m => !isNonProductPath(m));
+      const schemaFiles = (await glob('**/schema/**/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]))
+        .filter(m => !isNonProductPath(m));
       const files = [...migrationFiles, ...schemaFiles];
       if (files.length > 0) {
         const modelCount = await countUniqueTables(rootPath, files);

@@ -419,6 +419,8 @@ export function discoverDeployments(
 ): DeploymentEntry[] {
   const entries: DeploymentEntry[] = [];
   for (const root of roots) {
+    // Skip non-product paths (e2e fixtures, examples, templates, etc.)
+    if (isNonProductPath(root.relativePath)) continue;
     for (const [file, platform] of Object.entries(DEPLOYMENT_CONFIGS)) {
       const full = path.join(root.absolutePath, file);
       if (existsSync(full)) {
