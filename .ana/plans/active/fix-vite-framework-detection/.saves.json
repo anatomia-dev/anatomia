@@ -45,5 +45,20 @@
     "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
     "packages/cli/tests/engine/types/census.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T19:28:44.758Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f07336a74e725e54a0ac67c6faf50cbdef1525ba4a70c3016348e26e836d74a4",
+    "run_at": "2026-06-02T19:34:57.494Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T19:34:57.527Z",
+    "hash": "sha256:5007c4f5aedd448c2894cabd2042556a68029752c3da708afcc4cb4240012558"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T19:34:57.527Z",
+    "hash": "sha256:0704a0df030218c5e3db436b9f35a65006bca62ce79d17e99fa8fb94beaa99b4"
+  }
 }
