@@ -39,7 +39,7 @@ One definition of "non-product." Every system that touches file paths uses it.
 - AC3: Supabase schema detection excludes migration files under non-product paths, and the `isNonProductPath` filter is applied BEFORE `firstPath` capture so `schemaDir` points to a real product directory
 - AC4: Deploy discovery excludes deploy configs from non-product workspace packages — template Dockerfiles do not register as the project's deploy platform
 - AC5: All non-product path exclusions derive from the single `EXCLUDED_SEGMENTS` set in surfaces.ts — no duplicated definitions of what constitutes non-product code
-- AC6: Clean control regression bar: scan output for dub, langfuse, and anatomia is identical before and after this change. Zero difference. These three repos have no non-product pollution and must not be affected.
+- AC6: Clean control regression bar: run `ana scan --json` on dub, langfuse, and anatomia before and after this change, diff the JSON output, zero differences. These three repos have no non-product pollution and must not be affected. The diff must be empty (excluding `scannedAt` timestamp).
 
 ## Edge Cases & Risks
 
