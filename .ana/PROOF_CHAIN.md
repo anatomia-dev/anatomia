@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-185 runs · 174 active · 5 promoted · 875 closed
+185 runs · 173 active · 5 promoted · 876 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 33 | 2026-06-02 |
-| cli | 128 | 118 | 2026-06-02 |
+| cli | 128 | 117 | 2026-06-02 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 174 total)
+## Active Findings (30 shown of 173 total)
 
 ### packages/cli/src/commands/work-proof.ts
 

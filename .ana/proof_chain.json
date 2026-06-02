@@ -44938,7 +44938,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "gitignore-force-add-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Theoretical perf concern — lstatSync per-file on .claude/ which contains <50 files (agent definitions + skills). O(n) on n<50 is not a scalability concern. KNOWN_ROOTS dirs are small by design.",
+          "closed_at": "2026-06-02T21:49:58.763Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
