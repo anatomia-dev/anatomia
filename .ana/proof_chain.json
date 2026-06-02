@@ -45544,7 +45544,10 @@
           "severity": "debt",
           "suggested_action": "monitor",
           "id": "platform-aware-cli-C7",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Claim outdated — advisoryPipelineCheck was rewritten. Lines 260-284 use fs.existsSync file-presence checks (scope.md, plan.md). Zero .saves.json reads. No stage field coupling.",
+          "closed_at": "2026-06-02T20:03:27.649Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
