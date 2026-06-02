@@ -48683,6 +48683,211 @@
         "base_commit": "153a6f852a0dad3103de4c2a70ba43724b56d5e0"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-scan-display-accuracy",
+      "feature": "Fix scan display accuracy — env hygiene false positive and contributor label",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 8,
+        "satisfied": 8,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Repos that only gitignore .env.local are correctly flagged as not covering .env",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Repos with .env in their gitignore are still correctly detected as covered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Non-git directories gracefully fall back to assuming .env is not covered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Git negation patterns that un-ignore .env are correctly detected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The contributor count shows the active qualifier",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A single contributor uses singular form",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A single contributor does not show plural form",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Existing env hygiene finding tests still pass unchanged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 35,
+        "think": 1,
+        "plan": 7,
+        "build": 5,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:7fa0cc078b2538d09cbb436d7a192bc153d4bea787f763fc5da07ff87283a517",
+        "contract": "sha256:8a0ea7ce883e83433da112366cc4faa3a4d8eb49920c42eab463c2aede3d650f",
+        "plan": "sha256:5105e4b48f287725ee67fa1f7ae576096329abb54c44f48814d1d7c6628a75f2",
+        "spec": "sha256:6c931de1b61cfdc157e5e2975a5d422a36b5576f60819afd05ff0525a3376285",
+        "build-report": "sha256:0386447e65ab60c56089e6121d32d30d14245520204704adec1838d6c6e16ec3",
+        "build-data": "sha256:995bb05ceedaee16d11a09b3de3a78b37ac759343704576750898ffa739ce57b",
+        "verify-report": "sha256:3e285822b19f60a87255958a178e4bbe996bd29f6ad87a28a123ead85b2d3253",
+        "verify-data": "sha256:4f3b159ebab8a562a7e5e6eb92e492925343d7986ca39fabee7c0f89f40d739b"
+      },
+      "completed_at": "2026-06-02T20:02:28.837Z",
+      "modules_touched": [
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/commands/scan.test.ts",
+        "packages/cli/tests/engine/scan-engine-secrets.test.ts"
+      ],
+      "scope_summary": "The scan makes two claims the data doesn't support. First, `.gitignore covers .env` passes on a substring match — `.env.local` contains `.env`, so repos that only cover `.env.local` variants get a false \"clean\" checkmark. Second, the contributor count shows `activeContributors` without the \"active\" qualifier, making a 563-contributor repo look like it has 27 people.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "git init without -b main in both new test files — CI runners with different init.defaultBranch may fail",
+          "file": "packages/cli/tests/engine/scan-engine-secrets.test.ts",
+          "anchor": null,
+          "line": 20,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004"
+          ],
+          "id": "fix-scan-display-accuracy-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "git init without -b main in contributor display test",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1282,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A005",
+            "A006",
+            "A007"
+          ],
+          "id": "fix-scan-display-accuracy-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1296,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "fix-scan-display-accuracy-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Contributor display test gates assertion behind truthy check — if Activity line disappears from output, test silently passes",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1295,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "fix-scan-display-accuracy-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Synchronous execSync in async function — documented as acceptable but adds subprocess overhead to every scan",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 604,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004"
+          ],
+          "id": "fix-scan-display-accuracy-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "formatHumanReadable still not exported — display tests use integration approach (run dist/index.js) rather than unit testing the format function directly",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-scan-display-accuracy-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-02T20:02:28.837Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "detectSecrets is now exported solely for testing — no other module imports it",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-02T19:40:26.793Z",
+        "completed_at": "2026-06-02T20:02:28.830Z",
+        "commit_count": 0,
+        "base_commit": "f9a05c83784544c4c4e77600c57e957df0fbe740"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

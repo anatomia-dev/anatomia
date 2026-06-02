@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-183 runs · 180 active · 5 promoted · 859 closed
+184 runs · 185 active · 5 promoted · 860 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 35 | 2026-06-02 |
-| cli | 126 | 121 | 2026-06-02 |
+| cli | 127 | 126 | 2026-06-02 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 180 total)
+## Active Findings (30 shown of 185 total)
 
 ### .claude/agents/ana-learn.md
 
@@ -34,16 +34,9 @@
 
 - **code:** Backfill migration uses `as string` cast to compare old accept values against narrowed type — *Rename finding action accept to acknowledge*
 
-### packages/cli/src/commands/work-state.ts
-
-- **code:** resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate — *Fix Multi-Phase Timestamp Poisoning*
-
 ### packages/cli/src/commands/work.ts
 
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
-- **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -63,6 +56,7 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
+- **code:** Synchronous execSync in async function — documented as acceptable but adds subprocess overhead to every scan — *Fix scan display accuracy — env hygiene false positive and contributor label*
 - **test:** A011-A015 (service detection entries) have no tagged tests — verified by source inspection only — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/tests/commands/config.test.ts
@@ -78,6 +72,12 @@
 - **test:** A004/A005 test checks test helper output, not real init behavior — *Learn Agent Codex Adaptation*
 - **test:** A003 test asserts mock stub content ('# ana-learn prompt') not contract value ('Ana Learn') — *Learn Agent Codex Adaptation*
 
+### packages/cli/tests/commands/scan.test.ts
+
+- **test:** git init without -b main in contributor display test — *Fix scan display accuracy — env hygiene false positive and contributor label*
+- **test:** A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor — *Fix scan display accuracy — env hygiene false positive and contributor label*
+- **test:** Contributor display test gates assertion behind truthy check — if Activity line disappears from output, test silently passes — *Fix scan display accuracy — env hygiene false positive and contributor label*
+
 ### packages/cli/tests/commands/work-ci-mocked.test.ts
 
 - **test:** Duplicate @ana tags A001-A006 in work-ci-mocked.test.ts — old getAgentPid/conflict tests and new session tests share tag IDs from different contracts — *Fix Conditional Test No-Ops*
@@ -91,13 +91,16 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** A015 edge-case test uses toBeGreaterThanOrEqual(1) — weak assertion on entry count — *Rename finding action accept to acknowledge*
-- **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/tests/engine/non-product-filtering.test.ts
 
 - **test:** A004-A006 verify glob array contents and isNonProductPath, not actual glob execution in findings rules — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
 - **test:** A007-A008 test isNonProductPath directly, not the git churn detection loop in git.ts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
 - **test:** A011 simulates Supabase filtering inline instead of calling scan-engine detectSchemas — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
+
+### packages/cli/tests/engine/scan-engine-secrets.test.ts
+
+- **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
 
 ### packages/cli/tests/templates/codex-learn-template.test.ts
 
