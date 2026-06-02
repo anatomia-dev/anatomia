@@ -10,6 +10,8 @@ import {
   detectSurfaces,
   enrichPackages,
   isNonProductPath,
+  isNonProductFilePath,
+  FILE_PATH_DEPTH_LIMIT,
   STRONG_FRAMEWORK_CONFIGS,
   INFRA_PATTERNS,
   MIN_SOURCE_FILES,
@@ -947,6 +949,47 @@ describe('isNonProductPath is exported and usable', () => {
   it('is case-insensitive', () => {
     expect(isNonProductPath('Examples/app')).toBe(true);
     expect(isNonProductPath('TEMPLATES/app')).toBe(true);
+  });
+});
+
+// @ana A021
+describe('isNonProductFilePath is exported and usable', () => {
+  it('isNonProductFilePath is a function', () => {
+    expect(typeof isNonProductFilePath).toBe('function');
+  });
+
+  // @ana A020
+  it('FILE_PATH_DEPTH_LIMIT is 3', () => {
+    expect(FILE_PATH_DEPTH_LIMIT).toBe(3);
+  });
+
+  it('returns true for shallow non-product file paths', () => {
+    expect(isNonProductFilePath('examples/next-app/src/route.ts')).toBe(true);
+    expect(isNonProductFilePath('templates/starter/src/index.ts')).toBe(true);
+    expect(isNonProductFilePath('e2e/integration/test.ts')).toBe(true);
+  });
+
+  it('returns false for deep paths with excluded segment names', () => {
+    expect(isNonProductFilePath('apps/web/app/(ee)/api/e2e/bounties/route.ts')).toBe(false);
+    expect(isNonProductFilePath('packages/core/src/lib/templates/data.ts')).toBe(false);
+  });
+
+  it('returns false for product paths', () => {
+    expect(isNonProductFilePath('apps/web/src/page.tsx')).toBe(false);
+    expect(isNonProductFilePath('packages/cli/src/index.ts')).toBe(false);
+  });
+
+  it('handles -e2e suffix within depth limit', () => {
+    expect(isNonProductFilePath('apps/gauzy-e2e/src/route.ts')).toBe(true);
+  });
+
+  it('ignores -e2e suffix past depth limit', () => {
+    expect(isNonProductFilePath('apps/web/app/api/gauzy-e2e/route.ts')).toBe(false);
+  });
+
+  it('is case-insensitive', () => {
+    expect(isNonProductFilePath('Examples/app/src/route.ts')).toBe(true);
+    expect(isNonProductFilePath('TEMPLATES/app/src/route.ts')).toBe(true);
   });
 });
 

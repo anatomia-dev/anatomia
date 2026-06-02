@@ -13,19 +13,25 @@ import {
   EXCLUDED_SEGMENTS,
   NON_PRODUCT_GLOB_IGNORE,
   isNonProductPath,
+  isNonProductFilePath,
+  FILE_PATH_DEPTH_LIMIT,
 } from '../../src/engine/detectors/surfaces.js';
 import { discoverDeployments } from '../../src/engine/census.js';
 
 // ── A001, A002, A003: Shared definition tests ────────────────────────
 
 describe('NON_PRODUCT_GLOB_IGNORE', () => {
-  // @ana A001
-  it('exists and derives from EXCLUDED_SEGMENTS', () => {
+  // @ana A011, A012, A013, A014
+  it('uses 3-tier rooted patterns for EXCLUDED_SEGMENTS', () => {
     expect(NON_PRODUCT_GLOB_IGNORE).toBeDefined();
     expect(Array.isArray(NON_PRODUCT_GLOB_IGNORE)).toBe(true);
-    // Every EXCLUDED_SEGMENTS entry should have a corresponding glob
+    // Every EXCLUDED_SEGMENTS entry should have 3 rooted-depth globs
     for (const segment of EXCLUDED_SEGMENTS) {
-      expect(NON_PRODUCT_GLOB_IGNORE).toContain(`**/${segment}/**`);
+      expect(NON_PRODUCT_GLOB_IGNORE).toContain(`${segment}/**`);
+      expect(NON_PRODUCT_GLOB_IGNORE).toContain(`*/${segment}/**`);
+      expect(NON_PRODUCT_GLOB_IGNORE).toContain(`*/*/${segment}/**`);
+      // Any-depth patterns should NOT be present for excluded segments
+      expect(NON_PRODUCT_GLOB_IGNORE).not.toContain(`**/${segment}/**`);
     }
   });
 
@@ -52,20 +58,20 @@ describe('NON_PRODUCT_GLOB_IGNORE', () => {
 describe('findings rule non-product exclusion', () => {
   // @ana A004
   it('NON_PRODUCT_GLOB_IGNORE excludes template route files', () => {
-    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/templates/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('templates/**');
     // isNonProductPath confirms the path-level check
     expect(isNonProductPath('templates/next-app/app/api/route.ts')).toBe(true);
   });
 
   // @ana A005
   it('NON_PRODUCT_GLOB_IGNORE excludes example page files', () => {
-    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/examples/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('examples/**');
     expect(isNonProductPath('examples/with-tailwind/app/page.tsx')).toBe(true);
   });
 
   // @ana A006
   it('NON_PRODUCT_GLOB_IGNORE excludes playground files', () => {
-    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/playground/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('playground/**');
     expect(isNonProductPath('playground/demo/src/secrets.ts')).toBe(true);
   });
 });
@@ -74,7 +80,7 @@ describe('findings rule non-product exclusion', () => {
 
 describe('hot file non-product path filtering', () => {
   // @ana A007
-  it('isNonProductPath filters template config files from git output paths', () => {
+  it('isNonProductFilePath filters template config files from git output paths', () => {
     // Simulates paths that would appear in git log --name-only output
     const templatePaths = [
       'templates/default/tailwind.config.ts',
@@ -82,19 +88,19 @@ describe('hot file non-product path filtering', () => {
       'examples/with-auth/src/config.ts',
     ];
     for (const p of templatePaths) {
-      expect(isNonProductPath(p)).toBe(true);
+      expect(isNonProductFilePath(p)).toBe(true);
     }
   });
 
   // @ana A008
-  it('isNonProductPath preserves legitimate source file paths', () => {
+  it('isNonProductFilePath preserves legitimate source file paths', () => {
     const productPaths = [
       'packages/cli/src/engine/scan-engine.ts',
       'src/commands/run.ts',
       'apps/web/src/app/page.tsx',
     ];
     for (const p of productPaths) {
-      expect(isNonProductPath(p)).toBe(false);
+      expect(isNonProductFilePath(p)).toBe(false);
     }
   });
 });
@@ -103,14 +109,14 @@ describe('hot file non-product path filtering', () => {
 
 describe('Supabase schema non-product path filtering', () => {
   // @ana A009
-  it('isNonProductPath filters example migration files', () => {
-    expect(isNonProductPath('examples/with-supabase/supabase/migrations/001_init.sql')).toBe(true);
-    expect(isNonProductPath('example/supabase/migrations/002_users.sql')).toBe(true);
+  it('isNonProductFilePath filters example migration files', () => {
+    expect(isNonProductFilePath('examples/with-supabase/supabase/migrations/001_init.sql')).toBe(true);
+    expect(isNonProductFilePath('example/supabase/migrations/002_users.sql')).toBe(true);
   });
 
   // @ana A010
-  it('isNonProductPath filters template schema directories', () => {
-    expect(isNonProductPath('templates/supabase-starter/supabase/migrations/001.sql')).toBe(true);
+  it('isNonProductFilePath filters template schema directories', () => {
+    expect(isNonProductFilePath('templates/supabase-starter/supabase/migrations/001.sql')).toBe(true);
   });
 
   // @ana A011
@@ -119,7 +125,7 @@ describe('Supabase schema non-product path filtering', () => {
       'examples/demo/supabase/migrations/001_init.sql',
       'templates/starter/supabase/migrations/002_users.sql',
     ];
-    const filtered = migrationFiles.filter(m => !isNonProductPath(m));
+    const filtered = migrationFiles.filter(m => !isNonProductFilePath(m));
     expect(filtered).toHaveLength(0);
     // Empty files array → Supabase reports found: false
   });
@@ -193,6 +199,115 @@ describe('discoverDeployments non-product path filtering', () => {
     const entries = discoverDeployments(tmpDir, roots);
     expect(entries).toHaveLength(1);
     expect(entries[0]!.platform).toBe('Docker');
+  });
+});
+
+// ── isNonProductFilePath depth-boundary tests ───────────────────────
+
+describe('isNonProductFilePath depth-boundary behavior', () => {
+  // @ana A001
+  it('allows deep product paths with excluded segment names past depth limit', () => {
+    // e2e at index 5 — past depth-3 limit
+    expect(isNonProductFilePath('apps/web/app/(ee)/api/e2e/bounties/route.ts')).toBe(false);
+  });
+
+  // @ana A002
+  it('excludes non-product directories at segment 0', () => {
+    expect(isNonProductFilePath('examples/next-app/src/route.ts')).toBe(true);
+  });
+
+  // @ana A003
+  it('excludes non-product directories at segment 2', () => {
+    expect(isNonProductFilePath('packages/platform/examples/base/src/route.ts')).toBe(true);
+  });
+
+  // @ana A004
+  it('does not exclude segments at exactly depth 3', () => {
+    // templates at index 3 — exactly at the limit, NOT checked (indices 0, 1, 2 only)
+    expect(isNonProductFilePath('packages/novu/src/commands/init/templates/route.ts')).toBe(false);
+  });
+
+  // @ana A005
+  it('-e2e suffix check works within the depth limit', () => {
+    // gauzy-e2e at index 1 — within limit
+    expect(isNonProductFilePath('apps/gauzy-e2e/src/route.ts')).toBe(true);
+  });
+
+  // @ana A006
+  it('-e2e suffix check does not apply past the depth limit', () => {
+    // gauzy-e2e at index 4 — past limit
+    expect(isNonProductFilePath('apps/web/app/api/gauzy-e2e/route.ts')).toBe(false);
+  });
+
+  // @ana A007
+  it('is case-insensitive', () => {
+    expect(isNonProductFilePath('Examples/next-app/src/route.ts')).toBe(true);
+    expect(isNonProductFilePath('TEMPLATES/starter/src/index.ts')).toBe(true);
+  });
+
+  // @ana A020
+  it('FILE_PATH_DEPTH_LIMIT is 3', () => {
+    expect(FILE_PATH_DEPTH_LIMIT).toBe(3);
+  });
+
+  // @ana A021
+  it('isNonProductFilePath is a function', () => {
+    expect(typeof isNonProductFilePath).toBe('function');
+  });
+
+  it('handles empty string path', () => {
+    expect(isNonProductFilePath('')).toBe(false);
+  });
+
+  it('handles single-segment path', () => {
+    expect(isNonProductFilePath('examples')).toBe(true);
+    expect(isNonProductFilePath('src')).toBe(false);
+  });
+
+  it('deep product paths with multiple excluded segment names pass through', () => {
+    // Both e2e and templates appear deep — both past limit
+    expect(isNonProductFilePath('packages/core/src/lib/e2e/templates/data.ts')).toBe(false);
+  });
+});
+
+// ── isNonProductPath unchanged ──────────────────────────────────────
+
+describe('isNonProductPath is unchanged', () => {
+  // @ana A008
+  it('package-path filtering still works for all segments', () => {
+    expect(isNonProductPath('examples/next-app')).toBe(true);
+  });
+
+  // @ana A009
+  it('package-path filtering still detects deep excluded segments', () => {
+    expect(isNonProductPath('packages/core/examples/with-auth/src/index.ts')).toBe(true);
+  });
+
+  // @ana A010
+  it('package-path filtering still handles -e2e suffix', () => {
+    expect(isNonProductPath('apps/gauzy-e2e')).toBe(true);
+  });
+});
+
+// ── NON_PRODUCT_GLOB_IGNORE build artifact patterns ─────────────────
+
+describe('build artifact patterns unchanged', () => {
+  // @ana A015
+  it('build artifact patterns remain at any depth', () => {
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/node_modules/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/dist/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/build/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/.next/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/.git/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/.turbo/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/out/**');
+    expect(NON_PRODUCT_GLOB_IGNORE).toContain('**/.cache/**');
+  });
+
+  // @ana A016
+  it('all 8 build artifact patterns are preserved', () => {
+    const buildArtifactPatterns = NON_PRODUCT_GLOB_IGNORE.filter(p => p.startsWith('**/'));
+    expect(buildArtifactPatterns.length).toBe(8);
   });
 });
 

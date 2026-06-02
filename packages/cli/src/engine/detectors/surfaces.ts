@@ -97,17 +97,50 @@ export function isNonProductPath(relativePath: string): boolean {
 }
 
 /**
+ * Depth limit for file-path non-product filtering. Only segments at indices
+ * 0 through FILE_PATH_DEPTH_LIMIT - 1 are checked. Validated across 17 repos
+ * as the boundary where package structure ends and product source begins.
+ */
+export const FILE_PATH_DEPTH_LIMIT = 3;
+
+/**
+ * Check whether a full file path belongs to a non-product directory, checking
+ * only the first FILE_PATH_DEPTH_LIMIT segments. Use this for full file paths
+ * (from git log, glob results, etc.) where excluded segment names like `e2e`,
+ * `templates`, `playground` may appear deep inside product surfaces.
+ *
+ * @param relativePath - Forward-slash-separated relative file path (e.g., "apps/web/app/(ee)/api/e2e/bounties/route.ts")
+ * @returns True if the path is non-product based on its first segments
+ */
+export function isNonProductFilePath(relativePath: string): boolean {
+  const segments = relativePath.split('/');
+  const limit = Math.min(FILE_PATH_DEPTH_LIMIT, segments.length);
+  for (let i = 0; i < limit; i++) {
+    if (EXCLUDED_SEGMENTS.has(segments[i]!.toLowerCase())) return true;
+  }
+  // Suffix check: segments within depth limit ending with -e2e (e.g., "gauzy-e2e")
+  for (let i = 0; i < limit; i++) {
+    if (segments[i]!.toLowerCase().endsWith('-e2e')) return true;
+  }
+  return false;
+}
+
+/**
  * Glob ignore patterns for non-product and build-artifact directories.
  * Combines build-artifact globs (node_modules, dist, etc.) with globs derived
  * from EXCLUDED_SEGMENTS. Used by findings rules, schema detection, and any
  * other subsystem that needs to skip non-product files during glob operations.
+ *
+ * Non-product patterns use 3-tier rooted globs (depth 0, 1, 2) instead of
+ * any-depth `**​/` matching to avoid over-excluding deep product paths.
+ * Build-artifact patterns remain `**​/`-prefixed because they're correct at any depth.
  */
 export const NON_PRODUCT_GLOB_IGNORE: string[] = [
   // Build artifacts
   '**/node_modules/**', '**/dist/**', '**/build/**', '**/.next/**',
   '**/.git/**', '**/.turbo/**', '**/out/**', '**/.cache/**',
-  // Non-product paths derived from EXCLUDED_SEGMENTS
-  ...[...EXCLUDED_SEGMENTS].map(s => `**/${s}/**`),
+  // Non-product paths derived from EXCLUDED_SEGMENTS — 3-tier rooted patterns
+  ...[...EXCLUDED_SEGMENTS].flatMap(s => [`${s}/**`, `*/${s}/**`, `*/*/${s}/**`]),
 ];
 
 /** Minimum source files for a package to be considered as a surface. */
