@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-185 runs · 171 active · 5 promoted · 878 closed
+185 runs · 170 active · 5 promoted · 879 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 33 | 32 | 2026-06-02 |
+| Unscoped | 33 | 31 | 2026-06-02 |
 | cli | 128 | 116 | 2026-06-02 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -16,7 +16,7 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 13 | 8 |
 | packages/cli/src/engine/detectors/surfaces.ts | 10 | 4 |
-| packages/cli/tests/commands/work.test.ts | 8 | 7 |
+| packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 171 total)
+## Active Findings (30 shown of 170 total)
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -34,6 +34,7 @@
 
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -87,10 +88,6 @@
 ### packages/cli/tests/commands/work-merge.test.ts
 
 - **test:** A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv — *Fix work complete merge strategy*
-
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** A015 edge-case test uses toBeGreaterThanOrEqual(1) — weak assertion on entry count — *Rename finding action accept to acknowledge*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 

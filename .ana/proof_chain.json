@@ -47356,7 +47356,10 @@
             "A015"
           ],
           "id": "rename-accept-to-acknowledge-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Assertion serves its purpose — toBeGreaterThanOrEqual(1) at work.test.ts:5867 is a sanity guard confirming chain isn't empty. The test's real assertion is line 5866: expect(chain.migrations.accept_to_acknowledge).toBe(true). Entry count precision is irrelevant to the migration check.",
+          "closed_at": "2026-06-02T21:51:46.693Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
