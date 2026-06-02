@@ -45,5 +45,20 @@
     "packages/cli/src/engine/scan-engine.ts",
     "packages/cli/tests/engine/non-product-filtering.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T18:27:46.196Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:078a984daa8960fd1cdc00c79f9e8a94d36e079976501fbcff76288382e512d5",
+    "run_at": "2026-06-02T18:32:23.078Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T18:32:23.112Z",
+    "hash": "sha256:a7acfeb7360787ff2d0c35fe5b0fc77ec106ee61c8a5aa130b9a9409719adfb2"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T18:32:23.112Z",
+    "hash": "sha256:eb02d46e4667b09059f9b13b6016491d8e1c4a379c28ea24b8559bb5814b838a"
+  }
 }
