@@ -47370,7 +47370,10 @@
           "severity": "observation",
           "suggested_action": "acknowledge",
           "id": "rename-accept-to-acknowledge-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional cast — (finding.suggested_action as string) === 'accept' at work-proof.ts:309 is necessary because the type was narrowed to exclude 'accept', but old proof chain data still contains it. The as-string cast is the correct migration pattern. Comment at line 305 documents the migration.",
+          "closed_at": "2026-06-02T21:51:55.458Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

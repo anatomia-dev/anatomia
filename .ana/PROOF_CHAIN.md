@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-185 runs · 170 active · 5 promoted · 879 closed
+185 runs · 169 active · 5 promoted · 880 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 33 | 31 | 2026-06-02 |
+| Unscoped | 33 | 30 | 2026-06-02 |
 | cli | 128 | 116 | 2026-06-02 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -24,11 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 170 total)
+## Active Findings (30 shown of 169 total)
 
-### packages/cli/src/commands/work-proof.ts
+### packages/cli/src/commands/work-state.ts
 
-- **code:** Backfill migration uses `as string` cast to compare old accept values against narrowed type — *Rename finding action accept to acknowledge*
+- **code:** resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/commands/work.ts
 
