@@ -32,7 +32,7 @@ Split non-product filtering into two tiers: package-path filtering (existing `is
 This preserves the original function's correct behavior for its designed use case while fixing the regression introduced when it was extended to deep file paths.
 
 ## Acceptance Criteria
-- AC1: `isNonProductFilePath('apps/web/app/(ee)/api/e2e/bounties/route.ts')` returns `false` (e2e at segment 4, past depth limit)
+- AC1: `isNonProductFilePath('apps/web/app/(ee)/api/e2e/bounties/route.ts')` returns `false` (e2e at index 5, past depth-3 limit)
 - AC2: `isNonProductFilePath('examples/next-app/src/route.ts')` returns `true` (examples at segment 0)
 - AC3: `isNonProductFilePath('packages/platform/examples/base/src/route.ts')` returns `true` (examples at segment 2, within depth limit)
 - AC4: `isNonProductPath('examples/next-app')` still returns `true` (unchanged for package paths)
