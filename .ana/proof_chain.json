@@ -46018,7 +46018,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "codex-support-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is wrong — only one JSDoc block exists on getPlatformFlags at platform.ts:73-84. Read lines 60-94; no duplicate. The 'old block' referenced does not exist.",
+          "closed_at": "2026-06-02T20:03:19.447Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
@@ -46089,7 +46092,10 @@
           "severity": "debt",
           "suggested_action": "acknowledge",
           "id": "codex-support-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is wrong — only one JSDoc block exists on getPlatformFlags at platform.ts:73-84. Read lines 60-94; no duplicate. The 'old block' referenced does not exist.",
+          "closed_at": "2026-06-02T20:03:19.448Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

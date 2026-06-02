@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-184 runs · 182 active · 5 promoted · 863 closed
+184 runs · 180 active · 5 promoted · 865 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 35 | 2026-06-02 |
-| cli | 127 | 123 | 2026-06-02 |
+| cli | 127 | 121 | 2026-06-02 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 182 total)
+## Active Findings (30 shown of 180 total)
 
 ### .claude/agents/ana-learn.md
 
