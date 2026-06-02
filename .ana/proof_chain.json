@@ -48371,6 +48371,315 @@
         "base_commit": "7ae830ba45f2703e68545204c4eef21f78ad5a2e"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-vite-framework-detection",
+      "feature": "Fix Vite Framework Detection and Service Detection Gaps",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Vue apps are detected as Vue at the stack level",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Vue detection is blocked when Nuxt is present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Vue detection confidence increases with config file evidence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Library packages with vite config are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Library packages with exports field are not detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Deployable apps with vite config are detected as surfaces",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The library guard only applies to vite configs, not other framework configs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Surfaces with vite config and Vue deps get the Vue framework label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Surfaces with vite config and React deps get the React framework label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Surfaces with vite config but no framework deps get no framework label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "MCP SDK is detected as an external service",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "MCP is categorized as an AI service",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Upstash Ratelimit is detected as an external service",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Upstash Vector is detected as a vector database service",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Upstash Workflow is detected as a queue service",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Next.js detection is unchanged after adding Vue and vite support",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "React detection still guards against Next.js",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Vite config files are recognized as strong framework indicators",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Vite config files are recognized as framework hints during census",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Census source roots include library marker fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Census source roots track package exports declarations",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Test helper defaults keep all existing tests passing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Existing surface detection tests pass with new SourceRoot fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Vue detection works with Vite as the build tool",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 42,
+        "think": 2,
+        "plan": 8,
+        "build": 13,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:2a31bb2e3d4bce61c883bb173e220f5ae97525e61053ad5e3f002a2990272b52",
+        "contract": "sha256:f07336a74e725e54a0ac67c6faf50cbdef1525ba4a70c3016348e26e836d74a4",
+        "plan": "sha256:9fd43f0e5bff9db59b8e57eecd43ff515d8a0305faf6b770a39845ab16360268",
+        "spec": "sha256:70dda41163e7af2bf82cc19040598eb30a7d95d97a028c91a76b1320bf616016",
+        "build-report": "sha256:3ef2e0229dcedda74753c0fd8a8f0c553de2e71e189d9864cbe14010d27213ec",
+        "build-data": "sha256:a0cae089a77711d5c557924adf77a1025c2466caabdff5d3b5c0217b71a153e0",
+        "verify-report": "sha256:5007c4f5aedd448c2894cabd2042556a68029752c3da708afcc4cb4240012558",
+        "verify-data": "sha256:0704a0df030218c5e3db436b9f35a65006bca62ce79d17e99fa8fb94beaa99b4"
+      },
+      "completed_at": "2026-06-02T19:40:20.557Z",
+      "modules_touched": [
+        "packages/cli/src/engine/census.ts",
+        "packages/cli/src/engine/detectors/node/framework-registry.ts",
+        "packages/cli/src/engine/detectors/node/vue.ts",
+        "packages/cli/src/engine/detectors/surfaces.ts",
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/src/engine/types/census.ts",
+        "packages/cli/tests/engine/census-primary.test.ts",
+        "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+        "packages/cli/tests/engine/detectors/dependencies.test.ts",
+        "packages/cli/tests/engine/detectors/documentation.test.ts",
+        "packages/cli/tests/engine/detectors/node-frameworks.test.ts",
+        "packages/cli/tests/engine/detectors/surfaces.test.ts",
+        "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+        "packages/cli/tests/engine/types/census.test.ts"
+      ],
+      "scope_summary": "The scanner's framework detection is config-file-only. Modern Vue 3 and React+Vite apps use `vite.config.ts` — not framework-specific config files like `vue.config.ts` (legacy Vue CLI) or `next.config.ts`. Some don't use any config file at all (hoppscotch-common runs `vite` directly via script). This makes major open-source repos invisible: hoppscotch (70K stars) shows no framework, \"unknown\" shape, and 4 missing surfaces. novu's 1416-file React dashboard has no framework label. twenty's 7794-file React frontend is invisible as a surface.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 245,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A008",
+            "A009",
+            "A010"
+          ],
+          "id": "fix-vite-framework-detection-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Inline dep-to-framework map in resolveViteFramework duplicates knowledge from the framework registry",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 248,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "fix-vite-framework-detection-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 341,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-vite-framework-detection-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A011-A015 (service detection entries) have no tagged tests — verified by source inspection only",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 163,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A011",
+            "A012",
+            "A013",
+            "A014",
+            "A015"
+          ],
+          "id": "fix-vite-framework-detection-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A019 (FRAMEWORK_HINTS vite count) has no tagged test — FRAMEWORK_HINTS is not exported so cannot be unit-tested directly",
+          "file": "packages/cli/src/engine/census.ts",
+          "anchor": null,
+          "line": 68,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A019"
+          ],
+          "id": "fix-vite-framework-detection-C5",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No per-surface test for vue+react simultaneous deps in resolveViteFramework (Vue wins by priority, but untested)",
+          "file": "packages/cli/src/engine/detectors/surfaces.ts",
+          "anchor": null,
+          "line": 248,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "fix-vite-framework-detection-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A019 matcher 'equals' with value 3 is fragile — if a 4th extension is added (e.g. vite.config.cjs), the contract assertion breaks",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A019"
+          ],
+          "id": "fix-vite-framework-detection-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-02T19:40:20.557Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts (unused eslint-disable)",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "EXTERNAL_SERVICE_PACKAGES entries not directly unit-tested — map not exported",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "FRAMEWORK_HINTS ordering invariant has no direct unit test",
+          "file": "packages/cli/src/engine/census.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-02T19:14:11.110Z",
+        "completed_at": "2026-06-02T19:40:20.551Z",
+        "commit_count": 0,
+        "base_commit": "153a6f852a0dad3103de4c2a70ba43724b56d5e0"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

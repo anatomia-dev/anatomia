@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-182 runs · 175 active · 5 promoted · 857 closed
+183 runs · 181 active · 5 promoted · 858 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 35 | 2026-06-02 |
-| cli | 125 | 116 | 2026-06-02 |
+| cli | 126 | 122 | 2026-06-02 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
@@ -16,15 +16,15 @@
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 13 | 8 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
+| packages/cli/src/engine/detectors/surfaces.ts | 7 | 3 |
 | packages/cli/src/commands/run.ts | 7 | 2 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
-| packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 175 total)
+## Active Findings (30 shown of 181 total)
 
 ### .claude/agents/ana-learn.md
 
@@ -44,15 +44,26 @@
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard — *Fix Multi-Phase Timestamp Poisoning*
+
+### packages/cli/src/engine/census.ts
+
+- **test:** A019 (FRAMEWORK_HINTS vite count) has no tagged test — FRAMEWORK_HINTS is not exported so cannot be unit-tested directly — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
+- **code:** resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null — *Fix Vite Framework Detection and Service Detection Gaps*
+- **code:** Inline dep-to-framework map in resolveViteFramework duplicates knowledge from the framework registry — *Fix Vite Framework Detection and Service Detection Gaps*
+- **code:** Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface — *Fix Vite Framework Detection and Service Detection Gaps*
+- **test:** No per-surface test for vue+react simultaneous deps in resolveViteFramework (Vue wins by priority, but untested) — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** NON_PRODUCT_GLOB_IGNORE includes **/build/** which collides with legitimate 'build' directories in some monorepo layouts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
 
 ### packages/cli/src/engine/findings/rules/errorBoundaries.ts
 
 - **code:** Redundant alias: GLOB_IGNORE = NON_PRODUCT_GLOB_IGNORE adds an unnecessary indirection — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
+
+### packages/cli/src/engine/scan-engine.ts
+
+- **test:** A011-A015 (service detection entries) have no tagged tests — verified by source inspection only — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/tests/commands/config.test.ts
 
@@ -91,20 +102,6 @@
 ### packages/cli/tests/templates/codex-learn-template.test.ts
 
 - **code:** Extra file not in contract: codex-learn-template.test.ts created for dedicated assertion coverage — *Learn Agent Codex Adaptation*
-
-### website/content/docs/guides/platform-setup.mdx
-
-- **code:** Platform flags guide shows Codex sandbox as platformFlags even though run dispatch already passes sandbox mode — *Docs, Website, and README Multi-Platform Update*
-
-### website/lib/__tests__/docs-platform-content.test.ts
-
-- **test:** ForPlatform pairing test only compares total block counts — *Docs, Website, and README Multi-Platform Update*
-- **test:** Generated docs asset assertions read ignored prebuild outputs directly, so focused tests can depend on stale or missing local files — *Docs, Website, and README Multi-Platform Update*
-- **test:** ForPlatform pairing test proves count and adjacency but not that paired blocks address the same user need — *Docs, Website, and README Multi-Platform Update*
-
-### website/public/search-index.json
-
-- **test:** Generated search index can still surface stale direct Claude agent command text — *Docs, Website, and README Multi-Platform Update*
 
 ### General
 
