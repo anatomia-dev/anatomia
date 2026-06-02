@@ -35,5 +35,20 @@
     "packages/cli/tests/commands/scan.test.ts",
     "packages/cli/tests/engine/scan-engine-secrets.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T19:52:41.965Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:8a0ea7ce883e83433da112366cc4faa3a4d8eb49920c42eab463c2aede3d650f",
+    "run_at": "2026-06-02T19:58:00.343Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T19:58:00.378Z",
+    "hash": "sha256:3e285822b19f60a87255958a178e4bbe996bd29f6ad87a28a123ead85b2d3253"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T19:58:00.379Z",
+    "hash": "sha256:4f3b159ebab8a562a7e5e6eb92e492925343d7986ca39fabee7c0f89f40d739b"
+  }
 }
