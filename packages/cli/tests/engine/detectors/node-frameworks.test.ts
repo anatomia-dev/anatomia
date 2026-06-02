@@ -13,6 +13,7 @@ import { detectNestjs } from '../../../src/engine/detectors/node/nestjs';
 import { detectExpress } from '../../../src/engine/detectors/node/express';
 import { detectOtherNodeFrameworks } from '../../../src/engine/detectors/node/other';
 import { detectRemix } from '../../../src/engine/detectors/node/remix';
+import { detectVue } from '../../../src/engine/detectors/node/vue';
 import type { FrameworkHintEntry } from '../../../src/engine/types/census';
 
 function hint(framework: string, path: string, sourceRootPath = '.'): FrameworkHintEntry {
@@ -222,6 +223,49 @@ describe('Other Node frameworks', () => {
   });
 });
 
+// @ana A001
+describe('Vue detector', () => {
+  it('returns null when vue not in dependencies', () => {
+    const result = detectVue(['react', 'express'], []);
+    expect(result.framework).toBe(null);
+    expect(result.confidence).toBe(0.0);
+  });
+
+  // @ana A002
+  it('returns null when nuxt is present (Nuxt takes priority)', () => {
+    const result = detectVue(['vue', 'nuxt'], []);
+    expect(result.framework).toBe(null);
+  });
+
+  it('detects vue with dependency only (baseline 0.75 confidence)', () => {
+    const result = detectVue(['vue'], []);
+    expect(result.framework).toBe('vue');
+    expect(result.confidence).toBe(0.75);
+    expect(result.indicators).toContain('vue in dependencies');
+  });
+
+  // @ana A003
+  it('detects vue with vue.config hint (0.90 confidence)', () => {
+    const result = detectVue(['vue'], [hint('vue', 'vue.config.ts')]);
+    expect(result.framework).toBe('vue');
+    expect(result.confidence).toBe(0.90);
+    expect(result.indicators).toContain('vue.config.* found (Vue CLI)');
+  });
+
+  // @ana A024
+  it('detects vue with vite in deps (0.85 confidence)', () => {
+    const result = detectVue(['vue', 'vite'], []);
+    expect(result.framework).toBe('vue');
+    expect(result.confidence).toBe(0.85);
+    expect(result.indicators).toContain('Vite (Vue build tool)');
+  });
+
+  it('detects vue with vue.config and vite (0.90 confidence max)', () => {
+    const result = detectVue(['vue', 'vite'], [hint('vue', 'vue.config.ts')]);
+    expect(result.confidence).toBe(0.90);
+  });
+});
+
 describe('CRITICAL: Framework disambiguation', () => {
   it('Next.js wins over React (Next.js includes React)', () => {
     const deps = ['next', 'react'];
@@ -248,5 +292,35 @@ describe('CRITICAL: Framework disambiguation', () => {
     expect(remixResult.framework).toBe('remix');
     // React fires because no 'next' dep — but registry priority prevents misclassification
     expect(reactResult.framework).toBe('react');
+  });
+
+  // @ana A016
+  it('Next.js detection is unchanged after adding Vue and vite support', () => {
+    const deps = ['next', 'react'];
+    const result = detectNextjs(deps, [hint('nextjs', 'next.config.ts')]);
+    expect(result.framework).toBe('nextjs');
+  });
+
+  // @ana A017
+  it('React detection still guards against Next.js', () => {
+    const deps = ['next', 'react'];
+    const result = detectReact(deps, []);
+    expect(result.framework).toBe(null);
+  });
+
+  it('Vue wins over React when both present (registry ordering)', () => {
+    const deps = ['vue', 'react'];
+    const vueResult = detectVue(deps, []);
+    expect(vueResult.framework).toBe('vue');
+    // React also fires independently (no 'next' guard for vue)
+    const reactResult = detectReact(deps, []);
+    expect(reactResult.framework).toBe('react');
+    // But Vue is checked first in registry, so Vue wins at runtime
+  });
+
+  it('Nuxt blocks Vue detection (Nuxt includes Vue)', () => {
+    const deps = ['vue', 'nuxt'];
+    const vueResult = detectVue(deps, []);
+    expect(vueResult.framework).toBe(null);
   });
 });
