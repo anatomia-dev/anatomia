@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-181 runs · 170 active · 5 promoted · 856 closed
+182 runs · 175 active · 5 promoted · 857 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 35 | 2026-06-02 |
-| cli | 124 | 111 | 2026-06-01 |
+| cli | 125 | 116 | 2026-06-02 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,15 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 170 total)
+## Active Findings (30 shown of 175 total)
 
 ### .claude/agents/ana-learn.md
 
 - **code:** Dogfood .claude/agents/ana-learn.md also received .claude/skills/ -> .ana/skills/ fix, not listed in contract file_changes — *Learn Agent Codex Adaptation*
-
-### packages/cli/src/commands/artifact.ts
-
-- **code:** Phase inference adds a second .saves.json reader instead of sharing the existing metadata read path — *Multi-Phase Report Naming Guard*
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -50,10 +46,13 @@
 - **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard — *Fix Multi-Phase Timestamp Poisoning*
 
-### packages/cli/tests/commands/artifact.test.ts
+### packages/cli/src/engine/detectors/surfaces.ts
 
-- **test:** Work-status progression test calls determineStage with constructed state instead of exercising ana work status discovery — *Multi-Phase Report Naming Guard*
-- **test:** No-target error test asserts only the headline message, not the exit code or explicit numbered-command guidance — *Multi-Phase Report Naming Guard*
+- **code:** NON_PRODUCT_GLOB_IGNORE includes **/build/** which collides with legitimate 'build' directories in some monorepo layouts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
+
+### packages/cli/src/engine/findings/rules/errorBoundaries.ts
+
+- **code:** Redundant alias: GLOB_IGNORE = NON_PRODUCT_GLOB_IGNORE adds an unnecessary indirection — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
 
 ### packages/cli/tests/commands/config.test.ts
 
@@ -62,7 +61,6 @@
 ### packages/cli/tests/commands/init.test.ts
 
 - **test:** init.test.ts line 866 test description says '5 agent files' but body asserts 12 (6 agents) — *Learn Agent Codex Adaptation*
-- **test:** No test for codex-only init path — A011/A012/A013 verified by source inspection only — *Codex Support*
 
 ### packages/cli/tests/commands/run.test.ts
 
@@ -84,9 +82,11 @@
 - **test:** A015 edge-case test uses toBeGreaterThanOrEqual(1) — weak assertion on entry count — *Rename finding action accept to acknowledge*
 - **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
 
-### packages/cli/tests/e2e/init-flow.test.ts
+### packages/cli/tests/engine/non-product-filtering.test.ts
 
-- **test:** A029 (init-flow.test.ts asserts ana run) lacks @ana tag — verified by source inspection — *Codex Support*
+- **test:** A004-A006 verify glob array contents and isNonProductPath, not actual glob execution in findings rules — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
+- **test:** A007-A008 test isNonProductPath directly, not the git churn detection loop in git.ts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
+- **test:** A011 simulates Supabase filtering inline instead of calling scan-engine detectSchemas — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
 
 ### packages/cli/tests/templates/codex-learn-template.test.ts
 
