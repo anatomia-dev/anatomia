@@ -46403,7 +46403,10 @@
             "A011"
           ],
           "id": "multi-phase-report-naming-guard-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Unit testing determineStage with constructed ArtifactState is correct test strategy — same pattern as testing resolvePhase. Integration test through ana work status would be a different scope entirely.",
+          "closed_at": "2026-06-02T21:51:37.572Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
