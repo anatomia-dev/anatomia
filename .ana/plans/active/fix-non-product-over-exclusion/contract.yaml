@@ -1,0 +1,168 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix non-product path over-exclusion at deep segments"
+
+assertions:
+  # ── isNonProductFilePath depth boundary ─────────────────────────────
+  - id: A001
+    says: "Deep product paths with excluded segment names are no longer over-excluded"
+    block: "isNonProductFilePath allows deep product paths"
+    target: "isNonProductFilePath('apps/web/app/(ee)/api/e2e/bounties/route.ts')"
+    matcher: "equals"
+    value: false
+
+  - id: A002
+    says: "Top-level non-product directories are still excluded"
+    block: "isNonProductFilePath excludes shallow non-product paths"
+    target: "isNonProductFilePath('examples/next-app/src/route.ts')"
+    matcher: "equals"
+    value: true
+
+  - id: A003
+    says: "Non-product directories at depth 2 are still excluded"
+    block: "isNonProductFilePath excludes shallow non-product paths"
+    target: "isNonProductFilePath('packages/platform/examples/base/src/route.ts')"
+    matcher: "equals"
+    value: true
+
+  - id: A004
+    says: "Segments at exactly depth 3 are not excluded by the file-path filter"
+    block: "isNonProductFilePath respects depth boundary"
+    target: "isNonProductFilePath('packages/novu/src/commands/init/templates/route.ts')"
+    matcher: "equals"
+    value: false
+
+  - id: A005
+    says: "The -e2e suffix check works within the depth limit"
+    block: "isNonProductFilePath handles -e2e suffix"
+    target: "isNonProductFilePath('apps/gauzy-e2e/src/route.ts')"
+    matcher: "equals"
+    value: true
+
+  - id: A006
+    says: "The -e2e suffix check does not apply past the depth limit"
+    block: "isNonProductFilePath handles -e2e suffix"
+    target: "isNonProductFilePath('apps/web/app/api/gauzy-e2e/route.ts')"
+    matcher: "equals"
+    value: false
+
+  - id: A007
+    says: "File-path filtering is case-insensitive"
+    block: "isNonProductFilePath is case-insensitive"
+    target: "isNonProductFilePath('Examples/next-app/src/route.ts')"
+    matcher: "equals"
+    value: true
+
+  # ── isNonProductPath unchanged ──────────────────────────────────────
+  - id: A008
+    says: "Package-path filtering still works for all segments"
+    block: "isNonProductPath is unchanged"
+    target: "isNonProductPath('examples/next-app')"
+    matcher: "equals"
+    value: true
+
+  - id: A009
+    says: "Package-path filtering still detects deep excluded segments"
+    block: "isNonProductPath is unchanged"
+    target: "isNonProductPath('packages/core/examples/with-auth/src/index.ts')"
+    matcher: "equals"
+    value: true
+
+  - id: A010
+    says: "Package-path filtering still handles -e2e suffix"
+    block: "isNonProductPath is unchanged"
+    target: "isNonProductPath('apps/gauzy-e2e')"
+    matcher: "equals"
+    value: true
+
+  # ── NON_PRODUCT_GLOB_IGNORE rooted patterns ────────────────────────
+  - id: A011
+    says: "Glob patterns use rooted depth tiers instead of any-depth matching"
+    block: "NON_PRODUCT_GLOB_IGNORE uses 3-tier rooted patterns"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "contains"
+    value: "examples/**"
+
+  - id: A012
+    says: "Glob patterns include second-level rooted tier"
+    block: "NON_PRODUCT_GLOB_IGNORE uses 3-tier rooted patterns"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "contains"
+    value: "*/examples/**"
+
+  - id: A013
+    says: "Glob patterns include third-level rooted tier"
+    block: "NON_PRODUCT_GLOB_IGNORE uses 3-tier rooted patterns"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "contains"
+    value: "*/*/examples/**"
+
+  - id: A014
+    says: "Any-depth patterns are no longer used for excluded segments"
+    block: "NON_PRODUCT_GLOB_IGNORE uses 3-tier rooted patterns"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "not_contains"
+    value: "**/examples/**"
+
+  - id: A015
+    says: "Build artifact patterns remain at any depth"
+    block: "build artifact patterns unchanged"
+    target: "NON_PRODUCT_GLOB_IGNORE"
+    matcher: "contains"
+    value: "**/node_modules/**"
+
+  - id: A016
+    says: "All 8 build artifact patterns are preserved"
+    block: "build artifact patterns unchanged"
+    target: "buildArtifactPatterns.length"
+    matcher: "equals"
+    value: 8
+
+  # ── Call-site migrations ────────────────────────────────────────────
+  - id: A017
+    says: "Hot file filtering uses the depth-limited filter"
+    block: "git.ts uses isNonProductFilePath"
+    target: "git.ts.import"
+    matcher: "contains"
+    value: "isNonProductFilePath"
+
+  - id: A018
+    says: "Schema detection filtering uses the depth-limited filter"
+    block: "scan-engine.ts uses isNonProductFilePath"
+    target: "scan-engine.ts.import"
+    matcher: "contains"
+    value: "isNonProductFilePath"
+
+  - id: A019
+    says: "Package-path callers are not migrated"
+    block: "package-path callers unchanged"
+    target: "scan-engine.ts.import"
+    matcher: "not_contains"
+    value: "isNonProductPath"
+
+  # ── Constant and export ─────────────────────────────────────────────
+  - id: A020
+    says: "The depth limit is defined as a named constant"
+    block: "FILE_PATH_DEPTH_LIMIT is exported"
+    target: "FILE_PATH_DEPTH_LIMIT"
+    matcher: "equals"
+    value: 3
+
+  - id: A021
+    says: "The new function is exported and callable"
+    block: "isNonProductFilePath is exported"
+    target: "typeof isNonProductFilePath"
+    matcher: "equals"
+    value: "function"
+
+file_changes:
+  - path: "packages/cli/src/engine/detectors/surfaces.ts"
+    action: modify
+  - path: "packages/cli/src/engine/detectors/git.ts"
+    action: modify
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/non-product-filtering.test.ts"
+    action: modify
