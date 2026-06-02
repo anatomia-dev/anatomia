@@ -7,6 +7,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-01
+
+### Added
+
+- **Codex Learn agent.** All five pipeline stages now work on both Claude Code and Codex. `ana run learn --platform codex` launches Learn with platform-specific diagnostic guidance. CC Learn template paths corrected to canonical `.ana/skills/`.
+- **`mergeStrategy` config field.** `ana.json` gains an optional `mergeStrategy` field (`merge`, `squash`, or `rebase`). When absent, `ana work complete --merge` queries GitHub for allowed strategies and auto-selects when exactly one is enabled. Write-time validation rejects invalid values.
+
+### Fixed
+
+- **`ana work complete --merge` fails non-interactively.** The merge call had no strategy flag — `gh pr merge` without `--merge`/`--squash`/`--rebase` fails when stdin is piped (Codex, CI, scripts). Now always passes an explicit strategy with runtime fallback to GitHub API detection.
+- **Finding action `accept` renamed to `acknowledge`.** The word "accept" caused Learn to batch-close findings instead of evaluating them. Renamed across source, templates, tests, and docs. One-time backfill migration renames existing proof chain entries. Old `accept` values tolerated from existing templates.
+- **Multi-phase timestamp poisoning.** Phase 1's `verify_started_at` no longer blocks Phase 2 status for up to one hour. Phase-scoped timestamp keys prevent cross-phase interference. Centralized phase resolver ensures `work status` and `work start` agree.
+- **Conditional test no-ops.** 6 tests that silently passed without executing assertions now run with mocked PID resolution. 2 parsing tests converted to visible `skipIf`.
+
+### Changed
+
+- `CODEX_AGENT_FILES` expanded to include Learn (5 → 6 agents)
+- Finding action `accept` → `acknowledge` in JSON output, display, and proof chain
+- `mergeStrategy` added as a user-owned `ana.json` field
+- PlatformSwitcher shows only supported platforms (Claude Code, Codex)
+
 ## [1.2.0] - 2026-06-01
 
 ### Added
@@ -335,7 +356,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/anatomia-dev/anatomia/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/anatomia-dev/anatomia/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/anatomia-dev/anatomia/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/anatomia-dev/anatomia/compare/v1.1.3...v1.1.4
