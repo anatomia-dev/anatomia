@@ -18,6 +18,7 @@ import { glob } from 'glob';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import type { Finding, FindingContext } from '../index.js';
+import { NON_PRODUCT_GLOB_IGNORE } from '../../detectors/surfaces.js';
 
 interface SecretPattern {
   regex: RegExp;
@@ -108,14 +109,12 @@ export const SECRET_PATTERNS: SecretPattern[] = [
   { regex: /SK[a-f0-9]{32}/g, type: 'Twilio API key', severity: 'critical' },
 ];
 
-const SECRET_GLOB_IGNORE = [
-  // Dependencies and build artifacts
-  '**/node_modules/**', '**/dist/**', '**/build/**', '**/.next/**',
-  '**/.git/**', '**/.turbo/**', '**/out/**', '**/.cache/**',
+/** Secrets-specific exclusions beyond non-product paths. */
+const SECRETS_EXTRA_IGNORE = [
   // Test files — test keys in test files are expected
   '**/*.test.*', '**/*.spec.*', '**/*.e2e.*', '**/*.e2e-spec.*',
-  '**/__tests__/**', '**/test/**', '**/tests/**',
-  '**/playwright/**', '**/cypress/**', '**/e2e/**',
+  '**/__tests__/**',
+  '**/playwright/**', '**/cypress/**',
   '**/*fixture*/**', '**/*mock*/**', '**/__snapshots__/**',
   // Seed and migration files
   '**/*seed*', '**/migrations/**',
@@ -131,6 +130,11 @@ const SECRET_GLOB_IGNORE = [
   '**/*.d.ts', '**/*.min.js', '**/*.map',
   // Storybook stories
   '**/*.stories.*',
+];
+
+const SECRET_GLOB_IGNORE = [
+  ...NON_PRODUCT_GLOB_IGNORE,
+  ...SECRETS_EXTRA_IGNORE,
 ];
 
 function redact(value: string): string {

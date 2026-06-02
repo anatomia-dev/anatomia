@@ -12,13 +12,13 @@ import { glob } from 'glob';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import type { Finding, FindingContext } from '../index.js';
+import { NON_PRODUCT_GLOB_IGNORE } from '../../detectors/surfaces.js';
 
 const VALIDATION_MODULES = ['zod', 'yup', 'joi', 'class-validator', 'valibot', '@sinclair/typebox'];
 const VALIDATION_PATH_PATTERNS = ['schema', 'schemas', 'validate', 'validation'];
 
 const ROUTE_GLOB_IGNORE = [
-  '**/node_modules/**', '**/dist/**', '**/build/**', '**/.next/**',
-  '**/.git/**', '**/.turbo/**', '**/out/**', '**/.cache/**',
+  ...NON_PRODUCT_GLOB_IGNORE,
   '**/*.d.ts', '**/*.min.js', '**/*.map',
 ];
 
