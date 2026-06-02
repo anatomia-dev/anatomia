@@ -42,5 +42,20 @@
     "packages/cli/tests/engine/detectors/surfaces.test.ts",
     "packages/cli/tests/engine/non-product-filtering.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T21:41:56.719Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:a8f577dd85612510c77814928de04b0783e2f490666382c7737810d29fa10d11",
+    "run_at": "2026-06-02T21:46:11.107Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T21:46:11.139Z",
+    "hash": "sha256:5f12e086abe226700c8ed96abae24b7e4c3539d653c0be1638f14d4a2591e401"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T21:46:11.140Z",
+    "hash": "sha256:ad9d591c1e116ff11b52e39d9bc7aa9727a6cea980c71c4e7f6bc33a7ce931ef"
+  }
 }
