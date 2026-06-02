@@ -46043,7 +46043,10 @@
           "severity": "observation",
           "suggested_action": "monitor",
           "id": "codex-support-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Intentional — comment at assets.ts:669 says 'It\\''s a real directory — will be handled by skill migration in state.ts.' Silent skip is the designed behavior; state.ts owns the migration path.",
+          "closed_at": "2026-06-02T20:03:08.147Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
