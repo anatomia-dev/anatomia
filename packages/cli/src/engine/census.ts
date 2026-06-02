@@ -64,6 +64,10 @@ const FRAMEWORK_HINTS: Array<{ pattern: string; framework: string; check: 'file'
   { pattern: 'vue.config.mjs', framework: 'vue', check: 'file' },
   // Astro
   { pattern: 'astro.config.js', framework: 'astro', check: 'file' },
+  // Vite (generic — AFTER all framework-specific configs so they shadow this)
+  { pattern: 'vite.config.ts', framework: 'vite', check: 'file' },
+  { pattern: 'vite.config.js', framework: 'vite', check: 'file' },
+  { pattern: 'vite.config.mjs', framework: 'vite', check: 'file' },
   // Express (entry points that signal Express usage)
   { pattern: 'server.js', framework: 'express', check: 'file' },
   { pattern: 'src/server.js', framework: 'express', check: 'file' },
@@ -532,6 +536,8 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
       deps: (fallbackRootPackage?.dependencies ?? {}) as Record<string, string>,
       devDeps: (fallbackRootPackage?.devDependencies ?? {}) as Record<string, string>,
       hasBin: !!(fallbackRootPackage?.bin),
+      hasMain: !!((fallbackRootPackage as Record<string, unknown> | null)?.['main']) || !!((fallbackRootPackage as Record<string, unknown> | null)?.['module']),
+      hasExports: !!((fallbackRootPackage as Record<string, unknown> | null)?.['exports']),
       scripts: Object.keys((fallbackRootPackage?.scripts as Record<string, unknown> | null) ?? {}),
     }];
   } else if (isSingleRepo) {
@@ -546,6 +552,8 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
         deps: {},
         devDeps: {},
         hasBin: false,
+        hasMain: false,
+        hasExports: false,
         scripts: [],
       }];
     } else {
@@ -559,6 +567,8 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
         deps: (pkg.packageJson.dependencies ?? {}) as Record<string, string>,
         devDeps: (pkg.packageJson.devDependencies ?? {}) as Record<string, string>,
         hasBin: !!((pkg.packageJson as unknown as Record<string, unknown>)['bin']),
+        hasMain: !!((pkg.packageJson as unknown as Record<string, unknown>)['main']) || !!((pkg.packageJson as unknown as Record<string, unknown>)['module']),
+        hasExports: !!((pkg.packageJson as unknown as Record<string, unknown>)['exports']),
         scripts: Object.keys(((pkg.packageJson as unknown as Record<string, unknown>)['scripts'] as Record<string, unknown> | null) ?? {}),
       }];
     }
@@ -575,6 +585,8 @@ export async function buildCensus(rootPath: string): Promise<ProjectCensus> {
         deps: (pkg.packageJson.dependencies ?? {}) as Record<string, string>,
         devDeps: (pkg.packageJson.devDependencies ?? {}) as Record<string, string>,
         hasBin: !!((pkg.packageJson as unknown as Record<string, unknown>)['bin']),
+        hasMain: !!((pkg.packageJson as unknown as Record<string, unknown>)['main']) || !!((pkg.packageJson as unknown as Record<string, unknown>)['module']),
+        hasExports: !!((pkg.packageJson as unknown as Record<string, unknown>)['exports']),
         scripts: Object.keys(((pkg.packageJson as unknown as Record<string, unknown>)['scripts'] as Record<string, unknown> | null) ?? {}),
       };
     });

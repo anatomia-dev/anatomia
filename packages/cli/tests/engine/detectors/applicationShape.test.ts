@@ -373,6 +373,8 @@ describe('detectApplicationShape', () => {
         deps: {},
         devDeps: {},
         hasBin: true,
+        hasMain: false,
+        hasExports: false,
         scripts: [],
       };
 

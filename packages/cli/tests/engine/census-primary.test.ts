@@ -22,6 +22,8 @@ function root(relativePath: string, fileCount: number, packageName: string | nul
     deps: {},
     devDeps: {},
     hasBin: false,
+    hasMain: false,
+    hasExports: false,
     scripts: [],
   };
 }
