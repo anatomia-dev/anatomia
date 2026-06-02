@@ -24,5 +24,38 @@
   "spec": {
     "saved_at": "2026-06-02T21:19:36.827Z",
     "hash": "sha256:1a9a84717266666c6a448130187c6777527b0622b027d63b79b5a995e36d2e01"
+  },
+  "build_started_at": "2026-06-02T21:29:39.737Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-02T21:36:10.700Z",
+    "hash": "sha256:4758a438d6f57915cdd2e985b354b63cc3e93564bf62e87d34b818a264a10c81"
+  },
+  "build-data": {
+    "saved_at": "2026-06-02T21:36:10.700Z",
+    "hash": "sha256:7b7fe5f4f09e1fd91fc1eefc3fdd147de3411cf16ca992522bb97bd69730b253"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/detectors/git.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts",
+    "packages/cli/tests/engine/non-product-filtering.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T21:41:56.719Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:a8f577dd85612510c77814928de04b0783e2f490666382c7737810d29fa10d11",
+    "run_at": "2026-06-02T21:46:11.107Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T21:46:11.139Z",
+    "hash": "sha256:5f12e086abe226700c8ed96abae24b7e4c3539d653c0be1638f14d4a2591e401"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T21:46:11.140Z",
+    "hash": "sha256:ad9d591c1e116ff11b52e39d9bc7aa9727a6cea980c71c4e7f6bc33a7ce931ef"
   }
 }

@@ -1,0 +1,28 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 122
+    severity: debt
+    suggested_action: acknowledge
+    related_assertions: ["A005", "A006"]
+  - category: code
+    summary: "NON_PRODUCT_GLOB_IGNORE **/build/** collision with legitimate build directories persists — out of scope for this fix, tracked as fix-non-product-code-pollution-C5"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 140
+    severity: observation
+    suggested_action: monitor
+    resolves: []
+  - category: test
+    summary: "@ana tag namespace collision — surfaces.test.ts carries A001-A027 tags from 3+ prior contracts, making per-contract tag lookup ambiguous"
+    file: "packages/cli/tests/engine/detectors/surfaces.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "isNonProductFilePath suffix loop comment doesn't explain why it can't use last-segment pattern (last segment is filename for file paths, not directory)"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 121
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A005", "A006"]

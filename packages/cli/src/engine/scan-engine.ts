@@ -39,7 +39,7 @@ import { annotateServiceRoles } from './utils/serviceAnnotation.js';
 import { countFiles } from '../utils/fileCounts.js';
 import { buildCensus } from './census.js';
 import { generateFindings } from './findings/index.js';
-import { detectSurfaces, enrichPackages, isNonProductPath } from './detectors/surfaces.js';
+import { detectSurfaces, enrichPackages, isNonProductFilePath } from './detectors/surfaces.js';
 
 import { getLanguageDisplayName, getFrameworkDisplayName, getPatternDisplayName } from '../utils/displayNames.js';
 import { getProjectName } from '../utils/validators.js';
@@ -318,7 +318,7 @@ async function detectSchemas(
         matches = [...dirs];
       }
       // Filter out non-product paths (e2e/, examples/, fixtures/, etc.)
-      matches = matches.filter(m => !isNonProductPath(m));
+      matches = matches.filter(m => !isNonProductFilePath(m));
       if (matches.length > 0) {
         // Score each candidate by model count (including sibling .prisma files)
         let best: { path: string; modelCount: number; provider: string | null } | null = null;
@@ -440,7 +440,7 @@ async function detectSchemas(
           rawMatches.push(...found);
         }
         // Deduplicate and filter out non-product paths (e2e/, examples/, fixtures/, etc.)
-        const unique = [...new Set(rawMatches)].filter(m => !isNonProductPath(m));
+        const unique = [...new Set(rawMatches)].filter(m => !isNonProductFilePath(m));
         // Content filter: file must contain a Drizzle table helper call
         for (const f of unique) {
           try {
@@ -540,9 +540,9 @@ async function detectSchemas(
     try {
       // Filter out non-product paths (e2e/, examples/, fixtures/, etc.)
       const migrationFiles = (await glob('**/supabase/migrations/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]))
-        .filter(m => !isNonProductPath(m));
+        .filter(m => !isNonProductFilePath(m));
       const schemaFiles = (await glob('**/schema/**/*.sql', SCHEMA_GLOB_OPTS).catch(() => [] as string[]))
-        .filter(m => !isNonProductPath(m));
+        .filter(m => !isNonProductFilePath(m));
       const files = [...migrationFiles, ...schemaFiles];
       if (files.length > 0) {
         const modelCount = await countUniqueTables(rootPath, files);
