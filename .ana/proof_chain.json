@@ -48126,7 +48126,10 @@
           "severity": "observation",
           "suggested_action": "acknowledge",
           "id": "learn-codex-adaptation-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Benign observations — C5: extra test file beyond contract is additional coverage, not a defect. C6: dogfood .claude/agents/ana-learn.md receiving the same skills-path fix is standard propagation, not a contract violation.",
+          "closed_at": "2026-06-02T20:31:34.795Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
@@ -48136,7 +48139,10 @@
           "severity": "observation",
           "suggested_action": "acknowledge",
           "id": "learn-codex-adaptation-C6",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Benign observations — C5: extra test file beyond contract is additional coverage, not a defect. C6: dogfood .claude/agents/ana-learn.md receiving the same skills-path fix is standard propagation, not a contract violation.",
+          "closed_at": "2026-06-02T20:31:34.796Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,

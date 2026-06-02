@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-184 runs · 176 active · 5 promoted · 869 closed
+184 runs · 174 active · 5 promoted · 871 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 33 | 35 | 2026-06-02 |
+| Unscoped | 33 | 33 | 2026-06-02 |
 | cli | 127 | 117 | 2026-06-02 |
 | website | 24 | 24 | 2026-06-01 |
 
@@ -24,11 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 176 total)
-
-### .claude/agents/ana-learn.md
-
-- **code:** Dogfood .claude/agents/ana-learn.md also received .claude/skills/ -> .ana/skills/ fix, not listed in contract file_changes — *Learn Agent Codex Adaptation*
+## Active Findings (30 shown of 174 total)
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -37,6 +33,8 @@
 ### packages/cli/src/commands/work.ts
 
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
+- **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -101,10 +99,6 @@
 ### packages/cli/tests/engine/scan-engine-secrets.test.ts
 
 - **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
-
-### packages/cli/tests/templates/codex-learn-template.test.ts
-
-- **code:** Extra file not in contract: codex-learn-template.test.ts created for dedicated assertion coverage — *Learn Agent Codex Adaptation*
 
 ### General
 
