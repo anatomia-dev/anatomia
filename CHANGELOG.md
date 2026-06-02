@@ -7,6 +7,31 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-06-02
+
+### Added
+
+- **Vue framework detection.** Vue 3 apps using `vite.config.ts` are now correctly identified. hoppscotch (70K stars) goes from "unknown" shape with 2 surfaces to "Vue" framework with 6 surfaces. Dep-based framework fallback detects Vue and React even when no framework-specific config file exists.
+- **Vite surface detection with library guard.** Packages with `vite.config.ts` are detected as surfaces. Library packages (those with `main`/`module`/`exports` in package.json) are excluded — they use Vite for bundling, not as a deployable app. Zero false positives across 22 validated repos.
+- **`hasMain` and `hasExports` fields on `SourceRoot`.** Census reads library markers from package.json during construction. Used by the surface detection library guard.
+- **MCP and Upstash service detection.** `@modelcontextprotocol/sdk` detected as "MCP Server." `@upstash/ratelimit`, `@upstash/vector`, `@upstash/workflow` added. Existing `@upstash/redis` and `@upstash/qstash` detection unchanged.
+
+### Fixed
+
+- **Non-product code counted as production code.** Test fixtures, templates, examples, playground, and reference directories were included in scan findings, hot files, schema model counts, and deploy detection. Supabase showed 39 models (real: 10). trigger.dev/payload/novu had 100% false-positive API route findings. shadcn hot files showed template config files. Payload's deploy platform came from a template Dockerfile. Fixed by wiring `isNonProductPath` filtering into all affected systems with a shared `NON_PRODUCT_GLOB_IGNORE` constant derived from `EXCLUDED_SEGMENTS`.
+- **Non-product path filter over-excluded product code.** The initial fix used any-depth segment matching (`**/e2e/**`), which incorrectly filtered product endpoints named `e2e`, `test`, `sandbox`, `templates`, or `playground` deep inside app source trees. dub lost 9 production API routes. Fixed with depth-limited `isNonProductFilePath` that only checks the first 3 path segments (where workspace packages live). Root-anchored glob patterns replace any-depth patterns. Verified across 22 repos.
+- **Env hygiene false positive.** `.gitignore` coverage check used `gitignore.includes('.env')` — a substring match that passed when only `.env.local` was covered. Replaced with `git check-ignore --no-index .env` for authoritative gitignore evaluation.
+- **Contributor display missing "active" qualifier.** "27 contributors" now reads "27 active contributors." The count is a 30-day window, not all-time.
+
+### Changed
+
+- `EXCLUDED_SEGMENTS` exported from `surfaces.ts` — shared definition of non-product paths
+- `NON_PRODUCT_GLOB_IGNORE` uses root-anchored patterns instead of any-depth `**/${s}/**`
+- `isNonProductFilePath` exported for file-path callers. `isNonProductPath` unchanged for package-path callers.
+- `detectSecrets` exported for testing
+- Vue detector registered at position 5 in the node framework registry
+- `FRAMEWORK_HINTS` and `STRONG_FRAMEWORK_CONFIGS` include `vite.config.ts/js/mjs`
+
 ## [1.2.1] - 2026-06-01
 
 ### Added
