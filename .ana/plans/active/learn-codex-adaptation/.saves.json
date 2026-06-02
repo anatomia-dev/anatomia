@@ -44,5 +44,20 @@
     "website/content/docs/guides/using-ana-learn.mdx",
     "website/lib/__tests__/docs-platform-content.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T00:06:36.611Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:3a0f7e3b07b3cb11c46ff68a41be3c002b5d0c333571f987be1213dcec48c098",
+    "run_at": "2026-06-02T00:14:18.316Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T00:14:18.359Z",
+    "hash": "sha256:6ac1bb296cd92c36926d9bbf44014c06bc6ac529eb738c7f5c22f65d064fe3e4"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T00:14:18.359Z",
+    "hash": "sha256:017eb82d97727813f5eef541ba898efcdc3ebad15f00d7d7e1fe39af26a70a61"
+  }
 }

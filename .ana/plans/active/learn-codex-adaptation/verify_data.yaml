@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A004/A005 test checks test helper output, not real init behavior"
+    file: "packages/cli/tests/commands/run.test.ts"
+    line: 434
+    severity: debt
+    suggested_action: acknowledge
+    related_assertions: ["A004", "A005"]
+  - category: test
+    summary: "A003 test asserts mock stub content ('# ana-learn prompt') not contract value ('Ana Learn')"
+    file: "packages/cli/tests/commands/run.test.ts"
+    line: 364
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A003"]
+  - category: test
+    summary: "init.test.ts line 866 test description says '5 agent files' but body asserts 12 (6 agents)"
+    file: "packages/cli/tests/commands/init.test.ts"
+    line: 866
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Contract A008 matcher 'not_contains ---' is imprecise - template has --- as horizontal rules, not frontmatter"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A008"]
+  - category: code
+    summary: "Extra file not in contract: codex-learn-template.test.ts created for dedicated assertion coverage"
+    file: "packages/cli/tests/templates/codex-learn-template.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - category: code
+    summary: "Dogfood .claude/agents/ana-learn.md also received .claude/skills/ -> .ana/skills/ fix, not listed in contract file_changes"
+    file: ".claude/agents/ana-learn.md"
+    severity: observation
+    suggested_action: acknowledge
