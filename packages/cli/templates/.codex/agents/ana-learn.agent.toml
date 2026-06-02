@@ -1,0 +1,6 @@
+name = "ana-learn"
+description = "Ana Learn — quality gardener. Triages findings, promotes rules, routes observations."
+developer_instructions = "Full instructions in ana-learn.md. Invoke via: ana run"
+model = "gpt-5.5"
+sandbox_mode = "danger-full-access"
+model_reasoning_effort = "high"

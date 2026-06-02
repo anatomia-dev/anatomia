@@ -790,9 +790,10 @@ describe('Codex init infrastructure', () => {
   });
 
   describe('Codex template inventory', () => {
-    it('has 5 Codex agent files (no Learn)', () => {
-      expect(CODEX_AGENT_FILES).toHaveLength(5);
-      expect(CODEX_AGENT_FILES).not.toContain('ana-learn.md');
+    // @ana A006, A007
+    it('has 6 Codex agent files including Learn', () => {
+      expect(CODEX_AGENT_FILES).toHaveLength(6);
+      expect(CODEX_AGENT_FILES).toContain('ana-learn.md');
     });
 
     it('all Codex template files exist in CLI package', async () => {
@@ -882,7 +883,7 @@ describe('Codex init infrastructure', () => {
       }
 
       const files = await fs.readdir(codexAgentsPath);
-      expect(files).toHaveLength(10);
+      expect(files).toHaveLength(12);
 
       for (const agentFile of CODEX_AGENT_FILES) {
         expect(files).toContain(agentFile);

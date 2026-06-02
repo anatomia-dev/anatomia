@@ -168,13 +168,14 @@ export const AGENT_FILES = [
   'ana-learn.md',
 ] as const;
 
-/** Agent definition files for Codex (no Learn agent) */
+/** Agent definition files for Codex */
 export const CODEX_AGENT_FILES = [
   'ana.md',
   'ana-plan.md',
   'ana-setup.md',
   'ana-build.md',
   'ana-verify.md',
+  'ana-learn.md',
 ] as const;
 
 

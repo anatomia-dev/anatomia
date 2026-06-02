@@ -100,13 +100,7 @@ FAIL means Verify found issues — this is the pipeline working as designed. <Do
 
 </TroubleCard>
 
-<ForPlatform platform="claude-code">
-Claude Code users can run Learn normally with `ana run learn` when triaging findings between pipeline cycles.
-</ForPlatform>
-
-<ForPlatform platform="codex">
-Codex users cannot run Learn yet. `ana run learn --platform codex` fails with a Claude Code fallback, so use Claude Code for proof-chain triage until Codex Learn is available.
-</ForPlatform>
+Use `ana run learn` for proof-chain triage between pipeline cycles. Both platforms support Learn.
 
 <TroubleCard title="My build never finishes">
 
