@@ -212,6 +212,8 @@ function makeRoot(overrides: Partial<SourceRoot> & { relativePath: string }): So
     deps: overrides.deps ?? {},
     devDeps: overrides.devDeps ?? {},
     hasBin: overrides.hasBin ?? false,
+    hasMain: overrides.hasMain ?? false,
+    hasExports: overrides.hasExports ?? false,
     scripts: overrides.scripts ?? [],
   };
 }

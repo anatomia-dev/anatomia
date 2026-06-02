@@ -20,6 +20,8 @@ export interface SourceRoot {
   deps: Record<string, string>;        // this root's own deps (not merged)
   devDeps: Record<string, string>;     // this root's own devDeps
   hasBin: boolean;                     // true when package.json declares a bin field
+  hasMain: boolean;                    // true when package.json declares main or module field
+  hasExports: boolean;                 // true when package.json declares exports field
   scripts: string[];                   // script keys from package.json (e.g., ["build", "dev", "test"])
 }
 

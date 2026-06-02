@@ -160,6 +160,7 @@ const EXTERNAL_SERVICE_PACKAGES: Record<string, { name: string; category: string
   '@lemonsqueezy/lemonsqueezy.js': { name: 'Lemon Squeezy', category: 'payments' },
   'openai': { name: 'OpenAI', category: 'ai' },
   '@anthropic-ai/sdk': { name: 'Anthropic', category: 'ai' },
+  '@modelcontextprotocol/sdk': { name: 'MCP Server', category: 'ai' },
   '@trpc/server': { name: 'tRPC', category: 'api' },
   '@trpc/client': { name: 'tRPC', category: 'api' },
   // Vercel platform
@@ -177,6 +178,10 @@ const EXTERNAL_SERVICE_PACKAGES: Record<string, { name: string; category: string
   '@liveblocks/client': { name: 'Liveblocks', category: 'realtime' },
   'livekit-server-sdk': { name: 'LiveKit', category: 'realtime' },
   '@partykit/client': { name: 'PartyKit', category: 'realtime' },
+  // Upstash
+  '@upstash/ratelimit': { name: 'Upstash Ratelimit', category: 'cache' },
+  '@upstash/vector': { name: 'Upstash Vector', category: 'vector-db' },
+  '@upstash/workflow': { name: 'Upstash Workflow', category: 'queue' },
   // Vector databases
   '@pinecone-database/pinecone': { name: 'Pinecone', category: 'vector-db' },
   'chromadb': { name: 'ChromaDB', category: 'vector-db' },

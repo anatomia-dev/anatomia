@@ -26,6 +26,7 @@ import { detectNextjs } from './nextjs.js';
 import { detectRemix } from './remix.js';
 import { detectNestjs } from './nestjs.js';
 import { detectExpress } from './express.js';
+import { detectVue } from './vue.js';
 import { detectReact } from './react.js';
 import { detectOtherNodeFrameworks } from './other.js';
 
@@ -44,15 +45,18 @@ export type NodeFrameworkDetector = (
  *      NOT on bare react-router (which is a routing lib, not the
  *      framework).
  *   3. Nest.js — wraps Express; must beat plain Express detection.
- *   4. Express — a common direct dependency, checked before React.
- *   5. React — fallback for pure React (no Next/Remix) projects.
- *   6. Other (Fastify/Koa/Hono) — catch-all for simpler frameworks.
+ *   4. Express — a common direct dependency, checked before Vue/React.
+ *   5. Vue — checked before React (Vue apps have vue, not react).
+ *      Guards against Nuxt (which includes Vue).
+ *   6. React — fallback for pure React (no Next/Remix) projects.
+ *   7. Other (Fastify/Koa/Hono) — catch-all for simpler frameworks.
  */
 export const NODE_FRAMEWORK_DETECTORS: NodeFrameworkDetector[] = [
   detectNextjs,
   detectRemix,
   detectNestjs,
   detectExpress,
+  detectVue,
   detectReact,
   detectOtherNodeFrameworks,
 ];

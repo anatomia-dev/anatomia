@@ -18,5 +18,47 @@
   "spec": {
     "saved_at": "2026-06-02T19:04:43.255Z",
     "hash": "sha256:70dda41163e7af2bf82cc19040598eb30a7d95d97a028c91a76b1320bf616016"
+  },
+  "build_started_at": "2026-06-02T19:14:11.110Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-02T19:26:58.419Z",
+    "hash": "sha256:3ef2e0229dcedda74753c0fd8a8f0c553de2e71e189d9864cbe14010d27213ec"
+  },
+  "build-data": {
+    "saved_at": "2026-06-02T19:26:58.422Z",
+    "hash": "sha256:a0cae089a77711d5c557924adf77a1025c2466caabdff5d3b5c0217b71a153e0"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/census.ts",
+    "packages/cli/src/engine/detectors/node/framework-registry.ts",
+    "packages/cli/src/engine/detectors/node/vue.ts",
+    "packages/cli/src/engine/detectors/surfaces.ts",
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/src/engine/types/census.ts",
+    "packages/cli/tests/engine/census-primary.test.ts",
+    "packages/cli/tests/engine/detectors/applicationShape.test.ts",
+    "packages/cli/tests/engine/detectors/dependencies.test.ts",
+    "packages/cli/tests/engine/detectors/documentation.test.ts",
+    "packages/cli/tests/engine/detectors/node-frameworks.test.ts",
+    "packages/cli/tests/engine/detectors/surfaces.test.ts",
+    "packages/cli/tests/engine/sampling/proportional-sampler.test.ts",
+    "packages/cli/tests/engine/types/census.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-02T19:28:44.758Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f07336a74e725e54a0ac67c6faf50cbdef1525ba4a70c3016348e26e836d74a4",
+    "run_at": "2026-06-02T19:34:57.494Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-02T19:34:57.527Z",
+    "hash": "sha256:5007c4f5aedd448c2894cabd2042556a68029752c3da708afcc4cb4240012558"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-02T19:34:57.527Z",
+    "hash": "sha256:0704a0df030218c5e3db436b9f35a65006bca62ce79d17e99fa8fb94beaa99b4"
   }
 }

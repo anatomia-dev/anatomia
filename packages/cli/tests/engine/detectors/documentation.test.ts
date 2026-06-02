@@ -31,6 +31,8 @@ function makeSourceRoot(relativePath: string): SourceRoot {
     deps: {},
     devDeps: {},
     hasBin: false,
+    hasMain: false,
+    hasExports: false,
     scripts: [],
   };
 }
@@ -263,9 +265,9 @@ describe('documentation inventory — dogfood', () => {
 
   it('produces expected output for Anatomia repo', () => {
     const roots: SourceRoot[] = [
-      { absolutePath: REPO_ROOT, relativePath: '.', packageName: 'anatomia', fileCount: 10, isPrimary: false, deps: {}, devDeps: {}, hasBin: false, scripts: [] },
-      { absolutePath: path.join(REPO_ROOT, 'packages/cli'), relativePath: 'packages/cli', packageName: 'cli', fileCount: 100, isPrimary: true, deps: {}, devDeps: {}, hasBin: true, scripts: [] },
-      { absolutePath: path.join(REPO_ROOT, 'website'), relativePath: 'website', packageName: 'website', fileCount: 10, isPrimary: false, deps: {}, devDeps: {}, hasBin: false, scripts: [] },
+      { absolutePath: REPO_ROOT, relativePath: '.', packageName: 'anatomia', fileCount: 10, isPrimary: false, deps: {}, devDeps: {}, hasBin: false, hasMain: false, hasExports: false, scripts: [] },
+      { absolutePath: path.join(REPO_ROOT, 'packages/cli'), relativePath: 'packages/cli', packageName: 'cli', fileCount: 100, isPrimary: true, deps: {}, devDeps: {}, hasBin: true, hasMain: false, hasExports: false, scripts: [] },
+      { absolutePath: path.join(REPO_ROOT, 'website'), relativePath: 'website', packageName: 'website', fileCount: 10, isPrimary: false, deps: {}, devDeps: {}, hasBin: false, hasMain: false, hasExports: false, scripts: [] },
     ];
     const result = detectDocumentation(REPO_ROOT, roots, null, {});
 

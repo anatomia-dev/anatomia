@@ -1,0 +1,47 @@
+schema: 1
+findings:
+  - category: code
+    summary: "resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 245
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A008", "A009", "A010"]
+  - category: code
+    summary: "Inline dep-to-framework map in resolveViteFramework duplicates knowledge from the framework registry"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 248
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A008"]
+  - category: code
+    summary: "Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 341
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "A011-A015 (service detection entries) have no tagged tests — verified by source inspection only"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 163
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A011", "A012", "A013", "A014", "A015"]
+  - category: test
+    summary: "A019 (FRAMEWORK_HINTS vite count) has no tagged test — FRAMEWORK_HINTS is not exported so cannot be unit-tested directly"
+    file: "packages/cli/src/engine/census.ts"
+    line: 68
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A019"]
+  - category: test
+    summary: "No per-surface test for vue+react simultaneous deps in resolveViteFramework (Vue wins by priority, but untested)"
+    file: "packages/cli/src/engine/detectors/surfaces.ts"
+    line: 248
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Contract A019 matcher 'equals' with value 3 is fragile — if a 4th extension is added (e.g. vite.config.cjs), the contract assertion breaks"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A019"]

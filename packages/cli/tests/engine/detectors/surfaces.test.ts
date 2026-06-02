@@ -31,6 +31,8 @@ function makeRoot(overrides: Partial<SourceRoot> & { relativePath: string }): So
     deps: overrides.deps ?? {},
     devDeps: overrides.devDeps ?? {},
     hasBin: overrides.hasBin ?? false,
+    hasMain: overrides.hasMain ?? false,
+    hasExports: overrides.hasExports ?? false,
     scripts: overrides.scripts ?? [],
   };
 }
@@ -1276,5 +1278,201 @@ describe('signal 3 continue prevents duplicate candidates', () => {
     expect(surfaces[0]!.name).toBe('server');
     // Signal 3 claims it — framework detected from config
     expect(surfaces[0]!.framework).toBe('NestJS');
+  });
+});
+
+// ── Vite config surface detection and library guard ─────────────────
+
+// @ana A006
+describe('signal 3 detects vite config as surface for deployable apps', () => {
+  it('detects package with vite.config.ts as surface when no library markers', () => {
+    const root = makeRoot({
+      relativePath: 'packages/web',
+      fileCount: 100,
+      deps: { vue: '3.4.0' },
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'vite',
+      sourceRootPath: 'packages/web',
+      path: 'packages/web/vite.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.name).toBe('web');
+  });
+});
+
+// @ana A004
+describe('library guard excludes vite config package with hasMain', () => {
+  it('excludes package with vite.config.ts and hasMain (library)', () => {
+    const root = makeRoot({
+      relativePath: 'packages/data',
+      fileCount: 100,
+      hasMain: true,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'vite',
+      sourceRootPath: 'packages/data',
+      path: 'packages/data/vite.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A005
+describe('library guard excludes vite config package with hasExports', () => {
+  it('excludes package with vite.config.ts and hasExports (library)', () => {
+    const root = makeRoot({
+      relativePath: 'packages/kernel',
+      fileCount: 100,
+      hasExports: true,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'vite',
+      sourceRootPath: 'packages/kernel',
+      path: 'packages/kernel/vite.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(0);
+  });
+});
+
+// @ana A007
+describe('library guard only applies to vite configs, not other framework configs', () => {
+  it('non-vite strong config with hasMain is still detected as surface', () => {
+    const root = makeRoot({
+      relativePath: 'packages/lib-web',
+      fileCount: 100,
+      hasMain: true,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'nextjs',
+      sourceRootPath: 'packages/lib-web',
+      path: 'packages/lib-web/next.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces).toHaveLength(1);
+  });
+});
+
+// ── Vite framework resolution ───────────────────────────────────────
+
+// @ana A008
+describe('vite hint resolves to Vue when vue is in deps', () => {
+  it('surfaces with vite config and Vue deps get the Vue framework label', () => {
+    const root = makeRoot({
+      relativePath: 'packages/web',
+      fileCount: 100,
+      deps: { vue: '3.4.0' },
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'vite',
+      sourceRootPath: 'packages/web',
+      path: 'packages/web/vite.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces[0]!.framework).toBe('Vue');
+  });
+});
+
+// @ana A009
+describe('vite hint resolves to React when react is in deps', () => {
+  it('surfaces with vite config and React deps get the React framework label', () => {
+    const root = makeRoot({
+      relativePath: 'packages/app',
+      fileCount: 100,
+      deps: { react: '18.2.0' },
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'vite',
+      sourceRootPath: 'packages/app',
+      path: 'packages/app/vite.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces[0]!.framework).toBe('React');
+  });
+});
+
+// @ana A010
+describe('vite hint resolves to null when no framework deps present', () => {
+  it('surfaces with vite config but no framework deps get no framework label', () => {
+    const root = makeRoot({
+      relativePath: 'packages/tool',
+      fileCount: 100,
+    });
+    const hint: FrameworkHintEntry = {
+      framework: 'vite',
+      sourceRootPath: 'packages/tool',
+      path: 'packages/tool/vite.config.ts',
+    };
+    const census = makeCensus({ roots: [root], frameworkHints: [hint] });
+    const surfaces = detectSurfaces(census, {});
+
+    expect(surfaces[0]!.framework).toBeNull();
+  });
+});
+
+// @ana A018
+describe('STRONG_FRAMEWORK_CONFIGS includes vite configs', () => {
+  it('has vite.config.ts', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('vite.config.ts')).toBe(true);
+  });
+  it('has vite.config.js', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('vite.config.js')).toBe(true);
+  });
+  it('has vite.config.mjs', () => {
+    expect(STRONG_FRAMEWORK_CONFIGS.has('vite.config.mjs')).toBe(true);
+  });
+});
+
+// @ana A022
+describe('makeRoot defaults hasMain and hasExports to false', () => {
+  it('default makeRoot has hasMain false', () => {
+    const root = makeRoot({ relativePath: 'packages/test' });
+    expect(root.hasMain).toBe(false);
+  });
+  it('default makeRoot has hasExports false', () => {
+    const root = makeRoot({ relativePath: 'packages/test' });
+    expect(root.hasExports).toBe(false);
+  });
+});
+
+// @ana A020, A021
+describe('SourceRoot has hasMain and hasExports fields', () => {
+  it('hasMain exists on SourceRoot', () => {
+    const root = makeRoot({ relativePath: 'packages/lib', hasMain: true });
+    expect(root.hasMain).toBe(true);
+  });
+  it('hasExports exists on SourceRoot', () => {
+    const root = makeRoot({ relativePath: 'packages/lib', hasExports: true });
+    expect(root.hasExports).toBe(true);
+  });
+});
+
+// @ana A023
+describe('existing signal tests pass with updated makeRoot', () => {
+  it('signal 1 still works with new fields defaulted', () => {
+    const root = makeRoot({
+      relativePath: 'packages/cli',
+      hasBin: true,
+      scripts: ['dev'],
+      fileCount: 50,
+    });
+    const census = makeCensus({ roots: [root] });
+    const surfaces = detectSurfaces(census, {});
+    expect(surfaces.length).toBeGreaterThan(0);
   });
 });
