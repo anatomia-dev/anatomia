@@ -1243,6 +1243,63 @@ describe('ana scan', () => {
   });
 });
 
+describe('contributor display label', () => {
+  let tempDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scan-contrib-'));
+    originalCwd = process.cwd();
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  function runScan(args: string[] = []): { stdout: string; stderr: string; exitCode: number } {
+    const cliPath = path.join(__dirname, '../../dist/index.js');
+    try {
+      const stdout = execSync(`node ${cliPath} scan ${args.join(' ')}`, {
+        encoding: 'utf-8',
+        cwd: process.cwd(),
+        env: { ...process.env, FORCE_COLOR: '0' },
+      });
+      return { stdout, stderr: '', exitCode: 0 };
+    } catch (error) {
+      const execError = error as { stdout?: string; stderr?: string; status?: number };
+      return {
+        stdout: execError.stdout || '',
+        stderr: execError.stderr || '',
+        exitCode: execError.status || 1,
+      };
+    }
+  }
+
+  // @ana A005, A006, A007
+  it('displays active contributor count', async () => {
+    // Create a git repo with commits so activity data is populated
+    execSync('git init', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    await fs.writeFile(path.join(tempDir, 'package.json'), '{"name":"test","version":"1.0.0"}');
+    await fs.writeFile(path.join(tempDir, 'index.ts'), 'export const foo = 1;');
+    execSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+
+    process.chdir(tempDir);
+    const { stdout } = runScan();
+
+    // The Activity line should include "active contributor" (singular or plural)
+    const activityLine = stdout.split('\n').find((l: string) => l.includes('Activity'));
+    expect(activityLine).toBeDefined();
+    expect(activityLine).toContain('active contributor');
+    // Singular: "1 active contributor" not "1 active contributors"
+    if (activityLine!.includes('1 active contributor')) {
+      expect(activityLine).not.toContain('1 active contributors');
+    }
+  });
+});
+
 describe('display name mapping', () => {
   it('maps node to Node.js', () => {
     expect(getLanguageDisplayName('node')).toBe('Node.js');
