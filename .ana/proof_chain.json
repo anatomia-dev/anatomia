@@ -45558,7 +45558,10 @@
           "severity": "observation",
           "suggested_action": "acknowledge",
           "id": "platform-aware-cli-C8",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Claim outdated — advisoryPipelineCheck rewrite (run.ts:253-292) removed all stage string matching. Uses file-existence checks now. No stage.includes() pattern exists.",
+          "closed_at": "2026-06-02T20:03:35.544Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
