@@ -39,6 +39,7 @@ export const STRONG_FRAMEWORK_CONFIGS = new Set([
   'remix.config.js', 'remix.config.ts', 'remix.config.mjs',
   'react-router.config.ts', 'react-router.config.js', 'react-router.config.mjs',
   'astro.config.mjs', 'astro.config.ts', 'astro.config.js',
+  'vite.config.ts', 'vite.config.js', 'vite.config.mjs',
 ]);
 
 /**
@@ -224,9 +225,30 @@ function detectFramework(root: SourceRoot, census: ProjectCensus): string | null
   for (const hint of hints) {
     const basename = path.basename(hint.path);
     if (STRONG_FRAMEWORK_CONFIGS.has(basename)) {
+      // Vite is a build tool, not a framework — resolve to actual framework via deps
+      if (hint.framework === 'vite') {
+        return resolveViteFramework(root);
+      }
       return getFrameworkDisplayName(hint.framework);
     }
   }
+  return null;
+}
+
+/**
+ * Resolve the actual framework for a package using Vite as its build tool.
+ * Checks production and dev deps for known framework packages.
+ *
+ * @param root - Source root with deps to inspect
+ * @returns Display framework name or null if no framework dep found
+ */
+function resolveViteFramework(root: SourceRoot): string | null {
+  const allDeps = { ...root.deps, ...root.devDeps };
+  // Check in priority order: Vue → React (without Next) → Svelte → Solid
+  if (allDeps['vue']) return 'Vue';
+  if (allDeps['react'] && !allDeps['next']) return 'React';
+  if (allDeps['svelte']) return 'Svelte';
+  if (allDeps['solid-js']) return 'Solid';
   return null;
 }
 
@@ -323,9 +345,18 @@ export function detectSurfaces(
     }
 
     // Signal 3: strong framework config anywhere
+    // Library guard: vite configs in packages with main/module/exports are libraries
+    // using Vite as a build tool, not deployable apps. Non-vite configs (next.config.ts,
+    // etc.) are always framework-specific and never guarded.
     if (hasStrongConfig(root, census)) {
-      candidates.push({ root });
-      continue;
+      const isViteLibrary = census.configs.frameworkHints.some(h =>
+        h.sourceRootPath === root.relativePath
+        && path.basename(h.path).startsWith('vite.config.')
+      ) && (root.hasMain || root.hasExports);
+      if (!isViteLibrary) {
+        candidates.push({ root });
+        continue;
+      }
     }
 
     // Signal 4: server framework dep + dev/start:dev script + enough files
