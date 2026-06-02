@@ -1,0 +1,70 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix scan display accuracy — env hygiene false positive and contributor label"
+
+assertions:
+  - id: A001
+    says: "Repos that only gitignore .env.local are correctly flagged as not covering .env"
+    block: "detects .env.local-only gitignore as not covering .env"
+    target: "result.gitignoreCoversEnv"
+    matcher: "equals"
+    value: false
+
+  - id: A002
+    says: "Repos with .env in their gitignore are still correctly detected as covered"
+    block: "detects .env in gitignore as covered"
+    target: "result.gitignoreCoversEnv"
+    matcher: "equals"
+    value: true
+
+  - id: A003
+    says: "Non-git directories gracefully fall back to assuming .env is not covered"
+    block: "falls back to false in non-git directory"
+    target: "result.gitignoreCoversEnv"
+    matcher: "equals"
+    value: false
+
+  - id: A004
+    says: "Git negation patterns that un-ignore .env are correctly detected"
+    block: "respects gitignore negation patterns"
+    target: "result.gitignoreCoversEnv"
+    matcher: "equals"
+    value: false
+
+  - id: A005
+    says: "The contributor count shows the active qualifier"
+    block: "displays active contributor count"
+    target: "displayLine"
+    matcher: "contains"
+    value: "active contributors"
+
+  - id: A006
+    says: "A single contributor uses singular form"
+    block: "displays singular active contributor"
+    target: "displayLine"
+    matcher: "contains"
+    value: "1 active contributor"
+
+  - id: A007
+    says: "A single contributor does not show plural form"
+    block: "displays singular active contributor"
+    target: "displayLine"
+    matcher: "not_contains"
+    value: "1 active contributors"
+
+  - id: A008
+    says: "Existing env hygiene finding tests still pass unchanged"
+    block: "existing env hygiene tests pass"
+    target: "testSuite.envHygiene"
+    matcher: "equals"
+    value: "pass"
+
+file_changes:
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/scan-engine-secrets.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/scan.test.ts"
+    action: modify
