@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-180 runs · 165 active · 5 promoted · 855 closed
+181 runs · 170 active · 5 promoted · 856 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 32 | 30 | 2026-06-01 |
+| Unscoped | 33 | 35 | 2026-06-02 |
 | cli | 124 | 111 | 2026-06-01 |
 | website | 24 | 24 | 2026-06-01 |
 
@@ -24,24 +24,15 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 165 total)
+## Active Findings (30 shown of 170 total)
+
+### .claude/agents/ana-learn.md
+
+- **code:** Dogfood .claude/agents/ana-learn.md also received .claude/skills/ -> .ana/skills/ fix, not listed in contract file_changes — *Learn Agent Codex Adaptation*
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** Phase inference adds a second .saves.json reader instead of sharing the existing metadata read path — *Multi-Phase Report Naming Guard*
-
-### packages/cli/src/commands/init/assets.ts
-
-- **code:** createSkillSymlinks silently skips real directories — falls through to nothing when lstat succeeds but isSymbolicLink is false — *Codex Support*
-
-### packages/cli/src/commands/platform.ts
-
-- **code:** Duplicate JSDoc block on getPlatformFlags — old block left above new block — *Codex Support*
-- **code:** Duplicate JSDoc block on getPlatformFlags — old docstring not removed when new one added — *Codex Support*
-
-### packages/cli/src/commands/run.ts
-
-- **code:** TOML mode field is dead data — dispatch uses hardcoded INTERACTIVE_AGENTS set instead — *Codex Support*
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -70,8 +61,13 @@
 
 ### packages/cli/tests/commands/init.test.ts
 
+- **test:** init.test.ts line 866 test description says '5 agent files' but body asserts 12 (6 agents) — *Learn Agent Codex Adaptation*
 - **test:** No test for codex-only init path — A011/A012/A013 verified by source inspection only — *Codex Support*
-- **test:** A026 test asserts length > 0, not that correct platforms were detected — weak assertion for auto-detection — *Codex Support*
+
+### packages/cli/tests/commands/run.test.ts
+
+- **test:** A004/A005 test checks test helper output, not real init behavior — *Learn Agent Codex Adaptation*
+- **test:** A003 test asserts mock stub content ('# ana-learn prompt') not contract value ('Ana Learn') — *Learn Agent Codex Adaptation*
 
 ### packages/cli/tests/commands/work-ci-mocked.test.ts
 
@@ -91,6 +87,10 @@
 ### packages/cli/tests/e2e/init-flow.test.ts
 
 - **test:** A029 (init-flow.test.ts asserts ana run) lacks @ana tag — verified by source inspection — *Codex Support*
+
+### packages/cli/tests/templates/codex-learn-template.test.ts
+
+- **code:** Extra file not in contract: codex-learn-template.test.ts created for dedicated assertion coverage — *Learn Agent Codex Adaptation*
 
 ### website/content/docs/guides/platform-setup.mdx
 

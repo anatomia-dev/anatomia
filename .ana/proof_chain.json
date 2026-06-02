@@ -47878,6 +47878,266 @@
         "commit_count": 0,
         "base_commit": "6b7ddecd231d0f4dabca27bcaeb33c2c79ec8c56"
       }
+    },
+    {
+      "slug": "learn-codex-adaptation",
+      "feature": "Learn Agent Codex Adaptation",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 19,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Running Learn on Codex dispatches successfully instead of erroring",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The Learn hard block no longer exists in dispatch code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Codex Learn prompt content is passed to the codex CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Init generates a Codex Learn prompt file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Init generates a Codex Learn TOML manifest",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The agent file list now includes Learn",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The agent file list contains the Learn entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The Codex Learn template has no YAML frontmatter",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The Codex Learn template uses the correct skill path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The Codex Learn template has no CC-specific frontmatter diagnostic language",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The Codex Learn template references Plan's prompt file for diagnostics",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The Codex Learn template notes that promoted rules require re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The CC Learn template no longer references .claude/skills/",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The CC Learn template uses the canonical .ana/skills/ path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Docs no longer mention Learn being unavailable on Codex",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "ForPlatform blocks remain balanced across all docs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The using-ana-learn terminal example no longer shows the limitation message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Dogfood installation includes the Codex Learn prompt",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Dogfood installation includes the Codex Learn TOML",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 14,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 140,
+        "think": 1,
+        "plan": 35,
+        "build": 83,
+        "verify": 8
+      },
+      "hashes": {
+        "scope": "sha256:a20361fbde9575eb0820c4f1201cb6d9b6c60c546d3522fe62f8b6387fb45e50",
+        "contract": "sha256:3a0f7e3b07b3cb11c46ff68a41be3c002b5d0c333571f987be1213dcec48c098",
+        "plan": "sha256:e300644ba4674f501fa3921b54caa111c0677484306f85e33704f95a50efa694",
+        "spec": "sha256:44b4a3f14ed386835d30c3b78dad7098cacdc0c61122b08e181763bccf620326",
+        "build-report": "sha256:92a5b1893c3724d66e9016250157b22fbf3397c1888d448c6e7e3f7a1991c3e6",
+        "build-data": "sha256:77844ab6efe5fa6453e499fe1b4af2e4067a865aacbb3b2315803e0a9e98993e",
+        "verify-report": "sha256:6ac1bb296cd92c36926d9bbf44014c06bc6ac529eb738c7f5c22f65d064fe3e4",
+        "verify-data": "sha256:017eb82d97727813f5eef541ba898efcdc3ebad15f00d7d7e1fe39af26a70a61"
+      },
+      "completed_at": "2026-06-02T00:49:05.598Z",
+      "modules_touched": [
+        ".claude/agents/ana-learn.md",
+        ".codex/agents/ana-learn.agent.toml",
+        ".codex/agents/ana-learn.md",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/constants.ts",
+        "packages/cli/templates/.claude/agents/ana-learn.md",
+        "packages/cli/templates/.codex/agents/ana-learn.agent.toml",
+        "packages/cli/templates/.codex/agents/ana-learn.md",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/templates/codex-learn-template.test.ts",
+        "website/content/docs/guides/platform-setup.mdx",
+        "website/content/docs/guides/troubleshooting.mdx",
+        "website/content/docs/guides/using-ana-learn.mdx",
+        "website/lib/__tests__/docs-platform-content.test.ts"
+      ],
+      "scope_summary": "Learn is the only pipeline agent without Codex support. A Codex-only team cannot tend their proof chain — findings accumulate unchecked, patterns never become rules, quality doesn't compound. The user wants to close this gap by creating a Codex Learn template, removing the hard block in `dispatchToCodex`, and updating constants, tests, dogfood, and docs.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A004/A005 test checks test helper output, not real init behavior",
+          "file": "packages/cli/tests/commands/run.test.ts",
+          "anchor": null,
+          "line": 434,
+          "severity": "debt",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A004",
+            "A005"
+          ],
+          "id": "learn-codex-adaptation-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A003 test asserts mock stub content ('# ana-learn prompt') not contract value ('Ana Learn')",
+          "file": "packages/cli/tests/commands/run.test.ts",
+          "anchor": null,
+          "line": 364,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "learn-codex-adaptation-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "init.test.ts line 866 test description says '5 agent files' but body asserts 12 (6 agents)",
+          "file": "packages/cli/tests/commands/init.test.ts",
+          "anchor": null,
+          "line": 866,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "learn-codex-adaptation-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A008 matcher 'not_contains ---' is imprecise - template has --- as horizontal rules, not frontmatter",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "learn-codex-adaptation-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-02T00:49:05.598Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Extra file not in contract: codex-learn-template.test.ts created for dedicated assertion coverage",
+          "file": "packages/cli/tests/templates/codex-learn-template.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "learn-codex-adaptation-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Dogfood .claude/agents/ana-learn.md also received .claude/skills/ -> .ana/skills/ fix, not listed in contract file_changes",
+          "file": ".claude/agents/ana-learn.md",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "learn-codex-adaptation-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "A003 test uses stub content ('# ana-learn prompt') instead of real template content ('Ana Learn') — unit test limitation, not a gap in real system behavior",
+          "file": "packages/cli/tests/commands/run.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "A008 contract value '---' is too broad — matches markdown section dividers in all agent templates. Test uses startsWith check as proxy for frontmatter detection.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "staleness.test.ts has day-boundary flake (89 vs 90 days) — pre-existing, not introduced by this build",
+          "file": "website/lib/__tests__/docs-data/staleness.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-01T22:35:42.285Z",
+        "completed_at": "2026-06-02T00:49:05.591Z",
+        "commit_count": 0,
+        "base_commit": "0846f363625692afa24ce6c54d177517402dc6ff"
+      }
     }
   ],
   "schema": 1,
