@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-184 runs · 185 active · 5 promoted · 860 closed
+184 runs · 184 active · 5 promoted · 861 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 35 | 2026-06-02 |
-| cli | 127 | 126 | 2026-06-02 |
+| cli | 127 | 125 | 2026-06-02 |
 | website | 24 | 24 | 2026-06-01 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/engine/detectors/surfaces.ts | 7 | 3 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
-| packages/cli/src/commands/run.ts | 6 | 2 |
+| packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 185 total)
+## Active Findings (30 shown of 184 total)
 
 ### .claude/agents/ana-learn.md
 
