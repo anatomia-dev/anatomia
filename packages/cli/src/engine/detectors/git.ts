@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'node:child_process';
-import { isNonProductPath } from './surfaces.js';
+import { isNonProductFilePath } from './surfaces.js';
 
 export interface GitInfo {
   head: string | null;
@@ -379,7 +379,7 @@ function detectRecentActivity(cwd: string): GitInfo['recentActivity'] {
       const isSrcMarkdown = ext === '.md' && (file.startsWith('src/') || file.includes('/src/'));
       if (!isSourceExt && !isSrcMarkdown) continue;
       // Skip non-product paths (e2e fixtures, examples, templates, etc.)
-      if (isNonProductPath(file)) continue;
+      if (isNonProductFilePath(file)) continue;
       fileCounts.set(file, (fileCounts.get(file) || 0) + 1);
     }
   }
