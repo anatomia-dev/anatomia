@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-184 runs · 173 active · 5 promoted · 872 closed
+184 runs · 170 active · 5 promoted · 875 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 33 | 2026-06-02 |
-| cli | 127 | 117 | 2026-06-02 |
+| cli | 127 | 114 | 2026-06-02 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,17 +24,22 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 173 total)
+## Active Findings (30 shown of 170 total)
 
 ### packages/cli/src/commands/work-proof.ts
 
 - **code:** Backfill migration uses `as string` cast to compare old accept values against narrowed type — *Rename finding action accept to acknowledge*
+
+### packages/cli/src/commands/work-state.ts
+
+- **code:** resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -89,12 +94,7 @@
 ### packages/cli/tests/commands/work.test.ts
 
 - **test:** A015 edge-case test uses toBeGreaterThanOrEqual(1) — weak assertion on entry count — *Rename finding action accept to acknowledge*
-
-### packages/cli/tests/engine/non-product-filtering.test.ts
-
-- **test:** A004-A006 verify glob array contents and isNonProductPath, not actual glob execution in findings rules — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
-- **test:** A007-A008 test isNonProductPath directly, not the git churn detection loop in git.ts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
-- **test:** A011 simulates Supabase filtering inline instead of calling scan-engine detectSchemas — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
+- **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/tests/engine/scan-engine-secrets.test.ts
 

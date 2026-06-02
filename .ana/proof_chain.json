@@ -48313,7 +48313,10 @@
             "A006"
           ],
           "id": "fix-non-product-code-pollution-C1",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Unit testing the filter predicate (isNonProductPath, glob array contents, inline Supabase simulation) is the correct strategy. These test the filtering logic in isolation — integration testing full scan-engine glob execution is a different scope. No defect.",
+          "closed_at": "2026-06-02T20:31:52.688Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
@@ -48328,7 +48331,10 @@
             "A008"
           ],
           "id": "fix-non-product-code-pollution-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Unit testing the filter predicate (isNonProductPath, glob array contents, inline Supabase simulation) is the correct strategy. These test the filtering logic in isolation — integration testing full scan-engine glob execution is a different scope. No defect.",
+          "closed_at": "2026-06-02T20:31:52.689Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
@@ -48342,7 +48348,10 @@
             "A011"
           ],
           "id": "fix-non-product-code-pollution-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Unit testing the filter predicate (isNonProductPath, glob array contents, inline Supabase simulation) is the correct strategy. These test the filtering logic in isolation — integration testing full scan-engine glob execution is a different scope. No defect.",
+          "closed_at": "2026-06-02T20:31:52.691Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
