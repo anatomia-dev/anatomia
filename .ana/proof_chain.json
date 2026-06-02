@@ -45501,7 +45501,10 @@
           "severity": "debt",
           "suggested_action": "scope",
           "id": "platform-aware-cli-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Already fixed — check.ts:1411 uses getSkillsDirRel() helper, not a hardcoded string. Verified: console.log(chalk.gray(`No skills found in ${getSkillsDirRel()}/`)).",
+          "closed_at": "2026-06-02T20:03:51.974Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
