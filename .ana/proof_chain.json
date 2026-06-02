@@ -45586,7 +45586,10 @@
           "severity": "observation",
           "suggested_action": "acknowledge",
           "id": "platform-aware-cli-C10",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Verify itself concluded 'no issue found' in its summary. findRunProjectRoot walks up from cwd correctly — Commander parsing doesn't affect resolution.",
+          "closed_at": "2026-06-02T20:03:43.602Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",
