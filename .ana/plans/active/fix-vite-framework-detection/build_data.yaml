@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable)"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "EXTERNAL_SERVICE_PACKAGES entries not directly unit-tested — map not exported"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "FRAMEWORK_HINTS ordering invariant has no direct unit test"
+    file: "packages/cli/src/engine/census.ts"
+    severity: debt
+    suggested_action: monitor
