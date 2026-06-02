@@ -1,0 +1,10 @@
+schema: 1
+concerns:
+  - summary: "detectSecrets is now exported solely for testing — no other module imports it"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Pre-existing lint warning in git-operations.ts (unused eslint-disable directive) — not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
