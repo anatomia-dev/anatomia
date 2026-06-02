@@ -45150,7 +45150,10 @@
           "severity": "observation",
           "suggested_action": "acknowledge",
           "id": "gitignore-disclosure-and-hardening-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Positive observation, not a defect — Verify noted discoverGitignoredDirtyFiles correctly uses --no-index (commit.ts:328-330) to handle tracked files that match gitignore rules. Good practice, nothing to fix.",
+          "closed_at": "2026-06-02T21:50:07.389Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
