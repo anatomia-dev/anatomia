@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-185 runs · 169 active · 5 promoted · 880 closed
+185 runs · 168 active · 5 promoted · 881 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 33 | 30 | 2026-06-02 |
+| Unscoped | 33 | 29 | 2026-06-02 |
 | cli | 128 | 116 | 2026-06-02 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 169 total)
+## Active Findings (30 shown of 168 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -35,6 +35,7 @@
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -96,8 +97,4 @@
 ### packages/cli/tests/engine/scan-engine-secrets.test.ts
 
 - **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
-
-### General
-
-- **code:** JSON API shape change: by_action key renamed from accept to acknowledge — breaking for any external consumer — *Rename finding action accept to acknowledge*
 
