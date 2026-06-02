@@ -46753,7 +46753,10 @@
             "A026"
           ],
           "id": "docs-readme-platform-update-C3",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is wrong — platform-setup.mdx line 71 explicitly warns 'Codex sandbox mode is already set in each .agent.toml manifest — don't duplicate it in platformFlags.' Lines 83-85 reinforce the distinction. Guide correctly separates sandbox config from platformFlags.",
+          "closed_at": "2026-06-02T20:31:43.334Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
