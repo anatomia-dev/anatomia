@@ -6,15 +6,17 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 describe('scanProject()', () => {
+  let tempRoot: string;
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = join(tmpdir(), `engine-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempRoot = join(tmpdir(), `engine-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tempRoot, 'isolated', 'a', 'b', 'c', 'd', 'project');
     await mkdir(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    await rm(tempRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
   async function createFiles(files: Record<string, string>): Promise<void> {
