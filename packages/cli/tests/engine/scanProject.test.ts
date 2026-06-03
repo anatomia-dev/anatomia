@@ -607,13 +607,6 @@ export const comments = pgTable("comments", {});
 
   // @ana A001, A002, A003, A004, A005, A006, A007
   it('counts surviving Supabase tables from schema-qualified SQL', async () => {
-    const fixture = {
-      includesContentServiceAsService: true,
-      includesPublicPageAsPage: true,
-      droppedSchemaQualifiedTablesExcluded: true,
-      recreatedTableSurvives: true,
-    };
-
     await createFiles({
       'package.json': JSON.stringify({
         name: 'test',
@@ -649,14 +642,31 @@ CREATE TABLE public.restored_extra (id INT);
 
     const result = await scanProject(tempDir, { depth: 'surface' });
 
-    expect(fixture.includesContentServiceAsService).toBeTruthy();
-    expect(fixture.includesPublicPageAsPage).toBeTruthy();
-    expect(fixture.droppedSchemaQualifiedTablesExcluded).toBeTruthy();
-    expect(fixture.recreatedTableSurvives).toBeTruthy();
     expect(result.schemas['supabase']).toBeDefined();
     expect(result.schemas['supabase']!.found).toBe(true);
     expect(result.schemas['supabase']!.modelCount).toBe(14);
     expect(result.schemas['supabase']!.path).toBe('supabase/migrations/');
+  });
+
+  // @ana A004, A005
+  it('counts schema-qualified Supabase identifiers by final table segment', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { '@supabase/supabase-js': '2.0.0' },
+      }),
+      'supabase/migrations/001_schema_qualified.sql': `
+CREATE TABLE content.service (id INT);
+CREATE TABLE content.invoice (id INT);
+CREATE TABLE "public"."page" (id INT);
+CREATE TABLE "public"."post" (id INT);
+`,
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['supabase']).toBeDefined();
+    expect(result.schemas['supabase']!.modelCount).toBe(4);
   });
 
   // @ana A008, A009, A010
