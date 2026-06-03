@@ -1,0 +1,90 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Fix SQL table counting regex"
+
+assertions:
+  - id: A001
+    says: "Quoted schema-qualified Supabase tables are counted by table name"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "result.schemas.supabase.found"
+    matcher: "equals"
+    value: true
+
+  - id: A002
+    says: "Supabase migrations with sixteen creates and two drops report fourteen surviving tables"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "result.schemas.supabase.modelCount"
+    matcher: "equals"
+    value: 14
+
+  - id: A003
+    says: "Supabase migration detection keeps the migration directory path"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "result.schemas.supabase.path"
+    matcher: "equals"
+    value: "supabase/migrations/"
+
+  - id: A004
+    says: "Non-public schema prefixes count the table instead of the schema"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "fixture.includesContentServiceAsService"
+    matcher: "truthy"
+
+  - id: A005
+    says: "Quoted public schema prefixes count the table instead of public"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "fixture.includesPublicPageAsPage"
+    matcher: "truthy"
+
+  - id: A006
+    says: "Schema-qualified dropped tables are removed from the surviving count"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "fixture.droppedSchemaQualifiedTablesExcluded"
+    matcher: "truthy"
+
+  - id: A007
+    says: "A table dropped and recreated later still survives"
+    block: "counts surviving Supabase tables from schema-qualified SQL"
+    target: "fixture.recreatedTableSurvives"
+    matcher: "truthy"
+
+  - id: A008
+    says: "Generic SQL fallback uses the same table identifier handling"
+    block: "counts surviving tables in generic SQL fallback"
+    target: "result.schemas.sql.found"
+    matcher: "equals"
+    value: true
+
+  - id: A009
+    says: "Generic SQL fallback reports only surviving tables"
+    block: "counts surviving tables in generic SQL fallback"
+    target: "result.schemas.sql.modelCount"
+    matcher: "equals"
+    value: 3
+
+  - id: A010
+    says: "Generic SQL fallback keeps the SQL directory path"
+    block: "counts surviving tables in generic SQL fallback"
+    target: "result.schemas.sql.path"
+    matcher: "equals"
+    value: "db/"
+
+  - id: A011
+    says: "Prisma model counting is unchanged by the SQL table fix"
+    block: "keeps Prisma and Drizzle counts independent from SQL table counting"
+    target: "result.schemas.prisma.modelCount"
+    matcher: "equals"
+    value: 2
+
+  - id: A012
+    says: "Drizzle model counting is unchanged by the SQL table fix"
+    block: "keeps Prisma and Drizzle counts independent from SQL table counting"
+    target: "result.schemas.drizzle.modelCount"
+    matcher: "equals"
+    value: 2
+
+file_changes:
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/scanProject.test.ts"
+    action: modify
