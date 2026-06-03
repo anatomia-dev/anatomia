@@ -256,20 +256,34 @@ async function detectExternalServices(
 // --- Schema detection ---
 
 /**
- * Count unique table names from SQL files via CREATE TABLE regex
+ * Count surviving table names from SQL files via narrow CREATE/DROP TABLE heuristics.
  */
 async function countUniqueTables(rootPath: string, sqlFiles: string[]): Promise<number> {
-  const tableNames = new Set<string>();
-  const regex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?["']?(\w+)["']?/gi;
-  for (const f of sqlFiles) {
+  const survivingTables = new Set<string>();
+  const tableStatementRegex = /\b(CREATE|DROP)\s+TABLE\s+(?:IF\s+(?:NOT\s+EXISTS|EXISTS)\s+)?((?:"\w+"|\w+)(?:\s*\.\s*(?:"\w+"|\w+))?)/gi;
+  const tableNameRegex = /^"?(?<name>\w+)"?$/;
+
+  for (const f of [...sqlFiles].sort()) {
     try {
       const content = await fs.readFile(path.join(rootPath, f), 'utf-8');
-      for (const match of content.matchAll(regex)) {
-        if (match[1]) tableNames.add(match[1].toLowerCase());
+      for (const match of content.matchAll(tableStatementRegex)) {
+        const action = match[1]?.toUpperCase();
+        const identifier = match[2];
+        if (!action || !identifier) continue;
+
+        const finalIdentifier = identifier.split('.').at(-1)?.trim();
+        const tableName = finalIdentifier?.match(tableNameRegex)?.groups?.['name']?.toLowerCase();
+        if (!tableName) continue;
+
+        if (action === 'CREATE') {
+          survivingTables.add(tableName);
+        } else {
+          survivingTables.delete(tableName);
+        }
       }
     } catch { /* skip unreadable files */ }
   }
-  return tableNames.size;
+  return survivingTables.size;
 }
 
 async function detectSchemas(

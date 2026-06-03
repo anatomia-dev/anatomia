@@ -12,14 +12,17 @@ import * as os from 'node:os';
 import { detectPackageManager } from '../../../src/engine/detectors/packageManager.js';
 
 describe('TypeScript language detection', () => {
+  let tempRoot: string;
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-ts-test-'));
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-ts-test-'));
+    tempDir = path.join(tempRoot, 'isolated', 'a', 'b', 'c', 'd', 'project');
+    await fs.mkdir(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    await fs.rm(tempRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
   // @ana A004
@@ -169,14 +172,17 @@ describe('TypeScript language detection', () => {
 });
 
 describe('Prisma provider parsing', () => {
+  let tempRoot: string;
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-prisma-test-'));
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-prisma-test-'));
+    tempDir = path.join(tempRoot, 'isolated', 'a', 'b', 'c', 'd', 'project');
+    await fs.mkdir(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    await fs.rm(tempRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
   it('parses postgresql provider from prisma schema', async () => {
@@ -222,14 +228,17 @@ model User { id Int @id name String }`
 });
 
 describe('Package manager inheritance', () => {
+  let tempRoot: string;
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-pm-test-'));
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-pm-test-'));
+    tempDir = path.join(tempRoot, 'isolated', 'a', 'b', 'c', 'd', 'project');
+    await fs.mkdir(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    await fs.rm(tempRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
   it('finds pnpm lockfile in parent directory', async () => {

@@ -1,0 +1,14 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Temp fixture isolation depends on the package-manager detector's current five-level parent walk"
+    file: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    line: 20
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "Lifecycle ordering relies on lexicographic SQL file sorting, which can misorder unpadded migration filenames such as 10 before 2"
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 266
+    severity: observation
+    suggested_action: monitor

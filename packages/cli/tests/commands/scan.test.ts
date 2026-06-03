@@ -19,17 +19,20 @@ import {
 
 // @ana A012, A013
 describe('ana scan', () => {
+  let tempRoot: string;
   let tempDir: string;
   let originalCwd: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scan-test-'));
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'scan-test-'));
+    tempDir = path.join(tempRoot, 'isolated', 'a', 'b', 'c', 'd', 'project');
+    await fs.mkdir(tempDir, { recursive: true });
     originalCwd = process.cwd();
   });
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+    await fs.rm(tempRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
   /**
