@@ -22,21 +22,33 @@
   "build_started_at": "2026-06-03T03:20:16.005Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-06-03T03:53:49.148Z",
-    "hash": "sha256:463e937a52f49738011e6ff0a3f19b996fdc7408299965057028ae6e4a06a295",
+    "saved_at": "2026-06-03T04:21:14.084Z",
+    "hash": "sha256:8ece71a1b10db87aff14f7bb1844eb02042f1582bac6d530c35ae9bd8ce123d6",
     "history": [
       {
         "saved_at": "2026-06-03T03:25:18.692Z",
         "hash": "sha256:e7597648df1cf5282a0c2681881b797a5f95cb02560317eb82af71e3b641f37d"
+      },
+      {
+        "saved_at": "2026-06-03T03:53:49.148Z",
+        "hash": "sha256:463e937a52f49738011e6ff0a3f19b996fdc7408299965057028ae6e4a06a295"
       }
     ]
   },
   "build-data": {
-    "saved_at": "2026-06-03T03:25:18.692Z",
-    "hash": "sha256:bfd43144b1696a911622cc93011706a0f894547b780bc357fbdc0c589809e487"
+    "saved_at": "2026-06-03T04:21:14.084Z",
+    "hash": "sha256:f8f57f2a1ccc6dff94be0d5c0ad436c22e360882e1fca1fcca2c95fcf9828f76",
+    "history": [
+      {
+        "saved_at": "2026-06-03T03:25:18.692Z",
+        "hash": "sha256:bfd43144b1696a911622cc93011706a0f894547b780bc357fbdc0c589809e487"
+      }
+    ]
   },
   "modules_touched": [
     "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
     "packages/cli/tests/engine/scanProject.test.ts"
   ],
   "commit_hygiene": [],
