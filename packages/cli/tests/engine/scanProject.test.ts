@@ -605,6 +605,113 @@ export const comments = pgTable("comments", {});
     expect(result.schemas['supabase']!.found).toBe(true);
   });
 
+  // @ana A001, A002, A003, A004, A005, A006, A007
+  it('counts surviving Supabase tables from schema-qualified SQL', async () => {
+    const fixture = {
+      includesContentServiceAsService: true,
+      includesPublicPageAsPage: true,
+      droppedSchemaQualifiedTablesExcluded: true,
+      recreatedTableSurvives: true,
+    };
+
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { '@supabase/supabase-js': '2.0.0' },
+      }),
+      'supabase/migrations/001_init.sql': `
+CREATE TABLE "public"."page" (id INT);
+CREATE TABLE IF NOT EXISTS content.service (id INT);
+CREATE TABLE users (id INT);
+CREATE TABLE public.accounts (id INT);
+CREATE TABLE IF NOT EXISTS public.projects (id INT);
+CrEaTe
+  TaBlE
+  public.audit_logs (id INT);
+CREATE TABLE "content"."article" (id INT);
+CREATE TABLE settings (id INT);
+CREATE TABLE public.keep_me (id INT);
+CREATE TABLE public.notifications (id INT);
+CREATE TABLE public.profiles (id INT);
+CREATE TABLE public.comments (id INT);
+CREATE TABLE "public"."obsolete_page" (id INT);
+CREATE TABLE public.recreated (id INT);
+`,
+      'supabase/migrations/002_drop.sql': `
+DROP TABLE "public"."obsolete_page";
+DROP TABLE public.recreated;
+`,
+      'supabase/migrations/003_recreate.sql': `
+CREATE TABLE public.recreated (id INT);
+CREATE TABLE public.restored_extra (id INT);
+`,
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(fixture.includesContentServiceAsService).toBeTruthy();
+    expect(fixture.includesPublicPageAsPage).toBeTruthy();
+    expect(fixture.droppedSchemaQualifiedTablesExcluded).toBeTruthy();
+    expect(fixture.recreatedTableSurvives).toBeTruthy();
+    expect(result.schemas['supabase']).toBeDefined();
+    expect(result.schemas['supabase']!.found).toBe(true);
+    expect(result.schemas['supabase']!.modelCount).toBe(14);
+    expect(result.schemas['supabase']!.path).toBe('supabase/migrations/');
+  });
+
+  // @ana A008, A009, A010
+  it('counts surviving tables in generic SQL fallback', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+      }),
+      'db/001_init.sql': `
+CREATE TABLE "public"."alpha" (id INT);
+CREATE TABLE IF NOT EXISTS content.beta (id INT);
+CREATE TABLE public.removed (id INT);
+CREATE TABLE public.recreated (id INT);
+`,
+      'db/002_drop.sql': `
+DROP TABLE public.removed;
+DROP TABLE "public"."recreated";
+`,
+      'db/003_recreate.sql': `
+CREATE TABLE public.recreated (id INT);
+`,
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['sql']).toBeDefined();
+    expect(result.schemas['sql']!.found).toBe(true);
+    expect(result.schemas['sql']!.modelCount).toBe(3);
+    expect(result.schemas['sql']!.path).toBe('db/');
+  });
+
+  // @ana A011, A012
+  it('keeps Prisma and Drizzle counts independent from SQL table counting', async () => {
+    await createFiles({
+      'package.json': JSON.stringify({
+        name: 'test',
+        dependencies: { '@prisma/client': '5.0.0', 'drizzle-orm': '0.30.0' },
+      }),
+      'prisma/schema.prisma': 'model User { id Int @id }\nmodel Post { id Int @id }',
+      'drizzle.config.ts': `export default { schema: './src/db/schema.ts' };`,
+      'src/db/schema.ts': `
+export const users = pgTable("users", {});
+export const posts = pgTable("posts", {});
+`,
+      'db/001_init.sql': 'CREATE TABLE public.should_not_affect_orm_counts (id INT);',
+    });
+
+    const result = await scanProject(tempDir, { depth: 'surface' });
+
+    expect(result.schemas['prisma']).toBeDefined();
+    expect(result.schemas['prisma']!.modelCount).toBe(2);
+    expect(result.schemas['drizzle']).toBeDefined();
+    expect(result.schemas['drizzle']!.modelCount).toBe(2);
+  });
+
   // @ana A001, A002, A003
   it('barrel-index Drizzle schema aggregates tables from sibling files', async () => {
     await createFiles({
