@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-186 runs · 167 active · 5 promoted · 884 closed
+186 runs · 166 active · 5 promoted · 885 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 129 | 115 | 2026-06-03 |
+| cli | 129 | 114 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 167 total)
+## Active Findings (30 shown of 166 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -36,6 +36,7 @@
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -76,7 +77,6 @@
 
 - **test:** git init without -b main in contributor display test — *Fix scan display accuracy — env hygiene false positive and contributor label*
 - **test:** A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor — *Fix scan display accuracy — env hygiene false positive and contributor label*
-- **test:** Contributor display test gates assertion behind truthy check — if Activity line disappears from output, test silently passes — *Fix scan display accuracy — env hygiene false positive and contributor label*
 
 ### packages/cli/tests/commands/work-ci-mocked.test.ts
 

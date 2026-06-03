@@ -48894,7 +48894,10 @@
             "A006"
           ],
           "id": "fix-scan-display-accuracy-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Finding is wrong — scan.test.ts:1294 expect(activityLine).toBeDefined() fails if the Activity line disappears from output. The test is not silently gated; the assertion enforces presence before checking content.",
+          "closed_at": "2026-06-03T04:38:36.949Z",
+          "closed_by": "human"
         },
         {
           "category": "code",
