@@ -48914,7 +48914,10 @@
             "A004"
           ],
           "id": "fix-scan-display-accuracy-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Documented acceptable pattern — execSync at scan-engine.ts:604 runs single git check-ignore subprocess during scan. Comment at line 607 explains exit code semantics. Scan already runs multiple subprocesses; one more has negligible overhead.",
+          "closed_at": "2026-06-03T04:38:45.474Z",
+          "closed_by": "human"
         },
         {
           "category": "upstream",

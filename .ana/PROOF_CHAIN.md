@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-186 runs · 166 active · 5 promoted · 885 closed
+186 runs · 165 active · 5 promoted · 886 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 129 | 114 | 2026-06-03 |
+| cli | 129 | 113 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 166 total)
+## Active Findings (30 shown of 165 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -57,7 +57,6 @@
 
 ### packages/cli/src/engine/scan-engine.ts
 
-- **code:** Synchronous execSync in async function — documented as acceptable but adds subprocess overhead to every scan — *Fix scan display accuracy — env hygiene false positive and contributor label*
 - **test:** A011-A015 (service detection entries) have no tagged tests — verified by source inspection only — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/tests/commands/config.test.ts
@@ -103,4 +102,8 @@
 ### packages/cli/tests/engine/scan-engine-secrets.test.ts
 
 - **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
+
+### website/lib/__tests__/docs-platform-content.test.ts
+
+- **test:** ForPlatform pairing test only compares total block counts — *Docs, Website, and README Multi-Platform Update*
 
