@@ -48689,7 +48689,10 @@
             "A019"
           ],
           "id": "fix-vite-framework-detection-C5",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Duplicate of existing tracked finding fill-scan-detection-gaps-C3 — same root: FRAMEWORK_HINTS is not exported from census.ts, so array ordering can't be unit-tested directly. Already parked with exit condition.",
+          "closed_at": "2026-06-03T04:39:02.853Z",
+          "closed_by": "human"
         },
         {
           "category": "test",

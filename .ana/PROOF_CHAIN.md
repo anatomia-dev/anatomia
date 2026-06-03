@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-186 runs · 164 active · 5 promoted · 887 closed
+186 runs · 163 active · 5 promoted · 888 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 129 | 112 | 2026-06-03 |
+| cli | 129 | 111 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 164 total)
+## Active Findings (30 shown of 163 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -37,10 +37,6 @@
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard — *Fix Multi-Phase Timestamp Poisoning*
-
-### packages/cli/src/engine/census.ts
-
-- **test:** A019 (FRAMEWORK_HINTS vite count) has no tagged test — FRAMEWORK_HINTS is not exported so cannot be unit-tested directly — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -105,6 +101,7 @@
 ### website/lib/__tests__/docs-platform-content.test.ts
 
 - **test:** ForPlatform pairing test only compares total block counts — *Docs, Website, and README Multi-Platform Update*
+- **test:** Generated docs asset assertions read ignored prebuild outputs directly, so focused tests can depend on stale or missing local files — *Docs, Website, and README Multi-Platform Update*
 
 ### website/public/search-index.json
 
