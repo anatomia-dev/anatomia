@@ -49169,6 +49169,173 @@
         "base_commit": "e00d4f3c2a3c30da53eac4449430843477836fb1"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "fix-sql-table-counting-regex",
+      "feature": "Fix SQL table counting regex",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Quoted schema-qualified Supabase tables are counted by table name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Supabase migrations with sixteen creates and two drops report fourteen surviving tables",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Supabase migration detection keeps the migration directory path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Non-public schema prefixes count the table instead of the schema",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Quoted public schema prefixes count the table instead of public",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Schema-qualified dropped tables are removed from the surviving count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A table dropped and recreated later still survives",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Generic SQL fallback uses the same table identifier handling",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Generic SQL fallback reports only surviving tables",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Generic SQL fallback keeps the SQL directory path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Prisma model counting is unchanged by the SQL table fix",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Drizzle model counting is unchanged by the SQL table fix",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 11
+      },
+      "timing": {
+        "total_minutes": 104,
+        "think": 11,
+        "plan": 5,
+        "build": 47,
+        "verify": 30
+      },
+      "hashes": {
+        "scope": "sha256:a2b5509a4fbc9b6cfaed43424bf36421b39ff31df8f66807e3a32c0f677856e7",
+        "contract": "sha256:ed2ac00b79c717ba3c969f7d6468f4a26623a41830b4b601119e585bd3653f56",
+        "plan": "sha256:a396c33d2b8280b2cba20db604c3ddc67b067b80bdb587e7f4dbbadc67d5f344",
+        "spec": "sha256:22cdcd729fd4d92ff1bef4986485356c270a7d14b7d15d358f18ea0ef6a57b1a",
+        "build-report": "sha256:8ece71a1b10db87aff14f7bb1844eb02042f1582bac6d530c35ae9bd8ce123d6",
+        "build-data": "sha256:f8f57f2a1ccc6dff94be0d5c0ad436c22e360882e1fca1fcca2c95fcf9828f76",
+        "verify-report": "sha256:fff28c5e5e49b43451adc456c4e1c4d7e858b7b439d5ed1aeb66c76c6a67db18",
+        "verify-data": "sha256:ca6a17ab0a4e0976a7b9b4f63466c3b828680e48e43901fbd8b92b80a5232444"
+      },
+      "completed_at": "2026-06-03T04:37:34.086Z",
+      "modules_touched": [
+        "packages/cli/src/engine/scan-engine.ts",
+        "packages/cli/tests/commands/scan.test.ts",
+        "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
+        "packages/cli/tests/engine/scanProject.test.ts"
+      ],
+      "scope_summary": "The SQL schema counter under-reports real tables when migrations use schema-qualified quoted identifiers. In Supabase-style SQL, `CREATE TABLE \"public\".\"page\"` is counted as `public` instead of `page`, collapsing multiple tables into one set entry. Supabase therefore shows 10 models when the surviving table count should be 14.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Temp fixture isolation depends on the package-manager detector's current five-level parent walk",
+          "file": "packages/cli/tests/engine/detectors/detection-overrides.test.ts",
+          "anchor": null,
+          "line": 20,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "fix-sql-table-counting-regex-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Lifecycle ordering relies on lexicographic SQL file sorting, which can misorder unpadded migration filenames such as 10 before 2",
+          "file": "packages/cli/src/engine/scan-engine.ts",
+          "anchor": null,
+          "line": 266,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "fix-sql-table-counting-regex-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-03T04:37:34.086Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 1,
+      "previous_failures": [
+        {
+          "id": "A004",
+          "summary": "Tagged test asserted a hard-coded fixture boolean instead of proving `content.service` counted as `service`."
+        },
+        {
+          "id": "A005",
+          "summary": "Tagged test asserted a hard-coded fixture boolean instead of proving `\"public\".\"page\"` counted as `page`."
+        }
+      ],
+      "build_concerns": [
+        {
+          "summary": "Workspace lint reports pre-existing warnings outside this fix: website Hero.tsx and CLI git-operations.ts.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Website build logs cached Next.js warnings for workspace-root inference and proof_chain.json data-cache size while still succeeding.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-03T03:20:16.005Z",
+        "completed_at": "2026-06-03T04:37:34.079Z",
+        "commit_count": 0,
+        "base_commit": "9672de78be9e52532cc91e38be4ffc4824bcf3e1"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-185 runs · 168 active · 5 promoted · 881 closed
+186 runs · 169 active · 5 promoted · 882 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 128 | 116 | 2026-06-02 |
+| cli | 129 | 117 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 168 total)
+## Active Findings (30 shown of 169 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -35,7 +35,6 @@
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -89,6 +88,10 @@
 ### packages/cli/tests/commands/work-merge.test.ts
 
 - **test:** A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv — *Fix work complete merge strategy*
+
+### packages/cli/tests/engine/detectors/detection-overrides.test.ts
+
+- **test:** Temp fixture isolation depends on the package-manager detector's current five-level parent walk — *Fix SQL table counting regex*
 
 ### packages/cli/tests/engine/detectors/surfaces.test.ts
 
