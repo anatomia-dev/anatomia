@@ -18,5 +18,20 @@
   "spec": {
     "saved_at": "2026-06-03T03:16:34.621Z",
     "hash": "sha256:22cdcd729fd4d92ff1bef4986485356c270a7d14b7d15d358f18ea0ef6a57b1a"
-  }
+  },
+  "build_started_at": "2026-06-03T03:20:16.005Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-03T03:25:18.692Z",
+    "hash": "sha256:e7597648df1cf5282a0c2681881b797a5f95cb02560317eb82af71e3b641f37d"
+  },
+  "build-data": {
+    "saved_at": "2026-06-03T03:25:18.692Z",
+    "hash": "sha256:bfd43144b1696a911622cc93011706a0f894547b780bc357fbdc0c589809e487"
+  },
+  "modules_touched": [
+    "packages/cli/src/engine/scan-engine.ts",
+    "packages/cli/tests/engine/scanProject.test.ts"
+  ],
+  "commit_hygiene": []
 }

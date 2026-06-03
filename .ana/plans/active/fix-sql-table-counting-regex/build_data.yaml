@@ -1,0 +1,11 @@
+schema: 1
+concerns:
+  - summary: "Full workspace test has cross-test interaction failures in package-manager and no-code scan expectations; each failing file passes individually."
+    severity: risk
+    suggested_action: scope
+  - summary: "Workspace lint reports pre-existing warnings in website Hero.tsx and CLI git-operations.ts."
+    severity: debt
+    suggested_action: scope
+  - summary: "Website build logs Next.js data cache size warnings for proof_chain.json while still succeeding."
+    severity: observation
+    suggested_action: monitor
