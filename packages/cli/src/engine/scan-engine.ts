@@ -861,7 +861,7 @@ export async function scanProject(
     testing: depResult.testing,
     payments: depResult.payments,
     workspace: mono.isMonorepo
-      ? (existsSync(path.join(rootPath, 'turbo.json'))
+      ? (existsSync(path.join(rootPath, 'turbo.json')) || existsSync(path.join(rootPath, 'turbo.jsonc'))
         ? `Turborepo (${mono.tool})`
         : existsSync(path.join(rootPath, 'nx.json'))
           ? `Nx (${mono.tool})`

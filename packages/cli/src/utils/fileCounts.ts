@@ -96,6 +96,7 @@ const CONFIG_FILES = [
   '.gitignore',
   '.editorconfig',
   'turbo.json',
+  'turbo.jsonc',
   'nx.json',
   'lerna.json',
   'pnpm-workspace.yaml',
