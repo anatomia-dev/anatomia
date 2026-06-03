@@ -48643,7 +48643,10 @@
             "A008"
           ],
           "id": "fix-vite-framework-detection-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Not duplication — resolveViteFramework (surfaces.ts:278-286) is a specialized resolver answering 'which framework uses Vite as build tool?' The framework registry answers 'which framework is this project?' Different purpose, different data flow.",
+          "closed_at": "2026-06-03T04:38:53.913Z",
+          "closed_by": "human"
         },
         {
           "category": "code",

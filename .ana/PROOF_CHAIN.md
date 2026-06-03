@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-186 runs · 165 active · 5 promoted · 886 closed
+186 runs · 164 active · 5 promoted · 887 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 129 | 113 | 2026-06-03 |
+| cli | 129 | 112 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -15,8 +15,8 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 13 | 8 |
-| packages/cli/src/engine/detectors/surfaces.ts | 8 | 4 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
+| packages/cli/src/engine/detectors/surfaces.ts | 7 | 4 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 165 total)
+## Active Findings (30 shown of 164 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -46,7 +46,6 @@
 
 - **code:** Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops — *Fix non-product path over-exclusion at deep segments*
 - **code:** resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null — *Fix Vite Framework Detection and Service Detection Gaps*
-- **code:** Inline dep-to-framework map in resolveViteFramework duplicates knowledge from the framework registry — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface — *Fix Vite Framework Detection and Service Detection Gaps*
 - **test:** No per-surface test for vue+react simultaneous deps in resolveViteFramework (Vue wins by priority, but untested) — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** NON_PRODUCT_GLOB_IGNORE includes **/build/** which collides with legitimate 'build' directories in some monorepo layouts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
@@ -106,4 +105,8 @@
 ### website/lib/__tests__/docs-platform-content.test.ts
 
 - **test:** ForPlatform pairing test only compares total block counts — *Docs, Website, and README Multi-Platform Update*
+
+### website/public/search-index.json
+
+- **test:** Generated search index can still surface stale direct Claude agent command text — *Docs, Website, and README Multi-Platform Update*
 
