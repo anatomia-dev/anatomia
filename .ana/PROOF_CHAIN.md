@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-186 runs · 168 active · 5 promoted · 883 closed
+186 runs · 167 active · 5 promoted · 884 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 129 | 116 | 2026-06-03 |
+| cli | 129 | 115 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -15,7 +15,7 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 13 | 8 |
-| packages/cli/src/engine/detectors/surfaces.ts | 9 | 4 |
+| packages/cli/src/engine/detectors/surfaces.ts | 8 | 4 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 168 total)
+## Active Findings (30 shown of 167 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -44,7 +44,6 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops — *Fix non-product path over-exclusion at deep segments*
-- **code:** isNonProductFilePath suffix loop comment doesn't explain why it can't use last-segment pattern (last segment is filename for file paths, not directory) — *Fix non-product path over-exclusion at deep segments*
 - **code:** resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** Inline dep-to-framework map in resolveViteFramework duplicates knowledge from the framework registry — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface — *Fix Vite Framework Detection and Service Detection Gaps*
@@ -88,6 +87,10 @@
 ### packages/cli/tests/commands/work-merge.test.ts
 
 - **test:** A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv — *Fix work complete merge strategy*
+
+### packages/cli/tests/commands/work.test.ts
+
+- **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/tests/engine/detectors/detection-overrides.test.ts
 

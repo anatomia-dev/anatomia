@@ -49158,7 +49158,10 @@
             "A006"
           ],
           "id": "fix-non-product-over-exclusion-C4",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Code is self-documenting — isNonProductFilePath iterates directory segments within depth limit. The suffix loop checks segments[i], not the last segment, because the last segment is the filename for file paths. A comment explaining this would be redundant.",
+          "closed_at": "2026-06-03T04:38:29.535Z",
+          "closed_by": "human"
         }
       ],
       "rejection_cycles": 0,
