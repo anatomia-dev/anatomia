@@ -33,5 +33,20 @@
     "packages/cli/src/engine/scan-engine.ts",
     "packages/cli/tests/engine/scanProject.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-03T03:31:24.983Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ed2ac00b79c717ba3c969f7d6468f4a26623a41830b4b601119e585bd3653f56",
+    "run_at": "2026-06-03T03:35:05.817Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-03T03:35:05.848Z",
+    "hash": "sha256:9dfecaea87fd45efbc1829ffffb77306ec9a4d674ed1230cab19b66f651ac200"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-03T03:35:05.848Z",
+    "hash": "sha256:6eb8ae4b8bde4cdd5821d3fd68932a8d289b86ae8fa5d4fdccd8d8ddbfd41083"
+  }
 }
