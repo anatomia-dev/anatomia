@@ -1,0 +1,15 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Tagged Supabase identifier assertions A004/A005 use hard-coded fixture booleans instead of proving extracted table names"
+    file: "packages/cli/tests/engine/scanProject.test.ts"
+    line: 610
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A004", "A005"]
+  - category: test
+    summary: "Required full workspace test command fails with 9 failures in scan/package-manager detector cases"
+    file: "packages/cli/tests/engine/detectors/detection-overrides.test.ts"
+    line: 252
+    severity: risk
+    suggested_action: scope
