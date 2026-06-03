@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-186 runs · 169 active · 5 promoted · 882 closed
+186 runs · 168 active · 5 promoted · 883 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 33 | 29 | 2026-06-02 |
-| cli | 129 | 117 | 2026-06-03 |
+| cli | 129 | 116 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -15,7 +15,7 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 13 | 8 |
-| packages/cli/src/engine/detectors/surfaces.ts | 10 | 4 |
+| packages/cli/src/engine/detectors/surfaces.ts | 9 | 4 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
 | packages/cli/tests/commands/proof.test.ts | 5 | 4 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 169 total)
+## Active Findings (30 shown of 168 total)
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -35,6 +35,7 @@
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/census.ts
 
@@ -43,7 +44,6 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops — *Fix non-product path over-exclusion at deep segments*
-- **code:** NON_PRODUCT_GLOB_IGNORE **/build/** collision with legitimate build directories persists — out of scope for this fix, tracked as fix-non-product-code-pollution-C5 — *Fix non-product path over-exclusion at deep segments*
 - **code:** isNonProductFilePath suffix loop comment doesn't explain why it can't use last-segment pattern (last segment is filename for file paths, not directory) — *Fix non-product path over-exclusion at deep segments*
 - **code:** resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** Inline dep-to-framework map in resolveViteFramework duplicates knowledge from the framework registry — *Fix Vite Framework Detection and Service Detection Gaps*

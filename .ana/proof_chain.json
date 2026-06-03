@@ -49130,7 +49130,10 @@
           "suggested_action": "monitor",
           "resolves": [],
           "id": "fix-non-product-over-exclusion-C2",
-          "status": "active"
+          "status": "closed",
+          "closed_reason": "Duplicate — same issue already tracked as fix-non-product-code-pollution-C5 (**/build/** collision with legitimate build directories). Verify re-observed the same persisting issue. Closing to avoid double-tracking.",
+          "closed_at": "2026-06-03T04:38:20.876Z",
+          "closed_by": "human"
         },
         {
           "category": "test",
