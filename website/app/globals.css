@@ -30,7 +30,7 @@
 
   /* Brand (oxblood) */
   --color-brand: #7A1B1B;
-  --color-brand-ink: #F5F0E8;
+  --color-brand-ink: #F2F0EC;
 
   /* Radius scale — "medium" from the HTML tweaks */
   --radius-sm: 6px;
@@ -105,28 +105,28 @@
    DARK THEME  ([data-theme="dark"])
    =================================================================== */
 [data-theme="dark"] {
-  --fg: #F5F0E8;
-  --fg-strong: #F8F4ED;
+  --fg: #F2F0EC;
+  --fg-strong: #F5F3EF;
   --bg: #0A0A0D;
   --bg-elev: #111117;
   --bg-deep: #070709;
   --bg-card: #0F0F14;
   --nav-bg: rgba(10, 10, 13, 0.82);
   --footer-bg: #070709;
-  --border: rgba(245, 240, 232, 0.12);
-  --border-soft: rgba(245, 240, 232, 0.08);
-  --hairline: rgba(245, 240, 232, 0.06);
-  --ink-75: rgba(245, 240, 232, 0.82);
-  --ink-60: rgba(245, 240, 232, 0.66);
-  --ink-45: rgba(245, 240, 232, 0.50);
-  --ink-30: rgba(245, 240, 232, 0.34);
-  --ink-15: rgba(245, 240, 232, 0.16);
-  --btn-2-bg: rgba(245, 240, 232, 0.04);
-  --btn-2-border: rgba(245, 240, 232, 0.18);
-  --btn-2-text: #F5F0E8;
+  --border: rgba(242, 240, 236, 0.12);
+  --border-soft: rgba(242, 240, 236, 0.08);
+  --hairline: rgba(242, 240, 236, 0.06);
+  --ink-75: rgba(242, 240, 236, 0.82);
+  --ink-60: rgba(242, 240, 236, 0.66);
+  --ink-45: rgba(242, 240, 236, 0.50);
+  --ink-30: rgba(242, 240, 236, 0.34);
+  --ink-15: rgba(242, 240, 236, 0.16);
+  --btn-2-bg: rgba(242, 240, 236, 0.04);
+  --btn-2-border: rgba(242, 240, 236, 0.18);
+  --btn-2-text: #F2F0EC;
   --terminal-bg: #050507;
-  --terminal-fg: #F5F0E8;
-  --paper-texture: radial-gradient(rgba(245, 240, 232, 0.05) 1px, transparent 1px);
+  --terminal-fg: #F2F0EC;
+  --paper-texture: radial-gradient(rgba(242, 240, 236, 0.05) 1px, transparent 1px);
   --brand-mark: var(--color-brand);
 }
 
@@ -239,12 +239,12 @@ section[data-component="proof-feed"]:has([data-open="false"]) + footer {
 
 /* Nav CTA — dark mode inversion (ivory key against dark plate) */
 [data-theme="dark"] .nav-cta {
-  background: #F5F0E8 !important;
+  background: #F2F0EC !important;
   color: #0A0A0D !important;
-  box-shadow: 0 1px 0 0 rgba(245,240,232,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 0 0 rgba(242,240,236,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
 }
 [data-theme="dark"] .nav-cta:hover {
-  background: #F5F0E8 !important;
+  background: #F2F0EC !important;
 }
 
 /* skip link for accessibility — hidden until focused */
