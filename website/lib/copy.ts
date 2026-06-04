@@ -51,9 +51,9 @@ export const copy = {
       feature:
         "*Proof chains* are live — every change now ships with receipts.",
     },
-    headline: "Most AI coding harnesses are prompt libraries. *Anatomia* has an engine.",
+    headline: "Most AI coding harnesses are prompt libraries. *anatomia* has an engine.",
     subhead:
-      "It scans your codebase for real context, then runs every change through a pipeline that scopes, plans, builds, and independently verifies it \u2014 enforced by the CLI, not by instructions an agent can ignore. Every run ends in a proof you can audit. Built for Claude Code and Codex.",
+      "It scans your codebase for real context, then runs every change through a pipeline that scopes, plans, builds, and independently verifies it \u2014 enforced by the CLI, not by instructions an agent can ignore. Every run ends in a proof you can audit.",
     ctas: {
       primary: { label: "Install", command: "npx anatomia-cli init", href: "https://www.npmjs.com/package/anatomia-cli" },
       secondary: { label: "See the pipeline", href: "#system" },
