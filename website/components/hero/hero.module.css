@@ -206,6 +206,32 @@
   padding: 0 0.02em;
 }
 
+/* Washi tape behind "anatomia" — dark mode only */
+.brandHighlight {
+  position: relative;
+  z-index: 0;
+  white-space: nowrap;
+}
+:global([data-theme="dark"]) .brandHighlight::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0.06em -0.2em 0.10em -0.2em;
+  background:
+    repeating-linear-gradient(91deg, rgba(0,0,0,0.035) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 9px),
+    #ECDFBE;
+  transform: rotate(-2.8deg);
+  clip-path: polygon(
+    1% 9%, 22% 5%, 44% 8%, 67% 4%, 99% 6%,
+    100% 13%, 98% 90%,
+    78% 95%, 55% 91%, 33% 96%, 12% 92%, 1% 95%,
+    0% 87%
+  );
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));
+  pointer-events: none;
+}
+
 /* --- Subhead --- */
 .sub {
   font-size: clamp(16px, 1.4vw, 19px);
