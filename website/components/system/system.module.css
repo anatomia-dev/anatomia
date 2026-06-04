@@ -142,7 +142,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-brand);
+  color: var(--fg-strong);
   letter-spacing: 0.14em;
   align-self: center;
 }
@@ -405,7 +405,7 @@
   gap: 12px;
 }
 .closerArrow {
-  color: var(--color-brand);
+  color: var(--fg-strong);
   font-size: 14px;
   font-weight: 600;
 }
