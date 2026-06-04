@@ -128,7 +128,7 @@ export function ScanSlab() {
           <div className="max-w-[48ch]">
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--ink-60)" }}>
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--fg-strong)" }} />
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--color-brand)" }} />
               <Formatted text={copy.scan.eyebrow} />
             </div>
 

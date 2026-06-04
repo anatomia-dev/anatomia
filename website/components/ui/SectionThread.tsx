@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /**
  * SectionThread — section-to-section connector.
- * Hairline border-top, mono text, oxblood arrow glyph, optional link.
+ * Hairline border-top, mono text, arrow glyph, optional link.
  * Server component. Reused between ScanSlab → System and System → Proof.
  */
 export function SectionThread({
@@ -25,7 +25,7 @@ export function SectionThread({
         <span key={i}>{seg}</span>
       ))}
       <span
-        style={{ color: "var(--color-brand)" }}
+        style={{ color: "var(--fg-strong)" }}
       >
         {arrow}
       </span>
