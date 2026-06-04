@@ -11,7 +11,7 @@
      radius         "medium"      (6 / 10 / 14 px)
 
   Tailwind v4 `@theme` exposes tokens as utilities AND as CSS vars:
-     --color-brand: #7A1B1B;     →  bg-brand, text-brand, border-brand
+     --color-brand: #C44A50;     →  bg-brand, text-brand, border-brand
      --font-sans:   Geist, ...   →  font-sans
   =======================================================================
 */
@@ -28,8 +28,8 @@
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
   --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
 
-  /* Brand (oxblood) */
-  --color-brand: #7A1B1B;
+  /* Brand */
+  --color-brand: #C44A50;
   --color-brand-ink: #F7F7F4;
 
   /* Radius scale — "medium" from the HTML tweaks */
