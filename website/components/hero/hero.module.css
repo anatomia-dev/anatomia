@@ -206,6 +206,22 @@
   padding: 0 0.02em;
 }
 
+/* Slanted tape / highlighter behind "anatomia" — dark mode only */
+.brandHighlight {
+  position: relative;
+}
+:global([data-theme="dark"]) .brandHighlight::before {
+  content: "";
+  position: absolute;
+  inset: 0.08em -0.12em;
+  background: color-mix(in oklch, var(--color-brand) 18%, transparent);
+  border-left: 2px solid color-mix(in oklch, var(--color-brand) 50%, transparent);
+  transform: skewX(-6deg);
+  border-radius: 2px;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* --- Subhead --- */
 .sub {
   font-size: clamp(16px, 1.4vw, 19px);
