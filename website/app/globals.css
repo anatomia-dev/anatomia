@@ -105,7 +105,6 @@
    DARK THEME  ([data-theme="dark"])
    =================================================================== */
 [data-theme="dark"] {
-  --color-brand: #C84A45;
   --fg: #F7F7F4;
   --fg-strong: #FBFAF6;
   --bg: #0A0A0D;
