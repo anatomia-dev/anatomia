@@ -62,7 +62,7 @@ export async function Nav() {
         </div>
 
         {/* Center: nav links */}
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-7 md:flex" style={{ marginRight: "34px" }}>
           {copy.nav.links.map((l) => (
             <Link
               key={l.href}
