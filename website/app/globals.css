@@ -5,7 +5,7 @@
   Ported from Anatomia Landing Refresh handoff.html, locked to:
 
      brand color    #7A1B1B       (oxblood)
-     paper          "snow"        (warm off-white #F7F7F4 in light mode)
+     paper          "ivory"       (warm ivory #F5F0E8 in light mode)
      pattern        "noise"       (SVG fractal grain, no grid)
      typography     "grotesk"     (Geist — Geist Mono for code — Fraunces for serif)
      radius         "medium"      (6 / 10 / 14 px)
@@ -30,7 +30,7 @@
 
   /* Brand (oxblood) */
   --color-brand: #7A1B1B;
-  --color-brand-ink: #F7F7F4;
+  --color-brand-ink: #F2F0EC;
 
   /* Radius scale — "medium" from the HTML tweaks */
   --radius-sm: 6px;
@@ -73,17 +73,17 @@
 
 /* ===================================================================
    LIGHT THEME  ([data-theme="light"])
-   "snow" paper: warm off-white #F7F7F4
+   "ivory" paper: warm ivory #F5F0E8
    =================================================================== */
 [data-theme="light"] {
   --fg: #0b0b10;
   --fg-strong: #000000;
-  --bg: #F7F7F4;
-  --bg-elev: #F7F7F4;
-  --bg-deep: #F0EFE9;
-  --bg-card: #F7F7F4;
-  --nav-bg: rgba(247, 247, 244, 0.85);
-  --footer-bg: #F0EFE9;
+  --bg: #F5F0E8;
+  --bg-elev: #F5F0E8;
+  --bg-deep: #EDE8DF;
+  --bg-card: #F5F0E8;
+  --nav-bg: rgba(245, 240, 232, 0.85);
+  --footer-bg: #EDE8DF;
   --border: rgba(11, 11, 16, 0.12);
   --border-soft: rgba(11, 11, 16, 0.08);
   --hairline: rgba(11, 11, 16, 0.06);
@@ -96,7 +96,7 @@
   --btn-2-border: rgba(11, 11, 16, 0.22);
   --btn-2-text: #0b0b10;
   --terminal-bg: #0b0b10;
-  --terminal-fg: #F7F7F4;
+  --terminal-fg: #F5F0E8;
   --paper-texture: radial-gradient(rgba(11, 11, 16, 0.045) 1px, transparent 1px);
   --brand-mark: var(--color-brand);
 }
@@ -105,28 +105,28 @@
    DARK THEME  ([data-theme="dark"])
    =================================================================== */
 [data-theme="dark"] {
-  --fg: #F7F7F4;
-  --fg-strong: #FBFAF6;
+  --fg: #F2F0EC;
+  --fg-strong: #F5F3EF;
   --bg: #0A0A0D;
   --bg-elev: #111117;
   --bg-deep: #070709;
   --bg-card: #0F0F14;
   --nav-bg: rgba(10, 10, 13, 0.82);
   --footer-bg: #070709;
-  --border: rgba(255, 255, 255, 0.12);
-  --border-soft: rgba(255, 255, 255, 0.08);
-  --hairline: rgba(255, 255, 255, 0.06);
-  --ink-75: rgba(255, 255, 255, 0.82);
-  --ink-60: rgba(255, 255, 255, 0.66);
-  --ink-45: rgba(255, 255, 255, 0.50);
-  --ink-30: rgba(255, 255, 255, 0.34);
-  --ink-15: rgba(255, 255, 255, 0.16);
-  --btn-2-bg: rgba(255, 255, 255, 0.04);
-  --btn-2-border: rgba(255, 255, 255, 0.18);
-  --btn-2-text: #F7F7F4;
+  --border: rgba(242, 240, 236, 0.12);
+  --border-soft: rgba(242, 240, 236, 0.08);
+  --hairline: rgba(242, 240, 236, 0.06);
+  --ink-75: rgba(242, 240, 236, 0.82);
+  --ink-60: rgba(242, 240, 236, 0.66);
+  --ink-45: rgba(242, 240, 236, 0.50);
+  --ink-30: rgba(242, 240, 236, 0.34);
+  --ink-15: rgba(242, 240, 236, 0.16);
+  --btn-2-bg: rgba(242, 240, 236, 0.04);
+  --btn-2-border: rgba(242, 240, 236, 0.18);
+  --btn-2-text: #F2F0EC;
   --terminal-bg: #050507;
-  --terminal-fg: #F7F7F4;
-  --paper-texture: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  --terminal-fg: #F2F0EC;
+  --paper-texture: radial-gradient(rgba(242, 240, 236, 0.05) 1px, transparent 1px);
   --brand-mark: var(--color-brand);
 }
 
@@ -237,14 +237,14 @@ section[data-component="proof-feed"]:has([data-open="false"]) + footer {
   margin-top: 0;
 }
 
-/* Nav CTA — dark mode inversion (warm off-paper key against dark plate) */
+/* Nav CTA — dark mode inversion (ivory key against dark plate) */
 [data-theme="dark"] .nav-cta {
-  background: #F7F7F4 !important;
+  background: #F2F0EC !important;
   color: #0A0A0D !important;
-  box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 0 0 rgba(242,240,236,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
 }
 [data-theme="dark"] .nav-cta:hover {
-  background: #F7F7F4 !important;
+  background: #F2F0EC !important;
 }
 
 /* skip link for accessibility — hidden until focused */

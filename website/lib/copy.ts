@@ -51,9 +51,9 @@ export const copy = {
       feature:
         "*Proof chains* are live — every change now ships with receipts.",
     },
-    headline: "Your AI doesn't know your codebase. *ana* does.",
+    headline: "Most AI coding harnesses are prompt libraries. *anatomia* has an engine.",
     subhead:
-      "You shipped fast. The codebase is 80% AI-generated. *ana* gives you the senior engineer you don\u2019t have time to hire \u2014 generated from your code, not your intentions.",
+      "It scans your codebase for real context, then runs every change through a pipeline that scopes, plans, builds, and independently verifies it \u2014 enforced by the CLI, not by instructions an agent can ignore. Every run ends in a proof you can audit.",
     ctas: {
       primary: { label: "Install", command: "npx anatomia-cli init", href: "https://www.npmjs.com/package/anatomia-cli" },
       secondary: { label: "See the pipeline", href: "#system" },

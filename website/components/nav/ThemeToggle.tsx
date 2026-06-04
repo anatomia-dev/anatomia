@@ -12,7 +12,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-150 cursor-pointer after:absolute after:inset-[-5px] after:content-['']"
+      className="relative flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-150 cursor-pointer after:absolute after:inset-[-5px] after:content-[''] hidden"
       style={{ color: "var(--ink-60)" }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = "var(--border-soft)";
