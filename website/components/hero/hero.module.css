@@ -214,7 +214,7 @@
   content: "";
   position: absolute;
   inset: 0.05em -0.15em;
-  background: rgba(200, 74, 69, 0.35);
+  background: #F7F7F4;
   transform: skewX(-6deg);
   border-radius: 3px;
   z-index: -1;
