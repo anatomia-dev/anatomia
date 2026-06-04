@@ -213,11 +213,10 @@
 :global([data-theme="dark"]) .brandHighlight::before {
   content: "";
   position: absolute;
-  inset: 0.08em -0.12em;
-  background: color-mix(in oklch, var(--color-brand) 18%, transparent);
-  border-left: 2px solid color-mix(in oklch, var(--color-brand) 50%, transparent);
+  inset: 0.05em -0.15em;
+  background: rgba(200, 74, 69, 0.35);
   transform: skewX(-6deg);
-  border-radius: 2px;
+  border-radius: 3px;
   z-index: -1;
   pointer-events: none;
 }
