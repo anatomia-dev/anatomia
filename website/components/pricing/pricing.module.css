@@ -111,7 +111,7 @@
   flex-shrink: 0;
 }
 [data-theme="dark"] .cardFlag {
-  background: color-mix(in oklch, #F7F7F4 85%, var(--color-brand));
+  background: color-mix(in oklch, #F5F0E8 85%, var(--color-brand));
   color: var(--brand-deep);
 }
 

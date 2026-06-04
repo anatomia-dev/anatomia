@@ -30,7 +30,7 @@
 
   /* Brand (oxblood) */
   --color-brand: #7A1B1B;
-  --color-brand-ink: #F7F7F4;
+  --color-brand-ink: #F5F0E8;
 
   /* Radius scale — "medium" from the HTML tweaks */
   --radius-sm: 6px;
@@ -96,7 +96,7 @@
   --btn-2-border: rgba(11, 11, 16, 0.22);
   --btn-2-text: #0b0b10;
   --terminal-bg: #0b0b10;
-  --terminal-fg: #F7F7F4;
+  --terminal-fg: #F5F0E8;
   --paper-texture: radial-gradient(rgba(11, 11, 16, 0.045) 1px, transparent 1px);
   --brand-mark: var(--color-brand);
 }
@@ -105,28 +105,28 @@
    DARK THEME  ([data-theme="dark"])
    =================================================================== */
 [data-theme="dark"] {
-  --fg: #F7F7F4;
-  --fg-strong: #FBFAF6;
+  --fg: #F5F0E8;
+  --fg-strong: #F8F4ED;
   --bg: #0A0A0D;
   --bg-elev: #111117;
   --bg-deep: #070709;
   --bg-card: #0F0F14;
   --nav-bg: rgba(10, 10, 13, 0.82);
   --footer-bg: #070709;
-  --border: rgba(255, 255, 255, 0.12);
-  --border-soft: rgba(255, 255, 255, 0.08);
-  --hairline: rgba(255, 255, 255, 0.06);
-  --ink-75: rgba(255, 255, 255, 0.82);
-  --ink-60: rgba(255, 255, 255, 0.66);
-  --ink-45: rgba(255, 255, 255, 0.50);
-  --ink-30: rgba(255, 255, 255, 0.34);
-  --ink-15: rgba(255, 255, 255, 0.16);
-  --btn-2-bg: rgba(255, 255, 255, 0.04);
-  --btn-2-border: rgba(255, 255, 255, 0.18);
-  --btn-2-text: #F7F7F4;
+  --border: rgba(245, 240, 232, 0.12);
+  --border-soft: rgba(245, 240, 232, 0.08);
+  --hairline: rgba(245, 240, 232, 0.06);
+  --ink-75: rgba(245, 240, 232, 0.82);
+  --ink-60: rgba(245, 240, 232, 0.66);
+  --ink-45: rgba(245, 240, 232, 0.50);
+  --ink-30: rgba(245, 240, 232, 0.34);
+  --ink-15: rgba(245, 240, 232, 0.16);
+  --btn-2-bg: rgba(245, 240, 232, 0.04);
+  --btn-2-border: rgba(245, 240, 232, 0.18);
+  --btn-2-text: #F5F0E8;
   --terminal-bg: #050507;
-  --terminal-fg: #F7F7F4;
-  --paper-texture: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  --terminal-fg: #F5F0E8;
+  --paper-texture: radial-gradient(rgba(245, 240, 232, 0.05) 1px, transparent 1px);
   --brand-mark: var(--color-brand);
 }
 
@@ -237,14 +237,14 @@ section[data-component="proof-feed"]:has([data-open="false"]) + footer {
   margin-top: 0;
 }
 
-/* Nav CTA — dark mode inversion (warm off-paper key against dark plate) */
+/* Nav CTA — dark mode inversion (ivory key against dark plate) */
 [data-theme="dark"] .nav-cta {
-  background: #F7F7F4 !important;
+  background: #F5F0E8 !important;
   color: #0A0A0D !important;
-  box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 0 0 rgba(245,240,232,0.06) inset, 0 1px 2px rgba(0,0,0,0.4);
 }
 [data-theme="dark"] .nav-cta:hover {
-  background: #F7F7F4 !important;
+  background: #F5F0E8 !important;
 }
 
 /* skip link for accessibility — hidden until focused */
