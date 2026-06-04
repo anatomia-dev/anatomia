@@ -5,7 +5,7 @@
   Ported from Anatomia Landing Refresh handoff.html, locked to:
 
      brand color    #7A1B1B       (oxblood)
-     paper          "snow"        (warm off-white #F7F7F4 in light mode)
+     paper          "ivory"       (warm ivory #F5F0E8 in light mode)
      pattern        "noise"       (SVG fractal grain, no grid)
      typography     "grotesk"     (Geist — Geist Mono for code — Fraunces for serif)
      radius         "medium"      (6 / 10 / 14 px)
@@ -73,17 +73,17 @@
 
 /* ===================================================================
    LIGHT THEME  ([data-theme="light"])
-   "snow" paper: warm off-white #F7F7F4
+   "ivory" paper: warm ivory #F5F0E8
    =================================================================== */
 [data-theme="light"] {
   --fg: #0b0b10;
   --fg-strong: #000000;
-  --bg: #F7F7F4;
-  --bg-elev: #F7F7F4;
-  --bg-deep: #F0EFE9;
-  --bg-card: #F7F7F4;
-  --nav-bg: rgba(247, 247, 244, 0.85);
-  --footer-bg: #F0EFE9;
+  --bg: #F5F0E8;
+  --bg-elev: #F5F0E8;
+  --bg-deep: #EDE8DF;
+  --bg-card: #F5F0E8;
+  --nav-bg: rgba(245, 240, 232, 0.85);
+  --footer-bg: #EDE8DF;
   --border: rgba(11, 11, 16, 0.12);
   --border-soft: rgba(11, 11, 16, 0.08);
   --hairline: rgba(11, 11, 16, 0.06);
