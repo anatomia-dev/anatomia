@@ -39,15 +39,15 @@ export function ScanSlab() {
               <div className="flex gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#ef4444" }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#eab308" }} />
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--color-brand)" }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#22c55e" }} />
               </div>
               <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "11.5px" }}>~/work/inbox-zero</span>
-              <span className="text-[11px] uppercase tracking-widest" style={{ color: "var(--color-brand)" }}>scan · 3.1s</span>
+              <span className="text-[11px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>scan · 3.1s</span>
             </div>
 
             {/* Command */}
             <div className="mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>
-              $ <span style={{ color: "var(--color-brand)" }}>ana scan</span>
+              $ <span style={{ color: "var(--terminal-fg)" }}>ana scan</span>
             </div>
 
             {/* Project header card */}
@@ -61,7 +61,7 @@ export function ScanSlab() {
                 <span className="mx-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
                 <span style={{ color: "#67e8f9" }}>Next.js</span>
                 <span className="mx-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
-                <span style={{ color: "var(--color-brand)" }}>Prisma</span>
+                <span style={{ color: "#67e8f9" }}>Prisma</span>
                 {" → "}
                 <span style={{ color: "#fbbf24" }}>PostgreSQL</span>
                 <span style={{ color: "rgba(255,255,255,0.45)" }}> (63 models)</span>
@@ -107,7 +107,7 @@ export function ScanSlab() {
               <div className="mb-1.5 text-[10.5px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>Intelligence</div>
               <div className="grid gap-y-0.5" style={{ gridTemplateColumns: "92px 1fr" }}>
                 <span style={{ color: "rgba(255,255,255,0.55)" }}>Activity</span>
-                <span>7 contributors <span style={{ color: "rgba(255,255,255,0.45)" }}>·</span> 22→18→25→19 weekly <span className="ml-2 inline-flex items-end gap-[3px]" style={{ height: "12px", verticalAlign: "-2px" }} aria-hidden="true"><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "7px", background: "var(--color-brand)", opacity: 0.75 }} /><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "5px", background: "var(--color-brand)", opacity: 0.75 }} /><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "8px", background: "var(--color-brand)", opacity: 0.75 }} /><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "6px", background: "var(--color-brand)", opacity: 0.75 }} /></span></span>
+                <span>7 contributors <span style={{ color: "rgba(255,255,255,0.45)" }}>·</span> 22→18→25→19 weekly <span className="ml-2 inline-flex items-end gap-[3px]" style={{ height: "12px", verticalAlign: "-2px" }} aria-hidden="true"><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "7px", background: "rgba(255,255,255,0.55)", opacity: 0.75 }} /><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "5px", background: "rgba(255,255,255,0.55)", opacity: 0.75 }} /><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "8px", background: "rgba(255,255,255,0.55)", opacity: 0.75 }} /><i className="inline-block w-[5px] rounded-[1px]" style={{ height: "6px", background: "rgba(255,255,255,0.55)", opacity: 0.75 }} /></span></span>
                 <span style={{ color: "rgba(255,255,255,0.55)" }}>Hot files</span>
                 <span><span style={{ color: "#67e8f9" }}>clean.ts</span> <span style={{ color: "rgba(255,255,255,0.45)" }}>(14)</span>, <span style={{ color: "#67e8f9" }}>ai-categorize.ts</span> <span style={{ color: "rgba(255,255,255,0.45)" }}>(11)</span></span>
                 <span style={{ color: "rgba(255,255,255,0.55)" }}>Docs</span>
@@ -120,7 +120,7 @@ export function ScanSlab() {
             {/* Footer */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-dashed pt-3 text-[11.5px]" style={{ borderColor: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }}>
               <span>Full data: <span style={{ color: "#67e8f9" }}>.ana/scan.json</span></span>
-              <span><span style={{ color: "var(--color-brand)" }}>›</span> Run <span style={{ color: "var(--color-brand)" }}>ana init</span> to scaffold 8 skills for Next.js · Prisma · OpenAI</span>
+              <span><span style={{ color: "var(--terminal-fg)" }}>›</span> Run <span style={{ color: "var(--terminal-fg)" }}>ana init</span> to scaffold 8 skills for Next.js · Prisma · OpenAI</span>
             </div>
           </div>
 
@@ -128,7 +128,7 @@ export function ScanSlab() {
           <div className="max-w-[48ch]">
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--ink-60)" }}>
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--color-brand)" }} />
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--fg-strong)" }} />
               <Formatted text={copy.scan.eyebrow} />
             </div>
 
@@ -151,7 +151,7 @@ export function ScanSlab() {
             >
               <span className="inline-flex items-center border-r px-3 font-mono text-[13.5px]" style={{ color: "var(--ink-45)", borderColor: "var(--hairline)" }}>$</span>
               <code className="flex-1 whitespace-nowrap px-3.5 py-3 font-mono text-[13.5px]" style={{ color: "var(--fg-strong)" }}>
-                <span className="font-semibold" style={{ color: "var(--color-brand)" }}>{copy.scan.install}</span>
+                <span className="font-semibold" style={{ color: "var(--fg-strong)" }}>{copy.scan.install}</span>
               </code>
               <CopyButton text={copy.scan.install} />
             </div>
@@ -160,7 +160,7 @@ export function ScanSlab() {
             <div className="mt-5 grid gap-y-1.5 font-mono text-xs" style={{ gridTemplateColumns: "auto 1fr", columnGap: "10px", color: "var(--ink-60)" }}>
               {copy.scan.asserts.map((a, i) => (
                 <span key={i} className="contents">
-                  <span className="font-bold" style={{ color: "var(--color-brand)" }}>✓</span>
+                  <span className="font-bold" style={{ color: "var(--fg-strong)" }}>✓</span>
                   <span>{a}</span>
                 </span>
               ))}
