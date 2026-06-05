@@ -53,7 +53,7 @@ export const copy = {
     },
     headline: "The Coding Harness\nwith an *engine*.",
     subhead:
-      "It scans your codebase for real context, then runs every change through a pipeline that scopes, plans, builds, and independently verifies it \u2014 enforced by the CLI, not by instructions an agent can ignore. Every run ends in a proof you can audit.",
+      "Anatomia scans your codebase for real context, then runs every change through a pipeline that scopes, plans, builds, and independently verifies it \u2014 enforced by the CLI, not by instructions an agent can ignore. Every run ends in a proof you can audit.",
     ctas: {
       primary: { label: "Install", command: "npx anatomia-cli init", href: "https://www.npmjs.com/package/anatomia-cli" },
       secondary: { label: "See the pipeline", href: "#system" },
