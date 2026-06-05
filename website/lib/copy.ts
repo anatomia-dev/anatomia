@@ -51,7 +51,7 @@ export const copy = {
       feature:
         "*Proof chains* are live — every change now ships with receipts.",
     },
-    headline: "The Coding Harness\nwith an *engine*.",
+    headline: "The coding harness\nwith an *engine*.",
     subhead:
       "Anatomia scans your codebase for real context, then runs every change through a pipeline that scopes, plans, builds, and independently verifies it \u2014 enforced by the CLI, not by instructions an agent can ignore. Every run ends in a proof you can audit.",
     ctas: {
