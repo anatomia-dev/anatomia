@@ -1,0 +1,255 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Token Efficiency — Engine-Captured Test Evidence + Enriched Build Briefing"
+
+assertions:
+  # ---- Phase 1: capture + preservation spine ----
+  - id: A001
+    says: "Running a captured test writes the full raw test output to a capture file"
+    block: "capture writes raw bytes to the capture file"
+    target: "result.captureFile.exists"
+    matcher: "truthy"
+
+  - id: A002
+    says: "The capture file path is namespaced under the work item's captures folder"
+    block: "capture file lives under .captures with stage and epoch in the name"
+    target: "result.capturePath"
+    matcher: "contains"
+    value: ".captures/test-"
+
+  - id: A003
+    says: "Test output inlined into the build report is byte-for-byte identical to what was captured"
+    block: "inlined block sha256 equals the capture file sha256"
+    target: "inline.blockSha256"
+    matcher: "equals"
+    value: "captureSha256"
+
+  - id: A004
+    says: "A build report with no captured test run cannot be sealed"
+    block: "validateCapturePresent rejects a report with zero build captures"
+    target: "validateCapturePresent.error"
+    matcher: "exists"
+
+  - id: A005
+    says: "A build report whose inlined output was altered cannot be sealed"
+    block: "validateCaptureInlined fires on a tampered inlined block"
+    target: "validateCaptureInlined.error"
+    matcher: "exists"
+
+  - id: A006
+    says: "A build report whose inlined output was truncated cannot be sealed"
+    block: "validateCaptureNotTruncated fires when block length differs from the marker"
+    target: "validateCaptureNotTruncated.error"
+    matcher: "exists"
+
+  - id: A007
+    says: "A valid captured build report passes all three seal checks"
+    block: "present, inlined, and not-truncated all return null on a valid report"
+    target: "validateAll.error"
+    matcher: "not_equals"
+    value: "present"
+
+  - id: A008
+    says: "The capturing runner runs the test command without a shell"
+    block: "capture runner spawns with an argv array and shell disabled"
+    target: "runner.usedShell"
+    matcher: "not_equals"
+    value: true
+
+  # ---- Phase 1: counts (fail-open) ----
+  - id: A009
+    says: "When the runner reports structured results, test counts are computed from the captured output"
+    block: "counts derived from a vitest capture fixture"
+    target: "counts.passed"
+    matcher: "greater"
+    value: 0
+
+  - id: A010
+    says: "A runner with no structured mode still seals, with counts reported as not-available"
+    block: "unknown runner abstains: counts N/A, build still seals"
+    target: "result.verdict"
+    matcher: "equals"
+    value: "unverified"
+
+  - id: A011
+    says: "A passing verdict is never reported when the test run hit a collection or compile error"
+    block: "error fixture never yields a pass verdict (NO-FALSE-GREEN)"
+    target: "errorFixture.verdict"
+    matcher: "not_equals"
+    value: "pass"
+
+  - id: A012
+    says: "Error text in test output is preserved, never stripped from the captured bytes"
+    block: "captured output retains the error message verbatim"
+    target: "errorFixture.captured"
+    matcher: "contains"
+    value: "Error"
+
+  # ---- Phase 1: token ledger + tokenizer ----
+  - id: A013
+    says: "Each captured run records a token-ledger line for the slug"
+    block: "token ledger appends a JSONL entry per capture call"
+    target: "ledger.entryCount"
+    matcher: "greater"
+    value: 0
+
+  - id: A014
+    says: "Output preserved in the proof artifact counts as zero tokens saved, by construction"
+    block: "artifact-destination ledger entry has saved_tokens of 0"
+    target: "ledger.artifactEntry.saved_tokens"
+    matcher: "equals"
+    value: 0
+
+  - id: A015
+    says: "Tokens are counted with a named, reproducible tokenizer"
+    block: "ledger records the o200k_base tokenizer name"
+    target: "ledger.entry.tokenizer"
+    matcher: "equals"
+    value: "o200k_base"
+
+  # ---- Phase 1: proof fold (cross-cut) ----
+  - id: A016
+    says: "Completing a work item seals its token economy onto the proof record"
+    block: "token_economy folds onto the proof chain entry at complete"
+    target: "proofEntry.token_economy"
+    matcher: "exists"
+
+  - id: A017
+    says: "The token ledger is sealed by hash alongside the other proof artifacts"
+    block: "ledger hash lifts into entry.hashes"
+    target: "proofEntry.hashes.token-ledger"
+    matcher: "exists"
+
+  - id: A018
+    says: "Older proof entries recorded before this feature still load without error"
+    block: "entry without a ledger reads with token_economy absent, no throw"
+    target: "legacyEntry.token_economy"
+    matcher: "not_equals"
+    value: "error"
+
+  # ---- Phase 1: ana gain (honest copy) ----
+  - id: A019
+    says: "The gain command surfaces the sealed bytes kept out of working context"
+    block: "ana gain prints the sealed byte figure for a slug"
+    target: "gain.output"
+    matcher: "contains"
+    value: "bytes"
+
+  - id: A020
+    says: "The gain command makes no percentage-cheaper claim"
+    block: "ana gain output contains no percent sign"
+    target: "gain.output"
+    matcher: "not_contains"
+    value: "%"
+
+  - id: A021
+    says: "The gain command makes no dollar-savings claim"
+    block: "ana gain output contains no dollar sign"
+    target: "gain.output"
+    matcher: "not_contains"
+    value: "$"
+
+  # ---- Phase 1: ana.json opt-in override ----
+  - id: A022
+    says: "A surface can opt into structured test counts via an ana.json override"
+    block: "surface schema accepts a test_json override field"
+    target: "parsedSurface.test_json"
+    matcher: "not_equals"
+    value: "schema-error"
+
+  - id: A023
+    says: "Structured-mode flags are never auto-appended to a customer's test command"
+    block: "generated commands.test carries no injected json flag"
+    target: "anaJson.commands.test"
+    matcher: "not_contains"
+    value: "--reporter=json"
+
+  # ---- Phase 1: gate wired at both save paths ----
+  - id: A024
+    says: "The save-all path enforces the capture guarantee, not just single saves"
+    block: "saveAllArtifacts rejects a markerless build report"
+    target: "saveAll.error"
+    matcher: "exists"
+
+  # ---- Phase 2: briefing enrichment ----
+  - id: A025
+    says: "The build briefing lists symbol locations for the files the work item touches"
+    block: "worktree-context includes touched-file symbol sites"
+    target: "briefing.symbolSection"
+    matcher: "contains"
+    value: "Symbol Locations"
+
+  - id: A026
+    says: "Symbol locations are labeled as an advisory, possibly-stale snapshot"
+    block: "symbol section carries advisory freshness wording"
+    target: "briefing.symbolSection"
+    matcher: "contains"
+    value: "advisory"
+
+  - id: A027
+    says: "The briefing carries the project's build, test, and lint commands"
+    block: "worktree-context includes ana.json command scalars"
+    target: "briefing.commandsSection"
+    matcher: "contains"
+    value: "test:"
+
+  - id: A028
+    says: "Symbol injection is scoped to touched files, not the entire index"
+    block: "briefing omits symbols from files the work item does not touch"
+    target: "briefing.containsUntouchedSymbol"
+    matcher: "not_equals"
+    value: true
+
+  - id: A029
+    says: "When the symbol index is missing, the briefing falls back without error"
+    block: "absent index yields the current briefing, no symbol section, no throw"
+    target: "fallbackBriefing.symbolSection"
+    matcher: "not_equals"
+    value: "present"
+
+  - id: A030
+    says: "The freshness stamp reflects when the symbol index was generated"
+    block: "symbol section embeds the index generated timestamp"
+    target: "briefing.symbolSection"
+    matcher: "contains"
+    value: "generated"
+
+file_changes:
+  # Phase 1
+  - path: "packages/cli/src/commands/test.ts"
+    action: create
+  - path: "packages/cli/src/utils/capture-runner.ts"
+    action: create
+  - path: "packages/cli/src/utils/capture-marker.ts"
+    action: create
+  - path: "packages/cli/src/utils/token-ledger.ts"
+    action: create
+  - path: "packages/cli/src/commands/gain.ts"
+    action: create
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/package.json"
+    action: modify
+  # Phase 2
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/utils/worktree.ts"
+    action: modify
+  - path: "packages/cli/src/utils/symbol-lookup.ts"
+    action: create
