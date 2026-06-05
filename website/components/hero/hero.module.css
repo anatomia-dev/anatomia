@@ -206,6 +206,27 @@
   padding: 0 0.02em;
 }
 
+/* Emphasized word as pressed ink — dimensional oxblood that bleeds into the paper grain. */
+.headline .em {
+  display: inline;
+  /* Extra vertical padding extends the background-clip paint box so the
+     italic descender (g) is filled, not cut off. Layout-neutral on inline. */
+  padding: 0.06em 0.06em 0.24em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  color: transparent;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--color-brand) 96%, var(--bg)) 0%,
+    var(--color-brand) 50%,
+    color-mix(in oklch, var(--color-brand) 92%, var(--fg-strong)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* Barely-there ink bleed — a hint of warmth into the paper, no hard ridge. */
+  filter: drop-shadow(0 1px 4px color-mix(in oklch, var(--color-brand) 15%, transparent));
+}
+
 /* --- Subhead --- */
 .sub {
   font-size: clamp(16px, 1.4vw, 19px);

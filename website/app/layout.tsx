@@ -29,14 +29,15 @@ export const metadata: Metadata = {
  */
 const themeBootstrap = `
 (function () {
-  try {
-    var stored = localStorage.getItem('anatomia-theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var theme = stored || (prefersDark ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', theme);
-  } catch (_) {
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
+  // Dark mode is disabled for users — the site always paints light.
+  // The dark theme CSS ([data-theme="dark"] in globals.css) and the toggle
+  // code (lib/theme.ts, components/nav/ThemeToggle.tsx) are intentionally
+  // retained but unreachable. To re-enable dark mode, restore the
+  // stored/prefers-color-scheme resolution and unhide the toggle:
+  //   var stored = localStorage.getItem('anatomia-theme');
+  //   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  //   var theme = stored || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', 'light');
 })();
 `;
 

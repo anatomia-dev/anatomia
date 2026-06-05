@@ -38,13 +38,13 @@ export async function Hero() {
         {/* Headline */}
         <h1 className={styles.headline}>
           {title.map((p, i) =>
-            p.em ? (
-              <em key={i} className="font-serif italic" style={{
+            p.br ? (
+              <br key={i} />
+            ) : p.em ? (
+              <em key={i} className={`font-serif italic ${styles.em}`} style={{
                 fontVariationSettings: '"opsz" 144',
                 fontWeight: 700,
-                color: "var(--color-brand)",
                 letterSpacing: "-0.03em",
-                padding: "0 0.02em",
               }}>{p.t}</em>
             ) : (
               <span key={i}>{p.t}</span>
