@@ -38,7 +38,9 @@ export async function Hero() {
         {/* Headline */}
         <h1 className={styles.headline}>
           {title.map((p, i) =>
-            p.em ? (
+            p.br ? (
+              <br key={i} />
+            ) : p.em ? (
               <em key={i} className="font-serif italic" style={{
                 fontVariationSettings: '"opsz" 144',
                 fontWeight: 700,
