@@ -206,35 +206,27 @@
   padding: 0 0.02em;
 }
 
-/* Emphasized word carries a hand-drawn annotation stroke. */
-.em {
-  position: relative;
-  display: inline-block;
-}
-.markStroke {
-  position: absolute;
-  left: -0.03em;
-  top: 0.8em;
-  width: 150%;
-  height: auto;
-  overflow: visible;
-  pointer-events: none;
-  color: var(--color-brand);
-  opacity: 0.92;
-  /* Draw-on: a single left-to-right reveal so the stroke "writes" itself. */
-  clip-path: inset(0 100% 0 0);
-  animation: markDraw 760ms cubic-bezier(0.22, 1, 0.36, 1) 380ms both;
-}
-@keyframes markDraw {
-  to {
-    clip-path: inset(0 -4% 0 0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .markStroke {
-    animation: none;
-    clip-path: inset(0 -4% 0 0);
-  }
+/* Emphasized word as pressed ink — dimensional oxblood that bleeds into the paper grain. */
+.headline .em {
+  display: inline;
+  /* Extra vertical padding extends the background-clip paint box so the
+     italic descender (g) is filled, not cut off. Layout-neutral on inline. */
+  padding: 0.06em 0.06em 0.24em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  color: transparent;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--color-brand) 91%, var(--bg)) 0%,
+    var(--color-brand) 38%,
+    color-mix(in oklch, var(--color-brand) 77%, var(--fg-strong)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* Crisp press ridge + soft ink bleed into the paper. */
+  filter:
+    drop-shadow(0 1px 0 color-mix(in oklch, var(--color-brand) 60%, var(--fg-strong)))
+    drop-shadow(0 2px 9px color-mix(in oklch, var(--color-brand) 40%, transparent));
 }
 
 /* --- Subhead --- */
