@@ -41,13 +41,28 @@ export async function Hero() {
             p.br ? (
               <br key={i} />
             ) : p.em ? (
-              <em key={i} className="font-serif italic" style={{
+              <em key={i} className={`font-serif italic ${styles.em}`} style={{
                 fontVariationSettings: '"opsz" 144',
                 fontWeight: 700,
                 color: "var(--color-brand)",
                 letterSpacing: "-0.03em",
                 padding: "0 0.02em",
-              }}>{p.t}</em>
+              }}>
+                {p.t}
+                <svg
+                  className={styles.markStroke}
+                  viewBox="0 0 280 40"
+                  fill="none"
+                  aria-hidden="true"
+                  focusable="false"
+                  preserveAspectRatio="xMinYMid meet"
+                >
+                  <path
+                    d="M8 15 C56 13.5 108 13.5 158 15 C178 16 204 21 240 32 L236 35 C202 25 178 21 156 20 C108 18.5 56 18.5 9 20 Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </em>
             ) : (
               <span key={i}>{p.t}</span>
             ),
