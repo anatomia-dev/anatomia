@@ -463,6 +463,47 @@ Content...`;
       expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
     });
 
+    // @ana A014 — a verify report keeps its OWN sealed account: saving a verify
+    // report that carries a bare capture marker inlines + seals that run into
+    // verify_report.md. The gate is ON here, proving the seal is unconditional
+    // (inlineReportCaptures runs in the verify branch independently of the gate,
+    // which never blocks a verify save).
+    it("inlines and seals the verify report's own capture account when saved", async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await enableGate(); // gate ON — the seal must happen regardless of the gate
+
+      const dir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(path.join(dir, '.captures'), { recursive: true });
+      const rel = '.captures/test-verify-1.log';
+      const raw = 'verify run output\nTests 5 passed (5)\n';
+      await fs.writeFile(path.join(dir, rel), raw, 'utf-8');
+      const buf = Buffer.from(raw, 'utf-8');
+      const sha = createHash('sha256').update(buf).digest('hex');
+      const marker = formatMarker({
+        stage: 'verify',
+        slug: 'test-slug',
+        bytes: buf.byteLength,
+        sha256: sha,
+        file: rel,
+        counts: 'abstain',
+        verdict: 'abstain',
+      });
+      // The report on disk carries only the BARE marker — no sealed block yet.
+      const report = `# Verify Report\n\n**Result:** PASS\n\n## Test Results\n\n${marker}\n`;
+      await createArtifact('test-slug', 'verify_report.md', report);
+
+      expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
+
+      // After the save, verify_report.md carries its own SEALED block: the
+      // begin/end delimiters plus the verbatim captured bytes that were not
+      // present on disk before the save.
+      const sealed = await fs.readFile(path.join(dir, 'verify_report.md'), 'utf-8');
+      expect(sealed).toContain('ana:capture-begin');
+      expect(sealed).toContain('ana:capture-end');
+      expect(sealed).toContain(`sha256=${sha}`);
+      expect(sealed).toContain('Tests 5 passed (5)');
+    });
+
     // @ana A007 — saves that are not build reports never trigger the gate.
     it('never gates a non-build-report save even when the gate is enabled', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
