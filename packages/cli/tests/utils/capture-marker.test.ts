@@ -175,7 +175,6 @@ describe('validators', () => {
     expect(validateCaptureInlined(reportPath)).toBeNull();
   });
 
-  // @ana A012
   it('validateCapturePresent flags a report with no capture marker', () => {
     const slugDir = mkSlugDir();
     const reportPath = path.join(slugDir, 'build_report.md');
@@ -183,7 +182,6 @@ describe('validators', () => {
     expect(validateCapturePresent(reportPath)).not.toBeNull();
   });
 
-  // @ana A013
   it('validateCaptureInlined catches a tampered inlined byte', () => {
     const slugDir = mkSlugDir();
     const raw = 'Tests  10 passed (10)\n';
@@ -196,7 +194,6 @@ describe('validators', () => {
     expect(validateCaptureInlined(reportPath)).not.toBeNull();
   });
 
-  // @ana A014
   it('validateCaptureNotTruncated catches a shortened block', () => {
     const slugDir = mkSlugDir();
     const raw = 'line one\nline two\nline three\nTests 1 passed\n';
@@ -210,13 +207,13 @@ describe('validators', () => {
   });
 });
 
-describe('evaluateCaptureGate — warn-mode (Phase 1)', () => {
-  // @ana A015
-  it('never blocks when not armed, even with a failing validator', () => {
+describe('evaluateCaptureGate — gate disabled (warn-mode)', () => {
+  // @ana A003 — flag off/unset → never blocks, even with a failing validator.
+  it('never blocks when the gate is disabled, even with a failing validator', () => {
     const slugDir = mkSlugDir();
     const reportPath = path.join(slugDir, 'build_report.md');
     fs.writeFileSync(reportPath, '# Build Report\n\nno capture marker at all\n');
-    const gate = evaluateCaptureGate(reportPath, { armed: false });
+    const gate = evaluateCaptureGate(reportPath, { enabled: false });
     expect(gate.blocked).toBe(false);
     expect(gate.warnings.length).toBeGreaterThan(0);
     expect(gate.errors).toEqual([]);
@@ -226,14 +223,14 @@ describe('evaluateCaptureGate — warn-mode (Phase 1)', () => {
     const slugDir = mkSlugDir();
     const marker = seed(slugDir, 'Tests  5 passed (5)\n');
     const { reportPath } = inlineToFile(slugDir, marker);
-    const gate = evaluateCaptureGate(reportPath, { armed: false });
+    const gate = evaluateCaptureGate(reportPath, { enabled: false });
     expect(gate.blocked).toBe(false);
     expect(gate.warnings).toEqual([]);
   });
 });
 
-describe('validateCapturePresent — block-skipping scan (load-bearing once armed)', () => {
-  // @ana A012 — a build marker embedded INSIDE another capture's inlined block
+describe('validateCapturePresent — block-skipping scan (load-bearing when gate enabled)', () => {
+  // a build marker embedded INSIDE another capture's inlined block
   // must NOT satisfy the present-check; only a real top-level marker counts.
   it('does not accept a build marker that lives inside captured content', () => {
     const slugDir = mkSlugDir();
@@ -257,38 +254,49 @@ describe('validateCapturePresent — block-skipping scan (load-bearing once arme
   });
 });
 
-describe('evaluateCaptureGate — fail-closed flip (Phase 2)', () => {
-  // @ana A030
-  it('blocks when armed and a preservation validator fails', () => {
+describe('evaluateCaptureGate — gate enabled (fail-closed)', () => {
+  // @ana A001 — enabled + a preservation validator fails → blocked.
+  it('blocks when enabled and a preservation validator fails', () => {
     const slugDir = mkSlugDir();
     const reportPath = path.join(slugDir, 'build_report.md');
     fs.writeFileSync(reportPath, '# Build Report\n\nno capture marker at all\n');
-    const gate = evaluateCaptureGate(reportPath, { armed: true });
+    const gate = evaluateCaptureGate(reportPath, { enabled: true });
     expect(gate.blocked).toBe(true);
     expect(gate.errors.length).toBeGreaterThan(0);
     expect(gate.warnings).toEqual([]);
   });
 
-  // @ana A033 — fail-OPEN on counts holds after the flip: the gate only weighs
-  // preservation, so a sealed report whose counts abstain is never blocked.
-  it('does not block when armed if preservation holds but counts abstain', () => {
+  // @ana A002 — enabled + all preservation validators pass → not blocked.
+  it('does not block when enabled and a valid sealed report is present', () => {
     const slugDir = mkSlugDir();
-    // seed() defaults counts/verdict to abstain; the block is still valid.
-    const marker = seed(slugDir, 'bespoke harness ran; no parseable counts here\n');
+    const marker = seed(slugDir, 'Tests  5 passed (5)\n');
     const { reportPath } = inlineToFile(slugDir, marker);
-    const gate = evaluateCaptureGate(reportPath, { armed: true });
+    const gate = evaluateCaptureGate(reportPath, { enabled: true });
     expect(gate.blocked).toBe(false);
     expect(gate.errors).toEqual([]);
     expect(gate.warnings).toEqual([]);
   });
 
-  // @ana A030 — a tampered (preservation-failing) sealed report blocks once armed.
-  it('blocks an armed save whose inlined block was altered', () => {
+  // @ana A004 — fail-OPEN on counts: the gate only weighs preservation, so a
+  // sealed report whose counts abstain is never blocked even when enabled.
+  it('does not block when enabled if preservation holds but counts abstain', () => {
+    const slugDir = mkSlugDir();
+    // seed() defaults counts/verdict to abstain; the block is still valid.
+    const marker = seed(slugDir, 'bespoke harness ran; no parseable counts here\n');
+    const { reportPath } = inlineToFile(slugDir, marker);
+    const gate = evaluateCaptureGate(reportPath, { enabled: true });
+    expect(gate.blocked).toBe(false);
+    expect(gate.errors).toEqual([]);
+    expect(gate.warnings).toEqual([]);
+  });
+
+  // @ana A001 — a tampered (preservation-failing) sealed report blocks when enabled.
+  it('blocks an enabled save whose inlined block was altered', () => {
     const slugDir = mkSlugDir();
     const marker = seed(slugDir, 'Tests  7 passed (7)\n');
     const { reportPath, text } = inlineToFile(slugDir, marker);
     fs.writeFileSync(reportPath, text.replace('7 passed', '9 passed'));
-    const gate = evaluateCaptureGate(reportPath, { armed: true });
+    const gate = evaluateCaptureGate(reportPath, { enabled: true });
     expect(gate.blocked).toBe(true);
   });
 });

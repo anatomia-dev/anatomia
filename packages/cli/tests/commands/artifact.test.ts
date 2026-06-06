@@ -4,8 +4,9 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey } from '../../src/commands/artifact.js';
+import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey, isCaptureGateEnabled } from '../../src/commands/artifact.js';
 import { determineStage } from '../../src/commands/work-state.js';
+import { inlineCaptures, formatMarker } from '../../src/utils/capture-marker.js';
 
 /**
  * Tests for `ana artifact save` command
@@ -368,7 +369,7 @@ Content...`;
     });
   });
 
-  describe('capture gate — self-arming flip (Phase 2)', () => {
+  describe('capture gate — config enablement', () => {
     /** Write a build report carrying a real, seal-valid capture marker + file. */
     async function createBuildReportWithCapture(slug: string, raw: string): Promise<void> {
       const dir = path.join(tempDir, '.ana', 'plans', 'active', slug);
@@ -383,78 +384,194 @@ Content...`;
       await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
     }
 
-    /** Mark the project armed directly (stand-in for a prior valid capture). */
-    async function armProject(): Promise<void> {
-      const stateDir = path.join(tempDir, '.ana', 'state');
-      await fs.mkdir(stateDir, { recursive: true });
-      await fs.writeFile(
-        path.join(stateDir, 'capture.json'),
-        JSON.stringify({ armed: true, armedAt: '2026-01-01T00:00:00.000Z' }),
-        'utf-8'
-      );
+    /**
+     * Turn the capture gate on in the test project's ana.json with a resolvable
+     * test command, then commit so the working tree stays clean. This is the
+     * config-driven replacement for the retired `armProject()` helper.
+     */
+    async function enableGate(opts?: { surfaceOnly?: boolean }): Promise<void> {
+      const cfg: Record<string, unknown> = { artifactBranch: 'main', captureGate: 'on' };
+      if (opts?.surfaceOnly) {
+        cfg['surfaces'] = { cli: { commands: { test: 'pnpm vitest run' } } };
+      } else {
+        cfg['commands'] = { test: 'pnpm vitest run' };
+      }
+      await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), JSON.stringify(cfg), 'utf-8');
+      execSync('git add .ana/ana.json && git commit -m "enable capture gate"', { cwd: tempDir, stdio: 'ignore' });
     }
 
-    async function isProjectArmed(): Promise<boolean> {
+    /** Run a function that calls process.exit, returning its console.error output. */
+    function captureGateError(fn: () => void): string {
+      const originalExit = process.exit;
+      const originalError = console.error;
+      const errors: string[] = [];
+      console.error = (...args: unknown[]) => {
+        errors.push(args.map(String).join(' '));
+      };
+      process.exit = ((code?: number) => {
+        throw new Error(`process.exit(${code})`);
+      }) as typeof process.exit;
       try {
-        const raw = await fs.readFile(path.join(tempDir, '.ana', 'state', 'capture.json'), 'utf-8');
-        return JSON.parse(raw).armed === true;
-      } catch {
-        return false;
+        fn();
+        return errors.join('\n');
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('process.exit')) {
+          return errors.join('\n');
+        }
+        throw error;
+      } finally {
+        console.error = originalError;
+        process.exit = originalExit;
       }
     }
 
-    // @ana A031 — check-then-arm: the first valid save is NOT blocked; it seals
-    // and then arms. The NEXT invalid save on the now-armed project IS blocked.
-    it('first valid-capture save arms the project; the next invalid save blocks', async () => {
+    // ── Gate behavior driven from config ────────────────────────────────
+
+    // @ana A001 — gate on + a resolvable test command + no evidence → blocked.
+    it('blocks a build-report save when the gate is enabled and there is no evidence', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
-      await createBuildReportWithCapture('test-slug', 'Tests  3 passed (3)\n');
-
-      // Un-armed project, valid capture → not blocked.
-      expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
-      // …and now armed.
-      expect(await isProjectArmed()).toBe(true);
-
-      // A no-capture build report on the now-armed project → blocked (A030).
-      await createArtifact('test-slug', 'build_report.md');
-      expect(() => saveArtifact('build-report', 'test-slug')).toThrow();
-    });
-
-    // @ana A030
-    it('blocks an armed build-report save that has no captured evidence', async () => {
-      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
-      await armProject();
+      await enableGate();
       await createArtifact('test-slug', 'build_report.md'); // plain report, no marker
 
       expect(() => saveArtifact('build-report', 'test-slug')).toThrow();
     });
 
-    // @ana A032 — a never-captured project stays in warn-mode and is never blocked.
-    it('does not block a build-report save on a never-armed project', async () => {
+    // @ana A002 — gate on + a valid sealed capture → not blocked (happy path).
+    it('does not block a build-report save with valid sealed evidence when enabled', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
-      await createArtifact('test-slug', 'build_report.md'); // no marker, but un-armed
+      await enableGate();
+      await createBuildReportWithCapture('test-slug', 'Tests  3 passed (3)\n');
 
       expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
-      // A warn-mode save never arms — only a VALID capture arms.
-      expect(await isProjectArmed()).toBe(false);
     });
 
-    // @ana A035 — verify reports are never gated, even when the project is armed.
-    it('never gates a verify-report save even when armed', async () => {
+    // @ana A003 — flag absent → warn-mode, a no-evidence save is never blocked.
+    it('does not block a build-report save when the gate flag is absent', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
-      await armProject();
+      await createArtifact('test-slug', 'build_report.md'); // no marker, flag absent
+
+      expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A006 — verify reports are never gated, even when the gate is enabled.
+    it('never gates a verify-report save even when the gate is enabled', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await enableGate();
       const validReport = `# Verify Report\n\n**Result:** PASS`;
       await createArtifact('test-slug', 'verify_report.md', validReport);
 
       expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
     });
 
-    // @ana A036 — saves with no build report never trigger the gate.
-    it('never gates a non-build-report save even when armed', async () => {
+    // @ana A007 — saves that are not build reports never trigger the gate.
+    it('never gates a non-build-report save even when the gate is enabled', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
-      await armProject();
+      await enableGate();
       await createArtifact('test-slug', 'spec.md');
 
       expect(() => saveArtifact('spec', 'test-slug')).not.toThrow();
+    });
+
+    // ── isCaptureGateEnabled (the function's home) ──────────────────────
+
+    // @ana A005 — missing or malformed ana.json reads as off and never throws.
+    it('isCaptureGateEnabled returns false for a missing or malformed ana.json', async () => {
+      // No .ana/ana.json at all.
+      expect(() => isCaptureGateEnabled(tempDir)).not.toThrow();
+      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+
+      // Malformed JSON.
+      await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+      await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), '{ not valid json', 'utf-8');
+      expect(() => isCaptureGateEnabled(tempDir)).not.toThrow();
+      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+    });
+
+    // @ana A008 — gate on but no resolvable test command → false (warn-mode).
+    it('isCaptureGateEnabled returns false when the gate is on but no test command resolves', async () => {
+      await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'ana.json'),
+        JSON.stringify({ captureGate: 'on', commands: {}, surfaces: {} }),
+        'utf-8'
+      );
+      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+    });
+
+    // @ana A009 — gate on + a surface-only test command (no top-level) → true.
+    it('isCaptureGateEnabled returns true when only a per-surface test command resolves', async () => {
+      await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'ana.json'),
+        JSON.stringify({ captureGate: 'on', surfaces: { cli: { commands: { test: 'pnpm vitest run' } } } }),
+        'utf-8'
+      );
+      expect(isCaptureGateEnabled(tempDir)).toBe(true);
+    });
+
+    it('isCaptureGateEnabled returns true when the gate is on and a top-level test command resolves', async () => {
+      await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'ana.json'),
+        JSON.stringify({ captureGate: 'on', commands: { test: 'pnpm vitest run' } }),
+        'utf-8'
+      );
+      expect(isCaptureGateEnabled(tempDir)).toBe(true);
+    });
+
+    it('isCaptureGateEnabled returns false when the gate flag is off', async () => {
+      await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'ana.json'),
+        JSON.stringify({ captureGate: 'off', commands: { test: 'pnpm vitest run' } }),
+        'utf-8'
+      );
+      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+    });
+
+    // ── Block message content (AC7) ─────────────────────────────────────
+
+    // @ana A015, A016, A017 — a TRUNCATED capture (bytes deleted inside the
+    // sealed block) blocks; the message names the `ana test` fix (A015), the
+    // `captureGate` disable instruction (A016), and the REAL validator error
+    // "truncated" (A017) — proving the reason line is dynamic, not hardcoded.
+    it('block message states the real (truncated) reason, the ana test fix, and how to disable', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await enableGate();
+
+      const dir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+      await fs.mkdir(path.join(dir, '.captures'), { recursive: true });
+      const rel = '.captures/test-build-1.log';
+      const raw = 'line one\nline two\nline three\nTests 1 passed (1)\n';
+      await fs.writeFile(path.join(dir, rel), raw, 'utf-8');
+      const buf = Buffer.from(raw, 'utf-8');
+      const sha = createHash('sha256').update(buf).digest('hex');
+      const marker = formatMarker({
+        stage: 'build',
+        slug: 'test-slug',
+        bytes: buf.byteLength,
+        sha256: sha,
+        file: rel,
+        counts: 'abstain',
+        verdict: 'abstain',
+      });
+      const report = `${getValidBuildReportContent()}\n\n## Test Results\n\n${marker}\n`;
+      const { text } = inlineCaptures(report, dir);
+      // Delete a line from INSIDE the sealed block — end delimiter shifts off
+      // its byte offset → validateCaptureNotTruncated trips with "truncated".
+      // (NOT an equal-length swap, which would say "mismatch" instead.)
+      const truncated = text.replace('line two\n', '');
+      expect(truncated).not.toBe(text);
+      await fs.writeFile(path.join(dir, 'build_report.md'), truncated, 'utf-8');
+      await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+      // Remove the capture file so the save's re-inline cannot repair the
+      // truncation — the committed (truncated) block becomes the source of truth.
+      await fs.rm(path.join(dir, rel));
+
+      const message = captureGateError(() => saveArtifact('build-report', 'test-slug'));
+      expect(message).toContain('ana test');     // A015
+      expect(message).toContain('captureGate');  // A016
+      expect(message).toContain('truncated');    // A017
     });
   });
 

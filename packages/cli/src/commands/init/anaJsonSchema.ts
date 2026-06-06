@@ -100,6 +100,12 @@ export const AnaJsonSchema = z
       .enum(['merge', 'squash', 'rebase'])
       .optional()
       .catch(undefined),
+    // No `.default` — absent must stay `undefined` so an absent flag stays
+    // absent through re-init and reads as gate-off (the migration mechanism).
+    captureGate: z
+      .enum(['on', 'off'])
+      .optional()
+      .catch(undefined),
     lastScanAt: z.string().nullable().optional().default(null).catch(null),
     custom: z.record(z.string(), z.unknown()).optional().default({}).catch({}),
   })
