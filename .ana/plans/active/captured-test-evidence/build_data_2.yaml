@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Seal-gate enforcement is per-working-copy: fresh clones / CI runners start un-armed (warn-mode) until they capture locally. Intended boundary, not a gap — committing the flag would re-introduce the brick on fresh clones."
+    file: "packages/cli/src/utils/capture-state.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "The verify-report sealed account (spec item 3) was built this phase but has no contract assertion binding it. Real and tested, but not contracted — flagged so the verifier weighs the scope decision."
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "deriveCounts now abstains for test commands that name no recognizable runner (e.g. bare `npm test`), sealing verdict=abstain instead of a count. Safe (fail-open) but a visible behavior change; remedy if it bites is to broaden inferRunner, never to restore the fabrication-prone fallthrough."
+    file: "packages/cli/src/utils/capture-runner.ts"
+    severity: debt
+    suggested_action: monitor

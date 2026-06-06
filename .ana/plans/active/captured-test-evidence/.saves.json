@@ -73,16 +73,19 @@
     "packages/cli/src/index.ts",
     "packages/cli/src/utils/capture-marker.ts",
     "packages/cli/src/utils/capture-runner.ts",
+    "packages/cli/src/utils/capture-state.ts",
     "packages/cli/templates/.claude/agents/ana-build.md",
     "packages/cli/templates/.claude/agents/ana-verify.md",
     "packages/cli/templates/.codex/agents/ana-build.md",
     "packages/cli/templates/.codex/agents/ana-verify.md",
     "packages/cli/tests/capture-corpus/invariants.test.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
     "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
     "packages/cli/tests/commands/template-capture-instruction.test.ts",
     "packages/cli/tests/commands/test-command.test.ts",
     "packages/cli/tests/utils/capture-marker.test.ts",
-    "packages/cli/tests/utils/capture-runner.test.ts"
+    "packages/cli/tests/utils/capture-runner.test.ts",
+    "packages/cli/tests/utils/capture-state.test.ts"
   ],
   "commit_hygiene": [],
   "verify_started_at_1": "2026-06-06T01:08:46.754Z",
@@ -99,5 +102,13 @@
   "verify-data-1": {
     "saved_at": "2026-06-06T01:17:32.235Z",
     "hash": "sha256:e09c32cffc0fb8c81afc5f934bd305771e18d296271274e547dca7ad9ff59536"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-06T01:56:49.623Z",
+    "hash": "sha256:8da844530b770c342daeb1b7d494a04ebe6e27f21de88b4ccc9699f82ba3daf8"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-06T01:56:49.624Z",
+    "hash": "sha256:f7cc5d7247ff600b2a06e804d508e89c71e1604fa7a5a4edc779b5cde6f6d688"
   }
 }
