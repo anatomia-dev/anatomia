@@ -50449,6 +50449,387 @@
         "commit_count": 0,
         "base_commit": "89e8e91f61b3a8d02f78c9c9be820480a6104039"
       }
+    },
+    {
+      "slug": "compact-capture-seal",
+      "feature": "Compact the capture seal + fix the count",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 29,
+        "satisfied": 29,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A captured test run produces a one-line sealed result, not a dump",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The sealed result carries the test counts, verdict, a fingerprint, and the output size",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The sealed result no longer carries a path to a throwaway log file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Saving a build report no longer pastes the raw test output into it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A build report with a compact seal saves successfully through the gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Test counts are read from a machine-readable report, not scraped from human text",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The tool prefers the configured machine-readable test command when one is set",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "With a machine-readable reporter configured, this project gets a real count instead of abstaining",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "With no machine-readable reporter, the result abstains instead of inventing a count",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A clean exit with no countable evidence is never reported as a pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A run where nothing actually passed is never reported as a pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A seal shown as an example inside a code block is not mistaken for a real seal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A described seal with placeholders is not mistaken for a real seal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "A seal missing its fingerprint is rejected, never accepted as valid evidence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A report that only describes the seal format does not satisfy the evidence gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The raw test log is deleted after the result is sealed, not left to be committed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The project ignores raw capture logs so they can never be committed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "New projects also ignore raw capture logs by default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "A seal carrying the reserved engine-binding field survives a round-trip unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A seal without the reserved field survives a round-trip unchanged and gains no field",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The build agent instructions no longer describe a raw expanded test-output block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "All four agent templates describe the compact single-line seal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The machine-readable count works for a non-JavaScript test runner too",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "An old-format report does not crash the new seal reader",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "An old-format seal is not accepted as a valid new seal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "When a real count is unavailable, the tool tells the user how to get one",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Saving the same build report twice produces an identical sealed result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "A large test output still seals, since the result is one line regardless of size",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "A large test output does not trigger a capture error",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 15,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 250,
+        "think": 89,
+        "plan": 34,
+        "build": 73,
+        "verify": 12
+      },
+      "hashes": {
+        "scope": "sha256:33134f04202616b30a28f214d46c4c225a0aca84d161af1cf51aeb5fb5a6dd38",
+        "contract": "sha256:e944b8cc712ed165f4a3da32036bb9309f99de0a9e1fedd1af3c7e0774f33fbf",
+        "plan": "sha256:54889fdee7b320f94f5fd7bbfa2bdca339e1b2d27c82db6d28a928cd3f10661e",
+        "spec": "sha256:1cf88a82ce81edb1f72d0bbe9978e1435b68e93482dbf713e727e865ef3b7521",
+        "build-report": "sha256:3e544f1578899ff77e10dc151be29e6f7799709a641056b74921e6a766934311",
+        "build-data": "sha256:8f0bb401fb18de9231bd7d1d3eb6ad4254b4d0e53d6c85cd6897737940ec4666",
+        "verify-report": "sha256:a5aa8bbb4b3e8ee1589691376575cc27524062038febc2bfe5509143bef9c64b",
+        "verify-data": "sha256:fa429611ba3b2d5921e2c0dbbb29200a01175da3458070e57a9779c63525b86e"
+      },
+      "completed_at": "2026-06-06T22:41:38.361Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-build.md",
+        ".codex/agents/ana-verify.md",
+        "CHANGELOG.md",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/test.ts",
+        "packages/cli/src/utils/capture-marker.ts",
+        "packages/cli/src/utils/capture-runner.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-build.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/capture-corpus/invariants.test.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/init/template-propagation.test.ts",
+        "packages/cli/tests/commands/test-command.test.ts",
+        "packages/cli/tests/utils/capture-marker.test.ts",
+        "packages/cli/tests/utils/capture-runner.test.ts"
+      ],
+      "scope_summary": "The capture gate seals test evidence into the build/verify report. Today that seal **inlines the entire raw test output** (the `retire-capture-self-arming` build report carried ~3,100 lines / 246 KB), and the sealed **count abstains on our own repo** because counts are regex-scraped from human-formatted output that our turbo-wrapped root runner doesn't match. A third defect shares the same root: the marker parser matches `<!-- ana:capture … -->` even inside prose, so a report that *describes* a marker corrupts parsing.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A026 (byte-stable re-save / AC12) has no dedicated test, though the spec's Testing Strategy explicitly requested one. Behavior is sound by construction — inlining is deleted and applyCaptureGate is read-only, so the save path never mutates the report — but the contract target reportUnchangedOnSecondSave is verified by source inspection, not a regression test.",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A026"
+          ],
+          "id": "compact-capture-seal-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Template wording assertions A020/A021 (AC8) have no automated regression test. template-capture-instruction.test.ts was not modified and contains no compact-seal assertion. A future template edit could silently reintroduce 'verbatim, sha-sealed block' or drop the compact description with the suite still green.",
+          "file": "packages/cli/tests/commands/template-capture-instruction.test.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A020",
+            "A021"
+          ],
+          "id": "compact-capture-seal-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A016/A017 (.captures/ rule in the dogfood .ana/.gitignore and the init generator) are verified by source inspection only — no test asserts either gitignore carries the rule. The rule in assets.ts predates this build (PR #281); this build only corrected its stale comment.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A016",
+            "A017"
+          ],
+          "id": "compact-capture-seal-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A008 (configured test_json yields a non-abstain verdict on real output) has no hermetic unit test. Verified via live dogfood run (this repo seals 3429p/0f/2s, verdict=pass) plus the A006 JSON-parser test, but no in-test fixture exercises the full test_json -> executeCapture -> verdict!=abstain chain.",
+          "file": "packages/cli/tests/commands/test-command.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "compact-capture-seal-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "isCheckpointSealConflict over-builds beyond this contract: it refuses an explicit --stage build/verify run through the -- <command> checkpoint form. Well-implemented and tested, and aligns with the anti-fabrication intent, but it is not part of the compact-capture-seal scope — it arrived via the merged sibling branch PR #281.",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "line": 168,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "compact-capture-seal-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "This PR carries merged sibling-branch commits (PR #281, feature/capture-seal-cleanup) that modify files outside this contract's file_changes: CHANGELOG.md (-4, removes an Unreleased entry) and .ana/plans/active/retire-capture-self-arming/build_report.md (-2623, strips inlined capture bloat). Not build defects, but the deployer should confirm these land intentionally when this PR merges.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "compact-capture-seal-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-06T22:41:38.361Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Removing INLINE_CEILING_BYTES resolves the tracked over-ceiling availability edge — an armed project whose honest output exceeds 8 MiB no longer fails closed; the one-line seal is size-independent (runCapture's 64 MiB maxBuffer is the sole fail-closed guard). The deferred excerpt-on-overflow fast-follow is now moot.",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "compact-capture-seal-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-06T22:41:38.361Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Proof finding captured-test-evidence-C4 (validateCapturePresent used a non-block-skipping parseMarkers, risking a marker embedded in preserved block content falsely satisfying 'present') is resolved: there are no inlined blocks any more, and the new strict parser is full-line-anchored and skips fenced regions.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "captured-test-evidence-C4"
+          ],
+          "id": "compact-capture-seal-C8",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-06T22:41:38.361Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "Net test count dropped 3434 -> 3431 (3429 passed + 2 skipped, 0 failed). Consistent with the documented deletion of the inliner round-trip and two block-validator suites, partially offset by new strict-parser/JSON/round-trip tests. No failing test, no coverage of live code lost — not a regression. The spec's literal '>= 3434' floor is not met.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "compact-capture-seal-C9",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Spec/contract file_changes omitted two test files that import the deleted inliner symbols (tests/commands/artifact.test.ts, tests/capture-corpus/invariants.test.ts). Both had to change or the suite would not compile/run; adapted to the compact-seal reality per spec intent.",
+          "file": "packages/cli/tests/capture-corpus/invariants.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Spec/contract file_changes omitted the dogfood agent definitions (.claude/agents/{ana-build,ana-verify}.md and .codex equivalents). A dogfood-vs-template exact-match test (templates/agent-proof-context.test.ts) failed until they were synced. Only the .claude sync is test-enforced; the .codex copies were synced for consistency (same single-line drift).",
+          "file": ".claude/agents/ana-build.md",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "The build report is saved with the worktree's freshly-built CLI rather than the PATH `ana` (which symlinks to the main-tree dist that predates compaction and whose old gate would reject a file-less compact marker). This is a transitional bootstrap; once this PR merges and `ana` is rebuilt from main, the installed CLI understands compact markers.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing eslint warning in packages/cli/src/utils/git-operations.ts:198 (unused eslint-disable directive) surfaces on every commit hook. Not introduced by this build; untouched file.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "The strict parser intentionally does NOT catch a verbatim real marker pasted raw into prose (outside a fence) — that forgery surface is consciously deferred to the reserved enginebind/L3 token. AC5/A012/A013 cover descriptions, placeholders, and fenced examples only.",
+          "file": "packages/cli/src/utils/capture-marker.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Verification scope: the build sealed and verified packages/cli only (the cli test_json JSON path). Verify must run the FULL project (cli + website) to catch what the narrow scope could miss. The full turbo-wrapped commands.test is not a JSON reporter, so an ana-test baseline over it abstains on the count — acceptable, since Verify's job is full-project pass/fail, not a count.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Build-report count delta was corrected after the rebase: the first draft compared the post-#281 final (3431) against a pre-#281 baseline (3434) and reported net -3. The post-#281 baseline was then MEASURED (origin/main = 3438) and the Comparison corrected to net -7. Both endpoints are now measured, not reconstructed.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-06T20:51:00.174Z",
+        "completed_at": "2026-06-06T22:41:38.354Z",
+        "commit_count": 0,
+        "base_commit": "8ffecf73c74c2199d75ae1e03d029861bc8760a8"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

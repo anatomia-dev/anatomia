@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-189 runs · 179 active · 5 promoted · 894 closed
+190 runs · 185 active · 5 promoted · 897 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 35 | 37 | 2026-06-06 |
-| cli | 130 | 119 | 2026-06-06 |
+| cli | 131 | 125 | 2026-06-06 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -17,14 +17,14 @@
 | packages/cli/src/commands/work.ts | 14 | 9 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/engine/detectors/surfaces.ts | 7 | 4 |
+| packages/cli/tests/commands/artifact.test.ts | 6 | 5 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
-| packages/cli/tests/commands/proof.test.ts | 5 | 4 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 179 total)
+## Active Findings (30 shown of 185 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -43,6 +43,7 @@
 
 ### packages/cli/src/commands/test.ts
 
+- **code:** isCheckpointSealConflict over-builds beyond this contract: it refuses an explicit --stage build/verify run through the -- <command> checkpoint form. Well-implemented and tested, and aligns with the anti-fabrication intent, but it is not part of the compact-capture-seal scope — it arrived via the merged sibling branch PR #281. — *Compact the capture seal + fix the count*
 - **code:** Checkpoint passthrough is joined with spaces and re-parsed by resolveCommand, losing original argv quoting. A multi-token checkpoint command whose args contain spaces/parens/metacharacters is misparsed or refused (verified live: parens in an arg triggered a subshell refusal). Mitigated by degrade-to-raw so it never blocks, but counts/verdict are lost. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 - **code:** inferRunner has a garbled inline comment about cargo/go precedence ('cargo test contains the substring go test… not, but be explicit'). Cosmetic; logic is correct (cargo checked before go). — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
@@ -55,16 +56,6 @@
 - **code:** Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops — *Fix non-product path over-exclusion at deep segments*
 - **code:** resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null — *Fix Vite Framework Detection and Service Detection Gaps*
 - **code:** Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface — *Fix Vite Framework Detection and Service Detection Gaps*
-- **test:** No per-surface test for vue+react simultaneous deps in resolveViteFramework (Vue wins by priority, but untested) — *Fix Vite Framework Detection and Service Detection Gaps*
-- **code:** NON_PRODUCT_GLOB_IGNORE includes **/build/** which collides with legitimate 'build' directories in some monorepo layouts — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
-
-### packages/cli/src/engine/findings/rules/errorBoundaries.ts
-
-- **code:** Redundant alias: GLOB_IGNORE = NON_PRODUCT_GLOB_IGNORE adds an unnecessary indirection — *Fix non-product code pollution in findings, hot files, schema counts, and deploy detection*
-
-### packages/cli/src/engine/scan-engine.ts
-
-- **test:** A011-A015 (service detection entries) have no tagged tests — verified by source inspection only — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/src/utils/capture-marker.ts
 
@@ -80,6 +71,7 @@
 
 ### packages/cli/tests/commands/artifact.test.ts
 
+- **test:** A026 (byte-stable re-save / AC12) has no dedicated test, though the spec's Testing Strategy explicitly requested one. Behavior is sound by construction — inlining is deleted and applyCaptureGate is read-only, so the save path never mutates the report — but the contract target reportUnchangedOnSecondSave is verified by source inspection, not a regression test. — *Compact the capture seal + fix the count*
 - **test:** A014 (verify-report sealed account) now has a genuine targeted @ana A014 test: saves a verify report carrying a bare marker with the gate ON, then asserts the saved verify_report.md contains the begin/end delimiters, the real sha256, AND the verbatim captured bytes that were absent before the save. Closes the prior verify's AC9 PARTIAL gap. Not a sentinel. — *Retire Capture-Gate Self-Arming — Drive the Gate from a Committed Config Flag*
 
 ### packages/cli/tests/commands/init/template-propagation.test.ts
@@ -88,15 +80,18 @@
 - **test:** CLAUDE.md overwrite-of-a-user-edit is not directly tested — A007 is verified only by presence of interpolation; no test mutates CLAUDE.md body then proves re-init resets it to stock — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
 - **test:** Changed-files warning test (A014) does not assert the exact set — it checks ana-build.md present and CLAUDE.md absent, but an unchanged agent erroneously appearing in the warning would not be caught — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
 
-### packages/cli/tests/commands/run.test.ts
-
-- **test:** A004/A005 test checks test helper output, not real init behavior — *Learn Agent Codex Adaptation*
-- **test:** A003 test asserts mock stub content ('# ana-learn prompt') not contract value ('Ana Learn') — *Learn Agent Codex Adaptation*
-
 ### packages/cli/tests/commands/scan.test.ts
 
 - **test:** git init without -b main in contributor display test — *Fix scan display accuracy — env hygiene false positive and contributor label*
 - **test:** A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor — *Fix scan display accuracy — env hygiene false positive and contributor label*
+
+### packages/cli/tests/commands/template-capture-instruction.test.ts
+
+- **test:** Template wording assertions A020/A021 (AC8) have no automated regression test. template-capture-instruction.test.ts was not modified and contains no compact-seal assertion. A future template edit could silently reintroduce 'verbatim, sha-sealed block' or drop the compact description with the suite still green. — *Compact the capture seal + fix the count*
+
+### packages/cli/tests/commands/test-command.test.ts
+
+- **test:** A008 (configured test_json yields a non-abstain verdict on real output) has no hermetic unit test. Verified via live dogfood run (this repo seals 3429p/0f/2s, verdict=pass) plus the A006 JSON-parser test, but no in-test fixture exercises the full test_json -> executeCapture -> verdict!=abstain chain. — *Compact the capture seal + fix the count*
 
 ### packages/cli/tests/engine/detectors/detection-overrides.test.ts
 
@@ -109,4 +104,9 @@
 ### packages/cli/tests/engine/scan-engine-secrets.test.ts
 
 - **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
+
+### General
+
+- **test:** A016/A017 (.captures/ rule in the dogfood .ana/.gitignore and the init generator) are verified by source inspection only — no test asserts either gitignore carries the rule. The rule in assets.ts predates this build (PR #281); this build only corrected its stale comment. — *Compact the capture seal + fix the count*
+- **test:** Net test count dropped 3434 -> 3431 (3429 passed + 2 skipped, 0 failed). Consistent with the documented deletion of the inliner round-trip and two block-validator suites, partially offset by new strict-parser/JSON/round-trip tests. No failing test, no coverage of live code lost — not a regression. The spec's literal '>= 3434' floor is not met. — *Compact the capture seal + fix the count*
 
