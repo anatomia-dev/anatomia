@@ -32,11 +32,23 @@
     "hash": "sha256:563de8d90aad750329bbb97c3eab69960ed54cccc07859192cbe09a792fb23f1"
   },
   "spec-1": {
-    "saved_at": "2026-06-06T00:10:05.571Z",
-    "hash": "sha256:8d4466802e9af043bd250efe6c440a5910793509b812c1f724cecb7e9d9884af"
+    "saved_at": "2026-06-06T00:26:15.874Z",
+    "hash": "sha256:e2c30ba365b27c0a04d43fb3a6e53d69d59bfaf7f5bfe63baad59ee0c593275a",
+    "history": [
+      {
+        "saved_at": "2026-06-06T00:10:05.571Z",
+        "hash": "sha256:8d4466802e9af043bd250efe6c440a5910793509b812c1f724cecb7e9d9884af"
+      }
+    ]
   },
   "spec-2": {
-    "saved_at": "2026-06-06T00:10:05.571Z",
-    "hash": "sha256:cb182d901e029dceebec5b7c7874fcc5b340c0a8f729309cd39cdd8a615433e8"
+    "saved_at": "2026-06-06T00:26:15.875Z",
+    "hash": "sha256:8adc3d45885b3864cd4941a1e5064d565459ef9f4a72cc6da92d795c62922d49",
+    "history": [
+      {
+        "saved_at": "2026-06-06T00:10:05.571Z",
+        "hash": "sha256:cb182d901e029dceebec5b7c7874fcc5b340c0a8f729309cd39cdd8a615433e8"
+      }
+    ]
   }
 }

@@ -28,6 +28,14 @@ The keystone is a **marker-sealed arming signal**, stored as a sticky per-projec
 
 **Why marker-sealed, not version-keyed (locked decision).** Version-keyed arms the instant a project is on a capture-aware `anaVersion`/post-re-init — simpler, no store — but it *assumes* re-init put the agent on the capture path. If the refreshed template didn't take, or the first build ran raw, the project is armed-with-no-marker and fail-closed: the exact residual brick this design exists to remove. Marker-sealed arms only after a real capture is sealed, so **arming itself is proof the agent is already capturing.** Brick-proof by construction.
 
+### Enforcement boundary (state it plainly — arming is per-working-copy, not project-global)
+
+The arming flag lives in **gitignored** `.ana/state/capture.json`. Therefore enforcement is scoped to a **persistent working copy**: a fresh `git clone`, a CI runner, or an ephemeral agent environment starts **un-armed** and stays in **warn-mode** (it observes and warns but never blocks) until it captures once locally and seals a valid build report.
+
+This is the **right** choice, not a gap to fix: committing the flag would arm a fresh clone of an already-armed project that hasn't yet proven *it* can capture — re-introducing the brick on fresh clones that we removed everywhere else. Keep it gitignored.
+
+The consequence to set expectations on: **CI does not enforce the seal-gate guarantee** unless that CI working copy has itself sealed a capture and persists `.ana/state/` across runs. The guarantee is "a persistent working copy that has demonstrably captured will not silently regress to a typed claim" — it is not "every environment everywhere enforces from first run." Say this so no one expects CI to enforce it and is surprised when it silently doesn't.
+
 ---
 
 ## Output Mockups

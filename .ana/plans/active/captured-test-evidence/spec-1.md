@@ -65,22 +65,26 @@ $ ana test --stage build --slug some-go-project
   <!-- ana:capture stage=build slug=some-go-project bytes=8821 sha256=… file=.captures/test-build-1749150100.log counts=abstain verdict=abstain -->
 ```
 
-**Over the inline ceiling (8 MiB) — fail-closed with a clear, logged message:**
+**Over the inline ceiling (8 MiB) — fail-closed CAPTURE error, distinct exit code 3 (NOT "tests failed"):**
 ```
 $ ana test --stage build --slug huge-suite
-✗ capture too large to seal: 11.4 MiB exceeds the 8 MiB inline ceiling.
+✗ CAPTURE error: capture too large to seal — 11.4 MiB exceeds the 8 MiB inline ceiling.
   The full output is on disk at .captures/test-build-….log but cannot be sealed into the
-  build report. Reduce test output (e.g. less verbose reporter) or split the suite.
+  build report. Reduce test output (less verbose reporter) or split the suite.
   (Excerpt-on-overflow sealing is a tracked fast-follow — see spec.)
+[exit 3]   # capture/seal error — an orchestrator must NOT read this as a test failure
 ```
 
-**`resolveCommand` refusal (no silent shell fallback):**
+**`resolveCommand` refusal (no silent shell fallback — also a CAPTURE error, exit 3):**
 ```
 $ ana test --slug x -- "vitest run | tee out.txt"
-✗ refused: command contains a pipe ('|'), which requires a shell. ana test runs commands
-  without a shell for security. Provide a single program with arguments, or set a
-  per-surface test_json command in ana.json.
+✗ CAPTURE error: command contains a pipe ('|'), which requires a shell. ana test runs
+  commands without a shell for security. Provide a single program with arguments, or set
+  a per-surface test_json command in ana.json.
+[exit 3]
 ```
+
+> **Exit-code contract:** `0` = tests ran (verdict `pass`/`abstain`); `1` = tests failed (verdict `fail`, mirrors the runner's own status); `3` = capture/seal error (over-ceiling, refusal, `spawnSync` `result.error`). Checkpoint runs degrade to raw and exit with the underlying test status (AC9); the distinct `3` is the baseline seal path.
 
 **Inlined block in `build_report.md` after save (comment-delimited, NO fence, verbatim):**
 ```
@@ -109,8 +113,9 @@ The N bytes between the begin line's trailing newline and the `\n<!-- ana:captur
 
 ### `packages/cli/src/utils/capture-marker.ts` (create)
 **What changes:** Marker format, the **length-addressed** verbatim inliner (`inlineCaptures(reportText, slugDir) → { text, errors }`), the three validators (`validateCapturePresent`, `validateCaptureInlined`, `validateCaptureNotTruncated`, each `(filePath) => string | null`), and a pure orchestrator `evaluateCaptureGate(filePath, { armed })` that runs the three validators and returns `{ blocked, warnings, errors }` — in Phase 1 `armed` is always effectively false so `blocked` is always false.
-**Pattern to follow:** validator shape is `validateBuildReportFormat` (`artifact-validators.ts:582`). Inliner is idempotent (re-inline replaces a prior expansion, located by length).
-**Why:** the marker binds the agent's pasted number to the captured bytes by construction.
+**Pattern to follow:** validator shape is `validateBuildReportFormat` (`artifact-validators.ts:582`).
+**The `.log` / inliner boundary (scope edge 7 — make it explicit):** the committed source of truth is the **inlined block + marker in `build_report.md`**. The validators verify *that committed content* and **never re-read `.captures/*.log` after the report seals.** The inliner needs the `.log` **only** to expand a *bare* marker (the capture-fresh save, where the agent pasted a marker but no block yet exists). On any save where the block is **already present** — a re-save, a fresh checkout, or the `.log` cleaned up — the inliner is a **no-op** and validation runs against the committed block, so it does **not** fail for a missing `.log`. "Idempotent re-inline located by length" means: *if* a prior expansion exists, locate its bounds by `bytes=N` and leave/replace it; it does **not** mean the `.log` is required on every save.
+**Why:** the marker binds the agent's pasted number to the captured bytes by construction; the artifact is self-contained once sealed.
 
 ### `packages/cli/src/commands/test.ts` (create)
 **What changes:** `ana test [--stage build|verify] [--slug <s>] [--surface <name>] [--json] [-- <command...>]`. No passthrough → runs the **configured** command (top-level `commands.test` or per-surface `commands.test` / `test_json`). With `-- <command...>` → captures that arbitrary Plan-authored command (the checkpoint case), parsed shell-free by the same `resolveCommand`. Writes captures to `.ana/plans/active/{slug}/.captures/test-{stage}-{epoch}.log`. Prints compact output + the marker. **Checkpoint runs degrade to raw and exit normally on any capture bug; only the baseline produces the sealed marker.**
@@ -170,6 +175,7 @@ Copied from scope (Phase 1), expanded with implementation criteria:
 - [ ] **AC9:** `ana test` is the default for checkpoint runs (`-- <command...>` passthrough) and the baseline (configured command). A capture bug on a checkpoint **degrades to raw and never blocks**; only the baseline produces the sealed marker.
 - [ ] **AC10:** A `test_json` per-surface ana.json override ships (opt-in); flags are **never auto-appended** to `commands.test`. `--surface` resolves the correct per-surface command.
 - [ ] **AC11:** A cross-stack adversarial corpus exists for `{vitest, jest, pytest, go, cargo, rspec, junit, dotnet}`, each with per-stack rows for empty / all-skipped / 0-exit-0 / collection-error / compile-error (NO-FALSE-GREEN), plus `.raw`/`.fail` pairs, **plus the two new adversarial rows: output-contains-the-end-delimiter and output-contains-backticks/fence.** A `describe.each(STACKS)` sweep asserts PRESERVE, COUNTS-FROM-CAPTURE, SEAL-BINDS/TAMPER-FIRES, ERROR-NEVER-STRIPPED, NO-FALSE-GREEN, ABSTAIN-ON-UNKNOWN. A green verdict on any adversarial row is a CI-failing bug.
+- [ ] **New (exit-code class):** Capture/seal failures (over-ceiling, `resolveCommand` refusal, `spawnSync` `result.error`) exit with a **distinct code `3`**, never `1` ("tests failed"). `0` = tests ran (`pass`/`abstain`); `1` = tests failed (`fail`). The armed-large-output fail-closed window is recorded in `build_report.md` Open Issues next to the excerpt-on-overflow fast-follow.
 - [ ] **New:** No token-ledger artifacts exist anywhere in the build (no `js-tiktoken`, no `token_economy`, no `ana gain`, no `tokenizer=` field, no `recordCapture`/`foldLedger`).
 - [ ] **New:** `pnpm vitest run` in `packages/cli` passes; test count does not decrease; `tsc --noEmit` clean (pre-commit hook).
 
@@ -229,9 +235,16 @@ Copied from scope (Phase 1), expanded with implementation criteria:
 ## Inline Ceiling (decision — interim fail-closed @ 8 MiB)
 
 - **Under 8 MiB (8388608 bytes):** inline verbatim (the common case).
-- **8 MiB ≤ size < spawn maxBuffer (64 MiB):** **fail-closed** with a clear, **logged warning** (never silent — the no-integrity case must be visible; this matters because marker-sealed arming means a project whose captures always exceed the ceiling would otherwise sit silently in warn-mode forever). Message tells the agent the capture is too large to seal and how to reduce output.
+- **8 MiB ≤ size < spawn maxBuffer (64 MiB):** **fail-closed** with a clear, **logged warning** (never silent). Message tells the agent the capture is too large to seal and how to reduce output (less verbose reporter, split the suite).
 - **≥ spawn maxBuffer:** already covered by AC3 (`result.error` throws before any sink write).
-- **Excerpt-on-overflow** (seal full sha256+bytes, inline an honest head/tail excerpt with its own `excerpt_sha256`/`excerpt_bytes`) is a **tracked fast-follow — explicitly deferred, not dropped.** Record it in the build report's Open Issues so it is not lost.
+- **Excerpt-on-overflow** (seal full sha256+bytes, inline an honest head/tail excerpt with its own `excerpt_sha256`/`excerpt_bytes`) is a **tracked fast-follow — explicitly deferred, not dropped.**
+
+### Two failure cases over the ceiling — both must be NAMED, not implicit
+
+1. **Never-armed project, always over ceiling** → never seals a valid capture → never arms → sits in **warn-mode** (never blocked). The logged over-ceiling warning is what keeps this from being a *silent* no-integrity state. Acceptable.
+2. **Already-armed project whose honest output grows past 8 MiB** → that run produces no inlinable marker → on save it is `armed + no valid capture = blocked`, and the agent is stuck: its real test output is simply too big to seal and it cannot shrink it on demand. **This is fail-closed on a legitimate customer — the cardinal sin this whole design exists to avoid.** It is narrow (8 MiB is generous) and it is the **accepted interim cost** of fail-closed-over-ceiling, which closes the output-padding evasion hole that a degrade-to-warn would open. **Excerpt-on-overflow is the real fix.** Two hard requirements so this is named, not buried:
+   - **(a) Distinct exit class.** `ana test`'s over-ceiling exit (and every other capture/seal failure — `resolveCommand` refusal, `spawnSync` `result.error`) is a **CAPTURE error with a distinct exit code (`3`), never conflated with "tests failed."** Reserve the exit-code space explicitly: **`0` = tests ran (verdict `pass`/`abstain`); `1` = tests failed (verdict `fail`, mirrors the runner's own non-zero status); `3` = capture/seal error (over-ceiling, refusal, spawn error).** An orchestrator keying on exit code must be able to tell "your tests are red" from "I could not capture your tests." (On a **checkpoint** run this still degrades to raw and exits with the underlying test status per AC9 — the distinct `3` is the **baseline** seal path.)
+   - **(b) Record it in Open Issues.** Build must record the **armed-large-output block** in `build_report.md`'s Open Issues, right next to the excerpt-on-overflow fast-follow — so the known fail-closed-on-honest-capture window is a tracked item, not a surprise.
 
 ---
 
