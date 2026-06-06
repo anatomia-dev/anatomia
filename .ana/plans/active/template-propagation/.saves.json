@@ -64,5 +64,20 @@
     "packages/cli/tests/utils/agent-config.test.ts",
     "website/content/docs/guides/configurability.mdx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-06T01:31:54.004Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:4680e8e4e2139e992d966a63bc627cfe9f1c02fdb640a0f23e4cf2ea545005bf",
+    "run_at": "2026-06-06T01:37:54.237Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-06T01:37:54.273Z",
+    "hash": "sha256:6eb23d533b15e103245123484f3d1285d69e4ee7e81f41726e7d7887b5f99a7c"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-06T01:37:54.273Z",
+    "hash": "sha256:f75e791cfd5eaa56bb914d630c9ed892393cfdbfc5873098df1feb32162e4cef"
+  }
 }
