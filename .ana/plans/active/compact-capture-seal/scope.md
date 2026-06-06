@@ -26,7 +26,7 @@ This is Step 3 of the capture-seal cleanup handoff. Steps 1 (remove brittle A028
   - `.ana/.gitignore` and the template `.gitignore` generator — add a `.captures/` rule
   - `packages/cli/templates/.claude/agents/ana-build.md`, `ana-verify.md` + the `.codex/` pair — update the seal description (currently says "expands into a verbatim, sha-sealed block")
 - **Blast radius:** The seal is a contract between `ana test` (emit), `artifact save` (gate), the agent templates (instruction), and the build/verify reports (consumer). Changing the seal shape touches all four. The three validators (`validateCapturePresent`, `validateCaptureInlined`, `validateCaptureNotTruncated`) assume an inlined block and largely collapse once nothing is inlined.
-- **Estimated effort:** 1–2 days. Most of the cost is design (what the seal attests, the L3-ready shape) and careful deletion, not new code.
+- **Estimated effort:** 2–3 days. Most of the cost is design (what the seal attests, the L3-ready shape) and careful deletion, not new code — but the upper end applies if the count source expands to **auto-deriving** a JSON reporter (per-runner flag logic + tests) rather than only reading opt-in `test_json`. The 1–2 day version assumes opt-in.
 - **Multi-phase:** no — one cohesive scope. The two halves (compaction + count source) must ship together: a compact seal that still reads `abstain` is still confusing. Plan may sequence internally.
 
 ## Approach
@@ -45,13 +45,14 @@ Split them:
 
 - AC1: A baseline `ana test --stage build` emits a single-line sealed marker containing counts, verdict, a sha256 of the captured output, and byte + line totals — and no inlined raw output.
 - AC2: At `artifact save`, a compliant report seals without inlining the raw output; the build/verify report no longer contains a verbatim test-output block.
-- AC3: The count is derived from a machine-readable reporter (`test_json`), not regex over human output. Running the seal on this repo produces a real count, not `abstain`.
+- AC3: The count is derived from a machine-readable reporter (`test_json`), not regex over human output. Running the seal on this repo produces a real count, not `abstain`. **State the fix's reach honestly in the contract** — it fixes the abstain *where a JSON reporter is configured or auto-derivable*, NOT a blanket "fixes the abstain." A repo with no JSON reporter still abstains safely (AC4). (The reach hinges on the auto-derive-vs-opt-in decision below — if opt-in, the abstain is fixed only for repos that manually configure `test_json`, possibly almost none.)
 - AC4: When no machine-readable reporter is configured/resolvable, the seal abstains safely (fail-open, no fabricated count) — the no-false-green guarantee in `deriveVerdict` is preserved.
 - AC5: The marker format is a closed token: a report containing the literal marker text inside prose does not corrupt parsing or falsely satisfy the gate.
 - AC6: The full output is written to `.captures/*.log` during the run (for hash + count) and is not committed; a `.captures/` gitignore rule exists in both the dogfood `.ana/.gitignore` and the generated template.
-- AC7: The marker carries a reserved slot for the future engine-bound token (L3) such that adding it later requires no second format migration — without implementing the token now.
+- AC7: The marker parser round-trips a marker **with the reserved L3 token field present AND with it absent** — both parse as valid and both re-serialize unchanged. This mechanically proves the non-breaking-addition property (adding the token later requires no second format migration) **without** implementing the token. **Do NOT let AC7 land as "verified by inspection"** — a counterfactual ("future migration unneeded") is the A014 trap, the exact unbacked-assertion problem this cleanup just refused to ship. The present/absent round-trip is the testable form of that claim.
 - AC8: The build + verify agent templates (Claude + Codex) describe the compact seal accurately (no "verbatim, sha-sealed block" language).
-- AC9: The seal change is verified against a non-vitest runner shape too (the JSON-count path is not hard-wired to vitest only) — proportional to "every change must work for all customers."
+- AC9: The seal change is verified against a **concrete** non-vitest runner — `go test -json` via the existing `parseGo` (`capture-runner.ts:492`) is the natural second runner — proving the JSON-count path is not hard-wired to vitest. Proportional to "every change must work for all customers."
+- AC10: The new parser tolerates a legacy (old-format) inlined marker without choking or false-gating. Back-compat at runtime is already moot — nothing re-parses completed reports (see Constraints) — so this is cheap defense-in-depth against a future caller, and it is testable: feed the parser an old-format marker block and assert it neither throws nor reports a satisfied seal.
 
 ## Edge Cases & Risks
 
@@ -69,9 +70,12 @@ Split them:
 
 ## Open Questions
 
+- **Count source — auto-derive vs opt-in (the real, consequential fork).** *Decided already, not open:* the engine must read **top-level** `commands.test_json` (today `resolveTestCommandString` reads `test_json` only under surfaces). Requiring a surface would force every customer to reconfigure, violating the top-level-abstain constraint and AC9 — so top-level reading is in scope, full stop. **The genuine open question is whether the JSON reporter is auto-derived or stays opt-in.** If `test_json` stays opt-in, the abstain is fixed only for repos that manually configure it — possibly almost none, including us until we set it. Auto-deriving (e.g. appending a JSON reporter flag for known runners) fixes the abstain for everyone but is more code and more per-runner risk. Plan must decide this deliberately, and AC3's stated reach must match the decision.
 - **Fail-case durable record:** should the committed artifact retain a bounded fail-excerpt (approach C), or stay fully compact even on failure (A)? Plan decides; live-debugging is already covered, so this is durable-record taste, not capability.
-- **Count-source config shape:** top-level `commands.test_json` (not supported today — `resolveTestCommandString` only reads `test_json` under surfaces) vs requiring a surface. Whichever Plan picks must fix *our own* top-level abstain.
 - **Validator collapse:** what exactly do `validateCaptureInlined` / `validateCaptureNotTruncated` become when nothing is inlined — deleted, or transformed into "the seal is well-formed and references a real run"? Lean toward deletion.
+
+**Resolved during scoping (recorded, not open):**
+- **Marker-format back-compat — confirmed safe.** The marker parser / inliner / validators / gate are called *only* from `artifact.ts` at save time, on the report being saved (the active slug). Completed reports are never re-parsed: `work-proof.ts:124` only `existsSync`-checks a completed verify report (never reads its content), neither `work-proof.ts` nor `proofSummary.ts` imports the marker parser, and the website's Proof Explorer reads `proof_chain.json`, not report markers. Old-format markers sitting in `plans/completed/*` reports are therefore inert. AC10 adds parser tolerance anyway as defense-in-depth against a future caller.
 
 ## Exploration Findings
 
@@ -88,6 +92,7 @@ Split them:
 - [OBSERVED] No `.captures/` gitignore rule exists in `.ana/.gitignore` or the template — a left-behind `.log` could currently be committed.
 - [OBSERVED] The capture-flow instruction lives in `packages/cli/templates/.claude/agents/ana-build.md:109-111` and `ana-verify.md` (+ the `.codex/` pair). It is correct (baseline vs checkpoint forms) but describes the *old* inlined-block expansion at line 110 — must be updated.
 - [INFERRED] `anaJsonSchema.ts:48` already has `test_json: z.string().nullable()` at the surface level; extending to top-level is a small schema + resolver change.
+- [VERIFIED] Marker-format back-compat is safe by call-graph: the parser/inliner/validators/gate are invoked only from `artifact.ts` at save time on the active slug's report. `work-proof.ts:124` only `existsSync`-checks a completed verify report; neither it nor `proofSummary.ts` imports the marker parser; the website reads `proof_chain.json`, not markers. Old markers in `plans/completed/*` are never re-parsed.
 
 ### Test Infrastructure
 - `packages/cli/tests/commands/test-command.test.ts` — `executeCapture` baseline/checkpoint tests, with a `mkProject` helper that writes an `ana.json` and a fake runner script. The seal-shape and count-source tests extend this.
@@ -119,9 +124,9 @@ For the seal-format half, the analog is the **existing marker system itself** (`
 - The four agent templates (build + verify × Claude + Codex) are a product change — they ship to all customers. Update all four; do not edit only the dogfood `.claude/` copies.
 
 ### Things to Investigate
+- **Count source: auto-derive vs opt-in** — the highest-priority decision (see Open Questions). It sets AC3's honest reach: opt-in fixes the abstain only for repos that configure `test_json` (maybe almost none); auto-derive (append a JSON-reporter flag for known runners) fixes it broadly at the cost of per-runner logic + tests. Decide before estimating — it's the difference between the 1–2 and 2–3 day estimate.
 - Fail-case durable record (A vs C) — design judgment, see Open Questions.
 - Exact validator collapse — design judgment (lean deletion).
-- Whether `test_json` should auto-derive (e.g., append `--reporter=json` for known runners) or stay opt-in config — affects how many customers get a real count without manual setup.
 
 ## Sequencing Guardrail
 
