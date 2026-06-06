@@ -77,5 +77,20 @@
     "packages/cli/tests/utils/capture-state.test.ts",
     "website/content/docs/guides/configurability.mdx"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-06T08:50:09.030Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:798f64a1fe5a648bb312fe5aebcebbf73b0766e3ddb3c7d02a93d85674fe60dd",
+    "run_at": "2026-06-06T09:01:17.683Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-06T09:01:17.724Z",
+    "hash": "sha256:629b7cf1f9d4e747b0828c1567269fd085f6da4f556eb62f332e38f4e2eb0525"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-06T09:01:17.724Z",
+    "hash": "sha256:ac2ae7ecf3c84e70ac27e5fdf01b562d011ee72e3de25606395ae182e682f004"
+  }
 }
