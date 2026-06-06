@@ -1,0 +1,21 @@
+schema: 1
+concerns:
+  - summary: "Spec/contract file_changes omitted two test files that import the deleted inliner symbols (tests/commands/artifact.test.ts, tests/capture-corpus/invariants.test.ts). Both had to change or the suite would not compile/run; adapted to the compact-seal reality per spec intent."
+    file: "packages/cli/tests/capture-corpus/invariants.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Spec/contract file_changes omitted the dogfood agent definitions (.claude/agents/{ana-build,ana-verify}.md and .codex equivalents). A dogfood-vs-template exact-match test (templates/agent-proof-context.test.ts) failed until they were synced. Only the .claude sync is test-enforced; the .codex copies were synced for consistency (same single-line drift)."
+    file: ".claude/agents/ana-build.md"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "The build report is saved with the worktree's freshly-built CLI rather than the PATH `ana` (which symlinks to the main-tree dist that predates compaction and whose old gate would reject a file-less compact marker). This is a transitional bootstrap; once this PR merges and `ana` is rebuilt from main, the installed CLI understands compact markers."
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing eslint warning in packages/cli/src/utils/git-operations.ts:198 (unused eslint-disable directive) surfaces on every commit hook. Not introduced by this build; untouched file."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "The strict parser intentionally does NOT catch a verbatim real marker pasted raw into prose (outside a fence) — that forgery surface is consciously deferred to the reserved enginebind/L3 token. AC5/A012/A013 cover descriptions, placeholders, and fenced examples only."
+    file: "packages/cli/src/utils/capture-marker.ts"
+    severity: observation
+    suggested_action: monitor
