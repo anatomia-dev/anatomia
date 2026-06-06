@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-187 runs · 169 active · 5 promoted · 888 closed
+188 runs · 177 active · 5 promoted · 891 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 34 | 35 | 2026-06-06 |
-| cli | 129 | 111 | 2026-06-03 |
+| cli | 130 | 119 | 2026-06-06 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,13 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 169 total)
+## Active Findings (30 shown of 177 total)
+
+### packages/cli/src/commands/artifact.ts
+
+- **code:** Block message did not reassure a build-only/no-tests agent. When the gate blocks on an armed project, the agent is told evidence is required and to run `ana test`, but not that `ana test` seals a harmless abstain when there are no tests. Added one chalk.gray guidance line; gate logic unchanged. Re-verified (build + full suite + lint + tsc green). — *Captured Test Evidence — engine-captured, seal-gated test evidence*
+- **code:** isArmed is read twice on the first valid build-report save (applyCaptureGate at :796, then armCapture's idempotency guard at capture-state.ts:75). Negligible — capture.json is a small separate file off the hot .saves.json path — but the second read is redundant given wasArmed is already known. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
+- **test:** The 'valid' arming predicate uses warnings.length === 0 as a proxy for 'all three preservation validators passed' rather than asserting on validator results directly. Correct today because evaluateCaptureGate routes all non-blocking messages to warnings, but the coupling is implicit — a future change that emits an informational warning would silently stop arming. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
 ### packages/cli/src/commands/init/assets.ts
 
@@ -35,15 +41,14 @@
 
 - **code:** Refresh-warning git-recovery hint hardcodes '.claude/agents/ana-build.md' regardless of which files changed — a Codex-only user, or one whose only change was CLAUDE.md, gets a Claude-path example. Echoes the hardcoded-'.claude/'-path pattern of gitignore-disclosure-and-hardening-C1 — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
 
-### packages/cli/src/commands/work-state.ts
+### packages/cli/src/commands/test.ts
 
-- **code:** resolvePhase returns null for both 'all phases passed' and 'single-spec' — dual-meaning null forces callers to disambiguate — *Fix Multi-Phase Timestamp Poisoning*
+- **code:** Checkpoint passthrough is joined with spaces and re-parsed by resolveCommand, losing original argv quoting. A multi-token checkpoint command whose args contain spaces/parens/metacharacters is misparsed or refused (verified live: parens in an arg triggered a subshell refusal). Mitigated by degrade-to-raw so it never blocks, but counts/verdict are lost. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
+- **code:** inferRunner has a garbled inline comment about cargo/go precedence ('cargo test contains the substring go test… not, but be explicit'). Cosmetic; logic is correct (cargo checked before go). — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
 ### packages/cli/src/commands/work.ts
 
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
-- **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -61,9 +66,17 @@
 
 - **test:** A011-A015 (service detection entries) have no tagged tests — verified by source inspection only — *Fix Vite Framework Detection and Service Detection Gaps*
 
-### packages/cli/tests/commands/config.test.ts
+### packages/cli/src/utils/capture-marker.ts
 
-- **test:** Diff removes many pre-existing @ana tags and explanatory comments from unrelated tests, weakening future contract traceability — *Fix work complete merge strategy*
+- **code:** validateCapturePresent uses parseMarkers (per-line scan) which does NOT skip inlined block content, unlike the integrity validators that use eachMarker. A capture marker embedded in preserved output could falsely satisfy 'present.' Harmless when a real top-level marker exists; the asymmetry is worth recording. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
+
+### packages/cli/src/utils/capture-runner.ts
+
+- **code:** deriveCounts falls through to every parser when no hint matches; the rspec parser regex /(\d+) examples?, (\d+) failures?/ is loose enough to match unrelated output, risking a false count (and a false 'pass' when passed>0 at exit 0) on an unknown runner. Counts are fail-open by design, but a coincidental match defeats ABSTAIN-ON-UNKNOWN for that input. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
+
+### packages/cli/tests/capture-corpus/invariants.test.ts
+
+- **test:** Corpus errorToken is the generic string 'Error' for 7 of 8 stacks (vitest uses the specific 'AssertionError'). It is present in each fail fixture, but a generic token is a weak assertion for ERROR-NEVER-STRIPPED — it would pass even if a different error string were the one preserved. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
 ### packages/cli/tests/commands/init.test.ts
 
@@ -84,16 +97,6 @@
 
 - **test:** git init without -b main in contributor display test — *Fix scan display accuracy — env hygiene false positive and contributor label*
 - **test:** A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor — *Fix scan display accuracy — env hygiene false positive and contributor label*
-
-### packages/cli/tests/commands/work-ci-mocked.test.ts
-
-- **test:** Duplicate @ana tags A001-A006 in work-ci-mocked.test.ts — old getAgentPid/conflict tests and new session tests share tag IDs from different contracts — *Fix Conditional Test No-Ops*
-- **test:** createSessionTestProject helper is now triplicated — work.test.ts (removed), work-ci-mocked.test.ts (added), plus createMergedProject as similar pattern — *Fix Conditional Test No-Ops*
-- **code:** A002 and A004 are semantically identical tests — both create session file with known timestamp, call startWork, assert saves.work_started_at equals that timestamp — *Fix Conditional Test No-Ops*
-
-### packages/cli/tests/commands/work-merge.test.ts
-
-- **test:** A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv — *Fix work complete merge strategy*
 
 ### packages/cli/tests/engine/detectors/detection-overrides.test.ts
 

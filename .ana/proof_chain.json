@@ -49667,6 +49667,499 @@
         "commit_count": 0,
         "base_commit": "16d2294db6f9010fcc5358c9bc97e3f07ee0ca4f"
       }
+    },
+    {
+      "slug": "captured-test-evidence",
+      "feature": "Captured Test Evidence — engine-captured, seal-gated test evidence",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 36,
+        "satisfied": 36,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Running tests through capture writes the full raw test output to a capture file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Capture returns a compact marker instead of the raw test scrollback",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A plain test command is parsed into a program and arguments without a shell",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A command wrapped in a directory change is parsed, recovering the directory and command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Leading environment assignments are lifted into the environment, not treated as the program",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A test command containing a pipe is refused with an error naming the pipe",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A test command using shell substitution or backticks is refused, never run through a shell",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A spawn failure or output overflow throws before any capture file is written, so truncated output is never sealed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The inlined evidence block matches the captured output exactly by SHA-256",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Captured output containing backticks and code fences round-trips into the report intact",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Captured output containing the evidence end-delimiter string round-trips intact",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A build report with no captured evidence is flagged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A tampered evidence block is caught",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A truncated evidence block is caught",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "In warn-mode, a failing evidence check warns but never blocks the save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Tests are marked passing only when at least one test passed and none failed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "A run with zero tests at exit code zero is never marked passing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "A run with failing tests is marked failing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "When test counts cannot be read, the run abstains rather than claiming a result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Test counts are derived from the captured output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Error text is never stripped from the preserved output",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "All four agent templates instruct running tests through the capture command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A capture problem on a checkpoint test run degrades to raw output and does not block the run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "A per-surface structured test command override is accepted in project config",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The configured test command is run as-is, with no flags appended",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "No adversarial stack fixture is ever reported as passing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Unknown runner output abstains on counts while still preserving the raw bytes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "A capture or seal failure exits with a distinct code, never mistaken for a test failure",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "No token-measurement code ships with the capture feature",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Once a project has sealed real evidence, a later build report with no valid evidence is blocked",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The first valid-evidence build report is never blocked; it seals and then arms the project",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "A project that never captured stays in warn-mode and is never blocked",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "After enforcement, unreadable counts still never block — only missing or corrupted evidence does",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "A fresh project with no arming record reads as not armed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Verify reports are never blocked by the evidence gate, preserving Verify's independence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A036",
+          "says": "Saves with no build report never trigger the evidence gate",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 7,
+        "met": 7
+      },
+      "timing": {
+        "total_minutes": 279,
+        "think": 40,
+        "plan": 88,
+        "build": 77,
+        "verify": 42,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 40
+          },
+          {
+            "stage": "plan",
+            "minutes": 88
+          },
+          {
+            "stage": "build",
+            "minutes": 38,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 9,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 39,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 33,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:c3c83aee7ef2319d0e03b236aa7333fddc72e2b9a3b779fa255c41353faca4c2",
+        "contract": "sha256:23c7ef1e5e87348ef51f0f411279f5ed5aa2557446f396c357c16d14ebaed4e3",
+        "plan": "sha256:563de8d90aad750329bbb97c3eab69960ed54cccc07859192cbe09a792fb23f1",
+        "spec-1": "sha256:e2c30ba365b27c0a04d43fb3a6e53d69d59bfaf7f5bfe63baad59ee0c593275a",
+        "spec-2": "sha256:8adc3d45885b3864cd4941a1e5064d565459ef9f4a72cc6da92d795c62922d49",
+        "build-report-1": "sha256:4f9936f42812ebee24fcead228eadecc0b9362054a1b8f97c304f6944af93b28",
+        "build-data-1": "sha256:62321e15f069ca5bc98d5d3fcc43b4c4d9860f2207540a70af26e9e22c96536f",
+        "verify-report-1": "sha256:134b411e5530b0b2b8103e6ad6b160ec328786b1fa50d5fc0cc831e3b67e7bdc",
+        "verify-data-1": "sha256:e09c32cffc0fb8c81afc5f934bd305771e18d296271274e547dca7ad9ff59536",
+        "build-report-2": "sha256:8da844530b770c342daeb1b7d494a04ebe6e27f21de88b4ccc9699f82ba3daf8",
+        "build-data-2": "sha256:f7cc5d7247ff600b2a06e804d508e89c71e1604fa7a5a4edc779b5cde6f6d688",
+        "verify-report-2": "sha256:45d71b968573de7a24791c77e3facc88e25eb5582dc56af04d0dd20dd834cdba",
+        "verify-data-2": "sha256:0767137494e8677ce3574884b2451921dfdfddd119995fff9f0f10a60c52f3b4"
+      },
+      "completed_at": "2026-06-06T03:03:45.376Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-build.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/test.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/utils/capture-marker.ts",
+        "packages/cli/src/utils/capture-runner.ts",
+        "packages/cli/src/utils/capture-state.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-build.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/capture-corpus/invariants.test.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/commands/template-capture-instruction.test.ts",
+        "packages/cli/tests/commands/test-command.test.ts",
+        "packages/cli/tests/utils/capture-marker.test.ts",
+        "packages/cli/tests/utils/capture-runner.test.ts",
+        "packages/cli/tests/utils/capture-state.test.ts"
+      ],
+      "scope_summary": "The single most-trusted number a customer reads from a build — *did the tests pass, how many* — is today the **agent's self-report**, and nothing mechanically verifies the agent pasted real output. `validateBuildReportFormat` (`artifact-validators.ts:582-600`) checks only section *headers*; the test evidence inside is whatever the agent typed. This is the one place \"verified over trusted\" is currently only *hoped*: an agent that types \"all tests pass\" seals exactly like one that ran them.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Repo-root dogfood agent files (.claude/.codex/agents/ana-build|verify.md) edited — spec Gotcha 'Templates, not dogfood' explicitly excludes them; propagation to the dogfood is owned by the prerequisite re-init scope. Edits are byte-identical to the template edits.",
+          "file": ".claude/agents/ana-build.md",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A022"
+          ],
+          "id": "captured-test-evidence-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-06T03:03:45.376Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Checkpoint passthrough is joined with spaces and re-parsed by resolveCommand, losing original argv quoting. A multi-token checkpoint command whose args contain spaces/parens/metacharacters is misparsed or refused (verified live: parens in an arg triggered a subshell refusal). Mitigated by degrade-to-raw so it never blocks, but counts/verdict are lost.",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "line": 149,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A023"
+          ],
+          "id": "captured-test-evidence-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "deriveCounts falls through to every parser when no hint matches; the rspec parser regex /(\\d+) examples?, (\\d+) failures?/ is loose enough to match unrelated output, risking a false count (and a false 'pass' when passed>0 at exit 0) on an unknown runner. Counts are fail-open by design, but a coincidental match defeats ABSTAIN-ON-UNKNOWN for that input.",
+          "file": "packages/cli/src/utils/capture-runner.ts",
+          "anchor": null,
+          "line": 531,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A027"
+          ],
+          "id": "captured-test-evidence-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "validateCapturePresent uses parseMarkers (per-line scan) which does NOT skip inlined block content, unlike the integrity validators that use eachMarker. A capture marker embedded in preserved output could falsely satisfy 'present.' Harmless when a real top-level marker exists; the asymmetry is worth recording.",
+          "file": "packages/cli/src/utils/capture-marker.ts",
+          "anchor": null,
+          "line": 362,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A012"
+          ],
+          "id": "captured-test-evidence-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Corpus errorToken is the generic string 'Error' for 7 of 8 stacks (vitest uses the specific 'AssertionError'). It is present in each fail fixture, but a generic token is a weak assertion for ERROR-NEVER-STRIPPED — it would pass even if a different error string were the one preserved.",
+          "file": "packages/cli/tests/capture-corpus/invariants.test.ts",
+          "anchor": null,
+          "line": 72,
+          "severity": "debt",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "captured-test-evidence-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "inferRunner has a garbled inline comment about cargo/go precedence ('cargo test contains the substring go test… not, but be explicit'). Cosmetic; logic is correct (cargo checked before go).",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "line": 128,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "captured-test-evidence-C6",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "@ana tag numbers (A001–A028) in the capture test files collide with identical tag numbers in other features' contracts (agents.test.ts, artifact.test.ts). Proof tooling associates tags by active-slug context, but the global tag space is ambiguous across files.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "captured-test-evidence-C7",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-06T03:03:45.376Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "AC14 prose contradicts its own contract. scope.md:84 and spec-2.md (lines 27, 106) carve out 'build-only specs with no contract' from the gate, but A030 blocks ANY no-evidence build report unconditionally — no contract condition. The carve-out also conflates 'build-only testing strategy' (no unit tests, still has a contract, still captures an abstain) with 'no contract.' Gate behavior is correct and fully contracted by A030; the prose is wrong. Route to Ana/Plan to strike the clause (Verify did not edit these artifacts).",
+          "file": ".ana/plans/active/captured-test-evidence/spec-2.md",
+          "anchor": null,
+          "line": 106,
+          "severity": "observation",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A030",
+            "A035",
+            "A036"
+          ],
+          "id": "captured-test-evidence-C8",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-06T03:03:45.376Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Block message did not reassure a build-only/no-tests agent. When the gate blocks on an armed project, the agent is told evidence is required and to run `ana test`, but not that `ana test` seals a harmless abstain when there are no tests. Added one chalk.gray guidance line; gate logic unchanged. Re-verified (build + full suite + lint + tsc green).",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 805,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "captured-test-evidence-C9",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "isArmed is read twice on the first valid build-report save (applyCaptureGate at :796, then armCapture's idempotency guard at capture-state.ts:75). Negligible — capture.json is a small separate file off the hot .saves.json path — but the second read is redundant given wasArmed is already known.",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 796,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "captured-test-evidence-C10",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "The 'valid' arming predicate uses warnings.length === 0 as a proxy for 'all three preservation validators passed' rather than asserting on validator results directly. Correct today because evaluateCaptureGate routes all non-blocking messages to warnings, but the coupling is implicit — a future change that emits an informational warning would silently stop arming.",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 815,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "captured-test-evidence-C11",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Armed-large-output fail-closed window: in Phase 2, an already-armed project whose honest test output grows past the 8 MiB inline ceiling produces no inlinable marker and is blocked. Narrow (8 MiB is generous) but a real fail-closed-on-honest-capture case. Excerpt-on-overflow is the real fix.",
+          "file": "packages/cli/src/commands/test.ts",
+          "severity": "risk",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Excerpt-on-overflow sealing (seal full sha256+bytes, inline an honest head/tail excerpt with its own excerpt_sha256/excerpt_bytes) is the tracked fast-follow that closes the over-ceiling availability edge. Explicitly deferred, not dropped.",
+          "file": "packages/cli/src/utils/capture-marker.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "test_json resolution is project-config opt-in: resolveTestCommandString prefers a surface's test_json over commands.test when present. The spec removed the --json-counts flag but kept the test_json feature; this resolves that ambiguity at the config level (no CLI flag, no auto-appended flags). Worth confirming this is the intended selection mechanism.",
+          "file": "packages/cli/src/commands/test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Dogfood seal is bootstrap-limited: the installed CLI (v1.2.2) has no inliner, so the marker pasted into THIS build report is not auto-expanded at save time until this feature ships. The marker + engine-derived counts are included as evidence; auto-inlining activates once merged. The inliner/validators themselves are proven by 84 passing unit/integration tests and a live `ana test` capture (3368 passed).",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "deriveVerdict maps ANY non-zero exit to `fail` (not abstain), including a collection/compile error with null counts. Consistent with the corpus (exit-1 pathologies assert not-pass; exit-0 assert abstain) but a deliberate judgment call — a non-zero exit is treated as a real failure signal rather than a soft abstain.",
+          "file": "packages/cli/src/utils/capture-runner.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Seal-gate enforcement is per-working-copy: fresh clones / CI runners start un-armed (warn-mode) until they capture locally. Intended boundary, not a gap — committing the flag would re-introduce the brick on fresh clones.",
+          "file": "packages/cli/src/utils/capture-state.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "The verify-report sealed account (spec item 3) was built this phase but has no contract assertion binding it. Real and tested, but not contracted — flagged so the verifier weighs the scope decision.",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "deriveCounts now abstains for test commands that name no recognizable runner (e.g. bare `npm test`), sealing verdict=abstain instead of a count. Safe (fail-open) but a visible behavior change; remedy if it bites is to broaden inferRunner, never to restore the fabrication-prone fallthrough.",
+          "file": "packages/cli/src/utils/capture-runner.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-06T00:28:03.716Z",
+        "completed_at": "2026-06-06T03:03:45.370Z",
+        "commit_count": 0,
+        "base_commit": "2e6aba50476f7490eb517db68b331b55ee5e2ebc"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
