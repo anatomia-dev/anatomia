@@ -48,16 +48,26 @@
   "build_started_at": "2026-06-06T07:22:40.269Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-06-06T08:26:45.748Z",
-    "hash": "sha256:6fe3ce81f2eeda7d38f7932b7d61340746fbd7e3c7ede0b8f0b855c19cdc2d54"
+    "saved_at": "2026-06-06T17:50:09.419Z",
+    "hash": "sha256:bf6fe2e54539754942476312b2b616e9eed8ad5d1dcfce60410f2d7219c5db46",
+    "history": [
+      {
+        "saved_at": "2026-06-06T08:26:45.748Z",
+        "hash": "sha256:6fe3ce81f2eeda7d38f7932b7d61340746fbd7e3c7ede0b8f0b855c19cdc2d54"
+      }
+    ]
   },
   "build-data": {
-    "saved_at": "2026-06-06T08:10:04.012Z",
-    "hash": "sha256:1ffed79ed8b3b3610204529f92e83a0d88659aab43264518cab1db70a1a0b7af",
+    "saved_at": "2026-06-06T17:50:09.419Z",
+    "hash": "sha256:4f033cf24a8512b67f8274de161295f05fd587668ced7058175275527b0574ee",
     "history": [
       {
         "saved_at": "2026-06-06T07:57:53.361Z",
         "hash": "sha256:f19b4773dc02a5da3d809841bae227f94ee261337532acad8fb5895df3af420b"
+      },
+      {
+        "saved_at": "2026-06-06T08:10:04.012Z",
+        "hash": "sha256:1ffed79ed8b3b3610204529f92e83a0d88659aab43264518cab1db70a1a0b7af"
       }
     ]
   },
