@@ -1,0 +1,203 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init"
+
+assertions:
+  # AC1 — instruction overwrite, per-harness, config preserved
+  - id: A001
+    says: "Re-initializing replaces a customized Claude agent's instructions with the current version"
+    block: "re-init overwrites the Claude agent .md instruction body from stock"
+    target: "claudeAgent.bodyMatchesStock"
+    matcher: "truthy"
+
+  - id: A002
+    says: "Re-initializing replaces a customized Codex agent's instructions with the current version"
+    block: "re-init overwrites the Codex agent .md instruction body from stock"
+    target: "codexAgent.bodyMatchesStock"
+    matcher: "truthy"
+
+  - id: A003
+    says: "Each AI tool keeps its own version of the agent that differs between tools"
+    block: "re-init refreshes ana-learn.md from each harness's own stock, never cross-written"
+    target: "anaLearn.perHarnessStockPreserved"
+    matcher: "truthy"
+
+  - id: A004
+    says: "A customer's chosen model for a Claude agent survives re-initializing"
+    block: "re-init preserves Claude agent frontmatter model config"
+    target: "claudeAgent.modelPreserved"
+    matcher: "truthy"
+
+  - id: A005
+    says: "A customer's Codex model, sandbox, and reasoning settings survive re-initializing"
+    block: "re-init preserves Codex .agent.toml model, sandbox_mode, and reasoning config keys"
+    target: "codexToml.configPreserved"
+    matcher: "truthy"
+
+  - id: A006
+    says: "Codex agent identity and instruction-pointer fields are refreshed to the current version"
+    block: "re-init refreshes Codex .agent.toml machine fields from stock"
+    target: "codexToml.machineFieldsRefreshed"
+    matcher: "truthy"
+
+  # AC2 — CLAUDE.md overwrite + interpolation; AGENTS.md out of scope
+  - id: A007
+    says: "Re-initializing refreshes CLAUDE.md to the current template"
+    block: "re-init overwrites CLAUDE.md from stock"
+    target: "claudeMd.refreshedFromStock"
+    matcher: "truthy"
+
+  - id: A008
+    says: "Refreshed CLAUDE.md still shows the project's name and detected stack"
+    block: "re-init re-applies project name and stack interpolation to CLAUDE.md"
+    target: "claudeMd.interpolated"
+    matcher: "truthy"
+
+  - id: A009
+    says: "AGENTS.md is left untouched when re-initializing"
+    block: "re-init does not overwrite AGENTS.md"
+    target: "agentsMd.preserved"
+    matcher: "truthy"
+
+  # AC3 — atomic writes
+  - id: A010
+    says: "An interrupted refresh never leaves a half-written template behind"
+    block: "agent template overwrite leaves no temp or partial file in the live tree"
+    target: "atomicWrite.noPartialOrTempLeftover"
+    matcher: "truthy"
+
+  - id: A011
+    says: "A refreshed template passes an integrity check after it is written"
+    block: "atomic overwrite verifies written content integrity"
+    target: "atomicWrite.contentVerified"
+    matcher: "truthy"
+
+  # AC4 — content-gated consolidated warning
+  - id: A012
+    says: "When a refresh overwrites changed content, re-init warns the customer to recover from git"
+    block: "re-init warns when an agent instruction body actually changed"
+    target: "warning.firedOnInstructionChange"
+    matcher: "truthy"
+
+  - id: A013
+    says: "Re-initializing stays silent when nothing actually changed"
+    block: "no warning on a no-op re-init"
+    target: "warning.silentOnNoChange"
+    matcher: "truthy"
+
+  - id: A014
+    says: "The refresh warning names exactly the files whose content changed"
+    block: "consolidated warning lists only the changed files"
+    target: "warning.listsOnlyChangedFiles"
+    matcher: "truthy"
+
+  - id: A015
+    says: "Refreshing CLAUDE.md with the same project context produces no false warning"
+    block: "CLAUDE.md warning is gated against interpolated output, not raw stock"
+    target: "warning.noFalsePositiveOnClaudeMd"
+    matcher: "truthy"
+
+  - id: A016
+    says: "Changing only a model setting never triggers a customization warning"
+    block: "config-only changes do not warn"
+    target: "warning.silentOnConfigOnlyChange"
+    matcher: "truthy"
+
+  - id: A017
+    says: "The refresh warning never stops init from completing"
+    block: "overwrite warnings are non-blocking and init exits successfully"
+    target: "warning.nonBlocking"
+    matcher: "truthy"
+
+  # AC5 — preserve-contract regression guard
+  - id: A018
+    says: "Re-initializing still preserves the team's context files"
+    block: "re-init preserves context/ directory"
+    target: "preserve.context"
+    matcher: "truthy"
+
+  - id: A019
+    says: "Re-initializing still preserves plans, the proof chain, and learn state"
+    block: "re-init preserves plans/completed, plans/active, proof chain, and learn state"
+    target: "preserve.pipelineState"
+    matcher: "truthy"
+
+  - id: A020
+    says: "Re-initializing still preserves a customer's skill rules, gotchas, and examples"
+    block: "re-init preserves skill Rules/Gotchas/Examples"
+    target: "preserve.skillHumanContent"
+    matcher: "truthy"
+
+  - id: A021
+    says: "Re-initializing still preserves ana.json user fields"
+    block: "re-init preserves ana.json user fields"
+    target: "preserve.anaJsonUserFields"
+    matcher: "truthy"
+
+  # AC6 — fresh / partial / single-harness
+  - id: A022
+    says: "A fresh install writes templates with no overwrite warning"
+    block: "fresh install produces no overwrite warning"
+    target: "fresh.noWarning"
+    matcher: "truthy"
+
+  - id: A023
+    says: "A Claude-only project refreshes only the Claude tree"
+    block: "single-harness re-init touches only the present tree"
+    target: "claudeOnly.codexTreeUntouched"
+    matcher: "truthy"
+
+  # AC7 — version nudge
+  - id: A024
+    says: "A customer on a stale CLI version is told to run ana init"
+    block: "version-mismatch nudge fires for a stale project version"
+    target: "nudge.firesOnMismatch"
+    matcher: "truthy"
+
+  - id: A025
+    says: "The version nudge tells the customer that re-init refreshes templates"
+    block: "version-mismatch nudge copy points to ana init and conveys template refresh"
+    target: "nudge.copy"
+    matcher: "contains"
+    value: "ana init"
+
+  # AC8 — docs + changelog reversal
+  - id: A026
+    says: "The docs no longer promise agent-file edits persist across re-init"
+    block: "configurability.mdx documents overwrite-and-recover behavior, not edit-persistence"
+    target: "docs.overwriteDocumentedNotPersistence"
+    matcher: "truthy"
+
+  - id: A027
+    says: "The docs state that agent basic configuration is preserved across re-init"
+    block: "configurability.mdx documents preserved basic-config"
+    target: "docs.configPreservationDocumented"
+    matcher: "truthy"
+
+  - id: A028
+    says: "The changelog records the re-init overwrite behavior change"
+    block: "CHANGELOG records the behavior reversal"
+    target: "changelog.recordsReversal"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/src/utils/agent-config.ts"
+    action: modify
+  - path: "packages/cli/src/constants.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: "CHANGELOG.md"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/agent-config.test.ts"
+    action: modify
