@@ -1,0 +1,276 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Generalize capture to build & lint, compact failures, instrument pipeline savings"
+
+assertions:
+  # ── Spec A — generalize capture to build & lint ──────────────────────────────
+  - id: A001
+    says: "The build command captures its output to a file on disk"
+    block: "ana build captures output to a .log under .captures"
+    target: "outcome.file"
+    matcher: "contains"
+    value: "build-build-"
+
+  - id: A002
+    says: "Build and lint never invent a test count when the output isn't a test run"
+    block: "build/lint counts abstain (null) on non-test output"
+    target: "outcome.counts"
+    matcher: "equals"
+    value: null
+
+  - id: A003
+    says: "Build and lint never produce a sealed verification marker — they are pure capture"
+    block: "build/lint return contains no capture marker"
+    target: "return.text"
+    matcher: "not_contains"
+    value: "ana:capture"
+
+  - id: A004
+    says: "A failing build reports failure with a non-zero exit code"
+    block: "failing build/lint carries the real non-zero exit code"
+    target: "outcome.exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A005
+    says: "A passing build exits cleanly"
+    block: "passing build carries a zero exit code"
+    target: "outcome.exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A006
+    says: "The build agent is told to run the thick build command"
+    block: "ana-build template instructs `ana build`"
+    target: "template.content"
+    matcher: "contains"
+    value: "ana build"
+
+  - id: A007
+    says: "The verify agent is told to run the thick lint command"
+    block: "ana-verify template instructs `ana lint`"
+    target: "template.content"
+    matcher: "contains"
+    value: "ana lint"
+
+  # ── Spec B — compact failures into the return ───────────────────────────────
+  - id: B001
+    says: "A failing test run shows the agent what failed, with file and line"
+    block: "vitest failing fixture summary includes the assertion failure"
+    target: "summary"
+    matcher: "contains"
+    value: "AssertionError"
+
+  - id: B002
+    says: "Every failing run leads with the verdict and counts"
+    block: "failing test return prepends verdict and counts"
+    target: "return.text"
+    matcher: "contains"
+    value: "failed"
+
+  - id: B003
+    says: "The failure summary is the same every time for the same output — no guessing"
+    block: "extraction is deterministic for identical input"
+    target: "isDeterministic"
+    matcher: "truthy"
+
+  - id: B004
+    says: "When nothing recognizable is found, the agent still sees the raw output, never an empty answer"
+    block: "no-match fallback returns a non-empty head+tail summary"
+    target: "fallbackSummary.length"
+    matcher: "greater"
+    value: 0
+
+  - id: B005
+    says: "The fallback never falsely claims there were no failures"
+    block: "fallback summary does not misreport a clean run"
+    target: "fallbackSummary"
+    matcher: "not_contains"
+    value: "no failures"
+
+  - id: B006
+    says: "A failing build gets a failure summary even though it has no test verdict"
+    block: "trigger fires on build/lint non-zero exit (verdict null)"
+    target: "buildFailSummary.length"
+    matcher: "greater"
+    value: 0
+
+  - id: B007
+    says: "Compacting failures does not change the sealed test record"
+    block: "failing test baseline still produces an unchanged sealed marker"
+    target: "outcome.marker"
+    matcher: "exists"
+
+  - id: B008
+    says: "A passing run's output to the agent is unchanged"
+    block: "composeAgentReturn for a passing baseline matches prior behavior"
+    target: "passingReturnUnchanged"
+    matcher: "truthy"
+
+  # ── Spec C-core — instrument savings ────────────────────────────────────────
+  - id: C001
+    says: "Each captured run records one row of facts about how much output it compressed"
+    block: "recorder appends a row with raw and returned byte counts when the flag is on"
+    target: "row.raw_bytes"
+    matcher: "exists"
+
+  - id: C002
+    says: "The recorded 'surfaced' size matches what the agent actually received"
+    block: "row.returned_bytes equals the composed agent return length"
+    target: "returnedMatchesComposed"
+    matcher: "truthy"
+
+  - id: C003
+    says: "Customers who haven't opted in pay nothing — no measurement file is ever written"
+    block: "no sidecar file is written when the flag is off or absent"
+    target: "sidecarWrittenWhenOff"
+    matcher: "equals"
+    value: false
+
+  - id: C004
+    says: "Each row separates which pipeline stage ran from what kind of run it was"
+    block: "row carries distinct phase and run_kind fields"
+    target: "row.run_kind"
+    matcher: "exists"
+
+  - id: C005
+    says: "Build and lint runs are recorded as facts even though they have no pass/fail count"
+    block: "build/lint row stores a null verdict and null counts"
+    target: "buildRow.verdict"
+    matcher: "equals"
+    value: null
+
+  - id: C006
+    says: "A completed run with the flag on carries a durable savings summary on its proof"
+    block: "work complete writes a metrics field on the proof entry when the flag is on"
+    target: "entry.metrics"
+    matcher: "exists"
+
+  - id: C007
+    says: "A completed run with the flag off looks exactly like today's proof — no savings field at all"
+    block: "the metrics key is absent from the entry when the flag is off"
+    target: "metricsKeyPresentWhenOff"
+    matcher: "equals"
+    value: false
+
+  - id: C008
+    says: "The savings summary spans both the build and the verify phases of the work"
+    block: "rollup sums rows recorded across build and verify"
+    target: "rollup.totals.runs"
+    matcher: "greater"
+    value: 1
+
+  - id: C009
+    says: "The savings summary counts every captured run"
+    block: "rollup totals.runs equals the number of recorded rows"
+    target: "rollup.totals.runs"
+    matcher: "equals"
+    value: 3
+
+  - id: C010
+    says: "The proof page shows the compression result when it exists"
+    block: "viewer renders the metrics block when metrics are present"
+    target: "renderedWithMetrics"
+    matcher: "contains"
+    value: "compressed"
+
+  - id: C011
+    says: "The proof page shows no empty savings panel when there's nothing to show"
+    block: "viewer renders nothing for the metrics block when absent"
+    target: "renderedWithoutMetrics"
+    matcher: "not_contains"
+    value: "compressed"
+
+  - id: C012
+    says: "The savings figures are bytes and lines — never tokens, never dollars"
+    block: "rollup and render use no token/cost language"
+    target: "renderedWithMetrics"
+    matcher: "not_contains"
+    value: "token"
+
+  - id: C013
+    says: "We never claim a counterfactual saving — only what was compressed"
+    block: "render uses 'compressed/surfaced', not 'saved'"
+    target: "renderedWithMetrics"
+    matcher: "not_contains"
+    value: "saved"
+
+  # ── Spec D — config flag (build-gated on retire-capture-self-arming) ─────────
+  - id: D001
+    says: "Turning measurement on is a real, validated setting"
+    block: "schema parses captureMetrics 'on'"
+    target: "parsed.captureMetrics"
+    matcher: "equals"
+    value: "on"
+
+  - id: D002
+    says: "A typo in the setting is ignored safely instead of breaking the project"
+    block: "a malformed captureMetrics value does not throw and degrades to off"
+    target: "parseThrowsOnMalformed"
+    matcher: "equals"
+    value: false
+
+  - id: D003
+    says: "Measurement is off by default for every new project"
+    block: "ana init writes captureMetrics 'off'"
+    target: "freshConfig.captureMetrics"
+    matcher: "equals"
+    value: "off"
+
+  - id: D004
+    says: "A customer who turned measurement on keeps it on after re-initializing"
+    block: "preserveUserState preserves an existing captureMetrics 'on'"
+    target: "merged.captureMetrics"
+    matcher: "equals"
+    value: "on"
+
+  - id: D005
+    says: "A project with no setting at all is treated as off, never on"
+    block: "an absent captureMetrics key is treated as off"
+    target: "effectiveOffWhenAbsent"
+    matcher: "equals"
+    value: true
+
+file_changes:
+  # Spec A
+  - path: "packages/cli/src/commands/capture-command.ts"
+    action: create
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  # Spec B
+  - path: "packages/cli/src/utils/failure-extract.ts"
+    action: create
+  - path: "packages/cli/src/utils/capture-return.ts"
+    action: create
+  - path: "packages/cli/src/commands/test.ts"
+    action: modify
+  # Spec C-core
+  - path: "packages/cli/src/utils/savings-recorder.ts"
+    action: create
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/lib/docs-data/types.ts"
+    action: modify
+  - path: "website/components/docs/proof/ProofHero.tsx"
+    action: modify
+  - path: ".ana/ana.json"
+    action: modify
+  # Spec D (build-gated on retire-capture-self-arming)
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
