@@ -9,18 +9,21 @@
  *   area before atomic rename
  * - generateScaffolds: project-context.md + design-principles.md from
  *   scan data (scaffold-generators.ts templates)
- * - copyAndVerifyFile: SHA-256 hash-verified copy (used for agent files)
+ * - atomicWriteFile: temp-then-rename write with SHA-256 integrity verify
+ *   (shared by every file init writes into the live tree)
  * - createClaudeConfiguration: the .claude/ tree (agents, skills,
  *   settings.json) — delegates skill copies to skills.scaffoldAndSeedSkills
- * - copyAgentFiles: .claude/agents/*.md without overwriting user edits
+ * - copyAgentFiles: .claude/agents/*.md — refresh instruction body from
+ *   stock on re-init, preserving CONFIG-class frontmatter keys
  * - copyClaudeMd + generateAgentsMd: the cross-tool CLAUDE.md and
  *   AGENTS.md entry points at the project root
  * - mergeHooksSettings + hookEntryMatches: dedup-safe merge of our hooks
  *   into an existing .claude/settings.json
  *
- * Only the entry points called from index.ts are exported; private
- * helpers (copyAgentFiles, copyClaudeMd, generateAgentsMd, hook merge
- * helpers) stay internal.
+ * Entry points called from index.ts are exported; copyAgentFiles and
+ * copyCodexAgentFiles are also exported for direct unit testing of the
+ * refresh-by-class behavior. Remaining helpers (copyClaudeMd,
+ * atomicWriteFile, hook merge helpers) stay internal.
  */
 
 import chalk from 'chalk';
@@ -35,7 +38,19 @@ import {
   generateProjectContextScaffold,
   generateDesignPrinciplesTemplate,
 } from '../../utils/scaffold-generators.js';
-import { AGENT_FILES, CODEX_AGENT_FILES, getStackSummary } from '../../constants.js';
+import {
+  AGENT_FILES,
+  CODEX_AGENT_FILES,
+  CLAUDE_AGENT_CONFIG_KEYS,
+  CODEX_AGENT_CONFIG_KEYS,
+  getStackSummary,
+} from '../../constants.js';
+import {
+  parseFrontmatter,
+  setFrontmatterField,
+  stripFrontmatter,
+  preserveTomlConfigKeys,
+} from '../../utils/agent-config.js';
 import type { InitState } from './types.js';
 import { dirExists, fileExists } from './preflight.js';
 import { getTemplatesDir, makeTestCommandNonInteractive } from './state.js';
@@ -118,39 +133,50 @@ export async function generateScaffolds(
 }
 
 /**
- * Copy file with SHA-256 integrity verification
+ * Atomically write content to a destination with SHA-256 integrity verification.
  *
- * Copies file and verifies hash matches after copy.
- * Throws if hashes don't match (file corruption).
+ * Writes to a temp sibling in the destination directory, verifies the written
+ * bytes hash to the expected content, then renames over the target. A crash
+ * mid-write leaves either the old file or the new file — never a truncated one.
+ * On any failure the temp file is removed and the error re-thrown.
  *
- * @param sourcePath - Source file path
+ * This is the shared integrity + atomicity guarantee for every file init
+ * writes into the live tree (fresh copies and re-init overwrites alike).
+ *
  * @param destPath - Destination file path
+ * @param content - Full file content to write
  * @param fileName - Display name for errors
  */
-async function copyAndVerifyFile(
-  sourcePath: string,
+async function atomicWriteFile(
   destPath: string,
+  content: string,
   fileName: string
 ): Promise<void> {
-  // Hash source before copy
-  const sourceContent = await fs.readFile(sourcePath);
-  const sourceHash = createHash('sha256').update(sourceContent).digest('hex');
+  const dir = path.dirname(destPath);
+  const tmpPath = path.join(dir, `.${path.basename(destPath)}.tmp-${process.pid}-${Date.now()}`);
+  const expectedHash = createHash('sha256').update(content, 'utf-8').digest('hex');
 
-  // Copy file
-  await fs.copyFile(sourcePath, destPath);
+  try {
+    await fs.writeFile(tmpPath, content, 'utf-8');
 
-  // Hash destination after copy
-  const destContent = await fs.readFile(destPath);
-  const destHash = createHash('sha256').update(destContent).digest('hex');
+    // Verify the temp file's bytes before swapping it into place
+    const written = await fs.readFile(tmpPath);
+    const writtenHash = createHash('sha256').update(written).digest('hex');
+    if (writtenHash !== expectedHash) {
+      throw new Error(
+        `File integrity check failed: ${fileName}\n` +
+          `Expected: ${expectedHash}\n` +
+          `Got: ${writtenHash}\n` +
+          'File may be corrupted during write.'
+      );
+    }
 
-  // Verify hashes match
-  if (sourceHash !== destHash) {
-    throw new Error(
-      `File integrity check failed: ${fileName}\n` +
-        `Expected: ${sourceHash}\n` +
-        `Got: ${destHash}\n` +
-        'File may be corrupted during copy.'
-    );
+    // Atomic swap — same directory, same filesystem
+    await fs.rename(tmpPath, destPath);
+  } catch (err) {
+    // Never leave a temp/partial file behind
+    await fs.rm(tmpPath, { force: true }).catch(() => {});
+    throw err;
   }
 }
 
@@ -160,13 +186,16 @@ async function copyAndVerifyFile(
  * Creates .claude/ directory with settings.json, agents/ directory, agent files,
  * skills directories, and CLAUDE.md at project root.
  * If .claude/ already exists, merges our hooks into existing settings.json.
- * Agent/skill files are copied without overwriting existing ones (merge-not-overwrite).
+ * On re-init the agent instruction bodies and CLAUDE.md are refreshed wholesale
+ * from stock (config keys preserved); the returned list names the files whose
+ * instruction content actually changed, for the consolidated refresh warning.
  *
  * @param cwd - Project root directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
  * @param _initState - Installation state (unused — skills scaffolding moved to orchestrator)
+ * @returns Filenames whose instruction content changed (empty on a fresh install or no-op re-init)
  */
-export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState): Promise<void> {
+export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState): Promise<string[]> {
   const spinner = ora('Creating .claude/ configuration...').start();
 
   const claudePath = path.join(cwd, '.claude');
@@ -189,6 +218,8 @@ agent-memory/
 settings.local.json
 `;
 
+  const changed: string[] = [];
+
   if (!claudeExists) {
     // First run: create everything fresh
     await fs.mkdir(claudePath, { recursive: true });
@@ -196,14 +227,15 @@ settings.local.json
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
     await fs.writeFile(claudeGitignorePath, claudeGitignoreContent, 'utf-8');
 
-    // Copy all agent files
-    await copyAgentFiles(agentsPath, templatesDir);
+    // Copy all agent files (fresh — never reports changes)
+    changed.push(...await copyAgentFiles(agentsPath, templatesDir));
 
-    // Copy CLAUDE.md to project root
-    await copyClaudeMd(cwd, templatesDir, engineResult);
+    // Copy CLAUDE.md to project root (fresh — never reports a change)
+    const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
+    if (claudeMdChanged) changed.push(claudeMdChanged);
 
     spinner.succeed('Created .claude/ configuration');
-    return;
+    return changed;
   }
 
   // .claude/ exists - handle merge
@@ -237,59 +269,92 @@ settings.local.json
     await fs.mkdir(agentsPath, { recursive: true });
   }
 
-  // Copy agent files (merge-not-overwrite)
-  await copyAgentFiles(agentsPath, templatesDir);
+  // Refresh agent instruction bodies from stock (config keys preserved)
+  changed.push(...await copyAgentFiles(agentsPath, templatesDir));
 
-  // Copy CLAUDE.md to project root (merge-not-overwrite)
-  await copyClaudeMd(cwd, templatesDir, engineResult);
+  // Refresh CLAUDE.md from stock (re-interpolated)
+  const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
+  if (claudeMdChanged) changed.push(claudeMdChanged);
 
   spinner.succeed('Created .claude/ configuration (merged)');
+  return changed;
 }
 
 /**
- * Copy agent files to .claude/agents/
+ * Copy agent files to .claude/agents/, refreshing instruction content from stock.
  *
- * Copies agent definition files from templates without overwriting existing ones.
- * This allows user customizations to persist across re-init.
+ * Re-init propagates the machine-owned instruction body from each tree's own
+ * stock. For an existing file, CONFIG-class frontmatter keys
+ * ({@link CLAUDE_AGENT_CONFIG_KEYS}, e.g. a customer's `model`) are carried
+ * forward onto the stock content, then the merged file is atomically written.
+ * The body of the existing file is compared against the stock body (config-key
+ * merges excluded) and the filename recorded when it differs. Fresh files
+ * (no existing destination) are written from stock and never reported.
  *
  * @param agentsPath - Path to .claude/agents/ directory
  * @param templatesDir - Path to CLI templates directory
+ * @returns Filenames whose instruction body changed vs the prior file
  */
-async function copyAgentFiles(agentsPath: string, templatesDir: string): Promise<void> {
+export async function copyAgentFiles(agentsPath: string, templatesDir: string): Promise<string[]> {
+  const changed: string[] = [];
   for (const agentFile of AGENT_FILES) {
     const sourcePath = path.join(templatesDir, '.claude/agents', agentFile);
     const destPath = path.join(agentsPath, agentFile);
+    const displayName = `.claude/agents/${agentFile}`;
+    const stockContent = await fs.readFile(sourcePath, 'utf-8');
 
-    // Check if file already exists (don't overwrite)
     const exists = await fileExists(destPath);
-    if (exists) {
-      // Skip - don't overwrite existing agent files
+    if (!exists) {
+      // Fresh — write stock as-is, no warning
+      await atomicWriteFile(destPath, stockContent, displayName);
       continue;
     }
 
-    // Copy with verification
-    await copyAndVerifyFile(sourcePath, destPath, `.claude/agents/${agentFile}`);
+    const existingContent = await fs.readFile(destPath, 'utf-8');
+
+    // Carry forward CONFIG-class frontmatter keys onto stock
+    let merged = stockContent;
+    const existingFm = parseFrontmatter(existingContent);
+    if (existingFm) {
+      for (const key of CLAUDE_AGENT_CONFIG_KEYS) {
+        const value = existingFm.raw[key];
+        if (value !== undefined) {
+          const updated = setFrontmatterField(merged, key, value);
+          if (updated) merged = updated;
+        }
+      }
+    }
+
+    // Record an instruction change only when the body actually differs
+    // (config-key frontmatter merges are excluded — a model-only change is silent)
+    if (stripFrontmatter(existingContent) !== stripFrontmatter(stockContent)) {
+      changed.push(agentFile);
+    }
+
+    await atomicWriteFile(destPath, merged, displayName);
   }
+  return changed;
 }
 
 /**
- * Copy CLAUDE.md to project root with project name + stack interpolation
+ * Copy CLAUDE.md to project root with project name + stack interpolation.
  *
- * Reads template, replaces header with project name, optionally adds stack summary.
- * Does not overwrite existing CLAUDE.md.
+ * Re-init overwrites CLAUDE.md wholesale, re-applying project-name and stack
+ * interpolation from the current scan. The warning is gated against the
+ * freshly-interpolated output (NOT the raw stock template), so the same
+ * project context produces no false positive.
  *
  * @param cwd - Project root directory
  * @param templatesDir - Path to CLI templates directory
  * @param engineResult - Engine result for stack interpolation (null if skipped)
+ * @returns `'CLAUDE.md'` if a prior file existed and differed from the interpolated output, else `null`
  */
-async function copyClaudeMd(cwd: string, templatesDir: string, engineResult: EngineResult | null): Promise<void> {
+async function copyClaudeMd(
+  cwd: string,
+  templatesDir: string,
+  engineResult: EngineResult | null
+): Promise<string | null> {
   const destPath = path.join(cwd, 'CLAUDE.md');
-
-  // Check if file already exists (don't overwrite)
-  const exists = await fileExists(destPath);
-  if (exists) {
-    return;
-  }
 
   // Read template and interpolate
   const sourcePath = path.join(templatesDir, 'CLAUDE.md');
@@ -307,7 +372,18 @@ async function copyClaudeMd(cwd: string, templatesDir: string, engineResult: Eng
     }
   }
 
-  await fs.writeFile(destPath, content, 'utf-8');
+  // Gate the warning against the interpolated output, not raw stock
+  let changed: string | null = null;
+  const exists = await fileExists(destPath);
+  if (exists) {
+    const existingContent = await fs.readFile(destPath, 'utf-8');
+    if (existingContent !== content) {
+      changed = 'CLAUDE.md';
+    }
+  }
+
+  await atomicWriteFile(destPath, content, 'CLAUDE.md');
+  return changed;
 }
 
 /**
@@ -563,12 +639,14 @@ function hookEntryMatches(a: HookEntry, b: HookEntry): boolean {
  * Create .codex/ configuration
  *
  * Creates .codex/agents/ directory with Codex agent templates and TOML manifests.
- * Mirrors createClaudeConfiguration shape: merge-not-overwrite for existing agent files.
+ * On re-init the agent instruction `.md` bodies refresh wholesale from stock and
+ * the `.agent.toml` machine fields refresh while CONFIG keys are preserved.
  *
  * @param cwd - Project root directory
  * @param _initState - Installation state (unused — reserved for future merge logic)
+ * @returns Filenames whose instruction body changed (empty on a fresh install or no-op re-init)
  */
-export async function createCodexConfiguration(cwd: string, _initState: InitState): Promise<void> {
+export async function createCodexConfiguration(cwd: string, _initState: InitState): Promise<string[]> {
   const spinner = ora('Creating .codex/ configuration...').start();
 
   const codexPath = path.join(cwd, '.codex');
@@ -583,50 +661,67 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
     await fs.mkdir(agentsPath, { recursive: true });
 
     // Copy agent .md files and .agent.toml manifests
-    await copyCodexAgentFiles(agentsPath, templatesDir);
+    const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
 
     spinner.succeed('Created .codex/ configuration');
-    return;
+    return changed;
   }
 
-  // .codex/ exists — merge (don't overwrite user customizations)
+  // .codex/ exists — refresh instruction content, preserve TOML config keys
   const agentsExists = await dirExists(agentsPath);
   if (!agentsExists) {
     await fs.mkdir(agentsPath, { recursive: true });
   }
 
-  await copyCodexAgentFiles(agentsPath, templatesDir);
+  const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
 
   spinner.succeed('Created .codex/ configuration (merged)');
+  return changed;
 }
 
 /**
- * Copy Codex agent files to .codex/agents/
+ * Copy Codex agent files to .codex/agents/, refreshing instruction content.
  *
- * Copies agent definition files (.md) and TOML manifests (.agent.toml)
- * from templates without overwriting existing ones.
+ * For each `.md` (no frontmatter): overwrite wholesale from stock; record the
+ * filename when a prior file's content differed. For each `.agent.toml`:
+ * preserve CONFIG keys ({@link CODEX_AGENT_CONFIG_KEYS}) from the existing file
+ * onto stock while refreshing all machine fields, then atomic-write. The
+ * `.agent.toml` never contributes to the changed-files list (it carries config
+ * + machine metadata, not instruction prose).
  *
  * @param agentsPath - Path to .codex/agents/ directory
  * @param templatesDir - Path to CLI templates directory
+ * @returns Filenames whose `.md` instruction content changed vs the prior file
  */
-async function copyCodexAgentFiles(agentsPath: string, templatesDir: string): Promise<void> {
+export async function copyCodexAgentFiles(agentsPath: string, templatesDir: string): Promise<string[]> {
+  const changed: string[] = [];
   for (const agentFile of CODEX_AGENT_FILES) {
-    // Copy .md file
+    // .md instruction body — overwrite wholesale (no frontmatter)
     const mdSource = path.join(templatesDir, '.codex/agents', agentFile);
     const mdDest = path.join(agentsPath, agentFile);
-    if (!(await fileExists(mdDest))) {
-      await copyAndVerifyFile(mdSource, mdDest, `.codex/agents/${agentFile}`);
+    const stockMd = await fs.readFile(mdSource, 'utf-8');
+    if (await fileExists(mdDest)) {
+      const existingMd = await fs.readFile(mdDest, 'utf-8');
+      if (existingMd !== stockMd) {
+        changed.push(agentFile);
+      }
     }
+    await atomicWriteFile(mdDest, stockMd, `.codex/agents/${agentFile}`);
 
-    // Copy .agent.toml manifest
+    // .agent.toml manifest — preserve config keys, refresh machine fields
     const baseName = agentFile.replace('.md', '');
     const tomlFile = `${baseName}.agent.toml`;
     const tomlSource = path.join(templatesDir, '.codex/agents', tomlFile);
     const tomlDest = path.join(agentsPath, tomlFile);
-    if (!(await fileExists(tomlDest))) {
-      await copyAndVerifyFile(tomlSource, tomlDest, `.codex/agents/${tomlFile}`);
+    const stockToml = await fs.readFile(tomlSource, 'utf-8');
+    let finalToml = stockToml;
+    if (await fileExists(tomlDest)) {
+      const existingToml = await fs.readFile(tomlDest, 'utf-8');
+      finalToml = preserveTomlConfigKeys(stockToml, existingToml, CODEX_AGENT_CONFIG_KEYS);
     }
+    await atomicWriteFile(tomlDest, finalToml, `.codex/agents/${tomlFile}`);
   }
+  return changed;
 }
 
 /**
