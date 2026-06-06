@@ -1,0 +1,251 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Compact the capture seal + fix the count"
+
+assertions:
+  # ── AC1: compact single-line seal ───────────────────────────────────────────
+  - id: A001
+    says: "A captured test run produces a one-line sealed result, not a dump"
+    block: "baseline emits a single-line compact marker"
+    target: "marker.split('\\n').length"
+    matcher: "equals"
+    value: 1
+
+  - id: A002
+    says: "The sealed result carries the test counts, verdict, a fingerprint, and the output size"
+    block: "compact marker carries counts, verdict, sha256, bytes, and lines"
+    target: "marker"
+    matcher: "contains"
+    value: "lines="
+
+  - id: A003
+    says: "The sealed result no longer carries a path to a throwaway log file"
+    block: "compact marker drops the file field"
+    target: "marker.includes('file=')"
+    matcher: "equals"
+    value: false
+
+  # ── AC2: save seals without inlining ─────────────────────────────────────────
+  - id: A004
+    says: "Saving a build report no longer pastes the raw test output into it"
+    block: "saved build report contains no inlined capture block"
+    target: "savedReport.includes('ana:capture-begin')"
+    matcher: "equals"
+    value: false
+
+  - id: A005
+    says: "A build report with a compact seal saves successfully through the gate"
+    block: "present compact build marker passes the capture gate"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # ── AC3: machine-readable count source ───────────────────────────────────────
+  - id: A006
+    says: "Test counts are read from a machine-readable report, not scraped from human text"
+    block: "vitest JSON-reporter output yields real counts"
+    target: "counts.passed"
+    matcher: "greater"
+    value: 0
+
+  - id: A007
+    says: "The tool prefers the configured machine-readable test command when one is set"
+    block: "resolveTestCommandString prefers top-level test_json over test"
+    target: "resolved.source"
+    matcher: "equals"
+    value: "test_json"
+
+  - id: A008
+    says: "With a machine-readable reporter configured, this project gets a real count instead of abstaining"
+    block: "configured test_json produces a non-abstain verdict on real output"
+    target: "verdict"
+    matcher: "not_equals"
+    value: "abstain"
+
+  # ── AC4: safe abstain, no-false-green ────────────────────────────────────────
+  - id: A009
+    says: "With no machine-readable reporter, the result abstains instead of inventing a count"
+    block: "unrecognized output yields null counts and an abstain verdict"
+    target: "verdict"
+    matcher: "equals"
+    value: "abstain"
+
+  - id: A010
+    says: "A clean exit with no countable evidence is never reported as a pass"
+    block: "deriveVerdict abstains on null counts with a clean exit"
+    target: "verdict"
+    matcher: "equals"
+    value: "abstain"
+
+  - id: A011
+    says: "A run where nothing actually passed is never reported as a pass"
+    block: "deriveVerdict abstains when zero tests passed"
+    target: "verdict"
+    matcher: "equals"
+    value: "abstain"
+
+  # ── AC5: closed token (prose collision) ──────────────────────────────────────
+  - id: A012
+    says: "A seal shown as an example inside a code block is not mistaken for a real seal"
+    block: "marker inside a fenced code block does not parse as a real seal"
+    target: "markers.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A013
+    says: "A described seal with placeholders is not mistaken for a real seal"
+    block: "placeholder description with a non-hex sha256 does not parse"
+    target: "markers.length"
+    matcher: "equals"
+    value: 0
+
+  # Strict-grammar backbone — also closes A002's gap (a marker shipped without
+  # its fingerprint must be rejected, not silently accepted) and hardens AC10.
+  - id: A029
+    says: "A seal missing its fingerprint is rejected, never accepted as valid evidence"
+    block: "a marker missing a required field (sha256) fails the strict grammar and is not present"
+    target: "markersMissingSha.length"
+    matcher: "equals"
+    value: 0
+
+  - id: A014
+    says: "A report that only describes the seal format does not satisfy the evidence gate"
+    block: "report describing the marker in prose leaves the gate unsatisfied"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: true
+
+  # ── AC6: log captured, deleted, gitignored ───────────────────────────────────
+  - id: A015
+    says: "The raw test log is deleted after the result is sealed, not left to be committed"
+    block: "the .captures log is removed after a successful baseline capture"
+    target: "logExistsAfterCapture"
+    matcher: "equals"
+    value: false
+
+  - id: A016
+    says: "The project ignores raw capture logs so they can never be committed"
+    block: "dogfood .ana/.gitignore contains the .captures rule"
+    target: "gitignore"
+    matcher: "contains"
+    value: ".captures/"
+
+  - id: A017
+    says: "New projects also ignore raw capture logs by default"
+    block: "the init gitignore generator emits the .captures rule"
+    target: "generatedGitignore"
+    matcher: "contains"
+    value: ".captures/"
+
+  # ── AC7: reserved L3 field round-trip ────────────────────────────────────────
+  - id: A018
+    says: "A seal carrying the reserved engine-binding field survives a round-trip unchanged"
+    block: "marker with enginebind present round-trips and re-serializes identically"
+    target: "roundTripWithToken.equal"
+    matcher: "equals"
+    value: true
+
+  - id: A019
+    says: "A seal without the reserved field survives a round-trip unchanged and gains no field"
+    block: "marker without enginebind round-trips and re-serializes identically"
+    target: "roundTripWithoutToken.equal"
+    matcher: "equals"
+    value: true
+
+  # ── AC8: templates describe the compact seal ─────────────────────────────────
+  - id: A020
+    says: "The build agent instructions no longer describe a raw expanded test-output block"
+    block: "ana-build templates drop the 'verbatim, sha-sealed block' language"
+    target: "buildTemplate.includes('verbatim, sha-sealed block')"
+    matcher: "equals"
+    value: false
+
+  - id: A021
+    says: "All four agent templates describe the compact single-line seal"
+    block: "build+verify Claude+Codex templates describe the compact marker"
+    target: "templatesDescribeCompactSeal"
+    matcher: "equals"
+    value: true
+
+  # ── AC9: runner-agnostic JSON count ──────────────────────────────────────────
+  - id: A022
+    says: "The machine-readable count works for a non-JavaScript test runner too"
+    block: "go test -json output yields real counts via parseGo"
+    target: "goCounts.passed"
+    matcher: "greater"
+    value: 0
+
+  # ── AC10: old-format tolerance ───────────────────────────────────────────────
+  - id: A023
+    says: "An old-format report does not crash the new seal reader"
+    block: "parsing an old-format inlined report does not throw"
+    target: "parsedOldFormat.threw"
+    matcher: "equals"
+    value: false
+
+  - id: A024
+    says: "An old-format seal is not accepted as a valid new seal"
+    block: "old-format marker fails the strict grammar and does not satisfy the gate"
+    target: "oldFormatMarkers.length"
+    matcher: "equals"
+    value: 0
+
+  # ── AC11: discoverability hint ───────────────────────────────────────────────
+  - id: A025
+    says: "When a real count is unavailable, the tool tells the user how to get one"
+    block: "abstain without test_json sets a hint naming commands.test_json"
+    target: "outcome.countHint"
+    matcher: "contains"
+    value: "test_json"
+
+  # ── AC12: idempotent re-save ─────────────────────────────────────────────────
+  - id: A026
+    says: "Saving the same build report twice produces an identical sealed result"
+    block: "re-saving the build report is byte-stable"
+    target: "reportUnchangedOnSecondSave"
+    matcher: "equals"
+    value: true
+
+  # ── AC13: ceiling removed ────────────────────────────────────────────────────
+  - id: A027
+    says: "A large test output still seals, since the result is one line regardless of size"
+    block: "a capture over the old 8 MiB ceiling still produces a sealed marker"
+    target: "outcome.marker"
+    matcher: "exists"
+
+  - id: A028
+    says: "A large test output does not trigger a capture error"
+    block: "an over-ceiling capture does not exit with the capture-error code"
+    target: "outcome.exitCode"
+    matcher: "not_equals"
+    value: 3
+
+file_changes:
+  - path: "packages/cli/src/utils/capture-marker.ts"
+    action: modify
+  - path: "packages/cli/src/utils/capture-runner.ts"
+    action: modify
+  - path: "packages/cli/src/commands/test.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  - path: ".ana/.gitignore"
+    action: modify
+  - path: ".ana/ana.json"
+    action: modify
+  - path: "packages/cli/tests/utils/capture-marker.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/capture-runner.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/test-command.test.ts"
+    action: modify
