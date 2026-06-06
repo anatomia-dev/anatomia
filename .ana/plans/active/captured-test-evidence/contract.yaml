@@ -1,0 +1,280 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Captured Test Evidence — engine-captured, seal-gated test evidence"
+
+assertions:
+  # ── Phase 1: capture spine + warn-mode ──────────────────────────────
+
+  # AC1 — capturing runner tees full bytes, returns a compact marker
+  - id: A001
+    says: "Running tests through capture writes the full raw test output to a capture file"
+    block: "runCapture tees full stdout and stderr to the capture file"
+    target: "result.bytes"
+    matcher: "greater"
+    value: 0
+  - id: A002
+    says: "Capture returns a compact marker instead of the raw test scrollback"
+    block: "runCapture returns a one-line capture marker"
+    target: "result.marker"
+    matcher: "contains"
+    value: "ana:capture"
+
+  # AC2 — resolveCommand parses without a shell, refuses metacharacters
+  - id: A003
+    says: "A plain test command is parsed into a program and arguments without a shell"
+    block: "resolveCommand parses a bare command into program and args"
+    target: "result.program"
+    matcher: "exists"
+  - id: A004
+    says: "A command wrapped in a directory change is parsed, recovering the directory and command"
+    block: "resolveCommand parses the (cd 'path' && cmd) wrapper, recovering cwd"
+    target: "result.cwd"
+    matcher: "exists"
+  - id: A005
+    says: "Leading environment assignments are lifted into the environment, not treated as the program"
+    block: "resolveCommand lifts leading VAR=val assignments into env and skips them for the executable"
+    target: "result.env.CI"
+    matcher: "equals"
+    value: "1"
+  - id: A006
+    says: "A test command containing a pipe is refused with an error naming the pipe"
+    block: "resolveCommand refuses a pipe and names the construct"
+    target: "error.message"
+    matcher: "contains"
+    value: "pipe"
+  - id: A007
+    says: "A test command using shell substitution or backticks is refused, never run through a shell"
+    block: "resolveCommand refuses command substitution with no shell fallback"
+    target: "error.message"
+    matcher: "exists"
+
+  # AC3 — fail-closed on spawn error before any sink write
+  - id: A008
+    says: "A spawn failure or output overflow throws before any capture file is written, so truncated output is never sealed"
+    block: "runCapture throws on result.error and writes no capture file"
+    target: "captureFileWritten"
+    matcher: "equals"
+    value: false
+
+  # AC4 — verbatim inline, sha-bound, length-addressed, round-trips
+  - id: A009
+    says: "The inlined evidence block matches the captured output exactly by SHA-256"
+    block: "inlined block sha256 equals the marker sha256 (round-trip)"
+    target: "extracted.sha256"
+    matcher: "equals"
+    value: "marker.sha256"
+  - id: A010
+    says: "Captured output containing backticks and code fences round-trips into the report intact"
+    block: "a capture body containing backticks round-trips byte-for-byte (no code fence)"
+    target: "extracted.bytes"
+    matcher: "equals"
+    value: "raw.bytes"
+  - id: A011
+    says: "Captured output containing the evidence end-delimiter string round-trips intact"
+    block: "extraction is by byte length, not delimiter scan — delimiter-in-output round-trips"
+    target: "extracted.bytes"
+    matcher: "equals"
+    value: "raw.bytes"
+
+  # AC5 — three validators, warn-mode in Phase 1
+  - id: A012
+    says: "A build report with no captured evidence is flagged"
+    block: "validateCapturePresent returns an error when no capture marker is present"
+    target: "result"
+    matcher: "exists"
+  - id: A013
+    says: "A tampered evidence block is caught"
+    block: "validateCaptureInlined returns an error when inlined bytes are altered"
+    target: "result"
+    matcher: "exists"
+  - id: A014
+    says: "A truncated evidence block is caught"
+    block: "validateCaptureNotTruncated returns an error when block byte length differs from the marker"
+    target: "result"
+    matcher: "exists"
+  - id: A015
+    says: "In warn-mode, a failing evidence check warns but never blocks the save"
+    block: "evaluateCaptureGate returns blocked=false when not armed (warn-mode)"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # AC6 — trinary verdict, no false green
+  - id: A016
+    says: "Tests are marked passing only when at least one test passed and none failed"
+    block: "deriveVerdict returns pass for counted, passed>0, no failures"
+    target: "verdict"
+    matcher: "equals"
+    value: "pass"
+  - id: A017
+    says: "A run with zero tests at exit code zero is never marked passing"
+    block: "deriveVerdict returns abstain for {0,0,0} at exit 0 (no vacuous green)"
+    target: "verdict"
+    matcher: "equals"
+    value: "abstain"
+  - id: A018
+    says: "A run with failing tests is marked failing"
+    block: "deriveVerdict returns fail when failures are present"
+    target: "verdict"
+    matcher: "equals"
+    value: "fail"
+  - id: A019
+    says: "When test counts cannot be read, the run abstains rather than claiming a result"
+    block: "deriveVerdict returns abstain when counts are null"
+    target: "verdict"
+    matcher: "equals"
+    value: "abstain"
+
+  # AC7 — counts from capture, errors never stripped
+  - id: A020
+    says: "Test counts are derived from the captured output"
+    block: "deriveCounts reads the pass count from captured runner output"
+    target: "counts.passed"
+    matcher: "greater"
+    value: 0
+  - id: A021
+    says: "Error text is never stripped from the preserved output"
+    block: "the inlined block still contains the runner's error text"
+    target: "extracted.containsErrorToken"
+    matcher: "equals"
+    value: true
+
+  # AC8 — the instruction surface
+  - id: A022
+    says: "All four agent templates instruct running tests through the capture command"
+    block: "the four agent templates contain the ana test instruction"
+    target: "templatesWithInstruction"
+    matcher: "equals"
+    value: 4
+
+  # AC9 — checkpoint degrades to raw, never blocks
+  - id: A023
+    says: "A capture problem on a checkpoint test run degrades to raw output and does not block the run"
+    block: "a checkpoint capture failure degrades to raw and does not block"
+    target: "result.degradedToRaw"
+    matcher: "equals"
+    value: true
+
+  # AC10 — test_json opt-in, no auto-appended flags
+  - id: A024
+    says: "A per-surface structured test command override is accepted in project config"
+    block: "anaJsonSchema accepts a surface test_json override"
+    target: "surface.commands.test_json"
+    matcher: "exists"
+  - id: A025
+    says: "The configured test command is run as-is, with no flags appended"
+    block: "resolveCommand round-trips the configured args without appending flags"
+    target: "result.args"
+    matcher: "not_contains"
+    value: "--appended"
+
+  # AC11 — adversarial corpus invariants
+  - id: A026
+    says: "No adversarial stack fixture is ever reported as passing"
+    block: "NO-FALSE-GREEN: every .fail and pathology fixture yields a non-pass verdict"
+    target: "verdict"
+    matcher: "not_equals"
+    value: "pass"
+  - id: A027
+    says: "Unknown runner output abstains on counts while still preserving the raw bytes"
+    block: "ABSTAIN-ON-UNKNOWN: unknown output gives null counts but is still inlined verbatim"
+    target: "counts"
+    matcher: "equals"
+    value: null
+
+  # New — token ledger fully excised
+  - id: A028
+    says: "No token-measurement code ships with the capture feature"
+    block: "no js-tiktoken, token_economy, ana gain, or tokenizer marker field exists"
+    target: "tokenLedgerArtifactsFound"
+    matcher: "equals"
+    value: 0
+
+  # ── Phase 2: self-arming flip to fail-closed ────────────────────────
+
+  # AC12 — armed project blocks an invalid build-report save
+  - id: A029
+    says: "Once a project has sealed real evidence, a later build report with no valid evidence is blocked"
+    block: "evaluateCaptureGate returns blocked=true when armed and preservation fails"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: true
+
+  # New — check-then-arm: the arming save never blocks itself
+  - id: A030
+    says: "The first valid-evidence build report is never blocked; it seals and then arms the project"
+    block: "check-then-arm: first valid save is not blocked, then isArmed becomes true"
+    target: "armedAfterFirstValidSave"
+    matcher: "equals"
+    value: true
+
+  # AC13 — never-captured project never blocked; undefined-safe
+  - id: A031
+    says: "A project that never captured stays in warn-mode and is never blocked"
+    block: "isArmed is false for a fresh project and the gate does not block"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+  - id: A032
+    says: "After enforcement, unreadable counts still never block — only missing or corrupted evidence does"
+    block: "fail-open on counts holds after the flip (abstain counts, valid preservation, armed)"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+  - id: A033
+    says: "A fresh project with no arming record reads as not armed"
+    block: "isArmed is undefined-safe — missing capture.json returns false"
+    target: "armed"
+    matcher: "equals"
+    value: false
+
+  # AC14 — gate scoped to build_report.md only
+  - id: A034
+    says: "Verify reports are never blocked by the evidence gate, preserving Verify's independence"
+    block: "a verify_report save is not gated even when the project is armed"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+  - id: A035
+    says: "Saves with no build report never trigger the evidence gate"
+    block: "a non-build-report save is not gated even when the project is armed"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+file_changes:
+  # Phase 1 — creates
+  - path: "packages/cli/src/utils/capture-runner.ts"
+    action: create
+  - path: "packages/cli/src/utils/capture-marker.ts"
+    action: create
+  - path: "packages/cli/src/commands/test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/capture-runner.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/capture-marker.test.ts"
+    action: create
+  - path: "packages/cli/tests/capture-corpus/invariants.test.ts"
+    action: create
+  # Phase 1 — modifies
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  # Phase 2 — creates
+  - path: "packages/cli/src/utils/capture-state.ts"
+    action: create
+  - path: "packages/cli/tests/utils/capture-state.test.ts"
+    action: create
