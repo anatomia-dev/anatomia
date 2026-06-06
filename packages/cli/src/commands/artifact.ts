@@ -802,6 +802,7 @@ function applyCaptureGate(filePath: string, slugDir: string, projectRoot: string
     for (const err of gate.errors) {
       console.error(chalk.red(`  ${err}`));
     }
+    console.error(chalk.gray('  No unit tests for this spec? Run `ana test` anyway — it seals a harmless abstain when no tests run, which satisfies the gate.'));
     process.exit(1);
   }
 
