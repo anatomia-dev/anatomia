@@ -8,7 +8,7 @@ import { createEmptyEngineResult } from '../../src/engine/types/engineResult.js'
 import { fileExists } from '../../src/commands/init/preflight.js';
 import { displayBlindSpots, displaySuccessMessage } from '../../src/commands/init/state.js';
 import { createDirectoryStructure } from '../../src/commands/init/assets.js';
-import { createSkillSymlinks } from '../../src/commands/init/assets.js';
+import { createSkillSymlinks, copyCodexAgentFiles } from '../../src/commands/init/assets.js';
 import { preserveUserState, migrateSkillsToCanonical } from '../../src/commands/init/state.js';
 import { AGENT_FILES, CODEX_AGENT_FILES, DOCS_QUICKSTART, DOCS_SETUP_GUIDE } from '../../src/constants.js';
 
@@ -891,31 +891,66 @@ describe('Codex init infrastructure', () => {
         expect(files).toContain(`${baseName}.agent.toml`);
       }
     });
-    it('merge-not-overwrite preserves existing Codex agent customizations', async () => {
+    // @ana A002, A005, A006
+    it('re-init overwrites Codex instruction body while preserving .agent.toml config', async () => {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const templatesDir = path.join(__dirname, '..', '..', 'templates');
       const codexAgentsPath = path.join(tmpDir, '.codex', 'agents');
       await fs.mkdir(codexAgentsPath, { recursive: true });
+
+      // Seed from stock, then mutate an instruction body + the .agent.toml config keys
       for (const agentFile of CODEX_AGENT_FILES) {
         await fs.copyFile(
           path.join(templatesDir, '.codex/agents', agentFile),
           path.join(codexAgentsPath, agentFile),
         );
-      }
-      const customPath = path.join(codexAgentsPath, 'ana-build.md');
-      await fs.writeFile(customPath, '# Custom Build Agent\n\nMy custom content');
-      for (const agentFile of CODEX_AGENT_FILES) {
-        const destPath = path.join(codexAgentsPath, agentFile);
-        const exists = await fileExists(destPath);
-        if (exists) continue; // Skip — merge-not-overwrite
+        const baseName = agentFile.replace('.md', '');
         await fs.copyFile(
-          path.join(templatesDir, '.codex/agents', agentFile),
-          destPath,
+          path.join(templatesDir, '.codex/agents', `${baseName}.agent.toml`),
+          path.join(codexAgentsPath, `${baseName}.agent.toml`),
         );
       }
-      const content = await fs.readFile(customPath, 'utf-8');
-      expect(content).toContain('My custom content');
+      const mdPath = path.join(codexAgentsPath, 'ana-build.md');
+      const tomlPath = path.join(codexAgentsPath, 'ana-build.agent.toml');
+      await fs.writeFile(mdPath, '# Custom Build Agent\n\nMy custom content');
+      await fs.writeFile(
+        tomlPath,
+        `name = "renamed-by-user"
+description = "user edited"
+developer_instructions = "stale pointer"
+model = "gpt-4.1-custom"
+sandbox_mode = "read-only"
+model_reasoning_effort = "low"
+`,
+      );
+
+      // Drive the REAL refresh path
+      const changed = await copyCodexAgentFiles(codexAgentsPath, templatesDir);
+
+      // Instruction body IS overwritten with stock (the propagation fix)
+      const stockMd = await fs.readFile(
+        path.join(templatesDir, '.codex/agents', 'ana-build.md'),
+        'utf-8',
+      );
+      const refreshedMd = await fs.readFile(mdPath, 'utf-8');
+      expect(refreshedMd).toBe(stockMd);
+      expect(refreshedMd).not.toContain('My custom content');
+      expect(changed).toContain('ana-build.md');
+
+      // CONFIG keys ARE preserved
+      const refreshedToml = await fs.readFile(tomlPath, 'utf-8');
+      expect(refreshedToml).toContain('model = "gpt-4.1-custom"');
+      expect(refreshedToml).toContain('sandbox_mode = "read-only"');
+      expect(refreshedToml).toContain('model_reasoning_effort = "low"');
+
+      // Machine fields refresh from stock (pointer can't be stranded)
+      expect(refreshedToml).toContain('name = "ana-build"');
+      expect(refreshedToml).toContain(
+        'developer_instructions = "Full instructions in ana-build.md. Invoke via: ana run"',
+      );
+      expect(refreshedToml).not.toContain('renamed-by-user');
+      expect(refreshedToml).not.toContain('stale pointer');
     });
   });
 
