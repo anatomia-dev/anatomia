@@ -1,0 +1,166 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Retire Capture-Gate Self-Arming — Drive the Gate from a Committed Config Flag"
+
+# Supersession note: This contract re-expresses the capture gate's behavior in
+# config-enablement terms. It SUPERSEDES captured-test-evidence assertions
+# A030-A036 (arming -> config). The captured-test-evidence contract and its
+# verify_reports remain sealed and immutable as the historical record of how the
+# gate worked under self-arming. The mapping (old -> new):
+#   A030 -> A001/A002   A031 -> dropped (self-arming removed)   A032 -> A003
+#   A033 -> A004        A034 -> A005   A035 -> A006   A036 -> A007
+# A008-A014 are net-new behavior introduced by this scope.
+
+assertions:
+  # ── Gate behavior, re-expressed in config-enablement terms ──────────
+
+  # Re-expresses old A030. Enablement = flag on AND a resolvable test command.
+  - id: A001
+    says: "With the capture gate enabled, a build report that has no valid test evidence is blocked"
+    block: "evaluateCaptureGate returns blocked=true when enabled and a preservation validator fails"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: true
+
+  # Positive companion to A001 — the happy path proceeds (the surviving,
+  # non-arming half of old A031's intent: a valid-evidence save is not blocked).
+  - id: A002
+    says: "With the gate enabled, a build report carrying valid sealed evidence is not blocked"
+    block: "evaluateCaptureGate returns blocked=false when enabled and all preservation validators pass"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # Re-expresses old A032. Flag off OR absent yields warn-mode.
+  - id: A003
+    says: "When the gate is off or unset, a build report with no evidence is never blocked"
+    block: "evaluateCaptureGate returns blocked=false when not enabled, even with a failing validator"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # Re-expresses old A033. Fail-open on counts survives the re-expression.
+  - id: A004
+    says: "With the gate enabled, unreadable or abstaining test counts still never block — only missing or corrupted evidence does"
+    block: "evaluateCaptureGate returns blocked=false when enabled with valid preservation but abstaining counts"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # Re-expresses old A034 (undefined-safe default). The fail-safe posture the
+  # deleted isArmed held, now held by isCaptureGateEnabled: a missing or
+  # malformed ana.json reads as OFF and never throws.
+  - id: A005
+    says: "A project with a missing or malformed config reads as gate-off and is never blocked"
+    block: "isCaptureGateEnabled returns false (never throws) when ana.json is absent or malformed"
+    target: "enabled"
+    matcher: "equals"
+    value: false
+
+  # Re-expresses old A035. Verify independence preserved.
+  - id: A006
+    says: "Verify reports are never blocked by the evidence gate, even when it is enabled"
+    block: "a verify_report save is not gated even when the gate is enabled"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # Re-expresses old A036. Gate scoped to build_report.md only.
+  - id: A007
+    says: "Saves that are not build reports never trigger the evidence gate, even when it is enabled"
+    block: "a non-build-report save is not gated even when the gate is enabled"
+    target: "gate.blocked"
+    matcher: "equals"
+    value: false
+
+  # ── New behavior introduced by this scope ───────────────────────────
+
+  # Carve-out: the founder's no-test edge cases (Go repo, no-test app) just work.
+  - id: A008
+    says: "A project with the gate on but no runnable test command is never blocked"
+    block: "isCaptureGateEnabled returns false when captureGate is on but no top-level or surface test command resolves"
+    target: "enabled"
+    matcher: "equals"
+    value: false
+
+  # The surface-only monorepo trap: capture-capable, must stay enforced.
+  - id: A009
+    says: "A monorepo whose test command lives only on a surface is still enforced when the gate is on"
+    block: "isCaptureGateEnabled returns true when captureGate is on and only a per-surface test command resolves"
+    target: "enabled"
+    matcher: "equals"
+    value: true
+
+  # AC4 — fresh init opts the project in.
+  - id: A010
+    says: "A newly initialized project has the capture gate turned on"
+    block: "createAnaJson writes captureGate: on into a fresh ana.json"
+    target: "anaJson.captureGate"
+    matcher: "equals"
+    value: "on"
+
+  # AC5 — re-init never re-enables a gate the user turned off.
+  - id: A011
+    says: "Re-running init preserves an explicit gate-off choice"
+    block: "preserveUserState keeps captureGate: off through a re-init merge"
+    target: "mergedConfig.captureGate"
+    matcher: "equals"
+    value: "off"
+
+  # AC5 — absent stays absent, and the GUARANTEE is the resulting enablement is
+  # off (assert behavior, not just field state).
+  - id: A012
+    says: "Re-running init on a project that never set the gate leaves it off — the build is not blocked"
+    block: "after preserveUserState leaves captureGate absent, isCaptureGateEnabled reads false"
+    target: "enabled"
+    matcher: "equals"
+    value: false
+
+  # AC11 — the gate's state is visible in human-readable status.
+  - id: A013
+    says: "Project status shows whether the capture gate is on or off"
+    block: "ana work status human output reports the capture gate state"
+    target: "statusOutput.captureGate"
+    matcher: "exists"
+
+  # OQ6 — binds the verify-report's own sealed capture account to an assertion
+  # (closes the captured-test-evidence 'no contract assertion' Build concern).
+  - id: A014
+    says: "A verify report keeps its own sealed account of its test run"
+    block: "inlineReportCaptures seals the verify report's capture independently of the gate"
+    target: "verifyCaptureInlined"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/utils/capture-state.ts"
+    action: delete
+  - path: "packages/cli/tests/utils/capture-state.test.ts"
+    action: delete
+  - path: "packages/cli/src/utils/capture-marker.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/capture-marker.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/anaJsonSchema.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: ".ana/context/project-context.md"
+    action: modify
+  - path: "CHANGELOG.md"
+    action: modify
+  - path: ".ana/ana.json"
+    action: modify
