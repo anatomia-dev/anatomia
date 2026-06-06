@@ -231,3 +231,64 @@ describe('evaluateCaptureGate — warn-mode (Phase 1)', () => {
     expect(gate.warnings).toEqual([]);
   });
 });
+
+describe('validateCapturePresent — block-skipping scan (load-bearing once armed)', () => {
+  // @ana A012 — a build marker embedded INSIDE another capture's inlined block
+  // must NOT satisfy the present-check; only a real top-level marker counts.
+  it('does not accept a build marker that lives inside captured content', () => {
+    const slugDir = mkSlugDir();
+    // A verify capture whose raw output happens to contain a build marker line.
+    const embeddedBuildMarker =
+      '<!-- ana:capture stage=build slug=x bytes=5 sha256=abc123 file=.captures/z.log counts=abstain verdict=pass -->';
+    const raw = `running the verify suite...\n${embeddedBuildMarker}\nTests  3 passed (3)\n`;
+    const marker = seed(slugDir, raw, 'verify');
+    const { reportPath, errors } = inlineToFile(slugDir, marker);
+    expect(errors).toEqual([]);
+    // Only a top-level VERIFY marker exists — the embedded build line is inside
+    // the skipped block, so the present-check (which requires a build run) fails.
+    expect(validateCapturePresent(reportPath)).not.toBeNull();
+  });
+
+  it('accepts a genuine top-level build marker', () => {
+    const slugDir = mkSlugDir();
+    const marker = seed(slugDir, 'Tests  4 passed (4)\n'); // stage=build by default
+    const { reportPath } = inlineToFile(slugDir, marker);
+    expect(validateCapturePresent(reportPath)).toBeNull();
+  });
+});
+
+describe('evaluateCaptureGate — fail-closed flip (Phase 2)', () => {
+  // @ana A030
+  it('blocks when armed and a preservation validator fails', () => {
+    const slugDir = mkSlugDir();
+    const reportPath = path.join(slugDir, 'build_report.md');
+    fs.writeFileSync(reportPath, '# Build Report\n\nno capture marker at all\n');
+    const gate = evaluateCaptureGate(reportPath, { armed: true });
+    expect(gate.blocked).toBe(true);
+    expect(gate.errors.length).toBeGreaterThan(0);
+    expect(gate.warnings).toEqual([]);
+  });
+
+  // @ana A033 — fail-OPEN on counts holds after the flip: the gate only weighs
+  // preservation, so a sealed report whose counts abstain is never blocked.
+  it('does not block when armed if preservation holds but counts abstain', () => {
+    const slugDir = mkSlugDir();
+    // seed() defaults counts/verdict to abstain; the block is still valid.
+    const marker = seed(slugDir, 'bespoke harness ran; no parseable counts here\n');
+    const { reportPath } = inlineToFile(slugDir, marker);
+    const gate = evaluateCaptureGate(reportPath, { armed: true });
+    expect(gate.blocked).toBe(false);
+    expect(gate.errors).toEqual([]);
+    expect(gate.warnings).toEqual([]);
+  });
+
+  // @ana A030 — a tampered (preservation-failing) sealed report blocks once armed.
+  it('blocks an armed save whose inlined block was altered', () => {
+    const slugDir = mkSlugDir();
+    const marker = seed(slugDir, 'Tests  7 passed (7)\n');
+    const { reportPath, text } = inlineToFile(slugDir, marker);
+    fs.writeFileSync(reportPath, text.replace('7 passed', '9 passed'));
+    const gate = evaluateCaptureGate(reportPath, { armed: true });
+    expect(gate.blocked).toBe(true);
+  });
+});

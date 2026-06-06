@@ -356,12 +356,21 @@ export function inlineCaptures(reportText: string, slugDir: string): InlineResul
 /**
  * Seal validator: a build report must carry at least one captured build run.
  *
+ * Uses the block-skipping `eachMarker` scan (not a per-line `parseMarkers`
+ * scan) so a `build` marker line that appears INSIDE another capture's inlined
+ * block cannot satisfy the present-check. This matters once the gate enforces:
+ * the present-check is load-bearing and must agree with the integrity
+ * validators on what counts as a real top-level marker.
+ *
  * @param filePath - Path to the (already-inlined) build report
  * @returns An error string when no build capture is present, null otherwise
  */
 export function validateCapturePresent(filePath: string): string | null {
   const content = fs.readFileSync(filePath, 'utf-8');
-  const hasBuild = parseMarkers(content).some((mk) => mk.stage === 'build');
+  let hasBuild = false;
+  eachMarker(content, (marker) => {
+    if (marker && marker.stage === 'build') hasBuild = true;
+  });
   if (!hasBuild) {
     return 'No captured test run found. Run `ana test --stage build --slug <slug>` and paste the marker into the build report.';
   }
