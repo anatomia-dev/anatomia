@@ -22,15 +22,17 @@ The cut line is precise and isolated. `isArmed`/`armCapture` are imported in exa
 
 ## Output Mockups
 
-**Re-framed block message** (`applyCaptureGate`, replacing the arming-era text). Config framing; names the `ana test` fix AND how to disable (AC7):
+**Re-framed block message** (`applyCaptureGate`, replacing the arming-era text). Config framing; names the `ana test` fix AND how to disable (AC7). **The reason line(s) are DYNAMIC** — the current code already loops `gate.errors` (the actual preservation validator output); keep that loop. The structure is: config preamble → the actual validator error(s) → fix line → disable line. Below, `{gate.errors…}` is illustrative for a *truncated* capture; a *missing* capture would print the missing-marker error instead:
 
 ```
 Error: build_report.md has no valid captured test evidence.
   The capture gate is on for this project, so test evidence is required.
-  Capture marker is missing — the build report has no sealed test run.
+  {gate.errors[*] — e.g. "Inlined capture block was truncated — end delimiter is not at the expected 412-byte offset."}
   Fix: run `ana test` (it seals a harmless abstain even when no tests run), then re-save.
   To turn the gate off for this project: set "captureGate": "off" in .ana/ana.json.
 ```
+
+Do **not** hardcode a single reason string — the message must surface whichever of the three preservation validators (missing / tampered / truncated) actually failed, via the existing `gate.errors` loop. A015–A017 verify this: the test blocks on a *tampered/truncated* capture and asserts the message contains `ana test`, `captureGate`, and the real validator error.
 
 **Status readout** (`ana work status` human output, AC11). One line near the header. Three states:
 
@@ -68,7 +70,7 @@ The third state is `captureGate: "on"` but the carve-out resolves no test comman
 **What changes:**
 - Remove the `import { isArmed, armCapture } from '../utils/capture-state.js'` line (26).
 - Add a new exported helper `isCaptureGateEnabled(projectRoot: string): boolean` (see Approach). It reads `ana.json` undefined-safe (missing/malformed → `false`), parses via `AnaJsonSchema`, returns `captureGate === 'on' && hasResolvableTestCommand`. Import `resolveTestCommandString` from `./test.js`.
-- In `applyCaptureGate`, replace `const wasArmed = isArmed(projectRoot)` with `const enabled = isCaptureGateEnabled(projectRoot)` and pass `{ enabled }` to `evaluateCaptureGate`. Re-frame the block message (see Output Mockups).
+- In `applyCaptureGate`, replace `const wasArmed = isArmed(projectRoot)` with `const enabled = isCaptureGateEnabled(projectRoot)` and pass `{ enabled }` to `evaluateCaptureGate`. Re-frame the block message (see Output Mockups): change the now-false "previously sealed a real capture" line to the config preamble; **keep the existing `for (const err of gate.errors)` loop** (this is what makes the reason dynamic — do not collapse it to a fixed string); keep the `ana test` line; **add** the `captureGate: "off"` disable line. The thrown/printed message must contain all three: the real validator error(s), `ana test`, and `captureGate`.
 - Delete the `CaptureGateOutcome` interface, the `wasArmed` field, the function's `valid`/`wasArmed` return — `applyCaptureGate` now returns `void`.
 - Delete `armAfterValidBuildReport` entirely and both call sites (current ~1188 and ~1618), the `buildReportOutcome` variable and its two assignments (current ~1039 and ~1448 become bare `applyCaptureGate(...)` calls), and the one-time "capture gate armed" message.
 **Pattern to follow:** ana.json load+parse mirrors `work.ts:150-151` and `platform.ts:87-88` (`AnaJsonSchema.parse(JSON.parse(readFileSync(...)))`), wrapped in try/catch returning `false`.
@@ -101,6 +103,7 @@ The third state is `captureGate: "on"` but the carve-out resolves no test comman
 - Re-express **A030 → A001** (config on + no evidence → throws), **A032 → A003** (flag absent → not throw), **A035 → A006** (verify-report not throw with flag on), **A036 → A007** (spec save not throw with flag on).
 - Add `isCaptureGateEnabled` unit tests in this file (the function's home): **A005** (absent/malformed ana.json → false, no throw), **A008** (flag on + no test command → false), **A009** (flag on + surface-only test command → true).
 - Add **A002** integration happy-path (config on + valid capture → not blocked) if not better covered in capture-marker.
+- Add the **block-message test (A015/A016/A017)**: flag on + resolvable test command + a **tampered or truncated** capture (alter an inlined block so `validateCaptureNotTruncated` fails — reuse the `capture-marker.test.ts` tamper pattern that replaces bytes inside the sealed block). Capture the thrown/`console.error` output and assert it contains **`ana test`** (A015), **`captureGate`** (A016), and the **actual validator error** (A017 — e.g. `truncated`). Using a tampered (not missing) fixture is what proves the reason line is dynamic, not hardcoded. The test will need access to the block message — assert via the mocked `process.exit`/`console.error` spy already used by the gate integration tests in this file.
 **Pattern to follow:** The existing `createTestProject` / `createArtifact` / `createBuildReportWithCapture` helpers and the surrounding describe block. `createTestProject` already writes an `ana.json` — extend its options or write the flag after.
 **Why:** The integration tests must drive enablement from config, not from a written `capture.json`.
 
@@ -161,6 +164,7 @@ Copied from scope, expanded. **AC14 is dropped** (see Approach — editing the f
 - **Unit (capture-marker):** `evaluateCaptureGate` with `{ enabled: true/false }` × {failing validator, valid block, abstain counts} — A001, A002, A003, A004. Same fixtures as today.
 - **Unit (isCaptureGateEnabled, in artifact.test.ts):** absent/malformed ana.json → false (A005); flag on + no test command → false (A008); flag on + surface-only test command → true (A009); flag on + top-level test command → true; flag off → false.
 - **Integration (artifact save path):** flag on + no evidence → throws (A001); verify-report not gated (A006); non-build-report not gated (A007); flag absent → not gated (A003).
+- **Block-message content (A015/A016/A017):** flag on + resolvable test command + **tampered/truncated** capture → blocked; assert the message contains `ana test` (fix), `captureGate` (disable), and the real validator error (dynamic — not a canned "missing"). One test, all three assertions.
 - **Init / re-init:** fresh init writes on (A010); re-init preserves off (A011); re-init absent → enablement off / not blocked (A012); schema enum validation.
 - **Status:** `Capture gate:` line present (A013).
 - **Verify-report sealed account:** verify-report capture still inlined/sealed independently of the gate (A014) — tag the existing verify-report inlining test if present, else add one.
@@ -294,5 +298,5 @@ Measured on `main` at plan time with the exact command below.
 - Current tests: **3419 passed + 2 skipped = 3421 total**
 - Current test files: **139**
 - Command used: `(cd 'packages/cli' && pnpm vitest run)`
-- Expected delta: **remove 7 arming tests** (6 in `capture-state.test.ts` + 1 self-arming `A031` test in `artifact.test.ts`); **add ≈11** (A002, A005, A008, A009, A010, A011, A012, A013, A014, plus carve-out/malformed edge cases). Net **≥ +4** → expected total **≥ 3423**. Test files: −1 (`capture-state.test.ts` deleted), new tests folded into existing files → **≈138-139 files**.
+- Expected delta: **remove 7 arming tests** (6 in `capture-state.test.ts` + 1 self-arming `A031` test in `artifact.test.ts`); **add ≈12** (A002, A005, A008, A009, A010, A011, A012, A013, A014, the A015/A016/A017 block-message test, plus carve-out/malformed edge cases). Net **≥ +5** → expected total **≥ 3424**. Test files: −1 (`capture-state.test.ts` deleted), new tests folded into existing files → **≈138-139 files**.
 - Regression focus: `artifact.test.ts` (gate block path re-expressed), `capture-marker.test.ts` (input rename), `init.test.ts` (re-init merge), `work.test.ts` (status output shape).
