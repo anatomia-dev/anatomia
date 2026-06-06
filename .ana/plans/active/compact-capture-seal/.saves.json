@@ -40,12 +40,18 @@
   "build_started_at": "2026-06-06T20:51:00.174Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-06-06T21:31:43.183Z",
-    "hash": "sha256:729845e8ce520b2a57beb365ad3c9bd6c5d7107308ce6da6e92f0814bceb582f"
+    "saved_at": "2026-06-06T22:03:42.960Z",
+    "hash": "sha256:3e544f1578899ff77e10dc151be29e6f7799709a641056b74921e6a766934311"
   },
   "build-data": {
-    "saved_at": "2026-06-06T21:31:43.184Z",
-    "hash": "sha256:6362a8dcc0fafe16c20fd00dada44a80fd5d9125c6d17178f245388ae79ab8b6"
+    "saved_at": "2026-06-06T22:03:42.961Z",
+    "hash": "sha256:8f0bb401fb18de9231bd7d1d3eb6ad4254b4d0e53d6c85cd6897737940ec4666",
+    "history": [
+      {
+        "saved_at": "2026-06-06T21:31:43.184Z",
+        "hash": "sha256:6362a8dcc0fafe16c20fd00dada44a80fd5d9125c6d17178f245388ae79ab8b6"
+      }
+    ]
   },
   "modules_touched": [
     ".claude/agents/ana-build.md",

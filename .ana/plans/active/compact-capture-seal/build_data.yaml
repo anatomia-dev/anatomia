@@ -19,3 +19,9 @@ concerns:
     file: "packages/cli/src/utils/capture-marker.ts"
     severity: observation
     suggested_action: monitor
+  - summary: "Verification scope: the build sealed and verified packages/cli only (the cli test_json JSON path). Verify must run the FULL project (cli + website) to catch what the narrow scope could miss. The full turbo-wrapped commands.test is not a JSON reporter, so an ana-test baseline over it abstains on the count — acceptable, since Verify's job is full-project pass/fail, not a count."
+    severity: observation
+    suggested_action: monitor
+  - summary: "Build-report count delta was corrected after the rebase: the first draft compared the post-#281 final (3431) against a pre-#281 baseline (3434) and reported net -3. The post-#281 baseline was then MEASURED (origin/main = 3438) and the Comparison corrected to net -7. Both endpoints are now measured, not reconstructed."
+    severity: observation
+    suggested_action: acknowledge

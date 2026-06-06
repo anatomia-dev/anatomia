@@ -139,15 +139,24 @@ copies follow). Contract.yaml not modified (sealed).
 
 ## Test Results
 
-### Baseline (before changes — origin/main)
-Command: `(cd packages/cli && pnpm vitest run)`
+### Baseline (before changes — post-#281 origin/main, MEASURED)
+Measured by checking out `origin/main` (d6522e9f, post-PR-#281) in this worktree and running the full
+cli suite — NOT reconstructed from `it()` tallies:
+Command: `(cd packages/cli && pnpm vitest run)` at `origin/main`
 ```
-Test Files  138 passed (138)
-Tests  3432 passed | 2 skipped (3434)
+Test Files  1 failed | 137 passed (138)
+Tests  1 failed | 3435 passed | 2 skipped (3438)
 ```
+**Total = 3438.** Note: my initial baseline (taken before the PR-#281 merge, on the pre-#281 base
+cb9ae644) was 3434 — that earlier number was across the merge boundary and is superseded by this
+measured post-#281 figure. The "1 failed" here is a **measurement artifact, not a main regression**:
+`template-propagation.test.ts > … (built CLI) … Codex agent instruction body` runs the *built* `dist/`,
+which is gitignored and therefore still held my compiled code while the source was reverted to main —
+the source/dist mismatch fails that one test. It does not affect the test *count* (3438 either way), and
+the test passes when `dist` matches source (it is green in the After-Changes run below).
 
-### After Changes
-Command: `(cd packages/cli && pnpm vitest run)`
+### After Changes (MEASURED)
+Command: `(cd packages/cli && pnpm vitest run)` on this branch
 ```
 Test Files  138 passed (138)
 Tests  3429 passed | 2 skipped (3431)
@@ -159,21 +168,32 @@ which is the AC3 dogfood proof. The ~1.05 MB output sealed compactly (AC13) and 
 
 <!-- ana:capture stage=build slug=compact-capture-seal counts=3429p/0f/2s verdict=pass sha256=feaf6587dac46cb49ba468795e07234be93387d70e1e63edf11d3014f9ebef22 bytes=1048890 lines=207 -->
 
-### Comparison
-- **Net: 3434 → 3431 (−3 tests); 138 test files unchanged (none added or removed).**
-- This is a deletion-heavy scope; the small net is the deletion of the inliner test surface offset by new
-  compact-seal tests:
-  - `capture-runner.test.ts`: 24 → 28 (**+4**: vitest-JSON ×3 incl. stderr-embedded + go-json A022).
-  - `capture-marker.test.ts` + `test-command.test.ts` + `capture-corpus/invariants.test.ts`: 116 → 109
-    (**−7 net**). **Deleted suites:** the inliner length-addressed round-trip suite, the two block-validator
-    describes (`validateCaptureInlined`/`validateCaptureNotTruncated`), the per-stack PRESERVE+SEAL-BINDS and
-    ERROR-NEVER-STRIPPED rows + the inliner-adversarial (end-delimiter/backtick) describe in
-    `invariants.test.ts`, and the "exit 3 over 8 MiB ceiling" test. **Added:** strict-parser/closed-token
-    rows (fenced/placeholder/backtick/trailing/missing-sha A029/bad-hex/unknown-key), enginebind round-trip
-    ×2, old-format ×2, JSON-count + source/null tests, log-deletion, abstain-hint ×2, removed-ceiling-seal.
-  - `artifact.test.ts`: 206 → 206 (the verify-inline test and the truncation block-message test were
-    rewritten in place to the compact/present-check reality).
-- Tests removed (suite-level intentional deletions): yes, see above. **Regressions: none.**
+### Comparison (against the MEASURED post-#281 baseline)
+- **Net: 3438 → 3431 (−7 tests); 138 test files unchanged (none added or removed).**
+- Both endpoints are MEASURED with `pnpm vitest run` (post-#281 `origin/main` = 3438; this branch = 3431),
+  not derived from `it()` tallies. The earlier draft said "3434 → 3431 (−3)"; that compared my post-#281
+  final against a *pre-#281* baseline (3434) across the PR-#281 merge boundary and was wrong. The correct,
+  measured delta is **−7**.
+- Every per-file count below is a MEASURED runtime count (final state). A net decrease is expected and
+  intended — this is a deletion-heavy scope (the inliner and its test surface were removed, not adapted).
+  Measured final per-file:
+  - `capture-runner.test.ts`: **28** — **+4 additive** (vitest-JSON ×3 incl. stderr-embedded + go-json A022),
+    nothing removed here.
+  - `capture-corpus/invariants.test.ts`: **64** — the largest intentional drop. Deleted the per-stack
+    PRESERVE+SEAL-BINDS and ERROR-NEVER-STRIPPED rows and the inliner-adversarial (end-delimiter/backtick)
+    describe (all inliner-only); kept the count/verdict + pathology + ABSTAIN-ON-UNKNOWN rows.
+  - `capture-marker.test.ts`: **23** — deleted the inliner length-addressed round-trip suite + the two
+    block-validator describes (`validateCaptureInlined`/`validateCaptureNotTruncated`); added the
+    strict-parser/closed-token rows (fenced/placeholder/backtick/trailing/missing-sha A029/bad-hex/
+    unknown-key), enginebind round-trip ×2, old-format ×2, present-check gate.
+  - `test-command.test.ts`: **22** — retains #281's 5-test `isCheckpointSealConflict` block (preserved
+    through the rebase); deleted the "exit 3 over 8 MiB ceiling" test; added log-deletion, abstain-hint ×2,
+    removed-ceiling-seal, and top-level `test_json` source/null tests.
+  - `artifact.test.ts`: **206** (unchanged) — the verify-inline and truncation block-message tests were
+    rewritten in place to the compact/present-check reality (no count change).
+- The +4 measured additions in capture-runner net against the inliner-suite deletions to land at −7 overall.
+- Tests removed (suite-level intentional deletions): yes, see above. **Regressions: none** — the
+  After-Changes suite is fully green (3429 passed, 0 failed, 2 skipped).
 
 ### New / notable tests
 - `capture-marker.test.ts`: strict closed-token parser, enginebind round-trip, old-format tolerance,
@@ -183,12 +203,22 @@ which is the AC3 dogfood proof. The ~1.05 MB output sealed compactly (AC13) and 
   removed-ceiling seal.
 
 ## Verification Commands
+
+**Verify should run the FULL project (cli + website), not the cli-only scope this build sealed.** My seal
+and all my verification covered `packages/cli` only — fine for the build, but the independent check exists
+to catch what a narrow scope misses, so the re-run must cover the whole project:
 ```
-(cd packages/cli && pnpm run build)        # includes tsc --noEmit typecheck
-(cd packages/cli && pnpm vitest run)       # expect 3429 passed, 2 skipped (3431)
-(cd packages/cli && pnpm run lint)         # see Open Issues re: pre-existing warning
+pnpm run build                             # full turbo build (cli + website) + typecheck
+pnpm run test -- --run                     # full project: commands.test, turbo-wrapped cli + website
+pnpm run lint                              # see Open Issues re: pre-existing git-operations.ts warning
 ```
-To reproduce the sealed dogfood count (uses commands.test_json):
+**Heads-up / accepted tradeoff:** the full `commands.test` (`pnpm run test -- --run`) is turbo-wrapped and
+NOT a JSON reporter, so an `ana test` baseline over it will **abstain on the count** — that is the very
+problem this scope fixes only for the cli JSON path (`test_json`). That abstain is acceptable here: Verify's
+job is full-project **pass/fail to catch a regression**, not a pretty count. Scope-completeness over
+count-prettiness for the independent re-run. (Per-package, measured: cli = 3429 passed / 2 skipped / 3431.)
+
+To reproduce the sealed dogfood cli count (uses commands.test_json — cli scope only):
 ```
 node packages/cli/dist/index.js test --stage build --slug compact-capture-seal
 ```
@@ -220,6 +250,13 @@ See `build_data.yaml` for the structured companion. Summary:
    `enginebind`/L3 token. AC5/A012/A013 cover descriptions, placeholders, and fenced examples only.
 6. **AC12 (idempotent re-save):** guaranteed by construction (save no longer writes the report body) but
    not covered by a dedicated automated test — see Deviations.
+7. **Verification scope (for Verify):** this build sealed/verified `packages/cli` only (the cli `test_json`
+   JSON path). Verify must run the FULL project (cli + website). The full turbo-wrapped `commands.test` is
+   not a JSON reporter, so an `ana test` baseline over it abstains on the count — accepted: Verify's job is
+   full-project pass/fail to catch a regression, not a count. See Verification Commands.
+8. **Count delta corrected post-rebase:** the first draft reported net −3 (post-#281 final vs a *pre*-#281
+   baseline of 3434, across the merge boundary). The post-#281 baseline was then MEASURED
+   (`origin/main` = 3438) and the Comparison corrected to net **−7**. Both endpoints are now measured.
 
 Second pass: re-examined the diff for unused imports/params (printOutcome's `slug` removed; failOrDegrade's
 `file` removed; capture-marker no longer imports `createHash`/`path`), the no-false-green path (deriveVerdict
