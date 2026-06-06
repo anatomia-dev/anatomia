@@ -641,6 +641,51 @@ describe('ana work status', () => {
     });
   });
 
+  describe('capture gate status readout', () => {
+    /** Overwrite the test project's ana.json to set the capture-gate config. */
+    async function setCaptureGateConfig(cfg: Record<string, unknown>): Promise<void> {
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'ana.json'),
+        JSON.stringify({ artifactBranch: 'main', ...cfg }),
+        'utf-8'
+      );
+    }
+
+    // @ana A013 — the gate's on/off state is visible in human-readable status.
+    it('reports "Capture gate: on" when the gate is on with a test command', async () => {
+      await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
+      await setCaptureGateConfig({ captureGate: 'on', commands: { test: 'pnpm vitest run' } });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('Capture gate: on');
+      expect(output).not.toContain('inactive');
+    });
+
+    it('reports the inactive state when on but no test command resolves', async () => {
+      await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
+      await setCaptureGateConfig({ captureGate: 'on', commands: {}, surfaces: {} });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('Capture gate: on (inactive');
+    });
+
+    it('reports "Capture gate: off" when the flag is absent', async () => {
+      await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('Capture gate: off');
+    });
+
+    it('includes the raw captureGate flag in --json output', async () => {
+      await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
+      await setCaptureGateConfig({ captureGate: 'on', commands: { test: 'pnpm vitest run' } });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const parsed = JSON.parse(output);
+      expect(parsed.captureGate).toBe('on');
+    });
+  });
+
   // @ana A006, A007, A008
   describe('behind-warning display', () => {
     it('work status shows behind warning when worktree is behind origin/main', async () => {

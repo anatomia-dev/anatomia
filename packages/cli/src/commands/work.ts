@@ -31,6 +31,7 @@ import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtif
 import type { ArtifactState } from './work-state.js';
 import { writeProofChain, guardFailResult } from './work-proof.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
+import { isCaptureGateEnabled } from './artifact.js';
 
 // Re-exports from work-proof for backward compatibility
 export { deriveSurface } from './work-proof.js';
@@ -65,6 +66,11 @@ interface StatusOutput {
   updateAvailable: { current: string; latest: string } | null;
   projectMismatch: { cliVersion: string; projectVersion: string } | null;
   scanStale: ScanFreshnessResult | null;
+  /** Raw `captureGate` flag from ana.json: `"on"`, `"off"`, or null when absent. */
+  captureGate: 'on' | 'off' | null;
+  /** Whether the gate actually enforces (flag on AND a test command resolves).
+   * Distinguishes the on-but-inactive readout from a truly enforcing gate. */
+  captureGateActive: boolean;
   items: WorkItem[];
 }
 
@@ -317,8 +323,27 @@ function printNotifications(output: StatusOutput): void {
  *
  * @param output - Status output structure
  */
+/**
+ * Render the capture-gate state for human-readable status.
+ *
+ * An absent flag reads as off (its enforcement behavior). An `on` flag with no
+ * resolvable test command is reported as inactive — configured on, but the
+ * carve-out means it never blocks.
+ *
+ * @param flag - Raw `captureGate` flag (`"on"`, `"off"`, or null when absent)
+ * @param active - Whether the gate actually enforces (flag on AND a test command)
+ * @returns A one-line human-readable description of the gate state
+ */
+function formatCaptureGateState(flag: 'on' | 'off' | null, active: boolean): string {
+  if (flag === 'on') {
+    return active ? 'on' : 'on (inactive — no test command configured)';
+  }
+  return 'off';
+}
+
 function printHumanReadable(output: StatusOutput): void {
   console.log(chalk.bold(`\nPipeline Status (artifact branch: ${output.artifactBranch})\n`));
+  console.log(`  Capture gate: ${formatCaptureGateState(output.captureGate, output.captureGateActive)}\n`);
 
   if (!output.onArtifactBranch) {
     console.log(chalk.yellow(`ℹ You're on ${output.currentBranch}. Artifact branch is ${output.artifactBranch}.`));
@@ -471,15 +496,20 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
 
   // Scan freshness check (best-effort, non-blocking)
   let lastScanAt: string | undefined;
+  let captureGate: 'on' | 'off' | null = null;
   try {
     const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
     const anaContent = fs.readFileSync(anaJsonPath, 'utf-8');
     const anaData = JSON.parse(anaContent);
     lastScanAt = anaData.lastScanAt;
+    captureGate = anaData.captureGate === 'on' ? 'on' : anaData.captureGate === 'off' ? 'off' : null;
   } catch {
     // Silent — ana.json might not exist or be unreadable
   }
   const scanFreshness = checkScanFreshness(lastScanAt, projectRoot);
+  // The gate enforces only when the flag is on AND a test command resolves;
+  // an on flag with no resolvable command is reported as inactive.
+  const captureGateActive = isCaptureGateEnabled(projectRoot);
 
   // Discover slugs
   const slugs = discoverSlugs(artifactBranch, onArtifactBranch, projectRoot);
@@ -493,6 +523,8 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
         updateAvailable: versionCheck.updateAvailable,
         projectMismatch: versionCheck.projectMismatch,
         scanStale: scanFreshness?.isStale ? scanFreshness : null,
+        captureGate,
+        captureGateActive,
         items: [],
       }, null, 2));
     } else {
@@ -503,6 +535,8 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
         updateAvailable: versionCheck.updateAvailable,
         projectMismatch: versionCheck.projectMismatch,
         scanStale: scanFreshness?.isStale ? scanFreshness : null,
+        captureGate,
+        captureGateActive,
         items: [],
       });
       console.log(chalk.gray(`\nNo active work. Run: ${agentCommand('')} to scope new work.`));
@@ -545,6 +579,8 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
     updateAvailable: versionCheck.updateAvailable,
     projectMismatch: versionCheck.projectMismatch,
     scanStale: scanFreshness?.isStale ? scanFreshness : null,
+    captureGate,
+    captureGateActive,
     items,
   };
 
