@@ -99,6 +99,15 @@ assertions:
     matcher: "equals"
     value: 0
 
+  # Strict-grammar backbone — also closes A002's gap (a marker shipped without
+  # its fingerprint must be rejected, not silently accepted) and hardens AC10.
+  - id: A029
+    says: "A seal missing its fingerprint is rejected, never accepted as valid evidence"
+    block: "a marker missing a required field (sha256) fails the strict grammar and is not present"
+    target: "markersMissingSha.length"
+    matcher: "equals"
+    value: 0
+
   - id: A014
     says: "A report that only describes the seal format does not satisfy the evidence gate"
     block: "report describing the marker in prose leaves the gate unsatisfied"
