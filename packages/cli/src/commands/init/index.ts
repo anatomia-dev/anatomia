@@ -54,6 +54,7 @@ import {
   detectPlatforms,
   migrateSkillsToCanonical,
   getTemplatesDir,
+  getCliVersion,
 } from './state.js';
 import { scaffoldAndSeedSkills } from './skills.js';
 
@@ -160,12 +161,28 @@ export function registerInitCommand(program: Command): void {
       const templatesDir = getTemplatesDir();
       await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState);
 
-      // Platform-conditional configuration
+      // Platform-conditional configuration.
+      // Re-init refreshes agent instruction bodies + CLAUDE.md from stock;
+      // the returned lists name files whose instruction content actually changed.
+      const changedFiles: string[] = [];
       if (platforms.includes('claude')) {
-        await createClaudeConfiguration(cwd, engineResult, preflight.initState);
+        changedFiles.push(...await createClaudeConfiguration(cwd, engineResult, preflight.initState));
       }
       if (platforms.includes('codex')) {
-        await createCodexConfiguration(cwd, preflight.initState);
+        changedFiles.push(...await createCodexConfiguration(cwd, preflight.initState));
+      }
+
+      // Content-gated consolidated warning — one entry listing only the files
+      // whose instruction content changed, with conditional git-recovery
+      // guidance. Silent on a fresh install or a no-op re-init. Non-blocking.
+      if (changedFiles.length > 0) {
+        const uniqueChanged = [...new Set(changedFiles)];
+        const cliVersion = await getCliVersion();
+        preflight.warnings.push(
+          `Refreshed to v${cliVersion} stock: ${uniqueChanged.join(', ')}\n`
+          + 'If you customized these, recover your version from git\n'
+          + '(e.g. git log -- .claude/agents/ana-build.md)'
+        );
       }
 
       // Cross-tool files — always generated regardless of platform

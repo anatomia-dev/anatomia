@@ -178,4 +178,40 @@ export const CODEX_AGENT_FILES = [
   'ana-learn.md',
 ] as const;
 
+// ============================================================
+// Re-init preserve classification (CONFIG vs INSTRUCTION)
+// ============================================================
+//
+// On re-init the agent INSTRUCTION surface (the .md body / machine
+// frontmatter) is refreshed wholesale from stock, but a customer's basic
+// CONFIG must never be reset. These two lists define the CONFIG class — the
+// structured keys carried forward from the existing file onto fresh stock.
+// Single source of truth for both assets.ts (the merge) and the tests.
+
+/**
+ * Claude agent `.md` frontmatter keys preserved across re-init (CONFIG class).
+ *
+ * `model` is unambiguously a user preference (set via `ana agents model`) →
+ * preserve. `tools` is a deliberate CONFIG call, NOT a lump-in with `model`:
+ * it straddles user-restriction knob and the agent's capability list. Today
+ * preserving it is low-risk and correct — stock templates set no `tools` key
+ * and we only preserve-if-present, so honoring a customer's restriction is
+ * right. NOTE: if stock ever begins managing `tools` as a *granted capability*
+ * the agent needs, `tools` moves to the refresh class — otherwise a future
+ * required capability gets stranded behind a customer's preserved restriction
+ * (the same "machine-owned and load-bearing?" question resolved for
+ * `developer_instructions` by refreshing it). Keep the choice explicit.
+ */
+export const CLAUDE_AGENT_CONFIG_KEYS = ['model', 'tools'] as const;
+
+/**
+ * Codex `.agent.toml` keys preserved across re-init (CONFIG class).
+ *
+ * Customer-tuned runtime settings — model choice, sandbox policy, and
+ * reasoning effort. The machine fields (`name`, `description`,
+ * `developer_instructions`) are deliberately NOT here: they refresh from
+ * stock so the instruction pointer can never be stranded stale.
+ */
+export const CODEX_AGENT_CONFIG_KEYS = ['model', 'sandbox_mode', 'model_reasoning_effort'] as const;
+
 

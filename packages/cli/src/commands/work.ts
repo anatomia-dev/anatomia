@@ -298,7 +298,8 @@ function printNotifications(output: StatusOutput): void {
   }
   if (output.projectMismatch) {
     console.log(chalk.gray(
-      `ℹ Project initialized with v${output.projectMismatch.projectVersion} (current CLI: v${output.projectMismatch.cliVersion}). Run: ana init`
+      `ℹ Project initialized with v${output.projectMismatch.projectVersion} (current CLI: v${output.projectMismatch.cliVersion}).\n`
+      + `  Run: ana init to refresh agent templates & CLAUDE.md to the current version.`
     ));
   }
   if (output.scanStale?.isStale) {

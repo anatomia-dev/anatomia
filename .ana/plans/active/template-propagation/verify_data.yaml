@@ -1,0 +1,42 @@
+schema: 1
+findings:
+  - category: test
+    summary: "`tools` config-key preservation is untested — CLAUDE_AGENT_CONFIG_KEYS includes 'tools' but no test sets a tools frontmatter key and asserts it survives re-init; only `model` (A004) is exercised"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    line: 130
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A004"]
+  - category: test
+    summary: "CLAUDE.md overwrite-of-a-user-edit is not directly tested — A007 is verified only by presence of interpolation; no test mutates CLAUDE.md body then proves re-init resets it to stock"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    line: 174
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A007"]
+  - category: test
+    summary: "atomicWriteFile SHA-256 integrity-failure branch (hash mismatch throw + temp cleanup) is untested — A011 is verified only indirectly via a passing happy-path write"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 165
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A011"]
+  - category: test
+    summary: "Changed-files warning test (A014) does not assert the exact set — it checks ana-build.md present and CLAUDE.md absent, but an unchanged agent erroneously appearing in the warning would not be caught"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    line: 206
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A014"]
+  - category: code
+    summary: "Refresh-warning git-recovery hint hardcodes '.claude/agents/ana-build.md' regardless of which files changed — a Codex-only user, or one whose only change was CLAUDE.md, gets a Claude-path example. Echoes the hardcoded-'.claude/'-path pattern of gitignore-disclosure-and-hardening-C1"
+    file: "packages/cli/src/commands/init/index.ts"
+    line: 184
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "atomicWriteFile fully replaces the removed copyAndVerifyFile (spec implied factoring the two to share). All writes now route through one content-based atomic+integrity helper; old helper removed with no remaining callers — cleaner than the spec's letter, no dead code"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 150
+    severity: observation
+    suggested_action: acknowledge

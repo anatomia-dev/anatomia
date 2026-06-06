@@ -1075,6 +1075,7 @@ describe('ana work status', () => {
     });
 
     // @ana A003, A004
+    // @ana A024, A025
     it('shows project mismatch notification when versions differ', async () => {
       await createWorkTestProject({
         slugs: [{
@@ -1091,6 +1092,9 @@ describe('ana work status', () => {
       expect(output).toContain('Project initialized with');
       expect(output).toContain('ana init');
       expect(output).toContain('v1.0.0');
+      // Sharpened copy conveys that re-init refreshes templates
+      expect(output).toContain('refresh');
+      expect(output).toContain('templates');
     });
 
     // @ana A005, A006

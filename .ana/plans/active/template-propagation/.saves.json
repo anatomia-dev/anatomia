@@ -40,5 +40,44 @@
         "hash": "sha256:4fafa6418a52a476a9fde0a5384f19bc9cdb47a4deeacca620244a07ca2956e3"
       }
     ]
+  },
+  "build_started_at": "2026-06-06T01:02:55.978Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-06T01:23:50.087Z",
+    "hash": "sha256:cba7b4b7d6963d57b5fda5dc9c436f6d0e61a4c6f0c5df8677f60434645875fd"
+  },
+  "build-data": {
+    "saved_at": "2026-06-06T01:23:50.088Z",
+    "hash": "sha256:f66eed13948731a73690c1f887291588594e2a02621e4b848efd00bfa8b4d87e"
+  },
+  "modules_touched": [
+    "CHANGELOG.md",
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/constants.ts",
+    "packages/cli/src/utils/agent-config.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/template-propagation.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/agent-config.test.ts",
+    "website/content/docs/guides/configurability.mdx"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-06T01:31:54.004Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:4680e8e4e2139e992d966a63bc627cfe9f1c02fdb640a0f23e4cf2ea545005bf",
+    "run_at": "2026-06-06T01:37:54.237Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-06T01:37:54.273Z",
+    "hash": "sha256:6eb23d533b15e103245123484f3d1285d69e4ee7e81f41726e7d7887b5f99a7c"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-06T01:37:54.273Z",
+    "hash": "sha256:f75e791cfd5eaa56bb914d630c9ed892393cfdbfc5873098df1feb32162e4cef"
   }
 }
