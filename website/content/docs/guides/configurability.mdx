@@ -140,7 +140,7 @@ sandbox_mode = "danger-full-access"
 
 ### Agent templates
 
-The six agent files in platform-specific directories such as `.claude/agents/` and `.codex/agents/` are yours to edit. Adjust Verify's disposition, add constraints to Build, modify Think's scoping process. Copied on `ana init`, not symlinked — edits persist across re-init.
+The six agent files in platform-specific directories such as `.claude/agents/` and `.codex/agents/` are yours to edit. Adjust Verify&apos;s disposition, add constraints to Build, modify Think&apos;s scoping process. But the instruction content is machine-owned: on `ana init` the agent `.md` instruction bodies and `CLAUDE.md` are **overwritten** from the current stock so template updates reach your install. Your edits are recoverable from git (init warns when it overwrites a file whose content had changed — `git log -- .claude/agents/ana-build.md`). Your **basic config is preserved**: Claude frontmatter `model`/`tools` and Codex `.agent.toml` `model`/`sandbox_mode`/`model_reasoning_effort` are never reset.
 
 <Callout variant="note">The pipeline assumes certain agent behaviors: Verify writes a report with a PASS/FAIL verdict, Build tags tests with `@ana`, Plan seals a contract. Removing these expectations breaks mechanical verification. Add behavior; be careful removing it.</Callout>
 
@@ -212,16 +212,18 @@ Updating the CLI (`npm update anatomia-cli`) changes the binary only. Your insta
 <ul style={{fontSize:"12.5px",color:"var(--ink-75)",lineHeight:1.6,margin:0,paddingLeft:"16px"}}>
 <li>context/ directory (copied wholesale)</li>
 <li>ana.json user fields + unknown keys</li>
+<li>Agent basic config — Claude frontmatter model/tools, Codex model/sandbox_mode/model_reasoning_effort</li>
 <li>Skill Rules, Gotchas, Examples</li>
 <li>proof_chain.json + PROOF_CHAIN.md</li>
-<li>plans/completed/ (all archives)</li>
-<li>Agent files in platform directories such as .claude/agents/ and .codex/agents/</li>
-<li>CLAUDE.md + AGENTS.md</li>
+<li>plans/completed/ + plans/active/ (all archives + in-flight work)</li>
+<li>AGENTS.md (still skip-if-exists)</li>
 </ul>
 </div>
 <div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",border:"1px solid rgba(248,113,113,0.25)",background:"var(--fail-bg)"}}>
 <div style={{fontWeight:600,fontSize:"13px",color:"var(--fail)",marginBottom:"6px"}}>Refreshed</div>
 <ul style={{fontSize:"12.5px",color:"var(--ink-75)",lineHeight:1.6,margin:0,paddingLeft:"16px"}}>
+<li>Agent .md instruction bodies (overwritten from stock — recover via git)</li>
+<li>CLAUDE.md (overwritten + re-interpolated)</li>
 <li>ana.json anaVersion + lastScanAt</li>
 <li>scan.json (full regeneration)</li>
 <li>Skill Detected sections</li>
