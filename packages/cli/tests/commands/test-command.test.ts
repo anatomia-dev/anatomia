@@ -11,9 +11,10 @@ import {
 } from '../../src/commands/test.js';
 
 /**
- * `ana test` orchestrator tests — exit-code contract, sealed marker, and the
- * checkpoint degrade-to-raw path. Bonus coverage beyond the contract's listed
- * test files; tags map to the orchestrator-level assertions (A002, A023, A028).
+ * `ana test` orchestrator tests — exit-code contract, the compact sealed marker
+ * (counts/verdict/sha256/bytes/lines, no file), log deletion after sealing, the
+ * abstain discoverability hint, the removed-ceiling seal, and the checkpoint
+ * degrade-to-raw path. Tags map to the orchestrator-level contract assertions.
  */
 
 const NODE = process.execPath;
@@ -69,19 +70,38 @@ describe('isCheckpointSealConflict', () => {
 });
 
 describe('resolveTestCommandString', () => {
-  it('reads top-level commands.test', () => {
-    expect(resolveTestCommandString({ commands: { test: 'vitest run' } }, undefined)).toBe('vitest run');
+  it('reads top-level commands.test and reports the source', () => {
+    expect(resolveTestCommandString({ commands: { test: 'vitest run' } }, undefined)).toEqual({
+      command: 'vitest run',
+      source: 'test',
+    });
   });
 
-  // @ana A024
+  // @ana A007 — prefers top-level test_json over test and reports source 'test_json'.
+  it('prefers top-level commands.test_json over commands.test', () => {
+    const ana = { commands: { test: 'vitest run', test_json: 'vitest run --reporter=json' } };
+    expect(resolveTestCommandString(ana, undefined)).toEqual({
+      command: 'vitest run --reporter=json',
+      source: 'test_json',
+    });
+  });
+
   it('prefers a surface test_json override when present (opt-in structured)', () => {
     const ana = { surfaces: { cli: { commands: { test: 'vitest run', test_json: 'vitest run --reporter=json' } } } };
-    expect(resolveTestCommandString(ana, 'cli')).toBe('vitest run --reporter=json');
+    expect(resolveTestCommandString(ana, 'cli')).toEqual({
+      command: 'vitest run --reporter=json',
+      source: 'test_json',
+    });
   });
 
   it('falls back to the surface commands.test without test_json', () => {
     const ana = { surfaces: { cli: { commands: { test: 'vitest run' } } } };
-    expect(resolveTestCommandString(ana, 'cli')).toBe('vitest run');
+    expect(resolveTestCommandString(ana, 'cli')).toEqual({ command: 'vitest run', source: 'test' });
+  });
+
+  it('returns null when no test command is configured', () => {
+    expect(resolveTestCommandString({ commands: {} }, undefined)).toBeNull();
+    expect(resolveTestCommandString({ surfaces: {} }, 'cli')).toBeNull();
   });
 });
 
@@ -94,8 +114,14 @@ describe('inferRunner', () => {
 });
 
 describe('executeCapture — baseline', () => {
-  // @ana A002
-  it('emits a sealed marker on a passing baseline run (exit 0)', () => {
+  /** Path the baseline log is tee'd to before deletion, for a given `now`. */
+  function logPath(root: string, slug: string, now: number): string {
+    return path.join(root, '.ana', 'plans', 'active', slug, '.captures', `test-build-${now}.log`);
+  }
+
+  // @ana A001, A002, A003 — a passing baseline emits a ONE-LINE compact marker
+  // that carries counts/verdict/sha256/bytes/lines and drops the file field.
+  it('emits a compact sealed marker on a passing baseline run (exit 0)', () => {
     const { root, slug } = mkProject('');
     // The script name carries the runner so inferRunner identifies it (counts
     // are hint-only — unhinted output abstains by design).
@@ -106,10 +132,51 @@ describe('executeCapture — baseline', () => {
     expect(outcome.captureError).toBeUndefined();
     expect(outcome.marker).toContain('ana:capture');
     expect(outcome.marker).toContain('verdict=pass');
+    expect(outcome.marker).toContain('lines=');
+    expect(outcome.marker!.includes('file=')).toBe(false);
+    expect(outcome.marker!.split('\n')).toHaveLength(1);
+    expect(outcome.lines).toBe(1);
     expect(outcome.verdict).toBe('pass');
     expect(outcome.exitCode).toBe(0);
-    // the capture file was written
-    expect(fs.existsSync(path.join(root, '.ana', 'plans', 'active', slug, outcome.file!))).toBe(true);
+  });
+
+  // @ana A015 — the .captures log is deleted after the result is sealed.
+  it('deletes the capture log after sealing the baseline marker', () => {
+    const { root, slug } = mkProject('');
+    const s = script(root, 'vitest-run.cjs', '      Tests  3 passed (3)\n', 0);
+    fs.writeFileSync(path.join(root, '.ana', 'ana.json'), JSON.stringify({ name: 'd', commands: { test: `${NODE} ${s}` } }));
+
+    const now = 1700000009;
+    const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now });
+    expect(outcome.marker).toBeDefined();
+    expect(fs.existsSync(logPath(root, slug, now))).toBe(false);
+  });
+
+  // @ana A025 — abstaining WITHOUT a test_json source sets the discoverability hint.
+  it('sets a countHint naming commands.test_json when abstaining without test_json', () => {
+    const { root, slug } = mkProject('');
+    // Unknown runner → counts abstain; command came from `test`, not `test_json`.
+    const s = script(root, 'mystery.cjs', 'bespoke harness: all good\n', 0);
+    fs.writeFileSync(path.join(root, '.ana', 'ana.json'), JSON.stringify({ name: 'd', commands: { test: `${NODE} ${s}` } }));
+
+    const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now: 1700000010 });
+    expect(outcome.counts).toBeNull();
+    expect(outcome.verdict).toBe('abstain');
+    expect(outcome.countHint).toContain('test_json');
+  });
+
+  it('suppresses the countHint when test_json IS the resolved source', () => {
+    const { root, slug } = mkProject('');
+    // test_json resolves and is unknown-runner → still abstains, but no hint.
+    const s = script(root, 'mystery.cjs', 'bespoke harness: all good\n', 0);
+    fs.writeFileSync(
+      path.join(root, '.ana', 'ana.json'),
+      JSON.stringify({ name: 'd', commands: { test: 'should-not-run', test_json: `${NODE} ${s}` } }),
+    );
+
+    const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now: 1700000011 });
+    expect(outcome.counts).toBeNull();
+    expect(outcome.countHint).toBeUndefined();
   });
 
   it('exits 1 (not 3) when the baseline tests fail', () => {
@@ -123,7 +190,6 @@ describe('executeCapture — baseline', () => {
     expect(outcome.marker).toContain('verdict=fail');
   });
 
-  // @ana A028
   it('exits 3 (capture error) when the configured command needs a shell', () => {
     const { root, slug } = mkProject('vitest run | tee out.txt');
     const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now: 1700000002 });
@@ -132,23 +198,24 @@ describe('executeCapture — baseline', () => {
     expect(outcome.marker).toBeUndefined();
   });
 
-  // @ana A028
-  it('exits 3 (capture error) when output exceeds the 8 MiB inline ceiling', () => {
+  // @ana A027, A028 — a capture over the OLD 8 MiB ceiling still seals compactly
+  // and does NOT exit with the capture-error code (the ceiling was removed).
+  it('still seals a capture larger than the old 8 MiB inline ceiling', () => {
     const { root, slug } = mkProject('');
-    // Emit ~8.4 MiB so the ceiling fails closed.
+    // Emit ~8.4 MiB — over the retired ceiling, well under the 64 MiB maxBuffer.
     const big = path.join(root, 'big.cjs');
     fs.writeFileSync(big, "process.stdout.write('x'.repeat(8.4*1024*1024|0));");
     fs.writeFileSync(path.join(root, '.ana', 'ana.json'), JSON.stringify({ name: 'd', commands: { test: `${NODE} ${big}` } }));
 
     const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now: 1700000003 });
-    expect(outcome.exitCode).toBe(CAPTURE_ERROR_EXIT);
-    expect(outcome.captureError).toContain('inline ceiling');
-    expect(outcome.marker).toBeUndefined();
+    expect(outcome.exitCode).not.toBe(CAPTURE_ERROR_EXIT);
+    expect(outcome.marker).toBeDefined();
+    expect(outcome.marker).toContain('ana:capture');
+    expect(outcome.bytes).toBeGreaterThan(8 * 1024 * 1024);
   });
 });
 
 describe('executeCapture — checkpoint', () => {
-  // @ana A023
   it('degrades to raw and does NOT block on a checkpoint capture bug', () => {
     const { root, slug } = mkProject('');
     const outcome = executeCapture({

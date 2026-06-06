@@ -3,9 +3,10 @@
  *
  * Runs the project's test command through the shell-free capturing runner
  * (array-arg spawn, NO shell), tees the full raw bytes to a per-slug capture
- * file, derives counts best-effort, and prints a single marker line the agent
- * pastes into the build report. At save the marker expands into a verbatim
- * block and three validators gate the seal.
+ * file, hashes + counts them, DELETES the log, and prints a single COMPACT
+ * marker line the agent pastes into the build report. Nothing is inlined at
+ * save; the one-line marker (counts + verdict + sha256 + byte/line totals) is
+ * the whole sealed account, and a present-check is the only save-time gate.
  *
  *   - Baseline (no `-- <command>`): runs the configured command, emits the
  *     SEALED marker. Capture/seal failures exit with a distinct code 3.
@@ -14,8 +15,9 @@
  *     exits with the underlying test status and emits no sealed marker.
  *
  * Exit-code contract: 0 = tests ran (verdict pass/abstain); 1 = tests failed
- * (verdict fail); 3 = capture/seal error (over-ceiling, resolveCommand refusal,
- * spawnSync result.error) — NEVER conflated with "tests failed".
+ * (verdict fail); 3 = capture/seal error (resolveCommand refusal, spawnSync
+ * result.error including the 64 MiB maxBuffer overflow) — NEVER conflated with
+ * "tests failed".
  */
 
 import { Command } from 'commander';
@@ -35,10 +37,7 @@ import {
   type TestCounts,
   type CaptureVerdict,
 } from '../utils/capture-runner.js';
-import { formatMarker, formatCounts, type CaptureStage } from '../utils/capture-marker.js';
-
-/** The 8 MiB interim inline ceiling — over this, a baseline fails CLOSED. */
-export const INLINE_CEILING_BYTES = 8 * 1024 * 1024;
+import { formatMarker, formatCounts, countLines, type CaptureStage } from '../utils/capture-marker.js';
 
 /** Distinct exit code for a capture/seal failure (never "tests failed"). */
 export const CAPTURE_ERROR_EXIT = 3;
@@ -60,13 +59,18 @@ export interface TestRunOutcome {
   /** A capture/seal error message, when the run failed to capture. */
   captureError?: string | undefined;
   bytes?: number | undefined;
+  /** Count of newline bytes in the captured output. */
+  lines?: number | undefined;
   sha256?: string | undefined;
   counts: TestCounts | null;
   verdict?: CaptureVerdict | undefined;
   /** The sealed marker (baseline success only). */
   marker?: string | undefined;
-  /** Capture file path, relative to the slug directory. */
-  file?: string | undefined;
+  /**
+   * A discoverability hint, set only when the baseline abstained for lack of a
+   * machine-readable reporter AND `test_json` was not the resolved source.
+   */
+  countHint?: string | undefined;
   /** Raw captured text, for checkpoint/degrade display. */
   rawText?: string | undefined;
 }
@@ -84,35 +88,44 @@ export interface ExecuteCaptureParams {
   now: number;
 }
 
+/** Which configured key a resolved test command came from. */
+export type TestCommandSource = 'test' | 'test_json';
+
+/** A resolved test command plus the config key it came from. */
+export interface ResolvedTestCommand {
+  command: string;
+  source: TestCommandSource;
+}
+
 /**
- * Resolve the test command string from ana.json.
+ * Resolve the test command from ana.json, preferring the opt-in machine-readable
+ * `test_json` over `test` and reporting which key was used.
  *
- * Per-surface (`surfaces[name].commands.test_json` when present, else
- * `.test`) when `--surface` is given; otherwise top-level `commands.test`.
- * `test_json` is the opt-in structured override — never auto-appended.
+ * Per-surface (`surfaces[name].commands`) when `--surface` is given; otherwise
+ * top-level `commands`. Both levels prefer `test_json` — the structured override
+ * that yields a real sealed count — then fall back to `test`. `test_json` is
+ * never auto-appended; it is the project's opt-in.
  *
  * @param anaJson - Parsed ana.json
  * @param surface - Surface name, or undefined for top-level
- * @returns The command string, or null when none is configured
+ * @returns The resolved command and its source, or null when none is configured
  */
 export function resolveTestCommandString(
   anaJson: Record<string, unknown>,
   surface: string | undefined,
-): string | null {
-  if (surface) {
-    const surfaces = anaJson['surfaces'] as Record<string, unknown> | undefined;
-    const surfaceObj = surfaces?.[surface] as Record<string, unknown> | undefined;
-    if (!surfaceObj) return null;
-    const commands = surfaceObj['commands'] as Record<string, unknown> | undefined;
-    const testJson = commands?.['test_json'];
-    if (typeof testJson === 'string' && testJson.trim()) return testJson;
-    const test = commands?.['test'];
-    return typeof test === 'string' && test.trim() ? test : null;
-  }
+): ResolvedTestCommand | null {
+  const commands = surface
+    ? ((anaJson['surfaces'] as Record<string, unknown> | undefined)?.[surface] as Record<string, unknown> | undefined)?.[
+        'commands'
+      ]
+    : (anaJson['commands'] as Record<string, unknown> | undefined);
+  const cmds = commands as Record<string, unknown> | undefined;
+  if (!cmds) return null;
 
-  const commands = anaJson['commands'] as Record<string, unknown> | undefined;
-  const test = commands?.['test'];
-  return typeof test === 'string' && test.trim() ? test : null;
+  const testJson = cmds['test_json'];
+  if (typeof testJson === 'string' && testJson.trim()) return { command: testJson, source: 'test_json' };
+  const test = cmds['test'];
+  return typeof test === 'string' && test.trim() ? { command: test, source: 'test' } : null;
 }
 
 /**
@@ -185,6 +198,9 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
   // 1. Resolve the command shell-free; keep a string for runner inference.
   let resolved: ResolvedCommand;
   let runnerSource: string;
+  // Which config key the baseline command came from — null for a checkpoint.
+  // Drives the abstain discoverability hint (fires only when NOT 'test_json').
+  let commandSource: TestCommandSource | null = null;
   if (mode === 'checkpoint') {
     const argv = params.passthrough!;
     runnerSource = argv.join(' ');
@@ -213,15 +229,16 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
     } catch {
       return { mode, exitCode: CAPTURE_ERROR_EXIT, degradedToRaw: false, counts: null, captureError: 'could not read .ana/ana.json.' };
     }
-    const cmdString = resolveTestCommandString(anaJson, params.surface);
-    if (!cmdString) {
+    const resolvedCmd = resolveTestCommandString(anaJson, params.surface);
+    if (!resolvedCmd) {
       const where = params.surface ? `surface "${params.surface}"` : 'top-level commands.test';
       return { mode, exitCode: CAPTURE_ERROR_EXIT, degradedToRaw: false, counts: null, captureError: `no test command configured for ${where}.` };
     }
-    runnerSource = cmdString;
+    runnerSource = resolvedCmd.command;
+    commandSource = resolvedCmd.source;
     // Resolve shell-free (throws CaptureCommandError on a refusal).
     try {
-      resolved = resolveCommand(cmdString, params.projectRoot);
+      resolved = resolveCommand(resolvedCmd.command, params.projectRoot);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       return failOrDegrade(mode, message, null);
@@ -249,25 +266,27 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
     return failOrDegrade(mode, message, null);
   }
 
-  // 4. Inline ceiling — fail CLOSED on a baseline; degrade on a checkpoint.
-  if (result.bytes >= INLINE_CEILING_BYTES) {
-    const mib = (result.bytes / (1024 * 1024)).toFixed(1);
-    const message =
-      `capture too large to seal — ${mib} MiB exceeds the 8 MiB inline ceiling. ` +
-      `The full output is on disk at ${relFile} but cannot be sealed into the build report. ` +
-      'Reduce test output (less verbose reporter) or split the suite.';
-    const counts = deriveCounts(result.rawBytes, runner);
-    return failOrDegrade(mode, message, { counts, rawText: result.rawBytes.toString('utf8'), file: relFile, bytes: result.bytes });
-  }
-
-  // 5. Derive counts + verdict from the captured bytes.
+  // 4. Derive counts + verdict from the captured bytes (in memory).
   const counts = deriveCounts(result.rawBytes, runner);
   const verdict = deriveVerdict(counts, result.exitCode);
   const testExit = verdict === 'fail' ? 1 : 0;
+  const lines = countLines(result.rawBytes);
+
+  // 5. Delete the .log now — the bytes are hashed + counted from memory, so the
+  // on-disk log is scratch with nothing left to do. Deleting here (not at save)
+  // is self-cleaning: an unsaved or abandoned run never orphans a log. The
+  // `.captures/` gitignore only backs up the brief in-run window + a crash here.
+  // No size ceiling: the seal is one line regardless of output size, and
+  // runCapture's 64 MiB maxBuffer is the sole (fail-closed) size guard.
+  try {
+    fs.rmSync(sink, { force: true });
+  } catch {
+    // Best-effort — the gitignore rule is the backstop for a failed unlink.
+  }
 
   if (mode === 'checkpoint') {
     // Checkpoints never seal — they degrade to raw by design and exit with the
-    // underlying test status.
+    // underlying test status. rawText stays in memory for the display.
     return {
       mode,
       exitCode: testExit,
@@ -275,22 +294,30 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
       counts,
       verdict,
       bytes: result.bytes,
-      file: relFile,
+      lines,
       rawText: result.rawBytes.toString('utf8'),
     };
   }
 
-  // 6. Baseline — seal the marker.
+  // 6. Baseline — seal the COMPACT marker (no inlined block, no file path).
   const sha = createHash('sha256').update(result.rawBytes).digest('hex');
   const marker = formatMarker({
     stage: params.stage,
     slug: params.slug,
-    bytes: result.bytes,
-    sha256: sha,
-    file: relFile,
     counts: formatCounts(counts),
     verdict,
+    sha256: sha,
+    bytes: result.bytes,
+    lines,
   });
+
+  // Discoverability hint: we abstained on the count AND the command did not come
+  // from `test_json`. Without this, an opt-in project abstains forever and never
+  // learns the fix. Narrow trigger — a `test_json`-sourced abstain says nothing.
+  const countHint =
+    counts === null && commandSource !== 'test_json'
+      ? 'No machine-readable count: set `commands.test_json` in .ana/ana.json for a real sealed count.'
+      : undefined;
 
   return {
     mode,
@@ -299,9 +326,10 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
     counts,
     verdict,
     bytes: result.bytes,
+    lines,
     sha256: sha,
     marker,
-    file: relFile,
+    countHint,
   };
 }
 
@@ -317,7 +345,7 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
 function failOrDegrade(
   mode: TestRunOutcome['mode'],
   message: string,
-  partial: { counts: TestCounts | null; rawText?: string; file?: string; bytes?: number } | null,
+  partial: { counts: TestCounts | null; rawText?: string; bytes?: number } | null,
 ): TestRunOutcome {
   if (mode === 'baseline') {
     return {
@@ -326,7 +354,6 @@ function failOrDegrade(
       degradedToRaw: false,
       counts: partial?.counts ?? null,
       captureError: message,
-      file: partial?.file,
       bytes: partial?.bytes,
     };
   }
@@ -339,7 +366,6 @@ function failOrDegrade(
     counts: partial?.counts ?? null,
     captureError: message,
     rawText: partial?.rawText,
-    file: partial?.file,
     bytes: partial?.bytes,
   };
 }
@@ -348,10 +374,9 @@ function failOrDegrade(
  * Print a capture outcome to the console (the CLI/chalk boundary lives here).
  *
  * @param outcome - The capture outcome
- * @param slug - Work item slug (for the on-disk path)
  * @param json - Whether to print JSON
  */
-function printOutcome(outcome: TestRunOutcome, slug: string, json: boolean): void {
+function printOutcome(outcome: TestRunOutcome, json: boolean): void {
   if (json) {
     console.log(JSON.stringify(outcome, null, 2));
     return;
@@ -377,13 +402,14 @@ function printOutcome(outcome: TestRunOutcome, slug: string, json: boolean): voi
 
   if (outcome.mode === 'checkpoint') {
     console.log(chalk.green(`✓ checkpoint  counts: ${countsLabel}  (verdict: ${outcome.verdict})`));
-    if (outcome.file) console.log(chalk.gray(`  ${outcome.bytes} bytes → ${path.join('.ana', 'plans', 'active', slug, outcome.file)}`));
+    console.log(chalk.gray(`  ${outcome.bytes} bytes / ${outcome.lines} lines captured (log deleted after sealing)`));
     return;
   }
 
   // Baseline success.
   console.log(chalk.green(`✓ captured  counts: ${countsLabel}  (verdict: ${outcome.verdict})`));
-  console.log(chalk.gray(`  ${outcome.bytes} bytes → ${path.join('.ana', 'plans', 'active', slug, outcome.file ?? '')}`));
+  console.log(chalk.gray(`  ${outcome.bytes} bytes / ${outcome.lines} lines captured (log deleted after sealing)`));
+  if (outcome.countHint) console.log(chalk.cyan(`  ℹ ${outcome.countHint}`));
   console.log('');
   console.log('  Paste this marker into build_report.md:');
   console.log(`  ${outcome.marker}`);
@@ -436,7 +462,7 @@ function runTest(passthrough: string[], options: TestOptions, stageSource?: stri
     now: Math.floor(Date.now() / 1000),
   });
 
-  printOutcome(outcome, options.slug, options.json ?? false);
+  printOutcome(outcome, options.json ?? false);
   process.exit(outcome.exitCode);
 }
 
