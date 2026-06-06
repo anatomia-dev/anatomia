@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: code
+    summary: "applyCaptureGate runs for every build-report save with no contract-presence guard — AC14's 'build-only specs with no contract never trigger the gate' is not implemented. On an armed working copy, a build-only spec whose build report carries no capture marker is blocked."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1027
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A035", "A036"]
+  - category: upstream
+    summary: "AC14 prose has three clauses but the sealed contract only encodes two (A035 verify-ungated, A036 non-build-report-ungated). The third clause — build-only specs with no contract never trigger the gate — was never sealed into an assertion, so it shipped unverified and unimplemented. Encode it as an assertion or drop it from AC14 on next seal."
+    severity: observation
+    suggested_action: scope
+    related_assertions: ["A035", "A036"]
+  - category: code
+    summary: "isArmed is read twice on the first valid build-report save (applyCaptureGate at :796, then armCapture's idempotency guard at capture-state.ts:75). Negligible — capture.json is a small separate file off the hot .saves.json path — but the second read is redundant given wasArmed is already known."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 796
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "The 'valid' arming predicate uses warnings.length === 0 as a proxy for 'all three preservation validators passed' rather than asserting on validator results directly. Correct today because evaluateCaptureGate routes all non-blocking messages to warnings, but the coupling is implicit — a future change that emits an informational warning would silently stop arming."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 815
+    severity: debt
+    suggested_action: monitor
