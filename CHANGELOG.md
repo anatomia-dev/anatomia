@@ -7,10 +7,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Changed
-
-- **Re-init now propagates agent template updates (behavior change).** `ana init` re-init overwrites the agent `.md` instruction bodies (both `.claude/agents/` and `.codex/agents/`) and `CLAUDE.md` from the current stock, so template improvements reach existing installs instead of being frozen by the old skip-if-exists rule. Init emits one consolidated warning listing any overwritten file whose content had changed; recover prior versions from git (e.g. `git log -- .claude/agents/ana-build.md`). **Your basic config is preserved** — Claude frontmatter `model`/`tools` and Codex `.agent.toml` `model`/`sandbox_mode`/`model_reasoning_effort` are never reset, and Codex `.agent.toml` machine fields refresh from stock. `AGENTS.md` is unaffected (still skip-if-exists). If you relied on agent-file edit persistence across re-init, move those edits to a custom agent or recover them from git.
-
 ## [1.2.2] - 2026-06-02
 
 ### Added

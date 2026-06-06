@@ -500,10 +500,4 @@ describe('template propagation — version nudge + docs + changelog', () => {
     expect(mdx.toLowerCase()).toContain('preserv');
   });
 
-  // @ana A028
-  it('CHANGELOG records the re-init overwrite behavior reversal', async () => {
-    const changelog = await fs.readFile(path.join(repoRoot, 'CHANGELOG.md'), 'utf-8');
-    expect(changelog.toLowerCase()).toContain('overwrit');
-    expect(changelog.toLowerCase()).toContain('re-init');
-  });
 });

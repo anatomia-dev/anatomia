@@ -135,6 +135,44 @@ export function inferRunner(cmdString: string): KnownRunner | undefined {
   return KNOWN_RUNNERS.find((r) => lower.includes(r));
 }
 
+/** The pipeline stages whose baseline form seals evidence into a report. */
+const SEALING_STAGES = new Set<CaptureStage>(['build', 'verify']);
+
+/**
+ * Detect the always-wrong combination of an explicitly-named sealing stage and
+ * the checkpoint passthrough form.
+ *
+ * `--stage build`/`--stage verify` signal "seal a result", but a `-- <command>`
+ * passthrough runs the checkpoint path, which by design NEVER seals. The two
+ * together can only mislead — the engine emits no marker and the operator is
+ * left to reconcile a sealing intent with a non-sealing run. That gap is exactly
+ * how a hand-fabricated seal slipped in. We refuse the input outright rather
+ * than warn, because the missing-marker signal is the very thing that was
+ * rationalized past.
+ *
+ * Fires ONLY when the stage was given on the CLI (source is neither the default
+ * nor unknown); a bare `ana test -- <cmd>` is a legitimate checkpoint and must
+ * not trip the guard. Keyed off {@link SEALING_STAGES} so a future non-sealing
+ * stage is excluded automatically.
+ *
+ * @param stage - The normalized capture stage
+ * @param stageSource - commander's `getOptionValueSource('stage')` ('default' | 'cli' | …)
+ * @param passthrough - The `-- <command...>` tokens
+ * @returns True when the run should be refused
+ */
+export function isCheckpointSealConflict(
+  stage: CaptureStage,
+  stageSource: string | undefined,
+  passthrough: string[],
+): boolean {
+  return (
+    passthrough.length > 0 &&
+    !!stageSource &&
+    stageSource !== 'default' &&
+    SEALING_STAGES.has(stage)
+  );
+}
+
 /**
  * Run the capture flow and return a structured outcome (no chalk, no exit).
  *
@@ -356,8 +394,9 @@ function printOutcome(outcome: TestRunOutcome, slug: string, json: boolean): voi
  *
  * @param passthrough - Tokens after `--` (checkpoint command)
  * @param options - Parsed flags
+ * @param stageSource - commander's `getOptionValueSource('stage')`, to tell an explicit `--stage` from the default
  */
-function runTest(passthrough: string[], options: TestOptions): void {
+function runTest(passthrough: string[], options: TestOptions, stageSource?: string): void {
   if (!options.slug) {
     console.error(chalk.red('Error: --slug <slug> is required.'));
     console.error(chalk.gray('Run: ana test --stage build --slug <slug>'));
@@ -365,6 +404,19 @@ function runTest(passthrough: string[], options: TestOptions): void {
     return;
   }
   const stage: CaptureStage = options.stage === 'verify' ? 'verify' : 'build';
+
+  // Refuse an explicit sealing stage run through the non-sealing checkpoint
+  // form — an always-wrong combination that can only mislead.
+  if (isCheckpointSealConflict(stage, stageSource, passthrough)) {
+    console.error(
+      chalk.red(`✗ Refusing: \`--stage ${stage}\` seals evidence, but the \`-- <command>\` checkpoint form never seals.`),
+    );
+    console.error(chalk.gray('  This combination produces no seal — run one of the two correct forms instead:'));
+    console.error(chalk.gray(`    Sealed ${stage} result:  ana test --stage ${stage} --slug ${options.slug}   (no \`-- ...\`)`));
+    console.error(chalk.gray(`    Checkpoint:           ana test --slug ${options.slug} -- ${passthrough.join(' ')}   (drop --stage ${stage})`));
+    process.exit(1);
+    return;
+  }
 
   let projectRoot: string;
   try {
@@ -402,7 +454,7 @@ export function registerTestCommand(program: Command): void {
     .option('--surface <name>', 'Resolve the per-surface test command')
     .option('--json', 'Output JSON for programmatic consumption')
     .argument('[command...]', 'Optional checkpoint command after `--` (captured, never blocks)')
-    .action((command: string[], options: TestOptions) => {
-      runTest(command ?? [], options);
+    .action((command: string[], options: TestOptions, cmd: Command) => {
+      runTest(command ?? [], options, cmd.getOptionValueSource('stage'));
     });
 }
