@@ -48,8 +48,8 @@
   "build_started_at": "2026-06-06T07:22:40.269Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-06-06T08:10:04.010Z",
-    "hash": "sha256:205e661752414b6da2cdcf35ebbb3f82fd19a29713510468704de9b091e0f131"
+    "saved_at": "2026-06-06T08:26:45.748Z",
+    "hash": "sha256:6fe3ce81f2eeda7d38f7932b7d61340746fbd7e3c7ede0b8f0b855c19cdc2d54"
   },
   "build-data": {
     "saved_at": "2026-06-06T08:10:04.012Z",
