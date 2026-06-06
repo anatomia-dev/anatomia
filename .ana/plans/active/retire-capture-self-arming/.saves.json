@@ -88,19 +88,31 @@
     "website/content/docs/guides/configurability.mdx"
   ],
   "commit_hygiene": [],
-  "verify_started_at": "2026-06-06T08:50:09.030Z",
+  "verify_started_at": "2026-06-06T17:51:34.344Z",
   "verify_agent": "ana-verify",
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:798f64a1fe5a648bb312fe5aebcebbf73b0766e3ddb3c7d02a93d85674fe60dd",
-    "run_at": "2026-06-06T09:01:17.683Z"
+    "run_at": "2026-06-06T17:59:50.336Z"
   },
   "verify-report": {
-    "saved_at": "2026-06-06T09:01:17.724Z",
-    "hash": "sha256:629b7cf1f9d4e747b0828c1567269fd085f6da4f556eb62f332e38f4e2eb0525"
+    "saved_at": "2026-06-06T17:59:50.387Z",
+    "hash": "sha256:363c6d4e003cb07b9eae6881d8eaff946e49d1048d4cdb7bd492c70f7a159129",
+    "history": [
+      {
+        "saved_at": "2026-06-06T09:01:17.724Z",
+        "hash": "sha256:629b7cf1f9d4e747b0828c1567269fd085f6da4f556eb62f332e38f4e2eb0525"
+      }
+    ]
   },
   "verify-data": {
-    "saved_at": "2026-06-06T09:01:17.724Z",
-    "hash": "sha256:ac2ae7ecf3c84e70ac27e5fdf01b562d011ee72e3de25606395ae182e682f004"
+    "saved_at": "2026-06-06T17:59:50.387Z",
+    "hash": "sha256:5e9ef44e6092cecd705dbc234ded9526a70b700c349703ab1aaaf972f594cae7",
+    "history": [
+      {
+        "saved_at": "2026-06-06T09:01:17.724Z",
+        "hash": "sha256:ac2ae7ecf3c84e70ac27e5fdf01b562d011ee72e3de25606395ae182e682f004"
+      }
+    ]
   }
 }
