@@ -211,6 +211,28 @@ describe('AnaJsonSchema', () => {
     });
   });
 
+  describe('captureGate enum values', () => {
+    it('accepts on', () => {
+      const parsed = AnaJsonSchema.parse({ captureGate: 'on' });
+      expect(parsed.captureGate).toBe('on');
+    });
+
+    it('accepts off', () => {
+      const parsed = AnaJsonSchema.parse({ captureGate: 'off' });
+      expect(parsed.captureGate).toBe('off');
+    });
+
+    it('catches an invalid value to undefined', () => {
+      const parsed = AnaJsonSchema.parse({ captureGate: 'enabled' });
+      expect(parsed.captureGate).toBeUndefined();
+    });
+
+    it('absence yields undefined (no default)', () => {
+      const parsed = AnaJsonSchema.parse({ name: 'x' });
+      expect(parsed.captureGate).toBeUndefined();
+    });
+  });
+
   describe('setupPhase enum values', () => {
     it('accepts context-complete', () => {
       const parsed = AnaJsonSchema.parse({ setupPhase: 'context-complete' });

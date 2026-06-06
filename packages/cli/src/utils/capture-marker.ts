@@ -448,23 +448,25 @@ export function validateCaptureNotTruncated(filePath: string): string | null {
 /**
  * Run the three seal validators and decide warn-vs-block.
  *
- * In Phase 1 callers always pass `armed: false`, so `blocked` is always false —
- * failures surface as warnings and never `process.exit`. Phase 2 passes
- * `armed: true` for a project that has sealed real evidence, flipping a
- * preservation failure to `blocked: true`.
+ * Enablement is a committed-config decision (`captureGate` in `ana.json`),
+ * resolved by the caller and passed in as `opts.enabled`. When the gate is NOT
+ * enabled, preservation failures surface as warnings and never `process.exit`.
+ * When it IS enabled, a preservation failure becomes `blocked: true`. The gate
+ * weighs ONLY preservation (present / inlined / not-truncated) — counts and
+ * verdict never block.
  *
  * @param filePath - Path to the (already-inlined) build report
  * @param opts - Gate options
- * @param opts.armed - Whether the project has armed enforcement (false in Phase 1)
+ * @param opts.enabled - Whether the capture gate is enabled for this project
  * @returns The gate decision with messages partitioned into warnings/errors
  */
-export function evaluateCaptureGate(filePath: string, opts: { armed: boolean }): CaptureGateResult {
+export function evaluateCaptureGate(filePath: string, opts: { enabled: boolean }): CaptureGateResult {
   const messages: string[] = [];
   for (const validate of [validateCapturePresent, validateCaptureInlined, validateCaptureNotTruncated]) {
     const msg = validate(filePath);
     if (msg) messages.push(msg);
   }
-  if (opts.armed && messages.length > 0) {
+  if (opts.enabled && messages.length > 0) {
     return { blocked: true, warnings: [], errors: messages };
   }
   return { blocked: false, warnings: messages, errors: [] };

@@ -44,5 +44,75 @@
         "hash": "sha256:f3d6c4d8194d77f7c4574514453ba7159f106395f48787376cad1255ce825009"
       }
     ]
+  },
+  "build_started_at": "2026-06-06T07:22:40.269Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-06T17:50:09.419Z",
+    "hash": "sha256:bf6fe2e54539754942476312b2b616e9eed8ad5d1dcfce60410f2d7219c5db46",
+    "history": [
+      {
+        "saved_at": "2026-06-06T08:26:45.748Z",
+        "hash": "sha256:6fe3ce81f2eeda7d38f7932b7d61340746fbd7e3c7ede0b8f0b855c19cdc2d54"
+      }
+    ]
+  },
+  "build-data": {
+    "saved_at": "2026-06-06T17:50:09.419Z",
+    "hash": "sha256:4f033cf24a8512b67f8274de161295f05fd587668ced7058175275527b0574ee",
+    "history": [
+      {
+        "saved_at": "2026-06-06T07:57:53.361Z",
+        "hash": "sha256:f19b4773dc02a5da3d809841bae227f94ee261337532acad8fb5895df3af420b"
+      },
+      {
+        "saved_at": "2026-06-06T08:10:04.012Z",
+        "hash": "sha256:1ffed79ed8b3b3610204529f92e83a0d88659aab43264518cab1db70a1a0b7af"
+      }
+    ]
+  },
+  "modules_touched": [
+    "CHANGELOG.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/utils/capture-marker.ts",
+    "packages/cli/src/utils/capture-state.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/capture-marker.test.ts",
+    "packages/cli/tests/utils/capture-state.test.ts",
+    "website/content/docs/guides/configurability.mdx"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-06T17:51:34.344Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:798f64a1fe5a648bb312fe5aebcebbf73b0766e3ddb3c7d02a93d85674fe60dd",
+    "run_at": "2026-06-06T17:59:50.336Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-06T17:59:50.387Z",
+    "hash": "sha256:363c6d4e003cb07b9eae6881d8eaff946e49d1048d4cdb7bd492c70f7a159129",
+    "history": [
+      {
+        "saved_at": "2026-06-06T09:01:17.724Z",
+        "hash": "sha256:629b7cf1f9d4e747b0828c1567269fd085f6da4f556eb62f332e38f4e2eb0525"
+      }
+    ]
+  },
+  "verify-data": {
+    "saved_at": "2026-06-06T17:59:50.387Z",
+    "hash": "sha256:5e9ef44e6092cecd705dbc234ded9526a70b700c349703ab1aaaf972f594cae7",
+    "history": [
+      {
+        "saved_at": "2026-06-06T09:01:17.724Z",
+        "hash": "sha256:ac2ae7ecf3c84e70ac27e5fdf01b562d011ee72e3de25606395ae182e682f004"
+      }
+    ]
   }
 }

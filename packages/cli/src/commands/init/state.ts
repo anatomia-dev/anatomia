@@ -566,6 +566,10 @@ export async function createAnaJson(
     coAuthor: 'Ana <build@anatomia.dev>',
     artifactBranch: detectArtifactBranch(result),
     branchPrefix: 'feature/',
+    // Fresh init opts the project into the capture gate. Re-init never imposes
+    // this onto a project that lacked the flag — see preserveUserState, which
+    // deliberately keeps captureGate out of its mechanical-override list.
+    captureGate: 'on',
     lastScanAt: result.overview.scannedAt,
     custom: {},
   };
@@ -724,6 +728,10 @@ export async function preserveUserState(
 
   const parsed = AnaJsonSchema.safeParse(existingRaw);
   if (parsed.success && Object.keys(existingRaw as Record<string, unknown>).length > 0) {
+    // `captureGate` is intentionally preserved-not-refreshed: it rides along in
+    // `...parsed.data` and is deliberately excluded from the mechanical-override
+    // list below. An explicit on/off is kept; an absent flag stays absent (so a
+    // re-init never imposes fresh-init's `on` onto a project that never set it).
     const merged = {
       ...parsed.data,
       anaVersion: newAnaConfig['anaVersion'],

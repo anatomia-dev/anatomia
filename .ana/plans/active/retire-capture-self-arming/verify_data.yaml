@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "AC15 spec/founder conflict resolved: spec said remove the `[Unreleased]` `### Changed` template-propagation note; founder explicitly decided to keep it (commit 9c787fa2) and confirmed during verify. Footer link corrected to v1.2.2...HEAD. Authorized spec deviation, not a defect — the note documents the same template-propagation behavior the project-context.md AC13 edit describes."
+    file: "CHANGELOG.md"
+    line: 10
+    severity: observation
+    suggested_action: acknowledge
+  - category: test
+    summary: "A014 (verify-report sealed account) now has a genuine targeted @ana A014 test: saves a verify report carrying a bare marker with the gate ON, then asserts the saved verify_report.md contains the begin/end delimiters, the real sha256, AND the verbatim captured bytes that were absent before the save. Closes the prior verify's AC9 PARTIAL gap. Not a sentinel."
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 469
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A014"]
+  - category: code
+    summary: "getWorkStatus reads + parses .ana/ana.json twice per call — once inline (readFileSync + JSON.parse) for lastScanAt/captureGate at work.ts:~500, then again inside isCaptureGateEnabled (which re-reads + AnaJsonSchema.parses the same file) for captureGateActive at ~515. Harmless (status is cold-path) but two reads of one file; could thread the parsed object through. Unchanged since prior verify."
+    file: "packages/cli/src/commands/work.ts"
+    line: 500
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "Stale gitignored .ana/state/capture.json (armed:true, armedAt 2026-06-06T17:50:09Z) reappears in the dogfood worktree. NOT created by this build's code — the forbidden-symbol sweep confirms zero references to capture.json/armCapture/isArmed in src. It is written by the globally-installed (pre-merge, still-self-arming) `ana` binary used to run the pipeline; armedAt matches the moment `ana test` ran. Gitignored, untracked, non-shipping, inert under the new code. Resolves once the published binary carries this change. `rm` for hygiene."
+    file: ".ana/state/capture.json"
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Retiring self-arming dissolves the captured-test-evidence arming findings: isArmed double-read (C10) and the warnings-length valid-predicate proxy (C11) are both deleted with the arming machinery. The C9 block-message reassurance ('ana test seals a harmless abstain even when no tests run') is preserved in config terms in the re-framed message."
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "captured-test-evidence-C10"
+      - "captured-test-evidence-C11"

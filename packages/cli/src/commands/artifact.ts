@@ -23,7 +23,8 @@ import { runContractPreCheck } from './verify.js';
 import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { inlineCaptures, evaluateCaptureGate } from '../utils/capture-marker.js';
-import { isArmed, armCapture } from '../utils/capture-state.js';
+import { resolveTestCommandString } from './test.js';
+import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
@@ -743,13 +744,40 @@ function validateBranch(
   }
 }
 
-/** Outcome of the build-report capture gate, used to decide post-seal arming. */
-interface CaptureGateOutcome {
-  /** All three preservation validators passed this save — safe to arm. */
-  valid: boolean;
-  /** Whether the project was already armed BEFORE this save (suppresses the
-   * one-time "armed" message on a re-save of an already-armed project). */
-  wasArmed: boolean;
+/**
+ * Whether the capture gate is enabled for this project.
+ *
+ * Enablement = the committed `captureGate` flag is `"on"` AND a test command
+ * resolves (top-level `commands.test` OR any per-surface test command). The
+ * carve-out keys on ANY resolvable test command so a surface-only monorepo
+ * (no top-level test, but `surfaces.cli.commands.test`) stays enforced.
+ *
+ * Undefined-safe by construction: a missing or malformed `ana.json` returns
+ * `false` and never throws — the same fail-safe posture the retired arming
+ * signal held (absent → off, never brick a fresh or pre-flag project).
+ *
+ * @param projectRoot - Project root directory
+ * @returns True only when the gate is on AND a test command resolves
+ */
+export function isCaptureGateEnabled(projectRoot: string): boolean {
+  let anaJson: Record<string, unknown>;
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(projectRoot, '.ana', 'ana.json'), 'utf-8')) as unknown;
+    anaJson = AnaJsonSchema.parse(raw) as Record<string, unknown>;
+  } catch {
+    return false;
+  }
+
+  if (anaJson['captureGate'] !== 'on') return false;
+
+  // Carve-out: enabled only when a test command actually resolves. Check the
+  // top-level command first, then every surface — any single hit is enough.
+  if (resolveTestCommandString(anaJson, undefined)) return true;
+  const surfaces = anaJson['surfaces'] as Record<string, unknown> | undefined;
+  for (const surfaceName of Object.keys(surfaces ?? {})) {
+    if (resolveTestCommandString(anaJson, surfaceName)) return true;
+  }
+  return false;
 }
 
 /**
@@ -775,60 +803,42 @@ function inlineReportCaptures(filePath: string, slugDir: string): void {
 }
 
 /**
- * Inline a build report's captures, then run the capture gate — fail-CLOSED
- * once the project is armed.
+ * Inline a build report's captures, then run the capture gate.
  *
- * Check-then-arm ordering: the gate is evaluated against the project's CURRENT
- * armed state and blocks (process.exit(1), BEFORE the seal hash) only when the
- * project is already armed AND a preservation validator fails. Counts/verdict
- * never block (fail-open). The caller arms the project AFTER a successful valid
- * save (see {@link CaptureGateOutcome}); evaluating before arming means the
- * first valid save — which arms the project — is never blocked by itself.
+ * Enablement is read from committed config (`isCaptureGateEnabled`): when the
+ * `captureGate` flag is on AND a test command resolves, a preservation failure
+ * blocks the save (process.exit(1), BEFORE the seal hash). When the gate is off
+ * or no test command resolves, failures surface as warnings and never block.
+ * Counts and verdict never block in either mode.
+ *
+ * The block message is built from the ACTUAL preservation validator errors
+ * (`gate.errors`), so it names the real reason (missing / tampered / truncated)
+ * rather than a canned one, and points the user at both the `ana test` fix and
+ * the `captureGate: "off"` escape hatch.
  *
  * @param filePath - Absolute path to the build report
  * @param slugDir - Absolute path to the slug directory (resolves capture files)
- * @param projectRoot - Project root (resolves the arming state)
- * @returns Whether the save was valid (arm after seal) and the prior armed state
+ * @param projectRoot - Project root (resolves the `captureGate` config flag)
  */
-function applyCaptureGate(filePath: string, slugDir: string, projectRoot: string): CaptureGateOutcome {
+function applyCaptureGate(filePath: string, slugDir: string, projectRoot: string): void {
   inlineReportCaptures(filePath, slugDir);
 
-  const wasArmed = isArmed(projectRoot);
-  const gate = evaluateCaptureGate(filePath, { armed: wasArmed });
+  const enabled = isCaptureGateEnabled(projectRoot);
+  const gate = evaluateCaptureGate(filePath, { enabled });
 
   if (gate.blocked) {
     console.error(chalk.red('Error: build_report.md has no valid captured test evidence.'));
-    console.error(chalk.red('  This project has previously sealed a real capture, so test evidence is required.'));
+    console.error(chalk.red('  The capture gate is on for this project, so test evidence is required.'));
     for (const err of gate.errors) {
       console.error(chalk.red(`  ${err}`));
     }
-    console.error(chalk.gray('  No unit tests for this spec? Run `ana test` anyway — it seals a harmless abstain when no tests run, which satisfies the gate.'));
+    console.error(chalk.gray('  Fix: run `ana test` (it seals a harmless abstain even when no tests run), then re-save.'));
+    console.error(chalk.gray('  To turn the gate off for this project: set "captureGate": "off" in .ana/ana.json.'));
     process.exit(1);
   }
 
   for (const warning of gate.warnings) {
     console.warn(chalk.yellow(`Warning: capture evidence — ${warning}`));
-  }
-
-  // Valid only when every preservation validator passed this save (no warnings,
-  // no errors). gate.errors is empty here (blocked already exited), so this is
-  // effectively "no warnings".
-  return { valid: gate.warnings.length === 0 && gate.errors.length === 0, wasArmed };
-}
-
-/**
- * Arm the project after a confirmed-valid build-report save, and announce the
- * one-time flip. Idempotent and safe to call on every build-report save.
- *
- * @param outcome - The gate outcome from {@link applyCaptureGate}, or null when
- *   the save was not a build report
- * @param projectRoot - Project root (where the arming state is written)
- */
-function armAfterValidBuildReport(outcome: CaptureGateOutcome | null, projectRoot: string): void {
-  if (!outcome || !outcome.valid) return;
-  armCapture(projectRoot);
-  if (!outcome.wasArmed) {
-    console.log(chalk.gray('  capture gate armed for this project — future build reports now require valid evidence.'));
   }
 }
 
@@ -985,9 +995,6 @@ export function saveArtifact(type: string, slug: string): void {
     }
   }
 
-  // Set by the build-report branch; consumed after the seal to arm the project.
-  let buildReportOutcome: CaptureGateOutcome | null = null;
-
   if (typeInfo.baseType === 'verify-report') {
     const error = validateVerifyReportFormat(filePath);
     if (error) {
@@ -1032,11 +1039,10 @@ export function saveArtifact(type: string, slug: string): void {
       process.exit(1);
     }
     // Expand capture markers + run the capture gate BEFORE the seal hash
-    // (writeSaveMetadata) and staging. Fail-CLOSED once the project is armed;
-    // the project is armed AFTER the seal (check-then-arm), so the first valid
-    // save never blocks itself.
+    // (writeSaveMetadata) and staging. Blocks only when the gate is enabled in
+    // config AND a preservation validator fails; otherwise warn-only.
     const captureSlugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
-    buildReportOutcome = applyCaptureGate(filePath, captureSlugDir, projectRoot);
+    applyCaptureGate(filePath, captureSlugDir, projectRoot);
   }
 
   if (typeInfo.baseType === 'contract') {
@@ -1182,10 +1188,6 @@ export function saveArtifact(type: string, slug: string): void {
     ? { gateOnStageTransition: { slugDir, artifactType: typeInfo.artifactType } }
     : undefined;
   writeSaveMetadata(slugDir, typeInfo.artifactType, artifactContent, stageGate);
-
-  // Check-then-arm: the build report sealed cleanly with valid evidence, so arm
-  // the project. From here on, a build-report save with no valid evidence blocks.
-  armAfterValidBuildReport(buildReportOutcome, projectRoot);
 
   // Write companion hash alongside report hash
   if (companionPath && companionKey && fs.existsSync(companionPath)) {
@@ -1393,9 +1395,6 @@ export function saveAllArtifacts(slug: string): void {
     process.exit(1);
   }
 
-  // Set by the build-report branch below; consumed after the seal to arm.
-  let buildReportOutcome: CaptureGateOutcome | null = null;
-
   // 3. Validate all artifacts
   for (const artifact of artifacts) {
     if (artifact.typeInfo.baseType === 'plan') {
@@ -1443,9 +1442,10 @@ export function saveAllArtifacts(slug: string): void {
         process.exit(1);
       }
       // Expand capture markers + run the capture gate BEFORE the seal hash and
-      // staging. Fail-CLOSED once armed; wiring BOTH save sites is required (one
-      // is bypassable). Arming happens after the seal (check-then-arm).
-      buildReportOutcome = applyCaptureGate(artifact.path, planDir, projectRoot);
+      // staging. Blocks only when the gate is enabled in config AND a
+      // preservation validator fails. Wiring BOTH save sites is required —
+      // saveArtifact and saveAllArtifacts are independent build-report paths.
+      applyCaptureGate(artifact.path, planDir, projectRoot);
     }
 
     if (artifact.typeInfo.baseType === 'contract') {
@@ -1613,9 +1613,6 @@ export function saveAllArtifacts(slug: string): void {
       : undefined;
     writeSaveMetadata(planDir, artifact.typeInfo.artifactType, content, gate);
   }
-
-  // Check-then-arm: a build report sealed with valid evidence arms the project.
-  armAfterValidBuildReport(buildReportOutcome, projectRoot);
 
   // Write companion hashes alongside report hashes
   for (const companion of companions) {

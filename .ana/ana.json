@@ -48,6 +48,7 @@
   "branchPrefix": "feature/",
   "setupPhase": "complete",
   "mergeStrategy": "merge",
+  "captureGate": "on",
   "lastScanAt": "2026-06-04T22:52:15.987Z",
   "custom": {}
 }
