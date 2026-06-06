@@ -130,8 +130,20 @@ assertions:
 
   - id: A021
     says: "Re-initializing still preserves ana.json user fields"
-    block: "re-init preserves ana.json user fields"
+    block: "re-init preserves ana.json user fields and refreshes mechanical fields"
     target: "preserve.anaJsonUserFields"
+    matcher: "truthy"
+
+  - id: A029
+    says: "An in-progress setup keeps its saved progress through re-init"
+    block: "re-init preserves state/setup-progress.json when setup is not complete"
+    target: "preserve.setupProgressWhenInProgress"
+    matcher: "truthy"
+
+  - id: A030
+    says: "A customer's tuned surface commands and any extra ana.json keys survive re-init"
+    block: "re-init preserves ana.json user-tuned surface commands and unknown/custom keys"
+    target: "preserve.anaJsonSurfacesAndUnknownKeys"
     matcher: "truthy"
 
   # AC6 — fresh / partial / single-harness

@@ -82,6 +82,7 @@ The warning is stateless — **no hash manifest, no per-project state, nothing a
 
 ### packages/cli/src/constants.ts (modify)
 **What changes:** add `CLAUDE_AGENT_CONFIG_KEYS` (`['model', 'tools']`) and `CODEX_AGENT_CONFIG_KEYS` (`['model', 'sandbox_mode', 'model_reasoning_effort']`), near `AGENT_FILES`/`CODEX_AGENT_FILES`. These define the CONFIG class that is preserved on re-init.
+**`tools` is a deliberate CONFIG call, not a lump-in with `model`** — document it in a comment on the constant. `model` is unambiguously user preference → preserve. `tools` straddles: it is both a user-restriction knob and the agent's capability list. Today it is low-risk to preserve — stock templates set no `tools` key, and we only preserve-if-present — so honoring a customer's restriction is correct. **Note in the comment:** if stock ever begins managing `tools` as a *granted capability* the agent needs, `tools` moves to the refresh class — otherwise a future required capability gets stranded behind a customer's preserved restriction (the same "machine-owned and load-bearing?" question resolved for `developer_instructions` by refreshing it). Keep the choice explicit, not implicit.
 **Why:** single source of truth for the preserve-vs-refresh classification; referenced by assets.ts and tests.
 
 ### packages/cli/src/commands/init/index.ts (modify)
@@ -123,7 +124,15 @@ The warning is stateless — **no hash manifest, no per-project state, nothing a
 - [ ] **AC2:** CLAUDE.md is overwritten from stock on re-init, re-applying project-name and stack interpolation from the current scan. AGENTS.md and the primary-package AGENTS.md remain skip-if-exists (deferred follow-up).
 - [ ] **AC3:** Every overwrite is an atomic per-file write (temp-then-rename) with post-write integrity verification; a crash mid-refresh never leaves a half-written or truncated file in the live tree.
 - [ ] **AC4:** Content-gated consolidated warning: re-init emits ONE warning listing only the files whose instruction content actually changed, with conditional "if you customized these, recover from git" wording (never asserts the customer edited). Compares agent `.md` body vs stock body and CLAUDE.md vs freshly-interpolated output (NOT raw stock — no false positive on CLAUDE.md). A config-only change (e.g. model) produces no warning. No per-project state, no hash manifest. Warnings never block init.
-- [ ] **AC5:** Surgically scoped — no other preserved content regresses. `context/`, `plans/active/`, `plans/completed/`, `proof_chain.json` + `PROOF_CHAIN.md`, `learn/`, `skills/` (Rules/Gotchas/Examples), and ana.json user fields all survive re-init unchanged. A regression test asserts the full preserve contract.
+- [ ] **AC5:** Surgically scoped — no other preserved content regresses. The regression guard asserts the **COMPLETE** `preserveUserState` contract (exhaustive, not an illustrative subset), so nothing outside the enumerated set silently regresses:
+  1. `context/` (wholesale)
+  2. ana.json — user fields + **unknown/custom keys** preserved; mechanical fields (anaVersion, lastScanAt, name, language, framework, packageManager) refreshed; **user-tuned `surfaces` commands preserved** while mechanical surface fields refresh
+  3. `state/setup-progress.json` — **conditional:** preserved when `setupPhase !== 'complete'` (in-progress setup); not carried when setup is complete
+  4. `proof_chain.json` + `PROOF_CHAIN.md`
+  5. `plans/completed/`
+  6. `learn/`
+  7. `plans/active/` (in-flight pipeline work — critical given this change's blast radius)
+  8. `skills/` (Rules/Gotchas/Examples; Detected refreshed post-swap)
 - [ ] **AC6:** Fresh install is unchanged — nothing overwritten, no warning fires. Claude-only projects (no `.codex` tree) refresh only the trees present.
 - [ ] **AC7:** The `update-check.ts` `projectMismatch` nudge reliably tells a stale-version customer to run `ana init`, with copy conveying that re-init refreshes templates. Detection unchanged; only the rendered copy (`work.ts`) is sharpened.
 - [ ] **AC8:** `configurability.mdx` no longer promises agent-file edits persist; it documents that re-init overwrites agent `.md` bodies and CLAUDE.md (warns on changed files, recover via git) while basic config is preserved; the survive-re-init lists are corrected. CHANGELOG records the reversal.
@@ -140,7 +149,7 @@ The warning is stateless — **no hash manifest, no per-project state, nothing a
   - Atomic write: after a refresh, no temp/partial files remain in the agents dir, and the written content matches intended (integrity).
   - Warning: fires and lists exactly the changed files when a body was edited; silent on a clean re-init; silent when only `model` changed; CLAUDE.md with unchanged project context produces no warning; init exits 0 regardless.
   - Fresh install: no warning. Claude-only project: `.codex` never created/touched.
-  - **Preserve-contract regression guard (AC5 — load-bearing):** seed `context/`, a completed plan, an active plan, proof chain files, `learn/state.json`, customized skill Rules/Gotchas/Examples, and ana.json user fields; after re-init assert every one survives byte-for-byte (model the existing `re-init preserves learn state.json` / `re-init refreshes metadata fields` tests at init.test.ts:612+).
+  - **Preserve-contract regression guard (AC5 — load-bearing, EXHAUSTIVE):** assert the COMPLETE `preserveUserState` set, not a subset — anything outside the enumerated list must not silently regress. Seed and then assert survival of all eight: (1) `context/`; (2) ana.json user fields + an **unknown/custom key** + a user-tuned **surface command**, with mechanical fields refreshed; (3) `state/setup-progress.json` preserved when `setupPhase !== 'complete'` (and the complete-setup branch behaves correctly); (4) `proof_chain.json` + `PROOF_CHAIN.md`; (5) `plans/completed/`; (6) `learn/` (e.g. `state.json`); (7) `plans/active/`; (8) customized skill `Rules`/`Gotchas`/`Examples`. Model the existing `re-init preserves learn state.json` / `re-init refreshes metadata fields` tests at init.test.ts:612+. Cross-check the assertion list against `preserveUserState` (state.ts:696-873) so it stays exhaustive if that function grows.
 - **Copy assertion (`work.ts`):** the sharpened nudge copy contains `ana init` and conveys template refresh.
 - **Docs/changelog:** assert `configurability.mdx` no longer contains the edit-persistence promise and documents overwrite + preserved-config; assert CHANGELOG contains the reversal entry.
 - **Edge cases:** first re-init after this ships (no prior baseline) → behaves as a normal content-gated refresh, warn-only safe; partial install (`.claude` present, `.ana` missing) follows the same overwrite path.
