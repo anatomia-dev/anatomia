@@ -368,6 +368,96 @@ Content...`;
     });
   });
 
+  describe('capture gate — self-arming flip (Phase 2)', () => {
+    /** Write a build report carrying a real, seal-valid capture marker + file. */
+    async function createBuildReportWithCapture(slug: string, raw: string): Promise<void> {
+      const dir = path.join(tempDir, '.ana', 'plans', 'active', slug);
+      await fs.mkdir(path.join(dir, '.captures'), { recursive: true });
+      const relFile = '.captures/test-build-1.log';
+      await fs.writeFile(path.join(dir, relFile), raw, 'utf-8');
+      const buf = Buffer.from(raw, 'utf-8');
+      const sha = createHash('sha256').update(buf).digest('hex');
+      const marker = `<!-- ana:capture stage=build slug=${slug} bytes=${buf.byteLength} sha256=${sha} file=${relFile} counts=abstain verdict=abstain -->`;
+      const content = `${getValidBuildReportContent()}\n\n## Test Results\n\n${marker}\n`;
+      await fs.writeFile(path.join(dir, 'build_report.md'), content, 'utf-8');
+      await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
+    }
+
+    /** Mark the project armed directly (stand-in for a prior valid capture). */
+    async function armProject(): Promise<void> {
+      const stateDir = path.join(tempDir, '.ana', 'state');
+      await fs.mkdir(stateDir, { recursive: true });
+      await fs.writeFile(
+        path.join(stateDir, 'capture.json'),
+        JSON.stringify({ armed: true, armedAt: '2026-01-01T00:00:00.000Z' }),
+        'utf-8'
+      );
+    }
+
+    async function isProjectArmed(): Promise<boolean> {
+      try {
+        const raw = await fs.readFile(path.join(tempDir, '.ana', 'state', 'capture.json'), 'utf-8');
+        return JSON.parse(raw).armed === true;
+      } catch {
+        return false;
+      }
+    }
+
+    // @ana A031 — check-then-arm: the first valid save is NOT blocked; it seals
+    // and then arms. The NEXT invalid save on the now-armed project IS blocked.
+    it('first valid-capture save arms the project; the next invalid save blocks', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await createBuildReportWithCapture('test-slug', 'Tests  3 passed (3)\n');
+
+      // Un-armed project, valid capture → not blocked.
+      expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
+      // …and now armed.
+      expect(await isProjectArmed()).toBe(true);
+
+      // A no-capture build report on the now-armed project → blocked (A030).
+      await createArtifact('test-slug', 'build_report.md');
+      expect(() => saveArtifact('build-report', 'test-slug')).toThrow();
+    });
+
+    // @ana A030
+    it('blocks an armed build-report save that has no captured evidence', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await armProject();
+      await createArtifact('test-slug', 'build_report.md'); // plain report, no marker
+
+      expect(() => saveArtifact('build-report', 'test-slug')).toThrow();
+    });
+
+    // @ana A032 — a never-captured project stays in warn-mode and is never blocked.
+    it('does not block a build-report save on a never-armed project', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await createArtifact('test-slug', 'build_report.md'); // no marker, but un-armed
+
+      expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
+      // A warn-mode save never arms — only a VALID capture arms.
+      expect(await isProjectArmed()).toBe(false);
+    });
+
+    // @ana A035 — verify reports are never gated, even when the project is armed.
+    it('never gates a verify-report save even when armed', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
+      await armProject();
+      const validReport = `# Verify Report\n\n**Result:** PASS`;
+      await createArtifact('test-slug', 'verify_report.md', validReport);
+
+      expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A036 — saves with no build report never trigger the gate.
+    it('never gates a non-build-report save even when armed', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      await armProject();
+      await createArtifact('test-slug', 'spec.md');
+
+      expect(() => saveArtifact('spec', 'test-slug')).not.toThrow();
+    });
+  });
+
   describe('non-main artifact branch', () => {
     // @ana A006
     it('saveArtifact scope allowed on develop artifact branch', async () => {

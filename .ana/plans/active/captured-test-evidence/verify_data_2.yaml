@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "AC14 prose contradicts its own contract. scope.md:84 and spec-2.md (lines 27, 106) carve out 'build-only specs with no contract' from the gate, but A030 blocks ANY no-evidence build report unconditionally — no contract condition. The carve-out also conflates 'build-only testing strategy' (no unit tests, still has a contract, still captures an abstain) with 'no contract.' Gate behavior is correct and fully contracted by A030; the prose is wrong. Route to Ana/Plan to strike the clause (Verify did not edit these artifacts)."
+    file: ".ana/plans/active/captured-test-evidence/spec-2.md"
+    line: 106
+    severity: observation
+    suggested_action: scope
+    related_assertions: ["A030", "A035", "A036"]
+  - category: code
+    summary: "Block message did not reassure a build-only/no-tests agent. When the gate blocks on an armed project, the agent is told evidence is required and to run `ana test`, but not that `ana test` seals a harmless abstain when there are no tests. Added one chalk.gray guidance line; gate logic unchanged. Re-verified (build + full suite + lint + tsc green)."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 805
+    severity: observation
+    suggested_action: acknowledge
+  - category: code
+    summary: "isArmed is read twice on the first valid build-report save (applyCaptureGate at :796, then armCapture's idempotency guard at capture-state.ts:75). Negligible — capture.json is a small separate file off the hot .saves.json path — but the second read is redundant given wasArmed is already known."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 796
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "The 'valid' arming predicate uses warnings.length === 0 as a proxy for 'all three preservation validators passed' rather than asserting on validator results directly. Correct today because evaluateCaptureGate routes all non-blocking messages to warnings, but the coupling is implicit — a future change that emits an informational warning would silently stop arming."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 815
+    severity: debt
+    suggested_action: monitor

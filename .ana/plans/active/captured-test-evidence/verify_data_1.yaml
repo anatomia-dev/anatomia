@@ -1,0 +1,46 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Repo-root dogfood agent files (.claude/.codex/agents/ana-build|verify.md) edited — spec Gotcha 'Templates, not dogfood' explicitly excludes them; propagation to the dogfood is owned by the prerequisite re-init scope. Edits are byte-identical to the template edits."
+    file: ".claude/agents/ana-build.md"
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A022"]
+  - category: code
+    summary: "Checkpoint passthrough is joined with spaces and re-parsed by resolveCommand, losing original argv quoting. A multi-token checkpoint command whose args contain spaces/parens/metacharacters is misparsed or refused (verified live: parens in an arg triggered a subshell refusal). Mitigated by degrade-to-raw so it never blocks, but counts/verdict are lost."
+    file: "packages/cli/src/commands/test.ts"
+    line: 149
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A023"]
+  - category: code
+    summary: "deriveCounts falls through to every parser when no hint matches; the rspec parser regex /(\\d+) examples?, (\\d+) failures?/ is loose enough to match unrelated output, risking a false count (and a false 'pass' when passed>0 at exit 0) on an unknown runner. Counts are fail-open by design, but a coincidental match defeats ABSTAIN-ON-UNKNOWN for that input."
+    file: "packages/cli/src/utils/capture-runner.ts"
+    line: 531
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A027"]
+  - category: code
+    summary: "validateCapturePresent uses parseMarkers (per-line scan) which does NOT skip inlined block content, unlike the integrity validators that use eachMarker. A capture marker embedded in preserved output could falsely satisfy 'present.' Harmless when a real top-level marker exists; the asymmetry is worth recording."
+    file: "packages/cli/src/utils/capture-marker.ts"
+    line: 362
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A012"]
+  - category: test
+    summary: "Corpus errorToken is the generic string 'Error' for 7 of 8 stacks (vitest uses the specific 'AssertionError'). It is present in each fail fixture, but a generic token is a weak assertion for ERROR-NEVER-STRIPPED — it would pass even if a different error string were the one preserved."
+    file: "packages/cli/tests/capture-corpus/invariants.test.ts"
+    line: 72
+    severity: debt
+    suggested_action: acknowledge
+    related_assertions: ["A021"]
+  - category: code
+    summary: "inferRunner has a garbled inline comment about cargo/go precedence ('cargo test contains the substring go test… not, but be explicit'). Cosmetic; logic is correct (cargo checked before go)."
+    file: "packages/cli/src/commands/test.ts"
+    line: 128
+    severity: observation
+    suggested_action: acknowledge
+  - category: upstream
+    summary: "@ana tag numbers (A001–A028) in the capture test files collide with identical tag numbers in other features' contracts (agents.test.ts, artifact.test.ts). Proof tooling associates tags by active-slug context, but the global tag space is ambiguous across files."
+    severity: observation
+    suggested_action: monitor

@@ -50,5 +50,81 @@
         "hash": "sha256:cb182d901e029dceebec5b7c7874fcc5b340c0a8f729309cd39cdd8a615433e8"
       }
     ]
+  },
+  "build_started_at": "2026-06-06T00:28:03.716Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-06T01:04:04.801Z",
+    "hash": "sha256:4f9936f42812ebee24fcead228eadecc0b9362054a1b8f97c304f6944af93b28"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-06T01:04:04.802Z",
+    "hash": "sha256:62321e15f069ca5bc98d5d3fcc43b4c4d9860f2207540a70af26e9e22c96536f"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-verify.md",
+    ".codex/agents/ana-build.md",
+    ".codex/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/test.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/utils/capture-marker.ts",
+    "packages/cli/src/utils/capture-runner.ts",
+    "packages/cli/src/utils/capture-state.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana-build.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/capture-corpus/invariants.test.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/template-capture-instruction.test.ts",
+    "packages/cli/tests/commands/test-command.test.ts",
+    "packages/cli/tests/utils/capture-marker.test.ts",
+    "packages/cli/tests/utils/capture-runner.test.ts",
+    "packages/cli/tests/utils/capture-state.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at_1": "2026-06-06T01:08:46.754Z",
+  "verify_agent_1": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:23c7ef1e5e87348ef51f0f411279f5ed5aa2557446f396c357c16d14ebaed4e3",
+    "run_at": "2026-06-06T02:56:10.134Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-06T01:17:32.235Z",
+    "hash": "sha256:134b411e5530b0b2b8103e6ad6b160ec328786b1fa50d5fc0cc831e3b67e7bdc"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-06T01:17:32.235Z",
+    "hash": "sha256:e09c32cffc0fb8c81afc5f934bd305771e18d296271274e547dca7ad9ff59536"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-06T01:56:49.623Z",
+    "hash": "sha256:8da844530b770c342daeb1b7d494a04ebe6e27f21de88b4ccc9699f82ba3daf8"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-06T01:56:49.624Z",
+    "hash": "sha256:f7cc5d7247ff600b2a06e804d508e89c71e1604fa7a5a4edc779b5cde6f6d688"
+  },
+  "verify_started_at_2": "2026-06-06T02:22:54.790Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-06T02:56:10.165Z",
+    "hash": "sha256:45d71b968573de7a24791c77e3facc88e25eb5582dc56af04d0dd20dd834cdba"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-06T02:56:10.165Z",
+    "hash": "sha256:0767137494e8677ce3574884b2451921dfdfddd119995fff9f0f10a60c52f3b4",
+    "history": [
+      {
+        "saved_at": "2026-06-06T02:29:09.920Z",
+        "hash": "sha256:76577f91e67906bb433014dd01e53ecce02009ba9a9068eff385d058d4974ee1"
+      }
+    ]
   }
 }

@@ -106,6 +106,10 @@ Read exact build and lint commands from `ana.json` `commands` field. Use the exa
 
 Run `commands.build` from ana.json first to compile the project. Then run checkpoint commands from the Build Brief section of the spec. `commands.test` is project-wide — use it only for the final "after all changes" baseline, not for per-file checkpoints.
 
+**Run every test through `ana test`** — the default capture-aware path. It runs the command shell-free, tees the full raw output to a capture file, and emits a sealed `<!-- ana:capture … -->` marker:
+- **Baseline** (the "after all changes" run): `ana test --stage build --slug {slug}`. Paste the emitted marker into the build report's test-evidence section — at save it expands into a verbatim, sha-sealed block, so your reported test counts are an engine-captured fact, not a typed claim.
+- **Checkpoints** (per-file, from the Build Brief): `ana test --slug {slug} -- {checkpoint command from Build Brief}`. Checkpoint captures degrade to raw and never block.
+
 Record the results: how many tests, how many passed, how many failed.
 
 **If baseline tests fail:** Check whether failures are in modules the spec touches:

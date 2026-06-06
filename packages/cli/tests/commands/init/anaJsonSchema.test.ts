@@ -52,6 +52,33 @@ describe('AnaJsonSchema', () => {
     });
   });
 
+  describe('surface test_json override', () => {
+    // @ana A024
+    it('accepts an opt-in test_json on a surface', () => {
+      const input = {
+        name: 'anatomia',
+        surfaces: {
+          cli: {
+            path: 'packages/cli',
+            commands: { test: 'pnpm vitest run', test_json: 'pnpm vitest run --reporter=json' },
+          },
+        },
+      };
+      const parsed = AnaJsonSchema.parse(input);
+      expect(parsed.surfaces['cli']!.commands.test_json).toBe('pnpm vitest run --reporter=json');
+    });
+
+    it('is undefined-safe when test_json is absent', () => {
+      const input = {
+        name: 'anatomia',
+        surfaces: { cli: { path: 'packages/cli', commands: { test: 'pnpm vitest run' } } },
+      };
+      const parsed = AnaJsonSchema.parse(input);
+      expect(parsed.surfaces['cli']!.commands.test_json).toBeUndefined();
+      expect(parsed.surfaces['cli']!.commands.test).toBe('pnpm vitest run');
+    });
+  });
+
   describe('passthrough preserves unknown fields', () => {
     it('preserves unknown top-level keys through parse', () => {
       const input = {

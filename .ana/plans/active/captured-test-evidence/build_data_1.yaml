@@ -1,0 +1,21 @@
+schema: 1
+concerns:
+  - summary: "Armed-large-output fail-closed window: in Phase 2, an already-armed project whose honest test output grows past the 8 MiB inline ceiling produces no inlinable marker and is blocked. Narrow (8 MiB is generous) but a real fail-closed-on-honest-capture case. Excerpt-on-overflow is the real fix."
+    file: "packages/cli/src/commands/test.ts"
+    severity: risk
+    suggested_action: scope
+  - summary: "Excerpt-on-overflow sealing (seal full sha256+bytes, inline an honest head/tail excerpt with its own excerpt_sha256/excerpt_bytes) is the tracked fast-follow that closes the over-ceiling availability edge. Explicitly deferred, not dropped."
+    file: "packages/cli/src/utils/capture-marker.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "test_json resolution is project-config opt-in: resolveTestCommandString prefers a surface's test_json over commands.test when present. The spec removed the --json-counts flag but kept the test_json feature; this resolves that ambiguity at the config level (no CLI flag, no auto-appended flags). Worth confirming this is the intended selection mechanism."
+    file: "packages/cli/src/commands/test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Dogfood seal is bootstrap-limited: the installed CLI (v1.2.2) has no inliner, so the marker pasted into THIS build report is not auto-expanded at save time until this feature ships. The marker + engine-derived counts are included as evidence; auto-inlining activates once merged. The inliner/validators themselves are proven by 84 passing unit/integration tests and a live `ana test` capture (3368 passed)."
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "deriveVerdict maps ANY non-zero exit to `fail` (not abstain), including a collection/compile error with null counts. Consistent with the corpus (exit-1 pathologies assert not-pass; exit-0 assert abstain) but a deliberate judgment call — a non-zero exit is treated as a real failure signal rather than a soft abstain."
+    file: "packages/cli/src/utils/capture-runner.ts"
+    severity: observation
+    suggested_action: acknowledge
