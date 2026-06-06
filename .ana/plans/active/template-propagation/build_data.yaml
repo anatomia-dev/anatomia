@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Stale @ana tags from prior pipeline cycles exist on unrelated tests (e.g. A005/A006/A007/A022 on parseFrontmatter, preserveUserState, and Codex-inventory tests in init.test.ts and agent-config.test.ts). They predate this contract and now collide with this contract's ID meanings; left untouched to avoid churning unrelated tests."
+    file: "packages/cli/tests/commands/init.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "atomicWriteFile temp filename uses Date.now()+pid for uniqueness. Concurrent inits writing the same destination in the same millisecond from the same process could in theory collide; init is single-process and sequential, so this is not reachable today."
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Pre-existing eslint warning in git-operations.ts (unused eslint-disable directive) and two unused-var warnings in website/components/hero/Hero.tsx — not introduced by this build, left as-is per scope discipline."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
