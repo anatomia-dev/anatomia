@@ -31,6 +31,7 @@ import {
   deriveVerdict,
   KNOWN_RUNNERS,
   type KnownRunner,
+  type ResolvedCommand,
   type TestCounts,
   type CaptureVerdict,
 } from '../utils/capture-runner.js';
@@ -143,10 +144,29 @@ export function inferRunner(cmdString: string): KnownRunner | undefined {
 export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
   const mode: TestRunOutcome['mode'] = params.passthrough && params.passthrough.length > 0 ? 'checkpoint' : 'baseline';
 
-  // 1. Determine the command string.
-  let cmdString: string | null;
+  // 1. Resolve the command shell-free; keep a string for runner inference.
+  let resolved: ResolvedCommand;
+  let runnerSource: string;
   if (mode === 'checkpoint') {
-    cmdString = params.passthrough!.join(' ');
+    const argv = params.passthrough!;
+    runnerSource = argv.join(' ');
+    if (argv.length === 1) {
+      // A single passthrough token may be a config-style command — including a
+      // `(cd '<dir>' && <cmd>)` wrapper — so parse it shell-free.
+      try {
+        resolved = resolveCommand(argv[0]!, params.projectRoot);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return failOrDegrade(mode, message, null);
+      }
+    } else {
+      // Already-tokenized argv from the invoking shell. Use it VERBATIM — never
+      // re-join + re-parse. The string parser is for ana.json's config string;
+      // re-tokenizing real argv silently loses quoting on args like
+      // `-k "a or b"`, which would split into separate tokens and change which
+      // tests run (and thus the sealed count).
+      resolved = { program: argv[0]!, args: argv.slice(1), env: {}, cwd: params.projectRoot };
+    }
   } else {
     const anaJsonPath = path.join(params.projectRoot, '.ana', 'ana.json');
     let anaJson: Record<string, unknown>;
@@ -155,21 +175,26 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
     } catch {
       return { mode, exitCode: CAPTURE_ERROR_EXIT, degradedToRaw: false, counts: null, captureError: 'could not read .ana/ana.json.' };
     }
-    cmdString = resolveTestCommandString(anaJson, params.surface);
+    const cmdString = resolveTestCommandString(anaJson, params.surface);
     if (!cmdString) {
       const where = params.surface ? `surface "${params.surface}"` : 'top-level commands.test';
       return { mode, exitCode: CAPTURE_ERROR_EXIT, degradedToRaw: false, counts: null, captureError: `no test command configured for ${where}.` };
     }
+    runnerSource = cmdString;
+    // Resolve shell-free (throws CaptureCommandError on a refusal).
+    try {
+      resolved = resolveCommand(cmdString, params.projectRoot);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return failOrDegrade(mode, message, null);
+    }
   }
 
-  // 2. Resolve shell-free (throws CaptureCommandError on a refusal).
-  let resolved;
-  try {
-    resolved = resolveCommand(cmdString, params.projectRoot);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return failOrDegrade(mode, message, null);
-  }
+  // Identify the runner once, from the command — used for count derivation in
+  // BOTH modes. Checkpoints get counts too (they previously abstained because
+  // no hint was inferred); unknown runners still abstain (deriveCounts is
+  // hint-only).
+  const runner = inferRunner(runnerSource);
 
   // 3. Prepare the sink and run the capture (throws on spawn/maxBuffer/timeout).
   const slugDir = path.join(params.projectRoot, '.ana', 'plans', 'active', params.slug);
@@ -193,12 +218,11 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
       `capture too large to seal — ${mib} MiB exceeds the 8 MiB inline ceiling. ` +
       `The full output is on disk at ${relFile} but cannot be sealed into the build report. ` +
       'Reduce test output (less verbose reporter) or split the suite.';
-    const counts = deriveCounts(result.rawBytes);
+    const counts = deriveCounts(result.rawBytes, runner);
     return failOrDegrade(mode, message, { counts, rawText: result.rawBytes.toString('utf8'), file: relFile, bytes: result.bytes });
   }
 
   // 5. Derive counts + verdict from the captured bytes.
-  const runner = mode === 'baseline' ? inferRunner(cmdString) : undefined;
   const counts = deriveCounts(result.rawBytes, runner);
   const verdict = deriveVerdict(counts, result.exitCode);
   const testExit = verdict === 'fail' ? 1 : 0;

@@ -73,7 +73,9 @@ describe('executeCapture — baseline', () => {
   // @ana A002
   it('emits a sealed marker on a passing baseline run (exit 0)', () => {
     const { root, slug } = mkProject('');
-    const s = script(root, 'ok.cjs', '      Tests  3 passed (3)\n', 0);
+    // The script name carries the runner so inferRunner identifies it (counts
+    // are hint-only — unhinted output abstains by design).
+    const s = script(root, 'vitest-run.cjs', '      Tests  3 passed (3)\n', 0);
     fs.writeFileSync(path.join(root, '.ana', 'ana.json'), JSON.stringify({ name: 'd', commands: { test: `${NODE} ${s}` } }));
 
     const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now: 1700000000 });
@@ -151,5 +153,41 @@ describe('executeCapture — checkpoint', () => {
     expect(outcome.degradedToRaw).toBe(false);
     expect(outcome.marker).toBeUndefined();
     expect(outcome.exitCode).toBe(0);
+  });
+
+  it('passes a pre-tokenized argv through VERBATIM (no quoting loss)', () => {
+    const { root, slug } = mkProject('');
+    // Echo argv beyond `node <script>` as JSON, so we can prove a multi-word
+    // arg survived as ONE token instead of being re-split by the string parser.
+    const echo = path.join(root, 'echo-argv.cjs');
+    fs.writeFileSync(echo, 'process.stdout.write(JSON.stringify(process.argv.slice(2)));process.exit(0);');
+    const outcome = executeCapture({
+      stage: 'build',
+      slug,
+      passthrough: [NODE, echo, '-k', 'alpha and beta'],
+      projectRoot: root,
+      now: 1700000006,
+    });
+    expect(outcome.mode).toBe('checkpoint');
+    expect(outcome.degradedToRaw).toBe(false);
+    // The argv arrives intact; the old join(' ')+re-parse split it into
+    // ["-k","alpha","and","beta"], which this assertion would catch.
+    expect(outcome.rawText).toContain('["-k","alpha and beta"]');
+  });
+
+  it('infers a runner hint from a checkpoint command and derives counts', () => {
+    const { root, slug } = mkProject('');
+    // Name the runner in the command so inferRunner picks it up; vitest-shaped
+    // summary then yields a real count even on a checkpoint.
+    const vitestish = script(root, 'vitest', ' Test Files  1 passed (1)\n      Tests  2 passed (2)\n', 0);
+    const outcome = executeCapture({
+      stage: 'build',
+      slug,
+      passthrough: [NODE, vitestish],
+      projectRoot: root,
+      now: 1700000007,
+    });
+    expect(outcome.mode).toBe('checkpoint');
+    expect(outcome.counts).toEqual({ passed: 2, failed: 0, skipped: 0 });
   });
 });
