@@ -79,44 +79,44 @@ const STACKS: StackCase[] = [
   {
     name: 'jest',
     raw: 'Tests:       3 passed, 3 total\nSnapshots:   0 total\n',
-    fail: 'Tests:       1 failed, 2 passed, 3 total\nError: boom\n',
-    errorToken: 'Error',
+    fail: 'Tests:       1 failed, 2 passed, 3 total\nExpect: received 2, expected 3\n',
+    errorToken: 'received 2, expected 3',
   },
   {
     name: 'pytest',
     raw: '===================== 3 passed, 2 skipped in 0.50s =====================\n',
     fail: 'E   AssertionError: assert 1 == 2\n===================== 1 failed, 2 passed in 0.40s =====================\n',
-    errorToken: 'Error',
+    errorToken: 'assert 1 == 2',
   },
   {
     name: 'go',
     raw: '{"Action":"pass","Test":"TestA"}\n{"Action":"pass","Test":"TestB"}\nok  \texample/p\t0.01s\n',
     fail: '{"Action":"run","Test":"TestA"}\n{"Action":"fail","Test":"TestA"}\n--- FAIL: TestA\n    main_test.go:10: Error: boom\nFAIL\texample/p\n',
-    errorToken: 'Error',
+    errorToken: 'main_test.go:10',
   },
   {
     name: 'cargo',
     raw: 'running 3 tests\ntest result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out\n',
     fail: "test tests::a ... FAILED\nError: assertion failed\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out\n",
-    errorToken: 'Error',
+    errorToken: 'assertion failed',
   },
   {
     name: 'rspec',
     raw: '5 examples, 0 failures, 1 pending\n',
     fail: 'Failure/Error: expect(1).to eq(2)\n5 examples, 2 failures\n',
-    errorToken: 'Error',
+    errorToken: 'expect(1).to eq(2)',
   },
   {
     name: 'junit',
     raw: '<testsuite name="s" tests="5" failures="0" errors="0" skipped="1"></testsuite>',
-    fail: '<testsuite name="s" tests="5" failures="2" errors="0" skipped="0"><testcase name="a"><failure>Error: expected 1 to be 2</failure></testcase></testsuite>',
-    errorToken: 'Error',
+    fail: '<testsuite name="s" tests="5" failures="2" errors="0" skipped="0"><testcase name="a"><failure>expected status 200 got 500</failure></testcase></testsuite>',
+    errorToken: 'expected status 200 got 500',
   },
   {
     name: 'dotnet',
     raw: 'Passed!  - Failed:     0, Passed:     3, Skipped:     1, Total:     4\n',
     fail: 'Failed!  - Failed:     2, Passed:     1, Skipped:     0, Total:     3\nError Message: boom\n',
-    errorToken: 'Error',
+    errorToken: 'Error Message: boom',
   },
 ];
 
