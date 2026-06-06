@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-186 runs · 163 active · 5 promoted · 888 closed
+187 runs · 169 active · 5 promoted · 888 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 33 | 29 | 2026-06-02 |
+| Unscoped | 34 | 35 | 2026-06-06 |
 | cli | 129 | 111 | 2026-06-03 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -24,7 +24,16 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 163 total)
+## Active Findings (30 shown of 169 total)
+
+### packages/cli/src/commands/init/assets.ts
+
+- **test:** atomicWriteFile SHA-256 integrity-failure branch (hash mismatch throw + temp cleanup) is untested — A011 is verified only indirectly via a passing happy-path write — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+- **code:** atomicWriteFile fully replaces the removed copyAndVerifyFile (spec implied factoring the two to share). All writes now route through one content-based atomic+integrity helper; old helper removed with no remaining callers — cleaner than the spec's letter, no dead code — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+
+### packages/cli/src/commands/init/index.ts
+
+- **code:** Refresh-warning git-recovery hint hardcodes '.claude/agents/ana-build.md' regardless of which files changed — a Codex-only user, or one whose only change was CLAUDE.md, gets a Claude-path example. Echoes the hardcoded-'.claude/'-path pattern of gitignore-disclosure-and-hardening-C1 — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
 
 ### packages/cli/src/commands/work-state.ts
 
@@ -35,8 +44,6 @@
 - **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
 - **code:** Dead conditional — verifyAgent always equals 'ana-verify' on both branches — *Fix Multi-Phase Timestamp Poisoning*
 - **code:** startBuildPhaseWithKey is an unnecessary wrapper — delegates entirely to startBuildPhase with unused _buildAgentKey param — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** getMainTreeResolution re-reads filesystem artifacts via gatherLocalArtifactState even though caller already has hasNumberedSpec/buildReportExists flags — *Fix Multi-Phase Timestamp Poisoning*
-- **code:** Inside-worktree resume writes phase-scoped timestamps without concurrency guard check — now phase-aware but still no guard — *Fix Multi-Phase Timestamp Poisoning*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -62,6 +69,12 @@
 
 - **test:** init.test.ts line 866 test description says '5 agent files' but body asserts 12 (6 agents) — *Learn Agent Codex Adaptation*
 
+### packages/cli/tests/commands/init/template-propagation.test.ts
+
+- **test:** `tools` config-key preservation is untested — CLAUDE_AGENT_CONFIG_KEYS includes 'tools' but no test sets a tools frontmatter key and asserts it survives re-init; only `model` (A004) is exercised — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+- **test:** CLAUDE.md overwrite-of-a-user-edit is not directly tested — A007 is verified only by presence of interpolation; no test mutates CLAUDE.md body then proves re-init resets it to stock — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+- **test:** Changed-files warning test (A014) does not assert the exact set — it checks ana-build.md present and CLAUDE.md absent, but an unchanged agent erroneously appearing in the warning would not be caught — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+
 ### packages/cli/tests/commands/run.test.ts
 
 - **test:** A004/A005 test checks test helper output, not real init behavior — *Learn Agent Codex Adaptation*
@@ -82,10 +95,6 @@
 
 - **test:** A003 is partly satisfied by source inspection because the tagged JSON success test checks clean output, not the merge argv — *Fix work complete merge strategy*
 
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** A023 test only covers worktree startWork path — doesn't actually compare main-tree vs worktree output as the test title claims — *Fix Multi-Phase Timestamp Poisoning*
-
 ### packages/cli/tests/engine/detectors/detection-overrides.test.ts
 
 - **test:** Temp fixture isolation depends on the package-manager detector's current five-level parent walk — *Fix SQL table counting regex*
@@ -97,13 +106,4 @@
 ### packages/cli/tests/engine/scan-engine-secrets.test.ts
 
 - **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
-
-### website/lib/__tests__/docs-platform-content.test.ts
-
-- **test:** ForPlatform pairing test only compares total block counts — *Docs, Website, and README Multi-Platform Update*
-- **test:** Generated docs asset assertions read ignored prebuild outputs directly, so focused tests can depend on stale or missing local files — *Docs, Website, and README Multi-Platform Update*
-
-### website/public/search-index.json
-
-- **test:** Generated search index can still surface stale direct Claude agent command text — *Docs, Website, and README Multi-Platform Update*
 

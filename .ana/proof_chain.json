@@ -49354,6 +49354,319 @@
         "base_commit": "9672de78be9e52532cc91e38be4ffc4824bcf3e1"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "template-propagation",
+      "feature": "Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 30,
+        "satisfied": 30,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Re-initializing replaces a customized Claude agent's instructions with the current version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Re-initializing replaces a customized Codex agent's instructions with the current version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each AI tool keeps its own version of the agent that differs between tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A customer's chosen model for a Claude agent survives re-initializing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A customer's Codex model, sandbox, and reasoning settings survive re-initializing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Codex agent identity and instruction-pointer fields are refreshed to the current version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Re-initializing refreshes CLAUDE.md to the current template",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Refreshed CLAUDE.md still shows the project's name and detected stack",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "AGENTS.md is left untouched when re-initializing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "An interrupted refresh never leaves a half-written template behind",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A refreshed template passes an integrity check after it is written",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "When a refresh overwrites changed content, re-init warns the customer to recover from git",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Re-initializing stays silent when nothing actually changed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The refresh warning names exactly the files whose content changed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Refreshing CLAUDE.md with the same project context produces no false warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Changing only a model setting never triggers a customization warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The refresh warning never stops init from completing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Re-initializing still preserves the team's context files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Re-initializing still preserves plans, the proof chain, and learn state",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Re-initializing still preserves a customer's skill rules, gotchas, and examples",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Re-initializing still preserves ana.json user fields",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "An in-progress setup keeps its saved progress through re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "A customer's tuned surface commands and any extra ana.json keys survive re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A fresh install writes templates with no overwrite warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A Claude-only project refreshes only the Claude tree",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "A customer on a stale CLI version is told to run ana init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The version nudge tells the customer that re-init refreshes templates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "The docs no longer promise agent-file edits persist across re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The docs state that agent basic configuration is preserved across re-init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The changelog records the re-init overwrite behavior change",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 171,
+        "think": 91,
+        "plan": 35,
+        "build": 21,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:491958647be4e85811fb3049e8f2116e2ffa9ebb29985cf94cc7068cb96c2cdc",
+        "contract": "sha256:4680e8e4e2139e992d966a63bc627cfe9f1c02fdb640a0f23e4cf2ea545005bf",
+        "plan": "sha256:afdc643f48a4b02df006f2fd21d4739fb093f3bc08435b4fba203a6e65db2a3c",
+        "spec": "sha256:6031804f3ff9041af0f2ccd176f9c71ec4cea1262ecea9419d5d585f33efaaf5",
+        "build-report": "sha256:cba7b4b7d6963d57b5fda5dc9c436f6d0e61a4c6f0c5df8677f60434645875fd",
+        "build-data": "sha256:f66eed13948731a73690c1f887291588594e2a02621e4b848efd00bfa8b4d87e",
+        "verify-report": "sha256:6eb23d533b15e103245123484f3d1285d69e4ee7e81f41726e7d7887b5f99a7c",
+        "verify-data": "sha256:f75e791cfd5eaa56bb914d630c9ed892393cfdbfc5873098df1feb32162e4cef"
+      },
+      "completed_at": "2026-06-06T01:47:51.730Z",
+      "modules_touched": [
+        "CHANGELOG.md",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/init/index.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/constants.ts",
+        "packages/cli/src/utils/agent-config.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/template-propagation.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/agent-config.test.ts",
+        "website/content/docs/guides/configurability.mdx"
+      ],
+      "scope_summary": "**The disease, in one sentence:** machine-owned template content (agent definitions, CLAUDE.md) can never reach existing customers, because re-init conservatively skips every file that already exists — it cannot tell an untouched stock template from a user-customized one, so it preserves all of them and refreshes none.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "`tools` config-key preservation is untested — CLAUDE_AGENT_CONFIG_KEYS includes 'tools' but no test sets a tools frontmatter key and asserts it survives re-init; only `model` (A004) is exercised",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "anchor": null,
+          "line": 130,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "template-propagation-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "CLAUDE.md overwrite-of-a-user-edit is not directly tested — A007 is verified only by presence of interpolation; no test mutates CLAUDE.md body then proves re-init resets it to stock",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "anchor": null,
+          "line": 174,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "template-propagation-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "atomicWriteFile SHA-256 integrity-failure branch (hash mismatch throw + temp cleanup) is untested — A011 is verified only indirectly via a passing happy-path write",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 165,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "template-propagation-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Changed-files warning test (A014) does not assert the exact set — it checks ana-build.md present and CLAUDE.md absent, but an unchanged agent erroneously appearing in the warning would not be caught",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "anchor": null,
+          "line": 206,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A014"
+          ],
+          "id": "template-propagation-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Refresh-warning git-recovery hint hardcodes '.claude/agents/ana-build.md' regardless of which files changed — a Codex-only user, or one whose only change was CLAUDE.md, gets a Claude-path example. Echoes the hardcoded-'.claude/'-path pattern of gitignore-disclosure-and-hardening-C1",
+          "file": "packages/cli/src/commands/init/index.ts",
+          "anchor": null,
+          "line": 184,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "template-propagation-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "atomicWriteFile fully replaces the removed copyAndVerifyFile (spec implied factoring the two to share). All writes now route through one content-based atomic+integrity helper; old helper removed with no remaining callers — cleaner than the spec's letter, no dead code",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 150,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "template-propagation-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Stale @ana tags from prior pipeline cycles exist on unrelated tests (e.g. A005/A006/A007/A022 on parseFrontmatter, preserveUserState, and Codex-inventory tests in init.test.ts and agent-config.test.ts). They predate this contract and now collide with this contract's ID meanings; left untouched to avoid churning unrelated tests.",
+          "file": "packages/cli/tests/commands/init.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "atomicWriteFile temp filename uses Date.now()+pid for uniqueness. Concurrent inits writing the same destination in the same millisecond from the same process could in theory collide; init is single-process and sequential, so this is not reachable today.",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing eslint warning in git-operations.ts (unused eslint-disable directive) and two unused-var warnings in website/components/hero/Hero.tsx — not introduced by this build, left as-is per scope discipline.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-06T01:02:55.978Z",
+        "completed_at": "2026-06-06T01:47:51.723Z",
+        "commit_count": 0,
+        "base_commit": "16d2294db6f9010fcc5358c9bc97e3f07ee0ca4f"
+      }
     }
   ],
   "schema": 1,
