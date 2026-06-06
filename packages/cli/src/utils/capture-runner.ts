@@ -366,30 +366,26 @@ function toBuffer(value: Buffer | string | null | undefined): Buffer {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Derive test counts from captured output, best-effort.
+ * Derive test counts from captured output — only when the runner is known.
  *
- * Tries the hinted runner first (when given), then every known parser in order.
- * Returns null (abstain) when no parser recognizes the output — counts never
- * block the seal (fail-open).
+ * ABSTAIN-ON-UNKNOWN is load-bearing: the count is the whole deliverable, and
+ * once the gate is armed a fabricated `passed>0` at exit 0 would seal a number
+ * that was never real. So we NEVER guess by running every parser against
+ * unidentified output — a loose summary regex (e.g. rspec's `N examples, N
+ * failures`) can coincidentally match unrelated prose and invent a count. We
+ * parse ONLY with the hinted runner's parser; unhinted output abstains (null).
+ *
+ * Fail-open still holds downstream: null counts never block the seal — they
+ * surface as an `abstain` verdict with the raw bytes preserved verbatim.
  *
  * @param raw - Captured output bytes (or string)
- * @param hint - Optional runner name to try first
- * @returns Derived counts, or null when abstaining
+ * @param hint - The identified runner whose parser to apply
+ * @returns Derived counts, or null when abstaining (no hint, or no match)
  */
 export function deriveCounts(raw: Buffer | string, hint?: KnownRunner): TestCounts | null {
+  if (!hint || !PARSERS[hint]) return null;
   const text = typeof raw === 'string' ? raw : raw.toString('utf8');
-
-  if (hint && PARSERS[hint]) {
-    const hinted = PARSERS[hint](text);
-    if (hinted) return hinted;
-  }
-
-  for (const name of KNOWN_RUNNERS) {
-    const parsed = PARSERS[name](text);
-    if (parsed) return parsed;
-  }
-
-  return null;
+  return PARSERS[hint](text);
 }
 
 /**
@@ -529,7 +525,9 @@ const parseCargo: Parser = (text) => {
  * @returns Counts, or null when no rspec summary is present
  */
 const parseRspec: Parser = (text) => {
-  const m = text.match(/(\d+) examples?, (\d+) failures?(?:, (\d+) pending)?/);
+  // Anchored to the start of rspec's standalone summary line — a bare
+  // `N examples, N failures` embedded mid-prose must not fabricate a count.
+  const m = text.match(/^\s*(\d+) examples?, (\d+) failures?(?:, (\d+) pending)?/m);
   if (!m) return null;
   const examples = parseInt(m[1]!, 10);
   const failed = parseInt(m[2]!, 10);

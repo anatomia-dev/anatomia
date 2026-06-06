@@ -214,4 +214,29 @@ describe('deriveCounts — from captured output', () => {
   it('abstains (null) on unrecognized output', () => {
     expect(deriveCounts('some random tool finished fine\n')).toBeNull();
   });
+
+  // @ana A027 — ABSTAIN-ON-UNKNOWN must not be defeated by a coincidental match.
+  it('abstains on unhinted output even when it embeds a runner-shaped phrase', () => {
+    // This prose would match rspec's loose `N examples, N failures` regex if we
+    // ran every parser against unidentified output. Unhinted ⇒ must abstain.
+    const prose = 'The guide walks through 5 examples, 0 failures expected, then more.\n';
+    expect(deriveCounts(prose)).toBeNull();
+  });
+
+  it('abstains when the embedded phrase is hinted to the wrong runner', () => {
+    // Hinted as vitest, but the text carries no vitest `Tests …` summary line —
+    // the hinted parser simply finds nothing and we abstain rather than guess.
+    const prose = 'we observed 5 examples, 2 failures during the demo\n';
+    expect(deriveCounts(prose, 'vitest')).toBeNull();
+  });
+
+  it('rspec parser ignores a summary phrase that is not its own line', () => {
+    // Anchored: a mid-sentence `N examples, N failures` is not the rspec summary.
+    expect(deriveCounts('saw 9 examples, 9 failures inline in a log\n', 'rspec')).toBeNull();
+    // …but a real standalone rspec summary line still parses.
+    const counts = deriveCounts('5 examples, 1 failure, 2 pending\n', 'rspec');
+    expect(counts).not.toBeNull();
+    expect(counts!.passed).toBe(2);
+    expect(counts!.failed).toBe(1);
+  });
 });
