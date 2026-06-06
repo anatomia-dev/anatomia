@@ -1,0 +1,22 @@
+schema: 1
+concerns:
+  - summary: "AC15 (remove premature CHANGELOG [Unreleased] note) directly conflicts with the template-propagation contract's A028 test, which asserted that note's presence. A028 was realigned to assert the note is deferred to the next version bump. This modifies a test owned by another (completed) contract — the spec authored AC15 but did not flag the dependent A028 test."
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    severity: risk
+    suggested_action: acknowledge
+  - summary: "Stale @ana tags (old captured-test-evidence A012/A013/A014) were removed from three preservation-validator unit tests in capture-marker.test.ts because those IDs are reused with different meanings by the new active contract. The tests are kept as untagged bonus coverage; the new contract's A012/A014 are covered by real tests in init.test.ts and artifact.test.ts."
+    file: "packages/cli/tests/utils/capture-marker.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "StatusOutput gained a computed captureGateActive boolean (and it appears in --json) beyond the raw captureGate flag the spec mockup named. It is required to render the third human state 'on (inactive — no test command configured)' without giving printHumanReadable a projectRoot. Improves JSON parity; not a spec deviation in behavior."
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "CHANGELOG has no [1.2.2] footer compare-link entry (the body has a ## [1.2.2] section). Pre-existing on main; AC15 only directed correcting the [Unreleased] link to v1.2.2...HEAD, so the dangling [1.2.2] reference was left as-is."
+    file: "CHANGELOG.md"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive). Not introduced by this build; surfaced by the project-wide lint in the pre-commit hook."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
