@@ -6,6 +6,7 @@ import {
   executeCapture,
   resolveTestCommandString,
   inferRunner,
+  isCheckpointSealConflict,
   CAPTURE_ERROR_EXIT,
 } from '../../src/commands/test.js';
 
@@ -42,6 +43,29 @@ afterEach(() => {
   while (tmpDirs.length) {
     fs.rmSync(tmpDirs.pop()!, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   }
+});
+
+describe('isCheckpointSealConflict', () => {
+  it('refuses an explicit --stage build with a passthrough (the incident form)', () => {
+    expect(isCheckpointSealConflict('build', 'cli', ['vitest', 'run'])).toBe(true);
+  });
+
+  it('refuses an explicit --stage verify with a passthrough (same class of contradiction)', () => {
+    expect(isCheckpointSealConflict('verify', 'cli', ['vitest', 'run'])).toBe(true);
+  });
+
+  it('allows a bare checkpoint — default stage + passthrough is legitimate', () => {
+    expect(isCheckpointSealConflict('build', 'default', ['vitest', 'run'])).toBe(false);
+  });
+
+  it('allows an explicit sealing stage with NO passthrough (the baseline seal)', () => {
+    expect(isCheckpointSealConflict('build', 'cli', [])).toBe(false);
+    expect(isCheckpointSealConflict('verify', 'cli', [])).toBe(false);
+  });
+
+  it('does not refuse when the stage source is unknown (no false positives)', () => {
+    expect(isCheckpointSealConflict('build', undefined, ['vitest'])).toBe(false);
+  });
 });
 
 describe('resolveTestCommandString', () => {
