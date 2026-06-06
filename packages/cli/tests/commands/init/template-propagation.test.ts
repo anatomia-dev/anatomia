@@ -500,17 +500,10 @@ describe('template propagation — version nudge + docs + changelog', () => {
     expect(mdx.toLowerCase()).toContain('preserv');
   });
 
-  // @ana A028 — superseded by retire-capture-self-arming AC15. The re-init
-  // overwrite note was premature under a published-looking section; AC15 pulled
-  // it from [Unreleased] (the changelog reflects only what is shipped to npm,
-  // 1.2.2). The note re-appears at the next version bump. Until then the
-  // [Unreleased] section must NOT carry it.
-  it('CHANGELOG defers the re-init overwrite note until the next version bump', async () => {
+  // @ana A028
+  it('CHANGELOG records the re-init overwrite behavior reversal', async () => {
     const changelog = await fs.readFile(path.join(repoRoot, 'CHANGELOG.md'), 'utf-8');
-    const unreleasedStart = changelog.indexOf('## [Unreleased]');
-    const nextRelease = changelog.indexOf('## [1.2.2]');
-    const unreleased = changelog.slice(unreleasedStart, nextRelease);
-    expect(unreleasedStart).toBeGreaterThanOrEqual(0);
-    expect(unreleased.toLowerCase()).not.toContain('overwrit');
+    expect(changelog.toLowerCase()).toContain('overwrit');
+    expect(changelog.toLowerCase()).toContain('re-init');
   });
 });
