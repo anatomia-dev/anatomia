@@ -182,8 +182,16 @@ assertions:
     matcher: "equals"
     value: null
 
-  # New — token ledger fully excised
+  # New — distinct capture-error exit code, never conflated with test failure
   - id: A028
+    says: "A capture or seal failure exits with a distinct code, never mistaken for a test failure"
+    block: "ana test exits 3 on a capture/seal error (over-ceiling, refusal, spawn error), not 1"
+    target: "exitCode"
+    matcher: "equals"
+    value: 3
+
+  # New — token ledger fully excised
+  - id: A029
     says: "No token-measurement code ships with the capture feature"
     block: "no js-tiktoken, token_economy, ana gain, or tokenizer marker field exists"
     target: "tokenLedgerArtifactsFound"
@@ -193,7 +201,7 @@ assertions:
   # ── Phase 2: self-arming flip to fail-closed ────────────────────────
 
   # AC12 — armed project blocks an invalid build-report save
-  - id: A029
+  - id: A030
     says: "Once a project has sealed real evidence, a later build report with no valid evidence is blocked"
     block: "evaluateCaptureGate returns blocked=true when armed and preservation fails"
     target: "gate.blocked"
@@ -201,7 +209,7 @@ assertions:
     value: true
 
   # New — check-then-arm: the arming save never blocks itself
-  - id: A030
+  - id: A031
     says: "The first valid-evidence build report is never blocked; it seals and then arms the project"
     block: "check-then-arm: first valid save is not blocked, then isArmed becomes true"
     target: "armedAfterFirstValidSave"
@@ -209,19 +217,19 @@ assertions:
     value: true
 
   # AC13 — never-captured project never blocked; undefined-safe
-  - id: A031
+  - id: A032
     says: "A project that never captured stays in warn-mode and is never blocked"
     block: "isArmed is false for a fresh project and the gate does not block"
     target: "gate.blocked"
     matcher: "equals"
     value: false
-  - id: A032
+  - id: A033
     says: "After enforcement, unreadable counts still never block — only missing or corrupted evidence does"
     block: "fail-open on counts holds after the flip (abstain counts, valid preservation, armed)"
     target: "gate.blocked"
     matcher: "equals"
     value: false
-  - id: A033
+  - id: A034
     says: "A fresh project with no arming record reads as not armed"
     block: "isArmed is undefined-safe — missing capture.json returns false"
     target: "armed"
@@ -229,13 +237,13 @@ assertions:
     value: false
 
   # AC14 — gate scoped to build_report.md only
-  - id: A034
+  - id: A035
     says: "Verify reports are never blocked by the evidence gate, preserving Verify's independence"
     block: "a verify_report save is not gated even when the project is armed"
     target: "gate.blocked"
     matcher: "equals"
     value: false
-  - id: A035
+  - id: A036
     says: "Saves with no build report never trigger the evidence gate"
     block: "a non-build-report save is not gated even when the project is armed"
     target: "gate.blocked"
