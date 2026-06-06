@@ -22,6 +22,7 @@ import * as yaml from 'yaml';
 import { runContractPreCheck } from './verify.js';
 import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
+import { inlineCaptures, evaluateCaptureGate } from '../utils/capture-marker.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
@@ -742,6 +743,34 @@ function validateBranch(
 }
 
 /**
+ * Expand capture markers in a build report and run the warn-mode capture gate.
+ *
+ * Runs BEFORE the seal hash and staging so the committed content carries the
+ * verbatim block. Phase 1 is warn-only: `armed: false` means `gate.blocked` is
+ * always false — failures print a warning and NEVER `process.exit`. Inliner
+ * errors (e.g. a bare marker with no `.log`) surface as warnings too.
+ *
+ * @param filePath - Absolute path to the build report
+ * @param slugDir - Absolute path to the slug directory (resolves capture files)
+ */
+function applyCaptureGate(filePath: string, slugDir: string): void {
+  const reportText = fs.readFileSync(filePath, 'utf-8');
+  const inlined = inlineCaptures(reportText, slugDir);
+  if (inlined.text !== reportText) {
+    fs.writeFileSync(filePath, inlined.text, 'utf-8');
+  }
+  for (const err of inlined.errors) {
+    console.warn(chalk.yellow(`Warning: capture — ${err}`));
+  }
+
+  // Phase 1: warn-mode only (armed: false → blocked always false).
+  const gate = evaluateCaptureGate(filePath, { armed: false });
+  for (const warning of gate.warnings) {
+    console.warn(chalk.yellow(`Warning: capture evidence — ${warning}`));
+  }
+}
+
+/**
  * Save an artifact to git with appropriate validation and commit
  *
  * @param type - Artifact type (e.g., "scope", "spec-2", "build-report")
@@ -931,6 +960,10 @@ export function saveArtifact(type: string, slug: string): void {
       console.error(chalk.red(`Error: build_report.md format invalid.\n${error}`));
       process.exit(1);
     }
+    // Expand capture markers + run the warn-mode capture gate BEFORE the seal
+    // hash (writeSaveMetadata) and staging. Phase 1 never blocks.
+    const captureSlugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+    applyCaptureGate(filePath, captureSlugDir);
   }
 
   if (typeInfo.baseType === 'contract') {
@@ -1327,6 +1360,9 @@ export function saveAllArtifacts(slug: string): void {
         console.error(chalk.red(`Error: ${artifact.file} format invalid.\n${error}`));
         process.exit(1);
       }
+      // Expand capture markers + run the warn-mode capture gate BEFORE the seal
+      // hash and staging. Wiring both save sites is required (one is bypassable).
+      applyCaptureGate(artifact.path, planDir);
     }
 
     if (artifact.typeInfo.baseType === 'contract') {
