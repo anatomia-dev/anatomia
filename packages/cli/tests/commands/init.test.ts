@@ -9,7 +9,8 @@ import { fileExists } from '../../src/commands/init/preflight.js';
 import { displayBlindSpots, displaySuccessMessage } from '../../src/commands/init/state.js';
 import { createDirectoryStructure } from '../../src/commands/init/assets.js';
 import { createSkillSymlinks, copyCodexAgentFiles } from '../../src/commands/init/assets.js';
-import { preserveUserState, migrateSkillsToCanonical } from '../../src/commands/init/state.js';
+import { preserveUserState, migrateSkillsToCanonical, createAnaJson } from '../../src/commands/init/state.js';
+import { isCaptureGateEnabled } from '../../src/commands/artifact.js';
 import { AGENT_FILES, CODEX_AGENT_FILES, DOCS_QUICKSTART, DOCS_SETUP_GUIDE } from '../../src/constants.js';
 
 async function dirExists(dirPath: string): Promise<boolean> {
@@ -105,6 +106,18 @@ describe('ana init', () => {
       expect(meta.lastScanAt).toBeDefined();
       expect(meta).not.toHaveProperty('setupPhase');
       expect(meta).not.toHaveProperty('mergeStrategy');
+    });
+
+    // @ana A010 — a freshly initialized project opts into the capture gate.
+    it('createAnaJson writes captureGate: on', async () => {
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const config = await createAnaJson(tmpAnaPath, createEmptyEngineResult());
+
+      expect(config['captureGate']).toBe('on');
+      const written = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
+      expect(written.captureGate).toBe('on');
     });
 
     it('has all required fields for D1 schema', () => {
@@ -728,6 +741,85 @@ describe('ana init', () => {
       expect(result.language).toBe('Rust');
     });
   });
+  describe('captureGate re-init preservation', () => {
+    // @ana A011 — re-init preserves an explicit gate-off choice.
+    it('keeps captureGate: off through a re-init merge', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'my-project',
+          language: 'TypeScript',
+          packageManager: 'pnpm',
+          artifactBranch: 'main',
+          captureGate: 'off',
+          commands: { test: 'pnpm vitest run' },
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'my-project',
+        language: 'TypeScript',
+        framework: null,
+        packageManager: 'pnpm',
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
+      expect(result.captureGate).toBe('off');
+    });
+
+    // @ana A012 — re-init on a project that never set the flag leaves it absent,
+    // and the GUARANTEE is the resulting enablement is off (assert behavior).
+    it('leaves an absent flag absent, and enablement reads off', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'my-project',
+          language: 'TypeScript',
+          packageManager: 'pnpm',
+          artifactBranch: 'main',
+          // No captureGate — and a resolvable test command, so the ONLY reason
+          // enablement is off must be the absent flag (not a missing command).
+          commands: { test: 'pnpm vitest run' },
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'my-project',
+        language: 'TypeScript',
+        framework: null,
+        packageManager: 'pnpm',
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
+      expect(result).not.toHaveProperty('captureGate');
+
+      // Behavior-level guarantee: place the merged config at a project root and
+      // confirm the gate reads off despite a resolvable test command.
+      const projectRoot = path.join(tmpDir, 'merged-proj');
+      await fs.mkdir(path.join(projectRoot, '.ana'), { recursive: true });
+      await fs.writeFile(path.join(projectRoot, '.ana', 'ana.json'), JSON.stringify(result), 'utf-8');
+      expect(isCaptureGateEnabled(projectRoot)).toBe(false);
+    });
+  });
+
   describe('refreshes null values from scan without preserving stale data', () => {
     it('null scan results overwrite non-null old values', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
