@@ -23,6 +23,7 @@ import { runContractPreCheck } from './verify.js';
 import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { inlineCaptures, evaluateCaptureGate } from '../utils/capture-marker.js';
+import { isArmed, armCapture } from '../utils/capture-state.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
@@ -742,18 +743,27 @@ function validateBranch(
   }
 }
 
+/** Outcome of the build-report capture gate, used to decide post-seal arming. */
+interface CaptureGateOutcome {
+  /** All three preservation validators passed this save — safe to arm. */
+  valid: boolean;
+  /** Whether the project was already armed BEFORE this save (suppresses the
+   * one-time "armed" message on a re-save of an already-armed project). */
+  wasArmed: boolean;
+}
+
 /**
- * Expand capture markers in a build report and run the warn-mode capture gate.
+ * Expand capture markers in a report into verbatim sealed blocks (warn-only).
  *
- * Runs BEFORE the seal hash and staging so the committed content carries the
- * verbatim block. Phase 1 is warn-only: `armed: false` means `gate.blocked` is
- * always false — failures print a warning and NEVER `process.exit`. Inliner
- * errors (e.g. a bare marker with no `.log`) surface as warnings too.
+ * Shared by build-report and verify-report saves. Runs BEFORE the seal hash so
+ * the committed content carries the block. Never blocks: inliner problems (e.g.
+ * a bare marker with no `.log`) surface as warnings. This is the mechanism that
+ * gives BOTH reports their own sealed account of their own test run.
  *
- * @param filePath - Absolute path to the build report
+ * @param filePath - Absolute path to the report
  * @param slugDir - Absolute path to the slug directory (resolves capture files)
  */
-function applyCaptureGate(filePath: string, slugDir: string): void {
+function inlineReportCaptures(filePath: string, slugDir: string): void {
   const reportText = fs.readFileSync(filePath, 'utf-8');
   const inlined = inlineCaptures(reportText, slugDir);
   if (inlined.text !== reportText) {
@@ -762,11 +772,62 @@ function applyCaptureGate(filePath: string, slugDir: string): void {
   for (const err of inlined.errors) {
     console.warn(chalk.yellow(`Warning: capture — ${err}`));
   }
+}
 
-  // Phase 1: warn-mode only (armed: false → blocked always false).
-  const gate = evaluateCaptureGate(filePath, { armed: false });
+/**
+ * Inline a build report's captures, then run the capture gate — fail-CLOSED
+ * once the project is armed.
+ *
+ * Check-then-arm ordering: the gate is evaluated against the project's CURRENT
+ * armed state and blocks (process.exit(1), BEFORE the seal hash) only when the
+ * project is already armed AND a preservation validator fails. Counts/verdict
+ * never block (fail-open). The caller arms the project AFTER a successful valid
+ * save (see {@link CaptureGateOutcome}); evaluating before arming means the
+ * first valid save — which arms the project — is never blocked by itself.
+ *
+ * @param filePath - Absolute path to the build report
+ * @param slugDir - Absolute path to the slug directory (resolves capture files)
+ * @param projectRoot - Project root (resolves the arming state)
+ * @returns Whether the save was valid (arm after seal) and the prior armed state
+ */
+function applyCaptureGate(filePath: string, slugDir: string, projectRoot: string): CaptureGateOutcome {
+  inlineReportCaptures(filePath, slugDir);
+
+  const wasArmed = isArmed(projectRoot);
+  const gate = evaluateCaptureGate(filePath, { armed: wasArmed });
+
+  if (gate.blocked) {
+    console.error(chalk.red('Error: build_report.md has no valid captured test evidence.'));
+    console.error(chalk.red('  This project has previously sealed a real capture, so test evidence is required.'));
+    for (const err of gate.errors) {
+      console.error(chalk.red(`  ${err}`));
+    }
+    process.exit(1);
+  }
+
   for (const warning of gate.warnings) {
     console.warn(chalk.yellow(`Warning: capture evidence — ${warning}`));
+  }
+
+  // Valid only when every preservation validator passed this save (no warnings,
+  // no errors). gate.errors is empty here (blocked already exited), so this is
+  // effectively "no warnings".
+  return { valid: gate.warnings.length === 0 && gate.errors.length === 0, wasArmed };
+}
+
+/**
+ * Arm the project after a confirmed-valid build-report save, and announce the
+ * one-time flip. Idempotent and safe to call on every build-report save.
+ *
+ * @param outcome - The gate outcome from {@link applyCaptureGate}, or null when
+ *   the save was not a build report
+ * @param projectRoot - Project root (where the arming state is written)
+ */
+function armAfterValidBuildReport(outcome: CaptureGateOutcome | null, projectRoot: string): void {
+  if (!outcome || !outcome.valid) return;
+  armCapture(projectRoot);
+  if (!outcome.wasArmed) {
+    console.log(chalk.gray('  capture gate armed for this project — future build reports now require valid evidence.'));
   }
 }
 
@@ -923,6 +984,9 @@ export function saveArtifact(type: string, slug: string): void {
     }
   }
 
+  // Set by the build-report branch; consumed after the seal to arm the project.
+  let buildReportOutcome: CaptureGateOutcome | null = null;
+
   if (typeInfo.baseType === 'verify-report') {
     const error = validateVerifyReportFormat(filePath);
     if (error) {
@@ -930,8 +994,14 @@ export function saveArtifact(type: string, slug: string): void {
       process.exit(1);
     }
 
-    // Auto pre-check for contract mode
+    // Verify keeps its OWN sealed account: inline + seal the verify capture into
+    // verify_report.md so this stage's count is sealed evidence, not loose prose.
+    // NEVER gated — Verify's independence is preserved; a verify save is never
+    // blocked by the capture gate even when the project is armed.
     const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
+    inlineReportCaptures(filePath, slugDir);
+
+    // Auto pre-check for contract mode
     runPreCheckAndStore(slug, slugDir, projectRoot);
   }
 
@@ -960,10 +1030,12 @@ export function saveArtifact(type: string, slug: string): void {
       console.error(chalk.red(`Error: build_report.md format invalid.\n${error}`));
       process.exit(1);
     }
-    // Expand capture markers + run the warn-mode capture gate BEFORE the seal
-    // hash (writeSaveMetadata) and staging. Phase 1 never blocks.
+    // Expand capture markers + run the capture gate BEFORE the seal hash
+    // (writeSaveMetadata) and staging. Fail-CLOSED once the project is armed;
+    // the project is armed AFTER the seal (check-then-arm), so the first valid
+    // save never blocks itself.
     const captureSlugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
-    applyCaptureGate(filePath, captureSlugDir);
+    buildReportOutcome = applyCaptureGate(filePath, captureSlugDir, projectRoot);
   }
 
   if (typeInfo.baseType === 'contract') {
@@ -1109,6 +1181,10 @@ export function saveArtifact(type: string, slug: string): void {
     ? { gateOnStageTransition: { slugDir, artifactType: typeInfo.artifactType } }
     : undefined;
   writeSaveMetadata(slugDir, typeInfo.artifactType, artifactContent, stageGate);
+
+  // Check-then-arm: the build report sealed cleanly with valid evidence, so arm
+  // the project. From here on, a build-report save with no valid evidence blocks.
+  armAfterValidBuildReport(buildReportOutcome, projectRoot);
 
   // Write companion hash alongside report hash
   if (companionPath && companionKey && fs.existsSync(companionPath)) {
@@ -1316,6 +1392,9 @@ export function saveAllArtifacts(slug: string): void {
     process.exit(1);
   }
 
+  // Set by the build-report branch below; consumed after the seal to arm.
+  let buildReportOutcome: CaptureGateOutcome | null = null;
+
   // 3. Validate all artifacts
   for (const artifact of artifacts) {
     if (artifact.typeInfo.baseType === 'plan') {
@@ -1333,6 +1412,8 @@ export function saveAllArtifacts(slug: string): void {
         console.error(chalk.red(`Error: ${artifact.file} format invalid.\n${error}`));
         process.exit(1);
       }
+      // Verify's own sealed account: inline + seal its capture, never gated.
+      inlineReportCaptures(artifact.path, planDir);
     }
 
     if (artifact.typeInfo.baseType === 'scope') {
@@ -1360,9 +1441,10 @@ export function saveAllArtifacts(slug: string): void {
         console.error(chalk.red(`Error: ${artifact.file} format invalid.\n${error}`));
         process.exit(1);
       }
-      // Expand capture markers + run the warn-mode capture gate BEFORE the seal
-      // hash and staging. Wiring both save sites is required (one is bypassable).
-      applyCaptureGate(artifact.path, planDir);
+      // Expand capture markers + run the capture gate BEFORE the seal hash and
+      // staging. Fail-CLOSED once armed; wiring BOTH save sites is required (one
+      // is bypassable). Arming happens after the seal (check-then-arm).
+      buildReportOutcome = applyCaptureGate(artifact.path, planDir, projectRoot);
     }
 
     if (artifact.typeInfo.baseType === 'contract') {
@@ -1530,6 +1612,9 @@ export function saveAllArtifacts(slug: string): void {
       : undefined;
     writeSaveMetadata(planDir, artifact.typeInfo.artifactType, content, gate);
   }
+
+  // Check-then-arm: a build report sealed with valid evidence arms the project.
+  armAfterValidBuildReport(buildReportOutcome, projectRoot);
 
   // Write companion hashes alongside report hashes
   for (const companion of companions) {
