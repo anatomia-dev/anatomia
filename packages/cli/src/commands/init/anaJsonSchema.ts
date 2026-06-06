@@ -37,10 +37,21 @@ import { z } from 'zod';
 /**
  * Per-surface command set — build/test/lint/dev scoped to one surface.
  */
-const surfaceCommandsSchema = z.record(
-  z.string(),
-  z.string().nullable().catch(null),
-).optional().default({}).catch({});
+const surfaceCommandsSchema = z
+  .object({
+    build: z.string().nullable().catch(null),
+    test: z.string().nullable().catch(null),
+    lint: z.string().nullable().catch(null),
+    dev: z.string().nullable().catch(null),
+    // Opt-in structured test command for stricter engine-derived counts.
+    // Never auto-appended to `commands.test`. Same fail-soft string shape.
+    test_json: z.string().nullable().catch(null),
+  })
+  .partial()
+  .passthrough()
+  .optional()
+  .default({})
+  .catch({});
 
 /**
  * Single surface object — path, language, framework, and scoped commands.
