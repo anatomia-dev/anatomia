@@ -132,8 +132,10 @@ assertions:
     matcher: "truthy"
 
   # ── AC7: the block message is itself verified (not just the boolean) ──
-  # A015-A017 share ONE test that blocks on a TAMPERED (not missing) capture,
-  # so a hardcoded 'missing' string cannot satisfy A017.
+  # A015-A017 share ONE test that blocks on a TRUNCATED (not missing) capture
+  # (bytes deleted inside the sealed block), so a hardcoded 'missing' string
+  # cannot satisfy A017. A truncation specifically yields the word "truncated";
+  # an equal-length swap would yield "mismatch" instead — the fixture is pinned.
 
   # AC7 — the message names the one-line fix.
   - id: A015
@@ -152,10 +154,11 @@ assertions:
     value: "captureGate"
 
   # AC2/AC7 — the message reflects the ACTUAL preservation failure, not a
-  # hardcoded reason. Test fixture: a tampered/truncated capture.
+  # hardcoded reason. Test fixture: a TRUNCATED capture (bytes deleted inside
+  # the sealed block), which deterministically produces the word "truncated".
   - id: A017
     says: "The block message states the real reason the evidence failed, not a canned one"
-    block: "the block message surfaces the actual preservation validator error (tampered/truncated case)"
+    block: "the block message surfaces the actual preservation validator error (truncated-capture case)"
     target: "blockMessage"
     matcher: "contains"
     value: "truncated"
