@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-188 runs · 177 active · 5 promoted · 891 closed
+189 runs · 179 active · 5 promoted · 894 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 34 | 35 | 2026-06-06 |
+| Unscoped | 35 | 37 | 2026-06-06 |
 | cli | 130 | 119 | 2026-06-06 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -14,7 +14,7 @@
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 13 | 8 |
+| packages/cli/src/commands/work.ts | 14 | 9 |
 | packages/cli/tests/commands/work.test.ts | 7 | 6 |
 | packages/cli/src/engine/detectors/surfaces.ts | 7 | 4 |
 | packages/cli/tests/commands/work-ci-mocked.test.ts | 6 | 2 |
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 177 total)
+## Active Findings (30 shown of 179 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -48,7 +48,7 @@
 
 ### packages/cli/src/commands/work.ts
 
-- **code:** Unsupported mergeStrategy classifier matches broad 'not allowed'/'disabled' text and can steal future policy failures from more specific guidance — *Fix work complete merge strategy*
+- **code:** getWorkStatus reads + parses .ana/ana.json twice per call — once inline (readFileSync + JSON.parse) for lastScanAt/captureGate at work.ts:~500, then again inside isCaptureGateEnabled (which re-reads + AnaJsonSchema.parses the same file) for captureGateActive at ~515. Harmless (status is cold-path) but two reads of one file; could thread the parsed object through. Unchanged since prior verify. — *Retire Capture-Gate Self-Arming — Drive the Gate from a Committed Config Flag*
 
 ### packages/cli/src/engine/detectors/surfaces.ts
 
@@ -78,9 +78,9 @@
 
 - **test:** Corpus errorToken is the generic string 'Error' for 7 of 8 stacks (vitest uses the specific 'AssertionError'). It is present in each fail fixture, but a generic token is a weak assertion for ERROR-NEVER-STRIPPED — it would pass even if a different error string were the one preserved. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
-### packages/cli/tests/commands/init.test.ts
+### packages/cli/tests/commands/artifact.test.ts
 
-- **test:** init.test.ts line 866 test description says '5 agent files' but body asserts 12 (6 agents) — *Learn Agent Codex Adaptation*
+- **test:** A014 (verify-report sealed account) now has a genuine targeted @ana A014 test: saves a verify report carrying a bare marker with the gate ON, then asserts the saved verify_report.md contains the begin/end delimiters, the real sha256, AND the verbatim captured bytes that were absent before the save. Closes the prior verify's AC9 PARTIAL gap. Not a sentinel. — *Retire Capture-Gate Self-Arming — Drive the Gate from a Committed Config Flag*
 
 ### packages/cli/tests/commands/init/template-propagation.test.ts
 
