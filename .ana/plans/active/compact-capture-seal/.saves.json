@@ -75,5 +75,20 @@
     "packages/cli/tests/utils/capture-marker.test.ts",
     "packages/cli/tests/utils/capture-runner.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-06T22:13:45.213Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:e944b8cc712ed165f4a3da32036bb9309f99de0a9e1fedd1af3c7e0774f33fbf",
+    "run_at": "2026-06-06T22:25:46.319Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-06T22:25:46.352Z",
+    "hash": "sha256:a5aa8bbb4b3e8ee1589691376575cc27524062038febc2bfe5509143bef9c64b"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-06T22:25:46.352Z",
+    "hash": "sha256:fa429611ba3b2d5921e2c0dbbb29200a01175da3458070e57a9779c63525b86e"
+  }
 }
