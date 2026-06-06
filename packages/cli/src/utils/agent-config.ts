@@ -152,6 +152,64 @@ export function removeFrontmatterField(content: string, key: string): string | n
 }
 
 /**
+ * Strip the leading frontmatter block, returning the body only.
+ *
+ * Removes the first `---` pair anchored to the start of the file (the same
+ * region `parseFrontmatter`/`setFrontmatterField` operate on) and returns
+ * everything after it. If no frontmatter block exists, the content is returned
+ * unchanged. Body `---` horizontal rules are never mistaken for frontmatter.
+ *
+ * Used for body-vs-body instruction comparison: both the existing file and the
+ * stock template are passed through this so a config-only frontmatter change
+ * never registers as an instruction change.
+ *
+ * @param content - Full file content
+ * @returns The body (content after the first `---` pair), or the full content unchanged if no frontmatter
+ */
+export function stripFrontmatter(content: string): string {
+  const match = content.match(/^(---\s*\n)([\s\S]*?)(\n---)/);
+  if (!match) {
+    return content;
+  }
+  return content.slice(match[0].length);
+}
+
+/**
+ * Preserve CONFIG keys from an existing flat-TOML file onto fresh stock.
+ *
+ * For each key in `configKeys` that appears as a `key = value` line in
+ * `existingToml`, substitute that line's value into the corresponding line of
+ * `stockToml`. All other lines come from stock (machine fields refresh). Keys
+ * absent from the existing file keep the stock value. Line-based and
+ * format-preserving — no TOML parser, no dependency. Assumes a flat
+ * `key = value` file (no nesting, no arrays), which `.agent.toml` manifests are.
+ *
+ * @param stockToml - The current stock TOML content (the refresh source)
+ * @param existingToml - The customer's existing TOML content (config source)
+ * @param configKeys - Keys whose values are preserved from the existing file
+ * @returns The stock TOML with the preserved config-key values substituted in
+ */
+export function preserveTomlConfigKeys(
+  stockToml: string,
+  existingToml: string,
+  configKeys: readonly string[],
+): string {
+  let result = stockToml;
+  for (const key of configKeys) {
+    const lineRegex = new RegExp(`^${key}\\s*=.*$`, 'm');
+    const existingLine = existingToml.match(lineRegex);
+    if (!existingLine) {
+      // Key absent from existing file — keep the stock value.
+      continue;
+    }
+    if (lineRegex.test(result)) {
+      result = result.replace(lineRegex, () => existingLine[0]);
+    }
+  }
+  return result;
+}
+
+/**
  * Resolve total character count for skill files.
  *
  * @param skills - Array of skill names from frontmatter
