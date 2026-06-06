@@ -436,11 +436,40 @@ function intFrom(text: string, re: RegExp): number {
 }
 
 /**
- * Vitest: `Tests  3234 passed | 2 skipped (3236)`.
+ * Vitest `--reporter=json`: the machine-readable summary object carrying
+ * `numPassedTests` / `numFailedTests` / `numPendingTests` / `numTodoTests`.
+ *
+ * This is the structural analog of {@link parseGo}: shape-gate on the reporter's
+ * distinctive keys, then read the counts mechanically. Preferred over the human
+ * summary because it is immune to a turbo/pnpm wrapper mangling the console
+ * output (the abstain `ana test` hits on our own monorepo). The capture
+ * concatenates stdout+stderr, so the JSON object may be embedded in surrounding
+ * noise — fields are read by key, never via a whole-blob `JSON.parse`.
+ *
+ * @param text - Captured output (vitest JSON possibly interleaved with stderr)
+ * @returns Counts, or null when no vitest JSON summary is present
+ */
+const parseVitestJson: Parser = (text) => {
+  if (!/"numTotalTests":/.test(text) || !/"testResults":/.test(text)) return null;
+  const num = (key: string): number => {
+    const m = text.match(new RegExp(`"${key}":\\s*(\\d+)`));
+    return m && m[1] ? parseInt(m[1], 10) : 0;
+  };
+  return {
+    passed: num('numPassedTests'),
+    failed: num('numFailedTests'),
+    // Vitest reports `.skip` as pending and `.todo` separately; the human
+    // summary folds both into "skipped", so we sum them to match.
+    skipped: num('numPendingTests') + num('numTodoTests'),
+  };
+};
+
+/**
+ * Vitest human summary: `Tests  3234 passed | 2 skipped (3236)`.
  * @param text - Captured output
  * @returns Counts, or null when no vitest summary is present
  */
-const parseVitest: Parser = (text) => {
+const parseVitestHuman: Parser = (text) => {
   const line = text.match(/^\s*Tests\s+\d.*$/m);
   if (!line) return null;
   const s = line[0];
@@ -450,6 +479,15 @@ const parseVitest: Parser = (text) => {
     skipped: intFrom(s, /(\d+) skipped/),
   };
 };
+
+/**
+ * Vitest: prefer the machine-readable `--reporter=json` summary, falling back to
+ * the human summary line. Reached only via the `vitest` hint (no fallthrough),
+ * so this never fabricates a count for an unknown runner.
+ * @param text - Captured output
+ * @returns Counts, or null when neither shape is present
+ */
+const parseVitest: Parser = (text) => parseVitestJson(text) ?? parseVitestHuman(text);
 
 /**
  * Jest: `Tests:       1 failed, 2 skipped, 3 passed, 6 total`.

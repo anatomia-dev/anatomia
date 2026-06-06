@@ -2,25 +2,24 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { createHash } from 'node:crypto';
 import {
   formatMarker,
   formatCounts,
+  countLines,
   parseMarkers,
-  inlineCaptures,
   validateCapturePresent,
-  validateCaptureInlined,
-  validateCaptureNotTruncated,
   evaluateCaptureGate,
   type CaptureMarker,
 } from '../../src/utils/capture-marker.js';
 
 /**
- * Marker + length-addressed inliner unit tests.
+ * Compact marker + strict-parser unit tests.
  *
- * The two load-bearing decisions get their own rows: NO code fence (backticks
- * round-trip) and LENGTH-ADDRESSED extraction (the end-delimiter STRING inside
- * the captured output round-trips intact).
+ * The marker is now a CLOSED TOKEN: a one-line attestation (counts, verdict,
+ * sha256, byte/line totals) with no inlined block. The closed-token guarantee is
+ * the COMBINATION of a full-line anchor, a fenced-region skip, and a required
+ * `lines` field — so a fenced example, a placeholder description, a backtick-
+ * wrapped line, and an old-format (inlined) marker all fail to parse as a seal.
  */
 
 const tmpDirs: string[] = [];
@@ -28,8 +27,15 @@ const tmpDirs: string[] = [];
 function mkSlugDir(): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cap-mark-'));
   tmpDirs.push(dir);
-  fs.mkdirSync(path.join(dir, '.captures'), { recursive: true });
   return dir;
+}
+
+/** Write a report file holding `body` and return its path. */
+function writeReport(body: string): string {
+  const dir = mkSlugDir();
+  const p = path.join(dir, 'build_report.md');
+  fs.writeFileSync(p, body);
+  return p;
 }
 
 afterEach(() => {
@@ -38,265 +44,187 @@ afterEach(() => {
   }
 });
 
-/** Write a capture file + return a marker bound to it. */
-function seed(slugDir: string, raw: string, stage: 'build' | 'verify' = 'build'): CaptureMarker {
-  const rel = `.captures/test-${stage}-1.log`;
-  fs.writeFileSync(path.join(slugDir, rel), raw);
-  const buf = Buffer.from(raw, 'utf8');
+const SHA = 'a'.repeat(64);
+
+/** A well-formed compact marker with overridable fields. */
+function marker(over: Partial<CaptureMarker> = {}): CaptureMarker {
   return {
-    stage,
+    stage: 'build',
     slug: 'demo',
-    bytes: buf.byteLength,
-    sha256: createHash('sha256').update(buf).digest('hex'),
-    file: rel,
-    counts: 'abstain',
-    verdict: 'abstain',
+    counts: '47p/0f/2s',
+    verdict: 'pass',
+    sha256: SHA,
+    bytes: 246012,
+    lines: 3100,
+    ...over,
   };
 }
 
-/** Inline a report holding the marker and write it to build_report.md. */
-function inlineToFile(slugDir: string, marker: CaptureMarker): { reportPath: string; text: string; errors: string[] } {
-  const report = `# Build Report\n\n## Test Results\n\n${formatMarker(marker)}\n\nrest of report\n`;
-  const { text, errors } = inlineCaptures(report, slugDir);
-  const reportPath = path.join(slugDir, 'build_report.md');
-  fs.writeFileSync(reportPath, text);
-  return { reportPath, text, errors };
-}
-
 describe('marker formatting', () => {
-  it('formats counts as Np/Nf/Ns or abstain (no tokenizer field)', () => {
+  it('formats counts as Np/Nf/Ns or abstain', () => {
     expect(formatCounts({ passed: 47, failed: 0, skipped: 2 })).toBe('47p/0f/2s');
     expect(formatCounts(null)).toBe('abstain');
-    const line = formatMarker({ stage: 'build', slug: 's', bytes: 10, sha256: 'a', file: 'f', counts: 'abstain', verdict: 'pass' });
+  });
+
+  it('counts newline bytes for the lines field', () => {
+    expect(countLines(Buffer.from('a\nb\nc\n', 'utf8'))).toBe(3);
+    expect(countLines(Buffer.from('', 'utf8'))).toBe(0);
+    expect(countLines(Buffer.from('no newline', 'utf8'))).toBe(0);
+  });
+
+  // @ana A001 — a captured run produces a ONE-LINE sealed result, not a dump.
+  it('renders a single-line marker (no embedded newline)', () => {
+    const line = formatMarker(marker());
+    expect(line.split('\n')).toHaveLength(1);
+    expect(line.includes('\n')).toBe(false);
     expect(line).toContain('ana:capture');
-    expect(line).not.toContain('tokenizer');
   });
 
-  it('parses a marker round-trip and skips begin/end delimiters', () => {
-    const text = `${formatMarker({ stage: 'build', slug: 's', bytes: 3, sha256: 'abc', file: 'f.log', counts: '1p/0f/0s', verdict: 'pass' })}\n<!-- ana:capture-begin bytes=3 sha256=abc -->\n<!-- ana:capture-end -->`;
-    const markers = parseMarkers(text);
+  // @ana A002 — the seal carries counts, verdict, fingerprint, and output size.
+  it('carries counts, verdict, sha256, bytes, and lines', () => {
+    const line = formatMarker(marker());
+    expect(line).toContain('counts=47p/0f/2s');
+    expect(line).toContain('verdict=pass');
+    expect(line).toContain(`sha256=${SHA}`);
+    expect(line).toContain('bytes=246012');
+    expect(line).toContain('lines=3100');
+  });
+
+  // @ana A003 — the seal no longer carries a throwaway log-file path.
+  it('drops the file field', () => {
+    expect(formatMarker(marker()).includes('file=')).toBe(false);
+  });
+});
+
+describe('strict parser — closed token', () => {
+  it('parses a well-formed compact marker', () => {
+    const markers = parseMarkers(formatMarker(marker()));
     expect(markers).toHaveLength(1);
-    expect(markers[0]!.bytes).toBe(3);
-    expect(markers[0]!.verdict).toBe('pass');
+    expect(markers[0]).toMatchObject({ stage: 'build', slug: 'demo', counts: '47p/0f/2s', verdict: 'pass', bytes: 246012, lines: 3100 });
+  });
+
+  // @ana A012 — a marker shown as a fenced example is not a real seal.
+  it('does not parse a marker inside a fenced code block', () => {
+    const report = `# Report\n\n\`\`\`markdown\n${formatMarker(marker())}\n\`\`\`\n\nprose\n`;
+    expect(parseMarkers(report)).toHaveLength(0);
+  });
+
+  // @ana A013 — a placeholder description with a non-hex sha256 is not a seal.
+  it('does not parse a placeholder description (non-hex sha256)', () => {
+    const placeholder = '<!-- ana:capture stage=build slug=x counts=1p/0f/0s verdict=pass sha256=…<64hex>… bytes=10 lines=2 -->';
+    expect(parseMarkers(placeholder)).toHaveLength(0);
+  });
+
+  it('does not parse a backtick-wrapped (non-full-line) marker', () => {
+    const wrapped = `\`${formatMarker(marker())}\``;
+    expect(parseMarkers(wrapped)).toHaveLength(0);
+  });
+
+  it('does not parse a marker with trailing prose on the line (full-line anchor)', () => {
+    const trailing = `${formatMarker(marker())} and then some prose`;
+    expect(parseMarkers(trailing)).toHaveLength(0);
+  });
+
+  // @ana A029 — a seal missing its fingerprint is rejected, never accepted.
+  it('rejects a marker missing the required sha256 field', () => {
+    const noSha = '<!-- ana:capture stage=build slug=x counts=1p/0f/0s verdict=pass bytes=10 lines=2 -->';
+    expect(parseMarkers(noSha)).toHaveLength(0);
+  });
+
+  it('rejects a marker whose sha256 is not 64 lowercase hex', () => {
+    const badHex = `<!-- ana:capture stage=build slug=x counts=1p/0f/0s verdict=pass sha256=${'A'.repeat(64)} bytes=10 lines=2 -->`;
+    expect(parseMarkers(badHex)).toHaveLength(0);
+    const shortHex = '<!-- ana:capture stage=build slug=x counts=1p/0f/0s verdict=pass sha256=abc123 bytes=10 lines=2 -->';
+    expect(parseMarkers(shortHex)).toHaveLength(0);
+  });
+
+  it('ignores unknown keys for forward-compat', () => {
+    const withUnknown = `<!-- ana:capture stage=build slug=x counts=1p/0f/0s verdict=pass sha256=${SHA} bytes=10 lines=2 futurekey=whatever -->`;
+    expect(parseMarkers(withUnknown)).toHaveLength(1);
   });
 });
 
-describe('inliner — length-addressed round-trip', () => {
-  // @ana A009
-  it('round-trips: inlined block sha256 equals the marker sha256', () => {
-    const slugDir = mkSlugDir();
-    const raw = ' RUN  v1.6.0\n ✓ foo.test.ts (12)\n Tests  47 passed (49)\n';
-    const marker = seed(slugDir, raw);
-    const { reportPath, text } = inlineToFile(slugDir, marker);
-
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(validateCaptureNotTruncated(reportPath)).toBeNull();
-    // The raw bytes appear verbatim, with NO code fence wrapping them.
-    expect(text).toContain(raw);
-    expect(text).not.toContain('```');
+describe('reserved enginebind field — round-trip (L3 plumbing only)', () => {
+  // @ana A018 — a marker WITH enginebind round-trips and re-serializes identically.
+  it('round-trips a marker carrying enginebind, re-serializing identically', () => {
+    const line = formatMarker(marker({ enginebind: 'reserved' }));
+    expect(line).toContain('enginebind=reserved');
+    const markers = parseMarkers(line);
+    expect(markers).toHaveLength(1);
+    expect(markers[0]!.enginebind).toBe('reserved');
+    expect(formatMarker(markers[0]!)).toBe(line);
   });
 
-  // @ana A010
-  it('round-trips captured output containing backticks/code fences (no fence used)', () => {
-    const slugDir = mkSlugDir();
-    const raw = 'output with ```ts\ncode fence\n``` and `inline backticks` inside\n';
-    const marker = seed(slugDir, raw);
-    const { reportPath, text } = inlineToFile(slugDir, marker);
-    const rawBytes = Buffer.byteLength(raw, 'utf8');
-
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(text).toContain(raw);
-    // extracted byte length equals raw byte length
-    const persisted = fs.readFileSync(reportPath, 'utf8');
-    expect(persisted).toContain(raw);
-    expect(Buffer.byteLength(raw, 'utf8')).toBe(rawBytes);
-  });
-
-  // @ana A011
-  it('round-trips captured output that contains the literal end-delimiter string', () => {
-    const slugDir = mkSlugDir();
-    // The dogfood hazard: captured output prints the end delimiter itself.
-    const raw = `line one\n${'<!-- ana:capture-end -->'}\nline three\nTests 1 passed\n`;
-    const marker = seed(slugDir, raw);
-    const { reportPath } = inlineToFile(slugDir, marker);
-
-    // Length-addressed extraction is NOT fooled by the delimiter inside content.
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(validateCaptureNotTruncated(reportPath)).toBeNull();
-  });
-
-  it('round-trips captured output that contains a full nested marker line', () => {
-    const slugDir = mkSlugDir();
-    const raw = `running tests\n<!-- ana:capture stage=build slug=x bytes=9 sha256=deadbeef file=f.log counts=abstain verdict=pass -->\ndone\n`;
-    const marker = seed(slugDir, raw);
-    const { reportPath } = inlineToFile(slugDir, marker);
-    // Only the REAL marker is expanded; the nested one inside content is inert.
-    expect(parseMarkers(fs.readFileSync(reportPath, 'utf8')).filter((mk) => mk.slug === 'demo')).toHaveLength(1);
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(validateCaptureNotTruncated(reportPath)).toBeNull();
-  });
-
-  it('is idempotent — re-inlining a saved report changes nothing', () => {
-    const slugDir = mkSlugDir();
-    const raw = 'Tests  3 passed (3)\n';
-    const marker = seed(slugDir, raw);
-    const { reportPath, text } = inlineToFile(slugDir, marker);
-    const second = inlineCaptures(text, slugDir);
-    expect(second.text).toBe(text);
-    fs.writeFileSync(reportPath, second.text);
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-  });
-
-  it('is a no-op (keeps the committed block) when the .log is gone', () => {
-    const slugDir = mkSlugDir();
-    const raw = 'Tests  3 passed (3)\n';
-    const marker = seed(slugDir, raw);
-    const { text } = inlineToFile(slugDir, marker);
-    // Simulate a fresh checkout: remove the capture file, re-inline.
-    fs.rmSync(path.join(slugDir, marker.file));
-    const reinlined = inlineCaptures(text, slugDir);
-    expect(reinlined.text).toBe(text); // committed block preserved verbatim
-    const reportPath = path.join(slugDir, 'r.md');
-    fs.writeFileSync(reportPath, reinlined.text);
-    expect(validateCaptureInlined(reportPath)).toBeNull();
+  // @ana A019 — a marker WITHOUT enginebind round-trips and gains no field.
+  it('round-trips a marker without enginebind, gaining no field', () => {
+    const line = formatMarker(marker());
+    expect(line.includes('enginebind=')).toBe(false);
+    const markers = parseMarkers(line);
+    expect(markers).toHaveLength(1);
+    expect(markers[0]!.enginebind).toBeUndefined();
+    expect(formatMarker(markers[0]!)).toBe(line);
   });
 });
 
-describe('validators', () => {
-  // @ana A021
-  it('preserves error text verbatim in the inlined block', () => {
-    const slugDir = mkSlugDir();
-    const raw = 'FAIL src/a.test.ts\n  AssertionError: expected 1 to be 2\n Tests  1 failed (1)\n';
-    const marker = seed(slugDir, raw);
-    const { reportPath } = inlineToFile(slugDir, marker);
-    const persisted = fs.readFileSync(reportPath, 'utf8');
-    // extracted.containsErrorToken === true
-    expect(persisted).toContain('AssertionError');
-    expect(validateCaptureInlined(reportPath)).toBeNull();
+describe('old-format tolerance', () => {
+  const oldFormat = `<!-- ana:capture stage=build slug=x bytes=9 sha256=${SHA} file=.captures/z.log counts=abstain verdict=pass -->`;
+
+  // @ana A023 — an old-format report does not crash the new reader.
+  it('does not throw when parsing an old-format inlined marker', () => {
+    let threw = false;
+    try {
+      parseMarkers(`# Old report\n\n${oldFormat}\n<!-- ana:capture-begin bytes=9 sha256=${SHA} -->\nraw\n<!-- ana:capture-end -->\n`);
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(false);
   });
 
-  it('validateCapturePresent flags a report with no capture marker', () => {
-    const slugDir = mkSlugDir();
-    const reportPath = path.join(slugDir, 'build_report.md');
-    fs.writeFileSync(reportPath, '# Build Report\n\nno marker here\n');
-    expect(validateCapturePresent(reportPath)).not.toBeNull();
-  });
-
-  it('validateCaptureInlined catches a tampered inlined byte', () => {
-    const slugDir = mkSlugDir();
-    const raw = 'Tests  10 passed (10)\n';
-    const marker = seed(slugDir, raw);
-    const { reportPath, text } = inlineToFile(slugDir, marker);
-    // Flip a byte inside the block (same length → sha must still catch it).
-    const tampered = text.replace('10 passed', '99 passed');
-    expect(tampered).not.toBe(text);
-    fs.writeFileSync(reportPath, tampered);
-    expect(validateCaptureInlined(reportPath)).not.toBeNull();
-  });
-
-  it('validateCaptureNotTruncated catches a shortened block', () => {
-    const slugDir = mkSlugDir();
-    const raw = 'line one\nline two\nline three\nTests 1 passed\n';
-    const marker = seed(slugDir, raw);
-    const { reportPath, text } = inlineToFile(slugDir, marker);
-    // Delete a line from inside the block — end delimiter shifts off its offset.
-    const truncated = text.replace('line two\n', '');
-    expect(truncated).not.toBe(text);
-    fs.writeFileSync(reportPath, truncated);
-    expect(validateCaptureNotTruncated(reportPath)).not.toBeNull();
+  // @ana A024 — an old-format seal (no `lines`, has `file`) is not a valid new seal.
+  it('does not accept an old-format marker as a well-formed seal', () => {
+    expect(parseMarkers(oldFormat)).toHaveLength(0);
   });
 });
 
-describe('evaluateCaptureGate — gate disabled (warn-mode)', () => {
-  // @ana A003 — flag off/unset → never blocks, even with a failing validator.
-  it('never blocks when the gate is disabled, even with a failing validator', () => {
-    const slugDir = mkSlugDir();
-    const reportPath = path.join(slugDir, 'build_report.md');
-    fs.writeFileSync(reportPath, '# Build Report\n\nno capture marker at all\n');
-    const gate = evaluateCaptureGate(reportPath, { enabled: false });
+describe('validateCapturePresent + evaluateCaptureGate (present-check only)', () => {
+  it('validateCapturePresent flags a report with no marker', () => {
+    const p = writeReport('# Build Report\n\nno marker here\n');
+    expect(validateCapturePresent(p)).not.toBeNull();
+  });
+
+  it('validateCapturePresent passes a report with a compact build marker', () => {
+    const p = writeReport(`# Build Report\n\n## Test Evidence\n\n${formatMarker(marker())}\n`);
+    expect(validateCapturePresent(p)).toBeNull();
+  });
+
+  it('validateCapturePresent does not accept a verify-only marker as a build run', () => {
+    const p = writeReport(`# Verify Report\n\n${formatMarker(marker({ stage: 'verify' }))}\n`);
+    expect(validateCapturePresent(p)).not.toBeNull();
+  });
+
+  // @ana A005 — a present compact build marker passes the gate (not blocked).
+  it('does not block when enabled and a compact build marker is present', () => {
+    const p = writeReport(`# Build Report\n\n${formatMarker(marker())}\n`);
+    const gate = evaluateCaptureGate(p, { enabled: true });
+    expect(gate.blocked).toBe(false);
+    expect(gate.errors).toEqual([]);
+    expect(gate.warnings).toEqual([]);
+  });
+
+  // @ana A014 — a report that only describes the seal leaves the gate unsatisfied.
+  it('blocks when enabled and only a fenced/placeholder description is present', () => {
+    const body = `# Build Report\n\nExample seal format:\n\n\`\`\`\n${formatMarker(marker())}\n\`\`\`\n`;
+    const p = writeReport(body);
+    const gate = evaluateCaptureGate(p, { enabled: true });
+    expect(gate.blocked).toBe(true);
+    expect(gate.errors.length).toBeGreaterThan(0);
+  });
+
+  it('never blocks when the gate is disabled, even with no marker', () => {
+    const p = writeReport('# Build Report\n\nno marker\n');
+    const gate = evaluateCaptureGate(p, { enabled: false });
     expect(gate.blocked).toBe(false);
     expect(gate.warnings.length).toBeGreaterThan(0);
     expect(gate.errors).toEqual([]);
-  });
-
-  it('passes cleanly on a valid sealed report', () => {
-    const slugDir = mkSlugDir();
-    const marker = seed(slugDir, 'Tests  5 passed (5)\n');
-    const { reportPath } = inlineToFile(slugDir, marker);
-    const gate = evaluateCaptureGate(reportPath, { enabled: false });
-    expect(gate.blocked).toBe(false);
-    expect(gate.warnings).toEqual([]);
-  });
-});
-
-describe('validateCapturePresent — block-skipping scan (load-bearing when gate enabled)', () => {
-  // a build marker embedded INSIDE another capture's inlined block
-  // must NOT satisfy the present-check; only a real top-level marker counts.
-  it('does not accept a build marker that lives inside captured content', () => {
-    const slugDir = mkSlugDir();
-    // A verify capture whose raw output happens to contain a build marker line.
-    const embeddedBuildMarker =
-      '<!-- ana:capture stage=build slug=x bytes=5 sha256=abc123 file=.captures/z.log counts=abstain verdict=pass -->';
-    const raw = `running the verify suite...\n${embeddedBuildMarker}\nTests  3 passed (3)\n`;
-    const marker = seed(slugDir, raw, 'verify');
-    const { reportPath, errors } = inlineToFile(slugDir, marker);
-    expect(errors).toEqual([]);
-    // Only a top-level VERIFY marker exists — the embedded build line is inside
-    // the skipped block, so the present-check (which requires a build run) fails.
-    expect(validateCapturePresent(reportPath)).not.toBeNull();
-  });
-
-  it('accepts a genuine top-level build marker', () => {
-    const slugDir = mkSlugDir();
-    const marker = seed(slugDir, 'Tests  4 passed (4)\n'); // stage=build by default
-    const { reportPath } = inlineToFile(slugDir, marker);
-    expect(validateCapturePresent(reportPath)).toBeNull();
-  });
-});
-
-describe('evaluateCaptureGate — gate enabled (fail-closed)', () => {
-  // @ana A001 — enabled + a preservation validator fails → blocked.
-  it('blocks when enabled and a preservation validator fails', () => {
-    const slugDir = mkSlugDir();
-    const reportPath = path.join(slugDir, 'build_report.md');
-    fs.writeFileSync(reportPath, '# Build Report\n\nno capture marker at all\n');
-    const gate = evaluateCaptureGate(reportPath, { enabled: true });
-    expect(gate.blocked).toBe(true);
-    expect(gate.errors.length).toBeGreaterThan(0);
-    expect(gate.warnings).toEqual([]);
-  });
-
-  // @ana A002 — enabled + all preservation validators pass → not blocked.
-  it('does not block when enabled and a valid sealed report is present', () => {
-    const slugDir = mkSlugDir();
-    const marker = seed(slugDir, 'Tests  5 passed (5)\n');
-    const { reportPath } = inlineToFile(slugDir, marker);
-    const gate = evaluateCaptureGate(reportPath, { enabled: true });
-    expect(gate.blocked).toBe(false);
-    expect(gate.errors).toEqual([]);
-    expect(gate.warnings).toEqual([]);
-  });
-
-  // @ana A004 — fail-OPEN on counts: the gate only weighs preservation, so a
-  // sealed report whose counts abstain is never blocked even when enabled.
-  it('does not block when enabled if preservation holds but counts abstain', () => {
-    const slugDir = mkSlugDir();
-    // seed() defaults counts/verdict to abstain; the block is still valid.
-    const marker = seed(slugDir, 'bespoke harness ran; no parseable counts here\n');
-    const { reportPath } = inlineToFile(slugDir, marker);
-    const gate = evaluateCaptureGate(reportPath, { enabled: true });
-    expect(gate.blocked).toBe(false);
-    expect(gate.errors).toEqual([]);
-    expect(gate.warnings).toEqual([]);
-  });
-
-  // @ana A001 — a tampered (preservation-failing) sealed report blocks when enabled.
-  it('blocks an enabled save whose inlined block was altered', () => {
-    const slugDir = mkSlugDir();
-    const marker = seed(slugDir, 'Tests  7 passed (7)\n');
-    const { reportPath, text } = inlineToFile(slugDir, marker);
-    fs.writeFileSync(reportPath, text.replace('7 passed', '9 passed'));
-    const gate = evaluateCaptureGate(reportPath, { enabled: true });
-    expect(gate.blocked).toBe(true);
   });
 });

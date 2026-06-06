@@ -37,7 +37,6 @@ afterEach(() => {
 describe('resolveCommand — shell-free parsing', () => {
   const base = '/project/root';
 
-  // @ana A003
   it('parses a bare `program args` command into program and args', () => {
     const r = resolveCommand('vitest run --reporter=dot', base);
     expect(r.program).toBe('vitest');
@@ -45,7 +44,6 @@ describe('resolveCommand — shell-free parsing', () => {
     expect(r.cwd).toBe(base);
   });
 
-  // @ana A004
   it("recovers cwd from a `(cd '<dir>' && <cmd>)` wrapper", () => {
     const r = resolveCommand("(cd 'packages/cli' && pnpm vitest run)", base);
     expect(r.cwd).toBe(path.resolve(base, 'packages/cli'));
@@ -59,7 +57,6 @@ describe('resolveCommand — shell-free parsing', () => {
     expect(r.program).toBe('vitest');
   });
 
-  // @ana A005
   it('lifts leading VAR=val assignments into env and skips them for the executable', () => {
     const r = resolveCommand('CI=1 NODE_ENV=test vitest run', base);
     expect(r.env['CI']).toBe('1');
@@ -75,14 +72,12 @@ describe('resolveCommand — shell-free parsing', () => {
     expect(r.env).toEqual({});
   });
 
-  // @ana A025
   it('round-trips the configured args verbatim — no flags appended', () => {
     const r = resolveCommand('vitest run packages/cli', base);
     expect(r.args).toEqual(['run', 'packages/cli']);
     expect(r.args).not.toContain('--appended');
   });
 
-  // @ana A006
   it("refuses a pipe and names the construct", () => {
     let msg = '';
     try {
@@ -94,7 +89,6 @@ describe('resolveCommand — shell-free parsing', () => {
     expect(msg).toContain('pipe');
   });
 
-  // @ana A007
   it('refuses command substitution and backticks with no shell fallback', () => {
     expect(() => resolveCommand('vitest $(echo run)', base)).toThrow(CaptureCommandError);
     expect(() => resolveCommand('vitest `echo run`', base)).toThrow(CaptureCommandError);
@@ -122,7 +116,6 @@ describe('runCapture — fail-closed tee', () => {
     expect(opts.shell).toBe(false);
   });
 
-  // @ana A001
   it('tees exactly the captured bytes to the sink (file equals returned bytes)', () => {
     const sink = mkSink();
     const result = runCapture({
@@ -150,7 +143,6 @@ describe('runCapture — fail-closed tee', () => {
     expect(result.rawBytes.toString('utf8')).toBe('OUTERR');
   });
 
-  // @ana A008
   it('throws on a spawn error (ENOENT) and writes NO capture file', () => {
     const sink = mkSink();
     let threw = false;
@@ -172,21 +164,20 @@ describe('runCapture — fail-closed tee', () => {
 });
 
 describe('deriveVerdict — trinary, no false green', () => {
-  // @ana A016
   it('returns pass when counted, passed>0, and no failures at exit 0', () => {
     expect(deriveVerdict({ passed: 47, failed: 0, skipped: 2 }, 0)).toBe('pass');
   });
 
-  // @ana A017
+  // @ana A011 — a run where nothing actually passed is never a pass.
   it('returns abstain for {0,0,0} at exit 0 (no vacuous green)', () => {
     expect(deriveVerdict({ passed: 0, failed: 0, skipped: 0 }, 0)).toBe('abstain');
   });
 
+  // @ana A011 — an all-skipped suite passed nothing → abstain, not pass.
   it('returns abstain for an all-skipped suite at exit 0', () => {
     expect(deriveVerdict({ passed: 0, failed: 0, skipped: 5 }, 0)).toBe('abstain');
   });
 
-  // @ana A018
   it('returns fail when failures are present', () => {
     expect(deriveVerdict({ passed: 1, failed: 2, skipped: 0 }, 1)).toBe('fail');
   });
@@ -195,15 +186,41 @@ describe('deriveVerdict — trinary, no false green', () => {
     expect(deriveVerdict({ passed: 3, failed: 0, skipped: 0 }, 1)).toBe('fail');
   });
 
-  // @ana A019
+  // @ana A010 — a clean exit with no countable evidence is never a pass.
   it('returns abstain when counts are null at exit 0', () => {
     expect(deriveVerdict(null, 0)).toBe('abstain');
   });
 });
 
 describe('deriveCounts — from captured output', () => {
-  // @ana A020
-  it('reads the pass count from vitest output', () => {
+  // @ana A006 — counts read from vitest's machine-readable JSON reporter.
+  it('reads counts from vitest --reporter=json output', () => {
+    const json =
+      '{"numTotalTestSuites":7,"numTotalTests":49,"numPassedTests":47,"numFailedTests":0,' +
+      '"numPendingTests":1,"numTodoTests":1,"success":true,"testResults":[]}';
+    const counts = deriveCounts(json, 'vitest');
+    expect(counts).not.toBeNull();
+    expect(counts!.passed).toBe(47);
+    expect(counts!.passed).toBeGreaterThan(0);
+    expect(counts!.failed).toBe(0);
+    // pending (.skip) + todo both fold into "skipped".
+    expect(counts!.skipped).toBe(2);
+  });
+
+  // @ana A006 — the JSON object survives being embedded in surrounding stderr
+  // noise (the capture concatenates stdout+stderr); fields are read by key.
+  it('reads vitest JSON counts even when wrapped in stderr noise', () => {
+    const noisy =
+      '> [email protected] test\n> vitest run --reporter=json\n\n' +
+      '{"numTotalTests":3,"numPassedTests":3,"numFailedTests":0,"numPendingTests":0,' +
+      '"numTodoTests":0,"testResults":[{"status":"passed"}]}\n' +
+      'some trailing turbo summary line\n';
+    const counts = deriveCounts(noisy, 'vitest');
+    expect(counts).toEqual({ passed: 3, failed: 0, skipped: 0 });
+  });
+
+  // @ana A006 — falls back to the human summary when no JSON reporter is present.
+  it('falls back to the human vitest summary when JSON is absent', () => {
     const counts = deriveCounts('      Tests  47 passed | 2 skipped (49)\n', 'vitest');
     expect(counts).not.toBeNull();
     expect(counts!.passed).toBe(47);
@@ -211,11 +228,25 @@ describe('deriveCounts — from captured output', () => {
     expect(counts!.skipped).toBe(2);
   });
 
+  // @ana A022 — the JSON-count path is runner-agnostic: go's -json stream is
+  // counted via parseGo, proving the mechanism is not hard-wired to vitest.
+  it('reads counts from a non-vitest JSON runner (go test -json)', () => {
+    const goJson =
+      '{"Action":"pass","Test":"TestA"}\n{"Action":"pass","Test":"TestB"}\n' +
+      '{"Action":"fail","Test":"TestC"}\n{"Action":"skip","Test":"TestD"}\nok\texample/p\n';
+    const counts = deriveCounts(goJson, 'go');
+    expect(counts).not.toBeNull();
+    expect(counts!.passed).toBe(2);
+    expect(counts!.passed).toBeGreaterThan(0);
+    expect(counts!.failed).toBe(1);
+    expect(counts!.skipped).toBe(1);
+  });
+
   it('abstains (null) on unrecognized output', () => {
     expect(deriveCounts('some random tool finished fine\n')).toBeNull();
   });
 
-  // @ana A027 — ABSTAIN-ON-UNKNOWN must not be defeated by a coincidental match.
+  // ABSTAIN-ON-UNKNOWN must not be defeated by a coincidental match.
   it('abstains on unhinted output even when it embeds a runner-shaped phrase', () => {
     // This prose would match rspec's loose `N examples, N failures` regex if we
     // ran every parser against unidentified output. Unhinted ⇒ must abstain.

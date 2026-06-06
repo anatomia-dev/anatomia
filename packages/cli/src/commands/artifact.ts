@@ -22,7 +22,7 @@ import * as yaml from 'yaml';
 import { runContractPreCheck } from './verify.js';
 import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
-import { inlineCaptures, evaluateCaptureGate } from '../utils/capture-marker.js';
+import { evaluateCaptureGate } from '../utils/capture-marker.js';
 import { resolveTestCommandString } from './test.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
@@ -781,48 +781,24 @@ export function isCaptureGateEnabled(projectRoot: string): boolean {
 }
 
 /**
- * Expand capture markers in a report into verbatim sealed blocks (warn-only).
+ * Run the capture gate on a build report.
  *
- * Shared by build-report and verify-report saves. Runs BEFORE the seal hash so
- * the committed content carries the block. Never blocks: inliner problems (e.g.
- * a bare marker with no `.log`) surface as warnings. This is the mechanism that
- * gives BOTH reports their own sealed account of their own test run.
+ * Nothing is inlined any more — the committed compact marker IS the sealed
+ * account. The gate's job has shrunk to a present-check: a well-formed `build`
+ * capture marker must exist. Enablement is read from committed config
+ * (`isCaptureGateEnabled`): when the `captureGate` flag is on AND a test command
+ * resolves, an absent seal blocks the save (process.exit(1), BEFORE the seal
+ * hash). When the gate is off or no test command resolves, an absent seal
+ * surfaces as a warning and never blocks. Counts and verdict never block.
  *
- * @param filePath - Absolute path to the report
- * @param slugDir - Absolute path to the slug directory (resolves capture files)
- */
-function inlineReportCaptures(filePath: string, slugDir: string): void {
-  const reportText = fs.readFileSync(filePath, 'utf-8');
-  const inlined = inlineCaptures(reportText, slugDir);
-  if (inlined.text !== reportText) {
-    fs.writeFileSync(filePath, inlined.text, 'utf-8');
-  }
-  for (const err of inlined.errors) {
-    console.warn(chalk.yellow(`Warning: capture — ${err}`));
-  }
-}
-
-/**
- * Inline a build report's captures, then run the capture gate.
- *
- * Enablement is read from committed config (`isCaptureGateEnabled`): when the
- * `captureGate` flag is on AND a test command resolves, a preservation failure
- * blocks the save (process.exit(1), BEFORE the seal hash). When the gate is off
- * or no test command resolves, failures surface as warnings and never block.
- * Counts and verdict never block in either mode.
- *
- * The block message is built from the ACTUAL preservation validator errors
- * (`gate.errors`), so it names the real reason (missing / tampered / truncated)
- * rather than a canned one, and points the user at both the `ana test` fix and
- * the `captureGate: "off"` escape hatch.
+ * The block message is built from the ACTUAL gate error (`gate.errors`), so it
+ * names the real reason and points the user at both the `ana test` fix and the
+ * `captureGate: "off"` escape hatch.
  *
  * @param filePath - Absolute path to the build report
- * @param slugDir - Absolute path to the slug directory (resolves capture files)
  * @param projectRoot - Project root (resolves the `captureGate` config flag)
  */
-function applyCaptureGate(filePath: string, slugDir: string, projectRoot: string): void {
-  inlineReportCaptures(filePath, slugDir);
-
+function applyCaptureGate(filePath: string, projectRoot: string): void {
   const enabled = isCaptureGateEnabled(projectRoot);
   const gate = evaluateCaptureGate(filePath, { enabled });
 
@@ -1002,12 +978,11 @@ export function saveArtifact(type: string, slug: string): void {
       process.exit(1);
     }
 
-    // Verify keeps its OWN sealed account: inline + seal the verify capture into
-    // verify_report.md so this stage's count is sealed evidence, not loose prose.
-    // NEVER gated — Verify's independence is preserved; a verify save is never
-    // blocked by the capture gate even when the project is armed.
+    // Verify keeps its OWN sealed account: the compact capture marker pasted
+    // into verify_report.md IS that account — nothing to inline. NEVER gated:
+    // Verify's independence is preserved; a verify save is never blocked by the
+    // capture gate even when the project is armed.
     const slugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
-    inlineReportCaptures(filePath, slugDir);
 
     // Auto pre-check for contract mode
     runPreCheckAndStore(slug, slugDir, projectRoot);
@@ -1038,11 +1013,11 @@ export function saveArtifact(type: string, slug: string): void {
       console.error(chalk.red(`Error: build_report.md format invalid.\n${error}`));
       process.exit(1);
     }
-    // Expand capture markers + run the capture gate BEFORE the seal hash
-    // (writeSaveMetadata) and staging. Blocks only when the gate is enabled in
-    // config AND a preservation validator fails; otherwise warn-only.
-    const captureSlugDir = path.join(projectRoot, '.ana', 'plans', 'active', slug);
-    applyCaptureGate(filePath, captureSlugDir, projectRoot);
+    // Run the capture gate BEFORE the seal hash (writeSaveMetadata) and staging.
+    // Nothing is inlined — the gate is a present-check that blocks only when the
+    // gate is enabled in config AND no well-formed build seal is present;
+    // otherwise warn-only.
+    applyCaptureGate(filePath, projectRoot);
   }
 
   if (typeInfo.baseType === 'contract') {
@@ -1412,8 +1387,8 @@ export function saveAllArtifacts(slug: string): void {
         console.error(chalk.red(`Error: ${artifact.file} format invalid.\n${error}`));
         process.exit(1);
       }
-      // Verify's own sealed account: inline + seal its capture, never gated.
-      inlineReportCaptures(artifact.path, planDir);
+      // Verify's own sealed account is the compact marker pasted into the
+      // report — nothing to inline, never gated.
     }
 
     if (artifact.typeInfo.baseType === 'scope') {
@@ -1441,11 +1416,11 @@ export function saveAllArtifacts(slug: string): void {
         console.error(chalk.red(`Error: ${artifact.file} format invalid.\n${error}`));
         process.exit(1);
       }
-      // Expand capture markers + run the capture gate BEFORE the seal hash and
-      // staging. Blocks only when the gate is enabled in config AND a
-      // preservation validator fails. Wiring BOTH save sites is required —
-      // saveArtifact and saveAllArtifacts are independent build-report paths.
-      applyCaptureGate(artifact.path, planDir, projectRoot);
+      // Run the present-check capture gate BEFORE the seal hash and staging.
+      // Blocks only when the gate is enabled in config AND no well-formed build
+      // seal is present. Wiring BOTH save sites is required — saveArtifact and
+      // saveAllArtifacts are independent build-report paths.
+      applyCaptureGate(artifact.path, projectRoot);
     }
 
     if (artifact.typeInfo.baseType === 'contract') {

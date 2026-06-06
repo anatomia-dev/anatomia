@@ -1,0 +1,27 @@
+schema: 1
+concerns:
+  - summary: "Spec/contract file_changes omitted two test files that import the deleted inliner symbols (tests/commands/artifact.test.ts, tests/capture-corpus/invariants.test.ts). Both had to change or the suite would not compile/run; adapted to the compact-seal reality per spec intent."
+    file: "packages/cli/tests/capture-corpus/invariants.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Spec/contract file_changes omitted the dogfood agent definitions (.claude/agents/{ana-build,ana-verify}.md and .codex equivalents). A dogfood-vs-template exact-match test (templates/agent-proof-context.test.ts) failed until they were synced. Only the .claude sync is test-enforced; the .codex copies were synced for consistency (same single-line drift)."
+    file: ".claude/agents/ana-build.md"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "The build report is saved with the worktree's freshly-built CLI rather than the PATH `ana` (which symlinks to the main-tree dist that predates compaction and whose old gate would reject a file-less compact marker). This is a transitional bootstrap; once this PR merges and `ana` is rebuilt from main, the installed CLI understands compact markers."
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing eslint warning in packages/cli/src/utils/git-operations.ts:198 (unused eslint-disable directive) surfaces on every commit hook. Not introduced by this build; untouched file."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "The strict parser intentionally does NOT catch a verbatim real marker pasted raw into prose (outside a fence) — that forgery surface is consciously deferred to the reserved enginebind/L3 token. AC5/A012/A013 cover descriptions, placeholders, and fenced examples only."
+    file: "packages/cli/src/utils/capture-marker.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Verification scope: the build sealed and verified packages/cli only (the cli test_json JSON path). Verify must run the FULL project (cli + website) to catch what the narrow scope could miss. The full turbo-wrapped commands.test is not a JSON reporter, so an ana-test baseline over it abstains on the count — acceptable, since Verify's job is full-project pass/fail, not a count."
+    severity: observation
+    suggested_action: monitor
+  - summary: "Build-report count delta was corrected after the rebase: the first draft compared the post-#281 final (3431) against a pre-#281 baseline (3434) and reported net -3. The post-#281 baseline was then MEASURED (origin/main = 3438) and the Comparison corrected to net -7. Both endpoints are now measured, not reconstructed."
+    severity: observation
+    suggested_action: acknowledge

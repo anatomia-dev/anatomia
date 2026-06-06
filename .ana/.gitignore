@@ -1,3 +1,5 @@
 # Anatomia runtime state — local to each developer
 state/
 worktrees/
+# Raw test-capture logs — scratch; deleted after the count + sha are sealed into the compact build_report.md marker
+plans/active/*/.captures/

@@ -1,0 +1,58 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A026 (byte-stable re-save / AC12) has no dedicated test, though the spec's Testing Strategy explicitly requested one. Behavior is sound by construction — inlining is deleted and applyCaptureGate is read-only, so the save path never mutates the report — but the contract target reportUnchangedOnSecondSave is verified by source inspection, not a regression test."
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A026"]
+
+  - category: test
+    summary: "Template wording assertions A020/A021 (AC8) have no automated regression test. template-capture-instruction.test.ts was not modified and contains no compact-seal assertion. A future template edit could silently reintroduce 'verbatim, sha-sealed block' or drop the compact description with the suite still green."
+    file: "packages/cli/tests/commands/template-capture-instruction.test.ts"
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A020", "A021"]
+
+  - category: test
+    summary: "A016/A017 (.captures/ rule in the dogfood .ana/.gitignore and the init generator) are verified by source inspection only — no test asserts either gitignore carries the rule. The rule in assets.ts predates this build (PR #281); this build only corrected its stale comment."
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A016", "A017"]
+
+  - category: test
+    summary: "A008 (configured test_json yields a non-abstain verdict on real output) has no hermetic unit test. Verified via live dogfood run (this repo seals 3429p/0f/2s, verdict=pass) plus the A006 JSON-parser test, but no in-test fixture exercises the full test_json -> executeCapture -> verdict!=abstain chain."
+    file: "packages/cli/tests/commands/test-command.test.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A008"]
+
+  - category: code
+    summary: "isCheckpointSealConflict over-builds beyond this contract: it refuses an explicit --stage build/verify run through the -- <command> checkpoint form. Well-implemented and tested, and aligns with the anti-fabrication intent, but it is not part of the compact-capture-seal scope — it arrived via the merged sibling branch PR #281."
+    file: "packages/cli/src/commands/test.ts"
+    line: 168
+    severity: observation
+    suggested_action: acknowledge
+
+  - category: upstream
+    summary: "This PR carries merged sibling-branch commits (PR #281, feature/capture-seal-cleanup) that modify files outside this contract's file_changes: CHANGELOG.md (-4, removes an Unreleased entry) and .ana/plans/active/retire-capture-self-arming/build_report.md (-2623, strips inlined capture bloat). Not build defects, but the deployer should confirm these land intentionally when this PR merges."
+    severity: observation
+    suggested_action: monitor
+
+  - category: upstream
+    summary: "Removing INLINE_CEILING_BYTES resolves the tracked over-ceiling availability edge — an armed project whose honest output exceeds 8 MiB no longer fails closed; the one-line seal is size-independent (runCapture's 64 MiB maxBuffer is the sole fail-closed guard). The deferred excerpt-on-overflow fast-follow is now moot."
+    file: "packages/cli/src/commands/test.ts"
+    severity: observation
+    suggested_action: acknowledge
+
+  - category: upstream
+    summary: "Proof finding captured-test-evidence-C4 (validateCapturePresent used a non-block-skipping parseMarkers, risking a marker embedded in preserved block content falsely satisfying 'present') is resolved: there are no inlined blocks any more, and the new strict parser is full-line-anchored and skips fenced regions."
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "captured-test-evidence-C4"
+
+  - category: test
+    summary: "Net test count dropped 3434 -> 3431 (3429 passed + 2 skipped, 0 failed). Consistent with the documented deletion of the inliner round-trip and two block-validator suites, partially offset by new strict-parser/JSON/round-trip tests. No failing test, no coverage of live code lost — not a regression. The spec's literal '>= 3434' floor is not met."
+    severity: observation
+    suggested_action: acknowledge

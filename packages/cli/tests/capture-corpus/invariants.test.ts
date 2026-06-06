@@ -1,66 +1,22 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as os from 'node:os';
-import { createHash } from 'node:crypto';
+import { describe, it, expect } from 'vitest';
 import { deriveCounts, deriveVerdict, type KnownRunner } from '../../src/utils/capture-runner.js';
-import {
-  formatMarker,
-  inlineCaptures,
-  validateCaptureInlined,
-  validateCaptureNotTruncated,
-  type CaptureMarker,
-} from '../../src/utils/capture-marker.js';
 
 /**
- * Cross-stack capture corpus invariant sweep.
+ * Cross-stack capture corpus invariant sweep (count + verdict).
  *
  * For each of the 8 supported stacks: a passing `.raw` and a failing `.fail`
  * fixture (authored from real runner output), plus per-stack pathology rows
- * (empty / all-skipped / collection-error / compile-error). A `describe.each`
- * sweep asserts the Phase-1 invariants — PRESERVE, COUNTS-FROM-CAPTURE,
- * SEAL-BINDS/TAMPER-FIRES, ERROR-NEVER-STRIPPED, NO-FALSE-GREEN,
- * ABSTAIN-ON-UNKNOWN — plus two NEW adversarial rows: output-contains-the-end-
- * delimiter and output-contains-backticks. A green verdict on any adversarial
- * row is a CI-failing bug.
+ * (empty / all-skipped / collection-error / compile-error). The sweep asserts
+ * the count/verdict invariants — COUNTS-FROM-CAPTURE, NO-FALSE-GREEN,
+ * ABSTAIN-ON-UNKNOWN. A green verdict on any failing/empty row is a CI-failing
+ * bug.
+ *
+ * Preservation/inliner invariants (PRESERVE, SEAL-BINDS, ERROR-NEVER-STRIPPED,
+ * the end-delimiter/backtick adversarial rows) were retired with the inliner:
+ * nothing is inlined any more, so the raw bytes never enter the committed
+ * report and there is no block to bind or truncate. The marker is a compact
+ * attestation whose closed-token grammar is covered in capture-marker.test.ts.
  */
-
-const tmpDirs: string[] = [];
-
-function mkSlugDir(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'corpus-'));
-  tmpDirs.push(dir);
-  fs.mkdirSync(path.join(dir, '.captures'), { recursive: true });
-  return dir;
-}
-
-afterEach(() => {
-  while (tmpDirs.length) {
-    fs.rmSync(tmpDirs.pop()!, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
-  }
-});
-
-/** Inline a capture into a report and return the persisted path + text. */
-function sealReport(raw: string, verdict: CaptureMarker['verdict'] = 'pass'): { reportPath: string; text: string; errors: string[] } {
-  const slugDir = mkSlugDir();
-  const rel = '.captures/test-build-1.log';
-  fs.writeFileSync(path.join(slugDir, rel), raw);
-  const buf = Buffer.from(raw, 'utf8');
-  const marker: CaptureMarker = {
-    stage: 'build',
-    slug: 'corpus',
-    bytes: buf.byteLength,
-    sha256: createHash('sha256').update(buf).digest('hex'),
-    file: rel,
-    counts: 'abstain',
-    verdict,
-  };
-  const report = `# Build Report\n\n${formatMarker(marker)}\n`;
-  const { text, errors } = inlineCaptures(report, slugDir);
-  const reportPath = path.join(slugDir, 'build_report.md');
-  fs.writeFileSync(reportPath, text);
-  return { reportPath, text, errors };
-}
 
 interface StackCase {
   name: KnownRunner;
@@ -120,8 +76,7 @@ const STACKS: StackCase[] = [
   },
 ];
 
-describe.each(STACKS)('capture invariants: $name', ({ name, raw, fail, errorToken }) => {
-  // @ana A020
+describe.each(STACKS)('capture invariants: $name', ({ name, raw, fail }) => {
   it('COUNTS-FROM-CAPTURE: derives a positive pass count from a passing capture', () => {
     const counts = deriveCounts(raw, name);
     expect(counts).not.toBeNull();
@@ -129,32 +84,10 @@ describe.each(STACKS)('capture invariants: $name', ({ name, raw, fail, errorToke
     expect(counts!.failed).toBe(0);
   });
 
-  // @ana A026
+  // @ana A011 — a failing capture never yields a pass verdict.
   it('NO-FALSE-GREEN: a failing capture never yields a pass verdict', () => {
     const counts = deriveCounts(fail, name);
     expect(deriveVerdict(counts, 1)).not.toBe('pass');
-  });
-
-  // @ana A009
-  it('PRESERVE + SEAL-BINDS + TAMPER-FIRES: inlines byte-for-byte, seals, tamper breaks the seal', () => {
-    const { reportPath, text } = sealReport(raw);
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(validateCaptureNotTruncated(reportPath)).toBeNull();
-    expect(text).toContain(raw);
-    expect(text).not.toContain('```'); // no code fence wrapper
-
-    const tampered = text.replace(/passed/, 'PASSED');
-    if (tampered !== text) {
-      fs.writeFileSync(reportPath, tampered);
-      expect(validateCaptureInlined(reportPath)).not.toBeNull();
-    }
-  });
-
-  // @ana A021
-  it('ERROR-NEVER-STRIPPED: error text survives verbatim into the sealed report', () => {
-    expect(fail).toContain(errorToken);
-    const { reportPath } = sealReport(fail, 'fail');
-    expect(fs.readFileSync(reportPath, 'utf8')).toContain(errorToken);
   });
 });
 
@@ -200,14 +133,14 @@ const PATHOLOGIES: Pathology[] = [
 ];
 
 describe.each(PATHOLOGIES)('NO-FALSE-GREEN pathology: $stack/$kind', ({ stack, exitCode, output }) => {
-  // @ana A026
+  // @ana A011 — never a pass verdict on a pathological run.
   it('never yields a pass verdict', () => {
     const counts = deriveCounts(output, stack);
     expect(deriveVerdict(counts, exitCode)).not.toBe('pass');
   });
 
   if (exitCode === 0) {
-    // @ana A026
+    // @ana A010, A011 — a clean exit with no positive evidence abstains.
     it('abstains on a clean exit with no positive evidence (no vacuous green)', () => {
       const counts = deriveCounts(output, stack);
       expect(deriveVerdict(counts, exitCode)).toBe('abstain');
@@ -215,38 +148,12 @@ describe.each(PATHOLOGIES)('NO-FALSE-GREEN pathology: $stack/$kind', ({ stack, e
   }
 });
 
-describe('NEW adversarial rows — the inliner correctness hazards', () => {
-  // @ana A011
-  it('output containing the literal end-delimiter round-trips (length-addressed)', () => {
-    const raw = `running suite\n<!-- ana:capture-end -->\nmid\n<!-- ana:capture-end -->\nTests 3 passed\n`;
-    const { reportPath, errors } = sealReport(raw);
-    expect(errors).toEqual([]);
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(validateCaptureNotTruncated(reportPath)).toBeNull();
-  });
-
-  // @ana A010
-  it('output containing backticks / code fences round-trips (no fence wrapper)', () => {
-    const raw = 'console output:\n```ts\nconst x = `tpl ${y}`;\n```\nTests 2 passed\n';
-    const { reportPath, text } = sealReport(raw);
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(text).toContain(raw);
-  });
-});
-
 describe('capture invariants: ABSTAIN-ON-UNKNOWN', () => {
   const unknown = 'some bespoke harness finished\n  3 checks succeeded, 0 problems\n';
 
-  // @ana A027
-  it('gives null counts on unrecognized output but still preserves the bytes', () => {
-    // counts === null (abstain on counts)
+  // @ana A009 — unrecognized output yields null counts and an abstain verdict.
+  it('gives null counts on unrecognized output and abstains on the verdict', () => {
     expect(deriveCounts(unknown)).toBeNull();
     expect(deriveVerdict(null, 0)).toBe('abstain');
-
-    const { reportPath, text } = sealReport(unknown, 'abstain');
-    // Preservation still binds even when counts abstain.
-    expect(validateCaptureInlined(reportPath)).toBeNull();
-    expect(validateCaptureNotTruncated(reportPath)).toBeNull();
-    expect(text).toContain(unknown);
   });
 });

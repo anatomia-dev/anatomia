@@ -6,7 +6,7 @@ import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey, isCaptureGateEnabled } from '../../src/commands/artifact.js';
 import { determineStage } from '../../src/commands/work-state.js';
-import { inlineCaptures, formatMarker } from '../../src/utils/capture-marker.js';
+import { formatMarker } from '../../src/utils/capture-marker.js';
 
 /**
  * Tests for `ana artifact save` command
@@ -370,16 +370,22 @@ Content...`;
   });
 
   describe('capture gate — config enablement', () => {
-    /** Write a build report carrying a real, seal-valid capture marker + file. */
+    /** Write a build report carrying a well-formed compact capture marker. */
     async function createBuildReportWithCapture(slug: string, raw: string): Promise<void> {
       const dir = path.join(tempDir, '.ana', 'plans', 'active', slug);
-      await fs.mkdir(path.join(dir, '.captures'), { recursive: true });
-      const relFile = '.captures/test-build-1.log';
-      await fs.writeFile(path.join(dir, relFile), raw, 'utf-8');
+      await fs.mkdir(dir, { recursive: true });
       const buf = Buffer.from(raw, 'utf-8');
       const sha = createHash('sha256').update(buf).digest('hex');
-      const marker = `<!-- ana:capture stage=build slug=${slug} bytes=${buf.byteLength} sha256=${sha} file=${relFile} counts=abstain verdict=abstain -->`;
-      const content = `${getValidBuildReportContent()}\n\n## Test Results\n\n${marker}\n`;
+      const marker = formatMarker({
+        stage: 'build',
+        slug,
+        counts: 'abstain',
+        verdict: 'abstain',
+        sha256: sha,
+        bytes: buf.byteLength,
+        lines: (raw.match(/\n/g) ?? []).length,
+      });
+      const content = `${getValidBuildReportContent()}\n\n## Test Evidence\n\n${marker}\n`;
       await fs.writeFile(path.join(dir, 'build_report.md'), content, 'utf-8');
       await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
     }
@@ -427,7 +433,7 @@ Content...`;
 
     // ── Gate behavior driven from config ────────────────────────────────
 
-    // @ana A001 — gate on + a resolvable test command + no evidence → blocked.
+    // @ana A014 — gate on + a resolvable test command + no well-formed seal → blocked.
     it('blocks a build-report save when the gate is enabled and there is no evidence', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await enableGate();
@@ -436,7 +442,7 @@ Content...`;
       expect(() => saveArtifact('build-report', 'test-slug')).toThrow();
     });
 
-    // @ana A002 — gate on + a valid sealed capture → not blocked (happy path).
+    // @ana A005 — gate on + a present compact build seal → not blocked (happy path).
     it('does not block a build-report save with valid sealed evidence when enabled', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await enableGate();
@@ -445,7 +451,7 @@ Content...`;
       expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
     });
 
-    // @ana A003 — flag absent → warn-mode, a no-evidence save is never blocked.
+    // flag absent → warn-mode, a no-evidence save is never blocked (not a compact-seal contract assertion).
     it('does not block a build-report save when the gate flag is absent', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await createArtifact('test-slug', 'build_report.md'); // no marker, flag absent
@@ -453,7 +459,7 @@ Content...`;
       expect(() => saveArtifact('build-report', 'test-slug')).not.toThrow();
     });
 
-    // @ana A006 — verify reports are never gated, even when the gate is enabled.
+    // verify reports are never gated, even when the gate is enabled (verify-independence, not a compact-seal assertion).
     it('never gates a verify-report save even when the gate is enabled', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await enableGate();
@@ -463,48 +469,42 @@ Content...`;
       expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
     });
 
-    // @ana A014 — a verify report keeps its OWN sealed account: saving a verify
-    // report that carries a bare capture marker inlines + seals that run into
-    // verify_report.md. The gate is ON here, proving the seal is unconditional
-    // (inlineReportCaptures runs in the verify branch independently of the gate,
-    // which never blocks a verify save).
-    it("inlines and seals the verify report's own capture account when saved", async () => {
+    // @ana A004 — a verify report keeps its OWN sealed account as the COMPACT
+    // marker pasted into it. Saving inlines NOTHING: the committed report carries
+    // the one-line marker unchanged and no verbatim capture block. The gate is ON
+    // here, proving a verify save is never blocked nor rewritten.
+    it("carries the verify report's compact marker through save without inlining", async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
-      await enableGate(); // gate ON — the seal must happen regardless of the gate
+      await enableGate(); // gate ON — a verify save must still pass through untouched
 
       const dir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
-      await fs.mkdir(path.join(dir, '.captures'), { recursive: true });
-      const rel = '.captures/test-verify-1.log';
+      await fs.mkdir(dir, { recursive: true });
       const raw = 'verify run output\nTests 5 passed (5)\n';
-      await fs.writeFile(path.join(dir, rel), raw, 'utf-8');
       const buf = Buffer.from(raw, 'utf-8');
       const sha = createHash('sha256').update(buf).digest('hex');
       const marker = formatMarker({
         stage: 'verify',
         slug: 'test-slug',
-        bytes: buf.byteLength,
+        counts: '5p/0f/0s',
+        verdict: 'pass',
         sha256: sha,
-        file: rel,
-        counts: 'abstain',
-        verdict: 'abstain',
+        bytes: buf.byteLength,
+        lines: 2,
       });
-      // The report on disk carries only the BARE marker — no sealed block yet.
-      const report = `# Verify Report\n\n**Result:** PASS\n\n## Test Results\n\n${marker}\n`;
+      const report = `# Verify Report\n\n**Result:** PASS\n\n## Test Evidence\n\n${marker}\n`;
       await createArtifact('test-slug', 'verify_report.md', report);
 
       expect(() => saveArtifact('verify-report', 'test-slug')).not.toThrow();
 
-      // After the save, verify_report.md carries its own SEALED block: the
-      // begin/end delimiters plus the verbatim captured bytes that were not
-      // present on disk before the save.
-      const sealed = await fs.readFile(path.join(dir, 'verify_report.md'), 'utf-8');
-      expect(sealed).toContain('ana:capture-begin');
-      expect(sealed).toContain('ana:capture-end');
-      expect(sealed).toContain(`sha256=${sha}`);
-      expect(sealed).toContain('Tests 5 passed (5)');
+      // After the save: the compact marker is carried verbatim, and NO inlined
+      // capture block (begin/end delimiters) was written.
+      const saved = await fs.readFile(path.join(dir, 'verify_report.md'), 'utf-8');
+      expect(saved).toContain(marker);
+      expect(saved).not.toContain('ana:capture-begin');
+      expect(saved).not.toContain('ana:capture-end');
     });
 
-    // @ana A007 — saves that are not build reports never trigger the gate.
+    // saves that are not build reports never trigger the gate (not a compact-seal assertion).
     it('never gates a non-build-report save even when the gate is enabled', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
       await enableGate();
@@ -515,7 +515,7 @@ Content...`;
 
     // ── isCaptureGateEnabled (the function's home) ──────────────────────
 
-    // @ana A005 — missing or malformed ana.json reads as off and never throws.
+    // missing or malformed ana.json reads as off and never throws (gate-enablement, not a compact-seal assertion).
     it('isCaptureGateEnabled returns false for a missing or malformed ana.json', async () => {
       // No .ana/ana.json at all.
       expect(() => isCaptureGateEnabled(tempDir)).not.toThrow();
@@ -528,7 +528,7 @@ Content...`;
       expect(isCaptureGateEnabled(tempDir)).toBe(false);
     });
 
-    // @ana A008 — gate on but no resolvable test command → false (warn-mode).
+    // gate on but no resolvable test command → false (gate-enablement, not a compact-seal assertion).
     it('isCaptureGateEnabled returns false when the gate is on but no test command resolves', async () => {
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(
@@ -539,7 +539,7 @@ Content...`;
       expect(isCaptureGateEnabled(tempDir)).toBe(false);
     });
 
-    // @ana A009 — gate on + a surface-only test command (no top-level) → true.
+    // gate on + a surface-only test command (no top-level) → true (gate-enablement, not a compact-seal assertion).
     it('isCaptureGateEnabled returns true when only a per-surface test command resolves', async () => {
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(
@@ -570,49 +570,29 @@ Content...`;
       expect(isCaptureGateEnabled(tempDir)).toBe(false);
     });
 
-    // ── Block message content (AC7) ─────────────────────────────────────
+    // ── Block message content ───────────────────────────────────────────
 
-    // @ana A015, A016, A017 — a TRUNCATED capture (bytes deleted inside the
-    // sealed block) blocks; the message names the `ana test` fix (A015), the
-    // `captureGate` disable instruction (A016), and the REAL validator error
-    // "truncated" (A017) — proving the reason line is dynamic, not hardcoded.
-    it('block message states the real (truncated) reason, the ana test fix, and how to disable', async () => {
+    // @ana A024 — a report carrying only an OLD-FORMAT marker (no `lines`, has
+    // `file`) fails the strict present-check and blocks; the message names the
+    // real reason (no captured test run), the `ana test` fix, and the
+    // `captureGate` disable instruction.
+    it('block message names the missing-evidence reason, the ana test fix, and how to disable', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await enableGate();
 
       const dir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
-      await fs.mkdir(path.join(dir, '.captures'), { recursive: true });
-      const rel = '.captures/test-build-1.log';
-      const raw = 'line one\nline two\nline three\nTests 1 passed (1)\n';
-      await fs.writeFile(path.join(dir, rel), raw, 'utf-8');
-      const buf = Buffer.from(raw, 'utf-8');
-      const sha = createHash('sha256').update(buf).digest('hex');
-      const marker = formatMarker({
-        stage: 'build',
-        slug: 'test-slug',
-        bytes: buf.byteLength,
-        sha256: sha,
-        file: rel,
-        counts: 'abstain',
-        verdict: 'abstain',
-      });
-      const report = `${getValidBuildReportContent()}\n\n## Test Results\n\n${marker}\n`;
-      const { text } = inlineCaptures(report, dir);
-      // Delete a line from INSIDE the sealed block — end delimiter shifts off
-      // its byte offset → validateCaptureNotTruncated trips with "truncated".
-      // (NOT an equal-length swap, which would say "mismatch" instead.)
-      const truncated = text.replace('line two\n', '');
-      expect(truncated).not.toBe(text);
-      await fs.writeFile(path.join(dir, 'build_report.md'), truncated, 'utf-8');
+      await fs.mkdir(dir, { recursive: true });
+      // An old-format inlined marker — valid 64-hex sha, but no `lines` and a
+      // stale `file` field → fails the strict grammar → not "present".
+      const oldMarker = `<!-- ana:capture stage=build slug=test-slug bytes=9 sha256=${'a'.repeat(64)} file=.captures/z.log counts=abstain verdict=abstain -->`;
+      const report = `${getValidBuildReportContent()}\n\n## Test Evidence\n\n${oldMarker}\n`;
+      await fs.writeFile(path.join(dir, 'build_report.md'), report, 'utf-8');
       await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
-      // Remove the capture file so the save's re-inline cannot repair the
-      // truncation — the committed (truncated) block becomes the source of truth.
-      await fs.rm(path.join(dir, rel));
 
       const message = captureGateError(() => saveArtifact('build-report', 'test-slug'));
-      expect(message).toContain('ana test');     // A015
-      expect(message).toContain('captureGate');  // A016
-      expect(message).toContain('truncated');    // A017
+      expect(message).toContain('No captured test run'); // real present-check reason
+      expect(message).toContain('ana test');             // the fix
+      expect(message).toContain('captureGate');          // how to disable
     });
   });
 
