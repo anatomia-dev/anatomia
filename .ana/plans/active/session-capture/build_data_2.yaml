@@ -1,6 +1,6 @@
 schema: 1
 concerns:
-  - summary: "deriveTranscript test/failure counts are best-effort regex parsing of tool-result text (first 'N passed'/'N failed' match wins); ambiguous multi-line runner output can mis-count."
+  - summary: "deriveTranscript test/failure counts are best-effort regex parsing of tool-result text (first 'N passed'/'N failed' match wins); ambiguous multi-line runner output can mis-count. Provenance-only, never gates a verdict."
     file: "packages/cli/src/utils/forensics.ts"
     severity: debt
     suggested_action: monitor
@@ -12,7 +12,23 @@ concerns:
     file: "packages/cli/src/commands/init/assets.ts"
     severity: debt
     suggested_action: monitor
-  - summary: "ProcessAttestation now carries ALL matching sessions (process.sessions[], one SessionProvenance per role/attempt) rather than the newest, preserving the per-role dataset. Deterministic order (timestamp, then role). Human-approved deviation; supersedes the earlier newest-record-only design."
+  - summary: "assembleProcessAttestation reads the machine-wide ~/.ana/forensics/sessions.jsonl buffer in full (never pruned in Phase 1) and reads each non-slug-matched record's full transcript end-to-end; cost grows linearly with lifetime session count. Provenance-only, best-effort. A buffer-prune or slug-indexed lookup would bound it. (Verify Finding #2.)"
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "AC12 no-network enforcement scan covers the derive/cost core but not the work-proof.ts assembly wrapper; source inspection confirms no network code on the assembly path. Adding work-proof.ts to the scanned set would close the phrasing gap. (Verify Finding #5.)"
+    file: "packages/cli/tests/commands/_capture.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "SessionEnd derive (executeDerive) awaits a synchronous full-transcript readFileSync + per-line parse before process.exit(0); the 250ms stdin cap bounds the read-wait, not the derive. Low impact. (Verify Finding #6.)"
+    file: "packages/cli/src/commands/_capture.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "ProcessAttestation carries ALL matching sessions (process.sessions[], one SessionProvenance per role/attempt) in deterministic order (timestamp, then role), preserving the per-role dataset. Human-approved deviation; supersedes the earlier newest-record-only design."
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "RESOLVED (fix cycle 1): recordBelongsToWorktree now enforces a path-segment boundary (isUnderWorktree + worktreePath+path.sep) before every prefix comparison, mirroring deriveSurface; a `<slug>-v2` session is no longer attributed to `<slug>`. Regression test added. The intentionally-broad pre-filter on line 68 only gates JSON.parse; correctness is enforced by isUnderWorktree."
     file: "packages/cli/src/commands/work-proof.ts"
     severity: observation
     suggested_action: acknowledge
