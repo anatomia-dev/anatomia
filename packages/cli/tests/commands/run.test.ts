@@ -17,7 +17,7 @@ vi.mock('node:child_process', () => ({
 }));
 
 import { spawnSync } from 'node:child_process';
-import { executeRun, resolvePlatform, parseSimpleToml } from '../../src/commands/run.js';
+import { executeRun, resolvePlatform, parseSimpleToml, buildCaptureEnv } from '../../src/commands/run.js';
 
 const mockedSpawnSync = vi.mocked(spawnSync);
 
@@ -601,5 +601,128 @@ describe('ana run', () => {
         fs.rmSync(emptyDir, { recursive: true, force: true });
       }
     });
+  });
+});
+
+describe('buildCaptureEnv', () => {
+  let projectDir: string;
+
+  beforeEach(() => {
+    projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'capture-env-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(projectDir, { recursive: true, force: true });
+  });
+
+  /** Write a Claude agent-def file so the hash has content to read. */
+  function writeAgentDef(agentName: string, content: string, platform: 'claude' | 'codex' = 'claude'): void {
+    const dir = path.join(projectDir, platform === 'codex' ? '.codex' : '.claude', 'agents');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, `${agentName}.md`), content);
+  }
+
+  /** Mark projectDir as a worktree for the given slug. */
+  function writeWorktreeMeta(slug: string): void {
+    const anaDir = path.join(projectDir, '.ana');
+    fs.mkdirSync(anaDir, { recursive: true });
+    fs.writeFileSync(path.join(anaDir, 'worktree-meta.json'), JSON.stringify({ slug }));
+  }
+
+  // @ana A001
+  it('sets ANA_HARNESS to the platform', () => {
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    expect(env['ANA_HARNESS']).toBe('claude');
+
+    const codexEnv = buildCaptureEnv(projectDir, 'build', 'codex', 'ana-build');
+    expect(codexEnv['ANA_HARNESS']).toBe('codex');
+  });
+
+  // @ana A002
+  it('sets ANA_ROLE to the agent role, defaulting to ana for Think', () => {
+    expect(buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_ROLE']).toBe('build');
+    expect(buildCaptureEnv(projectDir, 'verify', 'claude', 'ana-verify')['ANA_ROLE']).toBe('verify');
+    // Think launches with an empty suffix → defaults to 'ana'.
+    expect(buildCaptureEnv(projectDir, '', 'claude', 'ana')['ANA_ROLE']).toBe('ana');
+  });
+
+  // @ana A003
+  it('sets ANA_AGENT_DEF_HASH to a sha256 of the resolved agent-def file', () => {
+    writeAgentDef('ana-build', '# ana-build agent definition body');
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    expect(env['ANA_AGENT_DEF_HASH']).toContain('sha256');
+    expect(env['ANA_AGENT_DEF_HASH']).toMatch(/^sha256:[0-9a-f]{64}$/);
+  });
+
+  it('hashes the Codex agent-def file when platform is codex', () => {
+    writeAgentDef('ana-build', '# codex agent body', 'codex');
+    const env = buildCaptureEnv(projectDir, 'build', 'codex', 'ana-build');
+    expect(env['ANA_AGENT_DEF_HASH']).toMatch(/^sha256:[0-9a-f]{64}$/);
+  });
+
+  it('degrades to an empty hash when the agent-def file is unreadable', () => {
+    // No agent-def file written.
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    expect(env['ANA_AGENT_DEF_HASH']).toBe('');
+  });
+
+  // @ana A004
+  it('merge over process.env is additive — PATH survives', () => {
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    // The spawn site merges this over process.env. Simulate that merge.
+    const spawnEnv = { ...process.env, ...env };
+    expect(spawnEnv['PATH']).toBeDefined();
+    expect(spawnEnv['ANA_HARNESS']).toBe('claude');
+    // buildCaptureEnv itself only contributes ANA_* keys — it never strips env.
+    expect(Object.keys(env).every((k) => k.startsWith('ANA_'))).toBe(true);
+  });
+
+  // @ana A005
+  it('build launched inside a worktree resolves ANA_SLUG from the worktree', () => {
+    writeWorktreeMeta('session-capture');
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    expect(env['ANA_SLUG']).toBe('session-capture');
+  });
+
+  it('verify launched inside a worktree resolves ANA_SLUG from the worktree', () => {
+    writeWorktreeMeta('session-capture');
+    const env = buildCaptureEnv(projectDir, 'verify', 'claude', 'ana-verify');
+    expect(env['ANA_SLUG']).toBe('session-capture');
+  });
+
+  // @ana A006
+  it('think injects an empty ANA_SLUG (no worktree)', () => {
+    const env = buildCaptureEnv(projectDir, '', 'claude', 'ana');
+    expect(env['ANA_SLUG']).toBe('');
+  });
+
+  it('learn injects an empty ANA_SLUG (no worktree)', () => {
+    const env = buildCaptureEnv(projectDir, 'learn', 'claude', 'ana-learn');
+    expect(env['ANA_SLUG']).toBe('');
+  });
+
+  // @ana A007
+  it('plan --slug sets ANA_SLUG to the given slug', () => {
+    const env = buildCaptureEnv(projectDir, 'plan', 'claude', 'ana-plan', 'session-capture');
+    expect(env['ANA_SLUG']).toBe('session-capture');
+  });
+
+  it('plain plan (no --slug) injects an empty ANA_SLUG', () => {
+    const env = buildCaptureEnv(projectDir, 'plan', 'claude', 'ana-plan');
+    expect(env['ANA_SLUG']).toBe('');
+  });
+
+  it('plan ignores the worktree slug, using only the --slug option', () => {
+    // Even inside a worktree, plan keys off the explicit flag, not the worktree.
+    writeWorktreeMeta('some-other-slug');
+    const env = buildCaptureEnv(projectDir, 'plan', 'claude', 'ana-plan', 'explicit-slug');
+    expect(env['ANA_SLUG']).toBe('explicit-slug');
+  });
+
+  it('includes a non-empty ANA_CLI_VERSION read from package.json', () => {
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    // The CLI version resolves from the package.json — present and a string.
+    expect(typeof env['ANA_CLI_VERSION']).toBe('string');
+    expect(env['ANA_CLI_VERSION']).not.toBe('');
   });
 });

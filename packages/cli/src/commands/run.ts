@@ -22,8 +22,10 @@ import chalk from 'chalk';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { createHash } from 'node:crypto';
 import { getPlatformFlags } from './platform.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
+import { detectWorktreeSlug } from '../utils/worktree.js';
 
 /**
  * Known agent suffix mappings.
@@ -54,6 +56,101 @@ const AGENT_MAP: Record<string, string> = {
 
 /** Platforms recognized by ana run. Unknown values are rejected. */
 const KNOWN_PLATFORMS = new Set(['claude', 'codex']);
+
+/**
+ * Read the CLI version synchronously from the package.json.
+ *
+ * Mirrors `getCliVersion` (init/state.ts) but synchronous — the spawn path is
+ * synchronous and cannot await. Handles bundle (dist) vs dev (src) layout.
+ * Returns an empty string on any failure (clean degrade — never throws).
+ *
+ * @returns The CLI version string, or `''` if it cannot be read
+ */
+function getCliVersionSync(): string {
+  try {
+    const moduleUrl = new URL('.', import.meta.url);
+    const isBundle = !moduleUrl.pathname.includes('/src/');
+    const pkgUrl = isBundle
+      ? new URL('../package.json', import.meta.url) // dist/index.js → ../package.json
+      : new URL('../../package.json', import.meta.url); // src/commands/run.ts → ../../package.json
+    const pkg = JSON.parse(fs.readFileSync(pkgUrl, 'utf-8'));
+    return typeof pkg.version === 'string' ? pkg.version : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Resolve the absolute path of the agent-def file the dispatch will run.
+ *
+ * Claude reads `.claude/agents/<agentName>.md`; Codex reads
+ * `.codex/agents/<agentName>.md`. This is the file whose content is hashed into
+ * `ANA_AGENT_DEF_HASH`.
+ *
+ * @param projectRoot - Project root directory
+ * @param platform - Target platform ('claude' | 'codex')
+ * @param agentName - Full agent name (e.g. 'ana-build')
+ * @returns Absolute path to the resolved agent-def file
+ */
+function resolveAgentDefPath(projectRoot: string, platform: string, agentName: string): string {
+  const dir = platform === 'codex' ? '.codex' : '.claude';
+  return path.join(projectRoot, dir, 'agents', `${agentName}.md`);
+}
+
+/**
+ * Build the `ANA_*` capture env injected into a spawned agent process.
+ *
+ * Purely additive — the caller merges this over `process.env`. Resolves:
+ * - `ANA_HARNESS` ← platform
+ * - `ANA_ROLE`    ← agentSuffix, defaulting to `'ana'` (Think)
+ * - `ANA_SLUG`    ← for `plan`, the `--slug` option; otherwise the worktree slug
+ *                   (`detectWorktreeSlug(projectRoot)`), coerced to `''`
+ * - `ANA_CLI_VERSION`    ← the CLI version
+ * - `ANA_AGENT_DEF_HASH` ← `sha256:` of the resolved agent-def file content
+ *
+ * Every field degrades cleanly: an unreadable agent-def file yields an empty
+ * hash, a missing worktree slug yields an empty `ANA_SLUG`. Never throws.
+ *
+ * @param projectRoot - Project root directory (the spawn cwd)
+ * @param agentSuffix - Agent suffix ('build', 'plan', 'verify', 'learn', '' for Think)
+ * @param platform - Target platform ('claude' | 'codex')
+ * @param agentName - Full agent name (e.g. 'ana-build')
+ * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
+ * @returns A record of the five `ANA_*` variables
+ */
+export function buildCaptureEnv(
+  projectRoot: string,
+  agentSuffix: string,
+  platform: string,
+  agentName: string,
+  slugOption?: string,
+): Record<string, string> {
+  // Slug resolution: plan is the only role that takes a slug from the CLI flag;
+  // build/verify (and any worktree-launched role) recover it from the worktree;
+  // think/learn from the main repo resolve to null → empty (an explicitly valid
+  // fallback). Resolve only through the already-resolved projectRoot.
+  const slug =
+    agentSuffix === 'plan'
+      ? (slugOption ?? '')
+      : (detectWorktreeSlug(projectRoot) ?? '');
+
+  // Hash the resolved agent-def file. Unreadable → empty hash (clean degrade).
+  let agentDefHash = '';
+  try {
+    const content = fs.readFileSync(resolveAgentDefPath(projectRoot, platform, agentName));
+    agentDefHash = `sha256:${createHash('sha256').update(content).digest('hex')}`;
+  } catch {
+    agentDefHash = '';
+  }
+
+  return {
+    ANA_HARNESS: platform,
+    ANA_ROLE: agentSuffix || 'ana',
+    ANA_SLUG: slug,
+    ANA_CLI_VERSION: getCliVersionSync(),
+    ANA_AGENT_DEF_HASH: agentDefHash,
+  };
+}
 
 /**
  * Parse a simple TOML file (key = "value" pairs, no nested tables).
@@ -155,12 +252,14 @@ function readAgentToml(projectRoot: string, agentName: string): Record<string, s
  * @param agentSuffix - Agent suffix (e.g. 'build', '')
  * @param agentName - Full agent name (e.g. 'ana-build')
  * @param passthroughArgs - Extra arguments after --
+ * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
  */
 function dispatchToCodex(
   projectRoot: string,
   agentSuffix: string,
   agentName: string,
   passthroughArgs: string[],
+  slugOption?: string,
 ): void {
   // Check codex executable
   if (!isExecutableInPath('codex')) {
@@ -206,6 +305,7 @@ function dispatchToCodex(
   const result = spawnSync('codex', args, {
     stdio: 'inherit',
     cwd: projectRoot,
+    env: { ...process.env, ...buildCaptureEnv(projectRoot, agentSuffix, 'codex', agentName, slugOption) },
   });
 
   process.exit(result.status ?? 1);
@@ -303,8 +403,14 @@ function advisoryPipelineCheck(projectRoot: string, agentSuffix: string): void {
  * @param agentSuffix - Agent suffix (e.g. 'build', 'plan', '' for Think)
  * @param passthroughArgs - Extra arguments after --
  * @param platformFlag - Explicit --platform flag value (optional)
+ * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
  */
-export function executeRun(agentSuffix: string, passthroughArgs: string[], platformFlag?: string): void {
+export function executeRun(
+  agentSuffix: string,
+  passthroughArgs: string[],
+  platformFlag?: string,
+  slugOption?: string,
+): void {
   // 1. Find project root
   const projectRoot = findRunProjectRoot();
   if (!projectRoot) {
@@ -332,12 +438,12 @@ export function executeRun(agentSuffix: string, passthroughArgs: string[], platf
 
   // 4. Dispatch to platform
   if (platform === 'codex') {
-    dispatchToCodex(projectRoot, agentSuffix, agentName, passthroughArgs);
+    dispatchToCodex(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
     return;
   }
 
   // Claude dispatch (existing behavior)
-  dispatchToClaude(projectRoot, agentSuffix, agentName, passthroughArgs);
+  dispatchToClaude(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
 }
 
 /**
@@ -350,12 +456,14 @@ export function executeRun(agentSuffix: string, passthroughArgs: string[], platf
  * @param agentSuffix - Agent suffix (e.g. 'build', '')
  * @param agentName - Full agent name (e.g. 'ana-build')
  * @param passthroughArgs - Extra arguments after --
+ * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
  */
 function dispatchToClaude(
   projectRoot: string,
   agentSuffix: string,
   agentName: string,
   passthroughArgs: string[],
+  slugOption?: string,
 ): void {
   // Read platform flags
   const flags = getPlatformFlags(projectRoot);
@@ -382,6 +490,7 @@ function dispatchToClaude(
   const result = spawnSync('claude', args, {
     stdio: 'inherit',
     cwd: projectRoot,
+    env: { ...process.env, ...buildCaptureEnv(projectRoot, agentSuffix, 'claude', agentName, slugOption) },
   });
 
   process.exit(result.status ?? 1);
@@ -398,12 +507,13 @@ export function registerRunCommand(program: Command): void {
     .description('Run an Anatomia agent')
     .argument('[agent]', 'Agent to run (build, plan, verify, setup, learn)', '')
     .option('--platform <platform>', 'Platform to use (claude, codex)')
+    .option('--slug <slug>', 'Work-item slug to tag the session with (used by plan)')
     .allowUnknownOption(true)
-    .action((agent: string, opts: { platform?: string }) => {
+    .action((agent: string, opts: { platform?: string; slug?: string }) => {
       // Collect passthrough args: everything after '--' in process.argv
       const dashDashIdx = process.argv.indexOf('--');
       const passthroughArgs = dashDashIdx >= 0 ? process.argv.slice(dashDashIdx + 1) : [];
 
-      executeRun(agent, passthroughArgs, opts.platform);
+      executeRun(agent, passthroughArgs, opts.platform, opts.slug);
     });
 }
