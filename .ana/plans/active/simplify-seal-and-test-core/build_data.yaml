@@ -1,0 +1,16 @@
+schema: 1
+concerns:
+  - summary: "Globally-installed `ana` is stale and still emits old bytes/lines markers; the sealed build marker came from the locally-built dist. Verify must seal via the worktree's local CLI, not the global `ana`."
+    file: "packages/cli/src/commands/test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "@ana tag id-space restarts per contract, so tags like A011 appear in multiple unrelated test files; coverage grep is ambiguous across contracts. Pre-existing convention, not introduced here."
+    severity: observation
+    suggested_action: monitor
+  - summary: "Net -5 tests after removing the checkpoint/conflict/bytes/lines machinery; spec did not pin a fixed total. Recorded for transparency."
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "artifact.test.ts was modified though not listed in the spec File Changes — a necessary consequence of removing bytes/lines from CaptureMarker (typecheck:tests caught it) plus a now-parseable old-format gate-block fixture."
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: debt
+    suggested_action: acknowledge

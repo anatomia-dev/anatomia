@@ -382,8 +382,6 @@ Content...`;
         counts: 'abstain',
         verdict: 'abstain',
         sha256: sha,
-        bytes: buf.byteLength,
-        lines: (raw.match(/\n/g) ?? []).length,
       });
       const content = `${getValidBuildReportContent()}\n\n## Test Evidence\n\n${marker}\n`;
       await fs.writeFile(path.join(dir, 'build_report.md'), content, 'utf-8');
@@ -488,8 +486,6 @@ Content...`;
         counts: '5p/0f/0s',
         verdict: 'pass',
         sha256: sha,
-        bytes: buf.byteLength,
-        lines: 2,
       });
       const report = `# Verify Report\n\n**Result:** PASS\n\n## Test Evidence\n\n${marker}\n`;
       await createArtifact('test-slug', 'verify_report.md', report);
@@ -572,20 +568,20 @@ Content...`;
 
     // ── Block message content ───────────────────────────────────────────
 
-    // @ana A024 — a report carrying only an OLD-FORMAT marker (no `lines`, has
-    // `file`) fails the strict present-check and blocks; the message names the
-    // real reason (no captured test run), the `ana test` fix, and the
-    // `captureGate` disable instruction.
+    // A report carrying only a malformed (non-hex sha256) placeholder fails the
+    // strict present-check and blocks; the message names the real reason (no
+    // captured test run), the `ana test` fix, and the `captureGate` disable
+    // instruction.
     it('block message names the missing-evidence reason, the ana test fix, and how to disable', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await enableGate();
 
       const dir = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
       await fs.mkdir(dir, { recursive: true });
-      // An old-format inlined marker — valid 64-hex sha, but no `lines` and a
-      // stale `file` field → fails the strict grammar → not "present".
-      const oldMarker = `<!-- ana:capture stage=build slug=test-slug bytes=9 sha256=${'a'.repeat(64)} file=.captures/z.log counts=abstain verdict=abstain -->`;
-      const report = `${getValidBuildReportContent()}\n\n## Test Evidence\n\n${oldMarker}\n`;
+      // A placeholder description — its sha256 is not 64-hex, so it fails the
+      // strict grammar and is not "present".
+      const placeholder = '<!-- ana:capture stage=build slug=test-slug counts=abstain verdict=abstain sha256=…<64hex>… -->';
+      const report = `${getValidBuildReportContent()}\n\n## Test Evidence\n\n${placeholder}\n`;
       await fs.writeFile(path.join(dir, 'build_report.md'), report, 'utf-8');
       await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
 

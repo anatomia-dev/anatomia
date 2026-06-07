@@ -1,0 +1,54 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract file_changes omits packages/cli/tests/commands/artifact.test.ts, which the build necessarily modified (the marker() factory no longer accepts bytes/lines, and an old-format @ana test depended on the retired shape)"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A023", "A024", "A025"]
+
+  - category: upstream
+    summary: "Checkpoint machinery deletion resolves two prior proof-chain findings: isCheckpointSealConflict over-build and the checkpoint-passthrough argv-quoting loss are both removed, not patched"
+    file: "packages/cli/src/commands/test.ts"
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "compact-capture-seal-C5"
+      - "captured-test-evidence-C2"
+
+  - category: code
+    summary: "test.ts top docstring says verify 'resolves the top-level commands.test' but the implementation resolves via resolveTestCommandString, which prefers commands.test_json when present — the named field is imprecise"
+    file: "packages/cli/src/commands/test.ts"
+    line: 16
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A015"]
+
+  - category: code
+    summary: "'Verify runs the full project' is config-dependent: on this repo top-level test_json scopes to packages/cli, so a --stage verify seal covers the CLI suite only and excludes the website package. Matches spec's accepted resolution rules; reader could over-read 'full project'"
+    file: "packages/cli/src/commands/test.ts"
+    line: 170
+    severity: observation
+    suggested_action: monitor
+
+  - category: code
+    summary: "Dropping required `lines` widens the accepted-seal grammar: any well-formed five-field line outside a fence now parses as a real seal (verbatim-paste forgery surface). Recorded-not-guarded per spec; deferred to the reserved enginebind token"
+    file: "packages/cli/src/utils/capture-marker.ts"
+    line: 201
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A008"]
+
+  - category: test
+    summary: "capture-runner.test.ts tee test adds a redundant weaker follow-up (toBeGreaterThan(0)) right after a specific toBe(11) on the same value; the specific assertion already covers it"
+    file: "packages/cli/tests/utils/capture-runner.test.ts"
+    line: 128
+    severity: observation
+    suggested_action: acknowledge
+
+  - category: code
+    summary: "Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts:198 — NOT introduced by this build (file is outside the diff); noted so it is not mistaken for a regression"
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: observation
+    suggested_action: monitor

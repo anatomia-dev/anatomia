@@ -3,9 +3,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 /**
- * AC8 — the instruction surface. All four agent templates that run tests must
- * instruct running them through `ana test`, kept in sync across `.claude` and
- * `.codex` (bodies byte-identical except the `.claude` YAML frontmatter).
+ * AC7 — the instruction surface. Build and verify agent templates seal their
+ * final/independent run through `ana test`, but no longer route every test
+ * through it nor wrap a focused checkpoint command. Kept in sync across `.claude`
+ * and `.codex` (bodies byte-identical except the `.claude` YAML frontmatter).
  */
 
 const TEMPLATES = path.resolve(__dirname, '..', '..', 'templates');
@@ -28,25 +29,27 @@ function stripFrontmatter(text: string): string {
   return end === -1 ? text : text.slice(text.indexOf('\n', end + 1) + 1);
 }
 
-describe('AC8 — ana test instruction in all four templates', () => {
-  // @ana A022
-  it('all four templates instruct running tests through `ana test`', () => {
-    const all = [...BUILD_TEMPLATES, ...VERIFY_TEMPLATES];
-    const withInstruction = all.filter((rel) => /`?ana test`?/.test(read(rel)));
-    expect(withInstruction).toHaveLength(4);
-  });
-
-  it('build templates carry the build-stage + checkpoint forms', () => {
+describe('AC7 — ana test instruction in build + verify templates', () => {
+  // @ana A016, A017, A020 — build templates keep the final build-seal instruction
+  // and drop the route-everything, checkpoint-wrapping, and byte/line wording.
+  it('build templates seal the final run and drop the checkpoint/route-everything forms', () => {
     for (const rel of BUILD_TEMPLATES) {
       const body = read(rel);
       expect(body).toContain('ana test --stage build --slug');
-      expect(body).toContain('ana test --slug {slug} -- {checkpoint command');
+      expect(body).not.toContain('-- {checkpoint command');
+      expect(body).not.toContain('Run every test through');
+      expect(body).not.toContain('byte/line totals');
     }
   });
 
-  it('verify templates carry the verify-stage form', () => {
+  // @ana A018, A019 — verify templates keep the unconditional verify-seal
+  // instruction and drop the focused-checkpoint form.
+  it('verify templates carry the verify-stage form and drop the checkpoint form', () => {
     for (const rel of VERIFY_TEMPLATES) {
-      expect(read(rel)).toContain('ana test --stage verify --slug');
+      const body = read(rel);
+      expect(body).toContain('ana test --stage verify --slug');
+      expect(body).not.toContain('-- {checkpoint command');
+      expect(body).not.toContain('byte/line totals');
     }
   });
 

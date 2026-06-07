@@ -50,8 +50,6 @@ export interface ResolvedCommand {
 export interface CaptureRunResult {
   /** Full raw stdout+stderr bytes, preserved verbatim. */
   rawBytes: Buffer;
-  /** Byte length of the captured output. */
-  bytes: number;
   /** Process exit code (null when the process was killed/timed out). */
   exitCode: number | null;
   /** Absolute path the bytes were tee'd to. */
@@ -308,7 +306,7 @@ export function captureSpawnOptions(
  * truncated or empty capture is never sealed.
  *
  * @param opts - Capture run options
- * @returns The captured bytes, byte length, exit code, sink path, and shell flag
+ * @returns The captured bytes, exit code, sink path, and shell flag
  */
 export function runCapture(opts: CaptureRunOptions): CaptureRunResult {
   const spawnOpts = captureSpawnOptions(opts.cwd, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS, opts.env);
@@ -343,7 +341,6 @@ export function runCapture(opts: CaptureRunOptions): CaptureRunResult {
 
   return {
     rawBytes,
-    bytes: rawBytes.byteLength,
     exitCode: result.status,
     sink: opts.sink,
     usedShell: spawnOpts.shell === true,
