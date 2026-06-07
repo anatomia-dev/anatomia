@@ -27,6 +27,7 @@ import { registerTestCommand } from './commands/test.js';
 import { registerConfigCommand } from './commands/config.js';
 import { registerDoctorCommand } from './commands/doctor.js';
 import { registerRunCommand } from './commands/run.js';
+import { registerCaptureCommand } from './commands/_capture.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8'));
 
@@ -75,6 +76,10 @@ program.commandsGroup('INTELLIGENCE');
 registerProofCommand(program);
 registerLearnCommand(program);
 registerAgentsCommand(program);
+
+// Hidden internal commands — registered outside any commandsGroup so they
+// never surface in `ana --help`.
+registerCaptureCommand(program);
 
 // Parse arguments with async support
 // CRITICAL: Use parseAsync() not parse() for async action handlers
