@@ -22,5 +22,34 @@
   "spec-2": {
     "saved_at": "2026-06-07T21:21:05.264Z",
     "hash": "sha256:ba2ee107e68ca7da2efcdb091a794d73b232b07b28cec53e6c2ccc5ed097088a"
-  }
+  },
+  "build_started_at": "2026-06-07T21:30:10.025Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-07T21:57:14.712Z",
+    "hash": "sha256:4cb3949e37e557c5a9a42753daa1fee141517fab8203f601b83dca71f3defa3c"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-07T21:57:14.713Z",
+    "hash": "sha256:41663716e58951270fa83645315f2b889e9e9f3133772ebf2303edddecf28e58"
+  },
+  "modules_touched": [
+    ".claude/settings.json",
+    ".codex/config.toml",
+    ".codex/hooks.json",
+    "packages/cli/src/commands/_capture.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/templates/.codex/config.toml",
+    "packages/cli/templates/.codex/hooks.json",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts"
+  ],
+  "commit_hygiene": []
 }

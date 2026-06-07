@@ -1,0 +1,26 @@
+schema: 1
+concerns:
+  - summary: "harness_version recorded empty at Phase 1 — Claude SessionStart payload carries no version; Phase 2 transcript derive should fill it from the transcript `version` key"
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Codex hooks.json/config.toml schema unconfirmed against a live Codex install; the Codex install/prune path is untested (init gating tests run --platforms claude only)"
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: risk
+    suggested_action: scope
+  - summary: "applyCodexCaptureHooks never rewrites an existing config.toml (only creates when absent), so a user config.toml lacking [features] hooks = true won't get the flag"
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "getTemplatesDir() dev path is off-by-one (resolves to src/templates which doesn't exist); only correct when compiled — pre-existing, forced init-gating tests onto dist"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Pre-existing @ana tag collision: unrelated CC-dispatch tests in run.test.ts carry A028-A037, which are Phase-2 assertion IDs in this contract"
+    file: "packages/cli/tests/commands/run.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning (unused eslint-disable) in git-operations.ts:198 — not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge
