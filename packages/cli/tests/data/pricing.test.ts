@@ -1,0 +1,74 @@
+/**
+ * Tests for the versioned price table and computeCost (Phase 2).
+ *
+ * computeCost must be pure and deterministic: known model → exact cost with the
+ * table version stamped; unknown model → 0 with the version still stamped (never
+ * throws). Exact-value assertions only — never `toBeGreaterThan(0)`.
+ */
+
+import { describe, it, expect } from 'vitest';
+import {
+  computeCost,
+  PRICE_TABLE_VERSION,
+  PRICES,
+  type TokenCounts,
+} from '../../src/data/pricing.js';
+
+describe('pricing', () => {
+  describe('computeCost', () => {
+    it('computes the exact cost for a known model and stamps the version', () => {
+      // @ana A027
+      const tokens: TokenCounts = {
+        input: 1_000_000,
+        output: 1_000_000,
+        cache_create: 1_000_000,
+        cache_read: 1_000_000,
+      };
+      // opus-4-6: 15 + 75 + 18.75 + 1.5 = 110.25 per 1M of each
+      const result = computeCost(tokens, 'claude-opus-4-6');
+      expect(result.cost_usd).toBe(110.25);
+      expect(result.price_table_version).toBe(PRICE_TABLE_VERSION);
+    });
+
+    it('computes a fractional cost exactly (rounded to 6 dp)', () => {
+      // @ana A027
+      const tokens: TokenCounts = { input: 48211, output: 12903, cache_create: 0, cache_read: 0 };
+      // 48211/1e6*15 + 12903/1e6*75 = 0.723165 + 0.967725 = 1.69089
+      const result = computeCost(tokens, 'claude-opus-4-6');
+      expect(result.cost_usd).toBe(1.69089);
+    });
+
+    it('returns 0 for an unknown model without throwing, version still stamped', () => {
+      // @ana A028
+      const tokens: TokenCounts = { input: 5000, output: 5000, cache_create: 5000, cache_read: 5000 };
+      const result = computeCost(tokens, 'no-such-model-9000');
+      expect(result.cost_usd).toBe(0);
+      expect(result.price_table_version).toBe(PRICE_TABLE_VERSION);
+    });
+
+    it('is deterministic — same input yields byte-identical output', () => {
+      // @ana A027
+      const tokens: TokenCounts = { input: 123, output: 456, cache_create: 789, cache_read: 1011 };
+      const a = computeCost(tokens, 'claude-sonnet-4-6');
+      const b = computeCost(tokens, 'claude-sonnet-4-6');
+      expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+    });
+
+    it('zero tokens cost exactly 0 for a known model', () => {
+      // @ana A028
+      const tokens: TokenCounts = { input: 0, output: 0, cache_create: 0, cache_read: 0 };
+      expect(computeCost(tokens, 'claude-opus-4-6').cost_usd).toBe(0);
+    });
+  });
+
+  describe('PRICES table', () => {
+    it('has a stable version stamp', () => {
+      expect(PRICE_TABLE_VERSION).toBe('2026-06-01');
+    });
+
+    it('has unique model ids', () => {
+      const ids = PRICES.map((p) => p.model);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+  });
+});
