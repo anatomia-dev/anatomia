@@ -1,7 +1,7 @@
 schema: 1
 findings:
   - category: code
-    summary: "recordBelongsToWorktree uses startsWith(worktreePath) with no path boundary — worktree slug 'feat' wrongly matches sessions from 'feat-2'/'feature', contaminating the proof attestation with another work item's provenance. Same bug class deriveSurface explicitly guards against in this same file (trailing-slash boundary)."
+    summary: "BLOCKER — recordBelongsToWorktree matches with startsWith(worktreePath)/includes(worktreePath) and no path boundary, so a slug that is a character-prefix of another (dashboard vs dashboard-v2, auth vs auth-fix) silently absorbs the longer slug's sessions into the shorter slug's ProcessAttestation. Silent corruption of the per-role provenance dataset — the entire point of the feature — triggered by normal iterative slug naming, in shipped product code. Required fix: append path.sep before the prefix compare (mirror deriveSurface's trailing-slash precedent in the same file) + a regression test proving a <slug>-v2 session is NOT attributed to <slug>."
     file: "packages/cli/src/commands/work-proof.ts"
     line: 51
     severity: risk
