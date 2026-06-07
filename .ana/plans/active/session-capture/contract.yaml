@@ -1,0 +1,310 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "session-capture — agent-session capture & provenance unlock"
+
+assertions:
+  # ── Phase 1: env injection (AC1) ────────────────────────────────
+  - id: A001
+    says: "Every launched agent is tagged with which harness it runs on"
+    block: "buildCaptureEnv sets ANA_HARNESS to the platform"
+    target: "env.ANA_HARNESS"
+    matcher: "equals"
+    value: "claude"
+
+  - id: A002
+    says: "Every launched agent is tagged with its pipeline role"
+    block: "buildCaptureEnv sets ANA_ROLE to the agent role"
+    target: "env.ANA_ROLE"
+    matcher: "equals"
+    value: "build"
+
+  - id: A003
+    says: "Each session records a fingerprint of the agent definition it ran"
+    block: "buildCaptureEnv sets ANA_AGENT_DEF_HASH to a sha256 of the agent-def file"
+    target: "env.ANA_AGENT_DEF_HASH"
+    matcher: "contains"
+    value: "sha256"
+
+  - id: A004
+    says: "Tagging a session never strips the agent's existing environment"
+    block: "buildCaptureEnv merge is additive over process.env"
+    target: "spawnEnv.PATH"
+    matcher: "exists"
+
+  # ── Phase 1: slug resolution (AC2) ──────────────────────────────
+  - id: A005
+    says: "A build launched inside a work item's worktree is tagged with that work item"
+    block: "build role resolves ANA_SLUG from the worktree"
+    target: "env.ANA_SLUG"
+    matcher: "equals"
+    value: "session-capture"
+
+  - id: A006
+    says: "Think and Learn sessions, which have no work item, are tagged with an empty slug"
+    block: "think role injects an empty ANA_SLUG"
+    target: "env.ANA_SLUG"
+    matcher: "equals"
+    value: ""
+
+  - id: A007
+    says: "Planning can be tied to a specific work item when the user names it"
+    block: "ana run plan --slug sets ANA_SLUG to the given slug"
+    target: "env.ANA_SLUG"
+    matcher: "equals"
+    value: "session-capture"
+
+  # ── Phase 1: buffer record (AC4) ────────────────────────────────
+  - id: A008
+    says: "Each session is recorded with the pointer to its own transcript"
+    block: "capture appends a record carrying the session id"
+    target: "record.session_id"
+    matcher: "exists"
+
+  - id: A009
+    says: "The transcript location is recorded exactly as the harness reported it"
+    block: "capture records transcript_path verbatim from the payload"
+    target: "record.transcript_path"
+    matcher: "equals"
+    value: "/tmp/fixture/transcript.jsonl"
+
+  - id: A010
+    says: "Each session start writes exactly one record, never more"
+    block: "capture appends exactly one line per session"
+    target: "bufferLineCount"
+    matcher: "equals"
+    value: 1
+
+  # ── Phase 1: totality / safety (AC5) ────────────────────────────
+  - id: A011
+    says: "Capture never disturbs a live agent session — it always exits cleanly"
+    block: "ana _capture exits 0 on malformed stdin"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A012
+    says: "When capture is turned off, no session data is written at all"
+    block: "ana _capture writes nothing when the gate is off"
+    target: "bufferLineCount"
+    matcher: "equals"
+    value: 0
+
+  - id: A013
+    says: "Capture never reaches out to the network"
+    block: "ana _capture performs no network I/O"
+    target: "networkCallCount"
+    matcher: "equals"
+    value: 0
+
+  # ── Phase 1: clean degrade (AC6) ────────────────────────────────
+  - id: A014
+    says: "A session started directly, outside the pipeline, is still recorded"
+    block: "direct-launch record falls back to the payload agent_type for role"
+    target: "record.role"
+    matcher: "equals"
+    value: "ana"
+
+  - id: A015
+    says: "A directly-started session is recorded with an empty work-item slug, not dropped"
+    block: "direct-launch record has an empty slug"
+    target: "record.slug"
+    matcher: "equals"
+    value: ""
+
+  # ── Phase 1: gate + default (AC7) ───────────────────────────────
+  - id: A016
+    says: "Capture runs only when the project has explicitly turned it on"
+    block: "isProcessCaptureEnabled is true when processCapture is on"
+    target: "result"
+    matcher: "equals"
+    value: true
+
+  - id: A017
+    says: "A broken config never accidentally enables capture"
+    block: "isProcessCaptureEnabled is false on malformed ana.json"
+    target: "result"
+    matcher: "equals"
+    value: false
+
+  - id: A018
+    says: "New customer projects ship with capture off by default"
+    block: "createAnaJson defaults processCapture to off"
+    target: "anaJson.processCapture"
+    matcher: "equals"
+    value: "off"
+
+  # ── Phase 1: install-time gating + prune (AC3) ──────────────────
+  - id: A019
+    says: "Turning capture on installs the session hook"
+    block: "init with processCapture on installs the ana _capture hook"
+    target: "installedHookCommands"
+    matcher: "contains"
+    value: "ana _capture"
+
+  - id: A020
+    says: "Opted-out customers get no capture hook, so they pay no per-session cost"
+    block: "init with processCapture off installs no ana _capture hook"
+    target: "installedHookCommands"
+    matcher: "not_contains"
+    value: "ana _capture"
+
+  - id: A021
+    says: "Turning capture off and re-initializing removes the hook it had added"
+    block: "re-init with processCapture off prunes a previously-installed capture hook"
+    target: "installedHookCommands"
+    matcher: "not_contains"
+    value: "ana _capture"
+
+  - id: A022
+    says: "Removing our hook never touches hooks the user wrote themselves"
+    block: "prune preserves user-authored hooks"
+    target: "userHookPreserved"
+    matcher: "equals"
+    value: true
+
+  # ── Phase 2: derive (AC8) ───────────────────────────────────────
+  - id: A023
+    says: "A finished session's token usage is counted from its transcript"
+    block: "deriveTranscript sums input tokens from the transcript"
+    target: "derived.tokens.input"
+    matcher: "equals"
+    value: 1500
+
+  - id: A024
+    says: "Token usage repeated across transcript lines is counted only once"
+    block: "deriveTranscript dedupes token usage by requestId"
+    target: "derived.tokens.output"
+    matcher: "equals"
+    value: 800
+
+  - id: A025
+    says: "The model that ran the session is recorded"
+    block: "deriveTranscript extracts the session model"
+    target: "derived.model"
+    matcher: "equals"
+    value: "claude-opus-4-6"
+
+  - id: A026
+    says: "Deriving the same transcript twice always yields the identical result"
+    block: "deriveTranscript is deterministic for the same input"
+    target: "isByteIdentical"
+    matcher: "equals"
+    value: true
+
+  # ── Phase 2: cost (AC8) ─────────────────────────────────────────
+  - id: A027
+    says: "Session cost is computed from token counts and a stamped price table"
+    block: "computeCost returns the expected cost and stamps the table version"
+    target: "cost.price_table_version"
+    matcher: "exists"
+
+  - id: A028
+    says: "An unknown model yields a zero estimate instead of crashing"
+    block: "computeCost returns 0 for an unknown model"
+    target: "cost.cost_usd"
+    matcher: "equals"
+    value: 0
+
+  # ── Phase 2: module_churn (AC10) ────────────────────────────────
+  - id: A029
+    says: "Per-file lines added and removed are recorded for each change"
+    block: "captureModulesTouched records added/deleted churn per file"
+    target: "saves.module_churn"
+    matcher: "exists"
+
+  - id: A030
+    says: "Recording churn never changes the existing list of touched files"
+    block: "captureModulesTouched leaves modules_touched as a path array"
+    target: "saves.modules_touched"
+    matcher: "contains"
+    value: "packages/cli/src/commands/run.ts"
+
+  # ── Phase 2: proof attach (AC9) ─────────────────────────────────
+  - id: A031
+    says: "A completed work item's proof carries its session provenance"
+    block: "work complete attaches a process attestation when capture is on"
+    target: "entry.process"
+    matcher: "exists"
+
+  - id: A032
+    says: "The proof records whether verification passed on the first try"
+    block: "process attestation reports first_pass_verify from rejection cycles"
+    target: "entry.process.outcome.first_pass_verify"
+    matcher: "equals"
+    value: true
+
+  - id: A033
+    says: "A proof produced with capture off is complete and simply omits provenance"
+    block: "work complete omits the process field when capture is off"
+    target: "hasProcessField"
+    matcher: "equals"
+    value: false
+
+  # ── Phase 2: SessionEnd derive + privacy (AC11, AC12) ───────────
+  - id: A034
+    says: "A non-pipeline session is fully counted when it ends, before its transcript can vanish"
+    block: "SessionEnd derive writes counts back into the session record"
+    target: "record.derived"
+    matcher: "exists"
+
+  - id: A035
+    says: "Raw conversation content is never stored — only pointers and counts"
+    block: "the session record persists no transcript body"
+    target: "record.transcriptBodyPersisted"
+    matcher: "equals"
+    value: false
+
+file_changes:
+  # Phase 1 — capture
+  - path: "packages/cli/src/commands/run.ts"
+    action: modify
+  - path: "packages/cli/src/commands/_capture.ts"
+    action: create
+  - path: "packages/cli/src/utils/forensics.ts"
+    action: create
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/settings.json"
+    action: modify
+  - path: "packages/cli/templates/.codex/hooks.json"
+    action: create
+  - path: "packages/cli/templates/.codex/config.toml"
+    action: create
+  - path: ".ana/ana.json"
+    action: modify
+  - path: ".claude/settings.json"
+    action: modify
+  # Phase 2 — derive + attach
+  - path: "packages/cli/src/data/pricing.ts"
+    action: create
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  # Tests
+  - path: "packages/cli/tests/commands/run.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/_capture.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/forensics.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/init/assets-capture-hooks.test.ts"
+    action: create
+  - path: "packages/cli/tests/data/pricing.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/artifact-module-churn.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/work-proof-process.test.ts"
+    action: create
