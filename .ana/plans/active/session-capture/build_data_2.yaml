@@ -12,7 +12,7 @@ concerns:
     file: "packages/cli/src/commands/init/assets.ts"
     severity: debt
     suggested_action: monitor
-  - summary: "ProcessAttestation selects the newest worktree-matched buffer record (deterministic by timestamp). When both build and verify sessions match, the newer (often verify) wins, so attestation.role may be 'verify' rather than 'build'. Provenance is still correct; the role label reflects the selected session."
+  - summary: "ProcessAttestation now carries ALL matching sessions (process.sessions[], one SessionProvenance per role/attempt) rather than the newest, preserving the per-role dataset. Deterministic order (timestamp, then role). Human-approved deviation; supersedes the earlier newest-record-only design."
     file: "packages/cli/src/commands/work-proof.ts"
     severity: observation
     suggested_action: acknowledge
