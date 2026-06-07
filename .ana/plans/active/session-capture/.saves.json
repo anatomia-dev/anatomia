@@ -51,5 +51,20 @@
     "packages/cli/tests/commands/run.test.ts",
     "packages/cli/tests/utils/forensics.test.ts"
   ],
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at_1": "2026-06-07T22:14:22.116Z",
+  "verify_agent_1": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:130cc607fb298032b71120b7eec56a5a6a8989fb184482e6df58dae2844edc0f",
+    "run_at": "2026-06-07T22:20:22.765Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-07T22:20:22.799Z",
+    "hash": "sha256:f03de33e3d240edcb7d30d8db65a04fe801ccc4d95da96bbc60f65e5e7288ad4"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-07T22:20:22.799Z",
+    "hash": "sha256:ca819e28f003b280ef62637a7c65dc562d5049e8c92da720e0947daa081d4a6b"
+  }
 }

@@ -1,0 +1,42 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude"
+    file: "packages/cli/tests/commands/init/assets-capture-hooks.test.ts"
+    line: 91
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A019", "A021", "A022"]
+  - category: code
+    summary: "Codex config.toml [features] hooks=true is written only when the file is absent — a customer with a pre-existing .codex/config.toml that lacks the flag, turning capture on, gets hooks.json but no enablement, so the SessionStart hook silently never fires"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 823
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A019"]
+  - category: code
+    summary: "pruneCaptureHook leaves empty hook-event arrays — a project whose only SessionStart entry was ours becomes \"SessionStart\": [] after flip-off (harmless cruft, no hook fires)"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 705
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A021"]
+  - category: test
+    summary: "A013 no-network is a static source-scan (asserts no network-module imports / no fetch() in the capture source), not a runtime network counter — would not catch network I/O reached via an already-imported transitive module. Spec-sanctioned enforcement approach; low risk given capture path is fs+os only"
+    file: "packages/cli/tests/commands/_capture.test.ts"
+    line: 156
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A013"]
+  - category: code
+    summary: "Empirical cwd/slug checkpoint from spec-1 (confirm real cwd of an ana run build/verify launch) has no in-repo evidence. Slug resolves via detectWorktreeSlug(projectRoot), unit-tested with a worktree-meta fixture; clean-degrade (empty slug) covers the worst case regardless"
+    file: "packages/cli/src/commands/run.ts"
+    line: 132
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A005", "A006"]
+  - category: upstream
+    summary: "run.ts active finding codex-support-C7 (TOML mode field is dead data) is outside this build's env-injection change and was not regressed"
+    file: "packages/cli/src/commands/run.ts"
+    severity: observation
+    suggested_action: monitor
