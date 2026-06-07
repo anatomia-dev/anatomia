@@ -50830,6 +50830,325 @@
         "base_commit": "8ffecf73c74c2199d75ae1e03d029861bc8760a8"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "simplify-seal-and-test-core",
+      "feature": "Simplify ana test to its load-bearing core (deterministic seal)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 25,
+        "satisfied": 25,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The seal is built from a fixed, predictable summary of the test result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The same test result always produces the exact same seal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The seal's fingerprint can be recomputed from the result it reports",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A different test result produces a different seal fingerprint",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The seal no longer reports raw-output byte and line counts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The seal no longer reports a raw-output line total",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The seal still carries stage, slug, counts, verdict, and a fingerprint",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A correctly-formed new seal is recognized as a real seal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A seal with a malformed fingerprint is rejected, not trusted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A seal missing its fingerprint is rejected, not trusted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A passing test run still produces a sealed result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A failing test run reports a test failure, not a capture error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A command that needs a shell is refused as a capture error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "With no surface named, the project-wide test command is used",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Verify seals a verify-stage result even when a surface is named",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Build agents no longer tell agents to wrap every test in a checkpoint command",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Build agents still mint the final build seal with ana test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Verify agents still run a full independent re-run sealed with ana test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Verify agents no longer route a focused checkpoint command through ana test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Agent seal descriptions no longer mention byte and line totals",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The shipped and in-repo Codex build agent are kept identical",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The shipped and in-repo Codex verify agent are kept identical",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A build report carrying a valid new-shape seal passes the save gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "A build report with no seal is blocked from saving",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "A seal shown only as a fenced example does not satisfy the gate",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 14,
+        "met": 14
+      },
+      "timing": {
+        "total_minutes": 620,
+        "think": 542,
+        "plan": 19,
+        "build": 20,
+        "verify": 10
+      },
+      "hashes": {
+        "scope": "sha256:20b492247501d9d7d4f667635c074188445972ba39516a107557e83a2d9eb7cf",
+        "contract": "sha256:c740b894512d8184eefa264540093ffe64e15f27866439731eaf8db68782cc92",
+        "plan": "sha256:5b83dc045f9ab11058083e1a5dad57c96e56e32610b6081cfc7195c8e997a6af",
+        "spec": "sha256:ba263e434e150de41acba5aa19936cf6be2b2a5ecaca54fd98e68d2c55332d50",
+        "build-report": "sha256:0bf1baf3f336b108a45d5bdc80d943f6a358ea42ef7ba130926bea74a84311eb",
+        "build-data": "sha256:4d26d32527f28885be859f7a430732b8e0540126abac320955b2e6f5a86883e4",
+        "verify-report": "sha256:bf09c78a283f478ac101222f23309a2a98a47b6643dbd064c515bd78f934d771",
+        "verify-data": "sha256:67dc2dafab8a44fdbe57b7a90874e8c3d1bceae683fa506cc724e812256df5ff"
+      },
+      "completed_at": "2026-06-07T07:24:30.828Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-build.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/test.ts",
+        "packages/cli/src/utils/capture-marker.ts",
+        "packages/cli/src/utils/capture-runner.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-build.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/template-capture-instruction.test.ts",
+        "packages/cli/tests/commands/test-command.test.ts",
+        "packages/cli/tests/templates/codex-learn-template.test.ts",
+        "packages/cli/tests/utils/capture-marker.test.ts",
+        "packages/cli/tests/utils/capture-runner.test.ts"
+      ],
+      "scope_summary": "Strip `ana test` down to the mechanical spine that the product actually needs, and fix the one defect in that spine: the seal is not deterministic.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes omits packages/cli/tests/commands/artifact.test.ts, which the build necessarily modified (the marker() factory no longer accepts bytes/lines, and an old-format @ana test depended on the retired shape)",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A023",
+            "A024",
+            "A025"
+          ],
+          "id": "simplify-seal-and-test-core-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-07T07:24:30.828Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Checkpoint machinery deletion resolves two prior proof-chain findings: isCheckpointSealConflict over-build and the checkpoint-passthrough argv-quoting loss are both removed, not patched",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "compact-capture-seal-C5",
+            "captured-test-evidence-C2"
+          ],
+          "id": "simplify-seal-and-test-core-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-07T07:24:30.828Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "test.ts top docstring says verify 'resolves the top-level commands.test' but the implementation resolves via resolveTestCommandString, which prefers commands.test_json when present — the named field is imprecise",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "line": 16,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A015"
+          ],
+          "id": "simplify-seal-and-test-core-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "'Verify runs the full project' is config-dependent: on this repo top-level test_json scopes to packages/cli, so a --stage verify seal covers the CLI suite only and excludes the website package. Matches spec's accepted resolution rules; reader could over-read 'full project'",
+          "file": "packages/cli/src/commands/test.ts",
+          "anchor": null,
+          "line": 170,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "simplify-seal-and-test-core-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Dropping required `lines` widens the accepted-seal grammar: any well-formed five-field line outside a fence now parses as a real seal (verbatim-paste forgery surface). Recorded-not-guarded per spec; deferred to the reserved enginebind token",
+          "file": "packages/cli/src/utils/capture-marker.ts",
+          "anchor": null,
+          "line": 201,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A008"
+          ],
+          "id": "simplify-seal-and-test-core-C5",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "capture-runner.test.ts tee test adds a redundant weaker follow-up (toBeGreaterThan(0)) right after a specific toBe(11) on the same value; the specific assertion already covers it",
+          "file": "packages/cli/tests/utils/capture-runner.test.ts",
+          "anchor": null,
+          "line": 128,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "simplify-seal-and-test-core-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts:198 — NOT introduced by this build (file is outside the diff); noted so it is not mistaken for a regression",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "anchor": null,
+          "line": 198,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "simplify-seal-and-test-core-C7",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Globally-installed `ana` is stale and still emits old bytes/lines markers; the sealed build marker came from the locally-built dist. Verify must seal via the worktree's local CLI, not the global `ana`.",
+          "file": "packages/cli/src/commands/test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "@ana tag id-space restarts per contract, so tags like A011 appear in multiple unrelated test files; coverage grep is ambiguous across contracts. Pre-existing convention, not introduced here.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Net -5 tests after removing the checkpoint/conflict/bytes/lines machinery; spec did not pin a fixed total. Recorded for transparency.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "artifact.test.ts was modified though not listed in the spec File Changes — a necessary consequence of removing bytes/lines from CaptureMarker (typecheck:tests caught it) plus a now-parseable old-format gate-block fixture.",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "severity": "debt",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-07T06:43:47.644Z",
+        "completed_at": "2026-06-07T07:24:30.821Z",
+        "commit_count": 0,
+        "base_commit": "d070e7bcd654f8c1f922c1f553474eed8c7b990b"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

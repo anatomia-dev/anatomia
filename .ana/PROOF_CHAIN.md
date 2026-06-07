@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-190 runs · 185 active · 5 promoted · 897 closed
+191 runs · 190 active · 5 promoted · 899 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 35 | 37 | 2026-06-06 |
-| cli | 131 | 125 | 2026-06-06 |
+| cli | 132 | 130 | 2026-06-07 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 185 total)
+## Active Findings (30 shown of 190 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -43,6 +43,8 @@
 
 ### packages/cli/src/commands/test.ts
 
+- **code:** test.ts top docstring says verify 'resolves the top-level commands.test' but the implementation resolves via resolveTestCommandString, which prefers commands.test_json when present — the named field is imprecise — *Simplify ana test to its load-bearing core (deterministic seal)*
+- **code:** 'Verify runs the full project' is config-dependent: on this repo top-level test_json scopes to packages/cli, so a --stage verify seal covers the CLI suite only and excludes the website package. Matches spec's accepted resolution rules; reader could over-read 'full project' — *Simplify ana test to its load-bearing core (deterministic seal)*
 - **code:** isCheckpointSealConflict over-builds beyond this contract: it refuses an explicit --stage build/verify run through the -- <command> checkpoint form. Well-implemented and tested, and aligns with the anti-fabrication intent, but it is not part of the compact-capture-seal scope — it arrived via the merged sibling branch PR #281. — *Compact the capture seal + fix the count*
 - **code:** Checkpoint passthrough is joined with spaces and re-parsed by resolveCommand, losing original argv quoting. A multi-token checkpoint command whose args contain spaces/parens/metacharacters is misparsed or refused (verified live: parens in an arg triggered a subshell refusal). Mitigated by degrade-to-raw so it never blocks, but counts/verdict are lost. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 - **code:** inferRunner has a garbled inline comment about cargo/go precedence ('cargo test contains the substring go test… not, but be explicit'). Cosmetic; logic is correct (cargo checked before go). — *Captured Test Evidence — engine-captured, seal-gated test evidence*
@@ -54,16 +56,19 @@
 ### packages/cli/src/engine/detectors/surfaces.ts
 
 - **code:** Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops — *Fix non-product path over-exclusion at deep segments*
-- **code:** resolveViteFramework only handles 4 framework deps — Preact, Qwik, and other Vite-based frameworks return null — *Fix Vite Framework Detection and Service Detection Gaps*
-- **code:** Signal 2 (apps/ directory) does not apply the library guard — a library package under apps/ with vite.config.ts and hasMain would still be detected as surface — *Fix Vite Framework Detection and Service Detection Gaps*
 
 ### packages/cli/src/utils/capture-marker.ts
 
+- **code:** Dropping required `lines` widens the accepted-seal grammar: any well-formed five-field line outside a fence now parses as a real seal (verbatim-paste forgery surface). Recorded-not-guarded per spec; deferred to the reserved enginebind token — *Simplify ana test to its load-bearing core (deterministic seal)*
 - **code:** validateCapturePresent uses parseMarkers (per-line scan) which does NOT skip inlined block content, unlike the integrity validators that use eachMarker. A capture marker embedded in preserved output could falsely satisfy 'present.' Harmless when a real top-level marker exists; the asymmetry is worth recording. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
 ### packages/cli/src/utils/capture-runner.ts
 
 - **code:** deriveCounts falls through to every parser when no hint matches; the rspec parser regex /(\d+) examples?, (\d+) failures?/ is loose enough to match unrelated output, risking a false count (and a false 'pass' when passed>0 at exit 0) on an unknown runner. Counts are fail-open by design, but a coincidental match defeats ABSTAIN-ON-UNKNOWN for that input. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
+
+### packages/cli/src/utils/git-operations.ts
+
+- **code:** Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts:198 — NOT introduced by this build (file is outside the diff); noted so it is not mistaken for a regression — *Simplify ana test to its load-bearing core (deterministic seal)*
 
 ### packages/cli/tests/capture-corpus/invariants.test.ts
 
@@ -79,11 +84,6 @@
 - **test:** `tools` config-key preservation is untested — CLAUDE_AGENT_CONFIG_KEYS includes 'tools' but no test sets a tools frontmatter key and asserts it survives re-init; only `model` (A004) is exercised — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
 - **test:** CLAUDE.md overwrite-of-a-user-edit is not directly tested — A007 is verified only by presence of interpolation; no test mutates CLAUDE.md body then proves re-init resets it to stock — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
 - **test:** Changed-files warning test (A014) does not assert the exact set — it checks ana-build.md present and CLAUDE.md absent, but an unchanged agent erroneously appearing in the warning would not be caught — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
-
-### packages/cli/tests/commands/scan.test.ts
-
-- **test:** git init without -b main in contributor display test — *Fix scan display accuracy — env hygiene false positive and contributor label*
-- **test:** A005 tests singular form only — contract value 'active contributors' (plural) not directly verified because test has 1 contributor — *Fix scan display accuracy — env hygiene false positive and contributor label*
 
 ### packages/cli/tests/commands/template-capture-instruction.test.ts
 
@@ -101,9 +101,9 @@
 
 - **test:** @ana tag namespace collision — surfaces.test.ts carries A001-A027 tags from 3+ prior contracts, making per-contract tag lookup ambiguous — *Fix non-product path over-exclusion at deep segments*
 
-### packages/cli/tests/engine/scan-engine-secrets.test.ts
+### packages/cli/tests/utils/capture-runner.test.ts
 
-- **test:** git init without -b main in both new test files — CI runners with different init.defaultBranch may fail — *Fix scan display accuracy — env hygiene false positive and contributor label*
+- **test:** capture-runner.test.ts tee test adds a redundant weaker follow-up (toBeGreaterThan(0)) right after a specific toBe(11) on the same value; the specific assertion already covers it — *Simplify ana test to its load-bearing core (deterministic seal)*
 
 ### General
 
