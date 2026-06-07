@@ -16,12 +16,17 @@
 
 import { Command } from 'commander';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
+import { globSync } from 'glob';
 import {
   appendSessionRecord,
   buildSessionRecord,
+  deriveTranscript,
   isProcessCaptureEnabled,
   parseHookPayload,
+  updateSessionRecord,
+  type HookPayload,
 } from '../utils/forensics.js';
 
 /** Upper bound on the stdin read — keeps the hook well under the sub-300ms budget. */
@@ -129,6 +134,87 @@ export async function executeCapture(): Promise<void> {
 }
 
 /**
+ * Detect which harness produced a session, for the derive branch.
+ *
+ * Prefers the injected `ANA_HARNESS` env; falls back to the transcript path
+ * shape (Codex rollouts live under `.codex/` and are named `rollout-*.jsonl`).
+ * Defaults to `'claude'`.
+ *
+ * @param env - Process environment
+ * @param transcriptPath - The resolved transcript path
+ * @returns The harness name (`'claude'` | `'codex'`)
+ */
+function detectHarness(env: Record<string, string | undefined>, transcriptPath: string): string {
+  const fromEnv = env['ANA_HARNESS'];
+  if (fromEnv) return fromEnv;
+  if (transcriptPath.includes(`${path.sep}.codex${path.sep}`) || /rollout-.*\.jsonl$/.test(transcriptPath)) {
+    return 'codex';
+  }
+  return 'claude';
+}
+
+/**
+ * Resolve the transcript path for the derive, with a Codex glob fallback.
+ *
+ * Claude SessionEnd delivers `transcript_path` directly. Codex `Stop` may not, so
+ * we glob `$CODEX_HOME/sessions/**\/rollout-*-<session_id>.jsonl` (the filename
+ * UUID equals the session id — confirmed against a real rollout). Returns `''`
+ * when nothing resolves.
+ *
+ * @param env - Process environment
+ * @param payload - The narrowed hook payload
+ * @returns The transcript path, or `''` if unresolvable
+ */
+function resolveTranscriptPath(env: Record<string, string | undefined>, payload: HookPayload): string {
+  if (payload.transcript_path && payload.transcript_path.length > 0) return payload.transcript_path;
+  const sessionId = payload.session_id;
+  if (!sessionId) return '';
+  try {
+    const codexHome = env['CODEX_HOME'] && env['CODEX_HOME'].length > 0
+      ? env['CODEX_HOME']
+      : path.join(os.homedir(), '.codex');
+    const matches = globSync(`sessions/**/rollout-*-${sessionId}.jsonl`, { cwd: codexHome, absolute: true });
+    return matches[0] ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Execute the end-of-session derive: read the finished transcript, compute
+ * provenance counts, and write them back into the matching buffer record.
+ *
+ * Triggered by the SessionEnd (Claude) / Stop (Codex) hook. TOTAL by
+ * construction — no-ops on a missing project, gate off, unresolvable transcript,
+ * or unreadable transcript; never throws. No network. Provenance ONLY — never
+ * findings or verdicts.
+ */
+export async function executeDerive(): Promise<void> {
+  try {
+    const raw = await readStdin(STDIN_TIMEOUT_MS);
+    const payload = parseHookPayload(raw);
+
+    const startDir = payload.cwd && payload.cwd.length > 0 ? payload.cwd : process.cwd();
+    const projectRoot = findProjectRoot(startDir);
+    if (!projectRoot) return; // not a project → silent no-op
+    if (!isProcessCaptureEnabled(projectRoot)) return; // gate off → silent no-op
+
+    if (!payload.session_id) return; // cannot match a record without the id
+
+    const transcriptPath = resolveTranscriptPath(process.env, payload);
+    if (!transcriptPath) return; // nothing to derive from
+
+    const harness = detectHarness(process.env, transcriptPath);
+    const derived = deriveTranscript(transcriptPath, harness);
+    if (!derived) return; // dangling/unreadable → no-op
+
+    updateSessionRecord(payload.session_id, derived);
+  } catch {
+    // Total: every failure mode is swallowed. Teardown must not be disturbed.
+  }
+}
+
+/**
  * Register the hidden `ana _capture` command.
  *
  * Added with `{ hidden: true }` so it never appears in `ana --help`, and NOT
@@ -139,8 +225,15 @@ export async function executeCapture(): Promise<void> {
 export function registerCaptureCommand(program: Command): void {
   const captureCommand = new Command('_capture')
     .description('(internal) Capture a session provenance record')
-    .action(async () => {
-      await executeCapture();
+    .option('--derive', 'Derive provenance from a finished transcript (SessionEnd/Stop)')
+    .action(async (options: { derive?: boolean }) => {
+      // --derive (SessionEnd/Stop) → enrich the existing record; otherwise
+      // (SessionStart) → append a new pointer record. Both are total/exit 0.
+      if (options.derive) {
+        await executeDerive();
+      } else {
+        await executeCapture();
+      }
       // Total: always a clean exit, regardless of what happened above.
       process.exit(0);
     });

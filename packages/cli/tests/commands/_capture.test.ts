@@ -159,7 +159,10 @@ describe('ana _capture', () => {
     // only; this guards against a future edit introducing a network call.
     const captureSrc = fs.readFileSync(path.resolve(__dirname, '../../src/commands/_capture.ts'), 'utf-8');
     const forensicsSrc = fs.readFileSync(path.resolve(__dirname, '../../src/utils/forensics.ts'), 'utf-8');
-    const combined = captureSrc + '\n' + forensicsSrc;
+    // Phase 2: the derive path (deriveTranscript) lives in forensics.ts and the
+    // cost path in data/pricing.ts — both must also be network-free.
+    const pricingSrc = fs.readFileSync(path.resolve(__dirname, '../../src/data/pricing.ts'), 'utf-8');
+    const combined = captureSrc + '\n' + forensicsSrc + '\n' + pricingSrc;
 
     const networkPatterns = [
       /from\s+['"]node:https?['"]/,
@@ -173,5 +176,134 @@ describe('ana _capture', () => {
     for (const pattern of networkPatterns) {
       expect(combined).not.toMatch(pattern);
     }
+  });
+
+  // ── Phase 2: SessionEnd/Stop derive mode (--derive) ──────────────────────
+  describe('--derive (SessionEnd/Stop)', () => {
+    /** Seed the forensics buffer under tmpHome with one record. */
+    function seedRecord(home: string, record: Record<string, unknown>): void {
+      const bufferPath = path.join(home, '.ana', 'forensics', 'sessions.jsonl');
+      fs.mkdirSync(path.dirname(bufferPath), { recursive: true });
+      fs.appendFileSync(bufferPath, JSON.stringify(record) + '\n', 'utf-8');
+    }
+
+    /** A minimal Phase-1 record (no derived block yet). */
+    function pointerRecord(sessionId: string, transcriptPath: string): Record<string, unknown> {
+      return {
+        session_id: sessionId,
+        transcript_path: transcriptPath,
+        harness: 'claude',
+        harness_version: '',
+        role: 'think',
+        slug: '',
+        model: 'claude-opus-4-6',
+        agent_def_hash: '',
+        cli_version: '',
+        cwd: projectDir,
+        source: 'startup',
+        os: 'darwin',
+        node: 'v20',
+        timestamp: '2026-06-01T00:00:00.000Z',
+      };
+    }
+
+    /** Write a tiny Claude transcript with known token counts. */
+    function writeTranscript(): string {
+      const p = path.join(projectDir, 'transcript.jsonl');
+      const lines = [
+        {
+          type: 'assistant',
+          requestId: 'req_1',
+          timestamp: '2026-06-01T00:00:00.000Z',
+          message: {
+            model: 'claude-opus-4-6',
+            usage: { input_tokens: 700, output_tokens: 200, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+            content: [],
+          },
+        },
+      ];
+      fs.writeFileSync(p, lines.map((l) => JSON.stringify(l)).join('\n') + '\n', 'utf-8');
+      return p;
+    }
+
+    /** Run `ana _capture --derive` against the compiled CLI. */
+    function runDerive(stdin: string, home: string): { status: number } {
+      const result = spawnSync('node', [CLI_PATH, '_capture', '--derive'], {
+        input: stdin,
+        cwd: projectDir,
+        env: { ...process.env, HOME: home },
+        encoding: 'utf-8',
+      });
+      return { status: result.status ?? 1 };
+    }
+
+    /** Read the single buffer record under a home. */
+    function readRecord(home: string): Record<string, unknown> {
+      const bufferPath = path.join(home, '.ana', 'forensics', 'sessions.jsonl');
+      return JSON.parse(fs.readFileSync(bufferPath, 'utf-8').trim());
+    }
+
+    // @ana A034
+    it('writes derived counts back into the matching record (async, exit 0)', () => {
+      writeProject('on');
+      const transcript = writeTranscript();
+      seedRecord(tmpHome, pointerRecord('sess-1', transcript));
+
+      const payload = JSON.stringify({ session_id: 'sess-1', transcript_path: transcript, cwd: projectDir, hook_event_name: 'SessionEnd' });
+      const { status } = runDerive(payload, tmpHome);
+
+      expect(status).toBe(0);
+      const rec = readRecord(tmpHome);
+      expect(rec['derived']).toBeDefined();
+      const derived = rec['derived'] as Record<string, unknown>;
+      expect((derived['tokens'] as Record<string, number>)['input']).toBe(700);
+      expect(derived['model']).toBe('claude-opus-4-6');
+    });
+
+    // @ana A035
+    it('persists no raw transcript body in the enriched record', () => {
+      writeProject('on');
+      const transcript = writeTranscript();
+      seedRecord(tmpHome, pointerRecord('sess-1', transcript));
+
+      const payload = JSON.stringify({ session_id: 'sess-1', transcript_path: transcript, cwd: projectDir });
+      runDerive(payload, tmpHome);
+
+      const rec = readRecord(tmpHome);
+      // The only added key is `derived`, which holds counts — never message text.
+      const derived = rec['derived'] as Record<string, unknown>;
+      expect(Object.keys(derived).sort()).toEqual(
+        ['commands_run', 'cost_usd', 'duration_ms', 'failures_encountered', 'files_touched', 'model', 'price_table_version', 'tests_executed', 'tokens', 'tool_calls', 'turns'].sort(),
+      );
+    });
+
+    it('no-ops and exits 0 when the gate is off', () => {
+      writeProject('off');
+      const transcript = writeTranscript();
+      seedRecord(tmpHome, pointerRecord('sess-1', transcript));
+
+      const payload = JSON.stringify({ session_id: 'sess-1', transcript_path: transcript, cwd: projectDir });
+      const { status } = runDerive(payload, tmpHome);
+
+      expect(status).toBe(0);
+      expect(readRecord(tmpHome)['derived']).toBeUndefined();
+    });
+
+    it('no-ops and exits 0 when the transcript is missing', () => {
+      writeProject('on');
+      seedRecord(tmpHome, pointerRecord('sess-1', path.join(projectDir, 'gone.jsonl')));
+
+      const payload = JSON.stringify({ session_id: 'sess-1', transcript_path: path.join(projectDir, 'gone.jsonl'), cwd: projectDir });
+      const { status } = runDerive(payload, tmpHome);
+
+      expect(status).toBe(0);
+      expect(readRecord(tmpHome)['derived']).toBeUndefined();
+    });
+
+    it('exits 0 on malformed stdin', () => {
+      writeProject('on');
+      const { status } = runDerive('not json {{{', tmpHome);
+      expect(status).toBe(0);
+    });
   });
 });

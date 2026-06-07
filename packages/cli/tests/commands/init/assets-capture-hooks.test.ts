@@ -21,6 +21,7 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const cliPath = path.join(__dirname, '..', '..', '..', 'dist', 'index.js');
 
 const CAPTURE_COMMAND = 'ana _capture';
+const CAPTURE_DERIVE_COMMAND = 'ana _capture --derive';
 const USER_COMMAND = 'echo my-user-hook';
 
 /** Hook entry shape used by Claude/Codex settings. */
@@ -37,6 +38,16 @@ function hookCommands(settings: Record<string, unknown>): string[] {
     for (const entry of hooks[event] ?? []) {
       for (const h of entry.hooks ?? []) cmds.push(h.command);
     }
+  }
+  return cmds;
+}
+
+/** Collect the hook commands under a single named event. */
+function eventCommands(settings: Record<string, unknown>, event: string): string[] {
+  const hooks = (settings['hooks'] ?? {}) as Record<string, HookEntry[]>;
+  const cmds: string[] = [];
+  for (const entry of hooks[event] ?? []) {
+    for (const h of entry.hooks ?? []) cmds.push(h.command);
   }
   return cmds;
 }
@@ -63,6 +74,8 @@ describe('install-time capture gating (built CLI)', () => {
   let onCommands: string[];
   let onTwiceCommands: string[];
   let offCommands: string[];
+  let onSettings: Record<string, unknown>;
+  let offSettings: Record<string, unknown>;
 
   const settingsPath = (): string => path.join(tmpDir, '.claude', 'settings.json');
 
@@ -127,7 +140,8 @@ describe('install-time capture gating (built CLI)', () => {
     await seedUserHook();
     await setProcessCapture('on');
     await runInit();
-    onCommands = hookCommands(await readSettings());
+    onSettings = await readSettings();
+    onCommands = hookCommands(onSettings);
 
     // 3. Re-init again with capture still on → idempotent (no duplicate hook).
     await runInit();
@@ -136,7 +150,8 @@ describe('install-time capture gating (built CLI)', () => {
     // 4. Flip processCapture off, re-init → capture hook pruned, user hook kept.
     await setProcessCapture('off');
     await runInit();
-    offCommands = hookCommands(await readSettings());
+    offSettings = await readSettings();
+    offCommands = hookCommands(offSettings);
   }, 120000);
 
   afterAll(async () => {
@@ -170,5 +185,154 @@ describe('install-time capture gating (built CLI)', () => {
   // @ana A022
   it('pruning the capture hook leaves user-authored hooks intact', () => {
     expect(offCommands).toContain(USER_COMMAND);
+  });
+
+  // ── Phase 2: the SessionEnd derive hook + its prune extension ──────────────
+
+  it('capture on installs the SessionEnd derive hook (Claude)', () => {
+    expect(eventCommands(onSettings, 'SessionEnd')).toContain(CAPTURE_DERIVE_COMMAND);
+  });
+
+  it('capture off prunes the SessionEnd derive hook too', () => {
+    expect(offCommands).not.toContain(CAPTURE_DERIVE_COMMAND);
+    expect(eventCommands(offSettings, 'SessionEnd')).not.toContain(CAPTURE_DERIVE_COMMAND);
+  });
+
+  it('the SessionStart hook stays the plain capture command (not the derive)', () => {
+    expect(eventCommands(onSettings, 'SessionStart')).toContain(CAPTURE_COMMAND);
+    expect(eventCommands(onSettings, 'SessionStart')).not.toContain(CAPTURE_DERIVE_COMMAND);
+  });
+});
+
+/**
+ * Codex install/prune coverage (delta #3 — Phase 1 tested `--platforms claude`
+ * only). Exercises hooks.json SessionStart + Stop, the prune extension, and the
+ * config.toml merge fix (delta #2).
+ */
+describe('install-time capture gating — Codex (built CLI)', () => {
+  let tmpDir: string;
+  let onHooks: Record<string, HookEntry[]>;
+  let onConfig: string;
+  let offHooks: Record<string, HookEntry[]>;
+
+  const USER_CONFIG = '# user codex config\n[history]\npersistence = "save-all"\n';
+
+  const hooksPath = (): string => path.join(tmpDir, '.codex', 'hooks.json');
+  const configPath = (): string => path.join(tmpDir, '.codex', 'config.toml');
+
+  async function setupProject(dir: string): Promise<void> {
+    await fs.writeFile(
+      path.join(dir, 'package.json'),
+      JSON.stringify({
+        name: 'codex-gate-fixture',
+        version: '1.0.0',
+        devDependencies: { vitest: '2.0.0', typescript: '5.7.0' },
+        scripts: { build: 'tsc', test: 'vitest run', lint: 'eslint .' },
+      }),
+    );
+    await fs.writeFile(path.join(dir, 'tsconfig.json'), '{}');
+    await fs.mkdir(path.join(dir, 'src'), { recursive: true });
+    await fs.writeFile(path.join(dir, 'src', 'index.ts'), 'export const x = 1;\n');
+    await fs.writeFile(path.join(dir, '.gitignore'), 'node_modules\n');
+    await execFileAsync('git', ['init', '-b', 'main'], { cwd: dir });
+    await execFileAsync('git', ['config', 'user.email', 'test@test.com'], { cwd: dir });
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: dir });
+    await execFileAsync('git', ['add', '-A'], { cwd: dir });
+    await execFileAsync('git', ['commit', '-m', 'init'], { cwd: dir });
+  }
+
+  async function runInitCodex(): Promise<void> {
+    await execFileAsync('node', [cliPath, 'init', '--force', '--platforms', 'codex'], { cwd: tmpDir });
+  }
+
+  async function setProcessCapture(value: 'on' | 'off'): Promise<void> {
+    const anaJsonPath = path.join(tmpDir, '.ana', 'ana.json');
+    const anaJson = JSON.parse(await fs.readFile(anaJsonPath, 'utf-8'));
+    anaJson['processCapture'] = value;
+    await fs.writeFile(anaJsonPath, JSON.stringify(anaJson, null, 2), 'utf-8');
+  }
+
+  async function readHooks(): Promise<Record<string, HookEntry[]>> {
+    try {
+      return JSON.parse(await fs.readFile(hooksPath(), 'utf-8'));
+    } catch {
+      return {}; // off-path fresh install never writes hooks.json
+    }
+  }
+
+  function eventCmds(hooks: Record<string, HookEntry[]>, event: string): string[] {
+    const cmds: string[] = [];
+    for (const entry of hooks[event] ?? []) {
+      for (const h of entry.hooks ?? []) cmds.push(h.command);
+    }
+    return cmds;
+  }
+
+  function allCmds(hooks: Record<string, HookEntry[]>): string[] {
+    return Object.keys(hooks).flatMap((e) => eventCmds(hooks, e));
+  }
+
+  /** Seed a user-authored hook into hooks.json under SessionStart. */
+  async function seedUserHook(): Promise<void> {
+    const hooks = await readHooks();
+    hooks['SessionStart'] = [
+      ...(hooks['SessionStart'] ?? []),
+      { hooks: [{ type: 'command', command: USER_COMMAND }] },
+    ];
+    await fs.writeFile(hooksPath(), JSON.stringify(hooks, null, 2), 'utf-8');
+  }
+
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-codex-gate-'));
+    await setupProject(tmpDir);
+
+    // 1. Fresh init (default off) — creates .codex + ana.json.
+    await runInitCodex();
+
+    // 2. Pre-seed a user config.toml WITHOUT the hooks flag (delta #2 scenario)
+    //    and a user-authored hook, flip capture on, re-init.
+    await fs.writeFile(configPath(), USER_CONFIG, 'utf-8');
+    await seedUserHook();
+    await setProcessCapture('on');
+    await runInitCodex();
+    onHooks = await readHooks();
+    onConfig = await fs.readFile(configPath(), 'utf-8');
+
+    // 3. Flip off, re-init → capture hooks pruned, user hook kept.
+    await setProcessCapture('off');
+    await runInitCodex();
+    offHooks = await readHooks();
+  }, 120000);
+
+  afterAll(async () => {
+    if (tmpDir) await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  it('capture on installs the SessionStart capture hook (Codex)', () => {
+    expect(eventCmds(onHooks, 'SessionStart')).toContain(CAPTURE_COMMAND);
+  });
+
+  it('capture on installs the Stop derive hook (Codex)', () => {
+    expect(eventCmds(onHooks, 'Stop')).toContain(CAPTURE_DERIVE_COMMAND);
+  });
+
+  it('installing the Codex hooks preserves user-authored hooks', () => {
+    expect(allCmds(onHooks)).toContain(USER_COMMAND);
+  });
+
+  it('merges the [features] hooks flag into a pre-existing config.toml (delta #2)', () => {
+    expect(onConfig).toMatch(/hooks\s*=\s*true/);
+    // The user's own config is preserved, not clobbered.
+    expect(onConfig).toContain('persistence = "save-all"');
+  });
+
+  it('capture off prunes both the SessionStart and Stop capture hooks', () => {
+    const cmds = allCmds(offHooks);
+    expect(cmds).not.toContain(CAPTURE_COMMAND);
+    expect(cmds).not.toContain(CAPTURE_DERIVE_COMMAND);
+  });
+
+  it('pruning the Codex hooks leaves user-authored hooks intact', () => {
+    expect(allCmds(offHooks)).toContain(USER_COMMAND);
   });
 });

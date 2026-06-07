@@ -660,8 +660,34 @@ function hookEntryMatches(a: HookEntry, b: HookEntry): boolean {
  */
 const CAPTURE_HOOK_COMMAND = 'ana _capture';
 
+/**
+ * The end-of-session derive command (Phase 2) — runs `deriveTranscript` on the
+ * finished transcript. Installed under SessionEnd (Claude) / Stop (Codex).
+ */
+const CAPTURE_DERIVE_COMMAND = 'ana _capture --derive';
+
 /** The SessionStart hook event Anatomia installs the capture hook under. */
 const CAPTURE_HOOK_EVENT = 'SessionStart';
+
+/** The end-of-session hook event for Claude (Phase 2 derive). */
+const CAPTURE_END_EVENT_CLAUDE = 'SessionEnd';
+
+/** The end-of-session hook event for Codex (Phase 2 derive). */
+const CAPTURE_END_EVENT_CODEX = 'Stop';
+
+/**
+ * Whether a hook command is one of Anatomia's machine-owned capture commands.
+ *
+ * Matches both `ana _capture` (SessionStart) and `ana _capture --derive`
+ * (SessionEnd/Stop), so the prune removes BOTH on flip-off — but never a
+ * user-authored command that merely starts with a different word.
+ *
+ * @param command - The hook command string
+ * @returns True if this is an Anatomia capture command
+ */
+function isCaptureCommand(command: string): boolean {
+  return command === CAPTURE_HOOK_COMMAND || command.startsWith(`${CAPTURE_HOOK_COMMAND} `);
+}
 
 /**
  * Inject the `ana _capture` SessionStart hook into a settings object.
@@ -677,14 +703,28 @@ function injectCaptureHook(settings: Record<string, unknown>): void {
     settings['hooks'] = {};
   }
   const hooks = settings['hooks'] as Record<string, unknown>;
-  const event = (hooks[CAPTURE_HOOK_EVENT] as HookEntry[] | undefined) ?? [];
-  const already = event.some((e) =>
-    (e.hooks || []).some((h) => h.command === CAPTURE_HOOK_COMMAND)
-  );
+  injectHookEvent(hooks, CAPTURE_HOOK_EVENT, CAPTURE_HOOK_COMMAND);
+  // Phase 2: the SessionEnd derive hook, banking non-work sessions' counts.
+  injectHookEvent(hooks, CAPTURE_END_EVENT_CLAUDE, CAPTURE_DERIVE_COMMAND);
+}
+
+/**
+ * Idempotently add a capture hook command under a hook event in a hooks object.
+ *
+ * Dedup-safe — does nothing if an entry with the command already exists under the
+ * event. Mutates `hooks` in place.
+ *
+ * @param hooks - The `hooks` object (event → entries[])
+ * @param event - The hook event name (e.g. `SessionStart`)
+ * @param command - The hook command to ensure is present
+ */
+function injectHookEvent(hooks: Record<string, unknown>, event: string, command: string): void {
+  const entries = (hooks[event] as HookEntry[] | undefined) ?? [];
+  const already = entries.some((e) => (e.hooks || []).some((h) => h.command === command));
   if (!already) {
-    event.push({ hooks: [{ type: 'command', command: CAPTURE_HOOK_COMMAND }] });
+    entries.push({ hooks: [{ type: 'command', command }] });
   }
-  hooks[CAPTURE_HOOK_EVENT] = event;
+  hooks[event] = entries;
 }
 
 /**
@@ -713,7 +753,7 @@ function pruneCaptureHook(settings: Record<string, unknown>): Record<string, unk
       continue;
     }
     prunedHooks[event] = (arr as HookEntry[]).filter(
-      (entry) => !(entry.hooks || []).some((h) => h.command === CAPTURE_HOOK_COMMAND)
+      (entry) => !(entry.hooks || []).some((h) => isCaptureCommand(h.command))
     );
   }
   result['hooks'] = prunedHooks;
@@ -805,26 +845,17 @@ async function applyCodexCaptureHooks(
   }
 
   if (captureOn) {
-    // Merge the capture hook under SessionStart (dedup by command).
-    const event = (hooksObj[CAPTURE_HOOK_EVENT] as HookEntry[] | undefined) ?? [];
-    const already = event.some((e) =>
-      (e.hooks || []).some((h) => h.command === CAPTURE_HOOK_COMMAND)
-    );
-    if (!already) {
-      event.push({ hooks: [{ type: 'command', command: CAPTURE_HOOK_COMMAND }] });
-    }
-    hooksObj[CAPTURE_HOOK_EVENT] = event;
+    // Merge the capture hooks: SessionStart (pointer) + Stop (Phase-2 derive),
+    // dedup by command, preserving any user-authored hooks.
+    injectHookEvent(hooksObj, CAPTURE_HOOK_EVENT, CAPTURE_HOOK_COMMAND);
+    injectHookEvent(hooksObj, CAPTURE_END_EVENT_CODEX, CAPTURE_DERIVE_COMMAND);
     await fs.writeFile(hooksPath, JSON.stringify(hooksObj, null, 2), 'utf-8');
 
-    // Ensure config.toml enables hooks. Only write when absent so we never
-    // mangle a user-authored TOML (documented limitation).
-    if (!(await fileExists(configPath))) {
-      const templateConfig = await fs.readFile(
-        path.join(templatesDir, '.codex/config.toml'),
-        'utf-8',
-      );
-      await fs.writeFile(configPath, templateConfig, 'utf-8');
-    }
+    // Ensure config.toml enables hooks. Idempotently MERGE the `[features]
+    // hooks = true` flag into an existing TOML (delta #2 — Verify flagged that a
+    // pre-existing config.toml without the flag silently disabled the hook),
+    // without mangling the user's other config.
+    await ensureCodexHooksFlag(configPath, templatesDir);
     return;
   }
 
@@ -832,6 +863,54 @@ async function applyCodexCaptureHooks(
   if (!(await fileExists(hooksPath))) return; // nothing installed → nothing to prune
   const prunedHooks = (pruneCaptureHook({ hooks: hooksObj })['hooks']) as Record<string, unknown>;
   await fs.writeFile(hooksPath, JSON.stringify(prunedHooks, null, 2), 'utf-8');
+}
+
+/**
+ * Ensure `.codex/config.toml` enables lifecycle hooks (`[features] hooks = true`).
+ *
+ * Delta #2 (human-approved fix): the previous code only wrote config.toml when it
+ * was ABSENT, so a pre-existing TOML lacking the flag got a hooks.json whose hooks
+ * never fired (silent degrade — Verify flagged this). This idempotently MERGES the
+ * flag into an existing file without mangling the user's other config:
+ *  - file absent → write the stock template;
+ *  - `hooks = true` already present → no-op;
+ *  - a `hooks =` key present but not `true` → set it to `true`;
+ *  - `[features]` section present without a `hooks` key → insert the key under it;
+ *  - otherwise → append a `[features]` section.
+ *
+ * @param configPath - Path to `.codex/config.toml`
+ * @param templatesDir - Path to the CLI templates directory
+ */
+async function ensureCodexHooksFlag(configPath: string, templatesDir: string): Promise<void> {
+  if (!(await fileExists(configPath))) {
+    const templateConfig = await fs.readFile(path.join(templatesDir, '.codex/config.toml'), 'utf-8');
+    await fs.writeFile(configPath, templateConfig, 'utf-8');
+    return;
+  }
+
+  let content = await fs.readFile(configPath, 'utf-8');
+
+  // Already enabled → nothing to do.
+  if (/^\s*hooks\s*=\s*true\s*$/m.test(content)) return;
+
+  // A `hooks =` key exists but isn't `true` → flip it (preserves the rest).
+  if (/^\s*hooks\s*=.*$/m.test(content)) {
+    content = content.replace(/^(\s*hooks\s*=\s*).*$/m, '$1true');
+    await fs.writeFile(configPath, content, 'utf-8');
+    return;
+  }
+
+  // A `[features]` section exists without a hooks key → insert under the header.
+  if (/^\s*\[features\]\s*$/m.test(content)) {
+    content = content.replace(/^(\s*\[features\]\s*)$/m, '$1\nhooks = true');
+    await fs.writeFile(configPath, content, 'utf-8');
+    return;
+  }
+
+  // No `[features]` section at all → append one (don't disturb existing config).
+  const sep = content.endsWith('\n') ? '' : '\n';
+  content = `${content}${sep}\n[features]\nhooks = true\n`;
+  await fs.writeFile(configPath, content, 'utf-8');
 }
 
 /**
