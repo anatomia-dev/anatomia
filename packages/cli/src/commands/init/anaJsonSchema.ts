@@ -106,6 +106,13 @@ export const AnaJsonSchema = z
       .enum(['on', 'off'])
       .optional()
       .catch(undefined),
+    // No `.default` — same migration-safe posture as captureGate. Absent must
+    // stay `undefined` so it survives re-init untouched and reads as off (the
+    // customer default). The default-off is emitted by createAnaJson, not here.
+    processCapture: z
+      .enum(['on', 'off'])
+      .optional()
+      .catch(undefined),
     lastScanAt: z.string().nullable().optional().default(null).catch(null),
     custom: z.record(z.string(), z.unknown()).optional().default({}).catch({}),
   })
