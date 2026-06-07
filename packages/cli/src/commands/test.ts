@@ -3,16 +3,17 @@
  *
  * Runs the project's test command through the shell-free capturing runner
  * (array-arg spawn, NO shell), tees the full raw bytes to a per-slug capture
- * file, hashes + counts them, DELETES the log, and prints a single COMPACT
- * marker line the agent pastes into the build report. Nothing is inlined at
- * save; the one-line marker (counts + verdict + sha256 + byte/line totals) is
- * the whole sealed account, and a present-check is the only save-time gate.
+ * file, derives counts + a verdict, DELETES the log, and prints a single COMPACT
+ * marker line the agent pastes into the build report. The marker's sha256 is
+ * computed over a canonical, deterministic summary of the RESULT
+ * (`stage|slug|counts|verdict`) — NOT the raw runner bytes — so the same outcome
+ * always seals a byte-identical marker. Nothing is inlined at save; the one-line
+ * marker (counts + verdict + sha256) is the whole sealed account, and a
+ * present-check is the only save-time gate.
  *
- *   - Baseline (no `-- <command>`): runs the configured command, emits the
- *     SEALED marker. Capture/seal failures exit with a distinct code 3.
- *   - Checkpoint (`-- <command...>`): captures an arbitrary Plan-authored
- *     command, but DEGRADES to raw on any capture bug and never blocks — it
- *     exits with the underlying test status and emits no sealed marker.
+ * `--stage build` resolves the configured command (per-surface when `--surface`
+ * is given, else top-level); `--stage verify` always resolves the top-level
+ * `commands.test` and runs the full project, ignoring `--surface`.
  *
  * Exit-code contract: 0 = tests ran (verdict pass/abstain); 1 = tests failed
  * (verdict fail); 3 = capture/seal error (resolveCommand refusal, spawnSync
@@ -22,7 +23,6 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { findProjectRoot } from '../utils/validators.js';
@@ -37,7 +37,7 @@ import {
   type TestCounts,
   type CaptureVerdict,
 } from '../utils/capture-runner.js';
-import { formatMarker, formatCounts, countLines, type CaptureStage } from '../utils/capture-marker.js';
+import { formatMarker, formatCounts, captureSha, type CaptureStage } from '../utils/capture-marker.js';
 
 /** Distinct exit code for a capture/seal failure (never "tests failed"). */
 export const CAPTURE_ERROR_EXIT = 3;
@@ -51,28 +51,20 @@ interface TestOptions {
 
 /** The data outcome of a capture run — no chalk, no process.exit. */
 export interface TestRunOutcome {
-  mode: 'baseline' | 'checkpoint';
   /** Process exit code the caller should use. */
   exitCode: number;
-  /** A capture bug forced a fall back to raw output (checkpoint only). */
-  degradedToRaw: boolean;
   /** A capture/seal error message, when the run failed to capture. */
   captureError?: string | undefined;
-  bytes?: number | undefined;
-  /** Count of newline bytes in the captured output. */
-  lines?: number | undefined;
   sha256?: string | undefined;
   counts: TestCounts | null;
   verdict?: CaptureVerdict | undefined;
-  /** The sealed marker (baseline success only). */
+  /** The sealed marker (success only). */
   marker?: string | undefined;
   /**
-   * A discoverability hint, set only when the baseline abstained for lack of a
+   * A discoverability hint, set only when the run abstained for lack of a
    * machine-readable reporter AND `test_json` was not the resolved source.
    */
   countHint?: string | undefined;
-  /** Raw captured text, for checkpoint/degrade display. */
-  rawText?: string | undefined;
 }
 
 /** Parameters for {@link executeCapture}. */
@@ -80,8 +72,6 @@ export interface ExecuteCaptureParams {
   stage: CaptureStage;
   slug: string;
   surface?: string | undefined;
-  /** The `-- <command...>` tokens; presence selects checkpoint mode. */
-  passthrough?: string[] | undefined;
   /** Project root (the directory holding `.ana/`). */
   projectRoot: string;
   /** Epoch seconds for the capture filename (injected for testability). */
@@ -139,8 +129,8 @@ export function inferRunner(cmdString: string): KnownRunner | undefined {
   if (lower.includes('vitest')) return 'vitest';
   if (lower.includes('jest')) return 'jest';
   if (lower.includes('pytest')) return 'pytest';
-  // Check cargo before go: "cargo test" contains the substring "go test"… not,
-  // but be explicit about precedence anyway.
+  // Check cargo before go: "cargo test" does not contain "go test", but be
+  // explicit about precedence anyway.
   if (lower.includes('cargo')) return 'cargo';
   if (lower.includes('go test')) return 'go';
   if (lower.includes('rspec')) return 'rspec';
@@ -148,42 +138,14 @@ export function inferRunner(cmdString: string): KnownRunner | undefined {
   return KNOWN_RUNNERS.find((r) => lower.includes(r));
 }
 
-/** The pipeline stages whose baseline form seals evidence into a report. */
-const SEALING_STAGES = new Set<CaptureStage>(['build', 'verify']);
-
 /**
- * Detect the always-wrong combination of an explicitly-named sealing stage and
- * the checkpoint passthrough form.
+ * Map a capture/seal failure to the baseline fail-closed (exit 3) outcome.
  *
- * `--stage build`/`--stage verify` signal "seal a result", but a `-- <command>`
- * passthrough runs the checkpoint path, which by design NEVER seals. The two
- * together can only mislead — the engine emits no marker and the operator is
- * left to reconcile a sealing intent with a non-sealing run. That gap is exactly
- * how a hand-fabricated seal slipped in. We refuse the input outright rather
- * than warn, because the missing-marker signal is the very thing that was
- * rationalized past.
- *
- * Fires ONLY when the stage was given on the CLI (source is neither the default
- * nor unknown); a bare `ana test -- <cmd>` is a legitimate checkpoint and must
- * not trip the guard. Keyed off {@link SEALING_STAGES} so a future non-sealing
- * stage is excluded automatically.
- *
- * @param stage - The normalized capture stage
- * @param stageSource - commander's `getOptionValueSource('stage')` ('default' | 'cli' | …)
- * @param passthrough - The `-- <command...>` tokens
- * @returns True when the run should be refused
+ * @param message - The capture/seal error message
+ * @returns The fail-closed outcome
  */
-export function isCheckpointSealConflict(
-  stage: CaptureStage,
-  stageSource: string | undefined,
-  passthrough: string[],
-): boolean {
-  return (
-    passthrough.length > 0 &&
-    !!stageSource &&
-    stageSource !== 'default' &&
-    SEALING_STAGES.has(stage)
-  );
+function failClosed(message: string): TestRunOutcome {
+  return { exitCode: CAPTURE_ERROR_EXIT, counts: null, captureError: message };
 }
 
 /**
@@ -193,65 +155,40 @@ export function isCheckpointSealConflict(
  * @returns The capture outcome and the exit code the caller should use
  */
 export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
-  const mode: TestRunOutcome['mode'] = params.passthrough && params.passthrough.length > 0 ? 'checkpoint' : 'baseline';
-
-  // 1. Resolve the command shell-free; keep a string for runner inference.
-  let resolved: ResolvedCommand;
-  let runnerSource: string;
-  // Which config key the baseline command came from — null for a checkpoint.
-  // Drives the abstain discoverability hint (fires only when NOT 'test_json').
-  let commandSource: TestCommandSource | null = null;
-  if (mode === 'checkpoint') {
-    const argv = params.passthrough!;
-    runnerSource = argv.join(' ');
-    if (argv.length === 1) {
-      // A single passthrough token may be a config-style command — including a
-      // `(cd '<dir>' && <cmd>)` wrapper — so parse it shell-free.
-      try {
-        resolved = resolveCommand(argv[0]!, params.projectRoot);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return failOrDegrade(mode, message, null);
-      }
-    } else {
-      // Already-tokenized argv from the invoking shell. Use it VERBATIM — never
-      // re-join + re-parse. The string parser is for ana.json's config string;
-      // re-tokenizing real argv silently loses quoting on args like
-      // `-k "a or b"`, which would split into separate tokens and change which
-      // tests run (and thus the sealed count).
-      resolved = { program: argv[0]!, args: argv.slice(1), env: {}, cwd: params.projectRoot };
-    }
-  } else {
-    const anaJsonPath = path.join(params.projectRoot, '.ana', 'ana.json');
-    let anaJson: Record<string, unknown>;
-    try {
-      anaJson = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8')) as Record<string, unknown>;
-    } catch {
-      return { mode, exitCode: CAPTURE_ERROR_EXIT, degradedToRaw: false, counts: null, captureError: 'could not read .ana/ana.json.' };
-    }
-    const resolvedCmd = resolveTestCommandString(anaJson, params.surface);
-    if (!resolvedCmd) {
-      const where = params.surface ? `surface "${params.surface}"` : 'top-level commands.test';
-      return { mode, exitCode: CAPTURE_ERROR_EXIT, degradedToRaw: false, counts: null, captureError: `no test command configured for ${where}.` };
-    }
-    runnerSource = resolvedCmd.command;
-    commandSource = resolvedCmd.source;
-    // Resolve shell-free (throws CaptureCommandError on a refusal).
-    try {
-      resolved = resolveCommand(resolvedCmd.command, params.projectRoot);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return failOrDegrade(mode, message, null);
-    }
+  // 1. Read ana.json and resolve the command shell-free.
+  const anaJsonPath = path.join(params.projectRoot, '.ana', 'ana.json');
+  let anaJson: Record<string, unknown>;
+  try {
+    anaJson = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8')) as Record<string, unknown>;
+  } catch {
+    return failClosed('could not read .ana/ana.json.');
   }
 
-  // Identify the runner once, from the command — used for count derivation in
-  // BOTH modes. Checkpoints get counts too (they previously abstained because
-  // no hint was inferred); unknown runners still abstain (deriveCounts is
-  // hint-only).
+  // Verify runs the FULL project: it always resolves the top-level command and
+  // ignores `--surface` (no caller scopes a verify re-run to one surface, and a
+  // guard would be surface for nothing). Build honors `--surface`.
+  const effectiveSurface = params.stage === 'verify' ? undefined : params.surface;
+  const resolvedCmd = resolveTestCommandString(anaJson, effectiveSurface);
+  if (!resolvedCmd) {
+    const where = effectiveSurface ? `surface "${effectiveSurface}"` : 'top-level commands.test';
+    return failClosed(`no test command configured for ${where}.`);
+  }
+  const runnerSource = resolvedCmd.command;
+  const commandSource = resolvedCmd.source;
+
+  let resolved: ResolvedCommand;
+  try {
+    resolved = resolveCommand(resolvedCmd.command, params.projectRoot);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return failClosed(message);
+  }
+
+  // Identify the runner from the command — drives count derivation. Unknown
+  // runners abstain (deriveCounts is hint-only).
   const runner = inferRunner(runnerSource);
 
-  // 3. Prepare the sink and run the capture (throws on spawn/maxBuffer/timeout).
+  // 2. Prepare the sink and run the capture (throws on spawn/maxBuffer/timeout).
   const slugDir = path.join(params.projectRoot, '.ana', 'plans', 'active', params.slug);
   const capturesDir = path.join(slugDir, '.captures');
   fs.mkdirSync(capturesDir, { recursive: true });
@@ -263,52 +200,35 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
     result = runCapture({ program: resolved.program, args: resolved.args, cwd: resolved.cwd, env: resolved.env, sink });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failOrDegrade(mode, message, null);
+    return failClosed(message);
   }
 
-  // 4. Derive counts + verdict from the captured bytes (in memory).
+  // 3. Derive counts + verdict from the captured bytes (in memory).
   const counts = deriveCounts(result.rawBytes, runner);
   const verdict = deriveVerdict(counts, result.exitCode);
   const testExit = verdict === 'fail' ? 1 : 0;
-  const lines = countLines(result.rawBytes);
 
-  // 5. Delete the .log now — the bytes are hashed + counted from memory, so the
-  // on-disk log is scratch with nothing left to do. Deleting here (not at save)
-  // is self-cleaning: an unsaved or abandoned run never orphans a log. The
-  // `.captures/` gitignore only backs up the brief in-run window + a crash here.
-  // No size ceiling: the seal is one line regardless of output size, and
-  // runCapture's 64 MiB maxBuffer is the sole (fail-closed) size guard.
+  // 4. Delete the .log now — counts are derived from memory and the seal is over
+  // the canonical result summary, so the on-disk log is scratch with nothing
+  // left to do. Deleting here (not at save) is self-cleaning: an unsaved or
+  // abandoned run never orphans a log.
   try {
     fs.rmSync(sink, { force: true });
   } catch {
-    // Best-effort — the gitignore rule is the backstop for a failed unlink.
+    // Best-effort — the `.captures/` gitignore rule is the backstop.
   }
 
-  if (mode === 'checkpoint') {
-    // Checkpoints never seal — they degrade to raw by design and exit with the
-    // underlying test status. rawText stays in memory for the display.
-    return {
-      mode,
-      exitCode: testExit,
-      degradedToRaw: false,
-      counts,
-      verdict,
-      bytes: result.bytes,
-      lines,
-      rawText: result.rawBytes.toString('utf8'),
-    };
-  }
-
-  // 6. Baseline — seal the COMPACT marker (no inlined block, no file path).
-  const sha = createHash('sha256').update(result.rawBytes).digest('hex');
+  // 5. Seal the COMPACT marker. The sha256 is computed over the canonical RESULT
+  // summary (stage|slug|counts|verdict) via the shared `captureSha`, so the same
+  // outcome always seals a byte-identical marker.
+  const countsStr = formatCounts(counts);
+  const sha = captureSha({ stage: params.stage, slug: params.slug, counts: countsStr, verdict });
   const marker = formatMarker({
     stage: params.stage,
     slug: params.slug,
-    counts: formatCounts(counts),
+    counts: countsStr,
     verdict,
     sha256: sha,
-    bytes: result.bytes,
-    lines,
   });
 
   // Discoverability hint: we abstained on the count AND the command did not come
@@ -320,53 +240,12 @@ export function executeCapture(params: ExecuteCaptureParams): TestRunOutcome {
       : undefined;
 
   return {
-    mode,
     exitCode: testExit,
-    degradedToRaw: false,
     counts,
     verdict,
-    bytes: result.bytes,
-    lines,
     sha256: sha,
     marker,
     countHint,
-  };
-}
-
-/**
- * Map a capture/seal failure to a baseline fail-closed (exit 3) or a checkpoint
- * degrade-to-raw (never blocks).
- *
- * @param mode - baseline or checkpoint
- * @param message - The capture/seal error message
- * @param partial - Optional captured data to carry into a degrade
- * @returns The outcome
- */
-function failOrDegrade(
-  mode: TestRunOutcome['mode'],
-  message: string,
-  partial: { counts: TestCounts | null; rawText?: string; bytes?: number } | null,
-): TestRunOutcome {
-  if (mode === 'baseline') {
-    return {
-      mode,
-      exitCode: CAPTURE_ERROR_EXIT,
-      degradedToRaw: false,
-      counts: partial?.counts ?? null,
-      captureError: message,
-      bytes: partial?.bytes,
-    };
-  }
-  // Checkpoint: degrade to raw, never block. Exit with the underlying status
-  // (we have no clean verdict here, so a capture problem reads as a failure).
-  return {
-    mode,
-    exitCode: 1,
-    degradedToRaw: true,
-    counts: partial?.counts ?? null,
-    captureError: message,
-    rawText: partial?.rawText,
-    bytes: partial?.bytes,
   };
 }
 
@@ -382,7 +261,7 @@ function printOutcome(outcome: TestRunOutcome, json: boolean): void {
     return;
   }
 
-  if (outcome.captureError && !outcome.degradedToRaw) {
+  if (outcome.captureError) {
     console.error(chalk.red(`✗ CAPTURE error: ${outcome.captureError}`));
     if (outcome.exitCode === CAPTURE_ERROR_EXIT) {
       console.error(chalk.gray('  (exit 3 — a capture/seal error, NOT a test failure)'));
@@ -394,21 +273,7 @@ function printOutcome(outcome: TestRunOutcome, json: boolean): void {
     ? `${outcome.counts.passed} passed, ${outcome.counts.failed} failed, ${outcome.counts.skipped} skipped`
     : 'abstain';
 
-  if (outcome.degradedToRaw) {
-    console.warn(chalk.yellow(`⚠ checkpoint capture degraded to raw — ${outcome.captureError ?? 'capture problem'}`));
-    if (outcome.rawText) console.log(outcome.rawText);
-    return;
-  }
-
-  if (outcome.mode === 'checkpoint') {
-    console.log(chalk.green(`✓ checkpoint  counts: ${countsLabel}  (verdict: ${outcome.verdict})`));
-    console.log(chalk.gray(`  ${outcome.bytes} bytes / ${outcome.lines} lines captured (log deleted after sealing)`));
-    return;
-  }
-
-  // Baseline success.
   console.log(chalk.green(`✓ captured  counts: ${countsLabel}  (verdict: ${outcome.verdict})`));
-  console.log(chalk.gray(`  ${outcome.bytes} bytes / ${outcome.lines} lines captured (log deleted after sealing)`));
   if (outcome.countHint) console.log(chalk.cyan(`  ℹ ${outcome.countHint}`));
   console.log('');
   console.log('  Paste this marker into build_report.md:');
@@ -418,11 +283,9 @@ function printOutcome(outcome: TestRunOutcome, json: boolean): void {
 /**
  * The `ana test` action.
  *
- * @param passthrough - Tokens after `--` (checkpoint command)
  * @param options - Parsed flags
- * @param stageSource - commander's `getOptionValueSource('stage')`, to tell an explicit `--stage` from the default
  */
-function runTest(passthrough: string[], options: TestOptions, stageSource?: string): void {
+function runTest(options: TestOptions): void {
   if (!options.slug) {
     console.error(chalk.red('Error: --slug <slug> is required.'));
     console.error(chalk.gray('Run: ana test --stage build --slug <slug>'));
@@ -430,19 +293,6 @@ function runTest(passthrough: string[], options: TestOptions, stageSource?: stri
     return;
   }
   const stage: CaptureStage = options.stage === 'verify' ? 'verify' : 'build';
-
-  // Refuse an explicit sealing stage run through the non-sealing checkpoint
-  // form — an always-wrong combination that can only mislead.
-  if (isCheckpointSealConflict(stage, stageSource, passthrough)) {
-    console.error(
-      chalk.red(`✗ Refusing: \`--stage ${stage}\` seals evidence, but the \`-- <command>\` checkpoint form never seals.`),
-    );
-    console.error(chalk.gray('  This combination produces no seal — run one of the two correct forms instead:'));
-    console.error(chalk.gray(`    Sealed ${stage} result:  ana test --stage ${stage} --slug ${options.slug}   (no \`-- ...\`)`));
-    console.error(chalk.gray(`    Checkpoint:           ana test --slug ${options.slug} -- ${passthrough.join(' ')}   (drop --stage ${stage})`));
-    process.exit(1);
-    return;
-  }
 
   let projectRoot: string;
   try {
@@ -457,7 +307,6 @@ function runTest(passthrough: string[], options: TestOptions, stageSource?: stri
     stage,
     slug: options.slug,
     surface: options.surface,
-    passthrough,
     projectRoot,
     now: Math.floor(Date.now() / 1000),
   });
@@ -477,10 +326,9 @@ export function registerTestCommand(program: Command): void {
     .description('Run tests with engine-captured, seal-gated evidence')
     .option('--stage <stage>', 'Pipeline stage: build or verify', 'build')
     .option('--slug <slug>', 'Work item slug (required)')
-    .option('--surface <name>', 'Resolve the per-surface test command')
+    .option('--surface <name>', 'Resolve the per-surface test command (build stage only)')
     .option('--json', 'Output JSON for programmatic consumption')
-    .argument('[command...]', 'Optional checkpoint command after `--` (captured, never blocks)')
-    .action((command: string[], options: TestOptions, cmd: Command) => {
-      runTest(command ?? [], options, cmd.getOptionValueSource('stage'));
+    .action((options: TestOptions) => {
+      runTest(options);
     });
 }

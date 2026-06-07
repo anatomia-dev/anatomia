@@ -6,15 +6,14 @@ import {
   executeCapture,
   resolveTestCommandString,
   inferRunner,
-  isCheckpointSealConflict,
   CAPTURE_ERROR_EXIT,
 } from '../../src/commands/test.js';
 
 /**
  * `ana test` orchestrator tests — exit-code contract, the compact sealed marker
- * (counts/verdict/sha256/bytes/lines, no file), log deletion after sealing, the
- * abstain discoverability hint, the removed-ceiling seal, and the checkpoint
- * degrade-to-raw path. Tags map to the orchestrator-level contract assertions.
+ * (counts/verdict/sha256, no file), log deletion after sealing, the abstain
+ * discoverability hint, the removed-ceiling seal, and the verify-runs-full-
+ * project rule. Tags map to the orchestrator-level contract assertions.
  */
 
 const NODE = process.execPath;
@@ -46,38 +45,14 @@ afterEach(() => {
   }
 });
 
-describe('isCheckpointSealConflict', () => {
-  it('refuses an explicit --stage build with a passthrough (the incident form)', () => {
-    expect(isCheckpointSealConflict('build', 'cli', ['vitest', 'run'])).toBe(true);
-  });
-
-  it('refuses an explicit --stage verify with a passthrough (same class of contradiction)', () => {
-    expect(isCheckpointSealConflict('verify', 'cli', ['vitest', 'run'])).toBe(true);
-  });
-
-  it('allows a bare checkpoint — default stage + passthrough is legitimate', () => {
-    expect(isCheckpointSealConflict('build', 'default', ['vitest', 'run'])).toBe(false);
-  });
-
-  it('allows an explicit sealing stage with NO passthrough (the baseline seal)', () => {
-    expect(isCheckpointSealConflict('build', 'cli', [])).toBe(false);
-    expect(isCheckpointSealConflict('verify', 'cli', [])).toBe(false);
-  });
-
-  it('does not refuse when the stage source is unknown (no false positives)', () => {
-    expect(isCheckpointSealConflict('build', undefined, ['vitest'])).toBe(false);
-  });
-});
-
 describe('resolveTestCommandString', () => {
+  // @ana A014 — with no surface named, the top-level command resolves (source set).
   it('reads top-level commands.test and reports the source', () => {
-    expect(resolveTestCommandString({ commands: { test: 'vitest run' } }, undefined)).toEqual({
-      command: 'vitest run',
-      source: 'test',
-    });
+    const resolved = resolveTestCommandString({ commands: { test: 'vitest run' } }, undefined);
+    expect(resolved).toEqual({ command: 'vitest run', source: 'test' });
+    expect(resolved!.source).toBeDefined();
   });
 
-  // @ana A007 — prefers top-level test_json over test and reports source 'test_json'.
   it('prefers top-level commands.test_json over commands.test', () => {
     const ana = { commands: { test: 'vitest run', test_json: 'vitest run --reporter=json' } };
     expect(resolveTestCommandString(ana, undefined)).toEqual({
@@ -119,8 +94,8 @@ describe('executeCapture — baseline', () => {
     return path.join(root, '.ana', 'plans', 'active', slug, '.captures', `test-build-${now}.log`);
   }
 
-  // @ana A001, A002, A003 — a passing baseline emits a ONE-LINE compact marker
-  // that carries counts/verdict/sha256/bytes/lines and drops the file field.
+  // @ana A011 — a passing baseline emits a ONE-LINE compact marker carrying
+  // counts/verdict/sha256 and dropping the file field.
   it('emits a compact sealed marker on a passing baseline run (exit 0)', () => {
     const { root, slug } = mkProject('');
     // The script name carries the runner so inferRunner identifies it (counts
@@ -132,15 +107,14 @@ describe('executeCapture — baseline', () => {
     expect(outcome.captureError).toBeUndefined();
     expect(outcome.marker).toContain('ana:capture');
     expect(outcome.marker).toContain('verdict=pass');
-    expect(outcome.marker).toContain('lines=');
+    expect(outcome.marker).not.toContain('bytes=');
+    expect(outcome.marker).not.toContain('lines=');
     expect(outcome.marker!.includes('file=')).toBe(false);
     expect(outcome.marker!.split('\n')).toHaveLength(1);
-    expect(outcome.lines).toBe(1);
     expect(outcome.verdict).toBe('pass');
     expect(outcome.exitCode).toBe(0);
   });
 
-  // @ana A015 — the .captures log is deleted after the result is sealed.
   it('deletes the capture log after sealing the baseline marker', () => {
     const { root, slug } = mkProject('');
     const s = script(root, 'vitest-run.cjs', '      Tests  3 passed (3)\n', 0);
@@ -152,7 +126,6 @@ describe('executeCapture — baseline', () => {
     expect(fs.existsSync(logPath(root, slug, now))).toBe(false);
   });
 
-  // @ana A025 — abstaining WITHOUT a test_json source sets the discoverability hint.
   it('sets a countHint naming commands.test_json when abstaining without test_json', () => {
     const { root, slug } = mkProject('');
     // Unknown runner → counts abstain; command came from `test`, not `test_json`.
@@ -179,6 +152,7 @@ describe('executeCapture — baseline', () => {
     expect(outcome.countHint).toBeUndefined();
   });
 
+  // @ana A012 — a failing baseline reports a test failure (exit 1), not a capture error.
   it('exits 1 (not 3) when the baseline tests fail', () => {
     const { root, slug } = mkProject('');
     const s = script(root, 'fail.cjs', '      Tests  1 failed | 2 passed (3)\n', 1);
@@ -190,6 +164,7 @@ describe('executeCapture — baseline', () => {
     expect(outcome.marker).toContain('verdict=fail');
   });
 
+  // @ana A013 — a command that needs a shell is refused as a capture error (exit 3).
   it('exits 3 (capture error) when the configured command needs a shell', () => {
     const { root, slug } = mkProject('vitest run | tee out.txt');
     const outcome = executeCapture({ stage: 'build', slug, projectRoot: root, now: 1700000002 });
@@ -198,8 +173,6 @@ describe('executeCapture — baseline', () => {
     expect(outcome.marker).toBeUndefined();
   });
 
-  // @ana A027, A028 — a capture over the OLD 8 MiB ceiling still seals compactly
-  // and does NOT exit with the capture-error code (the ceiling was removed).
   it('still seals a capture larger than the old 8 MiB inline ceiling', () => {
     const { root, slug } = mkProject('');
     // Emit ~8.4 MiB — over the retired ceiling, well under the 64 MiB maxBuffer.
@@ -211,74 +184,30 @@ describe('executeCapture — baseline', () => {
     expect(outcome.exitCode).not.toBe(CAPTURE_ERROR_EXIT);
     expect(outcome.marker).toBeDefined();
     expect(outcome.marker).toContain('ana:capture');
-    expect(outcome.bytes).toBeGreaterThan(8 * 1024 * 1024);
   });
 });
 
-describe('executeCapture — checkpoint', () => {
-  it('degrades to raw and does NOT block on a checkpoint capture bug', () => {
+describe('executeCapture — verify runs the full project', () => {
+  // @ana A015 — verify seals a verify-stage marker resolved from the top-level
+  // command, ignoring --surface (ignore-and-run-full).
+  it('seals a stage=verify marker from the top-level command even when a surface is named', () => {
     const { root, slug } = mkProject('');
-    const outcome = executeCapture({
-      stage: 'build',
-      slug,
-      passthrough: ['definitely-not-a-real-binary-xyz123'],
-      projectRoot: root,
-      now: 1700000004,
-    });
-    expect(outcome.mode).toBe('checkpoint');
-    expect(outcome.degradedToRaw).toBe(true);
-    expect(outcome.exitCode).not.toBe(CAPTURE_ERROR_EXIT); // never the capture/seal code
-  });
+    const s = script(root, 'vitest-run.cjs', '      Tests  3 passed (3)\n', 0);
+    // The surface command would ENOENT if it were (wrongly) used; the top-level
+    // command runs cleanly, so a passing verify marker proves --surface is ignored.
+    fs.writeFileSync(
+      path.join(root, '.ana', 'ana.json'),
+      JSON.stringify({
+        name: 'd',
+        commands: { test: `${NODE} ${s}` },
+        surfaces: { cli: { commands: { test: 'definitely-not-a-real-binary-xyz123' } } },
+      }),
+    );
 
-  it('captures a clean checkpoint without sealing a marker', () => {
-    const { root, slug } = mkProject('');
-    const s = script(root, 'chk.cjs', 'Tests  2 passed (2)\n', 0);
-    const outcome = executeCapture({
-      stage: 'build',
-      slug,
-      passthrough: [`${NODE}`, s],
-      projectRoot: root,
-      now: 1700000005,
-    });
-    expect(outcome.mode).toBe('checkpoint');
-    expect(outcome.degradedToRaw).toBe(false);
-    expect(outcome.marker).toBeUndefined();
+    const outcome = executeCapture({ stage: 'verify', slug, surface: 'cli', projectRoot: root, now: 1700000020 });
+    expect(outcome.captureError).toBeUndefined();
+    expect(outcome.marker).toContain('stage=verify');
+    expect(outcome.verdict).toBe('pass');
     expect(outcome.exitCode).toBe(0);
-  });
-
-  it('passes a pre-tokenized argv through VERBATIM (no quoting loss)', () => {
-    const { root, slug } = mkProject('');
-    // Echo argv beyond `node <script>` as JSON, so we can prove a multi-word
-    // arg survived as ONE token instead of being re-split by the string parser.
-    const echo = path.join(root, 'echo-argv.cjs');
-    fs.writeFileSync(echo, 'process.stdout.write(JSON.stringify(process.argv.slice(2)));process.exit(0);');
-    const outcome = executeCapture({
-      stage: 'build',
-      slug,
-      passthrough: [NODE, echo, '-k', 'alpha and beta'],
-      projectRoot: root,
-      now: 1700000006,
-    });
-    expect(outcome.mode).toBe('checkpoint');
-    expect(outcome.degradedToRaw).toBe(false);
-    // The argv arrives intact; the old join(' ')+re-parse split it into
-    // ["-k","alpha","and","beta"], which this assertion would catch.
-    expect(outcome.rawText).toContain('["-k","alpha and beta"]');
-  });
-
-  it('infers a runner hint from a checkpoint command and derives counts', () => {
-    const { root, slug } = mkProject('');
-    // Name the runner in the command so inferRunner picks it up; vitest-shaped
-    // summary then yields a real count even on a checkpoint.
-    const vitestish = script(root, 'vitest', ' Test Files  1 passed (1)\n      Tests  2 passed (2)\n', 0);
-    const outcome = executeCapture({
-      stage: 'build',
-      slug,
-      passthrough: [NODE, vitestish],
-      projectRoot: root,
-      now: 1700000007,
-    });
-    expect(outcome.mode).toBe('checkpoint');
-    expect(outcome.counts).toEqual({ passed: 2, failed: 0, skipped: 0 });
   });
 });

@@ -3,25 +3,28 @@
  *
  * A "marker" is a single-line HTML comment the agent pastes into a build (or
  * verify) report. It is the COMPACT attestation of a captured test run: it
- * carries the counts, the verdict, a sha256 fingerprint of the captured output,
- * and the output's byte + line totals — but NOT the raw output itself. The raw
- * bytes are evidence; `ana test` hashes + counts them, then deletes the log.
+ * carries the counts, the verdict, and a sha256 fingerprint — but NOT the raw
+ * output itself. The fingerprint is computed over a canonical, deterministic
+ * summary of the RESULT (`stage | slug | counts | verdict`), not over the raw
+ * runner bytes, so the same outcome always mints a byte-identical marker.
  * Nothing is inlined at save time and nothing committed contains a verbatim
  * dump — the one-line marker is the whole sealed account.
  *
  * The marker is a CLOSED TOKEN. A line is a real marker only when, after
  * trimming, it is exactly `<!-- ana:capture … -->` with every required field
- * present and well-formed (notably a 64-char lowercase-hex `sha256` and a
- * required `lines` field), and only when it sits OUTSIDE a fenced code region.
- * This combination — full-line anchor + fenced-region skip + required `lines` —
- * is what keeps a prose description, a fenced example, or an old-format inlined
- * marker from being mistaken for a real seal. (A verbatim real marker pasted raw
- * into prose is a forgery surface consciously deferred to a future engine-bound
- * token; the reserved `enginebind` field is the plumbing for it.)
+ * present and well-formed (notably a 64-char lowercase-hex `sha256`), and only
+ * when it sits OUTSIDE a fenced code region. This combination — full-line anchor
+ * + fenced-region skip + a well-formed `sha256` — is what keeps a prose
+ * description or a fenced example from being mistaken for a real seal. (A
+ * verbatim real marker pasted raw into prose is a forgery surface consciously
+ * deferred to a future engine-bound token; the reserved `enginebind` field is
+ * the plumbing for it.)
  *
- * This module is pure: no chalk, no commander, no process.exit.
+ * This module is pure: no chalk, no commander, no process.exit. `node:crypto` is
+ * permitted — the canonical hash is computed here.
  */
 
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import type { CaptureVerdict, TestCounts } from './capture-runner.js';
 
@@ -40,12 +43,8 @@ export interface CaptureMarker {
   /** `Np/Nf/Ns` when counts were derived, or `abstain` when abstaining. */
   counts: string;
   verdict: CaptureVerdict;
-  /** Lowercase hex sha256 of the captured output bytes. */
+  /** Lowercase hex sha256 of the canonical result summary. */
   sha256: string;
-  /** Byte length of the captured output. */
-  bytes: number;
-  /** Count of newline (`0x0a`) bytes in the captured output. */
-  lines: number;
   /**
    * Reserved L3 engine-binding token. Plumbing only — the parser round-trips it
    * present and absent and builds no nonce/binding machinery. Its existence is
@@ -67,8 +66,6 @@ const FULL_LINE_MARKER = /^<!--\s*ana:capture\s+(.+?)\s*-->$/;
 const FENCE_LINE = /^\s*```/;
 /** A 64-char lowercase-hex sha256 — a plausible doc placeholder must fail this. */
 const HEX64 = /^[0-9a-f]{64}$/;
-/** Newline byte — `lines` counts these in the captured output. */
-const NL = 0x0a;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Marker formatting
@@ -85,24 +82,47 @@ export function formatCounts(counts: TestCounts | null): string {
   return `${counts.passed}p/${counts.failed}f/${counts.skipped}s`;
 }
 
+/** The deterministic result summary the seal is computed over. */
+export interface CanonicalCaptureInput {
+  stage: CaptureStage;
+  slug: string;
+  /** The `formatCounts(...)` string — `Np/Nf/Ns` or `abstain`. */
+  counts: string;
+  verdict: CaptureVerdict;
+}
+
 /**
- * Count newline bytes in a buffer — the marker's `lines` field.
+ * Serialize a result into its canonical, deterministic byte layout — the single
+ * source of truth the seal is hashed over. Field order is fixed
+ * (`stage`, `slug`, `counts`, `verdict`), each field is `key=value`, and fields
+ * are separated by a single newline. No value can contain a newline, so the form
+ * is unambiguous. `enginebind` does NOT participate — it is a dormant reserved
+ * field, not part of the result summary.
  *
- * @param raw - Captured output bytes
- * @returns The number of `0x0a` bytes
+ * @param input - The deterministic result fields
+ * @returns The canonical string `stage=…\nslug=…\ncounts=…\nverdict=…`
  */
-export function countLines(raw: Buffer): number {
-  let n = 0;
-  for (let i = 0; i < raw.length; i++) {
-    if (raw[i] === NL) n++;
-  }
-  return n;
+export function canonicalCaptureString(input: CanonicalCaptureInput): string {
+  return `stage=${input.stage}\nslug=${input.slug}\ncounts=${input.counts}\nverdict=${input.verdict}`;
+}
+
+/**
+ * Compute the seal's `sha256` over the canonical result summary. Determinism is
+ * structural: the same visible fields always hash to the same fingerprint, and
+ * the fingerprint is recomputable from the marker — it proves determinism and
+ * self-consistency, not forgery resistance.
+ *
+ * @param input - The deterministic result fields
+ * @returns Lowercase hex sha256 of `canonicalCaptureString(input)`
+ */
+export function captureSha(input: CanonicalCaptureInput): string {
+  return createHash('sha256').update(canonicalCaptureString(input), 'utf8').digest('hex');
 }
 
 /**
  * Render a capture marker as a single-line HTML comment. Field order is
- * `stage slug counts verdict sha256 bytes lines [enginebind]`; the reserved
- * `enginebind` is emitted only when present.
+ * `stage slug counts verdict sha256 [enginebind]`; the reserved `enginebind` is
+ * emitted only when present.
  *
  * @param marker - Marker fields to serialize
  * @returns The `<!-- ana:capture … -->` line
@@ -114,8 +134,6 @@ export function formatMarker(marker: CaptureMarker): string {
     `counts=${marker.counts}`,
     `verdict=${marker.verdict}`,
     `sha256=${marker.sha256}`,
-    `bytes=${marker.bytes}`,
-    `lines=${marker.lines}`,
   ];
   if (marker.enginebind !== undefined) parts.push(`enginebind=${marker.enginebind}`);
   return `<!-- ana:capture ${parts.join(' ')} -->`;
@@ -133,11 +151,10 @@ export function formatMarker(marker: CaptureMarker): string {
  *   - `slug`, `counts` non-empty
  *   - `verdict` ∈ {pass, fail, abstain}
  *   - `sha256` = 64 lowercase hex
- *   - `bytes`, `lines` = non-negative integers
  * Unknown keys are ignored (forward-compat); the reserved `enginebind` is
- * captured when present so it re-serializes unchanged. The required `lines`
- * field is the back-compat discriminator: an old-format marker (which has `file`
- * and no `lines`) fails here and is never accepted as a real seal.
+ * captured when present so it re-serializes unchanged. A well-formed `sha256` is
+ * the discriminator: a prose description or fenced placeholder fails the hex
+ * check and is never accepted as a real seal.
  *
  * @param line - A single report line (untrimmed)
  * @returns A typed marker, or null when the line is not a well-formed marker
@@ -168,15 +185,7 @@ function parseMarkerText(line: string): CaptureMarker | null {
   const sha256 = fields['sha256'];
   if (!sha256 || !HEX64.test(sha256)) return null;
 
-  const bytes = Number(fields['bytes']);
-  if (!Number.isInteger(bytes) || bytes < 0) return null;
-
-  // `lines` is REQUIRED — its absence is what makes an old-format marker fail.
-  if (!('lines' in fields)) return null;
-  const lines = Number(fields['lines']);
-  if (!Number.isInteger(lines) || lines < 0) return null;
-
-  const marker: CaptureMarker = { stage, slug, counts, verdict, sha256, bytes, lines };
+  const marker: CaptureMarker = { stage, slug, counts, verdict, sha256 };
   if ('enginebind' in fields) marker.enginebind = fields['enginebind']!;
   return marker;
 }

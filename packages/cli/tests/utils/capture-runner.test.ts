@@ -124,8 +124,8 @@ describe('runCapture — fail-closed tee', () => {
       cwd: process.cwd(),
       sink,
     });
-    expect(result.bytes).toBe(11);
-    expect(result.bytes).toBeGreaterThan(0);
+    expect(result.rawBytes.byteLength).toBe(11);
+    expect(result.rawBytes.byteLength).toBeGreaterThan(0);
     expect(result.usedShell).toBe(false);
     expect(fs.existsSync(sink)).toBe(true);
     expect(fs.readFileSync(sink)).toEqual(result.rawBytes);
