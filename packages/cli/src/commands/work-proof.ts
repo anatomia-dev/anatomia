@@ -46,9 +46,19 @@ type ModuleChurnMap = Record<string, { added: number; deleted: number }>;
  * @returns True if this record belongs to the work item
  */
 function recordBelongsToWorktree(record: SessionRecord, slug: string, worktreePath: string): boolean {
+  // Path-segment boundary for prefix comparison: a path matches the worktree
+  // only if it IS the worktree dir or sits strictly under it. Without this,
+  // `slug` greedily absorbs `slug-v2`'s sessions (…/worktrees/slug is a raw
+  // character-prefix of …/worktrees/slug-v2). Mirrors deriveSurface's
+  // trailing-slash precedent (see this file).
+  const worktreeWithSep = worktreePath + path.sep;
+  const isUnderWorktree = (p: string): boolean => p === worktreePath || p.startsWith(worktreeWithSep);
+
   if (record.slug && record.slug === slug) return true;
-  if (record.transcript_path && record.transcript_path.includes(worktreePath)) return true;
-  if (record.cwd && record.cwd.startsWith(worktreePath)) return true;
+  // transcript_path always points at a file, never the worktree dir itself, so
+  // require the trailing separator — a `slug-v2` transcript path cannot match `slug`.
+  if (record.transcript_path && record.transcript_path.includes(worktreeWithSep)) return true;
+  if (record.cwd && isUnderWorktree(record.cwd)) return true;
   // Fall back to the transcript's own cwd entries — robust for Build/Verify,
   // which start in the main repo and cd into the worktree mid-session.
   try {
@@ -64,7 +74,7 @@ function recordBelongsToWorktree(record: SessionRecord, slug: string, worktreePa
       }
       if (typeof parsed === 'object' && parsed !== null) {
         const cwd = (parsed as Record<string, unknown>)['cwd'];
-        if (typeof cwd === 'string' && cwd.startsWith(worktreePath)) return true;
+        if (typeof cwd === 'string' && isUnderWorktree(cwd)) return true;
       }
     }
   } catch {
@@ -90,7 +100,9 @@ function parseScopeSize(scopeContent: string): string {
  * Provenance ONLY (counts/cost/outcome/task-shape/churn) — never findings or
  * verdicts. Returns `null` (→ field omitted, proof still valid) when capture is
  * off, no session record matches the worktree, or the transcript is unreadable.
- * Among matching records the newest by `timestamp` wins (deterministic).
+ * ALL matching records are kept (one {@link SessionProvenance} per session —
+ * plan, every build rework cycle, verify), ordered deterministically by
+ * `timestamp` then `role`.
  *
  * @param projectRoot - Project root directory
  * @param slug - Work-item slug being completed

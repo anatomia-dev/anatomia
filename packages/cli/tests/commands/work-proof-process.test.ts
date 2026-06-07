@@ -234,6 +234,25 @@ describe('assembleProcessAttestation', () => {
     expect(att!.sessions.map((s) => s.session_id)).toContain('sess-feat');
   });
 
+  it('does NOT attribute a `<slug>-v2` session to `<slug>` (worktree prefix boundary)', () => {
+    // @ana A031 — regression: …/worktrees/feat is a raw char-prefix of
+    // …/worktrees/feat-v2. Without a path-segment boundary, the shorter slug
+    // greedily absorbs the longer slug's sessions, silently corrupting the
+    // per-role provenance dataset. The buffer holds ONLY a feat-v2 session.
+    writeAnaJson('on');
+    const v2Tx = writeRoleTranscript('feat-v2', 'build', 'claude-opus-4-6', 1000);
+    seedBuffer(roleRecord('build', 'claude-opus-4-6', 'sess-feat-v2', v2Tx, '2026-06-01T01:00:00.000Z'));
+
+    // Assembling for the SHORTER slug must find no matching session → null.
+    const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+    expect(att).toBeNull();
+
+    // And the feat-v2 session is still correctly attributed to feat-v2.
+    const v2Att = assembleProcessAttestation(projectRoot, 'feat-v2', makeProof(), churn, SCOPE, true);
+    expect(v2Att).not.toBeNull();
+    expect(v2Att!.sessions.map((s) => s.session_id)).toEqual(['sess-feat-v2']);
+  });
+
   it('captures ALL matching sessions with correct per-role metadata (DEVIATION)', () => {
     // @ana A031 — build + verify both present, each with its own model/role/counts.
     writeAnaJson('on');
