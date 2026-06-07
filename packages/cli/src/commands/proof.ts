@@ -436,20 +436,33 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
   // attestation is present. NEVER influences PASS/FAIL; it is pure provenance.
   if (entry.process) {
     const p = entry.process;
-    const d = p.derived;
     lines.push('');
     lines.push(chalk.bold('  Provenance'));
     lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
 
-    const modelShort = d.model.replace(/^claude-/, '').replace(/^gpt-/, 'gpt-');
+    // One line per session — preserves the per-role dataset (plan/build/verify
+    // and every build rework cycle).
+    for (const s of p.sessions) {
+      const d = s.derived;
+      const modelShort = d.model.replace(/^claude-/, '');
+      lines.push(
+        `  ${[s.harness, s.role, modelShort].filter(Boolean).join(' · ')}` +
+          `   ${d.turns} turns · ${d.tool_calls} tools` +
+          ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
+          ` · est. $${d.cost_usd.toFixed(2)}`,
+      );
+    }
+
+    // Work-item-level totals, once: combined cost + table version, then churn.
+    let totalCost = 0;
+    let tableVersion = '';
+    for (const s of p.sessions) {
+      totalCost += s.derived.cost_usd;
+      if (!tableVersion) tableVersion = s.derived.price_table_version;
+    }
     lines.push(
-      `  ${[p.harness, p.role, modelShort].filter(Boolean).join(' · ')}` +
-        `      ${d.turns} turns · ${d.tool_calls} tool calls`,
-    );
-    lines.push(
-      `  tokens  in ${formatTokenCount(d.tokens.input)} · out ${formatTokenCount(d.tokens.output)}` +
-        ` · cache ${formatTokenCount(d.tokens.cache_create + d.tokens.cache_read)}` +
-        `     est. $${d.cost_usd.toFixed(2)} (table ${d.price_table_version})`,
+      `  total   ${p.sessions.length} session${p.sessions.length === 1 ? '' : 's'}` +
+        ` · est. $${totalCost.toFixed(2)}${tableVersion ? ` (table ${tableVersion})` : ''}`,
     );
     const churnFiles = Object.keys(p.module_churn).length;
     if (churnFiles > 0) {

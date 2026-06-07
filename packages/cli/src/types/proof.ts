@@ -12,28 +12,44 @@ import type { ProofSummary } from '../utils/proofSummary.js';
 import type { ProvenanceCounts } from '../utils/forensics.js';
 
 /**
- * Session provenance attached to a completed proof entry (Phase 2).
+ * Provenance for ONE agent session that worked on a work item (Phase 2).
  *
- * Provenance ONLY — counts, cost, tokens, model, outcome joins, churn. This is
- * deliberately NOT the rule engine: no findings, no verdicts, no scoring. Every
- * field is a recomputable fact derived from the session transcript and the
- * already-assembled proof object. Attached optionally and never gating (see
- * {@link ProofChainEntry.process}).
+ * Provenance ONLY — identity + deterministic derived counts. One of these exists
+ * per matching session (plan, build, every build rework cycle, verify), so the
+ * per-role dataset is preserved rather than collapsed to a single session.
  */
-export interface ProcessAttestation {
-  /** Harness session id of the run that produced the work. */
-  session_id: string;
+export interface SessionProvenance {
+  /** Pipeline role (`plan` | `build` | `verify` | …). */
+  role: string;
   /** Harness the session ran on (`claude` | `codex`). */
   harness: string;
-  /** Pipeline role (`build` | `verify` | …). */
-  role: string;
+  /** The model that ran the session. */
+  model: string;
   /** sha256 of the resolved agent-def file at spawn time. */
   agent_def_hash: string;
   /** CLI version that spawned the agent. */
   cli_version: string;
-  /** Deterministic provenance counts derived from the transcript. */
+  /** Harness session id. */
+  session_id: string;
+  /** Deterministic provenance counts derived from this session's transcript. */
   derived: ProvenanceCounts;
-  /** Outcome joins read off the proof object being assembled. */
+}
+
+/**
+ * Session provenance attached to a completed proof entry (Phase 2).
+ *
+ * Provenance ONLY — counts, cost, tokens, model, outcome joins, churn. This is
+ * deliberately NOT the rule engine: no findings, no verdicts, no scoring. Every
+ * field is a recomputable fact derived from the session transcripts and the
+ * already-assembled proof object. Attached optionally and never gating (see
+ * {@link ProofChainEntry.process}).
+ *
+ * Carries ALL of the work item's matching sessions in {@link sessions} (one
+ * {@link SessionProvenance} each), with work-item-level joins (`outcome`,
+ * `task_shape`, `module_churn`) recorded once.
+ */
+export interface ProcessAttestation {
+  /** Outcome joins read off the proof object being assembled (work-item level). */
   outcome: {
     /** True when verification passed with zero rejection cycles. */
     first_pass_verify: boolean;
@@ -53,8 +69,14 @@ export interface ProcessAttestation {
     /** Whether this work item has more than one phase. */
     multi_phase: boolean;
   };
-  /** Per-file added/deleted churn read from `.saves.json`. */
+  /** Per-file added/deleted churn read from `.saves.json` (work-item level). */
   module_churn: Record<string, { added: number; deleted: number }>;
+  /**
+   * Every matching agent session for this work item — one per role/attempt,
+   * deterministically ordered (by timestamp, then role). Repeated build attempts
+   * from rejection cycles are kept: that rework is wanted data.
+   */
+  sessions: SessionProvenance[];
 }
 
 /**

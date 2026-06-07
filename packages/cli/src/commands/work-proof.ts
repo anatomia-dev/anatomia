@@ -12,7 +12,7 @@ import chalk from 'chalk';
 import { globSync } from 'glob';
 import { resolveFindingPaths, generateDashboard, computeChainHealth } from '../utils/proofSummary.js';
 import type { ProofSummary } from '../utils/proofSummary.js';
-import type { ProofChainEntry, ProofChain, ProofChainStats, ProcessAttestation } from '../types/proof.js';
+import type { ProofChainEntry, ProofChain, ProofChainStats, ProcessAttestation, SessionProvenance } from '../types/proof.js';
 import { agentCommand } from './platform.js';
 import { countPhases } from './work-state.js';
 import {
@@ -134,13 +134,30 @@ export function assembleProcessAttestation(
   const matches = records.filter((r) => recordBelongsToWorktree(r, slug, worktreePath));
   if (matches.length === 0) return null;
 
-  // Deterministic selection: newest timestamp wins (typically the final session).
-  matches.sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0));
-  const record = matches[0];
-  if (!record) return null;
+  // Deterministic order: by timestamp, then role. ALL matching sessions are kept
+  // — plan, build, every build rework cycle, verify — so the per-role dataset is
+  // preserved. Repeated build attempts from rejection cycles are wanted data.
+  matches.sort((a, b) => {
+    if (a.timestamp !== b.timestamp) return a.timestamp < b.timestamp ? -1 : 1;
+    return a.role < b.role ? -1 : a.role > b.role ? 1 : 0;
+  });
 
-  const derived = deriveTranscript(record.transcript_path, record.harness);
-  if (!derived) return null; // dangling transcript → field absent, proof still valid
+  const sessions: SessionProvenance[] = [];
+  for (const record of matches) {
+    const derived = deriveTranscript(record.transcript_path, record.harness);
+    if (!derived) continue; // dangling/unreadable transcript → skip that session
+    sessions.push({
+      role: record.role,
+      harness: record.harness,
+      model: record.model || derived.model,
+      agent_def_hash: record.agent_def_hash,
+      cli_version: record.cli_version,
+      session_id: record.session_id,
+      derived,
+    });
+  }
+  // Every matching transcript was unreadable → no provenance to attach.
+  if (sessions.length === 0) return null;
 
   const findings = { risk: 0, debt: 0, observation: 0 };
   for (const f of proof.findings) {
@@ -150,12 +167,6 @@ export function assembleProcessAttestation(
   }
 
   return {
-    session_id: record.session_id,
-    harness: record.harness,
-    role: record.role,
-    agent_def_hash: record.agent_def_hash,
-    cli_version: record.cli_version,
-    derived,
     outcome: {
       first_pass_verify: proof.rejection_cycles === 0,
       assertions_satisfied: proof.contract.satisfied,
@@ -168,6 +179,7 @@ export function assembleProcessAttestation(
       multi_phase: multiPhase,
     },
     module_churn: moduleChurn,
+    sessions,
   };
 }
 

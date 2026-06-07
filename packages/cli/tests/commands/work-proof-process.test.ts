@@ -81,6 +81,47 @@ describe('assembleProcessAttestation', () => {
     fs.appendFileSync(bufferPath, JSON.stringify(record) + '\n', 'utf-8');
   }
 
+  /** Write a worktree-cwd transcript with a given model + input tokens; returns the path. */
+  function writeRoleTranscript(slug: string, tag: string, model: string, inputTokens: number): string {
+    const worktree = path.join(projectRoot, '.ana', 'worktrees', slug);
+    const p = path.join(projectRoot, `transcript-${slug}-${tag}.jsonl`);
+    const lines = [
+      {
+        type: 'assistant',
+        requestId: `req-${tag}`,
+        timestamp: '2026-06-01T00:00:00.000Z',
+        cwd: worktree,
+        message: {
+          model,
+          usage: { input_tokens: inputTokens, output_tokens: 100, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+          content: [],
+        },
+      },
+    ];
+    fs.writeFileSync(p, lines.map((l) => JSON.stringify(l)).join('\n') + '\n', 'utf-8');
+    return p;
+  }
+
+  /** A session record (empty slug — the deviation case) for an arbitrary role/model. */
+  function roleRecord(role: string, model: string, sessionId: string, transcriptPath: string, timestamp: string): SessionRecord {
+    return {
+      session_id: sessionId,
+      transcript_path: transcriptPath,
+      harness: 'claude',
+      harness_version: '',
+      role,
+      slug: '',
+      model,
+      agent_def_hash: `sha256:${role}`,
+      cli_version: '1.2.2',
+      cwd: projectRoot,
+      source: 'startup',
+      os: 'darwin',
+      node: 'v20',
+      timestamp,
+    };
+  }
+
   /** A build session record with an EMPTY slug (the deviation's central case). */
   function buildRecord(slug: string, transcriptPath: string): SessionRecord {
     return {
@@ -139,10 +180,11 @@ describe('assembleProcessAttestation', () => {
     const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
 
     expect(att).not.toBeNull();
-    expect(att!.session_id).toBe('sess-feat');
-    expect(att!.role).toBe('build');
-    expect(att!.derived.tokens.input).toBe(1000);
-    expect(att!.derived.model).toBe('claude-opus-4-6');
+    expect(att!.sessions).toHaveLength(1);
+    expect(att!.sessions[0]!.session_id).toBe('sess-feat');
+    expect(att!.sessions[0]!.role).toBe('build');
+    expect(att!.sessions[0]!.derived.tokens.input).toBe(1000);
+    expect(att!.sessions[0]!.model).toBe('claude-opus-4-6');
     expect(att!.module_churn).toEqual(churn);
   });
 
@@ -189,7 +231,55 @@ describe('assembleProcessAttestation', () => {
 
     const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
     expect(att).not.toBeNull();
-    expect(att!.session_id).toBe('sess-feat');
+    expect(att!.sessions.map((s) => s.session_id)).toContain('sess-feat');
+  });
+
+  it('captures ALL matching sessions with correct per-role metadata (DEVIATION)', () => {
+    // @ana A031 — build + verify both present, each with its own model/role/counts.
+    writeAnaJson('on');
+    const buildTx = writeRoleTranscript('feat', 'build', 'claude-opus-4-6', 1000);
+    const verifyTx = writeRoleTranscript('feat', 'verify', 'claude-sonnet-4-6', 500);
+    // Seed out of order to prove deterministic sorting by timestamp.
+    seedBuffer(roleRecord('verify', 'claude-sonnet-4-6', 'sess-verify', verifyTx, '2026-06-01T02:00:00.000Z'));
+    seedBuffer(roleRecord('build', 'claude-opus-4-6', 'sess-build', buildTx, '2026-06-01T01:00:00.000Z'));
+
+    const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+
+    expect(att).not.toBeNull();
+    expect(att!.sessions).toHaveLength(2);
+    // Deterministic order: by timestamp → build (01:00) before verify (02:00).
+    expect(att!.sessions.map((s) => s.role)).toEqual(['build', 'verify']);
+    expect(att!.sessions[0]!.model).toBe('claude-opus-4-6');
+    expect(att!.sessions[0]!.derived.tokens.input).toBe(1000);
+    expect(att!.sessions[0]!.agent_def_hash).toBe('sha256:build');
+    expect(att!.sessions[1]!.model).toBe('claude-sonnet-4-6');
+    expect(att!.sessions[1]!.derived.tokens.input).toBe(500);
+    // outcome stays top-level (contract A032 unchanged).
+    expect(att!.outcome.first_pass_verify).toBe(true);
+  });
+
+  it('keeps repeated build attempts from rejection cycles (rework is wanted data)', () => {
+    writeAnaJson('on');
+    const b1 = writeRoleTranscript('feat', 'build1', 'claude-opus-4-6', 1000);
+    const b2 = writeRoleTranscript('feat', 'build2', 'claude-opus-4-6', 1200);
+    seedBuffer(roleRecord('build', 'claude-opus-4-6', 'sess-build-1', b1, '2026-06-01T01:00:00.000Z'));
+    seedBuffer(roleRecord('build', 'claude-opus-4-6', 'sess-build-2', b2, '2026-06-01T03:00:00.000Z'));
+
+    const att = assembleProcessAttestation(projectRoot, 'feat', makeProof({ rejection_cycles: 1 }), churn, SCOPE, true);
+    expect(att!.sessions).toHaveLength(2);
+    expect(att!.sessions.map((s) => s.session_id)).toEqual(['sess-build-1', 'sess-build-2']);
+  });
+
+  it('is deterministic — assembling twice yields JSON-identical output', () => {
+    writeAnaJson('on');
+    const buildTx = writeRoleTranscript('feat', 'build', 'claude-opus-4-6', 1000);
+    const verifyTx = writeRoleTranscript('feat', 'verify', 'claude-sonnet-4-6', 500);
+    seedBuffer(roleRecord('build', 'claude-opus-4-6', 'sess-build', buildTx, '2026-06-01T01:00:00.000Z'));
+    seedBuffer(roleRecord('verify', 'claude-sonnet-4-6', 'sess-verify', verifyTx, '2026-06-01T02:00:00.000Z'));
+
+    const a = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+    const b = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 
   it('returns null when capture is off (proof omits the field)', () => {
