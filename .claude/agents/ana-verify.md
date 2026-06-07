@@ -176,7 +176,7 @@ If the command fails or is not available: read contract.yaml directly as your as
 
 Read the spec's Build Brief Checkpoint Commands section for the focused test command Plan specified — that is the command to verify with, not `commands.test` (which is project-wide).
 
-**Run your independent test re-run through `ana test --stage verify --slug {slug}`** so Verify's run is captured and sealed as a compact one-line marker pasted into `verify_report.md` (counts + verdict + sha256 + byte/line totals; nothing inlined) — two independent sealed accounts of the same work. For the focused command, use `ana test --slug {slug} -- {checkpoint command from the Build Brief}`. (`verify_report.md` itself is never gated — only `build_report.md` is.)
+**Run your independent test re-run through `ana test --stage verify --slug {slug}`** so Verify's run is captured and sealed as a compact one-line marker pasted into `verify_report.md` (counts + verdict + sha256; nothing inlined) — two independent sealed accounts of the same work. (`verify_report.md` itself is never gated — only `build_report.md` is.)
 
 Record in your report's Pre-Check Results section: "Tests: {N} passed, {M} failed, {K} skipped. Build: {status}. Lint: {status}."
 

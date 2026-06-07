@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
+import { CODEX_AGENT_FILES } from '../../src/constants.js';
 
 const codexTemplatesDir = path.join(__dirname, '../../templates/.codex/agents');
 const ccTemplatesDir = path.join(__dirname, '../../templates/.claude/agents');
@@ -55,22 +56,24 @@ describe('CC Learn Template Paths', () => {
   });
 });
 
-describe('Dogfood Codex Learn', () => {
+describe('Dogfood Codex — agent defs match shipped templates', () => {
   const dogfoodDir = path.join(__dirname, '../../../../.codex/agents');
 
-  // @ana A018, A019
-  it('dogfood codex agents include Learn', () => {
-    const learnMd = readFileSync(path.join(dogfoodDir, 'ana-learn.md'), 'utf-8');
+  // @ana A021, A022 — every codex dogfood `.md` matches its template byte-for-byte
+  // (mirrors the `.claude` check in agent-proof-context.test.ts). This closes the
+  // asymmetric-enforcement gap so the `.codex` ana-build/ana-verify edits — and all
+  // future codex `.md` drift — are test-enforced, not just ana-learn.
+  it('every dogfood codex agent .md matches the shipped template exactly', () => {
+    for (const file of CODEX_AGENT_FILES) {
+      const template = readCodexTemplate(file);
+      const dogfood = readFileSync(path.join(dogfoodDir, file), 'utf-8');
+      expect(dogfood, `${file} dogfood should match template`).toBe(template);
+    }
+  });
+
+  it('dogfood ana-learn.agent.toml matches the template', () => {
     const learnToml = readFileSync(path.join(dogfoodDir, 'ana-learn.agent.toml'), 'utf-8');
-
-    // Dogfood should match product templates
-    const templateMd = readCodexTemplate('ana-learn.md');
-    const templateToml = readFileSync(
-      path.join(codexTemplatesDir, 'ana-learn.agent.toml'),
-      'utf-8',
-    );
-
-    expect(learnMd, 'ana-learn.md dogfood should match template').toBe(templateMd);
+    const templateToml = readFileSync(path.join(codexTemplatesDir, 'ana-learn.agent.toml'), 'utf-8');
     expect(learnToml, 'ana-learn.agent.toml dogfood should match template').toBe(templateToml);
   });
 });
