@@ -12,9 +12,164 @@ import chalk from 'chalk';
 import { globSync } from 'glob';
 import { resolveFindingPaths, generateDashboard, computeChainHealth } from '../utils/proofSummary.js';
 import type { ProofSummary } from '../utils/proofSummary.js';
-import type { ProofChainEntry, ProofChain, ProofChainStats } from '../types/proof.js';
+import type { ProofChainEntry, ProofChain, ProofChainStats, ProcessAttestation } from '../types/proof.js';
 import { agentCommand } from './platform.js';
 import { countPhases } from './work-state.js';
+import {
+  deriveTranscript,
+  getForensicsBufferPath,
+  isProcessCaptureEnabled,
+  type SessionRecord,
+} from '../utils/forensics.js';
+
+/** Per-file churn map as stored in `.saves.json`. */
+type ModuleChurnMap = Record<string, { added: number; deleted: number }>;
+
+/**
+ * Whether a captured session belongs to a given work item's worktree.
+ *
+ * DEVIATION FROM spec-2 (human-approved): spec-2 says "find buffer record(s) for
+ * this slug", assuming the buffer carries the slug. It does NOT for Build/Verify:
+ * those launch from the MAIN repo (the agent `cd`s into the worktree only AFTER
+ * its session starts), so `ANA_SLUG` is empty at SessionStart and Phase 1
+ * correctly records them with an empty slug (AC6-valid — the slug is genuinely
+ * unknowable at spawn). So we recover them DETERMINISTICALLY by matching the
+ * worktree path against (a) the recorded `transcript_path`, (b) the record's
+ * `cwd`, or (c) the transcript's OWN per-line `cwd` entries (which become the
+ * worktree once the agent cd's in). A direct `record.slug === slug` match still
+ * wins first (covers `ana run plan --slug`). Think/Learn/empty-slug records not
+ * tied to any worktree never match here — they stay buffer-only, as designed.
+ *
+ * @param record - The session buffer record
+ * @param slug - The work-item slug being completed
+ * @param worktreePath - Absolute path to `.ana/worktrees/{slug}`
+ * @returns True if this record belongs to the work item
+ */
+function recordBelongsToWorktree(record: SessionRecord, slug: string, worktreePath: string): boolean {
+  if (record.slug && record.slug === slug) return true;
+  if (record.transcript_path && record.transcript_path.includes(worktreePath)) return true;
+  if (record.cwd && record.cwd.startsWith(worktreePath)) return true;
+  // Fall back to the transcript's own cwd entries — robust for Build/Verify,
+  // which start in the main repo and cd into the worktree mid-session.
+  try {
+    if (!record.transcript_path || !fs.existsSync(record.transcript_path)) return false;
+    const raw = fs.readFileSync(record.transcript_path, 'utf-8');
+    for (const line of raw.split('\n')) {
+      if (!line.includes(worktreePath)) continue; // cheap pre-filter before JSON.parse
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (typeof parsed === 'object' && parsed !== null) {
+        const cwd = (parsed as Record<string, unknown>)['cwd'];
+        if (typeof cwd === 'string' && cwd.startsWith(worktreePath)) return true;
+      }
+    }
+  } catch {
+    // Unreadable transcript — treat as no match.
+  }
+  return false;
+}
+
+/**
+ * Parse the `Size` field out of a scope.md Complexity Assessment.
+ *
+ * @param scopeContent - The scope.md contents
+ * @returns The lowercased size (e.g. `large`), or `''` if absent
+ */
+function parseScopeSize(scopeContent: string): string {
+  const m = scopeContent.match(/\*\*Size:\*\*\s*([a-zA-Z]+)/);
+  return m && m[1] ? m[1].toLowerCase() : '';
+}
+
+/**
+ * Assemble the optional {@link ProcessAttestation} for a completed work item.
+ *
+ * Provenance ONLY (counts/cost/outcome/task-shape/churn) — never findings or
+ * verdicts. Returns `null` (→ field omitted, proof still valid) when capture is
+ * off, no session record matches the worktree, or the transcript is unreadable.
+ * Among matching records the newest by `timestamp` wins (deterministic).
+ *
+ * @param projectRoot - Project root directory
+ * @param slug - Work-item slug being completed
+ * @param proof - The proof summary being assembled (source of outcome joins)
+ * @param moduleChurn - Per-file churn read from `.saves.json`
+ * @param scopeContent - scope.md contents (for task size)
+ * @param multiPhase - Whether the plan has more than one phase
+ * @returns The attestation, or `null` if none should be attached
+ */
+export function assembleProcessAttestation(
+  projectRoot: string,
+  slug: string,
+  proof: ProofSummary,
+  moduleChurn: ModuleChurnMap,
+  scopeContent: string,
+  multiPhase: boolean,
+): ProcessAttestation | null {
+  if (!isProcessCaptureEnabled(projectRoot)) return null;
+
+  const bufferPath = getForensicsBufferPath();
+  let records: SessionRecord[];
+  try {
+    if (!fs.existsSync(bufferPath)) return null;
+    const raw = fs.readFileSync(bufferPath, 'utf-8');
+    records = raw
+      .split('\n')
+      .filter((l) => l.trim())
+      .map((l) => {
+        try {
+          return JSON.parse(l) as SessionRecord;
+        } catch {
+          return null;
+        }
+      })
+      .filter((r): r is SessionRecord => r !== null);
+  } catch {
+    return null;
+  }
+
+  const worktreePath = path.join(projectRoot, '.ana', 'worktrees', slug);
+  const matches = records.filter((r) => recordBelongsToWorktree(r, slug, worktreePath));
+  if (matches.length === 0) return null;
+
+  // Deterministic selection: newest timestamp wins (typically the final session).
+  matches.sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0));
+  const record = matches[0];
+  if (!record) return null;
+
+  const derived = deriveTranscript(record.transcript_path, record.harness);
+  if (!derived) return null; // dangling transcript → field absent, proof still valid
+
+  const findings = { risk: 0, debt: 0, observation: 0 };
+  for (const f of proof.findings) {
+    if (f.severity === 'risk') findings.risk += 1;
+    else if (f.severity === 'debt') findings.debt += 1;
+    else if (f.severity === 'observation') findings.observation += 1;
+  }
+
+  return {
+    session_id: record.session_id,
+    harness: record.harness,
+    role: record.role,
+    agent_def_hash: record.agent_def_hash,
+    cli_version: record.cli_version,
+    derived,
+    outcome: {
+      first_pass_verify: proof.rejection_cycles === 0,
+      assertions_satisfied: proof.contract.satisfied,
+      assertions_total: proof.contract.total,
+      findings,
+    },
+    task_shape: {
+      size: parseScopeSize(scopeContent),
+      kind: proof.kind ?? '',
+      multi_phase: multiPhase,
+    },
+    module_churn: moduleChurn,
+  };
+}
 
 /**
  * Guard against completing work with a FAIL verification result.
@@ -102,6 +257,7 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
   // all code is committed).
   let modulesTouched: string[] = [];
   let commitHygiene: Array<{ check: string; file: string; severity: string; message: string }> = [];
+  let moduleChurn: ModuleChurnMap = {};
   try {
     const slugSaves = path.join(anaDir, 'plans', 'completed', slug, '.saves.json');
     if (fs.existsSync(slugSaves)) {
@@ -111,6 +267,9 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
       }
       if (Array.isArray(savesContent['commit_hygiene'])) {
         commitHygiene = savesContent['commit_hygiene'];
+      }
+      if (savesContent['module_churn'] && typeof savesContent['module_churn'] === 'object') {
+        moduleChurn = savesContent['module_churn'] as ModuleChurnMap;
       }
     }
   } catch { /* fall back to empty */ }
@@ -126,6 +285,29 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
       console.error(chalk.yellow(`Warning: Entry '${slug}' has result UNKNOWN but a verify report exists. Check verify_report.md for a Result line.`));
     }
   }
+
+  // Assemble the optional session provenance attestation (Phase 2). Provenance
+  // ONLY — never findings/verdicts. Absent (null) when capture is off, no session
+  // matches the worktree, or the transcript is unreadable; the proof stays valid.
+  let scopeContent = '';
+  let multiPhase = false;
+  try {
+    const scopePath = path.join(completedPlanDir, 'scope.md');
+    if (fs.existsSync(scopePath)) scopeContent = fs.readFileSync(scopePath, 'utf-8');
+    const planPath = path.join(completedPlanDir, 'plan.md');
+    if (fs.existsSync(planPath)) {
+      const { total } = countPhases(fs.readFileSync(planPath, 'utf-8'));
+      multiPhase = total > 1;
+    }
+  } catch { /* scope/plan unavailable — task_shape degrades to defaults */ }
+  const processAttestation = assembleProcessAttestation(
+    projectRoot,
+    slug,
+    proof,
+    moduleChurn,
+    scopeContent,
+    multiPhase,
+  );
 
   const entry: ProofChainEntry = {
     slug,
@@ -161,6 +343,7 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     previous_failures: proof.previous_failures,
     build_concerns: proof.build_concerns ?? [],
     ...(commitHygiene.length > 0 ? { commit_hygiene: commitHygiene } : {}),
+    ...(processAttestation ? { process: processAttestation } : {}),
     ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 

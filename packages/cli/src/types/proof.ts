@@ -9,6 +9,53 @@
  */
 
 import type { ProofSummary } from '../utils/proofSummary.js';
+import type { ProvenanceCounts } from '../utils/forensics.js';
+
+/**
+ * Session provenance attached to a completed proof entry (Phase 2).
+ *
+ * Provenance ONLY — counts, cost, tokens, model, outcome joins, churn. This is
+ * deliberately NOT the rule engine: no findings, no verdicts, no scoring. Every
+ * field is a recomputable fact derived from the session transcript and the
+ * already-assembled proof object. Attached optionally and never gating (see
+ * {@link ProofChainEntry.process}).
+ */
+export interface ProcessAttestation {
+  /** Harness session id of the run that produced the work. */
+  session_id: string;
+  /** Harness the session ran on (`claude` | `codex`). */
+  harness: string;
+  /** Pipeline role (`build` | `verify` | …). */
+  role: string;
+  /** sha256 of the resolved agent-def file at spawn time. */
+  agent_def_hash: string;
+  /** CLI version that spawned the agent. */
+  cli_version: string;
+  /** Deterministic provenance counts derived from the transcript. */
+  derived: ProvenanceCounts;
+  /** Outcome joins read off the proof object being assembled. */
+  outcome: {
+    /** True when verification passed with zero rejection cycles. */
+    first_pass_verify: boolean;
+    /** Contract assertions satisfied. */
+    assertions_satisfied: number;
+    /** Total contract assertions. */
+    assertions_total: number;
+    /** New findings bucketed by severity. */
+    findings: { risk: number; debt: number; observation: number };
+  };
+  /** Task shape — size/kind/multi_phase, from scope.md + plan.md + proof.kind. */
+  task_shape: {
+    /** Complexity size from scope.md (`small` | `medium` | `large` | ''). */
+    size: string;
+    /** Work kind from the proof (`feature` | `fix` | `chore` | `milestone` | ''). */
+    kind: string;
+    /** Whether this work item has more than one phase. */
+    multi_phase: boolean;
+  };
+  /** Per-file added/deleted churn read from `.saves.json`. */
+  module_churn: Record<string, { added: number; deleted: number }>;
+}
 
 /**
  * Proof chain JSON entry — one completed slug's verification record.
@@ -97,6 +144,13 @@ export interface ProofChainEntry {
     severity: string;
     message: string;
   }>;
+  /**
+   * Optional session provenance, attached at `ana work complete` when process
+   * capture is on and a matching session buffer record is found. OPTIONAL by
+   * construction — proof integrity never depends on it; a proof with this field
+   * absent is complete and valid. Mirrors `commit_hygiene`'s decoupling.
+   */
+  process?: ProcessAttestation;
   phases?: number;
   worktree?: {
     used: boolean;
