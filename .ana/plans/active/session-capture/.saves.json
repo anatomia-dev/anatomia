@@ -67,7 +67,7 @@
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:130cc607fb298032b71120b7eec56a5a6a8989fb184482e6df58dae2844edc0f",
-    "run_at": "2026-06-07T22:20:22.765Z"
+    "run_at": "2026-06-07T23:26:59.053Z"
   },
   "verify-report-1": {
     "saved_at": "2026-06-07T22:20:22.799Z",
@@ -90,5 +90,15 @@
         "hash": "sha256:33bfe4fec90b6cbf6e62b138dde98f3790752fac5562ebba53cf3c704d751512"
       }
     ]
+  },
+  "verify_started_at_2": "2026-06-07T23:18:24.203Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-07T23:26:59.095Z",
+    "hash": "sha256:bb95dedd61373b25f8f51f5b7a2e340366ee6f72923e9e29dfae155dbf6ae580"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-07T23:26:59.096Z",
+    "hash": "sha256:e2a3da158e8571aebdc56cc429ffc915c6f45f688883da86f28e86df4459532d"
   }
 }
