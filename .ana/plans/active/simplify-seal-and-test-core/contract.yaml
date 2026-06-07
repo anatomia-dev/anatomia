@@ -1,0 +1,218 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Simplify ana test to its load-bearing core (deterministic seal)"
+
+assertions:
+  # ── Deterministic seal (AC1, AC3) ──────────────────────────────────────────
+  - id: A001
+    says: "The seal is built from a fixed, predictable summary of the test result"
+    block: "canonical capture string has a fixed byte layout"
+    target: "canonicalCaptureString({stage:build, slug:demo, counts:47p/0f/2s, verdict:pass})"
+    matcher: "equals"
+    value: "stage=build\nslug=demo\ncounts=47p/0f/2s\nverdict=pass"
+
+  - id: A002
+    says: "The same test result always produces the exact same seal"
+    block: "two captures of the same outcome produce a byte-identical marker"
+    target: "second sealed marker"
+    matcher: "equals"
+    value: "first sealed marker"
+
+  - id: A003
+    says: "The seal's fingerprint can be recomputed from the result it reports"
+    block: "marker sha256 recomputes from its visible fields"
+    target: "marker.sha256"
+    matcher: "equals"
+    value: "captureSha(same stage, slug, counts, verdict)"
+
+  - id: A004
+    says: "A different test result produces a different seal fingerprint"
+    block: "changing the verdict changes the sha256"
+    target: "captureSha with a changed verdict"
+    matcher: "not_equals"
+    value: "captureSha of the original result"
+
+  - id: A005
+    says: "The seal no longer reports raw-output byte and line counts"
+    block: "formatMarker drops the bytes and lines fields"
+    target: "formatMarker(marker)"
+    matcher: "not_contains"
+    value: "bytes="
+
+  - id: A006
+    says: "The seal no longer reports a raw-output line total"
+    block: "formatMarker drops the bytes and lines fields"
+    target: "formatMarker(marker)"
+    matcher: "not_contains"
+    value: "lines="
+
+  - id: A007
+    says: "The seal still carries stage, slug, counts, verdict, and a fingerprint"
+    block: "formatMarker keeps the load-bearing fields"
+    target: "formatMarker(marker)"
+    matcher: "contains"
+    value: "verdict=pass"
+
+  # ── Parser well-formedness preserved (AC2, AC9) ────────────────────────────
+  - id: A008
+    says: "A correctly-formed new seal is recognized as a real seal"
+    block: "parser accepts the new five-field marker shape"
+    target: "parseMarkers(new-shape marker).length"
+    matcher: "equals"
+    value: 1
+
+  - id: A009
+    says: "A seal with a malformed fingerprint is rejected, not trusted"
+    block: "parser rejects a marker with a non-hex sha256"
+    target: "parseMarkers(non-hex sha256 marker).length"
+    matcher: "equals"
+    value: 0
+
+  - id: A010
+    says: "A seal missing its fingerprint is rejected, not trusted"
+    block: "parser rejects a marker missing sha256"
+    target: "parseMarkers(no-sha256 marker).length"
+    matcher: "equals"
+    value: 0
+
+  # ── Spine survives the subtraction (AC4, AC5) ──────────────────────────────
+  - id: A011
+    says: "A passing test run still produces a sealed result"
+    block: "baseline run still seals a marker"
+    target: "outcome.marker"
+    matcher: "exists"
+
+  - id: A012
+    says: "A failing test run reports a test failure, not a capture error"
+    block: "a failing baseline exits 1 not 3"
+    target: "outcome.exitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A013
+    says: "A command that needs a shell is refused as a capture error"
+    block: "a shell-needing command exits 3"
+    target: "outcome.exitCode"
+    matcher: "equals"
+    value: 3
+
+  - id: A014
+    says: "With no surface named, the project-wide test command is used"
+    block: "top-level command resolves when no surface is given"
+    target: "resolveTestCommandString(anaJson, undefined).source"
+    matcher: "exists"
+
+  # ── Verify runs the full project (AC6) ─────────────────────────────────────
+  - id: A015
+    says: "Verify seals a verify-stage result even when a surface is named"
+    block: "verify stage seals a verify-stage marker ignoring surface"
+    target: "outcome.marker"
+    matcher: "contains"
+    value: "stage=verify"
+
+  # ── Agent definitions tell the truth (AC7) ─────────────────────────────────
+  - id: A016
+    says: "Build agents no longer tell agents to wrap every test in a checkpoint command"
+    block: "build templates drop the checkpoint and route-everything instructions"
+    target: "ana-build template body"
+    matcher: "not_contains"
+    value: "-- {checkpoint command"
+
+  - id: A017
+    says: "Build agents still mint the final build seal with ana test"
+    block: "build templates keep the final build-seal instruction"
+    target: "ana-build template body"
+    matcher: "contains"
+    value: "ana test --stage build --slug"
+
+  - id: A018
+    says: "Verify agents still run a full independent re-run sealed with ana test"
+    block: "verify templates keep the unconditional verify-seal instruction"
+    target: "ana-verify template body"
+    matcher: "contains"
+    value: "ana test --stage verify --slug"
+
+  - id: A019
+    says: "Verify agents no longer route a focused checkpoint command through ana test"
+    block: "verify templates drop the checkpoint form"
+    target: "ana-verify template body"
+    matcher: "not_contains"
+    value: "-- {checkpoint command"
+
+  - id: A020
+    says: "Agent seal descriptions no longer mention byte and line totals"
+    block: "agent marker descriptions drop byte/line totals"
+    target: "ana-build template body"
+    matcher: "not_contains"
+    value: "byte/line totals"
+
+  # ── Codex dogfood now enforced (AC11) ──────────────────────────────────────
+  - id: A021
+    says: "The shipped and in-repo Codex build agent are kept identical"
+    block: "codex dogfood build def matches the template byte-for-byte"
+    target: "codex dogfood ana-build.md"
+    matcher: "equals"
+    value: "codex template ana-build.md"
+
+  - id: A022
+    says: "The shipped and in-repo Codex verify agent are kept identical"
+    block: "codex dogfood verify def matches the template byte-for-byte"
+    target: "codex dogfood ana-verify.md"
+    matcher: "equals"
+    value: "codex template ana-verify.md"
+
+  # ── Save-time gate behavior unchanged (AC9) ────────────────────────────────
+  - id: A023
+    says: "A build report carrying a valid new-shape seal passes the save gate"
+    block: "a present new-shape build marker passes the gate"
+    target: "evaluateCaptureGate(report, {enabled:true}).blocked"
+    matcher: "equals"
+    value: false
+
+  - id: A024
+    says: "A build report with no seal is blocked from saving"
+    block: "a missing marker blocks the save when gate enabled"
+    target: "evaluateCaptureGate(no-marker report, {enabled:true}).blocked"
+    matcher: "equals"
+    value: true
+
+  - id: A025
+    says: "A seal shown only as a fenced example does not satisfy the gate"
+    block: "a fenced or placeholder marker does not satisfy the gate"
+    target: "evaluateCaptureGate(fenced-example report, {enabled:true}).blocked"
+    matcher: "equals"
+    value: true
+
+file_changes:
+  - path: "packages/cli/src/utils/capture-marker.ts"
+    action: modify
+  - path: "packages/cli/src/commands/test.ts"
+    action: modify
+  - path: "packages/cli/src/utils/capture-runner.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  - path: ".claude/agents/ana-build.md"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
+  - path: ".codex/agents/ana-build.md"
+    action: modify
+  - path: ".codex/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/tests/commands/template-capture-instruction.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/capture-marker.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/test-command.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/capture-runner.test.ts"
+    action: modify
+  - path: "packages/cli/tests/templates/codex-learn-template.test.ts"
+    action: modify
