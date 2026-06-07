@@ -1,0 +1,18 @@
+schema: 1
+concerns:
+  - summary: "deriveTranscript test/failure counts are best-effort regex parsing of tool-result text (first 'N passed'/'N failed' match wins); ambiguous multi-line runner output can mis-count."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Codex derive sets files_touched=0 (apply_patch parsing intentionally out of scope) and excludes reasoning_output_tokens from the output count; documented best-effort gaps."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "ensureCodexHooksFlag uses text-based TOML matching (regex), not a TOML parser; a `hooks =` key under a non-[features] table could be flipped. No TOML lib is a dependency; acceptable given the confirmed config shape."
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "ProcessAttestation selects the newest worktree-matched buffer record (deterministic by timestamp). When both build and verify sessions match, the newer (often verify) wins, so attestation.role may be 'verify' rather than 'build'. Provenance is still correct; the role label reflects the selected session."
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: observation
+    suggested_action: acknowledge

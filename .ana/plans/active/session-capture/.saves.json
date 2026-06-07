@@ -38,17 +38,27 @@
     ".codex/config.toml",
     ".codex/hooks.json",
     "packages/cli/src/commands/_capture.ts",
+    "packages/cli/src/commands/artifact.ts",
     "packages/cli/src/commands/init/anaJsonSchema.ts",
     "packages/cli/src/commands/init/assets.ts",
     "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/proof.ts",
     "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/data/pricing.ts",
     "packages/cli/src/index.ts",
+    "packages/cli/src/types/proof.ts",
     "packages/cli/src/utils/forensics.ts",
+    "packages/cli/src/utils/proofSummary.ts",
     "packages/cli/templates/.codex/config.toml",
     "packages/cli/templates/.codex/hooks.json",
     "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/artifact-module-churn.test.ts",
     "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
     "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
     "packages/cli/tests/utils/forensics.test.ts"
   ],
   "commit_hygiene": [],
@@ -66,5 +76,13 @@
   "verify-data-1": {
     "saved_at": "2026-06-07T22:20:22.799Z",
     "hash": "sha256:ca819e28f003b280ef62637a7c65dc562d5049e8c92da720e0947daa081d4a6b"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-07T22:57:45.184Z",
+    "hash": "sha256:5dfa2e8b8aeffad168c945248cbf89445e0bde47befda86f5480a670eb6d7235"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-07T22:57:45.185Z",
+    "hash": "sha256:33bfe4fec90b6cbf6e62b138dde98f3790752fac5562ebba53cf3c704d751512"
   }
 }
