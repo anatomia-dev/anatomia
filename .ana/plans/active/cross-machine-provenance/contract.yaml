@@ -208,6 +208,20 @@ assertions:
     matcher: "equals"
     value: false
 
+  - id: A045
+    says: "A strict block is recoverable — it leaves the work item's files untouched"
+    block: "strict block runs before removeWorktree/cp, leaving the active dir intact"
+    target: "strictBlockActiveDirExists"
+    matcher: "equals"
+    value: true
+
+  - id: A046
+    says: "After a strict block, relaxing strict and re-running completes and records the gap"
+    block: "strict-off re-run after a block writes the entry with the gap recorded"
+    target: "recoveryRunEntry.process.completeness.complete"
+    matcher: "equals"
+    value: false
+
   # ── Phase 2: strict gate config (AC8) ───────────────────────────
   - id: A031
     says: "Teams can opt into strict completeness via a config flag"
