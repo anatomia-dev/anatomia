@@ -249,7 +249,7 @@ export function prunePendingPointers(maxAgeMs: number): void {
 /**
  * Whether process capture is enabled for this project.
  *
- * Mirrors `isCaptureGateEnabled` minus the test-command carve-out: process
+ * Mirrors `isTestEvidenceGateEnabled` minus the test-command carve-out: process
  * capture is unconditional when `processCapture` is `'on'`. Undefined-safe by
  * construction — a missing or malformed `ana.json` returns `false` and never
  * throws (a broken config must never accidentally enable capture).

@@ -10,7 +10,7 @@ import { displayBlindSpots, displaySuccessMessage } from '../../src/commands/ini
 import { createDirectoryStructure } from '../../src/commands/init/assets.js';
 import { createSkillSymlinks, copyCodexAgentFiles } from '../../src/commands/init/assets.js';
 import { preserveUserState, migrateSkillsToCanonical, createAnaJson } from '../../src/commands/init/state.js';
-import { isCaptureGateEnabled } from '../../src/commands/artifact.js';
+import { isTestEvidenceGateEnabled } from '../../src/commands/artifact.js';
 import { AGENT_FILES, CODEX_AGENT_FILES, DOCS_QUICKSTART, DOCS_SETUP_GUIDE } from '../../src/constants.js';
 
 async function dirExists(dirPath: string): Promise<boolean> {
@@ -119,16 +119,16 @@ describe('ana init', () => {
       expect(meta).not.toHaveProperty('mergeStrategy');
     });
 
-    // @ana A010 — a freshly initialized project opts into the capture gate.
-    it('createAnaJson writes captureGate: on', async () => {
+    // @ana A010, A001 — a freshly initialized project opts into the test-evidence gate.
+    it('createAnaJson writes testEvidenceGate: on', async () => {
       const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
       await createDirectoryStructure(tmpAnaPath);
 
       const config = await createAnaJson(tmpAnaPath, createEmptyEngineResult());
 
-      expect(config['captureGate']).toBe('on');
+      expect(config['testEvidenceGate']).toBe('on');
       const written = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
-      expect(written.captureGate).toBe('on');
+      expect(written.testEvidenceGate).toBe('on');
     });
 
     // @ana A032 — new projects default to warn (off), not block.
@@ -764,9 +764,9 @@ describe('ana init', () => {
       expect(result.language).toBe('Rust');
     });
   });
-  describe('captureGate re-init preservation', () => {
+  describe('testEvidenceGate re-init preservation', () => {
     // @ana A011 — re-init preserves an explicit gate-off choice.
-    it('keeps captureGate: off through a re-init merge', async () => {
+    it('keeps testEvidenceGate: off through a re-init merge', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
       await fs.mkdir(existingAnaPath, { recursive: true });
       await fs.writeFile(
@@ -776,7 +776,7 @@ describe('ana init', () => {
           language: 'TypeScript',
           packageManager: 'pnpm',
           artifactBranch: 'main',
-          captureGate: 'off',
+          testEvidenceGate: 'off',
           commands: { test: 'pnpm vitest run' },
         }),
       );
@@ -796,7 +796,7 @@ describe('ana init', () => {
       await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
 
       const result = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
-      expect(result.captureGate).toBe('off');
+      expect(result.testEvidenceGate).toBe('off');
     });
 
     // @ana A033 — re-init preserves an explicit processCaptureStrict choice.
@@ -845,7 +845,7 @@ describe('ana init', () => {
           language: 'TypeScript',
           packageManager: 'pnpm',
           artifactBranch: 'main',
-          // No captureGate — and a resolvable test command, so the ONLY reason
+          // No testEvidenceGate — and a resolvable test command, so the ONLY reason
           // enablement is off must be the absent flag (not a missing command).
           commands: { test: 'pnpm vitest run' },
         }),
@@ -866,14 +866,14 @@ describe('ana init', () => {
       await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
 
       const result = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
-      expect(result).not.toHaveProperty('captureGate');
+      expect(result).not.toHaveProperty('testEvidenceGate');
 
       // Behavior-level guarantee: place the merged config at a project root and
       // confirm the gate reads off despite a resolvable test command.
       const projectRoot = path.join(tmpDir, 'merged-proj');
       await fs.mkdir(path.join(projectRoot, '.ana'), { recursive: true });
       await fs.writeFile(path.join(projectRoot, '.ana', 'ana.json'), JSON.stringify(result), 'utf-8');
-      expect(isCaptureGateEnabled(projectRoot)).toBe(false);
+      expect(isTestEvidenceGateEnabled(projectRoot)).toBe(false);
     });
   });
 

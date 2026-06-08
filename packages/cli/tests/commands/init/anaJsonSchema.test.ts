@@ -211,25 +211,26 @@ describe('AnaJsonSchema', () => {
     });
   });
 
-  describe('captureGate enum values', () => {
+  describe('testEvidenceGate enum values', () => {
+    // @ana A007
     it('accepts on', () => {
-      const parsed = AnaJsonSchema.parse({ captureGate: 'on' });
-      expect(parsed.captureGate).toBe('on');
+      const parsed = AnaJsonSchema.parse({ testEvidenceGate: 'on' });
+      expect(parsed.testEvidenceGate).toBe('on');
     });
 
     it('accepts off', () => {
-      const parsed = AnaJsonSchema.parse({ captureGate: 'off' });
-      expect(parsed.captureGate).toBe('off');
+      const parsed = AnaJsonSchema.parse({ testEvidenceGate: 'off' });
+      expect(parsed.testEvidenceGate).toBe('off');
     });
 
     it('catches an invalid value to undefined', () => {
-      const parsed = AnaJsonSchema.parse({ captureGate: 'enabled' });
-      expect(parsed.captureGate).toBeUndefined();
+      const parsed = AnaJsonSchema.parse({ testEvidenceGate: 'enabled' });
+      expect(parsed.testEvidenceGate).toBeUndefined();
     });
 
     it('absence yields undefined (no default)', () => {
       const parsed = AnaJsonSchema.parse({ name: 'x' });
-      expect(parsed.captureGate).toBeUndefined();
+      expect(parsed.testEvidenceGate).toBeUndefined();
     });
   });
 
