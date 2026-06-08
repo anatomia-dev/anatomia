@@ -484,6 +484,18 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
       }
       lines.push(`  churn   ${churnFiles} files · +${added}/−${deleted}`);
     }
+
+    // Completeness line (Phase 2). Display-only — NEVER influences PASS/FAIL.
+    // Optional-guarded: entries written before Phase 2 lack `completeness`.
+    const c = p.completeness;
+    if (c) {
+      const counts = `plan ${c.present.plan}/${c.expected.plan} · build ${c.present.build}/${c.expected.build} · verify ${c.present.verify}/${c.expected.verify}`;
+      if (c.complete) {
+        lines.push(`  completeness  ${chalk.green('✓')} complete (${counts})`);
+      } else {
+        lines.push(`  completeness  ${chalk.yellow('⚠')} incomplete — ${counts}`);
+      }
+    }
   }
 
   // Deviations section (only if there are deviations)
