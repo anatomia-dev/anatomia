@@ -57,6 +57,9 @@ const KNOWN_FIELDS = new Set([
   'mergeStrategy',
   'setupPhase',
   'lastScanAt',
+  'captureGate',
+  'processCapture',
+  'processCaptureStrict',
   'custom',
 ]);
 
