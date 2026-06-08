@@ -49,6 +49,17 @@ describe('ana init', () => {
         expect(exists).toBe(true);
       }
     });
+
+    // @ana A044 — provenance/ must never be gitignored: per-session provenance
+    // travels in git between machines, so a generated ignore of it would break
+    // cross-machine assembly. The generator already omits it; lock that in.
+    it('generated .ana/.gitignore does not ignore provenance', async () => {
+      const tmpAnaPath = path.join(tmpDir, '.ana-gitignore');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const gitignore = await fs.readFile(path.join(tmpAnaPath, '.gitignore'), 'utf-8');
+      expect(gitignore).not.toContain('provenance');
+    });
   });
 
   describe('template inventory', () => {
