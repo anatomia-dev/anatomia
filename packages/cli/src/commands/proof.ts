@@ -448,11 +448,15 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
       const modelShort = (d?.model || s.model).replace(/^claude-/, '');
       const head = `  ${[s.harness, s.role, modelShort].filter(Boolean).join(' · ')}`;
       if (d) {
+        const cost = computeCost(d.tokens, d.model);
+        // Unpriced model → show "n/a", never a misleading "$0.00" (a missing
+        // price is not a free session). Add a row to data/pricing.ts to fix.
+        const costLabel = cost.priced ? `$${cost.cost_usd.toFixed(2)}` : 'n/a (unpriced)';
         lines.push(
           head +
             `   ${d.turns} turns · ${d.tool_calls} tools` +
             ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
-            ` · est. $${computeCost(d.tokens, d.model).cost_usd.toFixed(2)}`,
+            ` · est. ${costLabel}`,
         );
       } else {
         // Counts-less session (hook never fired AND transcript deleted) — still
@@ -465,14 +469,18 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     // Counts-less sessions contribute nothing to the cost total.
     let totalCost = 0;
     let tableVersion = '';
+    let unpriced = 0;
     for (const s of p.sessions) {
       if (!s.derived) continue;
-      totalCost += computeCost(s.derived.tokens, s.derived.model).cost_usd;
+      const c = computeCost(s.derived.tokens, s.derived.model);
+      if (c.priced) totalCost += c.cost_usd;
+      else unpriced += 1;
       if (!tableVersion) tableVersion = s.derived.price_table_version;
     }
     lines.push(
       `  total   ${p.sessions.length} session${p.sessions.length === 1 ? '' : 's'}` +
-        ` · est. $${totalCost.toFixed(2)}${tableVersion ? ` (table ${tableVersion})` : ''}`,
+        ` · est. $${totalCost.toFixed(2)}${tableVersion ? ` (table ${tableVersion})` : ''}` +
+        (unpriced > 0 ? ` · ${unpriced} unpriced` : ''),
     );
     const churnFiles = Object.keys(p.module_churn).length;
     if (churnFiles > 0) {

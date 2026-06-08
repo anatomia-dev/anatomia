@@ -171,7 +171,7 @@ describe('forensics derive', () => {
     it('carries price_table_version + tokens + model but NEVER a cost_usd', () => {
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude') as ProvenanceCounts;
       // A008: the version the display-time cost is computed against is present.
-      expect(d.price_table_version).toBe('2026-06-01');
+      expect(d.price_table_version).toBe('2026-06-08');
       // A007: no baked-in dollar figure on the derived (committed) object.
       expect(JSON.stringify(d)).not.toContain('cost_usd');
       expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
@@ -227,7 +227,7 @@ describe('forensics derive', () => {
     // @ana A007, A008
     it('carries price_table_version but never cost_usd (Codex)', () => {
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
-      expect(d.price_table_version).toBe('2026-06-01');
+      expect(d.price_table_version).toBe('2026-06-08');
       expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
     });
 
@@ -263,7 +263,7 @@ describe('forensics derive', () => {
       expect(d.tokens.input).toBe(0);
       expect(d.turns).toBe(0);
       expect(d.model).toBe('');
-      expect(d.price_table_version).toBe('2026-06-01');
+      expect(d.price_table_version).toBe('2026-06-08');
     });
   });
 });

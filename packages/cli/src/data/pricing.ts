@@ -11,7 +11,7 @@
  */
 
 /** The version stamp for the current price table. Bump when any rate changes. */
-export const PRICE_TABLE_VERSION = '2026-06-01';
+export const PRICE_TABLE_VERSION = '2026-06-08';
 
 /** Token counts for a session, as produced by the transcript derive. */
 export interface TokenCounts {
@@ -53,9 +53,11 @@ export interface PriceEntry {
  * transcript corpus — never compute prices at runtime.
  */
 export const PRICES: PriceEntry[] = [
-  { model: 'claude-opus-4-6', input: 15, output: 75, cache_create: 18.75, cache_read: 1.5 },
+  { model: 'claude-opus-4-8', input: 5, output: 25, cache_create: 6.25, cache_read: 0.5 },
+  { model: 'claude-opus-4-7', input: 5, output: 25, cache_create: 6.25, cache_read: 0.5 },
+  { model: 'claude-opus-4-6', input: 5, output: 25, cache_create: 6.25, cache_read: 0.5 },
   { model: 'claude-sonnet-4-6', input: 3, output: 15, cache_create: 3.75, cache_read: 0.3 },
-  { model: 'claude-haiku-4-6', input: 1, output: 5, cache_create: 1.25, cache_read: 0.1 },
+  { model: 'claude-haiku-4-5', input: 1, output: 5, cache_create: 1.25, cache_read: 0.1 },
   { model: 'gpt-5.5', input: 1.25, output: 10, cache_create: 0, cache_read: 0.125 },
 ];
 
@@ -63,6 +65,12 @@ export const PRICES: PriceEntry[] = [
 export interface CostResult {
   /** Estimated cost in USD, rounded to 6 decimal places. `0` for unknown models. */
   cost_usd: number;
+  /**
+   * Whether `model` was found in the price table. When `false`, `cost_usd` is
+   * `0` because the model is UNPRICED — not because the session was free.
+   * Callers should render unpriced models distinctly (e.g. "n/a"), never "$0.00".
+   */
+  priced: boolean;
   /** The price-table version this estimate was computed against. */
   price_table_version: string;
 }
@@ -82,7 +90,7 @@ export interface CostResult {
 export function computeCost(tokens: TokenCounts, model: string): CostResult {
   const entry = PRICES.find((p) => p.model === model);
   if (!entry) {
-    return { cost_usd: 0, price_table_version: PRICE_TABLE_VERSION };
+    return { cost_usd: 0, priced: false, price_table_version: PRICE_TABLE_VERSION };
   }
   const raw =
     (tokens.input / 1_000_000) * entry.input +
@@ -91,5 +99,5 @@ export function computeCost(tokens: TokenCounts, model: string): CostResult {
     (tokens.cache_read / 1_000_000) * entry.cache_read;
   // Round to 6 dp for a stable, byte-identical estimate across runs.
   const cost_usd = Math.round(raw * 1_000_000) / 1_000_000;
-  return { cost_usd, price_table_version: PRICE_TABLE_VERSION };
+  return { cost_usd, priced: true, price_table_version: PRICE_TABLE_VERSION };
 }

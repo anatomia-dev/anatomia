@@ -24,18 +24,33 @@ describe('pricing', () => {
         cache_create: 1_000_000,
         cache_read: 1_000_000,
       };
-      // opus-4-6: 15 + 75 + 18.75 + 1.5 = 110.25 per 1M of each
+      // opus-4-6: 5 + 25 + 6.25 + 0.5 = 36.75 per 1M of each
       const result = computeCost(tokens, 'claude-opus-4-6');
-      expect(result.cost_usd).toBe(110.25);
+      expect(result.cost_usd).toBe(36.75);
+      expect(result.priced).toBe(true);
       expect(result.price_table_version).toBe(PRICE_TABLE_VERSION);
+    });
+
+    it('prices the current flagship model (opus-4-8)', () => {
+      // @ana A027
+      // opus-4-8: 5 + 25 + 6.25 + 0.5 = 36.75 per 1M of each
+      const tokens: TokenCounts = {
+        input: 1_000_000,
+        output: 1_000_000,
+        cache_create: 1_000_000,
+        cache_read: 1_000_000,
+      };
+      const result = computeCost(tokens, 'claude-opus-4-8');
+      expect(result.cost_usd).toBe(36.75);
+      expect(result.priced).toBe(true);
     });
 
     it('computes a fractional cost exactly (rounded to 6 dp)', () => {
       // @ana A027
       const tokens: TokenCounts = { input: 48211, output: 12903, cache_create: 0, cache_read: 0 };
-      // 48211/1e6*15 + 12903/1e6*75 = 0.723165 + 0.967725 = 1.69089
+      // 48211/1e6*5 + 12903/1e6*25 = 0.241055 + 0.322575 = 0.56363
       const result = computeCost(tokens, 'claude-opus-4-6');
-      expect(result.cost_usd).toBe(1.69089);
+      expect(result.cost_usd).toBe(0.56363);
     });
 
     it('returns 0 for an unknown model without throwing, version still stamped', () => {
@@ -43,6 +58,7 @@ describe('pricing', () => {
       const tokens: TokenCounts = { input: 5000, output: 5000, cache_create: 5000, cache_read: 5000 };
       const result = computeCost(tokens, 'no-such-model-9000');
       expect(result.cost_usd).toBe(0);
+      expect(result.priced).toBe(false);
       expect(result.price_table_version).toBe(PRICE_TABLE_VERSION);
     });
 
@@ -63,7 +79,7 @@ describe('pricing', () => {
 
   describe('PRICES table', () => {
     it('has a stable version stamp', () => {
-      expect(PRICE_TABLE_VERSION).toBe('2026-06-01');
+      expect(PRICE_TABLE_VERSION).toBe('2026-06-08');
     });
 
     it('has unique model ids', () => {

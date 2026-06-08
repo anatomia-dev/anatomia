@@ -209,7 +209,7 @@ describe('forensics', () => {
       // captured_at carried verbatim from the pointer (the primary sort key).
       expect(prov.captured_at).toBe('2026-06-07T22:00:00.000Z');
       // A008: derived counts present with the price-table version + tokens.
-      expect(prov.derived.price_table_version).toBe('2026-06-01');
+      expect(prov.derived.price_table_version).toBe('2026-06-08');
       expect(prov.derived.tokens.input).toBe(700);
       expect(prov.derived.model).toBe('claude-opus-4-6');
       // A007: no baked-in dollar figure in the committed object.
