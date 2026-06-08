@@ -8,5 +8,15 @@
         }
       ]
     }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "ana _capture --derive"
+        }
+      ]
+    }
   ]
 }

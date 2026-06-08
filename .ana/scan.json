@@ -3,7 +3,7 @@
   "applicationShape": "cli",
   "overview": {
     "project": "anatomia-workspace",
-    "scannedAt": "2026-06-04T22:52:15.987Z",
+    "scannedAt": "2026-06-08T01:56:12.185Z",
     "depth": "deep"
   },
   "stack": {
@@ -42,10 +42,10 @@
     "vitest": "^4.1.5"
   },
   "files": {
-    "source": 262,
-    "test": 146,
+    "source": 268,
+    "test": 159,
     "config": 20,
-    "total": 428
+    "total": 447
   },
   "structure": [
     {
@@ -82,27 +82,28 @@
     "packageManager": "pnpm"
   },
   "git": {
-    "head": "92e36e7c",
+    "head": "40dc8fa5",
     "branch": "main",
-    "commitCount": 3616,
-    "lastCommitAt": "2026-06-04T16:44:43-06:00",
-    "uncommittedChanges": true,
+    "commitCount": 3781,
+    "lastCommitAt": "2026-06-07T19:55:18-06:00",
+    "uncommittedChanges": false,
     "contributorCount": 4,
     "defaultBranch": "main",
     "branches": [
       "feature/cli-telemetry",
       "feature/hero-wordmark",
-      "hero-copy-update",
+      "feature/process-capture-runtime-gating",
       "main"
     ],
     "commitFormat": {
       "conventional": false,
-      "confidence": 0,
+      "confidence": 0.02,
       "sampleSize": 50
     },
     "branchPatterns": {
       "prefixes": {
-        "feature/": 50
+        "feature/": 48,
+        "chore/": 1
       },
       "primary": "feature/"
     },
@@ -126,52 +127,52 @@
       "windowDays": 14,
       "highChurnFiles": [
         {
-          "path": "packages/cli/src/engine/scan-engine.ts",
+          "path": "packages/cli/src/commands/run.ts",
           "commits": 14
         },
         {
-          "path": "packages/cli/src/commands/run.ts",
-          "commits": 13
+          "path": "packages/cli/src/engine/scan-engine.ts",
+          "commits": 10
         },
         {
-          "path": "packages/cli/src/engine/detectors/surfaces.ts",
+          "path": "packages/cli/src/commands/init/assets.ts",
+          "commits": 9
+        },
+        {
+          "path": "packages/cli/src/commands/artifact.ts",
           "commits": 8
         },
         {
-          "path": "packages/cli/src/engine/census.ts",
+          "path": "packages/cli/src/commands/work.ts",
           "commits": 8
+        },
+        {
+          "path": "packages/cli/src/commands/proof.ts",
+          "commits": 7
+        },
+        {
+          "path": "packages/cli/src/commands/work-proof.ts",
+          "commits": 7
+        },
+        {
+          "path": "packages/cli/src/commands/init/state.ts",
+          "commits": 6
         },
         {
           "path": "website/lib/__tests__/docs-platform-content.test.ts",
           "commits": 6
         },
         {
-          "path": "packages/cli/src/commands/work.ts",
-          "commits": 6
-        },
-        {
-          "path": "packages/cli/src/commands/proof.ts",
-          "commits": 6
-        },
-        {
-          "path": "packages/cli/src/engine/findings/rules/validation.ts",
+          "path": "packages/cli/src/commands/init/anaJsonSchema.ts",
           "commits": 5
-        },
-        {
-          "path": "packages/cli/src/commands/init/state.ts",
-          "commits": 5
-        },
-        {
-          "path": "packages/cli/src/commands/scan.ts",
-          "commits": 4
         }
       ],
       "activeContributors": 3,
       "weeklyCommits": [
-        265,
-        471,
-        828,
-        596
+        331,
+        293,
+        611,
+        941
       ]
     }
   },
@@ -198,7 +199,7 @@
           "lint:fix",
           "prepublishOnly"
         ],
-        "sourceFiles": 264
+        "sourceFiles": 283
       },
       {
         "name": "anatomia-website",
@@ -240,7 +241,7 @@
       "testing": [
         "Vitest"
       ],
-      "sourceFiles": 264
+      "sourceFiles": 283
     },
     {
       "name": "website",
@@ -339,7 +340,7 @@
         "vitest imports found"
       ]
     },
-    "sampledFiles": 264,
+    "sampledFiles": 270,
     "detectionTime": 1,
     "threshold": 0.7
   },
@@ -347,61 +348,62 @@
     "naming": {
       "files": {
         "majority": "PascalCase",
-        "confidence": 0.6074074074074074,
+        "confidence": 0.5985401459854015,
         "mixed": true,
         "distribution": {
-          "camelCase": 0.16153846153846155,
-          "PascalCase": 0.6307692307692307,
-          "kebab-case": 0.2076923076923077
+          "camelCase": 0.1590909090909091,
+          "PascalCase": 0.6212121212121212,
+          "kebab-case": 0.2196969696969697
         },
-        "sampleSize": 264
+        "sampleSize": 270
       },
       "functions": {
         "majority": "camelCase",
-        "confidence": 0.8555133079847909,
+        "confidence": 0.8666666666666667,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.860969387755102,
-          "PascalCase": 0.13903061224489796
+          "camelCase": 0.8717647058823529,
+          "PascalCase": 0.12823529411764706
         },
-        "sampleSize": 830
+        "sampleSize": 896
       },
       "classes": {
         "majority": "PascalCase",
-        "confidence": 0.5,
+        "confidence": 0.5454545454545454,
         "mixed": false,
         "distribution": {
           "PascalCase": 1
         },
-        "sampleSize": 5
+        "sampleSize": 6
       },
       "variables": {
         "majority": "camelCase",
-        "confidence": 0.905931905931906,
+        "confidence": 0.9030303030303031,
         "mixed": false,
         "distribution": {
-          "camelCase": 0.9075246132208158,
-          "PascalCase": 0.011251758087201125,
-          "SCREAMING_SNAKE_CASE": 0.08122362869198312
+          "snake_case": 0.0003372681281618887,
+          "camelCase": 0.9045531197301855,
+          "PascalCase": 0.010792580101180439,
+          "SCREAMING_SNAKE_CASE": 0.08431703204047218
         },
-        "sampleSize": 4739
+        "sampleSize": 5069
       },
       "constants": {
         "majority": "SCREAMING_SNAKE_CASE",
-        "confidence": 0.9788135593220338,
+        "confidence": 0.9803921568627451,
         "mixed": false,
         "distribution": {
           "SCREAMING_SNAKE_CASE": 1
         },
-        "sampleSize": 231
+        "sampleSize": 250
       }
     },
     "imports": {
       "style": "mixed",
-      "confidence": 0.6748768472906403,
+      "confidence": 0.6837060702875399,
       "distribution": {
-        "absolute": 0.3251231527093596,
-        "relative": 0.6748768472906403
+        "absolute": 0.31629392971246006,
+        "relative": 0.6837060702875399
       },
       "aliasPattern": "@/"
     },
@@ -412,32 +414,32 @@
     },
     "codePatterns": {
       "jsExtensionImports": {
-        "count": 128,
-        "total": 128,
+        "count": 132,
+        "total": 132,
         "ratio": 1
       },
       "nodePrefix": {
-        "count": 64,
-        "total": 64,
+        "count": 65,
+        "total": 65,
         "ratio": 1
       },
       "emptyCatches": {
         "empty": 0,
-        "commented": 52,
-        "total": 145
+        "commented": 50,
+        "total": 152
       },
       "defaultExports": {
         "count": 3,
         "totalFiles": 30
       },
       "nullStyle": {
-        "nullCount": 108,
-        "optionalCount": 100,
+        "nullCount": 103,
+        "optionalCount": 102,
         "preference": "mixed"
       }
     },
-    "sampledFiles": 264,
-    "detectionTime": 426
+    "sampledFiles": 270,
+    "detectionTime": 443
   },
   "readme": {
     "description": "Anatomia is a CLI and agent harness for Claude Code and Codex. It scans your codebase — detecting your stack, conventions, and patterns — then runs every change through a five-agent pipeline that saves every artifact: scope, spec, contract, build report, and independent verification. Other harnesses are prompt libraries. This one has an engine. The cost of building is near zero. The cost of building the wrong thing is the same as it ever was. AI agents rush to implementation — they don't push back on your approach, surface tradeoffs you missed, or record why one design was chosen over another. Anatomia enforces the thinking that fast building skips.",
@@ -451,55 +453,55 @@
         "path": "README.md",
         "category": "project-docs",
         "sizeBytes": 7568,
-        "lastModifiedDays": 3
+        "lastModifiedDays": 6
       },
       {
         "path": "CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 418,
-        "lastModifiedDays": 20
+        "lastModifiedDays": 23
       },
       {
         "path": "SECURITY.md",
         "category": "guides",
         "sizeBytes": 1016,
-        "lastModifiedDays": 32
+        "lastModifiedDays": 35
       },
       {
         "path": "CODE_OF_CONDUCT.md",
         "category": "guides",
         "sizeBytes": 5477,
-        "lastModifiedDays": 32
+        "lastModifiedDays": 35
       },
       {
         "path": "CHANGELOG.md",
         "category": "changelog",
         "sizeBytes": 32297,
-        "lastModifiedDays": 2
+        "lastModifiedDays": 1
       },
       {
         "path": ".github/PULL_REQUEST_TEMPLATE.md",
         "category": "templates",
         "sizeBytes": 309,
-        "lastModifiedDays": 29
+        "lastModifiedDays": 33
       },
       {
         "path": ".github/ISSUE_TEMPLATE",
         "category": "templates",
         "sizeBytes": 0,
-        "lastModifiedDays": 32
+        "lastModifiedDays": 35
       },
       {
         "path": "packages/cli/ARCHITECTURE.md",
         "category": "guides",
         "sizeBytes": 15017,
-        "lastModifiedDays": 20
+        "lastModifiedDays": 23
       },
       {
         "path": "packages/cli/CONTRIBUTING.md",
         "category": "guides",
         "sizeBytes": 19216,
-        "lastModifiedDays": 20
+        "lastModifiedDays": 23
       }
     ],
     "docsDirectory": null,
