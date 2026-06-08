@@ -1,13 +1,17 @@
 schema: 1
 concerns:
-  - summary: "One full-suite run via `ana test` reported 1 failure (3586p/1f/2s); three other full runs and the clean re-seal were all 3587p/0f/2s. The exact test could not be isolated; the failing run's stderr was dominated by work.test.ts git/push-failure paths, matching the risk profile's documented flaky tests (conditional PID guards, heavyweight bare-remote git setups). Environmental — unrelated to a string rename."
+  - summary: "Test-evidence seal proves nothing about the run. The marker's sha256 is computed over the marker's OWN visible fields (canonicalCaptureString = stage+slug+counts+verdict, capture-marker.ts:105/119), NOT over the raw test output (capture-marker.ts:6-7 says so explicitly). The present-check only requires a 64-hex sha (capture-marker.ts:185-186) and never recomputes it. Consequences: (1) every passing run yields a byte-identical marker, so re-sealing is a no-op; (2) a valid marker is hand-forgeable with zero tests run — `counts=Np/0f/Ms verdict=pass sha256=<any 64 hex>` passes. The gate enforces format, not truth. Pre-existing and out of scope for this rename (capture-marker mechanism is the untouched boundary); already noted in the risk profile as the deferred enginebind token. Filed as GitHub issue #311."
+    file: "packages/cli/src/utils/capture-marker.ts"
+    severity: risk
+    suggested_action: scope
+  - summary: "Rare full-suite flake: the FIRST `ana test` run reported 3586p/1f/2s (verdict fail); every subsequent run was clean (3587p/0f/2s). Could NOT reproduce across ~21 further runs (9 full-suite + 10 work.test.ts/pr.test.ts + confirmations). The original failing run's raw capture is unrecoverable — `ana test` deletes the .captures/*.log sink after sealing. The failing run's stderr was dominated by work.test.ts git/push-failure paths, matching the risk profile's documented flaky tests (conditional PID guards, heavyweight bare-remote git setups). Almost certainly a cold-start git race on the first run after worktree build; cannot be caused by a pure string rename. Test isolation, not isolated."
     file: "packages/cli/tests/commands/work.test.ts"
     severity: observation
     suggested_action: monitor
   - summary: "@ana assertion IDs are reused per-work-item across the test suite (pre-existing convention): every test file already carries A001-A0xx tags from its own historical/merged contract. This rename's contract tags (A001-A008) therefore coexist with same-numbered predecessor tags on unrelated tests. Verify must map tags against THIS work item's active contract."
     severity: observation
     suggested_action: acknowledge
-  - summary: "capture-marker.test.ts was modified (renamed evaluateCaptureGate → evaluateTestEvidenceGate import/usages) but is NOT in the contract's file_changes list. The change was mandatory: the test imports the renamed evaluator symbol, so omitting it would break the suite."
+  - summary: "capture-marker.test.ts was modified (renamed evaluateCaptureGate -> evaluateTestEvidenceGate import/usages) but is NOT in the contract's file_changes list. The change was mandatory: the test imports the renamed evaluator symbol, so omitting it would break the suite."
     file: "packages/cli/tests/utils/capture-marker.test.ts"
     severity: observation
     suggested_action: acknowledge
