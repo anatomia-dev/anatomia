@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: code
+    summary: "computeCompleteness signature drops the spec's provenanceDir param — implemented as (reportsDir, sessions) vs spec's (provenanceDir, reportsDir, sessions)"
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 52
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A021", "A022"]
+  - category: code
+    summary: "Provenance-file reader is duplicated: the strict guard in work.ts inlines the same readdirSync+JSON.parse loop that assembleProcessAttestation uses; the two could drift (and the guard copy omits the sort). Spec permitted it, but a shared readSessionsFromDir helper would remove the drift risk."
+    file: "packages/cli/src/commands/work.ts"
+    line: 1124
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A027", "A045"]
+  - category: test
+    summary: "Strict guard under --merge is not directly exercised — the strict integration tests pre-merge via createMergedProject then call completeWork without --merge. The documented 'merge precedes guard' boundary message is unverified by test."
+    file: "packages/cli/tests/commands/work.test.ts"
+    line: 1442
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A027", "A028"]
+  - category: code
+    summary: "Completeness is a presence floor (present >= expected): missing provenance is caught, but an extra/orphan build or verify session (present > expected) never flags. Intended for rework tolerance, but worth recording — the check only detects under-counting."
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 75
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A025"]
+  - category: upstream
+    summary: "Spec File Changes listed proof.ts cost-via-computeCost as a Phase-2 change, but Phase 1 already finalized it; Phase 2's only proof.ts change was the completeness line. No defect — the Build Brief slightly overstated Phase-2 proof.ts scope."
+    file: "packages/cli/src/commands/proof.ts"
+    line: 455
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A034"]
