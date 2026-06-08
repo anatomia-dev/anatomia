@@ -22,7 +22,7 @@ import chalk from 'chalk';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { getPlatformFlags } from './platform.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { detectWorktreeSlug } from '../utils/worktree.js';
@@ -107,6 +107,10 @@ function resolveAgentDefPath(projectRoot: string, platform: string, agentName: s
  *                   (`detectWorktreeSlug(projectRoot)`), coerced to `''`
  * - `ANA_CLI_VERSION`    ← the CLI version
  * - `ANA_AGENT_DEF_HASH` ← `sha256:` of the resolved agent-def file content
+ * - `ANA_RUN_ID`         ← a fresh per-launch UUID, the only key shared by the
+ *                          SessionStart hook's pending pointer and the in-session
+ *                          `ana artifact save` that consumes it (cross-harness,
+ *                          concurrency-safe correlation)
  *
  * Every field degrades cleanly: an unreadable agent-def file yields an empty
  * hash, a missing worktree slug yields an empty `ANA_SLUG`. Never throws.
@@ -116,7 +120,7 @@ function resolveAgentDefPath(projectRoot: string, platform: string, agentName: s
  * @param platform - Target platform ('claude' | 'codex')
  * @param agentName - Full agent name (e.g. 'ana-build')
  * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
- * @returns A record of the five `ANA_*` variables
+ * @returns A record of the six `ANA_*` variables
  */
 export function buildCaptureEnv(
   projectRoot: string,
@@ -149,6 +153,7 @@ export function buildCaptureEnv(
     ANA_SLUG: slug,
     ANA_CLI_VERSION: getCliVersionSync(),
     ANA_AGENT_DEF_HASH: agentDefHash,
+    ANA_RUN_ID: randomUUID(),
   };
 }
 
