@@ -1,9 +1,9 @@
 version: "1.0"
 sealed_by: "AnaPlan"
-feature: "Rename captureGate → testEvidenceGate (field + gate symbols, with back-compat)"
+feature: "Rename captureGate → testEvidenceGate (clean rename, no back-compat)"
 
 assertions:
-  # AC1 — new projects use the new key, never the legacy one
+  # AC1 — new projects use the new key
   - id: A001
     says: "New projects turn the test-evidence gate on under its new name"
     block: "createAnaJson emits testEvidenceGate on for new projects"
@@ -11,142 +11,79 @@ assertions:
     matcher: "equals"
     value: "on"
 
+  # Enablement — new key, with the test-command carve-out
   - id: A002
-    says: "New projects no longer write the old gate name"
-    block: "createAnaJson output does not contain the legacy captureGate key"
-    target: "serialized createAnaJson output"
-    matcher: "not_contains"
-    value: "captureGate"
-
-  # AC2 — legacy-only config still resolves and still enforces
-  - id: A003
-    says: "A config that only has the old gate name is still recognized"
-    block: "readTestEvidenceGateFlag resolves a legacy-only captureGate config"
-    target: "readTestEvidenceGateFlag({ captureGate: 'on' })"
-    matcher: "equals"
-    value: "on"
-
-  - id: A004
-    says: "An old gate left on still requires test evidence before a build report saves"
-    block: "isTestEvidenceGateEnabled is true for a legacy captureGate on with a resolvable test command"
-    target: "isTestEvidenceGateEnabled(legacy-captureGate-on project)"
+    says: "Turning the gate on requires test evidence before a build report saves"
+    block: "isTestEvidenceGateEnabled is true for testEvidenceGate on with a resolvable test command"
+    target: "isTestEvidenceGateEnabled(testEvidenceGate-on project)"
     matcher: "equals"
     value: true
 
-  # AC3 — precedence
-  - id: A005
-    says: "When both gate names are present, the new one decides"
-    block: "readTestEvidenceGateFlag lets testEvidenceGate win over legacy captureGate"
-    target: "readTestEvidenceGateFlag({ testEvidenceGate: 'off', captureGate: 'on' })"
+  - id: A003
+    says: "Turning the gate off lets a build report save without test evidence"
+    block: "isTestEvidenceGateEnabled is false when testEvidenceGate is off"
+    target: "isTestEvidenceGateEnabled(testEvidenceGate-off project)"
     matcher: "equals"
-    value: "off"
+    value: false
 
-  # absent → off (fail-safe)
-  - id: A006
+  - id: A004
     says: "A config with no gate setting is treated as off"
-    block: "readTestEvidenceGateFlag returns null when neither key is present"
-    target: "readTestEvidenceGateFlag({})"
+    block: "isTestEvidenceGateEnabled is false when the flag is absent"
+    target: "isTestEvidenceGateEnabled(no-flag project)"
     matcher: "equals"
-    value: null
+    value: false
 
-  # AC4 — re-init convergence
-  - id: A007
-    says: "Re-installing keeps a project's on/off gate choice"
-    block: "preserveUserState carries a legacy captureGate value forward under the new key"
-    target: "merged.testEvidenceGate after re-init of { captureGate: 'off' }"
-    matcher: "equals"
-    value: "off"
-
-  - id: A008
-    says: "Re-installing drops the old gate name once it has been migrated"
-    block: "preserveUserState output no longer contains captureGate after migration"
-    target: "serialized merged config after re-init of a legacy install"
-    matcher: "not_contains"
-    value: "captureGate"
-
-  # AC5 — user-facing strings
-  - id: A009
+  # AC5 — user-facing message names the new flag
+  - id: A005
     says: "The block message tells users about the testEvidenceGate setting"
     block: "applyTestEvidenceGate block output names the testEvidenceGate escape hatch"
     target: "gate block stderr"
     matcher: "contains"
     value: "testEvidenceGate"
 
-  - id: A010
-    says: "The block message no longer mentions the old gate name"
-    block: "applyTestEvidenceGate block output does not contain captureGate"
-    target: "gate block stderr"
-    matcher: "not_contains"
-    value: "captureGate"
-
-  # AC6 — config allowlist honors both
-  - id: A011
-    says: "Setting the new gate flag is recognized without a warning"
+  # AC6 — config allowlist knows the new key
+  - id: A006
+    says: "Setting the gate flag is recognized without a warning"
     block: "KNOWN_FIELDS contains testEvidenceGate"
     target: "config KNOWN_FIELDS"
     matcher: "contains"
     value: "testEvidenceGate"
 
-  - id: A012
-    says: "Setting the old gate flag on a legacy install is still recognized"
-    block: "KNOWN_FIELDS still contains captureGate"
-    target: "config KNOWN_FIELDS"
-    matcher: "contains"
-    value: "captureGate"
-
-  # schema back-compat
-  - id: A013
-    says: "An older config file carrying only the old gate name still loads"
-    block: "AnaJsonSchema parses a legacy-only captureGate config"
-    target: "AnaJsonSchema.parse({ captureGate: 'on' }).captureGate"
-    matcher: "equals"
-    value: "on"
-
-  - id: A014
-    says: "Config files can carry the new gate name"
+  # Schema accepts the new key
+  - id: A007
+    says: "Config files can carry the gate setting under its new name"
     block: "AnaJsonSchema parses a testEvidenceGate config"
     target: "AnaJsonSchema.parse({ testEvidenceGate: 'on' }).testEvidenceGate"
     matcher: "equals"
     value: "on"
 
-  # AC2 reporting path — doctor honors the legacy key through the shared resolver
-  - id: A015
-    says: "The doctor view reports the gate as on for a legacy-only config"
-    block: "assessEnforcement reports test_evidence_gate on/on-inactive for legacy captureGate on"
-    target: "doctor enforcement.test_evidence_gate for legacy captureGate on"
+  # Doctor reporting path reads the new key
+  - id: A008
+    says: "The doctor view reports the gate state from the new key"
+    block: "assessEnforcement reports test_evidence_gate from testEvidenceGate on"
+    target: "doctor enforcement.test_evidence_gate for testEvidenceGate on"
     matcher: "not_equals"
     value: "off"
 
-  # AC7 — source-invariant: the rename is complete. These are the ONLY assertions
-  # that catch an incomplete rename — the back-compat fallback makes residual
-  # captureGate symbols keep working, so every behavioral assertion above is blind
-  # to a half-finished rename. Checked mechanically against src/ by Verify (no test
-  # written). None of the kept boundary symbols (CaptureMarker, parseMarkers,
-  # validateCapturePresent, processCapture*) contain these strings — zero false positives.
-  - id: A016
-    says: "The legacy enablement reader symbol is gone from source"
-    block: "isCaptureGateEnabled fully renamed"
+  # AC7 — source-invariant clean sweep. These are the ONLY assertions that catch an
+  # incomplete rename: behavioral assertions A001–A008 all pass on the new key alone
+  # and are blind to a residual captureGate symbol left behind. Checked mechanically
+  # against packages/cli/src/ by Verify (no test written). No kept symbol contains
+  # either string — CaptureMarker, parseMarkers, validateCapturePresent, processCapture*
+  # are all clear — so zero false positives.
+  - id: A009
+    says: "The legacy gate flag name is gone from source"
+    block: "no captureGate flag string remains in src"
     target: "sourceCode"
     matcher: "not_contains"
-    value: "isCaptureGateEnabled"
-  - id: A017
-    says: "The legacy gate evaluator symbol is gone from source"
-    block: "evaluateCaptureGate fully renamed"
+    value: "captureGate"
+
+  - id: A010
+    says: "No legacy gate symbol remains in source"
+    block: "no CaptureGate symbol remains in src"
     target: "sourceCode"
     matcher: "not_contains"
-    value: "evaluateCaptureGate"
-  - id: A018
-    says: "The legacy gate apply symbol is gone from source"
-    block: "applyCaptureGate fully renamed"
-    target: "sourceCode"
-    matcher: "not_contains"
-    value: "applyCaptureGate"
-  - id: A019
-    says: "The legacy gate result type is gone from source"
-    block: "CaptureGateResult fully renamed"
-    target: "sourceCode"
-    matcher: "not_contains"
-    value: "CaptureGateResult"
+    value: "CaptureGate"
 
 file_changes:
   - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
