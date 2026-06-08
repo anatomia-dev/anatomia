@@ -14,6 +14,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -461,6 +462,74 @@ describe('assembleProcessAttestation', () => {
       expect(c.expected).toEqual({ plan: 1, build: 0, verify: 0 });
       // plan still expected → still a gap with zero sessions.
       expect(c.complete).toBe(false);
+    });
+  });
+
+  describe('cross-machine fixture (AC2/AC6)', () => {
+    // @ana A036
+    it('assembles a complete process block from files authored on different machines', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report.md');
+      seedReport('feat', 'verify_report.md');
+      // Each session is authored as if from a DIFFERENT machine: distinct
+      // session_ids, harnesses, cli versions, agent-def hashes — and crucially no
+      // shared home/buffer state (assembly reads only committed files).
+      seedProvenance('feat', prov('plan', 'm1-plan', '2026-06-01T00:30:00.000Z', {
+        harness: 'claude', cli_version: '1.2.0', agent_def_hash: 'sha256:machineA-plan',
+      }));
+      seedProvenance('feat', prov('build', 'm2-build', '2026-06-01T01:00:00.000Z', {
+        harness: 'claude', cli_version: '1.2.2', agent_def_hash: 'sha256:machineB-build',
+      }));
+      seedProvenance('feat', prov('verify', 'm3-verify', '2026-06-01T02:00:00.000Z', {
+        harness: 'codex', cli_version: '1.3.0', agent_def_hash: 'sha256:machineC-verify',
+      }, 500, 'gpt-5'));
+
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+      expect(att).not.toBeNull();
+      expect(att!.sessions).toHaveLength(3);
+      // Machine-independent: the verdict is complete regardless of origin host.
+      expect(att!.completeness.complete).toBe(true);
+      expect(att!.sessions.map((s) => s.harness)).toEqual(['claude', 'claude', 'codex']);
+    });
+  });
+
+  describe('squash-merge survival fixture (AC6)', () => {
+    // @ana A037
+    it('keeps every distinct provenance file through a squash merge (union, no loss)', () => {
+      const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-squash-'));
+      try {
+        const run = (cmd: string): void => { execSync(cmd, { cwd: repo, stdio: 'ignore' }); };
+        // Force a clean main branch (git init -b main per the build brief).
+        run('git init -b main');
+        run('git config user.email "t@t.com"');
+        run('git config user.name "T"');
+        fs.writeFileSync(path.join(repo, 'README.md'), '# base', 'utf-8');
+        run('git add -A && git commit -m base');
+
+        // Feature branch: three distinct per-session provenance files committed
+        // across separate commits (as the pipeline would across machines/sessions).
+        run('git checkout -b feature/x');
+        const provDir = path.join(repo, '.ana', 'plans', 'active', 'x', 'provenance');
+        fs.mkdirSync(provDir, { recursive: true });
+        const names = ['plan-sp.json', 'build-sb.json', 'verify-sv.json'];
+        names.forEach((name, i) => {
+          fs.writeFileSync(path.join(provDir, name), JSON.stringify({ session_id: name, n: i }), 'utf-8');
+          run(`git add -A && git commit -m add-${name}`);
+        });
+
+        // Squash-merge the whole branch into one commit on main. Squash is the risk
+        // case (a single flattened commit) — a merge-commit fixture would not prove
+        // this. Distinct filenames must all survive the flatten with no collision.
+        run('git checkout main');
+        run('git merge --squash feature/x');
+        run('git commit -m "squash merge feature/x"');
+
+        const survived = fs.readdirSync(provDir).filter((f) => f.endsWith('.json'));
+        expect(survived).toHaveLength(3);
+        expect(survived.sort()).toEqual(['build-sb.json', 'plan-sp.json', 'verify-sv.json']);
+      } finally {
+        fs.rmSync(repo, { recursive: true, force: true });
+      }
     });
   });
 });
