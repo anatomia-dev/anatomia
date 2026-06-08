@@ -30,9 +30,9 @@ Settings the CLI manages for you. Change them with commands or `ana.json` edits 
 <div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set mergeStrategy "squash"</div>
 </div>
 <div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
-<div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Capture gate</div>
+<div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Test-evidence gate</div>
 <div style={{fontSize:"12.5px",color:"var(--ink-60)",lineHeight:1.5}}>On by default for new projects. When on, a build-report save with no valid captured test evidence is blocked — but only if a test command resolves. Set <code>&quot;off&quot;</code> (or leave it absent) to disable. Valid values: <code>on</code>, <code>off</code>.</div>
-<div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set captureGate "off"</div>
+<div style={{fontFamily:"var(--font-mono)",fontSize:"11px",marginTop:"8px",color:"var(--ink-45)"}}>ana config set testEvidenceGate "off"</div>
 </div>
 <div style={{padding:"12px 14px",borderRadius:"var(--radius-sm)",background:"var(--bg-card)",border:"1px solid var(--border-soft)"}}>
 <div style={{fontWeight:600,fontSize:"13px",marginBottom:"4px",color:"var(--fg)"}}>Custom data</div>
@@ -71,7 +71,7 @@ The `path`, `language`, and `framework` fields on each surface are machine-manag
   "coAuthor": "Ana <build@anatomia.dev>",
   "artifactBranch": "main",
   "mergeStrategy": "squash",
-  "captureGate": "on",
+  "testEvidenceGate": "on",
   "commands": {
     "build": "pnpm run build",
     "test": "pnpm test -- --run",
@@ -81,9 +81,9 @@ The `path`, `language`, and `framework` fields on each surface are machine-manag
 }
 ```
 
-<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>User fields (`branchPrefix`, `coAuthor`, `artifactBranch`, `mergeStrategy`, `captureGate`, `commands`, `custom`) are yours. Machine fields (`anaVersion`, `lastScanAt`, `language`, `framework`) refresh on `ana init`. Unknown top-level keys you add are preserved across re-init.</p>
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>User fields (`branchPrefix`, `coAuthor`, `artifactBranch`, `mergeStrategy`, `testEvidenceGate`, `commands`, `custom`) are yours. Machine fields (`anaVersion`, `lastScanAt`, `language`, `framework`) refresh on `ana init`. Unknown top-level keys you add are preserved across re-init.</p>
 
-<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The `captureGate` field controls the captured-test-evidence gate. New projects are initialized with `"on"`. When it is `"on"` <em>and</em> a test command resolves (top-level or per-surface), saving a `build_report.md` that carries no valid captured test evidence is blocked — run `ana test` (it seals a harmless abstain even when no tests run), then re-save. `"off"` or an absent flag disables the gate; re-init preserves an explicit choice and never imposes `"on"` on a project that never set it.</p>
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The `testEvidenceGate` field controls the captured-test-evidence gate. New projects are initialized with `"on"`. When it is `"on"` <em>and</em> a test command resolves (top-level or per-surface), saving a `build_report.md` that carries no valid captured test evidence is blocked — run `ana test` (it seals a harmless abstain even when no tests run), then re-save. `"off"` or an absent flag disables the gate; re-init preserves an explicit choice and never imposes `"on"` on a project that never set it.</p>
 
 ## Edit the files
 

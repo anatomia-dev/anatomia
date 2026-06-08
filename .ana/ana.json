@@ -49,7 +49,7 @@
   "branchPrefix": "feature/",
   "setupPhase": "complete",
   "mergeStrategy": "merge",
-  "captureGate": "on",
+  "testEvidenceGate": "on",
   "processCapture": "on",
   "lastScanAt": "2026-06-08T01:56:12.185Z",
   "custom": {}
