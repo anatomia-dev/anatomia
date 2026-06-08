@@ -13,12 +13,21 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { fileURLToPath } from 'node:url';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { assembleProcessAttestation } from '../../src/commands/work-proof.js';
 import type { SessionProvenance } from '../../src/types/proof.js';
 import type { ProofSummary } from '../../src/utils/proofSummary.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// @ana A017
+it('work-proof.ts no longer defines the fragile worktree-path matcher', () => {
+  const src = fs.readFileSync(path.resolve(__dirname, '../../src/commands/work-proof.ts'), 'utf-8');
+  expect(src).not.toContain('recordBelongsToWorktree');
+});
 
 describe('assembleProcessAttestation', () => {
   let projectRoot: string;
