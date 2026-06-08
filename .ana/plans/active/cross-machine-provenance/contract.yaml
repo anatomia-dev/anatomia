@@ -337,6 +337,8 @@ file_changes:
   # Phase 2
   - path: "packages/cli/src/types/proof.ts"
     action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
   - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
     action: modify
   - path: "packages/cli/src/commands/init/state.ts"
