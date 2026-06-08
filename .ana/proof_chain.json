@@ -51697,6 +51697,907 @@
       },
       "surface": "cli",
       "phases": 2
+    },
+    {
+      "slug": "cross-machine-provenance",
+      "feature": "Cross-machine process provenance (capture v2)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 46,
+        "satisfied": 46,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Every launched agent gets a unique run id so its work can be matched later",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Tagging a session never strips the agent's existing environment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Session start records a lightweight pointer to the live session",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The session-start hook does no heavy work — it writes no buffer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The retired end-of-session hook is harmless on installs that still have it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Each role's session is recorded as its own provenance file at save time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Provenance carries token counts and model, not a dollar figure, in git",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Derived counts include the token totals the cost is computed from",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A session's provenance ships in the very same commit as the artifact it produced",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Saving all artifacts together also ships their provenance in that commit",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Re-saving the same session updates its one provenance file — no duplicates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Separate sessions each keep their own provenance record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A re-check that changed nothing still reports nothing to save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "That no-work re-check tells the user there was nothing to save",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "No raw conversation text is ever written into the committed record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The cross-machine-broken home buffer is gone for good",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The fragile worktree-path matching is gone",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The completed proof is assembled purely from committed provenance files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "When capture is off, no provenance block is attached",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "When capture is on but provenance is missing, the gap is recorded, not hidden",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "How many build sessions we expect is tied to the build reports actually saved",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A run with every role's provenance present reads as complete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A run missing a role's provenance reads as incomplete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The incompleteness names which role is missing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Legitimate rework with extra build reports never false-fails completeness",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Thinking and learning sessions are never required for completeness",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "With strict mode on, an incomplete proof blocks completion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "A blocked strict completion writes no proof entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "With strict mode off, an incomplete proof warns but still completes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "A warned completion records the gap in the proof for later",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A045",
+          "says": "A strict block is recoverable — it leaves the work item's files untouched",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A046",
+          "says": "After a strict block, relaxing strict and re-running completes and records the gap",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "Teams can opt into strict completeness via a config flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "New projects default to warn, not block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "A team's strict setting survives re-running init",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "The proof shows an estimated cost computed at display time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Provenance is never allowed to change a pass/fail verdict",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A036",
+          "says": "A proof assembled from different machines' files comes out complete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A037",
+          "says": "Per-session provenance survives a squashed PR merge with no loss",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A038",
+          "says": "A fresh install gets exactly one capture hook on Claude",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A039",
+          "says": "A fresh install installs no end-of-session derive hook",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A040",
+          "says": "Re-init removes a stale derive hook left by an older version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A041",
+          "says": "Pruning a stale hook never removes the user's own hooks",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A042",
+          "says": "The Codex install template carries no derive hook",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A043",
+          "says": "Re-init prunes the stale derive hook on Codex too",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A044",
+          "says": "Provenance files are never gitignored — they must travel between machines",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 214,
+        "think": 17,
+        "plan": 93,
+        "build": 68,
+        "verify": 22,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 17
+          },
+          {
+            "stage": "plan",
+            "minutes": 93
+          },
+          {
+            "stage": "build",
+            "minutes": 33,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 18,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 2
+          },
+          {
+            "stage": "build",
+            "minutes": 17,
+            "phase": 3
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 3
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:d82576af6962ca5107538935c72d2430636b37ce249b0f20bb9f90f56b99d7ec",
+        "contract": "sha256:300546c9ebe06e0342606d1641dbc6e6f915113038dcfbf878d0bb7cad0db4af",
+        "plan": "sha256:cd38d4eb04d600e101bc52b5e8531bdcadbcea4eecb665268b7b5728f3ee1aea",
+        "spec-1": "sha256:12a60cc158383187f5719c6dd54c64892f7368275facc1c8b30952fb905e5848",
+        "spec-2": "sha256:8fe089e5366acc3d9e67a06222568842bb5db9c9720f0ca16721d0ed8667e323",
+        "spec-3": "sha256:913e1f33643253fead75c67cf2f6075efceeccc72339b1f643e6a3208598e7b6",
+        "build-report-1": "sha256:5a0a54a5dc8492ce30d3d1ba0383b38f73a4743be05f198f904b0167e8074d83",
+        "build-data-1": "sha256:3b88f7e4bab5de8bcc7c4907136a54a694ad737251173d1da68b6ccab84ba1b2",
+        "verify-report-1": "sha256:baa54617428d2698d381548c54fc8f97775d5d57da70707bbe76815ed06b6cf8",
+        "verify-data-1": "sha256:26e01bbe384e2a306097f3af412f3babf6effecf391400111f8acb5fe0f89e40",
+        "build-report-2": "sha256:ade5c164d9bc0a45b32696335fa669a7aca0a681b8c43665db03c08e7237d304",
+        "build-data-2": "sha256:6bd90beb60920ceeddd2ea16446fe6dcae014d7dc9050b7d46769586f83b2dc4",
+        "verify-report-2": "sha256:b14675395dbb3e70e048d450b7245ec94cc998fa13de41265d9f12f785e1e5f1",
+        "verify-data-2": "sha256:201e2e3175cda88d599d6a1b2a9e34b82170a56a43105df57c9f4432b7f3a584",
+        "build-report-3": "sha256:f19bd5f818c601c447614e4b32813dcd42d4093b4aec0adeab3944b85e329631",
+        "build-data-3": "sha256:82ba0645d0d669601a4b7900d65f63e4784d0cf5d143e67809728186fde80e7b",
+        "verify-report-3": "sha256:17f34a3173e1ea1a83a30c3daf35c42290059c64dcc546c5d1f04a33538a1276",
+        "verify-data-3": "sha256:b918713ca70e0704d7dfbd9a518dc72c6697a2f623e15ea83086ceb69c31c680"
+      },
+      "completed_at": "2026-06-08T07:40:51.666Z",
+      "modules_touched": [
+        "packages/cli/src/commands/_capture.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/forensics.ts",
+        "packages/cli/templates/.codex/hooks.json",
+        "packages/cli/tests/commands/_capture.test.ts",
+        "packages/cli/tests/commands/artifact-provenance.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/commands/work-proof-process.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/forensics-derive.test.ts",
+        "packages/cli/tests/utils/forensics.test.ts"
+      ],
+      "scope_summary": "Make per-session process provenance (model, tokens, churn, outcome — cost derived at display) **complete across machines and people**, so a work item's committed proof carries every role's record regardless of which machine each pipeline session ran on.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "No-work re-validation leaves the provenance file modified-but-unstaged in the working tree. captureProvenanceAtSave writes provenance/{role}-{id}.json to disk BEFORE the no-changes guard; on the no-op path only `git reset -- provenancePaths` runs (unstage), which does not restore working-tree content. On the Claude fallback path captured_at is a fresh wall-clock each call, so the file churns on every re-save. AC9 ('no staged provenance') is met; this is beyond-AC. Risk: a downstream clean-tree assumption (future ana command, user pre-push hook) could trip on the lingering change.",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 1259,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013",
+            "A014"
+          ],
+          "id": "cross-machine-provenance-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "resolveTranscriptPath is exported from forensics.ts but has zero importers anywhere — its only consumer is the internal call at forensics.ts:695. Per the project rule 'flag exports with zero imports anywhere', the export keyword is needless public-API surface. The spec instructed the builder to keep it exported, so this is partly an upstream hint that did not pan out (no other consumer materialized).",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "line": 615,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "cross-machine-provenance-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Capture v2 deletes the home-global forensics buffer read and the recordBelongsToWorktree worktree-path matcher from assembleProcessAttestation, replacing them with per-session committed provenance files. This resolves the session-capture C8 finding (assembly still read the machine-wide ~/.ana/forensics/sessions.jsonl and still used recordBelongsToWorktree). Verified by grep: neither symbol remains anywhere in src/.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "session-capture-C8"
+          ],
+          "id": "cross-machine-provenance-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T07:40:51.666Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "executeDerive's body (synchronous full-transcript readFileSync + per-line JSON.parse before process.exit(0) on SessionEnd/Stop) is deleted — the function is now a pure no-op kept only so commander tolerates an un-pruned --derive hook. This resolves the session-capture C11 finding about the unbounded synchronous derive read on the hook path.",
+          "file": "packages/cli/src/commands/_capture.ts",
+          "anchor": null,
+          "line": 157,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "session-capture-C11"
+          ],
+          "id": "cross-machine-provenance-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T07:40:51.666Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "The no-work re-validation integration test asserts only `git diff --staged --quiet` (nothing staged) but does not assert a clean working tree (`git status --porcelain` empty). It therefore passes despite the modified-but-unstaged provenance file the no-op path leaves behind (see the artifact.ts code finding). A stronger assertion would have surfaced that beyond-AC behavior.",
+          "file": "packages/cli/tests/commands/artifact-provenance.test.ts",
+          "anchor": null,
+          "line": 262,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013",
+            "A014"
+          ],
+          "id": "cross-machine-provenance-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "computeCompleteness signature drops the spec's provenanceDir param — implemented as (reportsDir, sessions) vs spec's (provenanceDir, reportsDir, sessions)",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "line": 52,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A021",
+            "A022"
+          ],
+          "id": "cross-machine-provenance-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Provenance-file reader is duplicated: the strict guard in work.ts inlines the same readdirSync+JSON.parse loop that assembleProcessAttestation uses; the two could drift (and the guard copy omits the sort). Spec permitted it, but a shared readSessionsFromDir helper would remove the drift risk.",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1124,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A027",
+            "A045"
+          ],
+          "id": "cross-machine-provenance-C7",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Strict guard under --merge is not directly exercised — the strict integration tests pre-merge via createMergedProject then call completeWork without --merge. The documented 'merge precedes guard' boundary message is unverified by test.",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "anchor": null,
+          "line": 1442,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A027",
+            "A028"
+          ],
+          "id": "cross-machine-provenance-C8",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Completeness is a presence floor (present >= expected): missing provenance is caught, but an extra/orphan build or verify session (present > expected) never flags. Intended for rework tolerance, but worth recording — the check only detects under-counting.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "line": 75,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A025"
+          ],
+          "id": "cross-machine-provenance-C9",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec File Changes listed proof.ts cost-via-computeCost as a Phase-2 change, but Phase 1 already finalized it; Phase 2's only proof.ts change was the completeness line. No defect — the Build Brief slightly overstated Phase-2 proof.ts scope.",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 455,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A034"
+          ],
+          "id": "cross-machine-provenance-C10",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T07:40:51.666Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "pruneHookCommand never-throw guards for malformed shapes are unexercised — non-object hooks and non-array event value branches have no direct test",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 725,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A040",
+            "A043"
+          ],
+          "id": "cross-machine-provenance-C11",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "pruneHookCommand drops the WHOLE entry if any hooks[].command matches — a user co-locating their command in the same entry object as the derive hook would lose it (faithful to spec wording; Anatomia installs one command per entry so unreachable in practice)",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 729,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A041"
+          ],
+          "id": "cross-machine-provenance-C12",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A044's regression test lives in tests/commands/init.test.ts, but the contract's Phase-3 file_changes lists only assets-capture-hooks.test.ts — the test exists and is correct; the contract under-specified the test location",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A044"
+          ],
+          "id": "cross-machine-provenance-C13",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T07:40:51.666Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "session-capture build concern remains live (out of Phase 3 scope): ensureCodexHooksFlag flips any `hooks =` key via regex regardless of TOML table, so `hooks =` under a non-[features] table could be flipped. Not touched by this phase.",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 870,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "cross-machine-provenance-C14",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts — not introduced by Phase 3 (file not in changeset); flagged so it is not mistaken for new debt",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "anchor": null,
+          "line": 198,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "cross-machine-provenance-C15",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "run.test.ts was modified though not in the spec's file_changes — added A001/A002 coverage for THIS contract and stripped stale @ana A001–A007 tags left over from the prior session-capture contract (they collided with this contract's meanings).",
+          "file": "packages/cli/tests/commands/run.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Claude fallback transcript resolution globs ~/.claude/projects/**/{session_id}.jsonl. Session ids are UUIDs so cross-project collision is effectively impossible, but the glob is project-agnostic (matches the first session-id-named transcript under any project dir).",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "detectHarness was deleted rather than moved to forensics.ts — captureProvenanceAtSave reads ANA_HARNESS directly (spec step 6), so transcript-shape harness detection no longer exists. With no remaining consumer, keeping it would have been dead code. The spec offered this as an explicit option.",
+          "file": "packages/cli/src/commands/_capture.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "computeCompleteness implemented as (reportsDir, sessions) rather than the spec's (provenanceDir, reportsDir, sessions) — provenanceDir would be unused since present derives from the passed sessions",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "ana proof context findings on touched files (getTemplatesDir dev-path, surface-path shell sanitization, monorepo command scoping) are all pre-existing and unrelated to Phase 2",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive) — untouched file, not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Codex fresh-install + prune now has automated coverage (closes the prior session-capture-C-class gap that --platforms codex was never exercised); the Codex install path is verified via the built CLI, but the hooks.json schema is still unconfirmed against a live Codex install.",
+          "file": "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Stale @ana tags corrected in assets-capture-hooks.test.ts. The file previously carried @ana A018/A019/A022 tags that referenced the superseded install-time-gating contract; the current sealed contract reassigned those IDs to Phase 1/2 attestation/completeness assertions (verified elsewhere). Retagged to the correct Phase-3 assertions (A038-A043) and dropped the spurious ones.",
+          "file": "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "pruneHookCommand drops an entire hook entry if ANY command in its hooks[] array matches the target. Install always writes one-command-per-entry, so this is correct for our shape, but a hand-authored entry that co-located the derive command with a user command in the same hooks[] array would lose the user command too. Mirrors the spec's filter-by-command idiom exactly.",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 46,
+          "assertions_total": 46,
+          "findings": {
+            "risk": 0,
+            "debt": 2,
+            "observation": 13
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "feature",
+          "multi_phase": true
+        },
+        "module_churn": {
+          "packages/cli/src/commands/_capture.ts": {
+            "added": 34,
+            "deleted": 92
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 43,
+            "deleted": 7
+          },
+          "packages/cli/src/commands/init/anaJsonSchema.ts": {
+            "added": 8,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/init/assets.ts": {
+            "added": 57,
+            "deleted": 17
+          },
+          "packages/cli/src/commands/init/state.ts": {
+            "added": 5,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 15,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/run.ts": {
+            "added": 7,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/work-proof.ts": {
+            "added": 116,
+            "deleted": 120
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 43,
+            "deleted": 1
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 36,
+            "deleted": 9
+          },
+          "packages/cli/src/utils/forensics.ts": {
+            "added": 285,
+            "deleted": 146
+          },
+          "packages/cli/templates/.codex/hooks.json": {
+            "added": 0,
+            "deleted": 10
+          },
+          "packages/cli/tests/commands/_capture.test.ts": {
+            "added": 98,
+            "deleted": 166
+          },
+          "packages/cli/tests/commands/artifact-provenance.test.ts": {
+            "added": 266,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/init.test.ts": {
+            "added": 57,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+            "added": 23,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/init/assets-capture-hooks.test.ts": {
+            "added": 149,
+            "deleted": 53
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 81,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/run.test.ts": {
+            "added": 18,
+            "deleted": 6
+          },
+          "packages/cli/tests/commands/work-proof-process.test.ts": {
+            "added": 392,
+            "deleted": 240
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 135,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/forensics-derive.test.ts": {
+            "added": 25,
+            "deleted": 82
+          },
+          "packages/cli/tests/utils/forensics.test.ts": {
+            "added": 303,
+            "deleted": 110
+          }
+        },
+        "sessions": [
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8[1m]",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "d44ca1c8-c78e-4e4a-93e0-a82299bf4749",
+            "derived": {
+              "tokens": {
+                "input": 11632,
+                "output": 113507,
+                "cache_create": 253545,
+                "cache_read": 15452810
+              },
+              "cost_usd": 0,
+              "price_table_version": "2026-06-01",
+              "duration_ms": 1619557,
+              "turns": 221,
+              "tool_calls": 102,
+              "commands_run": 38,
+              "tests_executed": 7536,
+              "failures_encountered": 3,
+              "files_touched": 15,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8[1m]",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "06170a6f-f431-49c9-9bb4-567e1eac9554",
+            "derived": {
+              "tokens": {
+                "input": 6905,
+                "output": 28540,
+                "cache_create": 136421,
+                "cache_read": 3200495
+              },
+              "cost_usd": 0,
+              "price_table_version": "2026-06-01",
+              "duration_ms": 525386,
+              "turns": 92,
+              "tool_calls": 39,
+              "commands_run": 21,
+              "tests_executed": 3690,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8[1m]",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "bd4232a8-7f20-4962-9290-fbf824366d57",
+            "derived": {
+              "tokens": {
+                "input": 7842,
+                "output": 55547,
+                "cache_create": 147372,
+                "cache_read": 9734624
+              },
+              "cost_usd": 0,
+              "price_table_version": "2026-06-01",
+              "duration_ms": 1072171,
+              "turns": 175,
+              "tool_calls": 87,
+              "commands_run": 43,
+              "tests_executed": 3727,
+              "failures_encountered": 0,
+              "files_touched": 14,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8[1m]",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "bbacaef8-98db-4452-aa96-251aad552327",
+            "derived": {
+              "tokens": {
+                "input": 6695,
+                "output": 25805,
+                "cache_create": 109400,
+                "cache_read": 3320748
+              },
+              "cost_usd": 0,
+              "price_table_version": "2026-06-01",
+              "duration_ms": 517681,
+              "turns": 102,
+              "tool_calls": 45,
+              "commands_run": 23,
+              "tests_executed": 3566,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8[1m]",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "7670787c-5f50-4e22-bf94-6d0c3dfe86f8",
+            "derived": {
+              "tokens": {
+                "input": 7016,
+                "output": 39800,
+                "cache_create": 113917,
+                "cache_read": 3908135
+              },
+              "cost_usd": 0,
+              "price_table_version": "2026-06-01",
+              "duration_ms": 1272494,
+              "turns": 92,
+              "tool_calls": 43,
+              "commands_run": 21,
+              "tests_executed": 3720,
+              "failures_encountered": 0,
+              "files_touched": 6,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8[1m]",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "5175e04f-5987-4296-9b8d-544b4948d5be",
+            "derived": {
+              "tokens": {
+                "input": 7005,
+                "output": 32460,
+                "cache_create": 88111,
+                "cache_read": 3842606
+              },
+              "cost_usd": 0,
+              "price_table_version": "2026-06-01",
+              "duration_ms": 1803737,
+              "turns": 114,
+              "tool_calls": 48,
+              "commands_run": 33,
+              "tests_executed": 3573,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-08T05:48:27.732Z",
+        "completed_at": "2026-06-08T07:40:51.597Z",
+        "commit_count": 0,
+        "base_commit": "ed66405c4a3ce807a1ee66fd6fdd826ea51f2d67"
+      },
+      "surface": "cli",
+      "phases": 3
     }
   ],
   "schema": 1,
