@@ -5,19 +5,19 @@
   "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
   "cli_version": "1.2.2",
   "session_id": "ac3a02b1-64c9-4a75-a9aa-e2d00d8d904c",
-  "captured_at": "2026-06-08T23:00:05.449Z",
+  "captured_at": "2026-06-08T23:25:03.349Z",
   "derived": {
     "tokens": {
-      "input": 5620,
-      "output": 54076,
-      "cache_create": 125227,
-      "cache_read": 6577767
+      "input": 5753,
+      "output": 56962,
+      "cache_create": 125992,
+      "cache_read": 6860981
     },
     "price_table_version": "2026-06-08",
-    "duration_ms": 1449615,
-    "turns": 192,
-    "tool_calls": 103,
-    "commands_run": 41,
+    "duration_ms": 1490512,
+    "turns": 196,
+    "tool_calls": 105,
+    "commands_run": 42,
     "tests_executed": 21703,
     "failures_encountered": 7175,
     "files_touched": 16,

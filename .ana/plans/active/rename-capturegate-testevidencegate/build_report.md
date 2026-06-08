@@ -69,10 +69,10 @@ Command: `ana test --stage build --slug rename-capturegate-testevidencegate` (ca
 ```
 ✓ captured  counts: 3587 passed, 0 failed, 2 skipped  (verdict: pass)
 ```
-Sealed marker (engine-captured, sha-sealed):
-```
+Sealed marker (engine-captured, sha-sealed) — top-level so the present-check recognizes it:
+
 <!-- ana:capture stage=build slug=rename-capturegate-testevidencegate counts=3587p/0f/2s verdict=pass sha256=5f4cabf70ae3c93e81cf27ca07f4ea4590aa88f485b47b4496708388f6a8ab69 -->
-```
+
 Tests: 3587 passed, 0 failed, 2 skipped. (Confirmed by 3 independent clean full runs; see Open Issues for one observed flaky run.)
 
 ### Comparison
