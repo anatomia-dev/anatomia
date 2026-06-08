@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-191 runs · 190 active · 5 promoted · 899 closed
+192 runs · 200 active · 5 promoted · 901 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 35 | 37 | 2026-06-06 |
-| cli | 132 | 130 | 2026-06-07 |
+| cli | 133 | 140 | 2026-06-08 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,22 +24,25 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 190 total)
+## Active Findings (30 shown of 200 total)
+
+### packages/cli/src/commands/_capture.ts
+
+- **code:** executeDerive awaits a synchronous readFileSync + per-line JSON.parse of the full transcript before process.exit(0) on SessionEnd/Stop. The 250ms stdin cap bounds the read-wait, not the derive itself, so a very large finished transcript adds to hook teardown latency despite the spec's 'async, never delays teardown' intent. Low impact; recorded for awareness. Unchanged this cycle. — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** Block message did not reassure a build-only/no-tests agent. When the gate blocks on an armed project, the agent is told evidence is required and to run `ana test`, but not that `ana test` seals a harmless abstain when there are no tests. Added one chalk.gray guidance line; gate logic unchanged. Re-verified (build + full suite + lint + tsc green). — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 - **code:** isArmed is read twice on the first valid build-report save (applyCaptureGate at :796, then armCapture's idempotency guard at capture-state.ts:75). Negligible — capture.json is a small separate file off the hot .saves.json path — but the second read is redundant given wasArmed is already known. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
-- **test:** The 'valid' arming predicate uses warnings.length === 0 as a proxy for 'all three preservation validators passed' rather than asserting on validator results directly. Correct today because evaluateCaptureGate routes all non-blocking messages to warnings, but the coupling is implicit — a future change that emits an informational warning would silently stop arming. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
 ### packages/cli/src/commands/init/assets.ts
 
-- **test:** atomicWriteFile SHA-256 integrity-failure branch (hash mismatch throw + temp cleanup) is untested — A011 is verified only indirectly via a passing happy-path write — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
-- **code:** atomicWriteFile fully replaces the removed copyAndVerifyFile (spec implied factoring the two to share). All writes now route through one content-based atomic+integrity helper; old helper removed with no remaining callers — cleaner than the spec's letter, no dead code — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+- **code:** Codex config.toml [features] hooks=true is written only when the file is absent — a customer with a pre-existing .codex/config.toml that lacks the flag, turning capture on, gets hooks.json but no enablement, so the SessionStart hook silently never fires — *session-capture — agent-session capture & provenance unlock*
+- **code:** pruneCaptureHook leaves empty hook-event arrays — a project whose only SessionStart entry was ours becomes "SessionStart": [] after flip-off (harmless cruft, no hook fires) — *session-capture — agent-session capture & provenance unlock*
 
-### packages/cli/src/commands/init/index.ts
+### packages/cli/src/commands/run.ts
 
-- **code:** Refresh-warning git-recovery hint hardcodes '.claude/agents/ana-build.md' regardless of which files changed — a Codex-only user, or one whose only change was CLAUDE.md, gets a Claude-path example. Echoes the hardcoded-'.claude/'-path pattern of gitignore-disclosure-and-hardening-C1 — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+- **code:** Empirical cwd/slug checkpoint from spec-1 (confirm real cwd of an ana run build/verify launch) has no in-repo evidence. Slug resolves via detectWorktreeSlug(projectRoot), unit-tested with a worktree-meta fixture; clean-degrade (empty slug) covers the worst case regardless — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/src/commands/test.ts
 
@@ -49,13 +52,14 @@
 - **code:** Checkpoint passthrough is joined with spaces and re-parsed by resolveCommand, losing original argv quoting. A multi-token checkpoint command whose args contain spaces/parens/metacharacters is misparsed or refused (verified live: parens in an arg triggered a subshell refusal). Mitigated by degrade-to-raw so it never blocks, but counts/verdict are lost. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 - **code:** inferRunner has a garbled inline comment about cargo/go precedence ('cargo test contains the substring go test… not, but be explicit'). Cosmetic; logic is correct (cargo checked before go). — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
+### packages/cli/src/commands/work-proof.ts
+
+- **code:** Unrequested scope expansion during the fix cycle: commit 41cdc1cb ('prefer banked counts, never drop a matched session') changed SessionProvenance.derived from required to optional, made assembleProcessAttestation keep a matched-but-counts-less session as a metadata-only row, and updated proof.ts to render 'counts unavailable' and skip such rows in cost totals. Beyond the FAIL's single required fix. It is a genuine robustness improvement (prevents silent session loss on a dangling/deleted transcript), well-tested (two new tests, both green) and type-safe (proof.ts handles d? everywhere). Not a blocker — recorded because a fix cycle widened beyond its mandate. — *session-capture — agent-session capture & provenance unlock*
+- **code:** Partially mitigated, not resolved: assembleProcessAttestation still reads the home-global forensics buffer (~/.ana/forensics/sessions.jsonl, machine-wide, never pruned in Phase 1) in full at every work-complete, and recordBelongsToWorktree still reads each non-slug/non-cwd-matched record's entire transcript end-to-end for the per-line cwd scan. The 41cdc1cb banked-counts preference removed the redundant RE-derive for already-counted matched sessions, so per-matched-session cost is lower, but the unbounded buffer scan and per-candidate transcript read remain. Cost still grows with lifetime session count. — *session-capture — agent-session capture & provenance unlock*
+
 ### packages/cli/src/commands/work.ts
 
 - **code:** getWorkStatus reads + parses .ana/ana.json twice per call — once inline (readFileSync + JSON.parse) for lastScanAt/captureGate at work.ts:~500, then again inside isCaptureGateEnabled (which re-reads + AnaJsonSchema.parses the same file) for captureGateActive at ~515. Harmless (status is cold-path) but two reads of one file; could thread the parsed object through. Unchanged since prior verify. — *Retire Capture-Gate Self-Arming — Drive the Gate from a Committed Config Flag*
-
-### packages/cli/src/engine/detectors/surfaces.ts
-
-- **code:** Redundant loop in isNonProductFilePath — EXCLUDED_SEGMENTS check and -e2e suffix check iterate the same range in separate loops — *Fix non-product path over-exclusion at deep segments*
 
 ### packages/cli/src/utils/capture-marker.ts
 
@@ -66,6 +70,10 @@
 
 - **code:** deriveCounts falls through to every parser when no hint matches; the rspec parser regex /(\d+) examples?, (\d+) failures?/ is loose enough to match unrelated output, risking a false count (and a false 'pass' when passed>0 at exit 0) on an unknown runner. Counts are fail-open by design, but a coincidental match defeats ABSTAIN-ON-UNKNOWN for that input. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
+### packages/cli/src/utils/forensics.ts
+
+- **code:** parseTestCounts matches the first /(\d+)\s+passed/ in any Bash tool_result text, so prose mentioning 'N passed' (not a test runner) inflates tests_executed/failures_encountered. Documented best-effort and provenance-only (never feeds a verdict), so impact is low, but the metric is not trustworthy. Unchanged this cycle. — *session-capture — agent-session capture & provenance unlock*
+
 ### packages/cli/src/utils/git-operations.ts
 
 - **code:** Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts:198 — NOT introduced by this build (file is outside the diff); noted so it is not mistaken for a regression — *Simplify ana test to its load-bearing core (deterministic seal)*
@@ -74,16 +82,19 @@
 
 - **test:** Corpus errorToken is the generic string 'Error' for 7 of 8 stacks (vitest uses the specific 'AssertionError'). It is present in each fail fixture, but a generic token is a weak assertion for ERROR-NEVER-STRIPPED — it would pass even if a different error string were the one preserved. — *Captured Test Evidence — engine-captured, seal-gated test evidence*
 
+### packages/cli/tests/commands/_capture.test.ts
+
+- **test:** A013 no-network is a static source-scan (asserts no network-module imports / no fetch() in the capture source), not a runtime network counter — would not catch network I/O reached via an already-imported transitive module. Spec-sanctioned enforcement approach; low risk given capture path is fs+os only — *session-capture — agent-session capture & provenance unlock*
+- **test:** AC12 no-network enforcement scan (_capture.test.ts:156) covers the derive/cost core (_capture.ts, forensics.ts, pricing.ts) but not the work-proof.ts assembly wrapper or artifact.ts churn path. Source inspection confirms no network code on the assembly path, so the guarantee holds where it matters, but the scanned set is narrower than the AC phrasing ('the capture + derive path'). — *session-capture — agent-session capture & provenance unlock*
+
 ### packages/cli/tests/commands/artifact.test.ts
 
 - **test:** A026 (byte-stable re-save / AC12) has no dedicated test, though the spec's Testing Strategy explicitly requested one. Behavior is sound by construction — inlining is deleted and applyCaptureGate is read-only, so the save path never mutates the report — but the contract target reportUnchangedOnSecondSave is verified by source inspection, not a regression test. — *Compact the capture seal + fix the count*
 - **test:** A014 (verify-report sealed account) now has a genuine targeted @ana A014 test: saves a verify report carrying a bare marker with the gate ON, then asserts the saved verify_report.md contains the begin/end delimiters, the real sha256, AND the verbatim captured bytes that were absent before the save. Closes the prior verify's AC9 PARTIAL gap. Not a sentinel. — *Retire Capture-Gate Self-Arming — Drive the Gate from a Committed Config Flag*
 
-### packages/cli/tests/commands/init/template-propagation.test.ts
+### packages/cli/tests/commands/init/assets-capture-hooks.test.ts
 
-- **test:** `tools` config-key preservation is untested — CLAUDE_AGENT_CONFIG_KEYS includes 'tools' but no test sets a tools frontmatter key and asserts it survives re-init; only `model` (A004) is exercised — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
-- **test:** CLAUDE.md overwrite-of-a-user-edit is not directly tested — A007 is verified only by presence of interpolation; no test mutates CLAUDE.md body then proves re-init resets it to stock — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
-- **test:** Changed-files warning test (A014) does not assert the exact set — it checks ana-build.md present and CLAUDE.md absent, but an unchanged agent erroneously appearing in the warning would not be caught — *Template Propagation — Lock-Stock Refresh of Machine-Owned Templates on Re-init*
+- **test:** Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/tests/commands/template-capture-instruction.test.ts
 
@@ -92,14 +103,6 @@
 ### packages/cli/tests/commands/test-command.test.ts
 
 - **test:** A008 (configured test_json yields a non-abstain verdict on real output) has no hermetic unit test. Verified via live dogfood run (this repo seals 3429p/0f/2s, verdict=pass) plus the A006 JSON-parser test, but no in-test fixture exercises the full test_json -> executeCapture -> verdict!=abstain chain. — *Compact the capture seal + fix the count*
-
-### packages/cli/tests/engine/detectors/detection-overrides.test.ts
-
-- **test:** Temp fixture isolation depends on the package-manager detector's current five-level parent walk — *Fix SQL table counting regex*
-
-### packages/cli/tests/engine/detectors/surfaces.test.ts
-
-- **test:** @ana tag namespace collision — surfaces.test.ts carries A001-A027 tags from 3+ prior contracts, making per-contract tag lookup ambiguous — *Fix non-product path over-exclusion at deep segments*
 
 ### packages/cli/tests/utils/capture-runner.test.ts
 

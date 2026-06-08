@@ -51149,6 +51149,554 @@
         "base_commit": "d070e7bcd654f8c1f922c1f553474eed8c7b990b"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "session-capture",
+      "feature": "session-capture — agent-session capture & provenance unlock",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 35,
+        "satisfied": 35,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Every launched agent is tagged with which harness it runs on",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Every launched agent is tagged with its pipeline role",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each session records a fingerprint of the agent definition it ran",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Tagging a session never strips the agent's existing environment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A build launched inside a work item's worktree is tagged with that work item",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Think and Learn sessions, which have no work item, are tagged with an empty slug",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Planning can be tied to a specific work item when the user names it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Each session is recorded with the pointer to its own transcript",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The transcript location is recorded exactly as the harness reported it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Each session start writes exactly one record, never more",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Capture never disturbs a live agent session — it always exits cleanly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "When capture is turned off, no session data is written at all",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Capture never reaches out to the network",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A session started directly, outside the pipeline, is still recorded",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A directly-started session is recorded with an empty work-item slug, not dropped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Capture runs only when the project has explicitly turned it on",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "A broken config never accidentally enables capture",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "New customer projects ship with capture off by default",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Turning capture on installs the session hook",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Opted-out customers get no capture hook, so they pay no per-session cost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Turning capture off and re-initializing removes the hook it had added",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "Removing our hook never touches hooks the user wrote themselves",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A finished session's token usage is counted from its transcript",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Token usage repeated across transcript lines is counted only once",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The model that ran the session is recorded",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Deriving the same transcript twice always yields the identical result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Session cost is computed from token counts and a stamped price table",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "An unknown model yields a zero estimate instead of crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "Per-file lines added and removed are recorded for each change",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Recording churn never changes the existing list of touched files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "A completed work item's proof carries its session provenance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "The proof records whether verification passed on the first try",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "A proof produced with capture off is complete and simply omits provenance",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "A non-pipeline session is fully counted when it ends, before its transcript can vanish",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Raw conversation content is never stored — only pointers and counts",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 870,
+        "think": 657,
+        "plan": 21,
+        "build": 139,
+        "verify": 11,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 657
+          },
+          {
+            "stage": "plan",
+            "minutes": 21
+          },
+          {
+            "stage": "build",
+            "minutes": 36,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 6,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 103,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 5,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:3113946389f3bc1b6b733d09ace8d133f9a7d24ebe30d518000e9ccff5a29709",
+        "contract": "sha256:130cc607fb298032b71120b7eec56a5a6a8989fb184482e6df58dae2844edc0f",
+        "plan": "sha256:060998173c0969b795930174c77cc23de3b5862432d2297ce3eca6a87470d5ef",
+        "spec-1": "sha256:02c3503620b3f5e88ccedd985995cf9883cf61192dbefc304c5b6149adc3769f",
+        "spec-2": "sha256:ba2ee107e68ca7da2efcdb091a794d73b232b07b28cec53e6c2ccc5ed097088a",
+        "build-report-1": "sha256:4cb3949e37e557c5a9a42753daa1fee141517fab8203f601b83dca71f3defa3c",
+        "build-data-1": "sha256:41663716e58951270fa83645315f2b889e9e9f3133772ebf2303edddecf28e58",
+        "verify-report-1": "sha256:f03de33e3d240edcb7d30d8db65a04fe801ccc4d95da96bbc60f65e5e7288ad4",
+        "verify-data-1": "sha256:ca819e28f003b280ef62637a7c65dc562d5049e8c92da720e0947daa081d4a6b",
+        "build-report-2": "sha256:4b61be9963e020fdfabe8598b50637e49e6be68e1435919744f2607df2adc8ca",
+        "build-data-2": "sha256:a294313700e7156a22eb44ae9242c7b4fe44ba38b55aa0871e9e4a504d9f5890",
+        "verify-report-2": "sha256:6cb4f0e80136aa57add237ec2b7fe98ecbbd00505df0fc240352afb5857cdd72",
+        "verify-data-2": "sha256:ee1dcac19597b0266a1351b324542fdbc9b81dda0186f417bdfcbafd8b550f5e"
+      },
+      "completed_at": "2026-06-08T00:34:30.762Z",
+      "modules_touched": [
+        ".claude/settings.json",
+        ".codex/config.toml",
+        ".codex/hooks.json",
+        "packages/cli/src/commands/_capture.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/data/pricing.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/forensics.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.codex/config.toml",
+        "packages/cli/templates/.codex/hooks.json",
+        "packages/cli/tests/commands/_capture.test.ts",
+        "packages/cli/tests/commands/artifact-module-churn.test.ts",
+        "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/commands/work-proof-process.test.ts",
+        "packages/cli/tests/data/pricing.test.ts",
+        "packages/cli/tests/utils/forensics-derive.test.ts",
+        "packages/cli/tests/utils/forensics.test.ts"
+      ],
+      "scope_summary": "Record, for **every** pipeline agent conversation (Think/Plan/Build/Verify/Learn) on **both** Claude Code and Codex, the session pointer plus full provenance — the moment each fact is knowable — so Anatomia starts banking a labeled dataset of every run immediately. This is the \"Scope 0\" unlock from the anatrace spike: it closes Anatomia's process-trust gap (today the proof verifies the *outcome* but trusts that each agent followed its mandate) by first capturing the raw material that later scopes will verify and analyze.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude",
+          "file": "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+          "anchor": null,
+          "line": 91,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A019",
+            "A021",
+            "A022"
+          ],
+          "id": "session-capture-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Codex config.toml [features] hooks=true is written only when the file is absent — a customer with a pre-existing .codex/config.toml that lacks the flag, turning capture on, gets hooks.json but no enablement, so the SessionStart hook silently never fires",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 823,
+          "severity": "risk",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A019"
+          ],
+          "id": "session-capture-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "pruneCaptureHook leaves empty hook-event arrays — a project whose only SessionStart entry was ours becomes \"SessionStart\": [] after flip-off (harmless cruft, no hook fires)",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 705,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "session-capture-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A013 no-network is a static source-scan (asserts no network-module imports / no fetch() in the capture source), not a runtime network counter — would not catch network I/O reached via an already-imported transitive module. Spec-sanctioned enforcement approach; low risk given capture path is fs+os only",
+          "file": "packages/cli/tests/commands/_capture.test.ts",
+          "anchor": null,
+          "line": 156,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "session-capture-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Empirical cwd/slug checkpoint from spec-1 (confirm real cwd of an ana run build/verify launch) has no in-repo evidence. Slug resolves via detectWorktreeSlug(projectRoot), unit-tested with a worktree-meta fixture; clean-degrade (empty slug) covers the worst case regardless",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "line": 132,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "session-capture-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "run.ts active finding codex-support-C7 (TOML mode field is dead data) is outside this build's env-injection change and was not regressed",
+          "file": "packages/cli/src/commands/run.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "session-capture-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T00:34:30.762Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Unrequested scope expansion during the fix cycle: commit 41cdc1cb ('prefer banked counts, never drop a matched session') changed SessionProvenance.derived from required to optional, made assembleProcessAttestation keep a matched-but-counts-less session as a metadata-only row, and updated proof.ts to render 'counts unavailable' and skip such rows in cost totals. Beyond the FAIL's single required fix. It is a genuine robustness improvement (prevents silent session loss on a dangling/deleted transcript), well-tested (two new tests, both green) and type-safe (proof.ts handles d? everywhere). Not a blocker — recorded because a fix cycle widened beyond its mandate.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "line": 163,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A031"
+          ],
+          "id": "session-capture-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Partially mitigated, not resolved: assembleProcessAttestation still reads the home-global forensics buffer (~/.ana/forensics/sessions.jsonl, machine-wide, never pruned in Phase 1) in full at every work-complete, and recordBelongsToWorktree still reads each non-slug/non-cwd-matched record's entire transcript end-to-end for the per-line cwd scan. The 41cdc1cb banked-counts preference removed the redundant RE-derive for already-counted matched sessions, so per-matched-session cost is lower, but the unbounded buffer scan and per-candidate transcript read remain. Cost still grows with lifetime session count.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "line": 125,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A031"
+          ],
+          "id": "session-capture-C8",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "ProcessAttestation shape still deviates from the spec-2 mockup (spec-2 lines 52-70 show process as a single-session object; implementation uses process.sessions[] with work-item-level outcome/task_shape/module_churn). Human-approved, contract-compatible (A031 only requires entry.process exists; A032 outcome stays top-level). The spec mockup is stale and should be refreshed on the next seal.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A031",
+            "A032"
+          ],
+          "id": "session-capture-C9",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T00:34:30.763Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "AC12 no-network enforcement scan (_capture.test.ts:156) covers the derive/cost core (_capture.ts, forensics.ts, pricing.ts) but not the work-proof.ts assembly wrapper or artifact.ts churn path. Source inspection confirms no network code on the assembly path, so the guarantee holds where it matters, but the scanned set is narrower than the AC phrasing ('the capture + derive path').",
+          "file": "packages/cli/tests/commands/_capture.test.ts",
+          "anchor": null,
+          "line": 156,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "session-capture-C10",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "executeDerive awaits a synchronous readFileSync + per-line JSON.parse of the full transcript before process.exit(0) on SessionEnd/Stop. The 250ms stdin cap bounds the read-wait, not the derive itself, so a very large finished transcript adds to hook teardown latency despite the spec's 'async, never delays teardown' intent. Low impact; recorded for awareness. Unchanged this cycle.",
+          "file": "packages/cli/src/commands/_capture.ts",
+          "anchor": null,
+          "line": 208,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "session-capture-C11",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "parseTestCounts matches the first /(\\d+)\\s+passed/ in any Bash tool_result text, so prose mentioning 'N passed' (not a test runner) inflates tests_executed/failures_encountered. Documented best-effort and provenance-only (never feeds a verdict), so impact is low, but the metric is not trustworthy. Unchanged this cycle.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "line": 346,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "session-capture-C12",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "harness_version recorded empty at Phase 1 — Claude SessionStart payload carries no version; Phase 2 transcript derive should fill it from the transcript `version` key",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Codex hooks.json/config.toml schema unconfirmed against a live Codex install; the Codex install/prune path is untested (init gating tests run --platforms claude only)",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "risk",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "applyCodexCaptureHooks never rewrites an existing config.toml (only creates when absent), so a user config.toml lacking [features] hooks = true won't get the flag",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "getTemplatesDir() dev path is off-by-one (resolves to src/templates which doesn't exist); only correct when compiled — pre-existing, forced init-gating tests onto dist",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing @ana tag collision: unrelated CC-dispatch tests in run.test.ts carry A028-A037, which are Phase-2 assertion IDs in this contract",
+          "file": "packages/cli/tests/commands/run.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning (unused eslint-disable) in git-operations.ts:198 — not introduced by this build",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "deriveTranscript test/failure counts are best-effort regex parsing of tool-result text (first 'N passed'/'N failed' match wins); ambiguous multi-line runner output can mis-count. Provenance-only, never gates a verdict.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Codex derive sets files_touched=0 (apply_patch parsing intentionally out of scope) and excludes reasoning_output_tokens from the output count; documented best-effort gaps.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "ensureCodexHooksFlag uses text-based TOML matching (regex), not a TOML parser; a `hooks =` key under a non-[features] table could be flipped. No TOML lib is a dependency; acceptable given the confirmed config shape.",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "assembleProcessAttestation reads the machine-wide ~/.ana/forensics/sessions.jsonl buffer in full (never pruned in Phase 1) and reads each non-slug-matched record's full transcript end-to-end; cost grows linearly with lifetime session count. Provenance-only, best-effort. A buffer-prune or slug-indexed lookup would bound it. (Verify Finding #2.)",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "AC12 no-network enforcement scan covers the derive/cost core but not the work-proof.ts assembly wrapper; source inspection confirms no network code on the assembly path. Adding work-proof.ts to the scanned set would close the phrasing gap. (Verify Finding #5.)",
+          "file": "packages/cli/tests/commands/_capture.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "SessionEnd derive (executeDerive) awaits a synchronous full-transcript readFileSync + per-line parse before process.exit(0); the 250ms stdin cap bounds the read-wait, not the derive. Low impact. (Verify Finding #6.)",
+          "file": "packages/cli/src/commands/_capture.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "ProcessAttestation carries ALL matching sessions (process.sessions[], one SessionProvenance per role/attempt) in deterministic order (timestamp, then role), preserving the per-role dataset. Human-approved deviation; supersedes the earlier newest-record-only design.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "RESOLVED (fix cycle 1): recordBelongsToWorktree now enforces a path-segment boundary (isUnderWorktree + worktreePath+path.sep) before every prefix comparison, mirroring deriveSurface; a `<slug>-v2` session is no longer attributed to `<slug>`. Regression test added. The intentionally-broad pre-filter on line 68 only gates JSON.parse; correctness is enforced by isUnderWorktree.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "RESOLVED (fix cycle 2): assembleProcessAttestation now prefers banked record.derived counts (surviving transcript deletion) over re-deriving, and no longer drops a matched session when no counts are available — the SessionProvenance row is kept with Phase-1 metadata and the now-optional derived block omitted. null is reserved for zero matching sessions. proof.ts display guards the optional derived. Two regression tests added; the superseded dangling-pointer→null test was replaced per developer instruction.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-07T21:30:10.025Z",
+        "completed_at": "2026-06-08T00:34:30.756Z",
+        "commit_count": 0,
+        "base_commit": "5fde422f3e831026dc923a138595368b7506858a"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
