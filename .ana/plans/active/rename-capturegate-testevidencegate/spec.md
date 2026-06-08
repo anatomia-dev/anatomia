@@ -121,7 +121,7 @@ Error: build_report.md has no valid captured test evidence.
 - [ ] AC4: Re-init on a project carrying legacy `captureGate` does not lose the user's on/off choice (migrated to `testEvidenceGate`, legacy key dropped) and never double-writes both keys.
 - [ ] AC5: The block message and escape-hatch hint name `testEvidenceGate` (`set "testEvidenceGate": "off"`), not `captureGate`.
 - [ ] AC6: `ana config set testEvidenceGate off` works with no "unknown key" warning; `ana config set captureGate off` on a legacy install also does not warn (both in `KNOWN_FIELDS`).
-- [ ] AC7: No `captureGate`-named gate symbol remains in `src/` (grep `isCaptureGateEnabled|evaluateCaptureGate|applyCaptureGate|CaptureGateResult` returns zero); capture-*marker* symbols (`CaptureMarker`, `parseMarkers`, `validateCapturePresent`) and `processCapture*` counts unchanged.
+- [ ] AC7: No `captureGate`-named gate symbol remains in `src/` — contract-backed by source-invariant assertions A016–A019 (`sourceCode` `not_contains` each of `isCaptureGateEnabled`, `evaluateCaptureGate`, `applyCaptureGate`, `CaptureGateResult`), Verify-checked mechanically. The checkpoint grep (`grep -rnE ... → zero`) stays as the Build-side gate. Capture-*marker* symbols (`CaptureMarker`, `parseMarkers`, `validateCapturePresent`) and `processCapture*` counts unchanged.
 - [ ] AC8: `configurability.mdx` documents `testEvidenceGate` and notes the legacy `captureGate` key is still honored.
 - [ ] AC9: The dogfood root `.ana/ana.json` is migrated to `testEvidenceGate: "on"`.
 - [ ] AC10: Test count does not decrease from baseline (3589); new tests cover legacy fallback (AC2), precedence (AC3), and re-init convergence (AC4).

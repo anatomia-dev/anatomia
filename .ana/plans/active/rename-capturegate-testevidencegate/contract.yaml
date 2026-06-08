@@ -117,6 +117,37 @@ assertions:
     matcher: "not_equals"
     value: "off"
 
+  # AC7 — source-invariant: the rename is complete. These are the ONLY assertions
+  # that catch an incomplete rename — the back-compat fallback makes residual
+  # captureGate symbols keep working, so every behavioral assertion above is blind
+  # to a half-finished rename. Checked mechanically against src/ by Verify (no test
+  # written). None of the kept boundary symbols (CaptureMarker, parseMarkers,
+  # validateCapturePresent, processCapture*) contain these strings — zero false positives.
+  - id: A016
+    says: "The legacy enablement reader symbol is gone from source"
+    block: "isCaptureGateEnabled fully renamed"
+    target: "sourceCode"
+    matcher: "not_contains"
+    value: "isCaptureGateEnabled"
+  - id: A017
+    says: "The legacy gate evaluator symbol is gone from source"
+    block: "evaluateCaptureGate fully renamed"
+    target: "sourceCode"
+    matcher: "not_contains"
+    value: "evaluateCaptureGate"
+  - id: A018
+    says: "The legacy gate apply symbol is gone from source"
+    block: "applyCaptureGate fully renamed"
+    target: "sourceCode"
+    matcher: "not_contains"
+    value: "applyCaptureGate"
+  - id: A019
+    says: "The legacy gate result type is gone from source"
+    block: "CaptureGateResult fully renamed"
+    target: "sourceCode"
+    matcher: "not_contains"
+    value: "CaptureGateResult"
+
 file_changes:
   - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
     action: modify
