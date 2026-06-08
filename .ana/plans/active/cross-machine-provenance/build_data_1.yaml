@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "run.test.ts was modified though not in the spec's file_changes — added A001/A002 coverage for THIS contract and stripped stale @ana A001–A007 tags left over from the prior session-capture contract (they collided with this contract's meanings)."
+    file: "packages/cli/tests/commands/run.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Claude fallback transcript resolution globs ~/.claude/projects/**/{session_id}.jsonl. Session ids are UUIDs so cross-project collision is effectively impossible, but the glob is project-agnostic (matches the first session-id-named transcript under any project dir)."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "detectHarness was deleted rather than moved to forensics.ts — captureProvenanceAtSave reads ANA_HARNESS directly (spec step 6), so transcript-shape harness detection no longer exists. With no remaining consumer, keeping it would have been dead code. The spec offered this as an explicit option."
+    file: "packages/cli/src/commands/_capture.ts"
+    severity: observation
+    suggested_action: acknowledge

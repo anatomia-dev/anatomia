@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Codex fresh-install + prune now has automated coverage (closes the prior session-capture-C-class gap that --platforms codex was never exercised); the Codex install path is verified via the built CLI, but the hooks.json schema is still unconfirmed against a live Codex install."
+    file: "packages/cli/tests/commands/init/assets-capture-hooks.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Stale @ana tags corrected in assets-capture-hooks.test.ts. The file previously carried @ana A018/A019/A022 tags that referenced the superseded install-time-gating contract; the current sealed contract reassigned those IDs to Phase 1/2 attestation/completeness assertions (verified elsewhere). Retagged to the correct Phase-3 assertions (A038-A043) and dropped the spurious ones."
+    file: "packages/cli/tests/commands/init/assets-capture-hooks.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "pruneHookCommand drops an entire hook entry if ANY command in its hooks[] array matches the target. Install always writes one-command-per-entry, so this is correct for our shape, but a hand-authored entry that co-located the derive command with a user command in the same hooks[] array would lose the user command too. Mirrors the spec's filter-by-command idiom exactly."
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: observation
+    suggested_action: acknowledge

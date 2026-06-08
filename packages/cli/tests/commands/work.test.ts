@@ -1390,6 +1390,141 @@ describe('ana work status', () => {
       });
     });
 
+    describe('strict process-completeness guard (Phase 2)', () => {
+      /** Overwrite ana.json with capture + strict flags, then commit it on main. */
+      function setCaptureFlags(processCapture: 'on' | 'off', processCaptureStrict: 'on' | 'off'): void {
+        fsSync.writeFileSync(
+          path.join(tempDir, '.ana', 'ana.json'),
+          JSON.stringify({ artifactBranch: 'main', processCapture, processCaptureStrict }),
+          'utf-8',
+        );
+      }
+
+      /** Seed a committed provenance file under active/{slug}/provenance/. */
+      function seedActiveProvenance(slug: string, role: string, sessionId: string): void {
+        const dir = path.join(tempDir, '.ana', 'plans', 'active', slug, 'provenance');
+        fsSync.mkdirSync(dir, { recursive: true });
+        fsSync.writeFileSync(
+          path.join(dir, `${role}-${sessionId}.json`),
+          JSON.stringify({
+            role,
+            harness: 'claude',
+            model: 'claude-opus-4-6',
+            agent_def_hash: `sha256:${role}`,
+            cli_version: '1.2.2',
+            session_id: sessionId,
+            captured_at: '2026-06-01T01:00:00.000Z',
+            derived: {
+              tokens: { input: 1000, output: 100, cache_create: 0, cache_read: 0 },
+              price_table_version: '2026-06-01',
+              duration_ms: 1000,
+              turns: 1,
+              tool_calls: 1,
+              commands_run: 1,
+              tests_executed: 0,
+              failures_encountered: 0,
+              files_touched: 1,
+              model: 'claude-opus-4-6',
+            },
+          }),
+          'utf-8',
+        );
+      }
+
+      /** Read the proof chain entry for a slug, or null if absent. */
+      function readChainEntry(slug: string): { process?: { completeness?: { complete?: boolean } } } | null {
+        const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+        if (!fsSync.existsSync(chainPath)) return null;
+        const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+        return chain.entries.find((e: { slug: string }) => e.slug === slug) ?? null;
+      }
+
+      // @ana A027, A028, A045
+      it('blocks completion with exit 1 on a gap, writes no entry, leaves active/ + worktree intact', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+        setCaptureFlags('on', 'on');
+        // plan + build present, verify MISSING → gap on verify.
+        seedActiveProvenance('test-slug', 'plan', 'sp');
+        seedActiveProvenance('test-slug', 'build', 'sb');
+        execSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
+
+        const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
+          throw new Error('process.exit');
+        }) as never);
+        try {
+          await expect(completeWork('test-slug')).rejects.toThrow('process.exit');
+        } finally {
+          mockExit.mockRestore();
+        }
+
+        const activePath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
+        const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+        // A045: blocked before removeWorktree/cp — active intact, nothing archived.
+        expect(fsSync.existsSync(activePath)).toBe(true);
+        expect(fsSync.existsSync(completedPath)).toBe(false);
+        // A028: no proof chain entry was written.
+        expect(readChainEntry('test-slug')).toBeNull();
+      });
+
+      // @ana A029, A030, A046
+      it('after a strict block, flipping strict off re-runs via the ordinary path and records the gap', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+        setCaptureFlags('on', 'on');
+        seedActiveProvenance('test-slug', 'plan', 'sp');
+        seedActiveProvenance('test-slug', 'build', 'sb');
+        execSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
+
+        // First run blocks under strict.
+        const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
+          throw new Error('process.exit');
+        }) as never);
+        try {
+          await expect(completeWork('test-slug')).rejects.toThrow('process.exit');
+        } finally {
+          mockExit.mockRestore();
+        }
+        expect(fsSync.existsSync(path.join(tempDir, '.ana', 'plans', 'active', 'test-slug'))).toBe(true);
+
+        // Flip strict off and re-run — ordinary completion path, NOT crash recovery.
+        setCaptureFlags('on', 'off');
+        execSync('git add -A && git commit -m "strict off"', { cwd: tempDir, stdio: 'ignore' });
+
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        try {
+          // A029: exits 0 (resolves, never throws process.exit).
+          await expect(completeWork('test-slug')).resolves.not.toThrow();
+        } finally {
+          const logged = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+          logSpy.mockRestore();
+          // Must NOT have routed into the crash-recovery branch.
+          expect(logged).not.toContain('Recovering incomplete completion');
+          expect(logged).not.toContain('was already completed');
+        }
+
+        const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
+        expect(fsSync.existsSync(completedPath)).toBe(true);
+        // A030/A046: the written entry records the gap.
+        const entry = readChainEntry('test-slug');
+        expect(entry).not.toBeNull();
+        expect(entry!.process!.completeness!.complete).toBe(false);
+      });
+
+      it('strict on + complete proof → completes normally (exit 0)', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+        setCaptureFlags('on', 'on');
+        // All three roles present → complete → no block.
+        seedActiveProvenance('test-slug', 'plan', 'sp');
+        seedActiveProvenance('test-slug', 'build', 'sb');
+        seedActiveProvenance('test-slug', 'verify', 'sv');
+        execSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
+
+        await expect(completeWork('test-slug')).resolves.not.toThrow();
+        const entry = readChainEntry('test-slug');
+        expect(entry).not.toBeNull();
+        expect(entry!.process!.completeness!.complete).toBe(true);
+      });
+    });
+
     describe('scoped commits', () => {
       // @ana A001, A002, A003, A004, A014
       it('excludes unrelated staged files from the complete commit', async () => {

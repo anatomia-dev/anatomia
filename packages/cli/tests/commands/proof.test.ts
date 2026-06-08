@@ -4930,6 +4930,87 @@ describe('ana proof', () => {
     });
   });
 
+  describe('Provenance display with completeness (Phase 2)', () => {
+    /** A process attestation block with the given completeness state. */
+    function makeProcess(complete: boolean) {
+      const session = {
+        role: 'build',
+        harness: 'claude',
+        model: 'claude-opus-4-6',
+        agent_def_hash: 'sha256:build',
+        cli_version: '1.2.2',
+        session_id: 'sb',
+        captured_at: '2026-06-01T01:00:00.000Z',
+        derived: {
+          tokens: { input: 1400, output: 6200, cache_create: 0, cache_read: 0 },
+          price_table_version: '2026-06-01',
+          duration_ms: 1000,
+          turns: 31,
+          tool_calls: 58,
+          commands_run: 5,
+          tests_executed: 10,
+          failures_encountered: 0,
+          files_touched: 6,
+          model: 'claude-opus-4-6',
+        },
+      };
+      return {
+        outcome: { first_pass_verify: true, assertions_satisfied: 20, assertions_total: 22, findings: { risk: 0, debt: 0, observation: 0 } },
+        task_shape: { size: 'medium', kind: 'feature', multi_phase: false },
+        module_churn: { 'src/a.ts': { added: 41, deleted: 6 } },
+        completeness: complete
+          ? { complete: true, expected: { plan: 1, build: 1, verify: 1 }, present: { plan: 1, build: 1, verify: 1 }, gaps: [] }
+          : { complete: false, expected: { plan: 1, build: 1, verify: 1 }, present: { plan: 1, build: 1, verify: 0 }, gaps: ['verify: 0 of 1 expected session(s) present'] },
+        sessions: [session],
+      };
+    }
+
+    // @ana A034
+    it('renders a per-session cost estimate computed at display time', async () => {
+      const entry = { ...sampleEntry, findings: [], build_concerns: [], process: makeProcess(true) };
+      await createProofChain([entry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['stripe-payments']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Provenance');
+      expect(stdout).toContain('est. $');
+    });
+
+    it('shows a complete completeness line with the ✓ marker', async () => {
+      const entry = { ...sampleEntry, findings: [], build_concerns: [], process: makeProcess(true) };
+      await createProofChain([entry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['stripe-payments']);
+      expect(stdout).toContain('completeness');
+      expect(stdout).toContain('✓ complete');
+      expect(stdout).toContain('verify 1/1');
+    });
+
+    it('shows an incomplete completeness line with the ⚠ marker', async () => {
+      const entry = { ...sampleEntry, findings: [], build_concerns: [], process: makeProcess(false) };
+      await createProofChain([entry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['stripe-payments']);
+      expect(stdout).toContain('⚠ incomplete');
+      expect(stdout).toContain('verify 0/1');
+    });
+
+    // @ana A035
+    it('an incomplete process block never changes the PASS/FAIL result', async () => {
+      const entry = { ...sampleEntry, result: 'PASS', findings: [], build_concerns: [], process: makeProcess(false) };
+      await createProofChain([entry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['stripe-payments']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('PASS');
+      expect(stdout).toContain('⚠ incomplete');
+    });
+  });
+
   // @ana A023
   describe('formatListTable includes surface column', () => {
     it('shows Surface column header in list view', async () => {

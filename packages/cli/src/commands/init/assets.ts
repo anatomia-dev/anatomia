@@ -260,9 +260,14 @@ settings.local.json
     try {
       const existingContent = await fs.readFile(settingsPath, 'utf-8');
       const existingSettings = JSON.parse(existingContent);
+      // Targeted prune of the retired SessionEnd derive hook. Legacy installs
+      // shipped it and PR #291 deleted the prune path, so an upgraded install
+      // would otherwise keep a stale `ana _capture --derive` hook forever. Remove
+      // it mechanically — keying on the exact command, never a user-authored hook.
+      pruneHookCommand(existingSettings.hooks, CAPTURE_END_EVENT_CLAUDE, CAPTURE_DERIVE_COMMAND);
       // mergeHooksSettings is dedup-safe and adds the always-installed capture
       // hook idempotently while preserving user-authored hooks. The flag is the
-      // runtime switch, so there is no flip-off prune.
+      // runtime switch, so the SessionStart hook is never flip-off pruned.
       const mergedSettings = mergeHooksSettings(existingSettings, templateSettings);
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2), 'utf-8');
     } catch {
@@ -655,18 +660,20 @@ function hookEntryMatches(a: HookEntry, b: HookEntry): boolean {
 const CAPTURE_HOOK_COMMAND = 'ana _capture';
 
 /**
- * The end-of-session derive command (Phase 2) — runs `deriveTranscript` on the
- * finished transcript. Installed under SessionEnd (Claude) / Stop (Codex).
+ * The retired end-of-session derive command (legacy) — once ran `deriveTranscript`
+ * on the finished transcript under SessionEnd (Claude) / Stop (Codex). No longer
+ * installed; the prune path keys on this exact string to remove it from upgraded
+ * installs that still carry it.
  */
 const CAPTURE_DERIVE_COMMAND = 'ana _capture --derive';
 
 /** The SessionStart hook event Anatomia installs the capture hook under. */
 const CAPTURE_HOOK_EVENT = 'SessionStart';
 
-/** The end-of-session hook event for Claude (Phase 2 derive). */
+/** The end-of-session hook event for Claude (legacy derive) — pruned on re-init. */
 const CAPTURE_END_EVENT_CLAUDE = 'SessionEnd';
 
-/** The end-of-session hook event for Codex (Phase 2 derive). */
+/** The end-of-session hook event for Codex (legacy derive) — pruned on re-init. */
 const CAPTURE_END_EVENT_CODEX = 'Stop';
 
 /**
@@ -684,8 +691,6 @@ function injectCaptureHook(settings: Record<string, unknown>): void {
   }
   const hooks = settings['hooks'] as Record<string, unknown>;
   injectHookEvent(hooks, CAPTURE_HOOK_EVENT, CAPTURE_HOOK_COMMAND);
-  // Phase 2: the SessionEnd derive hook, banking non-work sessions' counts.
-  injectHookEvent(hooks, CAPTURE_END_EVENT_CLAUDE, CAPTURE_DERIVE_COMMAND);
 }
 
 /**
@@ -705,6 +710,38 @@ function injectHookEvent(hooks: Record<string, unknown>, event: string, command:
     entries.push({ hooks: [{ type: 'command', command }] });
   }
   hooks[event] = entries;
+}
+
+/**
+ * Prune any hook entry whose command exactly matches `command` from a hook event.
+ *
+ * Mirrors {@link injectHookEvent}'s shape, but removes instead of adds. Drops
+ * every entry under `event` that carries a matching command (keying on the exact
+ * command string, never a matcher), preserving every user-authored entry. When
+ * the event's entry array becomes empty the event key is deleted entirely so no
+ * dangling `"SessionEnd": []` is left behind to confuse future merges.
+ *
+ * Total / never-throw — a malformed `hooks` shape (absent, non-object, or a
+ * non-array event value) degrades to a no-op rather than crashing init. Mutates
+ * `hooks` in place.
+ *
+ * @param hooks - The `hooks` object (event → entries[]); may be absent/non-object
+ * @param event - The hook event name (e.g. `SessionEnd`)
+ * @param command - The exact hook command to prune (legacy `ana _capture --derive`)
+ */
+function pruneHookCommand(hooks: unknown, event: string, command: string): void {
+  if (!hooks || typeof hooks !== 'object') return;
+  const hooksObj = hooks as Record<string, unknown>;
+  const entries = hooksObj[event];
+  if (!Array.isArray(entries)) return;
+  const kept = (entries as HookEntry[]).filter(
+    (e) => !(e.hooks || []).some((h) => h.command === command),
+  );
+  if (kept.length === 0) {
+    delete hooksObj[event];
+  } else {
+    hooksObj[event] = kept;
+  }
 }
 
 /**
@@ -756,14 +793,15 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
 }
 
 /**
- * Install the Codex capture hooks (always-on; runtime-gated by the flag).
+ * Install the Codex capture hook (always-on; runtime-gated by the flag).
  *
- * Merges the `ana _capture` SessionStart hook + the `ana _capture --derive` Stop
- * hook into `.codex/hooks.json` (dedup-safe, preserving user-authored hooks) and
- * ensures `config.toml` has `[features] hooks = true` (merged into an existing
- * file, never clobbering the user's other config). The hooks are always
+ * Merges the `ana _capture` SessionStart hook into `.codex/hooks.json`
+ * (dedup-safe, preserving user-authored hooks), prunes any retired
+ * `ana _capture --derive` Stop hook left by a legacy install, and ensures
+ * `config.toml` has `[features] hooks = true` (merged into an existing file,
+ * never clobbering the user's other config). The SessionStart hook is always
  * installed; the `processCapture` flag is the runtime switch (`ana _capture`
- * no-ops when off), so there is no flip-off prune.
+ * no-ops when off), so it is never flip-off pruned.
  *
  * @param codexPath - Path to the `.codex/` directory
  * @param templatesDir - Path to the CLI templates directory
@@ -786,11 +824,13 @@ async function applyCodexCaptureHooks(
     }
   }
 
-  // Capture hooks are ALWAYS installed; the `processCapture` flag is the runtime
-  // switch (`ana _capture` no-ops when off). Merge SessionStart (pointer) + Stop
-  // (Phase-2 derive), dedup by command, preserving any user-authored hooks.
+  // The SessionStart capture hook is ALWAYS installed; the `processCapture` flag
+  // is the runtime switch (`ana _capture` no-ops when off), so it is never
+  // flip-off pruned. Merge it dedup-by-command, preserving user-authored hooks.
   injectHookEvent(hooksObj, CAPTURE_HOOK_EVENT, CAPTURE_HOOK_COMMAND);
-  injectHookEvent(hooksObj, CAPTURE_END_EVENT_CODEX, CAPTURE_DERIVE_COMMAND);
+  // Targeted prune of the retired Stop derive hook from legacy installs — keying
+  // on the exact command, never a user-authored Stop hook.
+  pruneHookCommand(hooksObj, CAPTURE_END_EVENT_CODEX, CAPTURE_DERIVE_COMMAND);
   await fs.writeFile(hooksPath, JSON.stringify(hooksObj, null, 2), 'utf-8');
 
   // Ensure config.toml enables hooks — idempotently MERGE `[features] hooks = true`

@@ -32,12 +32,18 @@ export interface SessionProvenance {
   /** Harness session id. */
   session_id: string;
   /**
-   * Deterministic provenance counts for this session. Prefers the counts the
-   * SessionEnd `--derive` hook banked into the buffer record (they survive
-   * transcript deletion); falls back to re-deriving from the transcript.
-   * OMITTED when neither is available (e.g. the hook never fired AND the
-   * transcript has since been deleted) — the session row is still kept with its
-   * Phase-1 metadata so it stays visible in the dataset, just without counts.
+   * ISO-8601 wall-clock timestamp at which this session's provenance was captured
+   * (carried from the SessionStart pending pointer; falls back to save-time when
+   * no pointer is present). This is capture metadata and the PRIMARY assembly
+   * sort key — NOT part of the deterministic transcript derive.
+   */
+  captured_at: string;
+  /**
+   * Deterministic provenance counts for this session, derived from the committed
+   * transcript at `ana artifact save` time. OMITTED when the transcript was
+   * unreadable at capture (e.g. a dangling path) — the session row is still kept
+   * with its identity metadata so it stays visible in the dataset, just without
+   * counts.
    */
   derived?: ProvenanceCounts;
 }
@@ -79,9 +85,30 @@ export interface ProcessAttestation {
   /** Per-file added/deleted churn read from `.saves.json` (work-item level). */
   module_churn: Record<string, { added: number; deleted: number }>;
   /**
-   * Every matching agent session for this work item — one per role/attempt,
-   * deterministically ordered (by timestamp, then role). Repeated build attempts
-   * from rejection cycles are kept: that rework is wanted data.
+   * Presence-floor completeness verdict (Phase 2). REQUIRED whenever capture is on
+   * — it is always computed (even with zero sessions → all-gaps), so an incomplete
+   * cross-machine record is loud rather than silently hidden (Verified-over-trusted).
+   *
+   * The verdict is a pure function of committed state: `expected` is tied to the
+   * count of saved `build_report*.md` / `verify_report*.md` files (never
+   * `rejection_cycles`, which would false-fail legitimate rework), `present` counts
+   * the committed sessions by role, and `gaps` names every shortfall. `ana`/`learn`
+   * roles are never required and never produce a gap. NEVER influences PASS/FAIL.
+   */
+  completeness: {
+    /** True when no bucket is short (`gaps.length === 0`). */
+    complete: boolean;
+    /** Expected sessions per pipeline role (plan = 1; build/verify = saved report count). */
+    expected: { plan: number; build: number; verify: number };
+    /** Sessions actually present per role, counted from the committed provenance. */
+    present: { plan: number; build: number; verify: number };
+    /** One human-readable string per shortfall, e.g. `"verify: 0 of 1 expected session(s) present"`. */
+    gaps: string[];
+  };
+  /**
+   * Every committed provenance session for this work item — one per role/attempt,
+   * deterministically ordered (by `captured_at`, then role). Repeated build
+   * attempts from rejection cycles are kept: that rework is wanted data.
    */
   sessions: SessionProvenance[];
 }

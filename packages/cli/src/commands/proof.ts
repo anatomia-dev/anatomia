@@ -23,6 +23,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain } from '../types/proof.js';
+import { computeCost } from '../data/pricing.js';
 import { getSkillsDir, getSkillsDirRel } from './platform.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import {
@@ -451,7 +452,7 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
           head +
             `   ${d.turns} turns · ${d.tool_calls} tools` +
             ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
-            ` · est. $${d.cost_usd.toFixed(2)}`,
+            ` · est. $${computeCost(d.tokens, d.model).cost_usd.toFixed(2)}`,
         );
       } else {
         // Counts-less session (hook never fired AND transcript deleted) — still
@@ -466,7 +467,7 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     let tableVersion = '';
     for (const s of p.sessions) {
       if (!s.derived) continue;
-      totalCost += s.derived.cost_usd;
+      totalCost += computeCost(s.derived.tokens, s.derived.model).cost_usd;
       if (!tableVersion) tableVersion = s.derived.price_table_version;
     }
     lines.push(
@@ -482,6 +483,18 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
         deleted += c.deleted;
       }
       lines.push(`  churn   ${churnFiles} files · +${added}/−${deleted}`);
+    }
+
+    // Completeness line (Phase 2). Display-only — NEVER influences PASS/FAIL.
+    // Optional-guarded: entries written before Phase 2 lack `completeness`.
+    const c = p.completeness;
+    if (c) {
+      const counts = `plan ${c.present.plan}/${c.expected.plan} · build ${c.present.build}/${c.expected.build} · verify ${c.present.verify}/${c.expected.verify}`;
+      if (c.complete) {
+        lines.push(`  completeness  ${chalk.green('✓')} complete (${counts})`);
+      } else {
+        lines.push(`  completeness  ${chalk.yellow('⚠')} incomplete — ${counts}`);
+      }
     }
   }
 

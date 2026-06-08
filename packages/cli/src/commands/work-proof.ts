@@ -15,73 +15,10 @@ import type { ProofSummary } from '../utils/proofSummary.js';
 import type { ProofChainEntry, ProofChain, ProofChainStats, ProcessAttestation, SessionProvenance } from '../types/proof.js';
 import { agentCommand } from './platform.js';
 import { countPhases } from './work-state.js';
-import {
-  deriveTranscript,
-  getForensicsBufferPath,
-  isProcessCaptureEnabled,
-  type SessionRecord,
-} from '../utils/forensics.js';
+import { isProcessCaptureEnabled } from '../utils/forensics.js';
 
 /** Per-file churn map as stored in `.saves.json`. */
 type ModuleChurnMap = Record<string, { added: number; deleted: number }>;
-
-/**
- * Whether a captured session belongs to a given work item's worktree.
- *
- * DEVIATION FROM spec-2 (human-approved): spec-2 says "find buffer record(s) for
- * this slug", assuming the buffer carries the slug. It does NOT for Build/Verify:
- * those launch from the MAIN repo (the agent `cd`s into the worktree only AFTER
- * its session starts), so `ANA_SLUG` is empty at SessionStart and Phase 1
- * correctly records them with an empty slug (AC6-valid — the slug is genuinely
- * unknowable at spawn). So we recover them DETERMINISTICALLY by matching the
- * worktree path against (a) the recorded `transcript_path`, (b) the record's
- * `cwd`, or (c) the transcript's OWN per-line `cwd` entries (which become the
- * worktree once the agent cd's in). A direct `record.slug === slug` match still
- * wins first (covers `ana run plan --slug`). Think/Learn/empty-slug records not
- * tied to any worktree never match here — they stay buffer-only, as designed.
- *
- * @param record - The session buffer record
- * @param slug - The work-item slug being completed
- * @param worktreePath - Absolute path to `.ana/worktrees/{slug}`
- * @returns True if this record belongs to the work item
- */
-function recordBelongsToWorktree(record: SessionRecord, slug: string, worktreePath: string): boolean {
-  // Path-segment boundary for prefix comparison: a path matches the worktree
-  // only if it IS the worktree dir or sits strictly under it. Without this,
-  // `slug` greedily absorbs `slug-v2`'s sessions (…/worktrees/slug is a raw
-  // character-prefix of …/worktrees/slug-v2). Mirrors deriveSurface's
-  // trailing-slash precedent (see this file).
-  const worktreeWithSep = worktreePath + path.sep;
-  const isUnderWorktree = (p: string): boolean => p === worktreePath || p.startsWith(worktreeWithSep);
-
-  if (record.slug && record.slug === slug) return true;
-  // transcript_path always points at a file, never the worktree dir itself, so
-  // require the trailing separator — a `slug-v2` transcript path cannot match `slug`.
-  if (record.transcript_path && record.transcript_path.includes(worktreeWithSep)) return true;
-  if (record.cwd && isUnderWorktree(record.cwd)) return true;
-  // Fall back to the transcript's own cwd entries — robust for Build/Verify,
-  // which start in the main repo and cd into the worktree mid-session.
-  try {
-    if (!record.transcript_path || !fs.existsSync(record.transcript_path)) return false;
-    const raw = fs.readFileSync(record.transcript_path, 'utf-8');
-    for (const line of raw.split('\n')) {
-      if (!line.includes(worktreePath)) continue; // cheap pre-filter before JSON.parse
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(line);
-      } catch {
-        continue;
-      }
-      if (typeof parsed === 'object' && parsed !== null) {
-        const cwd = (parsed as Record<string, unknown>)['cwd'];
-        if (typeof cwd === 'string' && isUnderWorktree(cwd)) return true;
-      }
-    }
-  } catch {
-    // Unreadable transcript — treat as no match.
-  }
-  return false;
-}
 
 /**
  * Parse the `Size` field out of a scope.md Complexity Assessment.
@@ -95,14 +32,80 @@ function parseScopeSize(scopeContent: string): string {
 }
 
 /**
+ * Compute the presence-floor completeness verdict for a work item (Phase 2).
+ *
+ * The single source of truth for the verdict — called by both
+ * {@link assembleProcessAttestation} (post-`cp`, reads `completed/`) and the early
+ * strict guard in `completeWork` (pre-`cp`, reads `active/`). Pure: depends only on
+ * the report files under `reportsDir` and the passed `sessions`, so the recorded
+ * verdict and the upstream strict block can never disagree for the same inputs.
+ *
+ * Expectation is tied to SAVED REPORTS, never to `rejection_cycles` (which would
+ * false-fail legitimate rework): `expected.plan = 1`; `expected.build` /
+ * `expected.verify` equal the count of `build_report*.md` / `verify_report*.md`
+ * files in `reportsDir` (rework files like `build_report_2_r1.md` are counted, so a
+ * multi-attempt pipeline reads complete when each attempt has a session). `present`
+ * counts the passed sessions by role; `ana`/`learn` (and any non-pipeline role) are
+ * counted in the dataset but NEVER create an expected or a gap. A bucket is a gap
+ * when `present < expected`; `complete` is true when there are no gaps.
+ *
+ * @param reportsDir - Directory holding the saved `*_report*.md` files (`active/{slug}` or `completed/{slug}`)
+ * @param sessions - The committed sessions for this item (source of `present`)
+ * @returns The completeness verdict (`complete` / `expected` / `present` / `gaps`)
+ */
+export function computeCompleteness(
+  reportsDir: string,
+  sessions: SessionProvenance[],
+): ProcessAttestation['completeness'] {
+  const countReports = (pattern: string): number => {
+    try {
+      return globSync(pattern, { cwd: reportsDir }).length;
+    } catch {
+      return 0;
+    }
+  };
+
+  const expected = {
+    plan: 1,
+    build: countReports('build_report*.md'),
+    verify: countReports('verify_report*.md'),
+  };
+
+  const present = { plan: 0, build: 0, verify: 0 };
+  for (const s of sessions) {
+    if (s.role === 'plan') present.plan += 1;
+    else if (s.role === 'build') present.build += 1;
+    else if (s.role === 'verify') present.verify += 1;
+    // `ana` / `learn` / any other role: part of the dataset, never an expected/gap.
+  }
+
+  const gaps: string[] = [];
+  for (const role of ['plan', 'build', 'verify'] as const) {
+    if (present[role] < expected[role]) {
+      gaps.push(`${role}: ${present[role]} of ${expected[role]} expected session(s) present`);
+    }
+  }
+
+  return { complete: gaps.length === 0, expected, present, gaps };
+}
+
+/**
  * Assemble the optional {@link ProcessAttestation} for a completed work item.
  *
- * Provenance ONLY (counts/cost/outcome/task-shape/churn) — never findings or
- * verdicts. Returns `null` (→ field omitted, proof still valid) when capture is
- * off, no session record matches the worktree, or the transcript is unreadable.
- * ALL matching records are kept (one {@link SessionProvenance} per session —
- * plan, every build rework cycle, verify), ordered deterministically by
- * `timestamp` then `role`.
+ * Reads the committed per-session provenance files — every `*.json` under
+ * `.ana/plans/completed/{slug}/provenance/` (the active dir is `cp`'d to
+ * `completed/` before this runs, so the merged-tree content is present). Each
+ * file is already a self-contained {@link SessionProvenance} with its own derived
+ * counts — no buffer, no worktree-path matching, no re-derive. This is the whole
+ * point of capture v2: assembly no longer depends on any machine's home state or
+ * local transcript, so a proof assembled from files committed across machines
+ * comes out the same (AC2/AC7).
+ *
+ * Provenance ONLY (counts/outcome/task-shape/churn) — never findings or verdicts.
+ * Returns `null` ONLY when capture is off. When capture is on it ALWAYS returns
+ * an attestation — even with zero provenance files (`sessions: []`), so a gap is
+ * recorded rather than silently hidden. Sessions are ordered deterministically by
+ * `captured_at`, then `role`.
  *
  * @param projectRoot - Project root directory
  * @param slug - Work-item slug being completed
@@ -110,7 +113,7 @@ function parseScopeSize(scopeContent: string): string {
  * @param moduleChurn - Per-file churn read from `.saves.json`
  * @param scopeContent - scope.md contents (for task size)
  * @param multiPhase - Whether the plan has more than one phase
- * @returns The attestation, or `null` if none should be attached
+ * @returns The attestation, or `null` only when capture is disabled
  */
 export function assembleProcessAttestation(
   projectRoot: string,
@@ -122,58 +125,37 @@ export function assembleProcessAttestation(
 ): ProcessAttestation | null {
   if (!isProcessCaptureEnabled(projectRoot)) return null;
 
-  const bufferPath = getForensicsBufferPath();
-  let records: SessionRecord[];
+  const completedSlugDir = path.join(projectRoot, '.ana', 'plans', 'completed', slug);
+  const provDir = path.join(completedSlugDir, 'provenance');
+  const sessions: SessionProvenance[] = [];
   try {
-    if (!fs.existsSync(bufferPath)) return null;
-    const raw = fs.readFileSync(bufferPath, 'utf-8');
-    records = raw
-      .split('\n')
-      .filter((l) => l.trim())
-      .map((l) => {
-        try {
-          return JSON.parse(l) as SessionRecord;
-        } catch {
-          return null;
-        }
-      })
-      .filter((r): r is SessionRecord => r !== null);
+    for (const file of fs.readdirSync(provDir)) {
+      if (!file.endsWith('.json')) continue;
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(fs.readFileSync(path.join(provDir, file), 'utf-8'));
+      } catch {
+        continue; // an unparseable provenance file is skipped, never thrown
+      }
+      if (typeof parsed === 'object' && parsed !== null) {
+        sessions.push(parsed as SessionProvenance);
+      }
+    }
   } catch {
-    return null;
+    // No provenance dir → zero committed sessions. NOT an early return: capture is
+    // on, so we still attach an attestation with an empty sessions[] (the gap is
+    // recorded, not hidden — Phase 2 makes that incompleteness loud).
   }
 
-  const worktreePath = path.join(projectRoot, '.ana', 'worktrees', slug);
-  const matches = records.filter((r) => recordBelongsToWorktree(r, slug, worktreePath));
-  if (matches.length === 0) return null;
-
-  // Deterministic order: by timestamp, then role. ALL matching sessions are kept
-  // — plan, build, every build rework cycle, verify — so the per-role dataset is
-  // preserved. Repeated build attempts from rejection cycles are wanted data.
-  matches.sort((a, b) => {
-    if (a.timestamp !== b.timestamp) return a.timestamp < b.timestamp ? -1 : 1;
+  // Deterministic order: by captured_at, then role. ALL committed sessions are
+  // kept — plan, build, every build rework cycle, verify — so the per-role
+  // dataset is preserved. Repeated build attempts from rejection cycles are data.
+  sessions.sort((a, b) => {
+    const at = a.captured_at ?? '';
+    const bt = b.captured_at ?? '';
+    if (at !== bt) return at < bt ? -1 : 1;
     return a.role < b.role ? -1 : a.role > b.role ? 1 : 0;
   });
-
-  const sessions: SessionProvenance[] = [];
-  for (const record of matches) {
-    // Prefer the counts the SessionEnd `--derive` hook already banked into the
-    // record — they survive transcript deletion. Re-derive only when absent
-    // (e.g. the hook never fired). A matched-but-counts-less session is NOT
-    // dropped: keep its Phase-1 metadata row so it stays visible in the dataset.
-    const derived = record.derived ?? deriveTranscript(record.transcript_path, record.harness) ?? undefined;
-    sessions.push({
-      role: record.role,
-      harness: record.harness,
-      model: record.model || derived?.model || '',
-      agent_def_hash: record.agent_def_hash,
-      cli_version: record.cli_version,
-      session_id: record.session_id,
-      ...(derived ? { derived } : {}),
-    });
-  }
-  // Zero matching sessions → no provenance to attach. (A matched session with no
-  // counts is still a session — only an empty match set returns null.)
-  if (sessions.length === 0) return null;
 
   const findings = { risk: 0, debt: 0, observation: 0 };
   for (const f of proof.findings) {
@@ -195,6 +177,7 @@ export function assembleProcessAttestation(
       multi_phase: multiPhase,
     },
     module_churn: moduleChurn,
+    completeness: computeCompleteness(completedSlugDir, sessions),
     sessions,
   };
 }
@@ -314,9 +297,9 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     }
   }
 
-  // Assemble the optional session provenance attestation (Phase 2). Provenance
-  // ONLY — never findings/verdicts. Absent (null) when capture is off, no session
-  // matches the worktree, or the transcript is unreadable; the proof stays valid.
+  // Assemble the optional session provenance attestation from the committed
+  // per-session files. Provenance ONLY — never findings/verdicts. Absent (null)
+  // only when capture is off; the proof stays valid either way.
   let scopeContent = '';
   let multiPhase = false;
   try {
@@ -336,6 +319,19 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     scopeContent,
     multiPhase,
   );
+
+  // Completeness WARN path (strict is enforced earlier in completeWork, before any
+  // archival). writeProofChain is reached only when completion is allowed to
+  // proceed — strict-off, or strict-on-but-complete — so here we warn and continue,
+  // recording the gap into the entry via process.completeness. It never blocks.
+  if (processAttestation && !processAttestation.completeness.complete) {
+    console.error(
+      chalk.yellow(
+        `Warning: Process provenance is incomplete — ${processAttestation.completeness.gaps.join('; ')}. ` +
+          `Recorded in the proof's completeness block.`,
+      ),
+    );
+  }
 
   const entry: ProofChainEntry = {
     slug,

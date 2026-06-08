@@ -630,6 +630,23 @@ describe('buildCaptureEnv', () => {
   }
 
   // @ana A001
+  it('mints a non-empty ANA_RUN_ID as a UUID', () => {
+    const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
+    // A001: the per-launch correlation key — the only key shared by the
+    // SessionStart pending pointer and the in-session `ana artifact save`.
+    expect(env['ANA_RUN_ID']).toBeDefined();
+    expect(env['ANA_RUN_ID']).not.toBe('');
+    expect(env['ANA_RUN_ID']).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it('mints a DISTINCT ANA_RUN_ID on each launch', () => {
+    const a = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_RUN_ID'];
+    const b = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_RUN_ID'];
+    expect(a).not.toBe(b);
+  });
+
   it('sets ANA_HARNESS to the platform', () => {
     const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
     expect(env['ANA_HARNESS']).toBe('claude');
@@ -638,7 +655,6 @@ describe('buildCaptureEnv', () => {
     expect(codexEnv['ANA_HARNESS']).toBe('codex');
   });
 
-  // @ana A002
   it('sets ANA_ROLE to the agent role, defaulting to ana for Think', () => {
     expect(buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_ROLE']).toBe('build');
     expect(buildCaptureEnv(projectDir, 'verify', 'claude', 'ana-verify')['ANA_ROLE']).toBe('verify');
@@ -646,7 +662,6 @@ describe('buildCaptureEnv', () => {
     expect(buildCaptureEnv(projectDir, '', 'claude', 'ana')['ANA_ROLE']).toBe('ana');
   });
 
-  // @ana A003
   it('sets ANA_AGENT_DEF_HASH to a sha256 of the resolved agent-def file', () => {
     writeAgentDef('ana-build', '# ana-build agent definition body');
     const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
@@ -666,7 +681,7 @@ describe('buildCaptureEnv', () => {
     expect(env['ANA_AGENT_DEF_HASH']).toBe('');
   });
 
-  // @ana A004
+  // @ana A002
   it('merge over process.env is additive — PATH survives', () => {
     const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
     // The spawn site merges this over process.env. Simulate that merge.
@@ -677,7 +692,6 @@ describe('buildCaptureEnv', () => {
     expect(Object.keys(env).every((k) => k.startsWith('ANA_'))).toBe(true);
   });
 
-  // @ana A005
   it('build launched inside a worktree resolves ANA_SLUG from the worktree', () => {
     writeWorktreeMeta('session-capture');
     const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
@@ -690,7 +704,6 @@ describe('buildCaptureEnv', () => {
     expect(env['ANA_SLUG']).toBe('session-capture');
   });
 
-  // @ana A006
   it('think injects an empty ANA_SLUG (no worktree)', () => {
     const env = buildCaptureEnv(projectDir, '', 'claude', 'ana');
     expect(env['ANA_SLUG']).toBe('');
@@ -701,7 +714,6 @@ describe('buildCaptureEnv', () => {
     expect(env['ANA_SLUG']).toBe('');
   });
 
-  // @ana A007
   it('plan --slug sets ANA_SLUG to the given slug', () => {
     const env = buildCaptureEnv(projectDir, 'plan', 'claude', 'ana-plan', 'session-capture');
     expect(env['ANA_SLUG']).toBe('session-capture');

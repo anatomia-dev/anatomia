@@ -27,6 +27,7 @@ import { resolveTestCommandString } from './test.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
+import { captureProvenanceAtSave } from '../utils/forensics.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
 
 // Re-export public validators for backward compatibility
@@ -1245,21 +1246,40 @@ export function saveArtifact(type: string, slug: string): void {
     } catch { /* */ }
   }
 
-  // 8a. Check if there are staged changes
+  // 8a0. Capture this session's provenance (capture v2). Total/never-throws —
+  // returns the committed file path or null. Staged into a SEPARATE list so the
+  // no-changes guard (which checks artifact paths only) never absorbs it — the
+  // transcript always grows between saves, so including it would make every
+  // re-save commit. It rides the SAME commit only when artifacts actually changed.
+  const provenancePaths: string[] = [];
+  const provenancePath = captureProvenanceAtSave(projectRoot, slug, process.env);
+  if (provenancePath) {
+    try {
+      const provRelPath = path.relative(projectRoot, provenancePath);
+      runGit(['add', provRelPath], { cwd: projectRoot });
+      provenancePaths.push(provRelPath);
+    } catch { /* capture is non-blocking — a staging failure never fails the save */ }
+  }
+
+  // 8a. Check if there are staged changes (ARTIFACT paths only — never provenance).
   const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
-    // status 0 means no differences — nothing to commit
+    // status 0 means no differences — nothing to commit. Un-stage any provenance
+    // we added so a no-work re-validation leaves nothing staged-but-uncommitted.
+    if (provenancePaths.length > 0) {
+      try { runGit(['reset', '--', ...provenancePaths], { cwd: projectRoot }); } catch { /* */ }
+    }
     console.log(chalk.yellow('No changes to save — artifact is already up to date.'));
     process.exit(0);
   }
 
-  // 9. Commit
+  // 9. Commit — artifact + provenance ride the same commit (provenance only when present).
   const coAuthor = readCoAuthor(projectRoot);
 
   const prefix = isTracked ? 'Update: ' : '';
   const commitMessage = `[${slug}] ${prefix}${typeInfo.displayName}\n\nCo-authored-by: ${coAuthor}`;
   try {
-    const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...stagedPaths], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...stagedPaths, ...provenancePaths], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch (error) {
     console.error(chalk.red(`Error: Commit failed. ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -1660,20 +1680,36 @@ export function saveAllArtifacts(slug: string): void {
     } catch { /* */ }
   }
 
-  // 7. Check if there are staged changes
+  // 6a. Capture this session's provenance (capture v2). Same contract as the
+  // single-save site: total/never-throws, staged into a SEPARATE list kept out of
+  // the no-changes guard, folded into the commit only when artifacts changed.
+  const provenancePaths: string[] = [];
+  const provenancePath = captureProvenanceAtSave(projectRoot, slug, process.env);
+  if (provenancePath) {
+    try {
+      const provRelPath = path.relative(projectRoot, provenancePath);
+      runGit(['add', provRelPath], { cwd: projectRoot });
+      provenancePaths.push(provRelPath);
+    } catch { /* capture is non-blocking — a staging failure never fails the save */ }
+  }
+
+  // 7. Check if there are staged changes (ARTIFACT paths only — never provenance).
   const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
+    if (provenancePaths.length > 0) {
+      try { runGit(['reset', '--', ...provenancePaths], { cwd: projectRoot }); } catch { /* */ }
+    }
     console.log(chalk.yellow('No changes to save — artifacts are already up to date.'));
     process.exit(0);
   }
 
-  // 8. Commit
+  // 8. Commit — artifacts + provenance ride the same commit (provenance only when present).
   const typeNames = artifacts.map(a => a.typeInfo.displayName).join(', ');
   const action = allTracked ? 'Update' : 'Save';
   const commitMessage = `[${slug}] ${action}: ${typeNames}\n\nCo-authored-by: ${coAuthor}`;
 
   try {
-    const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...stagedPaths], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...stagedPaths, ...provenancePaths], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch (error) {
     console.error(chalk.red(`Error: Commit failed. ${error instanceof Error ? error.message : 'Unknown error'}`));
