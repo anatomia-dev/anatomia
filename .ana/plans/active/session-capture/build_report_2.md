@@ -14,10 +14,10 @@ For each file created or modified:
 - `packages/cli/src/data/pricing.ts` (created): Versioned price table (`PRICE_TABLE_VERSION`, `PRICES`) and a pure `computeCost(tokens, model)` — no network, no clock. Unknown model → `cost_usd: 0` with the version still stamped (never throws). Cost rounded to 6 dp for a byte-stable estimate.
 - `packages/cli/src/utils/forensics.ts` (modified): Added `ProvenanceCounts` type, `deriveTranscript(path, harness)` (deterministic), and `updateSessionRecord(sessionId, derived)`; extended `SessionRecord` with optional `derived?`. Claude branch dedupes token usage by top-level `requestId`, reads per-message `model`. Codex branch reads `model` from `turn_context.payload.model` and tokens from the **last** cumulative `event_msg`/`token_count` `total_token_usage`. Duration from transcript timestamps only (parse, not clock). Malformed lines are skipped, never thrown.
 - `packages/cli/src/commands/artifact.ts` (modified): `captureModulesTouched` now also writes `module_churn` (per-file `{added, deleted}`) from a sibling `git diff --numstat` over the same merge-base, folded into the existing `.saves.json` read/write (no extra read). `modules_touched` left exactly as-is. Binary files coerce to `0/0`. Exported `computeModuleChurn` for unit testing.
-- `packages/cli/src/types/proof.ts` (modified): **Touch 1/4** — added optional `process?: ProcessAttestation` to `ProofChainEntry`. `ProcessAttestation` carries work-item-level `outcome` + `task_shape` + `module_churn` **plus `sessions: SessionProvenance[]`** — one entry per matching session (role/harness/model/agent_def_hash/cli_version/session_id/derived). `outcome` stays top-level (contract A032). (See Deviations — Delta #4.)
+- `packages/cli/src/types/proof.ts` (modified): **Touch 1/4** — added optional `process?: ProcessAttestation` to `ProofChainEntry`. `ProcessAttestation` carries work-item-level `outcome` + `task_shape` + `module_churn` **plus `sessions: SessionProvenance[]`** — one entry per matching session (role/harness/model/agent_def_hash/cli_version/session_id/derived). `outcome` stays top-level (contract A032). (See Deviations — Delta #4.) **Fix cycle 2:** `SessionProvenance.derived` is now optional — a matched session with no available counts is kept as a metadata-only row.
 - `packages/cli/src/utils/proofSummary.ts` (modified): **Touch 2/4** — documented that `process` is an optional attach (defaults absent), consistent with its optionality.
-- `packages/cli/src/commands/work-proof.ts` (modified): **Touch 3/4** — reads `module_churn` from `.saves.json`; assembles and spreads the optional `process` attestation at work-complete, gated on `isProcessCaptureEnabled` + matching worktree sessions. Collects **ALL** matching sessions (deterministic order: timestamp, then role), one `SessionProvenance` each. Exported `assembleProcessAttestation`. Contains the human-approved slug-recovery DEVIATION + the all-sessions DEVIATION (see Deviations). **Fix cycle 1:** `recordBelongsToWorktree` now enforces a path-segment boundary before every prefix comparison (the worktree-prefix-collision blocker — see Fix History); stale JSDoc on `assembleProcessAttestation` corrected to describe the all-sessions behavior.
-- `packages/cli/src/commands/proof.ts` (modified): **Touch 4/4** — display-only "Provenance" section: one line per session (harness · role · model · turns/tools/tokens/cost) plus a work-item `total` (session count + combined cost + table version) and `churn`, gated on `entry.process`. Never influences PASS/FAIL. Added `formatTokenCount`.
+- `packages/cli/src/commands/work-proof.ts` (modified): **Touch 3/4** — reads `module_churn` from `.saves.json`; assembles and spreads the optional `process` attestation at work-complete, gated on `isProcessCaptureEnabled` + matching worktree sessions. Collects **ALL** matching sessions (deterministic order: timestamp, then role), one `SessionProvenance` each. Exported `assembleProcessAttestation`. Contains the human-approved slug-recovery DEVIATION + the all-sessions DEVIATION (see Deviations). **Fix cycle 1:** `recordBelongsToWorktree` now enforces a path-segment boundary before every prefix comparison (the worktree-prefix-collision blocker — see Fix History); stale JSDoc on `assembleProcessAttestation` corrected to describe the all-sessions behavior. **Fix cycle 2:** the assembly loop prefers banked `record.derived` counts over re-deriving and no longer drops a matched session when no counts are available (metadata-only row) — see Fix History.
+- `packages/cli/src/commands/proof.ts` (modified): **Touch 4/4** — display-only "Provenance" section: one line per session (harness · role · model · turns/tools/tokens/cost) plus a work-item `total` (session count + combined cost + table version) and `churn`, gated on `entry.process`. Never influences PASS/FAIL. Added `formatTokenCount`. **Fix cycle 2:** a counts-less session renders as `… counts unavailable` and is excluded from the cost total / table-version pick.
 - `packages/cli/src/commands/_capture.ts` (modified): `--derive` mode (SessionEnd/Stop) — total, exits 0 always, no network. Runs `deriveTranscript` on the finished transcript and writes counts back into the matching buffer record. Codex transcript-path glob fallback (`$CODEX_HOME/sessions/**/rollout-*-<session_id>.jsonl`); harness detection from env or path shape.
 - `packages/cli/src/commands/init/assets.ts` (modified): Installs the SessionEnd (Claude) / Stop (Codex) derive hook alongside SessionStart; prune now removes **both** capture entries on flip-off (`isCaptureCommand` matches `ana _capture` and `ana _capture --derive`). **Delta #2** — `ensureCodexHooksFlag` idempotently merges `[features] hooks = true` into an existing `config.toml`.
 - `packages/cli/templates/.codex/hooks.json` (modified): Added the `Stop` → `ana _capture --derive` hook.
@@ -38,25 +38,40 @@ Verify re-issued Phase 2 as FAIL on human severity override, with one sole block
 
 **Regression test added:** `work-proof-process.test.ts` → "does NOT attribute a `<slug>-v2` session to `<slug>` (worktree prefix boundary)". Seeds only a `feat-v2` session (transcript cwd under `…/worktrees/feat-v2`) and asserts (a) `assembleProcessAttestation(root, 'feat', …)` returns `null` — the `feat-v2` session is never attributed to `feat` — and (b) `assembleProcessAttestation(root, 'feat-v2', …)` still correctly attributes it. This test fails against the old raw-`startsWith` code and passes with the boundary fix.
 
+### Cycle 2 — No-session / deleted-transcript robustness (developer-requested defect fix)
+
+`assembleProcessAttestation` re-derived counts for **every** matching record (`deriveTranscript(record.transcript_path, harness); if (!derived) continue;`). Two problems: (1) it always re-read the transcript even though the SessionEnd `--derive` hook had already banked counts into `record.derived`, and (2) if the transcript was gone (months passed, `~/.claude` cleared) the session was **dropped entirely**, silently losing it from the per-role dataset.
+
+**Fix applied:**
+- **Prefer banked counts, fall back to re-derive:** `const derived = record.derived ?? deriveTranscript(record.transcript_path, record.harness) ?? undefined;` — `record.derived` is what the SessionEnd hook wrote back and it survives transcript deletion; re-derive only runs when banked counts are absent.
+- **Never drop a matched session:** the `if (!derived) continue;` is removed. The `SessionProvenance` row is always pushed with its Phase-1 metadata (role/harness/model/agent_def_hash/cli_version/session_id); the `derived` block is omitted when no counts are available (`...(derived ? { derived } : {})`). `model` falls back to `record.model || derived?.model || ''`. `null` is now returned **only** when there are zero matching sessions (unchanged).
+- **`derived` made optional** on the `SessionProvenance` interface (`packages/cli/src/types/proof.ts`) so a counts-less row is a valid shape.
+- **Display hardened** (`packages/cli/src/commands/proof.ts`, Touch 4/4): a counts-less session renders as `harness · role · model   counts unavailable` and is excluded from the cost total / table-version pick. Pre-existing rows with counts render unchanged.
+
+**Guardrails preserved:** deterministic (no clock/random; banked counts are already-frozen facts), no network, no raw bodies (only counts/metadata), decoupled/optional, never gates the proof.
+
+**Tests:** two cases added to `work-proof-process.test.ts` — (a) "uses banked derived counts when the transcript is gone (no re-derive needed)" (record with banked `derived` + dangling `transcript_path` → session keeps the banked counts); (b) "keeps a matched session (metadata only, no derived block) when banked counts are absent AND the transcript is deleted" (→ a session row with metadata and no `derived`). **Test-behavior change:** the prior test "returns null when the matched transcript is unreadable (dangling pointer)" asserted the now-superseded drop-to-null behavior; per the developer's explicit instruction it is replaced by case (b) above. Capture-off/no-match → null behavior is retained by the existing `A033` tests.
+
 ## PR Summary
 
 - Derives durable, **deterministic** provenance (tokens, cost, model, turns, tool/command counts, duration) from finished agent transcripts — Claude (requestId-deduped) and Codex (cumulative total) — with a versioned local price table; no network, no clock, no raw transcript body persisted.
 - Attaches an optional `process` attestation to the proof at `ana work complete` via the `commit_hygiene` 4-touch pattern: per-session provenance for ALL the work item's sessions (plan/build/rework/verify), plus work-item-level outcome joins, task shape, and per-file `module_churn`. The field is decoupled and never gates the proof — capture off or no matching session → a valid proof that simply omits it.
 - Session-to-work-item matching enforces a path-segment boundary, so iterative slugs (`feat` vs `feat-v2`) never cross-contaminate the per-role provenance dataset.
+- Provenance assembly prefers the counts the SessionEnd hook banked into the buffer record (surviving transcript deletion) and never drops a matched session — a session with no available counts is kept as a metadata-only row rather than silently lost.
 - Records per-file `module_churn` (`git diff --numstat`) without changing the existing `modules_touched` path array.
 - Adds the SessionEnd/Stop derive hook so non-pipeline sessions are counted before their transcript can vanish; the install-time prune now removes both capture hooks on flip-off. Also fixes a Codex `config.toml` silent-degrade (merges the `[features] hooks=true` flag into an existing file) and adds the previously-missing Codex install/prune/config test coverage.
 
 ## Acceptance Criteria Coverage
 
 - AC8 "deriveTranscript counts + determinism" → `forensics-derive.test.ts` (Claude: input=1500, output=800 deduped, model, cache/turns/tools/duration/cost; Codex: cumulative total, turn_context model; determinism both) + `pricing.test.ts` (12 assertions)
-- AC9 "ProcessAttestation attach via 4-touch" → `work-proof-process.test.ts` "attaches an attestation…", "captures ALL matching sessions with correct per-role metadata", "keeps repeated build attempts…", "does NOT attribute a `<slug>-v2` session to `<slug>`" (the fix-cycle regression test), determinism, "joins outcome and task_shape…" (A031), first_pass_verify (A032), capture-off/no-match → null (A033)
+- AC9 "ProcessAttestation attach via 4-touch" → `work-proof-process.test.ts` "attaches an attestation…", "captures ALL matching sessions with correct per-role metadata", "keeps repeated build attempts…", "does NOT attribute a `<slug>-v2` session to `<slug>`" (cycle-1 boundary regression), "uses banked derived counts when the transcript is gone" + "keeps a matched session (metadata only…)" (cycle-2 robustness), determinism, "joins outcome and task_shape…" (A031), first_pass_verify (A032), capture-off/no-match → null (A033)
 - AC10 "module_churn, modules_touched unchanged" → `artifact-module-churn.test.ts` (exact churn, binary 0/0, .ana excluded, .saves.json both keys) (A029/A030)
 - AC11 "SessionEnd/Stop derive, async/total" → `_capture.test.ts` "--derive" block (A034) + `assets-capture-hooks.test.ts` (hook install/prune, Claude + Codex)
 - AC12 "no network, no raw body" → `_capture.test.ts` network-denylist (now covers pricing.ts) + no-raw-body record assertion; `forensics-derive.test.ts` SECRET_BODY assertions (A035)
 - New "computeCost deterministic, unknown→0" → `pricing.test.ts` (A027/A028)
 - New "determinism byte-identical" → `forensics-derive.test.ts` (A026)
 - New "capture-off proof renders identically" → `work-proof-process.test.ts` null path + proof/work regression tests green
-- New "tests pass, no type errors, lint clean, count does not decrease" → 3524 passed (was 3469 at plan time), 0 failed; typecheck + lint clean
+- New "tests pass, no type errors, lint clean, count does not decrease" → 3525 passed (was 3469 at plan time), 0 failed; typecheck + lint clean
 
 **Contract coverage: 13/13 Phase-2 assertions tagged (A023–A035).** (A001–A022 are Phase 1.)
 
@@ -101,24 +116,28 @@ spec-2 stated Codex "model is session-level (first-line `session_meta` payload)"
 ### Baseline (plan-time)
 Plan-time baseline was 3424 (per verify_report_2); the initial Phase-2 build measured 3469 → 3523. Fix cycle 1 baseline (target file, before fix): `work-proof-process.test.ts` 11 passed.
 
-### After Changes (fix cycle 1)
-Command: `ana test --stage build --slug session-capture` → `✓ captured  counts: 3524 passed, 0 failed, 2 skipped  (verdict: pass)`
+### After Changes (fix cycle 2 — current state)
+Command: `ana test --stage build --slug session-capture` → `✓ captured  counts: 3525 passed, 0 failed, 2 skipped  (verdict: pass)`
 
 Sealed capture marker (live seal — intentionally outside any code fence):
 
-<!-- ana:capture stage=build slug=session-capture counts=3524p/0f/2s verdict=pass sha256=67fb31f892a98868f102c47a7b94a68490a80bfd4d0cdba29f076e0e6702bec6 -->
+<!-- ana:capture stage=build slug=session-capture counts=3525p/0f/2s verdict=pass sha256=5a748dc280af053030c92294de99ed5815d81a931546f8915aa65e1ed27787a1 -->
 
-Tests: 3524 passed, 0 failed, 2 skipped. Targeted `work-proof-process.test.ts`: 12 passed (was 11; +1 regression test).
+Tests: 3525 passed, 0 failed, 2 skipped. Targeted `work-proof-process.test.ts`: 13 passed (was 12; net +1 — replaced the dangling-→null test with two no-counts robustness cases).
 
-Build: `pnpm run build` — success. Typecheck: `tsc --noEmit` (source) and `tsc --noEmit -p tsconfig.test.json` (tests) — both 0 errors. Lint: `eslint src/commands/work-proof.ts tests/commands/work-proof-process.test.ts` — 0 errors, 0 warnings.
+Build: `pnpm run build` — success. Typecheck: `tsc --noEmit` (source) and `tsc --noEmit -p tsconfig.test.json` (tests) — both 0 errors. Lint: `eslint src/commands/work-proof.ts src/commands/proof.ts src/types/proof.ts tests/commands/work-proof-process.test.ts` — 0 errors, 0 warnings.
+
+Fix cycle 1 prior seal (3524p/0f/2s): `sha256=67fb31f892a98868f102c47a7b94a68490a80bfd4d0cdba29f076e0e6702bec6`.
 
 ### Comparison
-- Tests added this cycle: 1 (3523 → 3524) — the `<slug>-v2` boundary regression test.
-- Tests removed: 0
+- Tests added cycle 1: 1 (3523 → 3524) — the `<slug>-v2` boundary regression test.
+- Tests net change cycle 2: +1 (3524 → 3525) — added 2 no-counts robustness cases, replaced 1 superseded dangling-→null test.
+- Tests removed: 1 in cycle 2 — "returns null when the matched transcript is unreadable (dangling pointer)", whose drop-to-null assertion is intentionally superseded by the developer-requested behavior (a matched session is kept, not dropped). Replaced by case (b).
 - Regressions: none
 
-### New Tests Written (this cycle)
-- `tests/commands/work-proof-process.test.ts`: "does NOT attribute a `<slug>-v2` session to `<slug>` (worktree prefix boundary)" — proves the boundary fix; fails against pre-fix code.
+### New Tests Written
+- Cycle 1 — `tests/commands/work-proof-process.test.ts`: "does NOT attribute a `<slug>-v2` session to `<slug>` (worktree prefix boundary)" — proves the boundary fix; fails against pre-fix code.
+- Cycle 2 — `tests/commands/work-proof-process.test.ts`: "uses banked derived counts when the transcript is gone (no re-derive needed)" and "keeps a matched session (metadata only, no derived block) when banked counts are absent AND the transcript is deleted".
 
 ## Verification Commands
 ```
@@ -130,6 +149,7 @@ Targeted: `(cd 'packages/cli' && pnpm vitest run tests/commands/work-proof-proce
 
 ## Git History
 ```
+41cdc1cb [session-capture:s2] Fix: prefer banked counts, never drop a matched session
 e845e24a [session-capture:s2] Fix: path-segment boundary in recordBelongsToWorktree
 ccb84776 [session-capture:s2] Carry all work-item sessions in ProcessAttestation
 ae1def45 [session-capture:s2] SessionEnd/Stop derive hook + Codex config merge + coverage
@@ -150,4 +170,4 @@ See `build_data_2.yaml` for the structured companion. Summary:
 5. **AC12 no-network scan boundary** (`_capture.test.ts`, observation/monitor — verify Finding #5): the enforcement scan covers the derive/cost core but not the `work-proof.ts` assembly wrapper. Source inspection confirms no network code on the assembly path; adding `work-proof.ts` to the scanned set would close the phrasing gap.
 6. **SessionEnd derive blocks on a synchronous full-transcript read before exit** (`_capture.ts`, observation/acknowledge — verify Finding #6): `executeDerive` awaits a `readFileSync` + per-line parse before `process.exit(0)`. Low impact; the 250ms stdin cap bounds the read-wait, not the derive.
 
-Second pass — reviewed the fix for unused params/imports (the `isUnderWorktree` closure is used in three sites; no dead code), boundary edge cases (exact-dir cwd handled by the `=== worktreePath` branch; the broad pre-filter is intentional and documented), and that no other raw `startsWith(worktreePath)`/`includes(worktreePath)` comparisons remain in the matching path (grep-confirmed: the only remaining bare `includes(worktreePath)` is the documented pre-filter gate). Pre-existing lint warning in `src/utils/git-operations.ts:198` (unused eslint-disable) is unrelated to this build and untouched. Nothing further surfaced. Verified complete by second pass.
+Second pass — **Cycle 1:** reviewed for unused params/imports (the `isUnderWorktree` closure is used in three sites; no dead code), boundary edge cases (exact-dir cwd handled by the `=== worktreePath` branch; the broad pre-filter is intentional and documented), and that no other raw `startsWith(worktreePath)`/`includes(worktreePath)` comparisons remain in the matching path (grep-confirmed: the only remaining bare `includes(worktreePath)` is the documented pre-filter gate). **Cycle 2:** confirmed every consumer of `SessionProvenance.derived` handles the now-optional field — grep-confirmed the only consumers are `proof.ts` (guarded: `if (d)` for the per-session line, `if (!s.derived) continue` for the total) and the tests (non-null asserted where a `derived` block is expected). Determinism holds (a counts-less row serializes identically across runs since it omits `derived` deterministically). No `derived!`-without-guard remains in source. Pre-existing lint warning in `src/utils/git-operations.ts:198` (unused eslint-disable) is unrelated to this build and untouched. Nothing further surfaced. Verified complete by second pass.

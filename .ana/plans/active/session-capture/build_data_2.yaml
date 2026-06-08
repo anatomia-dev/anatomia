@@ -32,3 +32,7 @@ concerns:
     file: "packages/cli/src/commands/work-proof.ts"
     severity: observation
     suggested_action: acknowledge
+  - summary: "RESOLVED (fix cycle 2): assembleProcessAttestation now prefers banked record.derived counts (surviving transcript deletion) over re-deriving, and no longer drops a matched session when no counts are available — the SessionProvenance row is kept with Phase-1 metadata and the now-optional derived block omitted. null is reserved for zero matching sessions. proof.ts display guards the optional derived. Two regression tests added; the superseded dangling-pointer→null test was replaced per developer instruction."
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: observation
+    suggested_action: acknowledge
