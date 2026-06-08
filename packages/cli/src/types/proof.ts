@@ -32,12 +32,18 @@ export interface SessionProvenance {
   /** Harness session id. */
   session_id: string;
   /**
-   * Deterministic provenance counts for this session. Prefers the counts the
-   * SessionEnd `--derive` hook banked into the buffer record (they survive
-   * transcript deletion); falls back to re-deriving from the transcript.
-   * OMITTED when neither is available (e.g. the hook never fired AND the
-   * transcript has since been deleted) — the session row is still kept with its
-   * Phase-1 metadata so it stays visible in the dataset, just without counts.
+   * ISO-8601 wall-clock timestamp at which this session's provenance was captured
+   * (carried from the SessionStart pending pointer; falls back to save-time when
+   * no pointer is present). This is capture metadata and the PRIMARY assembly
+   * sort key — NOT part of the deterministic transcript derive.
+   */
+  captured_at: string;
+  /**
+   * Deterministic provenance counts for this session, derived from the committed
+   * transcript at `ana artifact save` time. OMITTED when the transcript was
+   * unreadable at capture (e.g. a dangling path) — the session row is still kept
+   * with its identity metadata so it stays visible in the dataset, just without
+   * counts.
    */
   derived?: ProvenanceCounts;
 }
@@ -79,9 +85,9 @@ export interface ProcessAttestation {
   /** Per-file added/deleted churn read from `.saves.json` (work-item level). */
   module_churn: Record<string, { added: number; deleted: number }>;
   /**
-   * Every matching agent session for this work item — one per role/attempt,
-   * deterministically ordered (by timestamp, then role). Repeated build attempts
-   * from rejection cycles are kept: that rework is wanted data.
+   * Every committed provenance session for this work item — one per role/attempt,
+   * deterministically ordered (by `captured_at`, then role). Repeated build
+   * attempts from rejection cycles are kept: that rework is wanted data.
    */
   sessions: SessionProvenance[];
 }

@@ -1,11 +1,13 @@
 /**
- * Tests for the Phase-2 transcript derive (deriveTranscript, updateSessionRecord).
+ * Tests for the deterministic transcript derive (deriveTranscript).
  *
  * Determinism is a hard contract (AC8): same transcript bytes → byte-identical
  * output. Token usage is deduped by requestId (Claude) or taken from the last
  * cumulative total (Codex). No raw transcript body is ever carried into the
- * derived counts (AC12). Fixtures are inline + trimmed (no message bodies beyond
- * what each assertion needs).
+ * derived counts. The derive carries token counts + model + price_table_version
+ * but NEVER a baked-in cost_usd (cost is a display-time estimate in capture v2).
+ * Fixtures are inline + trimmed (no message bodies beyond what each assertion
+ * needs).
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -14,10 +16,6 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import {
   deriveTranscript,
-  updateSessionRecord,
-  appendSessionRecord,
-  getForensicsBufferPath,
-  type SessionRecord,
   type ProvenanceCounts,
 } from '../../src/utils/forensics.js';
 
@@ -155,21 +153,28 @@ describe('forensics derive', () => {
 
   describe('deriveTranscript — Claude', () => {
     it('sums input tokens across requestIds', () => {
-      // @ana A023
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(d?.tokens.input).toBe(1500);
     });
 
     it('dedupes token usage by requestId (output counted once per request)', () => {
-      // @ana A024
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(d?.tokens.output).toBe(800);
     });
 
     it('extracts the session model', () => {
-      // @ana A025
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(d?.model).toBe('claude-opus-4-6');
+    });
+
+    // @ana A007, A008
+    it('carries price_table_version + tokens + model but NEVER a cost_usd', () => {
+      const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude') as ProvenanceCounts;
+      // A008: the version the display-time cost is computed against is present.
+      expect(d.price_table_version).toBe('2026-06-01');
+      // A007: no baked-in dollar figure on the derived (committed) object.
+      expect(JSON.stringify(d)).not.toContain('cost_usd');
+      expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
     });
 
     it('derives exact cache tokens, turns, tool/command counts, files, duration', () => {
@@ -183,9 +188,6 @@ describe('forensics derive', () => {
       expect(d.files_touched).toBe(1);
       // First line 00:00:00 → last line (the user tool_result) 00:00:21 = 21000ms.
       expect(d.duration_ms).toBe(21000);
-      // cost = 1500/1e6*15 + 800/1e6*75 + 150/1e6*18.75 + 300/1e6*1.5 = 0.0857625,
-      // rounded to 6 dp = 0.085763.
-      expect(d.cost_usd).toBe(0.085763);
     });
 
     it('parses best-effort test counts from tool results', () => {
@@ -195,15 +197,14 @@ describe('forensics derive', () => {
     });
 
     it('is deterministic — deriving twice yields JSON-identical output', () => {
-      // @ana A026
       const p = writeFixture('claude.jsonl', claudeFixture());
       const a = deriveTranscript(p, 'claude');
       const b = deriveTranscript(p, 'claude');
       expect(JSON.stringify(a)).toBe(JSON.stringify(b));
     });
 
+    // @ana A015
     it('never carries raw transcript body into the derived counts', () => {
-      // @ana A035
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(JSON.stringify(d)).not.toContain(SECRET_BODY);
     });
@@ -211,18 +212,23 @@ describe('forensics derive', () => {
 
   describe('deriveTranscript — Codex', () => {
     it('reads the model from turn_context, not the null session_meta model', () => {
-      // @ana A025
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex');
       expect(d?.model).toBe('gpt-5.5');
     });
 
     it('takes the last cumulative total_token_usage (does not sum)', () => {
-      // @ana A023, A024
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
       expect(d.tokens.input).toBe(300);
       expect(d.tokens.output).toBe(120);
       expect(d.tokens.cache_read).toBe(80);
       expect(d.tokens.cache_create).toBe(0);
+    });
+
+    // @ana A007, A008
+    it('carries price_table_version but never cost_usd (Codex)', () => {
+      const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
+      expect(d.price_table_version).toBe('2026-06-01');
+      expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
     });
 
     it('counts assistant turns and tool calls', () => {
@@ -234,15 +240,14 @@ describe('forensics derive', () => {
     });
 
     it('is deterministic for Codex too', () => {
-      // @ana A026
       const p = writeFixture('codex.jsonl', codexFixture());
       expect(JSON.stringify(deriveTranscript(p, 'codex'))).toBe(
         JSON.stringify(deriveTranscript(p, 'codex')),
       );
     });
 
+    // @ana A015
     it('never carries raw transcript body into the derived counts', () => {
-      // @ana A035
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex');
       expect(JSON.stringify(d)).not.toContain(SECRET_BODY);
     });
@@ -258,69 +263,7 @@ describe('forensics derive', () => {
       expect(d.tokens.input).toBe(0);
       expect(d.turns).toBe(0);
       expect(d.model).toBe('');
-      expect(d.cost_usd).toBe(0);
-    });
-  });
-
-  describe('updateSessionRecord', () => {
-    /** A minimal valid SessionRecord for buffer seeding. */
-    function record(sessionId: string): SessionRecord {
-      return {
-        session_id: sessionId,
-        transcript_path: '/t.jsonl',
-        harness: 'claude',
-        harness_version: '',
-        role: 'think',
-        slug: '',
-        model: 'claude-opus-4-6',
-        agent_def_hash: '',
-        cli_version: '',
-        cwd: '/proj',
-        source: 'startup',
-        os: 'darwin',
-        node: 'v20',
-        timestamp: '2026-06-01T00:00:00.000Z',
-      };
-    }
-
-    const derived: ProvenanceCounts = {
-      tokens: { input: 1500, output: 800, cache_create: 150, cache_read: 300 },
-      cost_usd: 0.0857625,
-      price_table_version: '2026-06-01',
-      duration_ms: 20000,
-      turns: 3,
-      tool_calls: 3,
-      commands_run: 1,
-      tests_executed: 12,
-      failures_encountered: 2,
-      files_touched: 2,
-      model: 'claude-opus-4-6',
-    };
-
-    it('writes derived counts back into the matching record', () => {
-      // @ana A034
-      appendSessionRecord(record('sess-1'));
-      appendSessionRecord(record('sess-2'));
-      const ok = updateSessionRecord('sess-2', derived);
-      expect(ok).toBe(true);
-
-      const lines = fs.readFileSync(getForensicsBufferPath(), 'utf-8').trim().split('\n');
-      const parsed = lines.map((l) => JSON.parse(l) as SessionRecord);
-      const target = parsed.find((r) => r.session_id === 'sess-2');
-      const other = parsed.find((r) => r.session_id === 'sess-1');
-      expect(target?.derived).toEqual(derived);
-      // The other record is left untouched.
-      expect(other?.derived).toBeUndefined();
-    });
-
-    it('returns false when no record matches (no throw, no write)', () => {
-      // @ana A034
-      appendSessionRecord(record('sess-1'));
-      expect(updateSessionRecord('absent', derived)).toBe(false);
-    });
-
-    it('returns false when the buffer does not exist', () => {
-      expect(updateSessionRecord('sess-1', derived)).toBe(false);
+      expect(d.price_table_version).toBe('2026-06-01');
     });
   });
 });

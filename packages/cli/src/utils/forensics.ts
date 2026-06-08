@@ -1,73 +1,43 @@
 /**
- * Forensics capture utilities — the home-anchored session buffer.
+ * Forensics capture utilities — per-session provenance that travels git.
  *
- * Phase 1 (capture) writes one provenance pointer per agent session into
- * `~/.ana/forensics/sessions.jsonl`. This module is the single source of truth
- * for the buffer path, the record shape, and the gate read, so that the Phase-2
- * derive reader and this writer agree on one format.
+ * Capture v2 does NOT use a home-global buffer (that channel never crossed
+ * machines). Instead:
  *
- * Nothing here derives counts or touches the proof — that is Phase 2. Phase 1 is
- * pointer + provenance only.
+ *  1. The SessionStart hook (`ana _capture`) writes a transient POINTER keyed by
+ *     `ANA_RUN_ID` into `~/.ana/forensics/pending/{run_id}.json` — just enough to
+ *     find the live session later. No derive, no git.
+ *  2. At `ana artifact save`, {@link captureProvenanceAtSave} resolves the session
+ *     from that pointer (or a Claude fallback), derives counts from the on-disk
+ *     transcript, and writes a self-contained
+ *     `.ana/plans/active/{slug}/provenance/{role}-{session_id}.json` that is
+ *     committed alongside the artifact — so it travels git like every other file.
+ *
+ * This module is the single source of truth for the pointer shape, the gate read,
+ * and the deterministic transcript derive. The derive is provenance ONLY — counts
+ * and model, never findings or verdicts.
  */
 
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { globSync } from 'glob';
 import { AnaJsonSchema } from '../commands/init/anaJsonSchema.js';
-import { computeCost, type TokenCounts } from '../data/pricing.js';
-
-/**
- * One session-capture record — the line appended to the forensics buffer.
- *
- * Phase 1 writes the pointer (`transcript_path`) plus identity/provenance.
- * Phase 2 enriches the same record shape with optional derived fields, so this
- * interface is the contract both phases share.
- */
-export interface SessionRecord {
-  /** Harness-assigned session id (from the hook payload). */
-  session_id: string;
-  /** Path to the session transcript, recorded VERBATIM from the payload. Never reconstructed. */
-  transcript_path: string;
-  /** Harness name — `ANA_HARNESS` env, defaulting to `'claude'` on direct launch. */
-  harness: string;
-  /** Harness version. Not delivered in the Claude SessionStart payload — empty at Phase 1. */
-  harness_version: string;
-  /** Pipeline role — `ANA_ROLE` env, falling back to the payload `agent_type`. */
-  role: string;
-  /** Work-item slug — `ANA_SLUG` env. Empty string is a valid value (think/learn/main-repo). */
-  slug: string;
-  /** Model id from the hook payload. */
-  model: string;
-  /** sha256 of the resolved agent-def file at spawn time — `ANA_AGENT_DEF_HASH` env. */
-  agent_def_hash: string;
-  /** CLI version that spawned the agent — `ANA_CLI_VERSION` env. */
-  cli_version: string;
-  /** Working directory, recorded verbatim from the payload. */
-  cwd: string;
-  /** Session-start source (`startup` | `resume` | `clear` | `compact`), verbatim from payload. */
-  source: string;
-  /** Host OS platform (`os.platform()`). */
-  os: string;
-  /** Node version (`process.version`). */
-  node: string;
-  /** ISO-8601 capture timestamp. */
-  timestamp: string;
-  /**
-   * Derived provenance counts, written back by the SessionEnd/Stop hook (Phase 2).
-   * Absent until the session ends and {@link deriveTranscript} has run. Optional
-   * by construction — a record without it is a complete, valid Phase-1 record.
-   */
-  derived?: ProvenanceCounts;
-}
+import { PRICE_TABLE_VERSION, type TokenCounts } from '../data/pricing.js';
+import type { SessionProvenance } from '../types/proof.js';
 
 /**
  * Durable, derived provenance for one finished session.
  *
  * Produced by {@link deriveTranscript} from a completed transcript. This is the
- * provenance dataset row — counts, cost, model, churn-adjacent shape — and
+ * provenance dataset row — token counts, model, churn-adjacent shape — and
  * NOTHING ELSE. It is deliberately NOT the rule engine: no findings, no
  * verdicts, no scoring. If a count cannot be derived it is `0`/`''`, never an
  * inferred judgement.
+ *
+ * No `cost_usd` is carried here: cost is a display-time estimate computed from
+ * `tokens` + `model` + `price_table_version` (so the committed git object stays a
+ * recomputable fact, never a baked-in dollar figure).
  *
  * Every field is a pure function of the transcript bytes (AC8): deriving the same
  * transcript twice yields a `JSON.stringify`-identical object.
@@ -75,9 +45,7 @@ export interface SessionRecord {
 export interface ProvenanceCounts {
   /** Token counts, deduped by `requestId` (Claude) or taken from the cumulative total (Codex). */
   tokens: TokenCounts;
-  /** Estimated cost in USD from the versioned price table. */
-  cost_usd: number;
-  /** The price-table version the cost was computed against. */
+  /** The price-table version the cost is computed against (at display time). */
   price_table_version: string;
   /** Wall-clock duration from first→last transcript timestamp, in ms. `0` if unknown. */
   duration_ms: number;
@@ -101,7 +69,7 @@ export interface ProvenanceCounts {
  * The harness hook payload delivered on stdin at SessionStart.
  *
  * Every field is optional — this is an untyped boundary. Absent fields degrade
- * cleanly to empty strings in the record. Codex may not deliver every key.
+ * cleanly to empty strings. Codex may not deliver every key.
  */
 export interface HookPayload {
   session_id?: string;
@@ -116,15 +84,37 @@ export interface HookPayload {
 }
 
 /**
- * The single source of truth for the forensics buffer path.
+ * A transient SessionStart pointer — written by the hook, consumed at save.
  *
- * Centralized so the Phase-2 reader and this Phase-1 writer resolve the same
- * file. Home is resolved via `os.homedir()`.
- *
- * @returns Absolute path to `~/.ana/forensics/sessions.jsonl`
+ * Just enough to find the live session later: the session id, its transcript
+ * path (verbatim from the payload, may be empty for Codex), the model, the
+ * start source, and the wall-clock capture time (which becomes the committed
+ * provenance's `captured_at`). Lives at `~/.ana/forensics/pending/{run_id}.json`
+ * and is deleted the moment a save consumes it.
  */
-export function getForensicsBufferPath(): string {
-  return path.join(os.homedir(), '.ana', 'forensics', 'sessions.jsonl');
+export interface PendingPointer {
+  /** Harness-assigned session id (from the hook payload). */
+  session_id: string;
+  /** Path to the session transcript, recorded VERBATIM from the payload. May be empty. */
+  transcript_path: string;
+  /** Model id from the hook payload (may be empty). */
+  model: string;
+  /** Session-start source (`startup` | `resume` | `clear` | `compact`), verbatim. */
+  source: string;
+  /** ISO-8601 wall-clock capture timestamp — carried into the committed `captured_at`. */
+  captured_at: string;
+}
+
+/**
+ * The single source of truth for the pending-pointer directory.
+ *
+ * Centralized so the hook writer and the save-time reader resolve the same dir.
+ * Home is resolved via `os.homedir()`.
+ *
+ * @returns Absolute path to `~/.ana/forensics/pending`
+ */
+export function getPendingDir(): string {
+  return path.join(os.homedir(), '.ana', 'forensics', 'pending');
 }
 
 /**
@@ -164,52 +154,96 @@ export function parseHookPayload(raw: string): HookPayload {
 }
 
 /**
- * Build one session record by merging the `ANA_*` env with the hook payload.
+ * Write the SessionStart pending pointer for a run id.
  *
- * Applies the clean-degrade fallbacks: `role` falls back to the payload
- * `agent_type`, `harness` defaults to `'claude'`, and absent env reads as empty
- * strings. `transcript_path` is recorded verbatim from the payload — never
- * reconstructed.
+ * Total/never-throw — the SessionStart hook calls this and must never disturb the
+ * session. Creates the pending dir if absent. A missing/empty run id is a no-op
+ * (nothing to correlate).
  *
- * @param env - Process environment (carries the injected `ANA_*` vars)
- * @param payload - The narrowed hook payload from stdin
- * @returns A fully-populated session record
+ * @param runId - The `ANA_RUN_ID` correlation key
+ * @param pointer - The pointer payload to persist
  */
-export function buildSessionRecord(
-  env: Record<string, string | undefined>,
-  payload: HookPayload,
-): SessionRecord {
-  return {
-    session_id: payload.session_id ?? '',
-    transcript_path: payload.transcript_path ?? '',
-    harness: env['ANA_HARNESS'] || 'claude',
-    harness_version: payload.version ?? '',
-    role: env['ANA_ROLE'] || payload.agent_type || '',
-    slug: env['ANA_SLUG'] ?? '',
-    model: payload.model ?? '',
-    agent_def_hash: env['ANA_AGENT_DEF_HASH'] ?? '',
-    cli_version: env['ANA_CLI_VERSION'] ?? '',
-    cwd: payload.cwd ?? '',
-    source: payload.source ?? '',
-    os: os.platform(),
-    node: process.version,
-    timestamp: new Date().toISOString(),
-  };
+export function writePendingPointer(runId: string, pointer: PendingPointer): void {
+  if (!runId) return;
+  try {
+    const dir = getPendingDir();
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, `${runId}.json`), JSON.stringify(pointer), 'utf-8');
+  } catch {
+    // Total: a failed pointer write must never disturb the session.
+  }
 }
 
 /**
- * Append one session record to the forensics buffer.
+ * Read the pending pointer for a run id.
  *
- * Creates the buffer directory if absent, then appends a single
- * `JSON.stringify(record) + '\n'` line. Uses `fs.appendFileSync` (`O_APPEND`)
- * so concurrent sessions interleave whole lines without clobbering each other.
+ * Returns `null` on any failure (absent file, unreadable, malformed JSON, wrong
+ * shape) — never throws. Copies only the known string fields.
  *
- * @param record - The session record to persist
+ * @param runId - The `ANA_RUN_ID` correlation key
+ * @returns The pointer, or `null` if unavailable
  */
-export function appendSessionRecord(record: SessionRecord): void {
-  const bufferPath = getForensicsBufferPath();
-  fs.mkdirSync(path.dirname(bufferPath), { recursive: true });
-  fs.appendFileSync(bufferPath, JSON.stringify(record) + '\n', 'utf-8');
+export function readPendingPointer(runId: string): PendingPointer | null {
+  if (!runId) return null;
+  try {
+    const raw = fs.readFileSync(path.join(getPendingDir(), `${runId}.json`), 'utf-8');
+    const parsed = JSON.parse(raw) as unknown;
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    return {
+      session_id: readString(parsed, 'session_id'),
+      transcript_path: readString(parsed, 'transcript_path'),
+      model: readString(parsed, 'model'),
+      source: readString(parsed, 'source'),
+      captured_at: readString(parsed, 'captured_at'),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Delete the pending pointer for a run id (best-effort).
+ *
+ * Called once a save has consumed the pointer. Swallows all errors — a missing
+ * file is a perfectly fine outcome.
+ *
+ * @param runId - The `ANA_RUN_ID` correlation key
+ */
+export function deletePendingPointer(runId: string): void {
+  if (!runId) return;
+  try {
+    fs.unlinkSync(path.join(getPendingDir(), `${runId}.json`));
+  } catch {
+    // Best-effort: nothing to delete is success.
+  }
+}
+
+/**
+ * Prune pending pointers older than `maxAgeMs` by file mtime (best-effort).
+ *
+ * Opportunistic housekeeping so a crashed/never-saved session cannot grow the
+ * pending dir unbounded. Uses wall-clock (`Date.now()`/file mtime) — this is
+ * runtime housekeeping, NOT the deterministic derive path. Swallows all errors.
+ *
+ * @param maxAgeMs - Maximum pointer age in milliseconds before it is removed
+ */
+export function prunePendingPointers(maxAgeMs: number): void {
+  try {
+    const dir = getPendingDir();
+    const now = Date.now();
+    for (const name of fs.readdirSync(dir)) {
+      if (!name.endsWith('.json')) continue;
+      const fp = path.join(dir, name);
+      try {
+        const stat = fs.statSync(fp);
+        if (now - stat.mtimeMs > maxAgeMs) fs.unlinkSync(fp);
+      } catch {
+        // Skip an individual unreadable/racing entry.
+      }
+    }
+  } catch {
+    // Best-effort: a missing pending dir is success.
+  }
 }
 
 /**
@@ -235,7 +269,7 @@ export function isProcessCaptureEnabled(projectRoot: string): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Phase 2 — deterministic transcript derive (provenance ONLY, never the engine)
+// Deterministic transcript derive (provenance ONLY, never the engine)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -444,11 +478,9 @@ function deriveClaude(lines: Array<Record<string, unknown>>): ProvenanceCounts {
     }
   }
 
-  const cost = computeCost(tokens, model);
   return {
     tokens,
-    cost_usd: cost.cost_usd,
-    price_table_version: cost.price_table_version,
+    price_table_version: PRICE_TABLE_VERSION,
     duration_ms: durationFromTimestamps(lines),
     turns,
     tool_calls: toolCalls,
@@ -526,11 +558,9 @@ function deriveCodex(lines: Array<Record<string, unknown>>): ProvenanceCounts {
     }
   }
 
-  const cost = computeCost(tokens, model);
   return {
     tokens,
-    cost_usd: cost.cost_usd,
-    price_table_version: cost.price_table_version,
+    price_table_version: PRICE_TABLE_VERSION,
     duration_ms: durationFromTimestamps(lines),
     turns,
     tool_calls: toolCalls,
@@ -547,9 +577,9 @@ function deriveCodex(lines: Array<Record<string, unknown>>): ProvenanceCounts {
  *
  * Reads the JSONL at `transcriptPath` and computes a {@link ProvenanceCounts}.
  * DETERMINISTIC (AC8): no clock, no randomness, no network — duration comes from
- * the transcript's own timestamps, cost from the versioned price table. Same
- * input bytes → `JSON.stringify`-identical output. A malformed line is skipped,
- * never thrown. Provenance ONLY — never findings or verdicts.
+ * the transcript's own timestamps. Same input bytes → `JSON.stringify`-identical
+ * output. A malformed line is skipped, never thrown. Provenance ONLY — never
+ * findings or verdicts.
  *
  * @param transcriptPath - Absolute path to the session transcript (`.jsonl`)
  * @param harness - The harness that produced it (`'codex'` selects the Codex shape)
@@ -565,44 +595,130 @@ export function deriveTranscript(
 }
 
 /**
- * Write derived counts back into the matching buffer record, in place.
+ * Resolve a transcript path for a session, with harness-specific fallbacks.
  *
- * Used by the SessionEnd/Stop hook (Phase 2): finds the line whose `session_id`
- * matches and rewrites it with `derived` set, leaving every other line byte-for-
- * byte unchanged. No-op (returns `false`) when the buffer is absent or no record
- * matches. Best-effort and safe — swallows IO errors so it never disturbs
- * session teardown.
+ * When `transcriptPath` is already known (the pointer carried it), it is returned
+ * verbatim. Otherwise the session id is used to locate the on-disk transcript:
+ * - **Codex** — glob `$CODEX_HOME/sessions/**\/rollout-*-<session_id>.jsonl`
+ *   (the filename UUID equals the session id — confirmed against a real rollout).
+ * - **Claude** — glob `~/.claude/projects/**\/<session_id>.jsonl` (the session id
+ *   equals the transcript filename).
  *
- * @param sessionId - The session id to match
- * @param derived - The derived provenance to attach
- * @returns True if a record was updated; false otherwise
+ * Returns `''` when nothing resolves. Never throws.
+ *
+ * @param env - Process environment (for `CODEX_HOME`)
+ * @param sessionId - The harness session id
+ * @param transcriptPath - The already-known transcript path, if any
+ * @param harness - The harness name (`'claude'` | `'codex'`)
+ * @returns The resolved transcript path, or `''`
  */
-export function updateSessionRecord(sessionId: string, derived: ProvenanceCounts): boolean {
-  if (!sessionId) return false;
-  const bufferPath = getForensicsBufferPath();
+export function resolveTranscriptPath(
+  env: Record<string, string | undefined>,
+  sessionId: string,
+  transcriptPath: string,
+  harness: string,
+): string {
+  if (transcriptPath && transcriptPath.length > 0) return transcriptPath;
+  if (!sessionId) return '';
   try {
-    if (!fs.existsSync(bufferPath)) return false;
-    const raw = fs.readFileSync(bufferPath, 'utf-8');
-    const lines = raw.split('\n');
-    let updated = false;
-    const out = lines.map((line) => {
-      if (!line.trim()) return line;
-      let record: unknown;
-      try {
-        record = JSON.parse(line);
-      } catch {
-        return line; // preserve unparseable lines verbatim
-      }
-      if (typeof record === 'object' && record !== null && readString(record, 'session_id') === sessionId) {
-        updated = true;
-        return JSON.stringify({ ...(record as SessionRecord), derived });
-      }
-      return line;
-    });
-    if (!updated) return false;
-    fs.writeFileSync(bufferPath, out.join('\n'), 'utf-8');
-    return true;
+    if (harness === 'codex') {
+      const codexHome =
+        env['CODEX_HOME'] && env['CODEX_HOME'].length > 0
+          ? env['CODEX_HOME']
+          : path.join(os.homedir(), '.codex');
+      const matches = globSync(`sessions/**/rollout-*-${sessionId}.jsonl`, {
+        cwd: codexHome,
+        absolute: true,
+      });
+      return matches[0] ?? '';
+    }
+    // Claude: the session id equals the transcript filename under ~/.claude/projects.
+    const claudeProjects = path.join(os.homedir(), '.claude', 'projects');
+    const matches = globSync(`**/${sessionId}.jsonl`, { cwd: claudeProjects, absolute: true });
+    return matches[0] ?? '';
   } catch {
-    return false; // total: never disturb teardown
+    return '';
+  }
+}
+
+/** Orphan pointers older than this (72h) are pruned opportunistically at save. */
+const POINTER_MAX_AGE_MS = 72 * 60 * 60 * 1000;
+
+/**
+ * Capture one session's provenance at `ana artifact save` time.
+ *
+ * This is the orchestrator the save sites call. It is TOTAL — any failure returns
+ * `null` and a capture failure must NEVER break a save. On success it writes a
+ * self-contained `.ana/plans/active/{slug}/provenance/{role}-{session_id}.json`,
+ * deletes the consumed pointer, prunes orphan pointers, and returns the absolute
+ * path written so the caller can stage it into the artifact commit.
+ *
+ * Session resolution:
+ *  1. `role` ← `ANA_ROLE` (no role → return `null`).
+ *  2. `runId` ← `ANA_RUN_ID`; read its pointer for session id / transcript / model.
+ *  3. Claude fallback when no pointer session: `session_id` ← `CLAUDE_CODE_SESSION_ID`.
+ *  4. Resolve the transcript path from the session id when the pointer lacked one.
+ *  5. Derive counts (omitted when the transcript is unreadable — the row is still written).
+ *
+ * @param projectRoot - Project root directory
+ * @param slug - Work-item slug being saved
+ * @param env - Process environment (carries the injected `ANA_*` vars)
+ * @returns The absolute path of the written provenance file, or `null` if none was written
+ */
+export function captureProvenanceAtSave(
+  projectRoot: string,
+  slug: string,
+  env: Record<string, string | undefined>,
+): string | null {
+  try {
+    if (!isProcessCaptureEnabled(projectRoot)) return null;
+
+    const role = env['ANA_ROLE'] ?? '';
+    if (!role) return null; // no role → nothing to attribute
+
+    const harness = env['ANA_HARNESS'] || 'claude';
+    const runId = env['ANA_RUN_ID'] ?? '';
+    const pointer = runId ? readPendingPointer(runId) : null;
+
+    let sessionId = pointer?.session_id ?? '';
+    let transcriptPath = pointer?.transcript_path ?? '';
+    const pointerModel = pointer?.model ?? '';
+
+    // Claude fallback: recover the session id from the harness env when no pointer
+    // was written (the hook never fired). Codex has no such env → no fallback.
+    if (!sessionId && harness !== 'codex') {
+      sessionId = env['CLAUDE_CODE_SESSION_ID'] ?? '';
+    }
+    if (!sessionId) return null; // unresolvable session → nothing to write
+
+    if (!transcriptPath) {
+      transcriptPath = resolveTranscriptPath(env, sessionId, '', harness);
+    }
+
+    const derived = transcriptPath ? deriveTranscript(transcriptPath, harness) : null;
+
+    const provenance: SessionProvenance = {
+      role,
+      harness,
+      model: derived?.model || pointerModel || '',
+      agent_def_hash: env['ANA_AGENT_DEF_HASH'] ?? '',
+      cli_version: env['ANA_CLI_VERSION'] ?? '',
+      session_id: sessionId,
+      captured_at: pointer?.captured_at || new Date().toISOString(),
+      ...(derived ? { derived } : {}),
+    };
+
+    const provDir = path.join(projectRoot, '.ana', 'plans', 'active', slug, 'provenance');
+    fs.mkdirSync(provDir, { recursive: true });
+    const filePath = path.join(provDir, `${role}-${sessionId}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(provenance, null, 2) + '\n', 'utf-8');
+
+    // Consume the pointer and prune orphans (best-effort).
+    if (runId) deletePendingPointer(runId);
+    prunePendingPointers(POINTER_MAX_AGE_MS);
+
+    return filePath;
+  } catch {
+    return null; // Total: a capture failure must never break a save.
   }
 }
