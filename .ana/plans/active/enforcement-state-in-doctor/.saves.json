@@ -18,5 +18,50 @@
   "spec": {
     "saved_at": "2026-06-08T21:25:05.569Z",
     "hash": "sha256:3253e6fb0ad55deefd612967e4f33d8df0b0f84162f557c3f373237e28a78307"
-  }
+  },
+  "build_started_at": "2026-06-08T21:32:55.659Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-08T21:42:38.280Z",
+    "hash": "sha256:2700502226ce26b79767bb8ec112807f861c2a2f31628abac3b0f1c74c2edfb1"
+  },
+  "build-data": {
+    "saved_at": "2026-06-08T21:42:38.281Z",
+    "hash": "sha256:39868ab1ff86c6a934146b07cf3eca65088c75355ef878bc9035528585c19f67"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/doctor.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/doctor.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/config.ts": {
+      "added": 3,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/doctor.ts": {
+      "added": 68,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 0,
+      "deleted": 36
+    },
+    "packages/cli/tests/commands/config.test.ts": {
+      "added": 30,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/doctor.test.ts": {
+      "added": 89,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 19,
+      "deleted": 10
+    }
+  },
+  "commit_hygiene": []
 }
