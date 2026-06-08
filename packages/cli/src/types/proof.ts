@@ -31,8 +31,15 @@ export interface SessionProvenance {
   cli_version: string;
   /** Harness session id. */
   session_id: string;
-  /** Deterministic provenance counts derived from this session's transcript. */
-  derived: ProvenanceCounts;
+  /**
+   * Deterministic provenance counts for this session. Prefers the counts the
+   * SessionEnd `--derive` hook banked into the buffer record (they survive
+   * transcript deletion); falls back to re-deriving from the transcript.
+   * OMITTED when neither is available (e.g. the hook never fired AND the
+   * transcript has since been deleted) — the session row is still kept with its
+   * Phase-1 metadata so it stays visible in the dataset, just without counts.
+   */
+  derived?: ProvenanceCounts;
 }
 
 /**

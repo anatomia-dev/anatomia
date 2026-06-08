@@ -444,19 +444,28 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     // and every build rework cycle).
     for (const s of p.sessions) {
       const d = s.derived;
-      const modelShort = d.model.replace(/^claude-/, '');
-      lines.push(
-        `  ${[s.harness, s.role, modelShort].filter(Boolean).join(' · ')}` +
-          `   ${d.turns} turns · ${d.tool_calls} tools` +
-          ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
-          ` · est. $${d.cost_usd.toFixed(2)}`,
-      );
+      const modelShort = (d?.model || s.model).replace(/^claude-/, '');
+      const head = `  ${[s.harness, s.role, modelShort].filter(Boolean).join(' · ')}`;
+      if (d) {
+        lines.push(
+          head +
+            `   ${d.turns} turns · ${d.tool_calls} tools` +
+            ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
+            ` · est. $${d.cost_usd.toFixed(2)}`,
+        );
+      } else {
+        // Counts-less session (hook never fired AND transcript deleted) — still
+        // listed so the dataset stays complete; counts simply unavailable.
+        lines.push(head + chalk.gray('   counts unavailable'));
+      }
     }
 
     // Work-item-level totals, once: combined cost + table version, then churn.
+    // Counts-less sessions contribute nothing to the cost total.
     let totalCost = 0;
     let tableVersion = '';
     for (const s of p.sessions) {
+      if (!s.derived) continue;
       totalCost += s.derived.cost_usd;
       if (!tableVersion) tableVersion = s.derived.price_table_version;
     }

@@ -156,19 +156,23 @@ export function assembleProcessAttestation(
 
   const sessions: SessionProvenance[] = [];
   for (const record of matches) {
-    const derived = deriveTranscript(record.transcript_path, record.harness);
-    if (!derived) continue; // dangling/unreadable transcript → skip that session
+    // Prefer the counts the SessionEnd `--derive` hook already banked into the
+    // record — they survive transcript deletion. Re-derive only when absent
+    // (e.g. the hook never fired). A matched-but-counts-less session is NOT
+    // dropped: keep its Phase-1 metadata row so it stays visible in the dataset.
+    const derived = record.derived ?? deriveTranscript(record.transcript_path, record.harness) ?? undefined;
     sessions.push({
       role: record.role,
       harness: record.harness,
-      model: record.model || derived.model,
+      model: record.model || derived?.model || '',
       agent_def_hash: record.agent_def_hash,
       cli_version: record.cli_version,
       session_id: record.session_id,
-      derived,
+      ...(derived ? { derived } : {}),
     });
   }
-  // Every matching transcript was unreadable → no provenance to attach.
+  // Zero matching sessions → no provenance to attach. (A matched session with no
+  // counts is still a session — only an empty match set returns null.)
   if (sessions.length === 0) return null;
 
   const findings = { risk: 0, debt: 0, observation: 0 };

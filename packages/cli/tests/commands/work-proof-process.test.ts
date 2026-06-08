@@ -183,7 +183,7 @@ describe('assembleProcessAttestation', () => {
     expect(att!.sessions).toHaveLength(1);
     expect(att!.sessions[0]!.session_id).toBe('sess-feat');
     expect(att!.sessions[0]!.role).toBe('build');
-    expect(att!.sessions[0]!.derived.tokens.input).toBe(1000);
+    expect(att!.sessions[0]!.derived!.tokens.input).toBe(1000);
     expect(att!.sessions[0]!.model).toBe('claude-opus-4-6');
     expect(att!.module_churn).toEqual(churn);
   });
@@ -269,10 +269,10 @@ describe('assembleProcessAttestation', () => {
     // Deterministic order: by timestamp → build (01:00) before verify (02:00).
     expect(att!.sessions.map((s) => s.role)).toEqual(['build', 'verify']);
     expect(att!.sessions[0]!.model).toBe('claude-opus-4-6');
-    expect(att!.sessions[0]!.derived.tokens.input).toBe(1000);
+    expect(att!.sessions[0]!.derived!.tokens.input).toBe(1000);
     expect(att!.sessions[0]!.agent_def_hash).toBe('sha256:build');
     expect(att!.sessions[1]!.model).toBe('claude-sonnet-4-6');
-    expect(att!.sessions[1]!.derived.tokens.input).toBe(500);
+    expect(att!.sessions[1]!.derived!.tokens.input).toBe(500);
     // outcome stays top-level (contract A032 unchanged).
     expect(att!.outcome.first_pass_verify).toBe(true);
   });
@@ -327,14 +327,57 @@ describe('assembleProcessAttestation', () => {
     expect(att).toBeNull();
   });
 
-  it('returns null when the matched transcript is unreadable (dangling pointer)', () => {
+  it('uses banked derived counts when the transcript is gone (no re-derive needed)', () => {
+    // @ana A031 — the SessionEnd `--derive` hook banked counts into the record;
+    // they survive transcript deletion, so the session keeps its counts without
+    // re-reading the (now deleted) transcript.
     writeAnaJson('on');
-    const rec = buildRecord('feat', path.join(projectRoot, 'gone.jsonl'));
-    // Force a slug match so recovery succeeds but the transcript derive fails.
-    rec.slug = 'feat';
+    const worktree = path.join(projectRoot, '.ana', 'worktrees', 'feat');
+    const banked: NonNullable<SessionRecord['derived']> = {
+      tokens: { input: 4242, output: 99, cache_create: 0, cache_read: 0 },
+      cost_usd: 1.23,
+      price_table_version: 'test-1',
+      duration_ms: 1000,
+      turns: 3,
+      tool_calls: 2,
+      commands_run: 1,
+      tests_executed: 0,
+      failures_encountered: 0,
+      files_touched: 1,
+      model: 'claude-opus-4-6',
+    };
+    const rec = roleRecord('build', 'claude-opus-4-6', 'sess-banked', path.join(projectRoot, 'deleted.jsonl'), '2026-06-01T00:00:00.000Z');
+    rec.cwd = worktree; // matches the worktree directly (boundary-safe); transcript is gone
+    rec.derived = banked;
     seedBuffer(rec);
 
     const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
-    expect(att).toBeNull();
+    expect(att).not.toBeNull();
+    expect(att!.sessions).toHaveLength(1);
+    expect(att!.sessions[0]!.session_id).toBe('sess-banked');
+    expect(att!.sessions[0]!.derived).toBeDefined();
+    expect(att!.sessions[0]!.derived!.tokens.input).toBe(4242);
+    expect(att!.sessions[0]!.derived!.cost_usd).toBe(1.23);
+  });
+
+  it('keeps a matched session (metadata only, no derived block) when banked counts are absent AND the transcript is deleted', () => {
+    // @ana A031 — a matched session is NEVER dropped. With neither banked counts
+    // nor a readable transcript, the row survives with its Phase-1 metadata and
+    // the derived block is omitted. (Supersedes the prior "dangling → null"
+    // behavior; null is now reserved for zero matching sessions.)
+    writeAnaJson('on');
+    const rec = buildRecord('feat', path.join(projectRoot, 'gone.jsonl'));
+    rec.slug = 'feat'; // force a slug match so recovery succeeds but the derive fails
+    expect(rec.derived).toBeUndefined();
+    seedBuffer(rec);
+
+    const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+    expect(att).not.toBeNull();
+    expect(att!.sessions).toHaveLength(1);
+    const s = att!.sessions[0]!;
+    expect(s.session_id).toBe('sess-feat');
+    expect(s.role).toBe('build');
+    expect(s.model).toBe('claude-opus-4-6'); // carried from Phase-1 metadata
+    expect(s.derived).toBeUndefined(); // no counts, but the row survives
   });
 });
