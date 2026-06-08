@@ -1,0 +1,22 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "ana _capture"
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "ana _capture --derive"
+        }
+      ]
+    }
+  ]
+}

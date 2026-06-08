@@ -54,6 +54,7 @@ import {
 import type { InitState } from './types.js';
 import { dirExists, fileExists } from './preflight.js';
 import { getTemplatesDir, makeTestCommandNonInteractive } from './state.js';
+import { isProcessCaptureEnabled } from '../../utils/forensics.js';
 // scaffoldAndSeedSkills is now called from the init orchestrator (index.ts)
 import { getPatternLibrary } from '../../engine/types/patterns.js';
 
@@ -210,6 +211,14 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
   const templateContent = await fs.readFile(templateSettingsPath, 'utf-8');
   const templateSettings = JSON.parse(templateContent);
 
+  // Install-time capture gating (the locked decision). The stock template stays
+  // hook-free; the SessionStart hook is injected ONLY when processCapture is on.
+  // When off, any previously-installed Anatomia hook is pruned below.
+  const captureOn = isProcessCaptureEnabled(cwd);
+  if (captureOn) {
+    injectCaptureHook(templateSettings);
+  }
+
   const claudeExists = await dirExists(claudePath);
 
   // Ensure .gitignore exists for per-developer state (agent-memory/, settings.local.json).
@@ -254,7 +263,13 @@ settings.local.json
     try {
       const existingContent = await fs.readFile(settingsPath, 'utf-8');
       const existingSettings = JSON.parse(existingContent);
-      const mergedSettings = mergeHooksSettings(existingSettings, templateSettings);
+      let mergedSettings = mergeHooksSettings(existingSettings, templateSettings);
+      // Capture off: prune any previously-installed Anatomia capture hook,
+      // leaving user-authored hooks intact. mergeHooksSettings only adds — the
+      // flip-off removal is this net-new step.
+      if (!captureOn) {
+        mergedSettings = pruneCaptureHook(mergedSettings);
+      }
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2), 'utf-8');
     } catch {
       // Malformed JSON - warn and overwrite with our defaults
@@ -638,6 +653,114 @@ function hookEntryMatches(a: HookEntry, b: HookEntry): boolean {
 }
 
 /**
+ * The machine-owned capture hook command — Anatomia's signature.
+ *
+ * The prune path keys on this exact string (regardless of matcher or hook
+ * event) to remove only our hook, never user-authored hooks.
+ */
+const CAPTURE_HOOK_COMMAND = 'ana _capture';
+
+/**
+ * The end-of-session derive command (Phase 2) — runs `deriveTranscript` on the
+ * finished transcript. Installed under SessionEnd (Claude) / Stop (Codex).
+ */
+const CAPTURE_DERIVE_COMMAND = 'ana _capture --derive';
+
+/** The SessionStart hook event Anatomia installs the capture hook under. */
+const CAPTURE_HOOK_EVENT = 'SessionStart';
+
+/** The end-of-session hook event for Claude (Phase 2 derive). */
+const CAPTURE_END_EVENT_CLAUDE = 'SessionEnd';
+
+/** The end-of-session hook event for Codex (Phase 2 derive). */
+const CAPTURE_END_EVENT_CODEX = 'Stop';
+
+/**
+ * Whether a hook command is one of Anatomia's machine-owned capture commands.
+ *
+ * Matches both `ana _capture` (SessionStart) and `ana _capture --derive`
+ * (SessionEnd/Stop), so the prune removes BOTH on flip-off — but never a
+ * user-authored command that merely starts with a different word.
+ *
+ * @param command - The hook command string
+ * @returns True if this is an Anatomia capture command
+ */
+function isCaptureCommand(command: string): boolean {
+  return command === CAPTURE_HOOK_COMMAND || command.startsWith(`${CAPTURE_HOOK_COMMAND} `);
+}
+
+/**
+ * Inject the `ana _capture` SessionStart hook into a settings object.
+ *
+ * Idempotent — does nothing if an entry with the capture command is already
+ * present under SessionStart. No `matcher` is set, so the hook fires on every
+ * session-start source; the `source` field is recorded for disambiguation.
+ *
+ * @param settings - The settings object to mutate (gains `hooks.SessionStart`)
+ */
+function injectCaptureHook(settings: Record<string, unknown>): void {
+  if (!settings['hooks'] || typeof settings['hooks'] !== 'object') {
+    settings['hooks'] = {};
+  }
+  const hooks = settings['hooks'] as Record<string, unknown>;
+  injectHookEvent(hooks, CAPTURE_HOOK_EVENT, CAPTURE_HOOK_COMMAND);
+  // Phase 2: the SessionEnd derive hook, banking non-work sessions' counts.
+  injectHookEvent(hooks, CAPTURE_END_EVENT_CLAUDE, CAPTURE_DERIVE_COMMAND);
+}
+
+/**
+ * Idempotently add a capture hook command under a hook event in a hooks object.
+ *
+ * Dedup-safe — does nothing if an entry with the command already exists under the
+ * event. Mutates `hooks` in place.
+ *
+ * @param hooks - The `hooks` object (event → entries[])
+ * @param event - The hook event name (e.g. `SessionStart`)
+ * @param command - The hook command to ensure is present
+ */
+function injectHookEvent(hooks: Record<string, unknown>, event: string, command: string): void {
+  const entries = (hooks[event] as HookEntry[] | undefined) ?? [];
+  const already = entries.some((e) => (e.hooks || []).some((h) => h.command === command));
+  if (!already) {
+    entries.push({ hooks: [{ type: 'command', command }] });
+  }
+  hooks[event] = entries;
+}
+
+/**
+ * Remove every Anatomia capture hook from a settings/hooks object.
+ *
+ * The inverse of {@link mergeHooksSettings} for our machine-owned hook: across
+ * ALL hook-event arrays, drop any entry whose `hooks[].command` is the capture
+ * command, while preserving every other (user-authored) entry. Keyed on the
+ * command string alone — independent of matcher — because the command is our
+ * signature. Returns a new object; does not mutate the input.
+ *
+ * @param settings - Existing settings object (may have a stale capture hook)
+ * @returns A settings object with all capture hooks removed
+ */
+function pruneCaptureHook(settings: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...settings };
+  const hooks = result['hooks'];
+  if (!hooks || typeof hooks !== 'object') return result;
+
+  const hooksObj = hooks as Record<string, unknown>;
+  const prunedHooks: Record<string, unknown> = {};
+  for (const event of Object.keys(hooksObj)) {
+    const arr = hooksObj[event];
+    if (!Array.isArray(arr)) {
+      prunedHooks[event] = arr;
+      continue;
+    }
+    prunedHooks[event] = (arr as HookEntry[]).filter(
+      (entry) => !(entry.hooks || []).some((h) => isCaptureCommand(h.command))
+    );
+  }
+  result['hooks'] = prunedHooks;
+  return result;
+}
+
+/**
  * Create .codex/ configuration
  *
  * Creates .codex/agents/ directory with Codex agent templates and TOML manifests.
@@ -655,6 +778,9 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
   const agentsPath = path.join(codexPath, 'agents');
   const templatesDir = getTemplatesDir();
 
+  // Install-time capture gating, mirrored from the Claude side.
+  const captureOn = isProcessCaptureEnabled(cwd);
+
   const codexExists = await dirExists(codexPath);
 
   if (!codexExists) {
@@ -664,6 +790,8 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
 
     // Copy agent .md files and .agent.toml manifests
     const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
+
+    await applyCodexCaptureHooks(codexPath, templatesDir, captureOn);
 
     spinner.succeed('Created .codex/ configuration');
     return changed;
@@ -677,8 +805,112 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
 
   const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
 
+  await applyCodexCaptureHooks(codexPath, templatesDir, captureOn);
+
   spinner.succeed('Created .codex/ configuration (merged)');
   return changed;
+}
+
+/**
+ * Install or prune the Codex capture hook (install-time gating, Codex side).
+ *
+ * On (`captureOn`): merge the `ana _capture` SessionStart hook into
+ * `.codex/hooks.json` (dedup-safe, preserving user-authored hooks) and ensure a
+ * `config.toml` exists with `[features] hooks = true`. Off: prune any
+ * previously-installed Anatomia capture hook from `hooks.json` while leaving
+ * user hooks intact. An existing user `config.toml` is never rewritten — the
+ * feature flag is only written when we create the file fresh.
+ *
+ * @param codexPath - Path to the `.codex/` directory
+ * @param templatesDir - Path to the CLI templates directory
+ * @param captureOn - Whether process capture is enabled for the project
+ */
+async function applyCodexCaptureHooks(
+  codexPath: string,
+  templatesDir: string,
+  captureOn: boolean,
+): Promise<void> {
+  const hooksPath = path.join(codexPath, 'hooks.json');
+  const configPath = path.join(codexPath, 'config.toml');
+
+  // Read any existing hooks.json (the Codex hooks file is the event-map directly).
+  let hooksObj: Record<string, unknown> = {};
+  if (await fileExists(hooksPath)) {
+    try {
+      hooksObj = JSON.parse(await fs.readFile(hooksPath, 'utf-8'));
+      if (typeof hooksObj !== 'object' || hooksObj === null) hooksObj = {};
+    } catch {
+      hooksObj = {};
+    }
+  }
+
+  if (captureOn) {
+    // Merge the capture hooks: SessionStart (pointer) + Stop (Phase-2 derive),
+    // dedup by command, preserving any user-authored hooks.
+    injectHookEvent(hooksObj, CAPTURE_HOOK_EVENT, CAPTURE_HOOK_COMMAND);
+    injectHookEvent(hooksObj, CAPTURE_END_EVENT_CODEX, CAPTURE_DERIVE_COMMAND);
+    await fs.writeFile(hooksPath, JSON.stringify(hooksObj, null, 2), 'utf-8');
+
+    // Ensure config.toml enables hooks. Idempotently MERGE the `[features]
+    // hooks = true` flag into an existing TOML (delta #2 — Verify flagged that a
+    // pre-existing config.toml without the flag silently disabled the hook),
+    // without mangling the user's other config.
+    await ensureCodexHooksFlag(configPath, templatesDir);
+    return;
+  }
+
+  // Capture off: prune our hook from hooks.json, preserve user hooks.
+  if (!(await fileExists(hooksPath))) return; // nothing installed → nothing to prune
+  const prunedHooks = (pruneCaptureHook({ hooks: hooksObj })['hooks']) as Record<string, unknown>;
+  await fs.writeFile(hooksPath, JSON.stringify(prunedHooks, null, 2), 'utf-8');
+}
+
+/**
+ * Ensure `.codex/config.toml` enables lifecycle hooks (`[features] hooks = true`).
+ *
+ * Delta #2 (human-approved fix): the previous code only wrote config.toml when it
+ * was ABSENT, so a pre-existing TOML lacking the flag got a hooks.json whose hooks
+ * never fired (silent degrade — Verify flagged this). This idempotently MERGES the
+ * flag into an existing file without mangling the user's other config:
+ *  - file absent → write the stock template;
+ *  - `hooks = true` already present → no-op;
+ *  - a `hooks =` key present but not `true` → set it to `true`;
+ *  - `[features]` section present without a `hooks` key → insert the key under it;
+ *  - otherwise → append a `[features]` section.
+ *
+ * @param configPath - Path to `.codex/config.toml`
+ * @param templatesDir - Path to the CLI templates directory
+ */
+async function ensureCodexHooksFlag(configPath: string, templatesDir: string): Promise<void> {
+  if (!(await fileExists(configPath))) {
+    const templateConfig = await fs.readFile(path.join(templatesDir, '.codex/config.toml'), 'utf-8');
+    await fs.writeFile(configPath, templateConfig, 'utf-8');
+    return;
+  }
+
+  let content = await fs.readFile(configPath, 'utf-8');
+
+  // Already enabled → nothing to do.
+  if (/^\s*hooks\s*=\s*true\s*$/m.test(content)) return;
+
+  // A `hooks =` key exists but isn't `true` → flip it (preserves the rest).
+  if (/^\s*hooks\s*=.*$/m.test(content)) {
+    content = content.replace(/^(\s*hooks\s*=\s*).*$/m, '$1true');
+    await fs.writeFile(configPath, content, 'utf-8');
+    return;
+  }
+
+  // A `[features]` section exists without a hooks key → insert under the header.
+  if (/^\s*\[features\]\s*$/m.test(content)) {
+    content = content.replace(/^(\s*\[features\]\s*)$/m, '$1\nhooks = true');
+    await fs.writeFile(configPath, content, 'utf-8');
+    return;
+  }
+
+  // No `[features]` section at all → append one (don't disturb existing config).
+  const sep = content.endsWith('\n') ? '' : '\n';
+  content = `${content}${sep}\n[features]\nhooks = true\n`;
+  await fs.writeFile(configPath, content, 'utf-8');
 }
 
 /**

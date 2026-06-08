@@ -1,0 +1,39 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Unrequested scope expansion during the fix cycle: commit 41cdc1cb ('prefer banked counts, never drop a matched session') changed SessionProvenance.derived from required to optional, made assembleProcessAttestation keep a matched-but-counts-less session as a metadata-only row, and updated proof.ts to render 'counts unavailable' and skip such rows in cost totals. Beyond the FAIL's single required fix. It is a genuine robustness improvement (prevents silent session loss on a dangling/deleted transcript), well-tested (two new tests, both green) and type-safe (proof.ts handles d? everywhere). Not a blocker — recorded because a fix cycle widened beyond its mandate."
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 163
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A031"]
+  - category: code
+    summary: "Partially mitigated, not resolved: assembleProcessAttestation still reads the home-global forensics buffer (~/.ana/forensics/sessions.jsonl, machine-wide, never pruned in Phase 1) in full at every work-complete, and recordBelongsToWorktree still reads each non-slug/non-cwd-matched record's entire transcript end-to-end for the per-line cwd scan. The 41cdc1cb banked-counts preference removed the redundant RE-derive for already-counted matched sessions, so per-matched-session cost is lower, but the unbounded buffer scan and per-candidate transcript read remain. Cost still grows with lifetime session count."
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 125
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A031"]
+  - category: upstream
+    summary: "ProcessAttestation shape still deviates from the spec-2 mockup (spec-2 lines 52-70 show process as a single-session object; implementation uses process.sessions[] with work-item-level outcome/task_shape/module_churn). Human-approved, contract-compatible (A031 only requires entry.process exists; A032 outcome stays top-level). The spec mockup is stale and should be refreshed on the next seal."
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A031", "A032"]
+  - category: test
+    summary: "AC12 no-network enforcement scan (_capture.test.ts:156) covers the derive/cost core (_capture.ts, forensics.ts, pricing.ts) but not the work-proof.ts assembly wrapper or artifact.ts churn path. Source inspection confirms no network code on the assembly path, so the guarantee holds where it matters, but the scanned set is narrower than the AC phrasing ('the capture + derive path')."
+    file: "packages/cli/tests/commands/_capture.test.ts"
+    line: 156
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "executeDerive awaits a synchronous readFileSync + per-line JSON.parse of the full transcript before process.exit(0) on SessionEnd/Stop. The 250ms stdin cap bounds the read-wait, not the derive itself, so a very large finished transcript adds to hook teardown latency despite the spec's 'async, never delays teardown' intent. Low impact; recorded for awareness. Unchanged this cycle."
+    file: "packages/cli/src/commands/_capture.ts"
+    line: 208
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "parseTestCounts matches the first /(\\d+)\\s+passed/ in any Bash tool_result text, so prose mentioning 'N passed' (not a test runner) inflates tests_executed/failures_encountered. Documented best-effort and provenance-only (never feeds a verdict), so impact is low, but the metric is not trustworthy. Unchanged this cycle."
+    file: "packages/cli/src/utils/forensics.ts"
+    line: 346
+    severity: observation
+    suggested_action: acknowledge

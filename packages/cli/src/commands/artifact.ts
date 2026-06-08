@@ -197,18 +197,74 @@ function captureModulesTouched(projectRoot: string, slugDir: string): void {
     const diffOutput = diffResult.stdout;
     const modulesList = diffOutput ? diffOutput.split('\n').filter(Boolean) : [];
 
+    // Per-file added/deleted churn — a sibling --numstat call over the same
+    // merge-base. Recorded under a NEW key; modules_touched stays a path array.
+    const churnMap = computeModuleChurn(projectRoot, mergeBase);
+
     const savesPath = path.join(slugDir, '.saves.json');
     let savesData: Record<string, unknown> = {};
     if (fs.existsSync(savesPath)) {
       try { savesData = JSON.parse(fs.readFileSync(savesPath, 'utf-8')); } catch { /* */ }
     }
     savesData['modules_touched'] = modulesList;
+    savesData['module_churn'] = churnMap;
     fs.writeFileSync(savesPath, JSON.stringify(savesData, null, 2));
   } catch (err) {
     // @ana A008
     const errMsg = err instanceof Error ? err.message : String(err);
     console.error(chalk.yellow(`⚠ Warning: Could not capture modules_touched — saving without it. ${errMsg}`));
   }
+}
+
+/** Per-file added/deleted line churn. */
+export interface FileChurn {
+  /** Lines added (binary files coerce to 0). */
+  added: number;
+  /** Lines deleted (binary files coerce to 0). */
+  deleted: number;
+}
+
+/** Map of repo-relative file path → its added/deleted churn. */
+export type ModuleChurn = Record<string, FileChurn>;
+
+/**
+ * Compute per-file added/deleted churn via `git diff --numstat`.
+ *
+ * The `(churn)` axis of the dataset row — a sibling of the `--name-only` call in
+ * {@link captureModulesTouched}, over the same merge-base, excluding `.ana`.
+ * numstat emits `added<TAB>deleted<TAB>path`; binary files report `-`/`-`, which
+ * are coerced to `0`/`0`. Returns an empty map on any git failure (never throws).
+ *
+ * @param projectRoot - Project root directory
+ * @param mergeBase - The merge-base commit to diff against
+ * @returns A map of file path to its added/deleted churn
+ */
+export function computeModuleChurn(projectRoot: string, mergeBase: string): ModuleChurn {
+  const churn: ModuleChurn = {};
+  try {
+    const numstat = runGit(['diff', mergeBase, '--numstat', '--', '.', ':(exclude).ana'], { cwd: projectRoot });
+    const out = numstat.stdout;
+    if (!out) return churn;
+    for (const row of out.split('\n')) {
+      if (!row.trim()) continue;
+      const parts = row.split('\t');
+      if (parts.length < 3) continue;
+      const addedRaw = parts[0] ?? '';
+      const deletedRaw = parts[1] ?? '';
+      const filePath = parts.slice(2).join('\t');
+      if (!filePath) continue;
+      // Binary files report '-' for both counts → coerce to 0.
+      const added = addedRaw === '-' ? 0 : Number.parseInt(addedRaw, 10);
+      const deleted = deletedRaw === '-' ? 0 : Number.parseInt(deletedRaw, 10);
+      churn[filePath] = {
+        added: Number.isFinite(added) ? added : 0,
+        deleted: Number.isFinite(deleted) ? deleted : 0,
+      };
+    }
+  } catch {
+    // Expected on new repos / no merge-base — return what we have.
+  }
+  return churn;
 }
 
 /** Commit hygiene finding — structured warning for the proof chain. */

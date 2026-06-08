@@ -9,6 +9,82 @@
  */
 
 import type { ProofSummary } from '../utils/proofSummary.js';
+import type { ProvenanceCounts } from '../utils/forensics.js';
+
+/**
+ * Provenance for ONE agent session that worked on a work item (Phase 2).
+ *
+ * Provenance ONLY — identity + deterministic derived counts. One of these exists
+ * per matching session (plan, build, every build rework cycle, verify), so the
+ * per-role dataset is preserved rather than collapsed to a single session.
+ */
+export interface SessionProvenance {
+  /** Pipeline role (`plan` | `build` | `verify` | …). */
+  role: string;
+  /** Harness the session ran on (`claude` | `codex`). */
+  harness: string;
+  /** The model that ran the session. */
+  model: string;
+  /** sha256 of the resolved agent-def file at spawn time. */
+  agent_def_hash: string;
+  /** CLI version that spawned the agent. */
+  cli_version: string;
+  /** Harness session id. */
+  session_id: string;
+  /**
+   * Deterministic provenance counts for this session. Prefers the counts the
+   * SessionEnd `--derive` hook banked into the buffer record (they survive
+   * transcript deletion); falls back to re-deriving from the transcript.
+   * OMITTED when neither is available (e.g. the hook never fired AND the
+   * transcript has since been deleted) — the session row is still kept with its
+   * Phase-1 metadata so it stays visible in the dataset, just without counts.
+   */
+  derived?: ProvenanceCounts;
+}
+
+/**
+ * Session provenance attached to a completed proof entry (Phase 2).
+ *
+ * Provenance ONLY — counts, cost, tokens, model, outcome joins, churn. This is
+ * deliberately NOT the rule engine: no findings, no verdicts, no scoring. Every
+ * field is a recomputable fact derived from the session transcripts and the
+ * already-assembled proof object. Attached optionally and never gating (see
+ * {@link ProofChainEntry.process}).
+ *
+ * Carries ALL of the work item's matching sessions in {@link sessions} (one
+ * {@link SessionProvenance} each), with work-item-level joins (`outcome`,
+ * `task_shape`, `module_churn`) recorded once.
+ */
+export interface ProcessAttestation {
+  /** Outcome joins read off the proof object being assembled (work-item level). */
+  outcome: {
+    /** True when verification passed with zero rejection cycles. */
+    first_pass_verify: boolean;
+    /** Contract assertions satisfied. */
+    assertions_satisfied: number;
+    /** Total contract assertions. */
+    assertions_total: number;
+    /** New findings bucketed by severity. */
+    findings: { risk: number; debt: number; observation: number };
+  };
+  /** Task shape — size/kind/multi_phase, from scope.md + plan.md + proof.kind. */
+  task_shape: {
+    /** Complexity size from scope.md (`small` | `medium` | `large` | ''). */
+    size: string;
+    /** Work kind from the proof (`feature` | `fix` | `chore` | `milestone` | ''). */
+    kind: string;
+    /** Whether this work item has more than one phase. */
+    multi_phase: boolean;
+  };
+  /** Per-file added/deleted churn read from `.saves.json` (work-item level). */
+  module_churn: Record<string, { added: number; deleted: number }>;
+  /**
+   * Every matching agent session for this work item — one per role/attempt,
+   * deterministically ordered (by timestamp, then role). Repeated build attempts
+   * from rejection cycles are kept: that rework is wanted data.
+   */
+  sessions: SessionProvenance[];
+}
 
 /**
  * Proof chain JSON entry — one completed slug's verification record.
@@ -97,6 +173,13 @@ export interface ProofChainEntry {
     severity: string;
     message: string;
   }>;
+  /**
+   * Optional session provenance, attached at `ana work complete` when process
+   * capture is on and a matching session buffer record is found. OPTIONAL by
+   * construction — proof integrity never depends on it; a proof with this field
+   * absent is complete and valid. Mirrors `commit_hygiene`'s decoupling.
+   */
+  process?: ProcessAttestation;
   phases?: number;
   worktree?: {
     used: boolean;

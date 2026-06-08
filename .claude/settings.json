@@ -1,3 +1,14 @@
 {
-  "hooks": {}
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ana _capture"
+          }
+        ]
+      }
+    ]
+  }
 }

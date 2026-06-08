@@ -1,0 +1,4 @@
+# Anatomia Codex configuration.
+# Enables lifecycle hooks so the SessionStart capture hook (hooks.json) fires.
+[features]
+hooks = true

@@ -50,6 +50,7 @@
   "setupPhase": "complete",
   "mergeStrategy": "merge",
   "captureGate": "on",
+  "processCapture": "on",
   "lastScanAt": "2026-06-04T22:52:15.987Z",
   "custom": {}
 }

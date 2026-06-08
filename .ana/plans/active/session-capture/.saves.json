@@ -22,5 +22,107 @@
   "spec-2": {
     "saved_at": "2026-06-07T21:21:05.264Z",
     "hash": "sha256:ba2ee107e68ca7da2efcdb091a794d73b232b07b28cec53e6c2ccc5ed097088a"
+  },
+  "build_started_at": "2026-06-07T21:30:10.025Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-07T21:57:14.712Z",
+    "hash": "sha256:4cb3949e37e557c5a9a42753daa1fee141517fab8203f601b83dca71f3defa3c"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-07T21:57:14.713Z",
+    "hash": "sha256:41663716e58951270fa83645315f2b889e9e9f3133772ebf2303edddecf28e58"
+  },
+  "modules_touched": [
+    ".claude/settings.json",
+    ".codex/config.toml",
+    ".codex/hooks.json",
+    "packages/cli/src/commands/_capture.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/data/pricing.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/templates/.codex/config.toml",
+    "packages/cli/templates/.codex/hooks.json",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/artifact-module-churn.test.ts",
+    "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts"
+  ],
+  "commit_hygiene": [],
+  "verify_started_at_1": "2026-06-07T22:14:22.116Z",
+  "verify_agent_1": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:130cc607fb298032b71120b7eec56a5a6a8989fb184482e6df58dae2844edc0f",
+    "run_at": "2026-06-08T00:28:57.655Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-07T22:20:22.799Z",
+    "hash": "sha256:f03de33e3d240edcb7d30d8db65a04fe801ccc4d95da96bbc60f65e5e7288ad4"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-07T22:20:22.799Z",
+    "hash": "sha256:ca819e28f003b280ef62637a7c65dc562d5049e8c92da720e0947daa081d4a6b"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-08T00:03:33.835Z",
+    "hash": "sha256:4b61be9963e020fdfabe8598b50637e49e6be68e1435919744f2607df2adc8ca"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-08T00:03:33.835Z",
+    "hash": "sha256:a294313700e7156a22eb44ae9242c7b4fe44ba38b55aa0871e9e4a504d9f5890",
+    "history": [
+      {
+        "saved_at": "2026-06-07T22:57:45.185Z",
+        "hash": "sha256:33bfe4fec90b6cbf6e62b138dde98f3790752fac5562ebba53cf3c704d751512"
+      },
+      {
+        "saved_at": "2026-06-07T23:12:26.627Z",
+        "hash": "sha256:77491bf8d918dbd1358b22310576aaeefaf9c1aef617aaaf1130c724879e2d6a"
+      },
+      {
+        "saved_at": "2026-06-07T23:52:31.235Z",
+        "hash": "sha256:eecc1ad1c032cb9ed671c620e862f5e3e2f3bcee6c587f6429f8ea02eb275724"
+      }
+    ]
+  },
+  "verify_started_at_2": "2026-06-08T00:23:44.872Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-08T00:28:57.711Z",
+    "hash": "sha256:6cb4f0e80136aa57add237ec2b7fe98ecbbd00505df0fc240352afb5857cdd72",
+    "history": [
+      {
+        "saved_at": "2026-06-07T23:44:50.625Z",
+        "hash": "sha256:f45289858417b8fbde579fa264aa515e6622f1cd44bb92c5f9217664af5d6a81"
+      }
+    ]
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-08T00:28:57.711Z",
+    "hash": "sha256:ee1dcac19597b0266a1351b324542fdbc9b81dda0186f417bdfcbafd8b550f5e",
+    "history": [
+      {
+        "saved_at": "2026-06-07T23:26:59.096Z",
+        "hash": "sha256:e2a3da158e8571aebdc56cc429ffc915c6f45f688883da86f28e86df4459532d"
+      },
+      {
+        "saved_at": "2026-06-07T23:44:50.626Z",
+        "hash": "sha256:a77903aac973d7059da1a4056defeb0ee12eee4059e571a7ccda4cc789abc64a"
+      }
+    ]
   }
 }

@@ -570,6 +570,12 @@ export async function createAnaJson(
     // this onto a project that lacked the flag — see preserveUserState, which
     // deliberately keeps captureGate out of its mechanical-override list.
     captureGate: 'on',
+    // Customer default OFF. Opted-out installs get zero capture hooks and run
+    // zero per-session Anatomia code. Guarded by a test so a future edit can't
+    // silently flip every customer on. Re-init preserves an explicit on/off
+    // (rides along in preserveUserState's `...parsed.data`, excluded from the
+    // mechanical-override list — same treatment as captureGate).
+    processCapture: 'off',
     lastScanAt: result.overview.scannedAt,
     custom: {},
   };

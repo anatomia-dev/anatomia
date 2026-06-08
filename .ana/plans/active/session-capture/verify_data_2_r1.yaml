@@ -1,0 +1,45 @@
+schema: 1
+findings:
+  - category: code
+    summary: "BLOCKER — recordBelongsToWorktree matches with startsWith(worktreePath)/includes(worktreePath) and no path boundary, so a slug that is a character-prefix of another (dashboard vs dashboard-v2, auth vs auth-fix) silently absorbs the longer slug's sessions into the shorter slug's ProcessAttestation. Silent corruption of the per-role provenance dataset — the entire point of the feature — triggered by normal iterative slug naming, in shipped product code. Required fix: append path.sep before the prefix compare (mirror deriveSurface's trailing-slash precedent in the same file) + a regression test proving a <slug>-v2 session is NOT attributed to <slug>."
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 51
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A031"]
+  - category: code
+    summary: "Scalability: assembleProcessAttestation reads the home-global forensics buffer (~/.ana/forensics/sessions.jsonl, shared across ALL projects/sessions, unbounded — Phase 1 never prunes it) in full at every work-complete, and for each non-slug-matched record reads that record's entire transcript file end-to-end. Grows linearly with a developer's lifetime session count."
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 117
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A031"]
+  - category: code
+    summary: "Stale JSDoc: assembleProcessAttestation's doc says 'Among matching records the newest by timestamp wins (deterministic)' but the implementation keeps ALL matching sessions (build/verify/rework) in a sorted array. Doc contradicts the human-approved deviation the code implements."
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 93
+    severity: debt
+    suggested_action: scope
+  - category: upstream
+    summary: "ProcessAttestation shape deviates from the spec-2 mockup: spec showed a single-session object (derived/session_id/role at top level); implementation uses a sessions[] array with work-item-level outcome/task_shape/module_churn. Human-approved deviation, contract-compatible (A031 'exists', A032 outcome stays top-level). Spec mockup is now stale."
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A031", "A032"]
+  - category: test
+    summary: "AC12 no-network enforcement test scans only _capture.ts, forensics.ts, pricing.ts for network imports. The full derive-to-proof assembly path (work-proof.ts assembleProcessAttestation, artifact.ts computeModuleChurn) is not covered by the enforcement scan. The derive/cost core IS covered, so the guarantee holds where it matters, but the scan boundary is narrower than the AC phrasing ('the capture + derive path')."
+    file: "packages/cli/tests/commands/_capture.test.ts"
+    line: 156
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "executeDerive awaits a synchronous readFileSync + per-line JSON.parse of the full transcript before process.exit(0). For a very large finished transcript this adds to SessionEnd/Stop hook latency, despite the spec's 'async, never delays teardown' intent. The 250ms stdin cap bounds the read wait but not the derive itself."
+    file: "packages/cli/src/commands/_capture.ts"
+    line: 208
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "parseTestCounts matches the first /(\\d+)\\s+passed/ in any Bash tool_result text — prose mentioning 'N passed' (not a test runner) inflates tests_executed/failures_encountered. Documented best-effort and provenance-only (never a verdict), so impact is low, but the count is not trustworthy as a metric."
+    file: "packages/cli/src/utils/forensics.ts"
+    line: 346
+    severity: observation
+    suggested_action: acknowledge

@@ -243,6 +243,18 @@ function getStatusIcon(status: string): string {
 }
 
 /**
+ * Format a token count compactly (e.g. `48211` → `48.2k`, `1442301` → `1.4M`).
+ *
+ * @param n - The token count
+ * @returns A short human-readable string
+ */
+function formatTokenCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+/**
  * Format human-readable terminal output
  *
  * @param entry - Proof chain entry to display
@@ -417,6 +429,59 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
 
     if (commitHygiene.length > MAX_DISPLAY) {
       lines.push(`  ... and ${commitHygiene.length - MAX_DISPLAY} more`);
+    }
+  }
+
+  // Provenance section (Phase 2) — display-only, shown only when a process
+  // attestation is present. NEVER influences PASS/FAIL; it is pure provenance.
+  if (entry.process) {
+    const p = entry.process;
+    lines.push('');
+    lines.push(chalk.bold('  Provenance'));
+    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
+
+    // One line per session — preserves the per-role dataset (plan/build/verify
+    // and every build rework cycle).
+    for (const s of p.sessions) {
+      const d = s.derived;
+      const modelShort = (d?.model || s.model).replace(/^claude-/, '');
+      const head = `  ${[s.harness, s.role, modelShort].filter(Boolean).join(' · ')}`;
+      if (d) {
+        lines.push(
+          head +
+            `   ${d.turns} turns · ${d.tool_calls} tools` +
+            ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
+            ` · est. $${d.cost_usd.toFixed(2)}`,
+        );
+      } else {
+        // Counts-less session (hook never fired AND transcript deleted) — still
+        // listed so the dataset stays complete; counts simply unavailable.
+        lines.push(head + chalk.gray('   counts unavailable'));
+      }
+    }
+
+    // Work-item-level totals, once: combined cost + table version, then churn.
+    // Counts-less sessions contribute nothing to the cost total.
+    let totalCost = 0;
+    let tableVersion = '';
+    for (const s of p.sessions) {
+      if (!s.derived) continue;
+      totalCost += s.derived.cost_usd;
+      if (!tableVersion) tableVersion = s.derived.price_table_version;
+    }
+    lines.push(
+      `  total   ${p.sessions.length} session${p.sessions.length === 1 ? '' : 's'}` +
+        ` · est. $${totalCost.toFixed(2)}${tableVersion ? ` (table ${tableVersion})` : ''}`,
+    );
+    const churnFiles = Object.keys(p.module_churn).length;
+    if (churnFiles > 0) {
+      let added = 0;
+      let deleted = 0;
+      for (const c of Object.values(p.module_churn)) {
+        added += c.added;
+        deleted += c.deleted;
+      }
+      lines.push(`  churn   ${churnFiles} files · +${added}/−${deleted}`);
     }
   }
 

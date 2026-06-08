@@ -885,6 +885,9 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     previous_failures: [],
     build_concerns: [],
     commit_hygiene: [],
+    // `process` (session provenance) is an optional attach assembled at
+    // work-complete from the session buffer — NOT a defaulted array. It defaults
+    // to absent; do not seed an empty object here.
   };
 
   // Source 1: .saves.json
