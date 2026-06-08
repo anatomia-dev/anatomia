@@ -54,5 +54,85 @@
   "spec-3": {
     "saved_at": "2026-06-08T05:25:11.814Z",
     "hash": "sha256:913e1f33643253fead75c67cf2f6075efceeccc72339b1f643e6a3208598e7b6"
-  }
+  },
+  "build_started_at": "2026-06-08T05:48:27.732Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-08T06:13:23.597Z",
+    "hash": "sha256:5a0a54a5dc8492ce30d3d1ba0383b38f73a4743be05f198f904b0167e8074d83"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-08T06:13:23.598Z",
+    "hash": "sha256:3b88f7e4bab5de8bcc7c4907136a54a694ad737251173d1da68b6ccab84ba1b2"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/_capture.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/artifact-provenance.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/_capture.ts": {
+      "added": 34,
+      "deleted": 92
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 43,
+      "deleted": 7
+    },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 3,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/run.ts": {
+      "added": 7,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/work-proof.ts": {
+      "added": 43,
+      "deleted": 120
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 15,
+      "deleted": 9
+    },
+    "packages/cli/src/utils/forensics.ts": {
+      "added": 262,
+      "deleted": 146
+    },
+    "packages/cli/tests/commands/_capture.test.ts": {
+      "added": 98,
+      "deleted": 166
+    },
+    "packages/cli/tests/commands/artifact-provenance.test.ts": {
+      "added": 266,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/run.test.ts": {
+      "added": 18,
+      "deleted": 6
+    },
+    "packages/cli/tests/commands/work-proof-process.test.ts": {
+      "added": 149,
+      "deleted": 244
+    },
+    "packages/cli/tests/utils/forensics-derive.test.ts": {
+      "added": 25,
+      "deleted": 82
+    },
+    "packages/cli/tests/utils/forensics.test.ts": {
+      "added": 303,
+      "deleted": 110
+    }
+  },
+  "commit_hygiene": []
 }
