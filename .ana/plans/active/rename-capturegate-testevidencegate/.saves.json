@@ -54,5 +54,95 @@
         "hash": "sha256:1c611d1a9c770b52fd4b95e57a06ed6282bdb5e7200886af136b9a0e1d83883c"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-06-08T23:02:18.729Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-08T23:24:19.245Z",
+    "hash": "sha256:3af127f50c11bda044dac46b8c7064df771443ac494231ad8e2aff68ccf0d3ee"
+  },
+  "build-data": {
+    "saved_at": "2026-06-08T23:24:19.246Z",
+    "hash": "sha256:d757a6b49a3a9d1e37640d9c3d1194e89c92444d027da75f44ca23fd98bfc17a"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/doctor.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/utils/capture-marker.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/doctor.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/capture-marker.test.ts",
+    "website/content/docs/guides/configurability.mdx"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 16,
+      "deleted": 16
+    },
+    "packages/cli/src/commands/config.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/doctor.ts": {
+      "added": 4,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/init/anaJsonSchema.ts": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 6,
+      "deleted": 6
+    },
+    "packages/cli/src/utils/capture-marker.ts": {
+      "added": 3,
+      "deleted": 3
+    },
+    "packages/cli/src/utils/forensics.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/artifact.test.ts": {
+      "added": 29,
+      "deleted": 24
+    },
+    "packages/cli/tests/commands/config.test.ts": {
+      "added": 3,
+      "deleted": 3
+    },
+    "packages/cli/tests/commands/doctor.test.ts": {
+      "added": 7,
+      "deleted": 7
+    },
+    "packages/cli/tests/commands/init.test.ts": {
+      "added": 12,
+      "deleted": 12
+    },
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+      "added": 9,
+      "deleted": 8
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 7,
+      "deleted": 7
+    },
+    "packages/cli/tests/utils/capture-marker.test.ts": {
+      "added": 6,
+      "deleted": 6
+    },
+    "website/content/docs/guides/configurability.mdx": {
+      "added": 5,
+      "deleted": 5
+    }
+  },
+  "commit_hygiene": []
 }

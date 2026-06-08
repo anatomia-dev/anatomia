@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "One full-suite run via `ana test` reported 1 failure (3586p/1f/2s); three other full runs and the clean re-seal were all 3587p/0f/2s. The exact test could not be isolated; the failing run's stderr was dominated by work.test.ts git/push-failure paths, matching the risk profile's documented flaky tests (conditional PID guards, heavyweight bare-remote git setups). Environmental — unrelated to a string rename."
+    file: "packages/cli/tests/commands/work.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "@ana assertion IDs are reused per-work-item across the test suite (pre-existing convention): every test file already carries A001-A0xx tags from its own historical/merged contract. This rename's contract tags (A001-A008) therefore coexist with same-numbered predecessor tags on unrelated tests. Verify must map tags against THIS work item's active contract."
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "capture-marker.test.ts was modified (renamed evaluateCaptureGate → evaluateTestEvidenceGate import/usages) but is NOT in the contract's file_changes list. The change was mandatory: the test imports the renamed evaluator symbol, so omitting it would break the suite."
+    file: "packages/cli/tests/utils/capture-marker.test.ts"
+    severity: observation
+    suggested_action: acknowledge
