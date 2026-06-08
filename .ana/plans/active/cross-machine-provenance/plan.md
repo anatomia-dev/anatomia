@@ -9,6 +9,6 @@
 - [x] Completeness + enforcement + display — add the per-phase presence-floor completeness check, the `processCaptureStrict` gate (warn by default, fail under strict), cross-machine + squash-merge survival fixtures, and finalize cost-at-display
   - Spec: spec-2.md
   - Depends on: Phase 1
-- [ ] Init hooks — install only the SessionStart hook on both platforms, add a targeted `ana _capture --derive` prune, keep `provenance/` out of the generated `.gitignore`
+- [x] Init hooks — install only the SessionStart hook on both platforms, add a targeted `ana _capture --derive` prune, keep `provenance/` out of the generated `.gitignore`
   - Spec: spec-3.md
   - Depends on: Phase 1

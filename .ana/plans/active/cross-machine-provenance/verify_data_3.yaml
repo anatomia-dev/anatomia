@@ -1,0 +1,33 @@
+schema: 1
+findings:
+  - category: test
+    summary: "pruneHookCommand never-throw guards for malformed shapes are unexercised — non-object hooks and non-array event value branches have no direct test"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 725
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A040", "A043"]
+  - category: code
+    summary: "pruneHookCommand drops the WHOLE entry if any hooks[].command matches — a user co-locating their command in the same entry object as the derive hook would lose it (faithful to spec wording; Anatomia installs one command per entry so unreachable in practice)"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 729
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A041"]
+  - category: upstream
+    summary: "A044's regression test lives in tests/commands/init.test.ts, but the contract's Phase-3 file_changes lists only assets-capture-hooks.test.ts — the test exists and is correct; the contract under-specified the test location"
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A044"]
+  - category: code
+    summary: "session-capture build concern remains live (out of Phase 3 scope): ensureCodexHooksFlag flips any `hooks =` key via regex regardless of TOML table, so `hooks =` under a non-[features] table could be flipped. Not touched by this phase."
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 870
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts — not introduced by Phase 3 (file not in changeset); flagged so it is not mistaken for new debt"
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: observation
+    suggested_action: acknowledge
