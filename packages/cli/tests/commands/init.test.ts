@@ -120,6 +120,18 @@ describe('ana init', () => {
       expect(written.captureGate).toBe('on');
     });
 
+    // @ana A032 — new projects default to warn (off), not block.
+    it('createAnaJson writes processCaptureStrict: off', async () => {
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp-strict');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const config = await createAnaJson(tmpAnaPath, createEmptyEngineResult());
+
+      expect(config['processCaptureStrict']).toBe('off');
+      const written = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
+      expect(written.processCaptureStrict).toBe('off');
+    });
+
     it('has all required fields for D1 schema', () => {
       const meta = {
         anaVersion: '1.0.0',
@@ -774,6 +786,40 @@ describe('ana init', () => {
 
       const result = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
       expect(result.captureGate).toBe('off');
+    });
+
+    // @ana A033 — re-init preserves an explicit processCaptureStrict choice.
+    it('keeps an explicit processCaptureStrict: on through a re-init merge', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing-strict');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({
+          name: 'my-project',
+          language: 'TypeScript',
+          packageManager: 'pnpm',
+          artifactBranch: 'main',
+          processCaptureStrict: 'on',
+          commands: { test: 'pnpm vitest run' },
+        }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp-strict-reinit');
+      await createDirectoryStructure(tmpAnaPath);
+
+      const newConfig = {
+        anaVersion: '2.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+        name: 'my-project',
+        language: 'TypeScript',
+        framework: null,
+        packageManager: 'pnpm',
+      };
+
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const result = JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
+      expect(result.processCaptureStrict).toBe('on');
     });
 
     // @ana A012 — re-init on a project that never set the flag leaves it absent,

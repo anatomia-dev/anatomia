@@ -576,6 +576,11 @@ export async function createAnaJson(
     // (rides along in preserveUserState's `...parsed.data`, excluded from the
     // mechanical-override list — same treatment as captureGate).
     processCapture: 'off',
+    // Default OFF (warn-and-record). A team opts into strict completeness blocking
+    // explicitly. Re-init preserves an explicit on/off — it rides along in
+    // preserveUserState's `...parsed.data` and is deliberately excluded from the
+    // mechanical-override list, same treatment as captureGate/processCapture.
+    processCaptureStrict: 'off',
     lastScanAt: result.overview.scannedAt,
     custom: {},
   };
