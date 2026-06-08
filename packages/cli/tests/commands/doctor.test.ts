@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { runDoctor } from '../../src/commands/doctor.js';
+import { runDoctor, formatTerminalOutput } from '../../src/commands/doctor.js';
 
 let tmpDir: string;
 
@@ -612,5 +612,93 @@ describe('edge cases', () => {
     const results = await runDoctor(tmpDir);
     expect(results.dimensions.surfaces.count).toBe(0);
     expect(results.dimensions.surfaces.status).toBe('pass');
+  });
+});
+
+// ── Enforcement dimension ───────────────────────────────────────────
+// The capture-gate readout relocated here from `ana work status`. The
+// dimension is informational (`status: 'info'`) and never affects exit code.
+
+describe('enforcement dimension', () => {
+  // @ana A005
+  it('includes an enforcement dimension in results', async () => {
+    await createMinimalProject(tmpDir);
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement).toBeDefined();
+  });
+
+  // @ana A006 — gate on AND a test command resolves → active.
+  it('reports test-evidence gate "on" when the gate is on with a test command', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { captureGate: 'on' } });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.test_evidence_gate).toBe('on');
+  });
+
+  // @ana A007 — gate on but NO resolvable test command → inactive.
+  it('reports test-evidence gate "on-inactive" when on but no test command resolves', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { captureGate: 'on', commands: {}, surfaces: {} } });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.test_evidence_gate).toBe('on-inactive');
+  });
+
+  // @ana A008 — flag absent → off.
+  it('reports test-evidence gate "off" when the flag is absent', async () => {
+    await createMinimalProject(tmpDir);
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.test_evidence_gate).toBe('off');
+  });
+
+  // @ana A009 — process_capture flag is reported.
+  it('reports process_capture "on" when the flag is set', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { processCapture: 'on' } });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.process_capture).toBe('on');
+  });
+
+  // @ana A010 — process_capture_strict flag is reported.
+  it('reports process_capture_strict "on" when the flag is set', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { processCaptureStrict: 'on' } });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.process_capture_strict).toBe('on');
+  });
+
+  it('defaults all three gates to off for a minimal project', async () => {
+    await createMinimalProject(tmpDir);
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.test_evidence_gate).toBe('off');
+    expect(results.dimensions.enforcement.process_capture).toBe('off');
+    expect(results.dimensions.enforcement.process_capture_strict).toBe('off');
+  });
+
+  // @ana A013, A015 — informational status, never a failure grade.
+  it('always carries status "info" (never pass/warn/fail)', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { captureGate: 'on', processCapture: 'on', processCaptureStrict: 'on' } });
+    const results = await runDoctor(tmpDir);
+    expect(results.dimensions.enforcement.status).toBe('info');
+    expect(results.dimensions.enforcement.status).not.toBe('fail');
+  });
+
+  // @ana A014 — a fully-configured enforcement state never flips overall to fail.
+  it('does not make overall fail when only enforcement flags are set', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { captureGate: 'on', processCapture: 'on', processCaptureStrict: 'on' } });
+    const results = await runDoctor(tmpDir);
+    expect(results.overall).toBe('pass');
+  });
+
+  // @ana A011 — human dashboard renders an Enforcement section.
+  it('human output renders an Enforcement section', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { captureGate: 'on' } });
+    const results = await runDoctor(tmpDir);
+    const output = formatTerminalOutput(results);
+    expect(output).toContain('Enforcement');
+    expect(output).toContain('test-evidence gate');
+  });
+
+  // @ana A012 — human dashboard surfaces the inactive case in plain language.
+  it('human output renders the inactive test-evidence gate readout', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { captureGate: 'on', commands: {}, surfaces: {} } });
+    const results = await runDoctor(tmpDir);
+    const output = formatTerminalOutput(results);
+    expect(output).toContain('inactive');
   });
 });
