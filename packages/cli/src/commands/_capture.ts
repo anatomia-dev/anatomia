@@ -126,6 +126,8 @@ export async function executeCapture(): Promise<void> {
 
     if (!isProcessCaptureEnabled(projectRoot)) return; // gate off → silent no-op
 
+    if (!payload.session_id) return; // no session id → unusable, unmatchable record; skip (mirrors the derive path)
+
     const record = buildSessionRecord(process.env, payload);
     appendSessionRecord(record);
   } catch {

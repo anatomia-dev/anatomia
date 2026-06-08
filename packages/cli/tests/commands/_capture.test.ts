@@ -114,10 +114,19 @@ describe('ana _capture', () => {
     expect(status).toBe(0);
   });
 
-  it('exits 0 on empty stdin', () => {
+  it('exits 0 and writes nothing on empty stdin', () => {
     writeProject('on');
     const { status } = runCapture('');
     expect(status).toBe(0);
+    expect(bufferLineCount()).toBe(0);
+  });
+
+  it('writes nothing when the payload has no session_id', () => {
+    writeProject('on');
+    const payload = JSON.stringify({ cwd: projectDir, source: 'startup', hook_event_name: 'SessionStart' });
+    const { status } = runCapture(payload);
+    expect(status).toBe(0);
+    expect(bufferLineCount()).toBe(0);
   });
 
   it('exits 0 when the buffer dir is unwritable (HOME is a file)', () => {
