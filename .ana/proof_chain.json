@@ -52598,6 +52598,399 @@
       },
       "surface": "cli",
       "phases": 3
+    },
+    {
+      "slug": "enforcement-state-in-doctor",
+      "feature": "Move enforcement-gate state from ana work status to ana doctor",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 18,
+        "satisfied": 17,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Pipeline status no longer announces the capture-gate state to agents",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The machine-readable pipeline status drops the capture-gate flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The machine-readable pipeline status drops the gate-active flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Pipeline status still works and reports the artifact branch after the gate state is removed",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Project health now includes an enforcement view",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Health shows the test-evidence gate as active when it is on and a test command exists",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Health distinctly flags a turned-on gate that cannot enforce because no test command is configured",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Health shows the test-evidence gate as off when the flag is absent",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Health reports whether process-provenance capture is enabled",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Health reports whether strict process-completeness enforcement is enabled",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The human health dashboard shows an Enforcement section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The human dashboard surfaces the inactive-gate case in plain language",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The enforcement view is informational and is never treated as a failure",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A configured enforcement state never makes the health check report an overall failure",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The enforcement view can never be classified as a failing dimension",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Setting the test-evidence gate via config no longer warns that the key is unknown",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Setting the process-capture flag via config no longer warns that the key is unknown",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Setting the strict-capture flag via config no longer warns that the key is unknown",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 11,
+        "met": 11
+      },
+      "timing": {
+        "total_minutes": 58,
+        "think": 16,
+        "plan": 7,
+        "build": 10,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:f8fa04e72f2753d05d0763d92afbf89e24c00448452793c5fedc38376fe2c039",
+        "contract": "sha256:ef2bb3a014b8d31bfaa21baf7fd9c1889bdf49d68fd9f8654f1cc45567f1c6b3",
+        "plan": "sha256:e8fe2e17a2a72e7e6dfbf851e2f2b6e274e9637ee5413fc3abfce429fa204729",
+        "spec": "sha256:3253e6fb0ad55deefd612967e4f33d8df0b0f84162f557c3f373237e28a78307",
+        "build-report": "sha256:2700502226ce26b79767bb8ec112807f861c2a2f31628abac3b0f1c74c2edfb1",
+        "build-data": "sha256:39868ab1ff86c6a934146b07cf3eca65088c75355ef878bc9035528585c19f67",
+        "verify-report": "sha256:76bfc264639237b4cdee2e80e1bc71e82819e34243a6c184fb5f31e828d95e48",
+        "verify-data": "sha256:73b06286f65e8a3a667b1dcf14914d3318c0974056b64f8f8d2c4edda74624ed"
+      },
+      "completed_at": "2026-06-08T22:00:14.410Z",
+      "modules_touched": [
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/doctor.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/config.test.ts",
+        "packages/cli/tests/commands/doctor.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "`ana work status` unconditionally prints `Capture gate: <state>` as its first content line (`work.ts:348`). Every agent runs `work status`, but the gate's state **does not change how any agent behaves** — it's mechanically enforced at the action (`applyCaptureGate` → `process.exit(1)` at `ana artifact save build-report`, `artifact.ts:860`). The agent learns at the moment it matters and is told exactly what to do. Foreknowledge in `work status` is pure chrome.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "assessEnforcement parse-failure fallback (all-off) is untested — every enforcement test uses createMinimalProject which always writes a valid ana.json, so the try/catch catch branch never runs",
+          "file": "packages/cli/src/commands/doctor.ts",
+          "anchor": null,
+          "line": 458,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A005",
+            "A008"
+          ],
+          "id": "enforcement-state-in-doctor-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "config A016-A018 are absence-only assertions (not.toContain 'not a known ana.json field') — they would pass vacuously if the config-set validation path no-op'd; they do not positively confirm the field was written. Contract-aligned (matcher is not_contains) but fragile as regression guards",
+          "file": "packages/cli/tests/commands/config.test.ts",
+          "anchor": null,
+          "line": 360,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A016",
+            "A017",
+            "A018"
+          ],
+          "id": "enforcement-state-in-doctor-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "assessEnforcement reads ana.json twice per doctor run — once via the raw inline parse and once inside isCaptureGateEnabled. Deliberate and documented in the spec (correctness-without-duplication on a cold human-invoked path); recorded so it is revisited if doctor ever becomes a hot path",
+          "file": "packages/cli/src/commands/doctor.ts",
+          "anchor": null,
+          "line": 453,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "enforcement-state-in-doctor-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "The work.ts double-read of ana.json (inline captureGate parse + isCaptureGateEnabled call in getWorkStatus) is removed by this build — getWorkStatus now reads ana.json once for lastScanAt only. Resolves the previously-recorded performance observation",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 473,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "retire-capture-self-arming-C3"
+          ],
+          "id": "enforcement-state-in-doctor-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-08T22:00:14.410Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "doctor.test.ts now has duplicate @ana tags (A005-A015) colliding with a prior doctor contract's tags on unrelated tests; old tags intentionally not stripped to preserve historical traceability",
+          "file": "packages/cli/tests/commands/doctor.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Finding retire-capture-self-arming-C3 is resolved by this build — the double parse of ana.json in getWorkStatus is removed (inline captureGate parse + captureGateActive call both deleted)",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "assessEnforcement adds a fourth independent ana.json read in doctor.ts (assessSurfaces/assessScanFreshness/assessContext each already parse it); matches the established per-assessor pattern, consolidation out of scope",
+          "file": "packages/cli/src/commands/doctor.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 17,
+          "assertions_total": 18,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 3
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "feature",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/config.ts": {
+            "added": 3,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/doctor.ts": {
+            "added": 68,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 0,
+            "deleted": 36
+          },
+          "packages/cli/tests/commands/config.test.ts": {
+            "added": 30,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/doctor.test.ts": {
+            "added": 89,
+            "deleted": 1
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 19,
+            "deleted": 10
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "f0e78821-d102-4eaf-8ec3-cc9ec5a6e6c5",
+            "captured_at": "2026-06-08T20:55:58.812Z",
+            "derived": {
+              "tokens": {
+                "input": 6270,
+                "output": 32581,
+                "cache_create": 76083,
+                "cache_read": 1334072
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 959440,
+              "turns": 59,
+              "tool_calls": 24,
+              "commands_run": 15,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:4a6877ff7630a60f018c522f3959fa0941ad61f6f702b7bb6467d94ad8781202",
+            "cli_version": "1.2.2",
+            "session_id": "3ead38eb-aafc-4845-bd3f-9381a87e4e53",
+            "captured_at": "2026-06-08T21:18:08.006Z",
+            "derived": {
+              "tokens": {
+                "input": 6315,
+                "output": 23921,
+                "cache_create": 71120,
+                "cache_read": 1087717
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 416078,
+              "turns": 55,
+              "tool_calls": 29,
+              "commands_run": 9,
+              "tests_executed": 146,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "09f4c73f-87a4-4cac-9f91-5893b01db9f3",
+            "captured_at": "2026-06-08T21:31:30.865Z",
+            "derived": {
+              "tokens": {
+                "input": 7534,
+                "output": 35836,
+                "cache_create": 97898,
+                "cache_read": 4462610
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 665947,
+              "turns": 144,
+              "tool_calls": 66,
+              "commands_run": 25,
+              "tests_executed": 3736,
+              "failures_encountered": 0,
+              "files_touched": 8,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "b8c9f489-7b8c-4ac2-9c84-7114800a002b",
+            "captured_at": "2026-06-08T21:44:02.742Z",
+            "derived": {
+              "tokens": {
+                "input": 6551,
+                "output": 24238,
+                "cache_create": 69951,
+                "cache_read": 1741206
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 596142,
+              "turns": 84,
+              "tool_calls": 34,
+              "commands_run": 25,
+              "tests_executed": 3587,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-08T21:32:55.659Z",
+        "completed_at": "2026-06-08T22:00:14.398Z",
+        "commit_count": 0,
+        "base_commit": "40148fb87cb9595f33068bb1e47f7cc2e4ce9ed9"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

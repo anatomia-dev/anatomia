@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-193 runs · 211 active · 5 promoted · 905 closed
+194 runs · 214 active · 5 promoted · 906 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 35 | 37 | 2026-06-06 |
-| cli | 134 | 151 | 2026-06-08 |
+| cli | 135 | 154 | 2026-06-08 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 211 total)
+## Active Findings (30 shown of 214 total)
 
 ### packages/cli/src/commands/_capture.ts
 
@@ -33,6 +33,11 @@
 ### packages/cli/src/commands/artifact.ts
 
 - **code:** No-work re-validation leaves the provenance file modified-but-unstaged in the working tree. captureProvenanceAtSave writes provenance/{role}-{id}.json to disk BEFORE the no-changes guard; on the no-op path only `git reset -- provenancePaths` runs (unstage), which does not restore working-tree content. On the Claude fallback path captured_at is a fresh wall-clock each call, so the file churns on every re-save. AC9 ('no staged provenance') is met; this is beyond-AC. Risk: a downstream clean-tree assumption (future ana command, user pre-push hook) could trip on the lingering change. — *Cross-machine process provenance (capture v2)*
+
+### packages/cli/src/commands/doctor.ts
+
+- **test:** assessEnforcement parse-failure fallback (all-off) is untested — every enforcement test uses createMinimalProject which always writes a valid ana.json, so the try/catch catch branch never runs — *Move enforcement-gate state from ana work status to ana doctor*
+- **code:** assessEnforcement reads ana.json twice per doctor run — once via the raw inline parse and once inside isCaptureGateEnabled. Deliberate and documented in the spec (correctness-without-duplication on a cold human-invoked path); recorded so it is revisited if doctor ever becomes a hot path — *Move enforcement-gate state from ana work status to ana doctor*
 
 ### packages/cli/src/commands/init/assets.ts
 
@@ -89,17 +94,13 @@
 
 - **test:** A026 (byte-stable re-save / AC12) has no dedicated test, though the spec's Testing Strategy explicitly requested one. Behavior is sound by construction — inlining is deleted and applyCaptureGate is read-only, so the save path never mutates the report — but the contract target reportUnchangedOnSecondSave is verified by source inspection, not a regression test. — *Compact the capture seal + fix the count*
 
+### packages/cli/tests/commands/config.test.ts
+
+- **test:** config A016-A018 are absence-only assertions (not.toContain 'not a known ana.json field') — they would pass vacuously if the config-set validation path no-op'd; they do not positively confirm the field was written. Contract-aligned (matcher is not_contains) but fragile as regression guards — *Move enforcement-gate state from ana work status to ana doctor*
+
 ### packages/cli/tests/commands/init/assets-capture-hooks.test.ts
 
 - **test:** Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude — *session-capture — agent-session capture & provenance unlock*
-
-### packages/cli/tests/commands/template-capture-instruction.test.ts
-
-- **test:** Template wording assertions A020/A021 (AC8) have no automated regression test. template-capture-instruction.test.ts was not modified and contains no compact-seal assertion. A future template edit could silently reintroduce 'verbatim, sha-sealed block' or drop the compact description with the suite still green. — *Compact the capture seal + fix the count*
-
-### packages/cli/tests/commands/test-command.test.ts
-
-- **test:** A008 (configured test_json yields a non-abstain verdict on real output) has no hermetic unit test. Verified via live dogfood run (this repo seals 3429p/0f/2s, verdict=pass) plus the A006 JSON-parser test, but no in-test fixture exercises the full test_json -> executeCapture -> verdict!=abstain chain. — *Compact the capture seal + fix the count*
 
 ### packages/cli/tests/commands/work.test.ts
 
@@ -108,8 +109,4 @@
 ### packages/cli/tests/utils/capture-runner.test.ts
 
 - **test:** capture-runner.test.ts tee test adds a redundant weaker follow-up (toBeGreaterThan(0)) right after a specific toBe(11) on the same value; the specific assertion already covers it — *Simplify ana test to its load-bearing core (deterministic seal)*
-
-### General
-
-- **test:** A016/A017 (.captures/ rule in the dogfood .ana/.gitignore and the init generator) are verified by source inspection only — no test asserts either gitignore carries the rule. The rule in assets.ts predates this build (PR #281); this build only corrected its stale comment. — *Compact the capture seal + fix the count*
 
