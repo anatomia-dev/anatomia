@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "computeCompleteness implemented as (reportsDir, sessions) rather than the spec's (provenanceDir, reportsDir, sessions) — provenanceDir would be unused since present derives from the passed sessions"
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "ana proof context findings on touched files (getTemplatesDir dev-path, surface-path shell sanitization, monorepo command scoping) are all pre-existing and unrelated to Phase 2"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in git-operations.ts:198 (unused eslint-disable directive) — untouched file, not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge

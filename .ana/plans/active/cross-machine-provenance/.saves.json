@@ -68,15 +68,22 @@
   "modules_touched": [
     "packages/cli/src/commands/_capture.ts",
     "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
     "packages/cli/src/commands/proof.ts",
     "packages/cli/src/commands/run.ts",
     "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/commands/work.ts",
     "packages/cli/src/types/proof.ts",
     "packages/cli/src/utils/forensics.ts",
     "packages/cli/tests/commands/_capture.test.ts",
     "packages/cli/tests/commands/artifact-provenance.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
     "packages/cli/tests/commands/run.test.ts",
     "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
     "packages/cli/tests/utils/forensics-derive.test.ts",
     "packages/cli/tests/utils/forensics.test.ts"
   ],
@@ -89,8 +96,16 @@
       "added": 43,
       "deleted": 7
     },
+    "packages/cli/src/commands/init/anaJsonSchema.ts": {
+      "added": 8,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 5,
+      "deleted": 0
+    },
     "packages/cli/src/commands/proof.ts": {
-      "added": 3,
+      "added": 15,
       "deleted": 2
     },
     "packages/cli/src/commands/run.ts": {
@@ -98,15 +113,19 @@
       "deleted": 2
     },
     "packages/cli/src/commands/work-proof.ts": {
-      "added": 43,
+      "added": 116,
       "deleted": 120
     },
+    "packages/cli/src/commands/work.ts": {
+      "added": 43,
+      "deleted": 1
+    },
     "packages/cli/src/types/proof.ts": {
-      "added": 15,
+      "added": 36,
       "deleted": 9
     },
     "packages/cli/src/utils/forensics.ts": {
-      "added": 262,
+      "added": 285,
       "deleted": 146
     },
     "packages/cli/tests/commands/_capture.test.ts": {
@@ -117,13 +136,29 @@
       "added": 266,
       "deleted": 0
     },
+    "packages/cli/tests/commands/init.test.ts": {
+      "added": 46,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+      "added": 23,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 81,
+      "deleted": 0
+    },
     "packages/cli/tests/commands/run.test.ts": {
       "added": 18,
       "deleted": 6
     },
     "packages/cli/tests/commands/work-proof-process.test.ts": {
-      "added": 149,
-      "deleted": 244
+      "added": 392,
+      "deleted": 240
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 135,
+      "deleted": 0
     },
     "packages/cli/tests/utils/forensics-derive.test.ts": {
       "added": 25,
@@ -149,5 +184,13 @@
   "verify-data-1": {
     "saved_at": "2026-06-08T06:22:06.198Z",
     "hash": "sha256:26e01bbe384e2a306097f3af412f3babf6effecf391400111f8acb5fe0f89e40"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-08T06:39:51.958Z",
+    "hash": "sha256:ade5c164d9bc0a45b32696335fa669a7aca0a681b8c43665db03c08e7237d304"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-08T06:39:51.959Z",
+    "hash": "sha256:6bd90beb60920ceeddd2ea16446fe6dcae014d7dc9050b7d46769586f83b2dc4"
   }
 }
