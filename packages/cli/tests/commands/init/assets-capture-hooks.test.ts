@@ -1,10 +1,16 @@
 /**
- * Install-time capture gating — the SessionStart hook install + prune (Phase 1).
+ * Always-install capture gating — the SessionStart/SessionEnd hooks (Phase 1+2).
  *
- * The end-to-end install/prune behavior runs the built CLI (`node dist/index.js
- * init`), the sanctioned pattern for init integration (getTemplatesDir resolves
- * to dist/templates only when compiled). The customer-default-off guard drives
- * createAnaJson directly. Requires `pnpm run build` first.
+ * The capture hooks are installed by `ana init` REGARDLESS of the `processCapture`
+ * flag; the flag is the single RUNTIME switch (`ana _capture` no-ops when off).
+ * This supersedes the prior install-time gating (old contract A019/A020/A021):
+ * there is no "no hook when off" and no flip-off prune — flipping the flag is a
+ * live toggle with no re-init, and `ana _capture`'s runtime gate (covered in
+ * _capture/forensics tests) is the sole on/off control.
+ *
+ * The end-to-end behavior runs the built CLI (`node dist/index.js init`), the
+ * sanctioned pattern for init integration (getTemplatesDir resolves to
+ * dist/templates only when compiled). Requires `pnpm run build` first.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -68,7 +74,7 @@ describe('createAnaJson — customer default', () => {
   });
 });
 
-describe('install-time capture gating (built CLI)', () => {
+describe('always-install capture gating (built CLI)', () => {
   let tmpDir: string;
   let freshCommands: string[];
   let onCommands: string[];
@@ -131,23 +137,25 @@ describe('install-time capture gating (built CLI)', () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-capture-gate-'));
     await setupProject(tmpDir);
 
-    // 1. Fresh init — customer default off → no capture hook.
+    // 1. Fresh init — customer default is off, but the hook is ALWAYS installed
+    //    (the flag is the runtime switch, not an install gate).
     await runInit();
     freshCommands = hookCommands(await readSettings());
 
-    // 2. Seed a user hook, flip processCapture on, re-init → capture hook added,
-    //    user hook preserved.
+    // 2. Seed a user hook, flip processCapture on, re-init → capture hook present
+    //    (idempotent), user hook preserved.
     await seedUserHook();
     await setProcessCapture('on');
     await runInit();
     onSettings = await readSettings();
     onCommands = hookCommands(onSettings);
 
-    // 3. Re-init again with capture still on → idempotent (no duplicate hook).
+    // 3. Re-init again with capture on → idempotent (no duplicate hook).
     await runInit();
     onTwiceCommands = hookCommands(await readSettings());
 
-    // 4. Flip processCapture off, re-init → capture hook pruned, user hook kept.
+    // 4. Flip processCapture off, re-init → capture hook STAYS installed
+    //    (runtime-gated, never pruned), user hook intact.
     await setProcessCapture('off');
     await runInit();
     offSettings = await readSettings();
@@ -158,13 +166,13 @@ describe('install-time capture gating (built CLI)', () => {
     if (tmpDir) await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
-  // @ana A020
-  it('fresh install (default off) installs no capture hook', () => {
-    expect(freshCommands).not.toContain(CAPTURE_COMMAND);
+  // Supersedes old A020 ("no hook when off"): the hook is installed regardless of the flag.
+  it('fresh install installs the capture hook regardless of the flag (default off)', () => {
+    expect(freshCommands).toContain(CAPTURE_COMMAND);
   });
 
   // @ana A019
-  it('re-init with processCapture on installs the ana _capture hook', () => {
+  it('init installs the ana _capture hook', () => {
     expect(onCommands).toContain(CAPTURE_COMMAND);
   });
 
@@ -173,29 +181,28 @@ describe('install-time capture gating (built CLI)', () => {
     expect(onCommands).toContain(USER_COMMAND);
   });
 
-  it('re-init with capture on is idempotent (exactly one capture hook)', () => {
+  it('re-init is idempotent (exactly one capture hook)', () => {
     expect(onTwiceCommands.filter((c) => c === CAPTURE_COMMAND)).toHaveLength(1);
   });
 
-  // @ana A021
-  it('re-init with processCapture off prunes the previously-installed capture hook', () => {
-    expect(offCommands).not.toContain(CAPTURE_COMMAND);
+  // Supersedes old A021 ("flip-off prunes"): the hook stays; the flag gates at runtime.
+  it('capture hook stays installed when the flag is off (runtime-gated, not pruned)', () => {
+    expect(offCommands).toContain(CAPTURE_COMMAND);
   });
 
   // @ana A022
-  it('pruning the capture hook leaves user-authored hooks intact', () => {
+  it('user-authored hooks stay intact across on/off flips', () => {
     expect(offCommands).toContain(USER_COMMAND);
   });
 
-  // ── Phase 2: the SessionEnd derive hook + its prune extension ──────────────
+  // ── Phase 2: the SessionEnd derive hook ────────────────────────────────────
 
-  it('capture on installs the SessionEnd derive hook (Claude)', () => {
+  it('installs the SessionEnd derive hook (Claude)', () => {
     expect(eventCommands(onSettings, 'SessionEnd')).toContain(CAPTURE_DERIVE_COMMAND);
   });
 
-  it('capture off prunes the SessionEnd derive hook too', () => {
-    expect(offCommands).not.toContain(CAPTURE_DERIVE_COMMAND);
-    expect(eventCommands(offSettings, 'SessionEnd')).not.toContain(CAPTURE_DERIVE_COMMAND);
+  it('the SessionEnd derive hook stays installed when the flag is off', () => {
+    expect(eventCommands(offSettings, 'SessionEnd')).toContain(CAPTURE_DERIVE_COMMAND);
   });
 
   it('the SessionStart hook stays the plain capture command (not the derive)', () => {
@@ -205,11 +212,11 @@ describe('install-time capture gating (built CLI)', () => {
 });
 
 /**
- * Codex install/prune coverage (delta #3 — Phase 1 tested `--platforms claude`
- * only). Exercises hooks.json SessionStart + Stop, the prune extension, and the
- * config.toml merge fix (delta #2).
+ * Codex install coverage. Exercises hooks.json SessionStart + Stop (always
+ * installed), user-hook preservation, the config.toml merge (delta #2), and that
+ * the hooks remain installed when the flag is off (runtime-gated, not pruned).
  */
-describe('install-time capture gating — Codex (built CLI)', () => {
+describe('always-install capture gating — Codex (built CLI)', () => {
   let tmpDir: string;
   let onHooks: Record<string, HookEntry[]>;
   let onConfig: string;
@@ -256,7 +263,7 @@ describe('install-time capture gating — Codex (built CLI)', () => {
     try {
       return JSON.parse(await fs.readFile(hooksPath(), 'utf-8'));
     } catch {
-      return {}; // off-path fresh install never writes hooks.json
+      return {};
     }
   }
 
@@ -286,7 +293,7 @@ describe('install-time capture gating — Codex (built CLI)', () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ana-codex-gate-'));
     await setupProject(tmpDir);
 
-    // 1. Fresh init (default off) — creates .codex + ana.json.
+    // 1. Fresh init (default off) — hooks are installed regardless.
     await runInitCodex();
 
     // 2. Pre-seed a user config.toml WITHOUT the hooks flag (delta #2 scenario)
@@ -298,7 +305,7 @@ describe('install-time capture gating — Codex (built CLI)', () => {
     onHooks = await readHooks();
     onConfig = await fs.readFile(configPath(), 'utf-8');
 
-    // 3. Flip off, re-init → capture hooks pruned, user hook kept.
+    // 3. Flip off, re-init → capture hooks STAY installed (runtime-gated), user hook kept.
     await setProcessCapture('off');
     await runInitCodex();
     offHooks = await readHooks();
@@ -308,11 +315,11 @@ describe('install-time capture gating — Codex (built CLI)', () => {
     if (tmpDir) await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
-  it('capture on installs the SessionStart capture hook (Codex)', () => {
+  it('installs the SessionStart capture hook (Codex)', () => {
     expect(eventCmds(onHooks, 'SessionStart')).toContain(CAPTURE_COMMAND);
   });
 
-  it('capture on installs the Stop derive hook (Codex)', () => {
+  it('installs the Stop derive hook (Codex)', () => {
     expect(eventCmds(onHooks, 'Stop')).toContain(CAPTURE_DERIVE_COMMAND);
   });
 
@@ -326,13 +333,13 @@ describe('install-time capture gating — Codex (built CLI)', () => {
     expect(onConfig).toContain('persistence = "save-all"');
   });
 
-  it('capture off prunes both the SessionStart and Stop capture hooks', () => {
+  it('capture hooks stay installed when the flag is off (Codex, runtime-gated)', () => {
     const cmds = allCmds(offHooks);
-    expect(cmds).not.toContain(CAPTURE_COMMAND);
-    expect(cmds).not.toContain(CAPTURE_DERIVE_COMMAND);
+    expect(cmds).toContain(CAPTURE_COMMAND);
+    expect(cmds).toContain(CAPTURE_DERIVE_COMMAND);
   });
 
-  it('pruning the Codex hooks leaves user-authored hooks intact', () => {
+  it('user-authored hooks stay intact across on/off flips (Codex)', () => {
     expect(allCmds(offHooks)).toContain(USER_COMMAND);
   });
 });
