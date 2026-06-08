@@ -108,7 +108,7 @@ Error: build_report.md has no valid captured test evidence.
 - [ ] AC1: New projects get `testEvidenceGate: "on"` in `ana.json`; `captureGate` is never written.
 - [ ] AC5: The block message and escape-hatch hint name `testEvidenceGate` (`set "testEvidenceGate": "off"`), not `captureGate`.
 - [ ] AC6: `ana config set testEvidenceGate off` works with no "unknown key" warning; `captureGate` is no longer in `KNOWN_FIELDS`.
-- [ ] AC7: No `captureGate`/`CaptureGate` string remains anywhere in `packages/cli/src/` — neither the flag name nor any gate symbol. Capture-*marker* symbols (`CaptureMarker`, `parseMarkers`, `validateCapturePresent`) and `processCapture*` counts unchanged. Contract-backed by source-invariant assertions (A009, A010), Verify-checked.
+- [ ] AC7: No `captureGate`/`CaptureGate` string remains anywhere across `packages/cli/src/`, `website/content/`, or `.ana/ana.json` — neither the flag name nor any gate symbol. Capture-*marker* symbols (`CaptureMarker`, `parseMarkers`, `validateCapturePresent`) and `processCapture*` counts unchanged. The `src/` half is contract-backed by source-invariant assertions A009/A010 (Verify-checked); the docs + dogfood surfaces, which the `sourceCode` matcher cannot reach, are covered by the widened final clean-sweep grep below — Verify runs that grep.
 - [ ] AC8: `configurability.mdx` documents `testEvidenceGate` with no legacy note.
 - [ ] AC9: The dogfood root `.ana/ana.json` uses `testEvidenceGate: "on"`.
 - [ ] AC10: Test count does not decrease from baseline (3589); rename coverage and new-key behavior (enablement on/off, absent fail-safe) are tested. No back-compat tests.
@@ -210,7 +210,7 @@ captureGate: 'on',      // -> testEvidenceGate: 'on'
 - Type check: `(cd 'packages/cli' && pnpm tsc --noEmit)` — Expected: zero errors.
 - After all changes: `pnpm run test -- --run` — Expected: ≥3589 tests pass.
 - Lint: `(cd 'packages/cli' && pnpm run lint)` — Expected: clean.
-- Final clean-sweep gate (AC7): `grep -rniE "captureGate" packages/cli/src` → zero hits.
+- Final clean-sweep gate (AC7), run by Build AND independently by Verify — covers all three edited surfaces, including the docs + dogfood paths the `sourceCode` contract matcher cannot reach: `grep -rniE "captureGate" packages/cli/src website/content .ana/ana.json` → zero hits.
 
 ### Build Baseline
 - Current tests: **3589** (3587 passed + 2 skipped)
