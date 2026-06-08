@@ -69,6 +69,7 @@
     "packages/cli/src/commands/_capture.ts",
     "packages/cli/src/commands/artifact.ts",
     "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/assets.ts",
     "packages/cli/src/commands/init/state.ts",
     "packages/cli/src/commands/proof.ts",
     "packages/cli/src/commands/run.ts",
@@ -76,10 +77,12 @@
     "packages/cli/src/commands/work.ts",
     "packages/cli/src/types/proof.ts",
     "packages/cli/src/utils/forensics.ts",
+    "packages/cli/templates/.codex/hooks.json",
     "packages/cli/tests/commands/_capture.test.ts",
     "packages/cli/tests/commands/artifact-provenance.test.ts",
     "packages/cli/tests/commands/init.test.ts",
     "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/init/assets-capture-hooks.test.ts",
     "packages/cli/tests/commands/proof.test.ts",
     "packages/cli/tests/commands/run.test.ts",
     "packages/cli/tests/commands/work-proof-process.test.ts",
@@ -99,6 +102,10 @@
     "packages/cli/src/commands/init/anaJsonSchema.ts": {
       "added": 8,
       "deleted": 0
+    },
+    "packages/cli/src/commands/init/assets.ts": {
+      "added": 57,
+      "deleted": 17
     },
     "packages/cli/src/commands/init/state.ts": {
       "added": 5,
@@ -128,6 +135,10 @@
       "added": 285,
       "deleted": 146
     },
+    "packages/cli/templates/.codex/hooks.json": {
+      "added": 0,
+      "deleted": 10
+    },
     "packages/cli/tests/commands/_capture.test.ts": {
       "added": 98,
       "deleted": 166
@@ -137,12 +148,16 @@
       "deleted": 0
     },
     "packages/cli/tests/commands/init.test.ts": {
-      "added": 46,
+      "added": 57,
       "deleted": 0
     },
     "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
       "added": 23,
       "deleted": 0
+    },
+    "packages/cli/tests/commands/init/assets-capture-hooks.test.ts": {
+      "added": 149,
+      "deleted": 53
     },
     "packages/cli/tests/commands/proof.test.ts": {
       "added": 81,
@@ -202,5 +217,13 @@
   "verify-data-2": {
     "saved_at": "2026-06-08T06:48:22.722Z",
     "hash": "sha256:201e2e3175cda88d599d6a1b2a9e34b82170a56a43105df57c9f4432b7f3a584"
+  },
+  "build-report-3": {
+    "saved_at": "2026-06-08T07:05:36.085Z",
+    "hash": "sha256:f19bd5f818c601c447614e4b32813dcd42d4093b4aec0adeab3944b85e329631"
+  },
+  "build-data-3": {
+    "saved_at": "2026-06-08T07:05:36.086Z",
+    "hash": "sha256:82ba0645d0d669601a4b7900d65f63e4784d0cf5d143e67809728186fde80e7b"
   }
 }
