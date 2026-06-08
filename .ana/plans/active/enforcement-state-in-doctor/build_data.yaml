@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "doctor.test.ts now has duplicate @ana tags (A005-A015) colliding with a prior doctor contract's tags on unrelated tests; old tags intentionally not stripped to preserve historical traceability"
+    file: "packages/cli/tests/commands/doctor.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Finding retire-capture-self-arming-C3 is resolved by this build — the double parse of ana.json in getWorkStatus is removed (inline captureGate parse + captureGateActive call both deleted)"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "assessEnforcement adds a fourth independent ana.json read in doctor.ts (assessSurfaces/assessScanFreshness/assessContext each already parse it); matches the established per-assessor pattern, consolidation out of scope"
+    file: "packages/cli/src/commands/doctor.ts"
+    severity: debt
+    suggested_action: monitor

@@ -641,7 +641,10 @@ describe('ana work status', () => {
     });
   });
 
-  describe('capture gate status readout', () => {
+  // The capture-gate readout moved to `ana doctor` (Enforcement dimension).
+  // These cases prove the gate state is fully absent from `work status` output;
+  // the equivalent on/inactive/off coverage now lives in doctor.test.ts.
+  describe('capture gate state is absent from work status', () => {
     /** Overwrite the test project's ana.json to set the capture-gate config. */
     async function setCaptureGateConfig(cfg: Record<string, unknown>): Promise<void> {
       await fs.writeFile(
@@ -651,38 +654,44 @@ describe('ana work status', () => {
       );
     }
 
-    // @ana A013 — the gate's on/off state is visible in human-readable status.
-    it('reports "Capture gate: on" when the gate is on with a test command', async () => {
+    // @ana A001 — human output no longer announces the gate, even when on.
+    it('human output omits the "Capture gate" line when the gate is on', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
       await setCaptureGateConfig({ captureGate: 'on', commands: { test: 'pnpm vitest run' } });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
-      expect(output).toContain('Capture gate: on');
+      expect(output).not.toContain('Capture gate');
       expect(output).not.toContain('inactive');
     });
 
-    it('reports the inactive state when on but no test command resolves', async () => {
+    // @ana A001 — absent line holds when the gate is on but inactive.
+    it('human output omits the gate line when on but no test command resolves', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
       await setCaptureGateConfig({ captureGate: 'on', commands: {}, surfaces: {} });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
-      expect(output).toContain('Capture gate: on (inactive');
+      expect(output).not.toContain('Capture gate');
     });
 
-    it('reports "Capture gate: off" when the flag is absent', async () => {
+    // @ana A001 — and when the flag is absent.
+    it('human output omits the gate line when the flag is absent', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
-      expect(output).toContain('Capture gate: off');
+      expect(output).not.toContain('Capture gate');
     });
 
-    it('includes the raw captureGate flag in --json output', async () => {
+    // @ana A002, A003, A004 — --json drops both gate fields, keeps core pipeline fields.
+    it('--json omits captureGate and captureGateActive but retains artifactBranch', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
       await setCaptureGateConfig({ captureGate: 'on', commands: { test: 'pnpm vitest run' } });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: true }));
       const parsed = JSON.parse(output);
-      expect(parsed.captureGate).toBe('on');
+      const keys = Object.keys(parsed);
+      expect(keys).not.toContain('captureGate');
+      expect(keys).not.toContain('captureGateActive');
+      expect(parsed.artifactBranch).toBeDefined();
     });
   });
 

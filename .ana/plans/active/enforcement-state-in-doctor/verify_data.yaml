@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: test
+    summary: "assessEnforcement parse-failure fallback (all-off) is untested — every enforcement test uses createMinimalProject which always writes a valid ana.json, so the try/catch catch branch never runs"
+    file: "packages/cli/src/commands/doctor.ts"
+    line: 458
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A005", "A008"]
+  - category: test
+    summary: "config A016-A018 are absence-only assertions (not.toContain 'not a known ana.json field') — they would pass vacuously if the config-set validation path no-op'd; they do not positively confirm the field was written. Contract-aligned (matcher is not_contains) but fragile as regression guards"
+    file: "packages/cli/tests/commands/config.test.ts"
+    line: 360
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A016", "A017", "A018"]
+  - category: code
+    summary: "assessEnforcement reads ana.json twice per doctor run — once via the raw inline parse and once inside isCaptureGateEnabled. Deliberate and documented in the spec (correctness-without-duplication on a cold human-invoked path); recorded so it is revisited if doctor ever becomes a hot path"
+    file: "packages/cli/src/commands/doctor.ts"
+    line: 453
+    severity: observation
+    suggested_action: acknowledge
+  - category: upstream
+    summary: "The work.ts double-read of ana.json (inline captureGate parse + isCaptureGateEnabled call in getWorkStatus) is removed by this build — getWorkStatus now reads ana.json once for lastScanAt only. Resolves the previously-recorded performance observation"
+    file: "packages/cli/src/commands/work.ts"
+    line: 473
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "retire-capture-self-arming-C3"

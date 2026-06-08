@@ -24,6 +24,7 @@ import { worktreeExists } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
 import { agentCommand } from './platform.js';
+import { isCaptureGateEnabled } from './artifact.js';
 import {
   checkSkill,
   readSetupProgress,
@@ -93,6 +94,21 @@ interface SurfacesDimension {
   legacy_fields: string[];
 }
 
+/**
+ * Enforcement dimension — the three mechanical gates as one informational view.
+ *
+ * Deliberately NOT a {@link DimensionStatus}: every gate value is a valid
+ * configuration, not a health grade. The fixed `status: 'info'` literal makes
+ * "never fails" true by type — it is structurally incapable of flipping
+ * doctor's exit code.
+ */
+interface EnforcementDimension {
+  status: 'info';
+  test_evidence_gate: 'on' | 'on-inactive' | 'off';
+  process_capture: 'on' | 'off';
+  process_capture_strict: 'on' | 'off';
+}
+
 interface StaleWorkItem {
   slug: string;
   days_stalled: number;
@@ -106,6 +122,7 @@ interface DoctorDimensions {
   skills: SkillsDimension;
   proof_chain: ProofChainDimension;
   surfaces: SurfacesDimension;
+  enforcement: EnforcementDimension;
 }
 
 interface DoctorResults {
@@ -421,6 +438,41 @@ function assessSurfaces(projectRoot: string): SurfacesDimension {
 }
 
 /**
+ * Assess the enforcement dimension — the test-evidence gate, process capture,
+ * and strict process-completeness flags reported as one informational view.
+ *
+ * The test-evidence gate is three-way: `on` when the flag is on and a test
+ * command resolves, `on-inactive` when the flag is on but no command resolves
+ * (configured on but unable to enforce), and `off` otherwise. The active
+ * carve-out is owned by {@link isCaptureGateEnabled}; process capture and strict
+ * are trivial `=== 'on'` reads from the same raw parse.
+ *
+ * @param projectRoot - Absolute path to the project root
+ * @returns Enforcement dimension result (always `status: 'info'`)
+ */
+function assessEnforcement(projectRoot: string): EnforcementDimension {
+  const anaJsonPath = path.join(projectRoot, '.ana', 'ana.json');
+  let anaContent: Record<string, unknown> = {};
+  try {
+    anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
+  } catch {
+    return { status: 'info', test_evidence_gate: 'off', process_capture: 'off', process_capture_strict: 'off' };
+  }
+
+  const gateFlag = anaContent['captureGate'] === 'on';
+  const testEvidenceGate: EnforcementDimension['test_evidence_gate'] = gateFlag
+    ? (isCaptureGateEnabled(projectRoot) ? 'on' : 'on-inactive')
+    : 'off';
+
+  return {
+    status: 'info',
+    test_evidence_gate: testEvidenceGate,
+    process_capture: anaContent['processCapture'] === 'on' ? 'on' : 'off',
+    process_capture_strict: anaContent['processCaptureStrict'] === 'on' ? 'on' : 'off',
+  };
+}
+
+/**
  * Detect stale work items.
  *
  * Reads `.saves.json` files under `.ana/plans/active/` to find the most recent
@@ -535,10 +587,13 @@ function classifyMaturity(
 /**
  * Format the terminal dashboard output.
  *
+ * Exported for testing — the command action handler prints this; tests assert
+ * on the rendered string directly.
+ *
  * @param results - Complete doctor results
  * @returns Formatted terminal output string
  */
-function formatTerminalOutput(results: DoctorResults): string {
+export function formatTerminalOutput(results: DoctorResults): string {
   const lines: string[] = [];
   const d = results.dimensions;
 
@@ -627,6 +682,16 @@ function formatTerminalOutput(results: DoctorResults): string {
     lines.push(`  ${chalk.yellow('⚠')} Legacy fields: ${d.surfaces.legacy_fields.join(', ')} — remove with \`ana config delete\``);
   }
 
+  // Enforcement — informational; neutral gray glyph, never reads as pass/warn/fail.
+  // Header carries no state; each gate is its own indented, column-aligned sub-line.
+  const testEvidenceReadout = d.enforcement.test_evidence_gate === 'on-inactive'
+    ? 'on (inactive — no test command)'
+    : d.enforcement.test_evidence_gate;
+  lines.push(`  ${chalk.gray('ℹ')} ${chalk.dim('Enforcement')}`);
+  lines.push(`      ${'test-evidence gate'.padEnd(20)}${testEvidenceReadout}`);
+  lines.push(`      ${'process capture'.padEnd(20)}${d.enforcement.process_capture}`);
+  lines.push(`      ${'strict'.padEnd(20)}${d.enforcement.process_capture_strict}`);
+
   // Stale work items
   for (const item of results.stale_work) {
     lines.push('');
@@ -685,6 +750,7 @@ export async function runDoctor(projectRoot: string): Promise<DoctorResults> {
 
   const proofChain = assessProofChain(projectRoot);
   const surfaces = assessSurfaces(projectRoot);
+  const enforcement = assessEnforcement(projectRoot);
   const staleWork = detectStaleWork(projectRoot);
   const maturity = classifyMaturity(proofChain, context);
 
@@ -702,6 +768,7 @@ export async function runDoctor(projectRoot: string): Promise<DoctorResults> {
       skills,
       proof_chain: proofChain,
       surfaces,
+      enforcement,
     },
     stale_work: staleWork,
     overall: hasRed ? 'fail' : 'pass',
