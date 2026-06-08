@@ -1,0 +1,350 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Cross-machine process provenance (capture v2)"
+
+assertions:
+  # ── Phase 1: correlation key + pointer hook (AC3) ───────────────
+  - id: A001
+    says: "Every launched agent gets a unique run id so its work can be matched later"
+    block: "buildCaptureEnv sets a non-empty ANA_RUN_ID"
+    target: "env.ANA_RUN_ID"
+    matcher: "exists"
+
+  - id: A002
+    says: "Tagging a session never strips the agent's existing environment"
+    block: "buildCaptureEnv merge stays additive over process.env"
+    target: "spawnEnv.PATH"
+    matcher: "exists"
+
+  - id: A003
+    says: "Session start records a lightweight pointer to the live session"
+    block: "SessionStart hook writes a pending pointer keyed by ANA_RUN_ID"
+    target: "pointer.session_id"
+    matcher: "exists"
+
+  - id: A004
+    says: "The session-start hook does no heavy work — it writes no buffer"
+    block: "SessionStart hook writes no home buffer file"
+    target: "homeBufferExists"
+    matcher: "equals"
+    value: false
+
+  - id: A005
+    says: "The retired end-of-session hook is harmless on installs that still have it"
+    block: "ana _capture --derive exits cleanly as a no-op"
+    target: "deriveExitCode"
+    matcher: "equals"
+    value: 0
+
+  # ── Phase 1: derive + write + commit at save (AC1, AC5, AC11, AC13) ──
+  - id: A006
+    says: "Each role's session is recorded as its own provenance file at save time"
+    block: "captureProvenanceAtSave writes provenance/{role}-{session_id}.json"
+    target: "provenance.session_id"
+    matcher: "exists"
+
+  - id: A007
+    says: "Provenance carries token counts and model, not a dollar figure, in git"
+    block: "committed provenance carries price_table_version but never cost_usd"
+    target: "provenanceJson"
+    matcher: "not_contains"
+    value: "cost_usd"
+
+  - id: A008
+    says: "Derived counts include the token totals the cost is computed from"
+    block: "provenance derived block carries a token breakdown"
+    target: "provenance.derived.price_table_version"
+    matcher: "exists"
+
+  - id: A009
+    says: "A session's provenance ships in the very same commit as the artifact it produced"
+    block: "saveArtifact commits the provenance file with the artifact, no extra commit"
+    target: "provenanceRidesArtifactCommit"
+    matcher: "truthy"
+
+  - id: A010
+    says: "Saving all artifacts together also ships their provenance in that commit"
+    block: "saveAllArtifacts commits the provenance file in the same commit"
+    target: "saveAllProvenanceRidesCommit"
+    matcher: "truthy"
+
+  - id: A011
+    says: "Re-saving the same session updates its one provenance file — no duplicates"
+    block: "a second save by the same session overwrites the same provenance file"
+    target: "sameSessionProvenanceFileCount"
+    matcher: "equals"
+    value: 1
+
+  - id: A012
+    says: "Separate sessions each keep their own provenance record"
+    block: "two distinct sessions write two distinct provenance files"
+    target: "distinctSessionProvenanceFileCount"
+    matcher: "equals"
+    value: 2
+
+  - id: A013
+    says: "A re-check that changed nothing still reports nothing to save"
+    block: "no-work re-validation exits 0 without committing provenance"
+    target: "revalidateExitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A014
+    says: "That no-work re-check tells the user there was nothing to save"
+    block: "no-work re-validation prints the up-to-date message"
+    target: "revalidateStdout"
+    matcher: "contains"
+    value: "No changes to save"
+
+  - id: A015
+    says: "No raw conversation text is ever written into the committed record"
+    block: "committed provenance excludes transcript body text"
+    target: "provenanceJson"
+    matcher: "not_contains"
+    value: "TRANSCRIPT_BODY_SENTINEL"
+
+  # ── Phase 1: buffer + matcher removal (AC7, AC10) ───────────────
+  - id: A016
+    says: "The cross-machine-broken home buffer is gone for good"
+    block: "forensics no longer exports the home-buffer path helper"
+    target: "forensicsExports"
+    matcher: "not_contains"
+    value: "getForensicsBufferPath"
+
+  - id: A017
+    says: "The fragile worktree-path matching is gone"
+    block: "work-proof no longer defines recordBelongsToWorktree"
+    target: "workProofSource"
+    matcher: "not_contains"
+    value: "recordBelongsToWorktree"
+
+  # ── Phase 1: assemble from committed files (AC2) ────────────────
+  - id: A018
+    says: "The completed proof is assembled purely from committed provenance files"
+    block: "assembleProcessAttestation returns one session per committed provenance file"
+    target: "attestation.sessions.length"
+    matcher: "equals"
+    value: 3
+
+  - id: A019
+    says: "When capture is off, no provenance block is attached"
+    block: "assembleProcessAttestation returns null when capture is disabled"
+    target: "attestationWhenCaptureOff"
+    matcher: "equals"
+    value: null
+
+  - id: A020
+    says: "When capture is on but provenance is missing, the gap is recorded, not hidden"
+    block: "assembleProcessAttestation returns an attestation even with zero sessions"
+    target: "attestationWhenZeroSessions"
+    matcher: "exists"
+
+  # ── Phase 2: completeness check (AC8) ───────────────────────────
+  - id: A021
+    says: "How many build sessions we expect is tied to the build reports actually saved"
+    block: "completeness.expected.build equals the saved build_report count"
+    target: "completeness.expected.build"
+    matcher: "equals"
+    value: 2
+
+  - id: A022
+    says: "A run with every role's provenance present reads as complete"
+    block: "completeness.complete is true when plan, build, and verify are all present"
+    target: "completeness.complete"
+    matcher: "truthy"
+
+  - id: A023
+    says: "A run missing a role's provenance reads as incomplete"
+    block: "a missing verify session makes completeness.complete false"
+    target: "missingVerifyCompleteness.complete"
+    matcher: "equals"
+    value: false
+
+  - id: A024
+    says: "The incompleteness names which role is missing"
+    block: "completeness.gaps names the missing verify role"
+    target: "missingVerifyGaps"
+    matcher: "contains"
+    value: "verify"
+
+  - id: A025
+    says: "Legitimate rework with extra build reports never false-fails completeness"
+    block: "a multi-attempt build pipeline with matching sessions reads complete"
+    target: "reworkCompleteness.complete"
+    matcher: "truthy"
+
+  - id: A026
+    says: "Thinking and learning sessions are never required for completeness"
+    block: "an extra learn session does not create a completeness gap"
+    target: "completeWithLearnSession.complete"
+    matcher: "truthy"
+
+  # ── Phase 2: strict gate (AC8) ──────────────────────────────────
+  - id: A027
+    says: "With strict mode on, an incomplete proof blocks completion"
+    block: "work complete exits 1 on a gap when processCaptureStrict is on"
+    target: "strictExitCode"
+    matcher: "equals"
+    value: 1
+
+  - id: A028
+    says: "A blocked strict completion writes no proof entry"
+    block: "no proof chain entry is written when strict mode blocks completion"
+    target: "strictChainEntryWritten"
+    matcher: "equals"
+    value: false
+
+  - id: A029
+    says: "With strict mode off, an incomplete proof warns but still completes"
+    block: "work complete exits 0 on a gap when strict mode is off"
+    target: "warnExitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A030
+    says: "A warned completion records the gap in the proof for later"
+    block: "the written entry carries completeness.complete false under warn mode"
+    target: "warnEntry.process.completeness.complete"
+    matcher: "equals"
+    value: false
+
+  # ── Phase 2: strict gate config (AC8) ───────────────────────────
+  - id: A031
+    says: "Teams can opt into strict completeness via a config flag"
+    block: "ana.json accepts processCaptureStrict on/off"
+    target: "parsedAnaJson.processCaptureStrict"
+    matcher: "equals"
+    value: "on"
+
+  - id: A032
+    says: "New projects default to warn, not block"
+    block: "createAnaJson emits processCaptureStrict off"
+    target: "createdAnaJson.processCaptureStrict"
+    matcher: "equals"
+    value: "off"
+
+  - id: A033
+    says: "A team's strict setting survives re-running init"
+    block: "re-init preserves an explicit processCaptureStrict value"
+    target: "reinitAnaJson.processCaptureStrict"
+    matcher: "equals"
+    value: "on"
+
+  # ── Phase 2: display + non-gating (AC1, AC11) ───────────────────
+  - id: A034
+    says: "The proof shows an estimated cost computed at display time"
+    block: "ana proof renders a per-session cost estimate"
+    target: "proofOutput"
+    matcher: "contains"
+    value: "est. $"
+
+  - id: A035
+    says: "Provenance is never allowed to change a pass/fail verdict"
+    block: "an incomplete process block does not change the proof result"
+    target: "resultWithIncompleteProcess"
+    matcher: "equals"
+    value: "PASS"
+
+  # ── Phase 2: cross-machine + survival fixtures (AC2, AC6) ───────
+  - id: A036
+    says: "A proof assembled from different machines' files comes out complete"
+    block: "cross-machine provenance fixture assembles a complete process block"
+    target: "crossMachineCompleteness.complete"
+    matcher: "truthy"
+
+  - id: A037
+    says: "Per-session provenance survives a squashed PR merge with no loss"
+    block: "squash-merge fixture keeps every distinct provenance file"
+    target: "squashSurvivingProvenanceCount"
+    matcher: "equals"
+    value: 3
+
+  # ── Phase 3: one hook, derive pruned (AC4) ──────────────────────
+  - id: A038
+    says: "A fresh install gets exactly one capture hook on Claude"
+    block: "fresh Claude install has the SessionStart capture hook"
+    target: "freshClaudeSettingsJson"
+    matcher: "contains"
+    value: "ana _capture"
+
+  - id: A039
+    says: "A fresh install installs no end-of-session derive hook"
+    block: "fresh Claude install has no --derive hook"
+    target: "freshClaudeSettingsJson"
+    matcher: "not_contains"
+    value: "--derive"
+
+  - id: A040
+    says: "Re-init removes a stale derive hook left by an older version"
+    block: "re-init prunes ana _capture --derive from Claude settings"
+    target: "prunedClaudeSettingsJson"
+    matcher: "not_contains"
+    value: "ana _capture --derive"
+
+  - id: A041
+    says: "Pruning a stale hook never removes the user's own hooks"
+    block: "re-init preserves a co-located user-authored hook"
+    target: "prunedClaudeSettingsJson"
+    matcher: "contains"
+    value: "my-own-cleanup.sh"
+
+  - id: A042
+    says: "The Codex install template carries no derive hook"
+    block: "templates/.codex/hooks.json has no --derive entry"
+    target: "codexHooksTemplateJson"
+    matcher: "not_contains"
+    value: "--derive"
+
+  - id: A043
+    says: "Re-init prunes the stale derive hook on Codex too"
+    block: "re-init prunes ana _capture --derive from Codex hooks"
+    target: "prunedCodexHooksJson"
+    matcher: "not_contains"
+    value: "ana _capture --derive"
+
+  # ── Phase 3: provenance stays tracked (AC2) ─────────────────────
+  - id: A044
+    says: "Provenance files are never gitignored — they must travel between machines"
+    block: "generated .ana/.gitignore does not ignore provenance"
+    target: "generatedAnaGitignore"
+    matcher: "not_contains"
+    value: "provenance"
+
+file_changes:
+  # Phase 1
+  - path: "packages/cli/src/commands/run.ts"
+    action: modify
+  - path: "packages/cli/src/utils/forensics.ts"
+    action: modify
+  - path: "packages/cli/src/commands/_capture.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/forensics.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/forensics-derive.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/_capture.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work-proof-process.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact-provenance.test.ts"
+    action: create
+  # Phase 2
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  # Phase 3
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/templates/.codex/hooks.json"
+    action: modify
+  - path: "packages/cli/tests/commands/init/assets-capture-hooks.test.ts"
+    action: modify
