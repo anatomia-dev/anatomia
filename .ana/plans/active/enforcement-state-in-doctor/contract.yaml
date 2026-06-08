@@ -1,0 +1,146 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Move enforcement-gate state from ana work status to ana doctor"
+
+assertions:
+  # ── AC1 / AC2 / AC7: work status no longer carries gate state ──
+  - id: A001
+    says: "Pipeline status no longer announces the capture-gate state to agents"
+    block: "work status human output omits the capture gate line"
+    target: "statusHumanOutput"
+    matcher: "not_contains"
+    value: "Capture gate"
+
+  - id: A002
+    says: "The machine-readable pipeline status drops the capture-gate flag"
+    block: "work status --json omits the captureGate field"
+    target: "statusJson.keys"
+    matcher: "not_contains"
+    value: "captureGate"
+
+  - id: A003
+    says: "The machine-readable pipeline status drops the gate-active flag"
+    block: "work status --json omits the captureGateActive field"
+    target: "statusJson.keys"
+    matcher: "not_contains"
+    value: "captureGateActive"
+
+  - id: A004
+    says: "Pipeline status still works and reports the artifact branch after the gate state is removed"
+    block: "work status --json still reports core pipeline fields"
+    target: "statusJson.artifactBranch"
+    matcher: "exists"
+
+  # ── AC3 / AC4: doctor gains the Enforcement dimension ──
+  - id: A005
+    says: "Project health now includes an enforcement view"
+    block: "doctor results include an enforcement dimension"
+    target: "doctorResults.dimensions.enforcement"
+    matcher: "exists"
+
+  - id: A006
+    says: "Health shows the test-evidence gate as active when it is on and a test command exists"
+    block: "enforcement reports test-evidence gate on when gate on with test command"
+    target: "doctorResults.dimensions.enforcement.test_evidence_gate"
+    matcher: "equals"
+    value: "on"
+
+  - id: A007
+    says: "Health distinctly flags a turned-on gate that cannot enforce because no test command is configured"
+    block: "enforcement reports test-evidence gate inactive when on but no test command resolves"
+    target: "doctorResults.dimensions.enforcement.test_evidence_gate"
+    matcher: "equals"
+    value: "on-inactive"
+
+  - id: A008
+    says: "Health shows the test-evidence gate as off when the flag is absent"
+    block: "enforcement reports test-evidence gate off when flag absent"
+    target: "doctorResults.dimensions.enforcement.test_evidence_gate"
+    matcher: "equals"
+    value: "off"
+
+  - id: A009
+    says: "Health reports whether process-provenance capture is enabled"
+    block: "enforcement reports process_capture state"
+    target: "doctorResults.dimensions.enforcement.process_capture"
+    matcher: "equals"
+    value: "on"
+
+  - id: A010
+    says: "Health reports whether strict process-completeness enforcement is enabled"
+    block: "enforcement reports process_capture_strict state"
+    target: "doctorResults.dimensions.enforcement.process_capture_strict"
+    matcher: "equals"
+    value: "on"
+
+  - id: A011
+    says: "The human health dashboard shows an Enforcement section"
+    block: "doctor human output renders an Enforcement section"
+    target: "doctorHumanOutput"
+    matcher: "contains"
+    value: "Enforcement"
+
+  - id: A012
+    says: "The human dashboard surfaces the inactive-gate case in plain language"
+    block: "doctor human output renders the inactive test-evidence gate readout"
+    target: "doctorHumanOutput"
+    matcher: "contains"
+    value: "inactive"
+
+  # ── AC5: enforcement is informational, never a health failure ──
+  - id: A013
+    says: "The enforcement view is informational and is never treated as a failure"
+    block: "enforcement dimension status is info"
+    target: "doctorResults.dimensions.enforcement.status"
+    matcher: "equals"
+    value: "info"
+
+  - id: A014
+    says: "A configured enforcement state never makes the health check report an overall failure"
+    block: "doctor overall stays pass when only enforcement flags are set"
+    target: "doctorResults.overall"
+    matcher: "equals"
+    value: "pass"
+
+  - id: A015
+    says: "The enforcement view can never be classified as a failing dimension"
+    block: "enforcement dimension status is not fail"
+    target: "doctorResults.dimensions.enforcement.status"
+    matcher: "not_equals"
+    value: "fail"
+
+  # ── AC6: config set no longer warns on the three gate keys ──
+  - id: A016
+    says: "Setting the test-evidence gate via config no longer warns that the key is unknown"
+    block: "config set captureGate off emits no unknown-field warning"
+    target: "configSetErrorOutput"
+    matcher: "not_contains"
+    value: "not a known ana.json field"
+
+  - id: A017
+    says: "Setting the process-capture flag via config no longer warns that the key is unknown"
+    block: "config set processCapture off emits no unknown-field warning"
+    target: "configSetErrorOutput"
+    matcher: "not_contains"
+    value: "not a known ana.json field"
+
+  - id: A018
+    says: "Setting the strict-capture flag via config no longer warns that the key is unknown"
+    block: "config set processCaptureStrict off emits no unknown-field warning"
+    target: "configSetErrorOutput"
+    matcher: "not_contains"
+    value: "not a known ana.json field"
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/doctor.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/doctor.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/config.test.ts"
+    action: modify
