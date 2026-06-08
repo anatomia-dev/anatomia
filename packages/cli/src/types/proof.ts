@@ -85,6 +85,27 @@ export interface ProcessAttestation {
   /** Per-file added/deleted churn read from `.saves.json` (work-item level). */
   module_churn: Record<string, { added: number; deleted: number }>;
   /**
+   * Presence-floor completeness verdict (Phase 2). REQUIRED whenever capture is on
+   * — it is always computed (even with zero sessions → all-gaps), so an incomplete
+   * cross-machine record is loud rather than silently hidden (Verified-over-trusted).
+   *
+   * The verdict is a pure function of committed state: `expected` is tied to the
+   * count of saved `build_report*.md` / `verify_report*.md` files (never
+   * `rejection_cycles`, which would false-fail legitimate rework), `present` counts
+   * the committed sessions by role, and `gaps` names every shortfall. `ana`/`learn`
+   * roles are never required and never produce a gap. NEVER influences PASS/FAIL.
+   */
+  completeness: {
+    /** True when no bucket is short (`gaps.length === 0`). */
+    complete: boolean;
+    /** Expected sessions per pipeline role (plan = 1; build/verify = saved report count). */
+    expected: { plan: number; build: number; verify: number };
+    /** Sessions actually present per role, counted from the committed provenance. */
+    present: { plan: number; build: number; verify: number };
+    /** One human-readable string per shortfall, e.g. `"verify: 0 of 1 expected session(s) present"`. */
+    gaps: string[];
+  };
+  /**
    * Every committed provenance session for this work item — one per role/attempt,
    * deterministically ordered (by `captured_at`, then role). Repeated build
    * attempts from rejection cycles are kept: that rework is wanted data.

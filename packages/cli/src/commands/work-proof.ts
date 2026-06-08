@@ -32,6 +32,64 @@ function parseScopeSize(scopeContent: string): string {
 }
 
 /**
+ * Compute the presence-floor completeness verdict for a work item (Phase 2).
+ *
+ * The single source of truth for the verdict — called by both
+ * {@link assembleProcessAttestation} (post-`cp`, reads `completed/`) and the early
+ * strict guard in `completeWork` (pre-`cp`, reads `active/`). Pure: depends only on
+ * the report files under `reportsDir` and the passed `sessions`, so the recorded
+ * verdict and the upstream strict block can never disagree for the same inputs.
+ *
+ * Expectation is tied to SAVED REPORTS, never to `rejection_cycles` (which would
+ * false-fail legitimate rework): `expected.plan = 1`; `expected.build` /
+ * `expected.verify` equal the count of `build_report*.md` / `verify_report*.md`
+ * files in `reportsDir` (rework files like `build_report_2_r1.md` are counted, so a
+ * multi-attempt pipeline reads complete when each attempt has a session). `present`
+ * counts the passed sessions by role; `ana`/`learn` (and any non-pipeline role) are
+ * counted in the dataset but NEVER create an expected or a gap. A bucket is a gap
+ * when `present < expected`; `complete` is true when there are no gaps.
+ *
+ * @param reportsDir - Directory holding the saved `*_report*.md` files (`active/{slug}` or `completed/{slug}`)
+ * @param sessions - The committed sessions for this item (source of `present`)
+ * @returns The completeness verdict (`complete` / `expected` / `present` / `gaps`)
+ */
+export function computeCompleteness(
+  reportsDir: string,
+  sessions: SessionProvenance[],
+): ProcessAttestation['completeness'] {
+  const countReports = (pattern: string): number => {
+    try {
+      return globSync(pattern, { cwd: reportsDir }).length;
+    } catch {
+      return 0;
+    }
+  };
+
+  const expected = {
+    plan: 1,
+    build: countReports('build_report*.md'),
+    verify: countReports('verify_report*.md'),
+  };
+
+  const present = { plan: 0, build: 0, verify: 0 };
+  for (const s of sessions) {
+    if (s.role === 'plan') present.plan += 1;
+    else if (s.role === 'build') present.build += 1;
+    else if (s.role === 'verify') present.verify += 1;
+    // `ana` / `learn` / any other role: part of the dataset, never an expected/gap.
+  }
+
+  const gaps: string[] = [];
+  for (const role of ['plan', 'build', 'verify'] as const) {
+    if (present[role] < expected[role]) {
+      gaps.push(`${role}: ${present[role]} of ${expected[role]} expected session(s) present`);
+    }
+  }
+
+  return { complete: gaps.length === 0, expected, present, gaps };
+}
+
+/**
  * Assemble the optional {@link ProcessAttestation} for a completed work item.
  *
  * Reads the committed per-session provenance files — every `*.json` under
@@ -67,7 +125,8 @@ export function assembleProcessAttestation(
 ): ProcessAttestation | null {
   if (!isProcessCaptureEnabled(projectRoot)) return null;
 
-  const provDir = path.join(projectRoot, '.ana', 'plans', 'completed', slug, 'provenance');
+  const completedSlugDir = path.join(projectRoot, '.ana', 'plans', 'completed', slug);
+  const provDir = path.join(completedSlugDir, 'provenance');
   const sessions: SessionProvenance[] = [];
   try {
     for (const file of fs.readdirSync(provDir)) {
@@ -118,6 +177,7 @@ export function assembleProcessAttestation(
       multi_phase: multiPhase,
     },
     module_churn: moduleChurn,
+    completeness: computeCompleteness(completedSlugDir, sessions),
     sessions,
   };
 }
@@ -259,6 +319,19 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     scopeContent,
     multiPhase,
   );
+
+  // Completeness WARN path (strict is enforced earlier in completeWork, before any
+  // archival). writeProofChain is reached only when completion is allowed to
+  // proceed — strict-off, or strict-on-but-complete — so here we warn and continue,
+  // recording the gap into the entry via process.completeness. It never blocks.
+  if (processAttestation && !processAttestation.completeness.complete) {
+    console.error(
+      chalk.yellow(
+        `Warning: Process provenance is incomplete — ${processAttestation.completeness.gaps.join('; ')}. ` +
+          `Recorded in the proof's completeness block.`,
+      ),
+    );
+  }
 
   const entry: ProofChainEntry = {
     slug,

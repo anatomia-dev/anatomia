@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { assembleProcessAttestation } from '../../src/commands/work-proof.js';
+import { assembleProcessAttestation, computeCompleteness } from '../../src/commands/work-proof.js';
 import type { SessionProvenance } from '../../src/types/proof.js';
 import type { ProofSummary } from '../../src/utils/proofSummary.js';
 
@@ -93,6 +93,13 @@ describe('assembleProcessAttestation', () => {
       JSON.stringify(p, null, 2),
       'utf-8',
     );
+  }
+
+  /** Seed a saved report file under completed/{slug}/ (drives expected counts). */
+  function seedReport(slug: string, fileName: string): void {
+    const dir = path.join(projectRoot, '.ana', 'plans', 'completed', slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, fileName), '# report', 'utf-8');
   }
 
   /** A proof summary with the given rejection_cycles and findings. */
@@ -284,5 +291,176 @@ describe('assembleProcessAttestation', () => {
       else process.env['HOME'] = home;
       fs.rmSync(tmpHome, { recursive: true, force: true });
     }
+  });
+
+  describe('completeness (via assembleProcessAttestation)', () => {
+    // @ana A022
+    it('reads complete when plan, build, and verify are all present', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report.md');
+      seedReport('feat', 'verify_report.md');
+      seedProvenance('feat', prov('plan', 'sp', '2026-06-01T00:30:00.000Z'));
+      seedProvenance('feat', prov('build', 'sb', '2026-06-01T01:00:00.000Z'));
+      seedProvenance('feat', prov('verify', 'sv', '2026-06-01T02:00:00.000Z'));
+
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+      expect(att!.completeness.complete).toBe(true);
+      expect(att!.completeness.expected).toEqual({ plan: 1, build: 1, verify: 1 });
+      expect(att!.completeness.present).toEqual({ plan: 1, build: 1, verify: 1 });
+      expect(att!.completeness.gaps).toEqual([]);
+    });
+
+    // @ana A021
+    it('ties expected.build/verify to the count of saved report files', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report_1.md');
+      seedReport('feat', 'build_report_2.md');
+      seedReport('feat', 'verify_report_1.md');
+      // No provenance seeded — only the expected counts matter here.
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+      expect(att!.completeness.expected.build).toBe(2);
+      expect(att!.completeness.expected.verify).toBe(1);
+      expect(att!.completeness.expected.plan).toBe(1);
+    });
+
+    // @ana A023, A024
+    it('reads incomplete and names the missing verify role when its session is absent', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report.md');
+      seedReport('feat', 'verify_report.md');
+      seedProvenance('feat', prov('plan', 'sp', '2026-06-01T00:30:00.000Z'));
+      seedProvenance('feat', prov('build', 'sb', '2026-06-01T01:00:00.000Z'));
+      // verify session missing
+
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+      expect(att!.completeness.complete).toBe(false);
+      expect(att!.completeness.present.verify).toBe(0);
+      expect(att!.completeness.gaps).toHaveLength(1);
+      expect(att!.completeness.gaps[0]).toContain('verify');
+      expect(att!.completeness.gaps[0]).toBe('verify: 0 of 1 expected session(s) present');
+    });
+
+    // @ana A025
+    it('does not false-fail legitimate rework — extra build reports with matching sessions read complete', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report.md');
+      seedReport('feat', 'build_report_2_r1.md'); // rework attempt
+      seedReport('feat', 'verify_report.md');
+      seedReport('feat', 'verify_report_2_r1.md');
+      seedProvenance('feat', prov('plan', 'sp', '2026-06-01T00:30:00.000Z'));
+      seedProvenance('feat', prov('build', 'sb1', '2026-06-01T01:00:00.000Z'));
+      seedProvenance('feat', prov('build', 'sb2', '2026-06-01T01:30:00.000Z'));
+      seedProvenance('feat', prov('verify', 'sv1', '2026-06-01T02:00:00.000Z'));
+      seedProvenance('feat', prov('verify', 'sv2', '2026-06-01T02:30:00.000Z'));
+
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof({ rejection_cycles: 1 }), churn, SCOPE, true);
+      expect(att!.completeness.expected).toEqual({ plan: 1, build: 2, verify: 2 });
+      expect(att!.completeness.present).toEqual({ plan: 1, build: 2, verify: 2 });
+      expect(att!.completeness.complete).toBe(true);
+    });
+
+    // @ana A026
+    it('never requires ana/learn — an extra learn session creates no gap', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report.md');
+      seedReport('feat', 'verify_report.md');
+      seedProvenance('feat', prov('plan', 'sp', '2026-06-01T00:30:00.000Z'));
+      seedProvenance('feat', prov('build', 'sb', '2026-06-01T01:00:00.000Z'));
+      seedProvenance('feat', prov('verify', 'sv', '2026-06-01T02:00:00.000Z'));
+      seedProvenance('feat', prov('learn', 'sl', '2026-06-01T03:00:00.000Z'));
+
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+      expect(att!.completeness.complete).toBe(true);
+      // learn is in the dataset but never an expected/present-counted bucket.
+      expect(att!.completeness.expected).toEqual({ plan: 1, build: 1, verify: 1 });
+      expect(att!.completeness.present).toEqual({ plan: 1, build: 1, verify: 1 });
+      expect(att!.sessions.map((s) => s.role)).toContain('learn');
+    });
+
+    it('zero provenance files + capture on → all-gaps completeness (loud, not null)', () => {
+      writeAnaJson('on');
+      seedReport('feat', 'build_report.md');
+      seedReport('feat', 'verify_report.md');
+      // No provenance seeded.
+      const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+      expect(att).not.toBeNull();
+      expect(att!.completeness.complete).toBe(false);
+      expect(att!.completeness.present).toEqual({ plan: 0, build: 0, verify: 0 });
+      expect(att!.completeness.gaps).toHaveLength(3);
+    });
+  });
+
+  describe('computeCompleteness (pure helper)', () => {
+    /** Seed report files into a standalone reportsDir and return its path. */
+    function seedReportsDir(files: string[]): string {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-reports-'));
+      for (const f of files) fs.writeFileSync(path.join(dir, f), '# report', 'utf-8');
+      return dir;
+    }
+
+    // @ana A021
+    it('expected counts come from report-file globs; plan is always 1', () => {
+      const dir = seedReportsDir(['build_report_1.md', 'build_report_2.md', 'verify_report.md']);
+      try {
+        const c = computeCompleteness(dir, []);
+        expect(c.expected).toEqual({ plan: 1, build: 2, verify: 1 });
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    // @ana A022
+    it('complete is true only when every bucket meets its floor', () => {
+      const dir = seedReportsDir(['build_report.md', 'verify_report.md']);
+      try {
+        const sessions: SessionProvenance[] = [
+          prov('plan', 'p', '2026-06-01T00:00:00.000Z'),
+          prov('build', 'b', '2026-06-01T01:00:00.000Z'),
+          prov('verify', 'v', '2026-06-01T02:00:00.000Z'),
+        ];
+        expect(computeCompleteness(dir, sessions).complete).toBe(true);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    // @ana A023, A024
+    it('a missing role yields complete:false with a named gap', () => {
+      const dir = seedReportsDir(['build_report.md', 'verify_report.md']);
+      try {
+        const sessions: SessionProvenance[] = [
+          prov('plan', 'p', '2026-06-01T00:00:00.000Z'),
+          prov('build', 'b', '2026-06-01T01:00:00.000Z'),
+        ];
+        const c = computeCompleteness(dir, sessions);
+        expect(c.complete).toBe(false);
+        expect(c.gaps).toEqual(['verify: 0 of 1 expected session(s) present']);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('an ana/learn-only dataset gaps plan/build/verify; ana/learn never required', () => {
+      const dir = seedReportsDir(['build_report.md', 'verify_report.md']);
+      try {
+        const sessions: SessionProvenance[] = [
+          prov('ana', 'a', '2026-06-01T00:00:00.000Z'),
+          prov('learn', 'l', '2026-06-01T01:00:00.000Z'),
+        ];
+        const c = computeCompleteness(dir, sessions);
+        expect(c.complete).toBe(false);
+        expect(c.gaps).toHaveLength(3); // plan, build, verify all short
+        expect(c.present).toEqual({ plan: 0, build: 0, verify: 0 });
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('a missing reportsDir degrades to zero expected build/verify (never throws)', () => {
+      const c = computeCompleteness(path.join(os.tmpdir(), 'cc-does-not-exist-xyz'), []);
+      expect(c.expected).toEqual({ plan: 1, build: 0, verify: 0 });
+      // plan still expected → still a gap with zero sessions.
+      expect(c.complete).toBe(false);
+    });
   });
 });
