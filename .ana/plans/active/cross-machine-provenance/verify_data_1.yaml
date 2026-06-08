@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: code
+    summary: "No-work re-validation leaves the provenance file modified-but-unstaged in the working tree. captureProvenanceAtSave writes provenance/{role}-{id}.json to disk BEFORE the no-changes guard; on the no-op path only `git reset -- provenancePaths` runs (unstage), which does not restore working-tree content. On the Claude fallback path captured_at is a fresh wall-clock each call, so the file churns on every re-save. AC9 ('no staged provenance') is met; this is beyond-AC. Risk: a downstream clean-tree assumption (future ana command, user pre-push hook) could trip on the lingering change."
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1259
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A013", "A014"]
+  - category: code
+    summary: "resolveTranscriptPath is exported from forensics.ts but has zero importers anywhere — its only consumer is the internal call at forensics.ts:695. Per the project rule 'flag exports with zero imports anywhere', the export keyword is needless public-API surface. The spec instructed the builder to keep it exported, so this is partly an upstream hint that did not pan out (no other consumer materialized)."
+    file: "packages/cli/src/utils/forensics.ts"
+    line: 615
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Capture v2 deletes the home-global forensics buffer read and the recordBelongsToWorktree worktree-path matcher from assembleProcessAttestation, replacing them with per-session committed provenance files. This resolves the session-capture C8 finding (assembly still read the machine-wide ~/.ana/forensics/sessions.jsonl and still used recordBelongsToWorktree). Verified by grep: neither symbol remains anywhere in src/."
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "session-capture-C8"
+  - category: upstream
+    summary: "executeDerive's body (synchronous full-transcript readFileSync + per-line JSON.parse before process.exit(0) on SessionEnd/Stop) is deleted — the function is now a pure no-op kept only so commander tolerates an un-pruned --derive hook. This resolves the session-capture C11 finding about the unbounded synchronous derive read on the hook path."
+    file: "packages/cli/src/commands/_capture.ts"
+    line: 157
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "session-capture-C11"
+  - category: test
+    summary: "The no-work re-validation integration test asserts only `git diff --staged --quiet` (nothing staged) but does not assert a clean working tree (`git status --porcelain` empty). It therefore passes despite the modified-but-unstaged provenance file the no-op path leaves behind (see the artifact.ts code finding). A stronger assertion would have surfaced that beyond-AC behavior."
+    file: "packages/cli/tests/commands/artifact-provenance.test.ts"
+    line: 262
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A013", "A014"]
