@@ -29,7 +29,9 @@ import { checkScanFreshness } from '../utils/scan-freshness.js';
 import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, resolvePhase, compareTimestamp, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
 import type { ArtifactState } from './work-state.js';
-import { writeProofChain, guardFailResult } from './work-proof.js';
+import { writeProofChain, guardFailResult, computeCompleteness } from './work-proof.js';
+import type { SessionProvenance } from '../types/proof.js';
+import { isProcessCaptureStrictEnabled } from '../utils/forensics.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { isCaptureGateEnabled } from './artifact.js';
 
@@ -1108,6 +1110,46 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     } else if (verifyMissing) {
       console.error(chalk.red(`Error: verify-report${phaseLabel} was not saved through the pipeline.`));
       console.error(chalk.red(`Run: ana artifact save verify-report${isUnnumbered ? '' : `-${phaseNum}`} ${slug}`));
+      process.exit(1);
+    }
+  }
+
+  // 8b-strict. Strict process-completeness guard (Phase 2).
+  // MUST run before any destructive/archival step (removeWorktree / cp active→
+  // completed) so a blocked completion leaves active/{slug}/ and the worktree fully
+  // intact and is cleanly re-runnable. Blocking after archival would strand the
+  // re-run in the crash-recovery branch, which never calls writeProofChain — the
+  // proof entry would be silently dropped. The verdict is computed from committed
+  // state in active/{slug}/ (present post merge+pull): reports drive `expected`,
+  // the committed provenance files drive `present`. computeCompleteness is the same
+  // helper the recorded warn-path verdict uses, so the two can never disagree.
+  if (isProcessCaptureStrictEnabled(projectRoot)) {
+    const activeProvDir = path.join(activePath, 'provenance');
+    const strictSessions: SessionProvenance[] = [];
+    try {
+      for (const file of fs.readdirSync(activeProvDir)) {
+        if (!file.endsWith('.json')) continue;
+        try {
+          const parsed = JSON.parse(fs.readFileSync(path.join(activeProvDir, file), 'utf-8'));
+          if (typeof parsed === 'object' && parsed !== null) {
+            strictSessions.push(parsed as SessionProvenance);
+          }
+        } catch { /* an unparseable provenance file is skipped, never thrown */ }
+      }
+    } catch { /* no provenance dir → zero sessions → all-gaps → blocks (loud) */ }
+
+    const completeness = computeCompleteness(activePath, strictSessions);
+    if (!completeness.complete) {
+      console.error(chalk.red('Error: Process provenance is incomplete and processCaptureStrict is on.'));
+      for (const gap of completeness.gaps) {
+        console.error(chalk.red(`  - ${gap}`));
+      }
+      console.error(chalk.gray('Completion is blocked: the proof record was NOT written and nothing was archived.'));
+      console.error(chalk.gray('(If you ran with --merge, note the PR merge already happened — strict blocks the proof'));
+      console.error(chalk.gray('record, not the merge.)'));
+      console.error(chalk.gray('To finish, either:'));
+      console.error(chalk.gray(`  • re-run the missing role through \`ana run\`, then re-run \`ana work complete ${slug}\`; or`));
+      console.error(chalk.gray('  • set processCaptureStrict to off and re-run `ana work complete` to record the gap and finish.'));
       process.exit(1);
     }
   }
