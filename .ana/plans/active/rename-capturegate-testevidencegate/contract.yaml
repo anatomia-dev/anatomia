@@ -1,0 +1,150 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Rename captureGate → testEvidenceGate (field + gate symbols, with back-compat)"
+
+assertions:
+  # AC1 — new projects use the new key, never the legacy one
+  - id: A001
+    says: "New projects turn the test-evidence gate on under its new name"
+    block: "createAnaJson emits testEvidenceGate on for new projects"
+    target: "createAnaJson result.testEvidenceGate"
+    matcher: "equals"
+    value: "on"
+
+  - id: A002
+    says: "New projects no longer write the old gate name"
+    block: "createAnaJson output does not contain the legacy captureGate key"
+    target: "serialized createAnaJson output"
+    matcher: "not_contains"
+    value: "captureGate"
+
+  # AC2 — legacy-only config still resolves and still enforces
+  - id: A003
+    says: "A config that only has the old gate name is still recognized"
+    block: "readTestEvidenceGateFlag resolves a legacy-only captureGate config"
+    target: "readTestEvidenceGateFlag({ captureGate: 'on' })"
+    matcher: "equals"
+    value: "on"
+
+  - id: A004
+    says: "An old gate left on still requires test evidence before a build report saves"
+    block: "isTestEvidenceGateEnabled is true for a legacy captureGate on with a resolvable test command"
+    target: "isTestEvidenceGateEnabled(legacy-captureGate-on project)"
+    matcher: "equals"
+    value: true
+
+  # AC3 — precedence
+  - id: A005
+    says: "When both gate names are present, the new one decides"
+    block: "readTestEvidenceGateFlag lets testEvidenceGate win over legacy captureGate"
+    target: "readTestEvidenceGateFlag({ testEvidenceGate: 'off', captureGate: 'on' })"
+    matcher: "equals"
+    value: "off"
+
+  # absent → off (fail-safe)
+  - id: A006
+    says: "A config with no gate setting is treated as off"
+    block: "readTestEvidenceGateFlag returns null when neither key is present"
+    target: "readTestEvidenceGateFlag({})"
+    matcher: "equals"
+    value: null
+
+  # AC4 — re-init convergence
+  - id: A007
+    says: "Re-installing keeps a project's on/off gate choice"
+    block: "preserveUserState carries a legacy captureGate value forward under the new key"
+    target: "merged.testEvidenceGate after re-init of { captureGate: 'off' }"
+    matcher: "equals"
+    value: "off"
+
+  - id: A008
+    says: "Re-installing drops the old gate name once it has been migrated"
+    block: "preserveUserState output no longer contains captureGate after migration"
+    target: "serialized merged config after re-init of a legacy install"
+    matcher: "not_contains"
+    value: "captureGate"
+
+  # AC5 — user-facing strings
+  - id: A009
+    says: "The block message tells users about the testEvidenceGate setting"
+    block: "applyTestEvidenceGate block output names the testEvidenceGate escape hatch"
+    target: "gate block stderr"
+    matcher: "contains"
+    value: "testEvidenceGate"
+
+  - id: A010
+    says: "The block message no longer mentions the old gate name"
+    block: "applyTestEvidenceGate block output does not contain captureGate"
+    target: "gate block stderr"
+    matcher: "not_contains"
+    value: "captureGate"
+
+  # AC6 — config allowlist honors both
+  - id: A011
+    says: "Setting the new gate flag is recognized without a warning"
+    block: "KNOWN_FIELDS contains testEvidenceGate"
+    target: "config KNOWN_FIELDS"
+    matcher: "contains"
+    value: "testEvidenceGate"
+
+  - id: A012
+    says: "Setting the old gate flag on a legacy install is still recognized"
+    block: "KNOWN_FIELDS still contains captureGate"
+    target: "config KNOWN_FIELDS"
+    matcher: "contains"
+    value: "captureGate"
+
+  # schema back-compat
+  - id: A013
+    says: "An older config file carrying only the old gate name still loads"
+    block: "AnaJsonSchema parses a legacy-only captureGate config"
+    target: "AnaJsonSchema.parse({ captureGate: 'on' }).captureGate"
+    matcher: "equals"
+    value: "on"
+
+  - id: A014
+    says: "Config files can carry the new gate name"
+    block: "AnaJsonSchema parses a testEvidenceGate config"
+    target: "AnaJsonSchema.parse({ testEvidenceGate: 'on' }).testEvidenceGate"
+    matcher: "equals"
+    value: "on"
+
+  # AC2 reporting path — doctor honors the legacy key through the shared resolver
+  - id: A015
+    says: "The doctor view reports the gate as on for a legacy-only config"
+    block: "assessEnforcement reports test_evidence_gate on/on-inactive for legacy captureGate on"
+    target: "doctor enforcement.test_evidence_gate for legacy captureGate on"
+    matcher: "not_equals"
+    value: "off"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/utils/capture-marker.ts"
+    action: modify
+  - path: "packages/cli/src/commands/doctor.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/utils/forensics.ts"
+    action: modify
+  - path: ".ana/ana.json"
+    action: modify
+  - path: "website/content/docs/guides/configurability.mdx"
+    action: modify
+  - path: "packages/cli/tests/commands/init/anaJsonSchema.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/doctor.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/config.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
