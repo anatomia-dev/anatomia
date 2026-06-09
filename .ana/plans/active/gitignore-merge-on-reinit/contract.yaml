@@ -1,0 +1,174 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Merge (not clobber) managed .gitignore files on re-init"
+
+assertions:
+  - id: A001
+    says: "A line a user added to .ana's ignore file survives re-setup"
+    block: "preserveUserState keeps a user line in .ana/.gitignore on re-init"
+    target: "merged .ana/.gitignore content"
+    matcher: "contains"
+    value: "user-custom-ignore-line"
+
+  - id: A002
+    says: "A line a user added to Claude's ignore file survives re-setup"
+    block: "createClaudeConfiguration preserves a user line in .claude/.gitignore on re-init"
+    target: "merged .claude/.gitignore content"
+    matcher: "contains"
+    value: "user-custom-ignore-line"
+
+  - id: A003
+    says: "Codex gets its own ignore file on first setup, listing its private files"
+    block: "createCodexConfiguration creates .codex/.gitignore with stock on fresh init"
+    target: "created .codex/.gitignore content"
+    matcher: "contains"
+    value: "agent-memory/"
+
+  - id: A004
+    says: "A line a user added to Codex's ignore file survives re-setup"
+    block: "createCodexConfiguration preserves a user line in .codex/.gitignore on re-init"
+    target: "merged .codex/.gitignore content"
+    matcher: "contains"
+    value: "user-custom-ignore-line"
+
+  - id: A005
+    says: "Stock ignore entries are always restored even if the user deleted them"
+    block: "mergeGitignore regenerates stock when the user removed a stock line"
+    target: "merged .ana/.gitignore content"
+    matcher: "contains"
+    value: "state/"
+
+  - id: A006
+    says: "Running setup twice leaves the .ana ignore file unchanged the second time"
+    block: "mergeGitignore is byte-identical on the .ana surface when fed its own output"
+    target: "second-pass mergeGitignore output (.ana, with user content)"
+    matcher: "equals"
+    value: "first-pass mergeGitignore output"
+
+  - id: A007
+    says: "Running setup twice leaves the Claude ignore file unchanged the second time"
+    block: "mergeGitignore is byte-identical on the .claude surface when fed its own output"
+    target: "second-pass mergeGitignore output (.claude, with user content)"
+    matcher: "equals"
+    value: "first-pass mergeGitignore output"
+
+  - id: A008
+    says: "Running setup twice leaves the Codex ignore file unchanged the second time"
+    block: "mergeGitignore is byte-identical on the .codex surface when fed its own output"
+    target: "second-pass mergeGitignore output (.codex, with user content)"
+    matcher: "equals"
+    value: "first-pass mergeGitignore output"
+
+  - id: A009
+    says: "A user override placed below the managed block keeps winning after re-setup"
+    block: "mergeGitignore keeps a user !negation below the managed block on re-merge"
+    target: "merged content after the END sentinel"
+    matcher: "contains"
+    value: "!settings.local.json.example"
+
+  - id: A010
+    says: "An old ignore file with no markers is upgraded into the managed-block format"
+    block: "mergeGitignore wraps a legacy bare-stock file in the managed block"
+    target: "migrated content"
+    matcher: "contains"
+    value: "# >>> Anatomia managed (do not edit) >>>"
+
+  - id: A011
+    says: "Upgrading an old ignore file preserves the user's non-stock lines"
+    block: "mergeGitignore preserves a non-stock user line during legacy migration"
+    target: "migrated content"
+    matcher: "contains"
+    value: "user-custom-ignore-line"
+
+  - id: A012
+    says: "The Claude session lock is never committed by setup"
+    block: "isExcluded returns true for .claude/scheduled_tasks.lock"
+    target: "isExcluded('.claude/scheduled_tasks.lock')"
+    matcher: "equals"
+    value: true
+
+  - id: A013
+    says: "The Claude ignore file lists the session lock so git skips it"
+    block: "CLAUDE stock block ignores scheduled_tasks.lock"
+    target: "mergeGitignore(null, CLAUDE_GITIGNORE_STOCK) content"
+    matcher: "contains"
+    value: "scheduled_tasks.lock"
+
+  - id: A014
+    says: "The .ana ignore file never hides provenance from git"
+    block: "mergeGitignore(null, ANA_GITIGNORE_STOCK) never contains provenance"
+    target: "mergeGitignore(null, ANA_GITIGNORE_STOCK) content"
+    matcher: "not_contains"
+    value: "provenance"
+
+  - id: A015
+    says: "The Claude ignore file never hides provenance from git"
+    block: "mergeGitignore(null, CLAUDE_GITIGNORE_STOCK) never contains provenance"
+    target: "mergeGitignore(null, CLAUDE_GITIGNORE_STOCK) content"
+    matcher: "not_contains"
+    value: "provenance"
+
+  - id: A016
+    says: "The Codex ignore file never hides provenance from git"
+    block: "mergeGitignore(null, CODEX_GITIGNORE_STOCK) never contains provenance"
+    target: "mergeGitignore(null, CODEX_GITIGNORE_STOCK) content"
+    matcher: "not_contains"
+    value: "provenance"
+
+  - id: A017
+    says: "User lines mistakenly placed above the managed block are tidied below it"
+    block: "mergeGitignore consolidates user content above the start sentinel below the block"
+    target: "regenerated content after the END sentinel"
+    matcher: "contains"
+    value: "line-that-was-above"
+
+  - id: A018
+    says: "A broken or hand-written marker is treated as the user's content, never deleted"
+    block: "mergeGitignore fail-safe preserves content when markers are partial/malformed"
+    target: "merged content"
+    matcher: "contains"
+    value: "user-line-near-broken-marker"
+
+  - id: A019
+    says: "Starting from nothing produces a clean managed ignore block"
+    block: "mergeGitignore(null, stock) returns the managed block only"
+    target: "mergeGitignore(null, ANA_GITIGNORE_STOCK) content"
+    matcher: "contains"
+    value: "# <<< Anatomia managed <<<"
+
+  - id: A020
+    says: "A user's Windows-style line endings are kept exactly as written"
+    block: "mergeGitignore preserves CRLF inside a user line verbatim"
+    target: "merged content (user interior)"
+    matcher: "contains"
+    value: "user-crlf-line\r"
+
+  - id: A021
+    says: "A user line that happens to match a stock entry is kept as the user wrote it"
+    block: "mergeGitignore preserves a well-formed user-region line equal to stock (preserve-verbatim)"
+    target: "merged content after the END sentinel"
+    matcher: "contains"
+    value: "state/"
+
+  - id: A022
+    says: "The ignore entries are the same for every project regardless of language"
+    block: "ANA_GITIGNORE_STOCK contains no language or framework tokens"
+    target: "ANA_GITIGNORE_STOCK content"
+    matcher: "not_contains"
+    value: "TypeScript"
+
+file_changes:
+  - path: "packages/cli/src/commands/init/gitignore.ts"
+    action: create
+  - path: "packages/cli/src/commands/init/assets.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/commit.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/gitignore.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/commit.test.ts"
+    action: modify
