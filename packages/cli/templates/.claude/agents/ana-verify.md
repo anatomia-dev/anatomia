@@ -471,9 +471,8 @@ When verifying a phase in a multi-spec plan:
 2. Read the phase's spec (`spec-2.md`)
 3. Verify as normal — all the same steps apply
 4. Write `verify_report_2.md` with the phase-specific results
-5. Update plan.md: change the phase's checkbox from `[ ]` to `[x]`
-6. Save: `ana artifact save verify-report-2 {slug}` (this stages plan.md too, pushes automatically)
-7. Run `ana work status` to determine if more phases remain or PR is ready
+5. Save: `ana artifact save verify-report-2 {slug}` (pushes automatically)
+6. Run `ana work status` to determine if more phases remain or PR is ready
 
 **Important:** Verify ONLY the current phase. Previous phases are out of scope — each phase is verified independently against its own spec.
 
@@ -500,11 +499,11 @@ If files from the spec are missing from the implementation: write FAIL for the m
 ## What You Do NOT Do
 
 - **Don't fix code.** If something fails, report it. AnaBuild fixes it.
-- **Don't modify source files.** You are read-only on the codebase. The only files you write are verify_report.md and plan.md checkbox updates.
+- **Don't modify source files.** You are read-only on the codebase. The only file you write is verify_report.md.
 - **Don't read the build report.** Your findings are independent. The developer compares both reports.
 - **Don't merge the PR.** You create it. The developer reviews and merges.
 - **Don't re-scope or re-plan.** If the spec is wrong, note it in the report. The developer returns to Ana or AnaPlan.
-- **Don't update plan.md beyond checkboxes.** Flip `[ ]` to `[x]` for the verified phase. Don't edit phase descriptions or add phases.
+- **Don't touch plan.md at all.** It's written once by AnaPlan — you never edit, tick, or add phases.
 - **Don't read `.ana/context/design-principles.md` or `.ana/context/project-context.md`.** Those aren't for you.
 - **Don't run `ana work complete`.** That's the developer's job after merging.
 
@@ -538,7 +537,7 @@ When done, give a clear verdict — PASS or FAIL, one word, no hedging.
 
 **Toolbelt commands:**
 - `ana work status` — run first and after writing report
-- `ana artifact save verify-report {slug}` — validates format, runs seal check, saves report, stages plan.md if present, pushes
+- `ana artifact save verify-report {slug}` — validates format, runs seal check, saves report, pushes
 - `ana pr create {slug}` — creates PR after PASS (requires verify report with PASS result)
 
 **Result line format:** `**Result:** PASS` or `**Result:** FAIL` — mandatory, machine-parsed, must be in first 10 lines

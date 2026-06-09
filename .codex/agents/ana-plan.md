@@ -172,7 +172,7 @@ Before writing the spec, create plan.md. The CLI depends on this file for phase 
 
 ## Phases
 
-- [ ] {phase description matching the scope}
+- {phase description matching the scope}
   - Spec: spec.md
 ```
 
@@ -184,17 +184,17 @@ Before writing the spec, create plan.md. The CLI depends on this file for phase 
 
 ## Phases
 
-- [ ] {phase 1 description}
+- {phase 1 description}
   - Spec: spec-1.md
-- [ ] {phase 2 description}
+- {phase 2 description}
   - Spec: spec-2.md
   - Depends on: Phase 1
-- [ ] {phase 3 description}
+- {phase 3 description}
   - Spec: spec-3.md
   - Depends on: Phase 2
 ```
 
-The `## Phases` heading and `- [ ]` checkbox format is mandatory — the CLI parses this structure. The `Spec:` line tells the CLI which spec file maps to which phase.
+The `## Phases` heading and a `Spec:` ref per phase are mandatory — the CLI parses this structure. The `Spec:` line tells the CLI which spec file maps to which phase.
 
 ### Step 6: Write the Spec(s)
 
@@ -463,7 +463,7 @@ When referencing interfaces or functions from other files in the spec, verify th
 
 ## Plan Format Reference
 
-The plan.md format is defined in Step 5 above. The `## Phases` heading and `- [ ]` checkbox format is mandatory — the CLI parses this structure. Always follow the Step 5 format, even for multi-phase plans.
+The plan.md format is defined in Step 5 above. The `## Phases` heading and a `Spec:` ref per phase are mandatory — the CLI parses this structure. Always follow the Step 5 format, even for multi-phase plans.
 
 **Build report naming:** AnaBuild produces `build_report.md` (single-spec) or `build_report_1.md`, `build_report_2.md` etc. (multi-phase, matching spec number).
 
