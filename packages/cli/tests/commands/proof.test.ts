@@ -620,6 +620,20 @@ describe('ana proof', () => {
       expect(json.meta).toBeTypeOf('object');
       expect(json.meta.chain_runs).toBeTypeOf('number');
     });
+
+    // @ana A028 — the visual redesign never touched the --json render path.
+    it('still carries the assertions array unchanged', async () => {
+      await createProofChain([sampleEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['stripe-payments', '--json']);
+      expect(exitCode).toBe(0);
+
+      const json = JSON.parse(stdout);
+      expect(Array.isArray(json.results.assertions)).toBe(true);
+      expect(json.results.assertions).toHaveLength(sampleEntry.assertions.length);
+      expect(json.results.assertions[0].says).toBe(sampleEntry.assertions[0]!.says);
+    });
   });
 
   // ─── --last / --latest Selection Tests (Part B) ───────────────────
