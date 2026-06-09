@@ -1397,6 +1397,25 @@ describe('ana work status', () => {
         const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
         expect(fsSync.existsSync(completedPath)).toBe(true);
       });
+
+      // @ana A001
+      it('prints the "View the full proof" hint after the summary (normal path)', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+
+        const output = await captureOutput(async () => await completeWork('test-slug'));
+
+        expect(output).toContain('View the full proof: ana proof test-slug');
+      });
+
+      // @ana A002
+      it('includes next_command in the --json results (normal path)', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+
+        const output = await captureOutput(async () => await completeWork('test-slug', { json: true }));
+
+        const parsed = JSON.parse(output);
+        expect(parsed.results.next_command).toBe('ana proof test-slug');
+      });
     });
 
     describe('process provenance recording', () => {
