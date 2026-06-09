@@ -816,6 +816,31 @@ describe('ana init', () => {
         'provenance',
       );
     });
+
+    // Platform isolation — users may install just Claude, just Codex, or both.
+    // Each surface's config creates ONLY its own .gitignore. This is what makes
+    // the platform gating in index.ts safe: a Claude-only install (which never
+    // calls createCodexConfiguration) cannot materialize a .codex/ surface, and a
+    // Codex-only install cannot materialize a .claude/ one. (.ana/.gitignore is
+    // universal — created by createDirectoryStructure regardless of platform.)
+    it('Claude-only: creates .claude/.gitignore and never a .codex/ surface', async () => {
+      await createClaudeConfiguration(tmpDir, createEmptyEngineResult(), 'fresh');
+      expect(await fileExists(path.join(tmpDir, '.claude', '.gitignore'))).toBe(true);
+      expect(await dirExists(path.join(tmpDir, '.codex'))).toBe(false);
+    });
+
+    it('Codex-only: creates .codex/.gitignore and never a .claude/ surface', async () => {
+      await createCodexConfiguration(tmpDir, 'fresh');
+      expect(await fileExists(path.join(tmpDir, '.codex', '.gitignore'))).toBe(true);
+      expect(await dirExists(path.join(tmpDir, '.claude'))).toBe(false);
+    });
+
+    it('Both platforms: .claude and .codex each get a managed .gitignore', async () => {
+      await createClaudeConfiguration(tmpDir, createEmptyEngineResult(), 'fresh');
+      await createCodexConfiguration(tmpDir, 'fresh');
+      expect(await fileExists(path.join(tmpDir, '.claude', '.gitignore'))).toBe(true);
+      expect(await fileExists(path.join(tmpDir, '.codex', '.gitignore'))).toBe(true);
+    });
   });
 
   describe('re-init refreshes metadata fields from new scan', () => {
