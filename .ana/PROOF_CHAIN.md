@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-195 runs · 219 active · 5 promoted · 907 closed
+196 runs · 222 active · 5 promoted · 908 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 36 | 42 | 2026-06-09 |
-| cli | 135 | 154 | 2026-06-08 |
+| cli | 136 | 157 | 2026-06-09 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,11 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 219 total)
-
-### packages/cli/src/commands/_capture.ts
-
-- **code:** executeDerive awaits a synchronous readFileSync + per-line JSON.parse of the full transcript before process.exit(0) on SessionEnd/Stop. The 250ms stdin cap bounds the read-wait, not the derive itself, so a very large finished transcript adds to hook teardown latency despite the spec's 'async, never delays teardown' intent. Low impact; recorded for awareness. Unchanged this cycle. — *session-capture — agent-session capture & provenance unlock*
+## Active Findings (30 shown of 222 total)
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -52,10 +48,6 @@
 
 - **code:** Empirical cwd/slug checkpoint from spec-1 (confirm real cwd of an ana run build/verify launch) has no in-repo evidence. Slug resolves via detectWorktreeSlug(projectRoot), unit-tested with a worktree-meta fixture; clean-degrade (empty slug) covers the worst case regardless — *session-capture — agent-session capture & provenance unlock*
 
-### packages/cli/src/commands/test.ts
-
-- **code:** test.ts top docstring says verify 'resolves the top-level commands.test' but the implementation resolves via resolveTestCommandString, which prefers commands.test_json when present — the named field is imprecise — *Simplify ana test to its load-bearing core (deterministic seal)*
-
 ### packages/cli/src/commands/work-proof.ts
 
 - **code:** computeCompleteness signature drops the spec's provenanceDir param — implemented as (reportsDir, sessions) vs spec's (provenanceDir, reportsDir, sessions) — *Cross-machine process provenance (capture v2)*
@@ -70,7 +62,6 @@
 ### packages/cli/src/utils/forensics.ts
 
 - **code:** resolveTranscriptPath is exported from forensics.ts but has zero importers anywhere — its only consumer is the internal call at forensics.ts:695. Per the project rule 'flag exports with zero imports anywhere', the export keyword is needless public-API surface. The spec instructed the builder to keep it exported, so this is partly an upstream hint that did not pan out (no other consumer materialized). — *Cross-machine process provenance (capture v2)*
-- **code:** parseTestCounts matches the first /(\d+)\s+passed/ in any Bash tool_result text, so prose mentioning 'N passed' (not a test runner) inflates tests_executed/failures_encountered. Documented best-effort and provenance-only (never feeds a verdict), so impact is low, but the metric is not trustworthy. Unchanged this cycle. — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/src/utils/git-operations.ts
 
@@ -96,11 +87,16 @@
 
 ### packages/cli/tests/commands/doctor.test.ts
 
+- **test:** A014 verified via results.overall === 'pass' proxy, not the literal exit code the contract names (doctorExitCode equals 0) — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
 - **test:** @ana A006 appears on both config.test.ts (this contract's KNOWN_FIELDS assertion) and doctor.test.ts (a predecessor contract's A006) — tags are not globally unique, muddying traceability — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
 
 ### packages/cli/tests/commands/init/assets-capture-hooks.test.ts
 
 - **test:** Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude — *session-capture — agent-session capture & provenance unlock*
+
+### packages/cli/tests/commands/work-merge.test.ts
+
+- **test:** Keystone merge test re-declares seedProvenance/readChainEntry helpers that duplicate seedActiveProvenance/readChainEntry in work.test.ts; cross-file duplication is justified by the child_process mock isolation but worth noting — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
 
 ### packages/cli/tests/commands/work.test.ts
 
@@ -109,4 +105,8 @@
 ### packages/cli/tests/utils/capture-marker.test.ts
 
 - **test:** capture-marker.test.ts edited but absent from contract file_changes — a necessary consequence of renaming the exported evaluateCaptureGate/CaptureGateResult symbols — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+
+### packages/cli/vitest.config.ts
+
+- **test:** Coverage gate — the spec's designated 'real gate' (vitest.config thresholds 80/75/80/80) — is not mechanically runnable; @vitest/coverage-v8 is not a declared dependency, so the threshold check silently no-ops wherever the provider is absent — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
 

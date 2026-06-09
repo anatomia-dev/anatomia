@@ -53418,6 +53418,406 @@
         "commit_count": 0,
         "base_commit": "a1d81a974472ff4271a2e245781f86baf390e440"
       }
+    },
+    {
+      "slug": "remove-processcapturestrict",
+      "feature": "Remove processCaptureStrict — provenance records-and-annotates, never blocks",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 14,
+        "satisfied": 14,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Completing work with incomplete provenance still records a proof entry instead of blocking",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "An incomplete provenance gap is recorded as not-complete, never hidden",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The recorded gap names the missing pipeline stage",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Completing work with no recorded sessions still writes a proof entry",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Zero recorded sessions are marked incomplete, not complete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "With full provenance the proof entry is still written",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "With full provenance the proof marks provenance complete",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Merging with incomplete provenance still records the proof entry — code never lands without an audit trail",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "After a merge with incomplete provenance, the recorded proof annotates the gap",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A new project's config contains no strict provenance flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Doctor's enforcement report no longer includes the strict flag",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Doctor still reports the test-evidence gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Doctor still reports the process-capture state",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Doctor still exits successfully on a valid config",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 167,
+        "think": 132,
+        "plan": 9,
+        "build": 13,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:a002719659c29ee485e2bf3645bfaee2c71a229e95c7382de15f8996e50fbb6c",
+        "contract": "sha256:a1b40f590177e8471c8fce9474bf147ed0ffcea9c49fe9ce365e961f99e77b88",
+        "plan": "sha256:e319c96a114f4e6fcf13583e5097d4cd7e7a8e0179e10d1e9a3c16d3af833663",
+        "spec": "sha256:776fcb70326c7fd239029ab934059275fcdce9f98df44a9bfa94ab13a9e09de1",
+        "build-report": "sha256:3e7f99da97d6c21a14d3d876e0b9daf61799459374d8c108658656c40ca22a67",
+        "build-data": "sha256:17ed6712ed48666187af6d59ff0968d65f1c28be3a997feecdc24c70a5cdae81",
+        "verify-report": "sha256:d0f2af46a594e92e0d7e9063fb3f7f9ce6b82fdc38bb68d8947be701e73b2cd6",
+        "verify-data": "sha256:0de4f182ebbb7229d7255b034b50073b44cdc97bc9feb586ffc8c70c69d82a45"
+      },
+      "completed_at": "2026-06-09T00:47:33.475Z",
+      "modules_touched": [
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/doctor.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/utils/forensics.ts",
+        "packages/cli/tests/commands/config.test.ts",
+        "packages/cli/tests/commands/doctor.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "packages/cli/tests/commands/work.test.ts"
+      ],
+      "scope_summary": "`processCaptureStrict` is a config flag that, at `ana work complete`, blocks completion (`process.exit(1)`) when recorded process provenance is incomplete. It should not exist. Process provenance is **metadata** — who/where each pipeline stage ran. Metadata blocking a terminal pipeline action is overreach, and this particular guard has a defect:",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Strict guard's inlined duplicate provenance reader is deleted — cross-machine-provenance-C7 resolved",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A001",
+            "A008"
+          ],
+          "resolves": [
+            "cross-machine-provenance-C7"
+          ],
+          "id": "remove-processcapturestrict-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T00:47:33.475Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A014 verified via results.overall === 'pass' proxy, not the literal exit code the contract names (doctorExitCode equals 0)",
+          "file": "packages/cli/tests/commands/doctor.test.ts",
+          "anchor": null,
+          "line": 668,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A014"
+          ],
+          "id": "remove-processcapturestrict-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Coverage gate — the spec's designated 'real gate' (vitest.config thresholds 80/75/80/80) — is not mechanically runnable; @vitest/coverage-v8 is not a declared dependency, so the threshold check silently no-ops wherever the provider is absent",
+          "file": "packages/cli/vitest.config.ts",
+          "anchor": null,
+          "line": 26,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "remove-processcapturestrict-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Keystone merge test re-declares seedProvenance/readChainEntry helpers that duplicate seedActiveProvenance/readChainEntry in work.test.ts; cross-file duplication is justified by the child_process mock isolation but worth noting",
+          "file": "packages/cli/tests/commands/work-merge.test.ts",
+          "anchor": null,
+          "line": 624,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "remove-processcapturestrict-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Coverage gate (vitest.config.ts thresholds 80/75/80/80) could not be executed — @vitest/coverage-v8 is not in package.json and not installed in either tree; `pnpm vitest run --coverage` fails with MISSING DEPENDENCY. The spec names this as the 'real gate' but it is unrunnable as configured. Thresholds should hold (deletion removes covered code with its tests; record-path coverage increased) but this is reasoned, not verified.",
+          "file": "packages/cli/vitest.config.ts",
+          "severity": "risk",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "@ana tag collisions across contracts in shared test files — this contract's A001-A014 overlap with historical A001-A016 tags from prior merged contracts in work.test.ts, work-merge.test.ts, doctor.test.ts, init.test.ts. A naive grep cannot distinguish them. Pre-existing/acknowledged; historical tags are immutable and were not touched.",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Net test delta is -5 (removed 10, added 5) vs the spec's predicted ~-4. Difference is one folded doctor test (A014 exit-0 merged into the AC5 test per 'extend rather than duplicate'). Within the spec's stated tolerance; behavioral coverage of the record path increased.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 14,
+          "assertions_total": 14,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 3
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/config.ts": {
+            "added": 0,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/doctor.ts": {
+            "added": 5,
+            "deleted": 8
+          },
+          "packages/cli/src/commands/init/anaJsonSchema.ts": {
+            "added": 0,
+            "deleted": 8
+          },
+          "packages/cli/src/commands/init/state.ts": {
+            "added": 0,
+            "deleted": 5
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 1,
+            "deleted": 43
+          },
+          "packages/cli/src/utils/forensics.ts": {
+            "added": 0,
+            "deleted": 23
+          },
+          "packages/cli/tests/commands/config.test.ts": {
+            "added": 0,
+            "deleted": 9
+          },
+          "packages/cli/tests/commands/doctor.test.ts": {
+            "added": 18,
+            "deleted": 11
+          },
+          "packages/cli/tests/commands/init.test.ts": {
+            "added": 4,
+            "deleted": 38
+          },
+          "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+            "added": 0,
+            "deleted": 23
+          },
+          "packages/cli/tests/commands/work-merge.test.ts": {
+            "added": 79,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 35,
+            "deleted": 61
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "f0e78821-d102-4eaf-8ec3-cc9ec5a6e6c5",
+            "captured_at": "2026-06-09T00:06:38.547Z",
+            "derived": {
+              "tokens": {
+                "input": 8022,
+                "output": 119658,
+                "cache_create": 200364,
+                "cache_read": 9471474
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 11435412,
+              "turns": 164,
+              "tool_calls": 56,
+              "commands_run": 36,
+              "tests_executed": 7174,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:4a6877ff7630a60f018c522f3959fa0941ad61f6f702b7bb6467d94ad8781202",
+            "cli_version": "1.2.2",
+            "session_id": "2f45057d-bd78-4a68-969e-af7f65e092c0",
+            "captured_at": "2026-06-09T00:06:47.189Z",
+            "derived": {
+              "tokens": {
+                "input": 6272,
+                "output": 29509,
+                "cache_create": 68005,
+                "cache_read": 1154279
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 632815,
+              "turns": 63,
+              "tool_calls": 29,
+              "commands_run": 12,
+              "tests_executed": 146,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "541f47c8-4a2d-4d6b-b5b9-d24971f3741f",
+            "captured_at": "2026-06-09T00:19:03.004Z",
+            "derived": {
+              "tokens": {
+                "input": 8292,
+                "output": 47243,
+                "cache_create": 153885,
+                "cache_read": 5901051
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 866056,
+              "turns": 180,
+              "tool_calls": 87,
+              "commands_run": 24,
+              "tests_executed": 7322,
+              "failures_encountered": 0,
+              "files_touched": 14,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "669e9bc1-1782-444e-ba2e-a70de249c6c9",
+            "captured_at": "2026-06-09T00:35:12.958Z",
+            "derived": {
+              "tokens": {
+                "input": 6414,
+                "output": 21243,
+                "cache_create": 68102,
+                "cache_read": 1629399
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 385259,
+              "turns": 74,
+              "tool_calls": 32,
+              "commands_run": 25,
+              "tests_executed": 7169,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-09T00:21:01.815Z",
+        "completed_at": "2026-06-09T00:47:33.464Z",
+        "commit_count": 0,
+        "base_commit": "2963dbe9ae0bcd061c5f6aaca2a5972fa9b78007"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
