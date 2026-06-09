@@ -1,0 +1,171 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Remove the non-authoritative plan.md phase checkbox"
+
+assertions:
+  # --- Validator: re-anchored to Spec-per-phase, accepts both formats (AC6) ---
+  - id: A001
+    says: "A plan written in the old checkbox style is still accepted"
+    block: "validatePlanFormat accepts an old-format plan with checkboxes and a Spec per phase"
+    target: "validatePlanFormat(oldFormatPlan)"
+    matcher: "equals"
+    value: null
+
+  - id: A002
+    says: "A plan written in the new plain-list style is accepted"
+    block: "validatePlanFormat accepts a new-format plan with no glyph and a Spec per phase"
+    target: "validatePlanFormat(newFormatPlan)"
+    matcher: "equals"
+    value: null
+
+  - id: A003
+    says: "A multi-phase plan with a spec for every phase is accepted"
+    block: "validatePlanFormat accepts a multi-phase new-format plan with a Spec per phase"
+    target: "validatePlanFormat(multiPhaseNewFormatPlan)"
+    matcher: "equals"
+    value: null
+
+  - id: A004
+    says: "A plan with a phase that has no spec reference is rejected"
+    block: "validatePlanFormat rejects a plan whose phase is missing its Spec reference"
+    target: "validatePlanFormat(planWithPhaseMissingSpec)"
+    matcher: "exists"
+
+  - id: A005
+    says: "A plan with no phases section is still rejected"
+    block: "validatePlanFormat rejects a plan missing the ## Phases heading"
+    target: "validatePlanFormat(planMissingPhasesHeading)"
+    matcher: "exists"
+
+  # --- countPhases unchanged: format-agnostic counting (AC7) ---
+  - id: A006
+    says: "Phase counting reads the old checkbox format correctly"
+    block: "countPhases returns the correct total and specs for an old-format plan"
+    target: "countPhases(oldFormatPlan).total"
+    matcher: "equals"
+    value: 1
+
+  - id: A007
+    says: "Phase counting reads the new plain-list format correctly"
+    block: "countPhases returns the correct total and specs for a new-format plan"
+    target: "countPhases(newFormatPlan).total"
+    matcher: "equals"
+    value: 1
+
+  - id: A008
+    says: "Phase counting handles a multi-phase plan correctly"
+    block: "countPhases returns total 2 for a two-phase new-format plan with Depends-on lines"
+    target: "countPhases(multiPhaseNewFormatPlan).total"
+    matcher: "equals"
+    value: 2
+
+  # --- Staging removed: verify-report save never touches plan.md (AC5) ---
+  - id: A009
+    says: "Saving a verify report no longer commits the plan file (single save)"
+    block: "verify-report single-save does not stage or commit plan.md"
+    target: "isFileCommitted('.ana/plans/active/test-slug/plan.md') after single verify-report save"
+    matcher: "equals"
+    value: false
+
+  - id: A010
+    says: "Saving a verify report no longer commits the plan file (bulk save)"
+    block: "verify-report multi-save does not stage or commit plan.md"
+    target: "isFileCommitted('.ana/plans/active/test-slug/plan.md') after save-all including verify-report"
+    matcher: "equals"
+    value: false
+
+  - id: A011
+    says: "Saving a verify report still succeeds when a plan file is present"
+    block: "verify-report save succeeds with plan.md present and commits the verify report"
+    target: "isFileCommitted('.ana/plans/active/test-slug/verify_report.md') after verify-report save"
+    matcher: "equals"
+    value: true
+
+  # --- Merge pull defense: tracked-modified plan.md can't block completion (AC1, AC2) ---
+  - id: A012
+    says: "Finishing a work item succeeds even when the plan file has uncommitted edits"
+    block: "ana work complete --merge succeeds when plan.md is tracked-modified"
+    target: "work complete --merge result with a tracked-modified plan.md"
+    matcher: "truthy"
+
+  - id: A013
+    says: "Finishing a work item leaves no uncommitted changes to the plan file"
+    block: "after completion, plan.md has no uncommitted/modified working-tree changes"
+    target: "git status --porcelain for plan.md after work complete"
+    matcher: "equals"
+    value: ""
+
+  # --- Agent instructions: glyph and tick removed, wording coherent (AC3, AC4, AC9) ---
+  - id: A014
+    says: "The planning agent no longer emits the checkbox glyph in its phase format"
+    block: "ana-plan templates' ## Phases format blocks contain no '- [ ]' checkbox glyph"
+    target: "ana-plan template phase-format section"
+    matcher: "not_contains"
+    value: "- [ ]"
+
+  - id: A015
+    says: "The verify agent is no longer told to tick a plan checkbox"
+    block: "ana-verify templates contain no instruction to change the phase checkbox to [x]"
+    target: "ana-verify template Multi-Phase Handling section"
+    matcher: "not_contains"
+    value: "change the phase's checkbox"
+
+  - id: A016
+    says: "The verify agent is no longer told that saving stages the plan file"
+    block: "ana-verify templates no longer describe the save command as staging plan.md"
+    target: "ana-verify template save-command descriptions"
+    matcher: "not_contains"
+    value: "stages plan.md"
+
+  - id: A017
+    says: "The build agent's guidance no longer references a plan checkbox"
+    block: "ana-build templates say 'don't touch plan.md' without referencing checkboxes"
+    target: "ana-build template plan.md guidance"
+    matcher: "not_contains"
+    value: "plan.md checkboxes"
+
+  # --- Docs corrected (AC8) ---
+  - id: A018
+    says: "The docs no longer describe plan checkbox updates"
+    block: "artifacts.mdx no longer mentions checkbox updates in multi-phase"
+    target: "website/content/docs/concepts/artifacts.mdx"
+    matcher: "not_contains"
+    value: "checkbox updates in multi-phase"
+
+file_changes:
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-plan.md"
+    action: modify
+  - path: ".claude/agents/ana-plan.md"
+    action: modify
+  - path: ".codex/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
+  - path: ".codex/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-build.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-build.md"
+    action: modify
+  - path: ".claude/agents/ana-build.md"
+    action: modify
+  - path: ".codex/agents/ana-build.md"
+    action: modify
+  - path: "website/content/docs/concepts/artifacts.mdx"
+    action: modify
+  - path: "packages/cli/tests/commands/artifact.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work-merge.test.ts"
+    action: modify
