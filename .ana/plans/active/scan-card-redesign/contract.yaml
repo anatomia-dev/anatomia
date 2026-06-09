@@ -1,0 +1,152 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Scan card redesign — shared render vocabulary + gated 'How your team writes' section"
+
+assertions:
+  # ── AC1/AC2: shared render vocabulary, rounded box, inset rules ──
+  - id: A001
+    says: "The scan card uses the same rounded header as the proof card"
+    block: "renders the identity header with rounded corners"
+    target: "output"
+    matcher: "contains"
+    value: "╭"
+
+  - id: A002
+    says: "The old hand-rolled square box is gone from the scan card"
+    block: "renders the identity header with rounded corners"
+    target: "output"
+    matcher: "not_contains"
+    value: "┌"
+
+  - id: A003
+    says: "Each section is introduced by a clean inset rule, not a bold label over dashes"
+    block: "renders the Stack section as an inset rule"
+    target: "output"
+    matcher: "contains"
+    value: "── Stack"
+
+  - id: A004
+    says: "The card header aligns to a consistent width"
+    block: "name line is exactly 71 columns wide with color stripped"
+    target: "nameLine.length"
+    matcher: "equals"
+    value: 71
+
+  - id: A005
+    says: "The header's summary line aligns to the same width"
+    block: "summary line is exactly 71 columns wide with color stripped"
+    target: "summaryLine.length"
+    matcher: "equals"
+    value: 71
+
+  # ── AC3: the "How your team writes" section surfaces real conventions ──
+  - id: A006
+    says: "A 'How your team writes' section appears, proving scan read the code"
+    block: "renders the How your team writes section on a deep-tier scan"
+    target: "output"
+    matcher: "contains"
+    value: "How your team writes"
+
+  - id: A007
+    says: "The card reports the team's naming style"
+    block: "renders the How your team writes section on a deep-tier scan"
+    target: "output"
+    matcher: "contains"
+    value: "camelCase"
+
+  - id: A008
+    says: "The card reports the team's indentation style"
+    block: "renders the How your team writes section on a deep-tier scan"
+    target: "output"
+    matcher: "contains"
+    value: "spaces"
+
+  - id: A009
+    says: "The card reports how the team handles errors"
+    block: "renders the How your team writes section on a deep-tier scan"
+    target: "output"
+    matcher: "contains"
+    value: "exceptions"
+
+  - id: A010
+    says: "The card reports the team's validation library"
+    block: "renders the How your team writes section on a deep-tier scan"
+    target: "output"
+    matcher: "contains"
+    value: "Zod"
+
+  # ── AC4: the confidence gate omits low-confidence guesses ──
+  - id: A011
+    says: "Low-confidence, mixed signals are hidden so the card never bluffs"
+    block: "gate fixture omits mixed and low-confidence signals"
+    target: "output"
+    matcher: "not_contains"
+    value: "mixed"
+
+  - id: A012
+    says: "On a fast scan with nothing measured, the section vanishes cleanly"
+    block: "surface-tier scan omits the section with no empty header"
+    target: "output"
+    matcher: "not_contains"
+    value: "How your team writes"
+
+  # ── AC5: legible with color stripped, no ANSI-dependent layout ──
+  - id: A013
+    says: "The card stays aligned and legible with color turned off"
+    block: "renders with no ANSI escape codes when color is stripped"
+    target: "ansiEscapeCount"
+    matcher: "equals"
+    value: 0
+
+  # ── AC6: --json output unchanged ──
+  - id: A014
+    says: "Machine-readable scan output is unaffected by the visual redesign"
+    block: "scan --json still emits the conventions data"
+    target: "jsonOutput"
+    matcher: "contains"
+    value: "\"conventions\""
+
+  # ── AC7: funnel mode preserved ──
+  - id: A015
+    says: "First-time users still get the 'run ana init' next step"
+    block: "funnel mode shows the ana init call to action"
+    target: "output"
+    matcher: "contains"
+    value: "ana init"
+
+  - id: A016
+    says: "Existing projects still get the pointer to the full scan data"
+    block: "non-funnel mode references the saved scan.json"
+    target: "output"
+    matcher: "contains"
+    value: ".ana/scan.json"
+
+  # ── AC8: graceful degradation ──
+  - id: A017
+    says: "A monorepo with many surfaces shows a tidy overflow indicator"
+    block: "monorepo surface overflow shows the +N more indicator"
+    target: "output"
+    matcher: "contains"
+    value: "(+"
+
+  - id: A018
+    says: "Scanning a subfolder still guides the user to the project root"
+    block: "no-stack ancestor-walk fallback survives the restyle"
+    target: "output"
+    matcher: "contains"
+    value: "project root"
+
+  # ── AC10/AC12: full card pinned by golden; render module untouched ──
+  - id: A019
+    says: "The full scan card layout is pinned so visual regressions are caught mechanically"
+    block: "renders the full deep-tier card"
+    target: "card"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/scan.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/scan-card-golden.test.ts"
+    action: create
