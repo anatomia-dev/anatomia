@@ -9,7 +9,7 @@ import {
   captureSha,
   parseMarkers,
   validateCapturePresent,
-  evaluateCaptureGate,
+  evaluateTestEvidenceGate,
   type CaptureMarker,
 } from '../../src/utils/capture-marker.js';
 
@@ -195,7 +195,7 @@ describe('reserved enginebind field — round-trip (L3 plumbing only)', () => {
   });
 });
 
-describe('validateCapturePresent + evaluateCaptureGate (present-check only)', () => {
+describe('validateCapturePresent + evaluateTestEvidenceGate (present-check only)', () => {
   it('validateCapturePresent flags a report with no marker', () => {
     const p = writeReport('# Build Report\n\nno marker here\n');
     expect(validateCapturePresent(p)).not.toBeNull();
@@ -214,7 +214,7 @@ describe('validateCapturePresent + evaluateCaptureGate (present-check only)', ()
   // @ana A023 — a present new-shape build marker passes the gate (not blocked).
   it('does not block when enabled and a compact build marker is present', () => {
     const p = writeReport(`# Build Report\n\n${formatMarker(marker())}\n`);
-    const gate = evaluateCaptureGate(p, { enabled: true });
+    const gate = evaluateTestEvidenceGate(p, { enabled: true });
     expect(gate.blocked).toBe(false);
     expect(gate.errors).toEqual([]);
     expect(gate.warnings).toEqual([]);
@@ -223,7 +223,7 @@ describe('validateCapturePresent + evaluateCaptureGate (present-check only)', ()
   // @ana A024 — a report with no seal is blocked from saving when the gate is enabled.
   it('blocks when enabled and no marker is present', () => {
     const p = writeReport('# Build Report\n\nno marker here\n');
-    const gate = evaluateCaptureGate(p, { enabled: true });
+    const gate = evaluateTestEvidenceGate(p, { enabled: true });
     expect(gate.blocked).toBe(true);
     expect(gate.errors.length).toBeGreaterThan(0);
   });
@@ -232,14 +232,14 @@ describe('validateCapturePresent + evaluateCaptureGate (present-check only)', ()
   it('blocks when enabled and only a fenced/placeholder description is present', () => {
     const body = `# Build Report\n\nExample seal format:\n\n\`\`\`\n${formatMarker(marker())}\n\`\`\`\n`;
     const p = writeReport(body);
-    const gate = evaluateCaptureGate(p, { enabled: true });
+    const gate = evaluateTestEvidenceGate(p, { enabled: true });
     expect(gate.blocked).toBe(true);
     expect(gate.errors.length).toBeGreaterThan(0);
   });
 
   it('never blocks when the gate is disabled, even with no marker', () => {
     const p = writeReport('# Build Report\n\nno marker\n');
-    const gate = evaluateCaptureGate(p, { enabled: false });
+    const gate = evaluateTestEvidenceGate(p, { enabled: false });
     expect(gate.blocked).toBe(false);
     expect(gate.warnings.length).toBeGreaterThan(0);
     expect(gate.errors).toEqual([]);

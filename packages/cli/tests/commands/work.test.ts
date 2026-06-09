@@ -646,7 +646,7 @@ describe('ana work status', () => {
   // the equivalent on/inactive/off coverage now lives in doctor.test.ts.
   describe('capture gate state is absent from work status', () => {
     /** Overwrite the test project's ana.json to set the capture-gate config. */
-    async function setCaptureGateConfig(cfg: Record<string, unknown>): Promise<void> {
+    async function setTestEvidenceGateConfig(cfg: Record<string, unknown>): Promise<void> {
       await fs.writeFile(
         path.join(tempDir, '.ana', 'ana.json'),
         JSON.stringify({ artifactBranch: 'main', ...cfg }),
@@ -657,7 +657,7 @@ describe('ana work status', () => {
     // @ana A001 — human output no longer announces the gate, even when on.
     it('human output omits the "Capture gate" line when the gate is on', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
-      await setCaptureGateConfig({ captureGate: 'on', commands: { test: 'pnpm vitest run' } });
+      await setTestEvidenceGateConfig({ testEvidenceGate: 'on', commands: { test: 'pnpm vitest run' } });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).not.toContain('Capture gate');
@@ -667,7 +667,7 @@ describe('ana work status', () => {
     // @ana A001 — absent line holds when the gate is on but inactive.
     it('human output omits the gate line when on but no test command resolves', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
-      await setCaptureGateConfig({ captureGate: 'on', commands: {}, surfaces: {} });
+      await setTestEvidenceGateConfig({ testEvidenceGate: 'on', commands: {}, surfaces: {} });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: false }));
       expect(output).not.toContain('Capture gate');
@@ -682,15 +682,15 @@ describe('ana work status', () => {
     });
 
     // @ana A002, A003, A004 — --json drops both gate fields, keeps core pipeline fields.
-    it('--json omits captureGate and captureGateActive but retains artifactBranch', async () => {
+    it('--json omits testEvidenceGate and testEvidenceGateActive but retains artifactBranch', async () => {
       await createWorkTestProject({ slugs: [{ slug: 'test-slug', artifacts: ['scope.md'] }] });
-      await setCaptureGateConfig({ captureGate: 'on', commands: { test: 'pnpm vitest run' } });
+      await setTestEvidenceGateConfig({ testEvidenceGate: 'on', commands: { test: 'pnpm vitest run' } });
 
       const output = await captureOutput(async () => await getWorkStatus({ json: true }));
       const parsed = JSON.parse(output);
       const keys = Object.keys(parsed);
-      expect(keys).not.toContain('captureGate');
-      expect(keys).not.toContain('captureGateActive');
+      expect(keys).not.toContain('testEvidenceGate');
+      expect(keys).not.toContain('testEvidenceGateActive');
       expect(parsed.artifactBranch).toBeDefined();
     });
   });

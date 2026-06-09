@@ -54,5 +54,116 @@
         "hash": "sha256:1c611d1a9c770b52fd4b95e57a06ed6282bdb5e7200886af136b9a0e1d83883c"
       }
     ]
+  },
+  "build_started_at": "2026-06-08T23:02:18.729Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-08T23:49:03.174Z",
+    "hash": "sha256:a38990cc8f861dc4f87d2005fe4cc8272ab3f6a001e049142324d5c478e72ff3"
+  },
+  "build-data": {
+    "saved_at": "2026-06-08T23:49:03.176Z",
+    "hash": "sha256:33eafc9d3800f95beaab3d2914633926c1749f56ae7e2ebf1acc6661d908ee5f",
+    "history": [
+      {
+        "saved_at": "2026-06-08T23:24:19.246Z",
+        "hash": "sha256:d757a6b49a3a9d1e37640d9c3d1194e89c92444d027da75f44ca23fd98bfc17a"
+      }
+    ]
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/doctor.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/utils/capture-marker.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/doctor.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/capture-marker.test.ts",
+    "website/content/docs/guides/configurability.mdx"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 16,
+      "deleted": 16
+    },
+    "packages/cli/src/commands/config.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/doctor.ts": {
+      "added": 4,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/init/anaJsonSchema.ts": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 6,
+      "deleted": 6
+    },
+    "packages/cli/src/utils/capture-marker.ts": {
+      "added": 3,
+      "deleted": 3
+    },
+    "packages/cli/src/utils/forensics.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/artifact.test.ts": {
+      "added": 29,
+      "deleted": 24
+    },
+    "packages/cli/tests/commands/config.test.ts": {
+      "added": 3,
+      "deleted": 3
+    },
+    "packages/cli/tests/commands/doctor.test.ts": {
+      "added": 7,
+      "deleted": 7
+    },
+    "packages/cli/tests/commands/init.test.ts": {
+      "added": 12,
+      "deleted": 12
+    },
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+      "added": 9,
+      "deleted": 8
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 7,
+      "deleted": 7
+    },
+    "packages/cli/tests/utils/capture-marker.test.ts": {
+      "added": 6,
+      "deleted": 6
+    },
+    "website/content/docs/guides/configurability.mdx": {
+      "added": 5,
+      "deleted": 5
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-08T23:53:25.096Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:ba2d93a9959fd23175fbbd6291b6a8beb669aaaa7a44b974799fb30f0fe44c74",
+    "run_at": "2026-06-08T23:59:16.865Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-08T23:59:16.897Z",
+    "hash": "sha256:97ebbf0efb8ffe72128a38182d070a62f8ec2c3d3cd9525bdb7b4c47eb1d3766"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-08T23:59:16.897Z",
+    "hash": "sha256:fe0c46c21b2de5f8cbf8e857802aa939e3f0bd4c951ab0cf23c5d978208e2546"
   }
 }

@@ -24,7 +24,7 @@ import { worktreeExists } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
 import { checkScanFreshness } from '../utils/scan-freshness.js';
 import { agentCommand } from './platform.js';
-import { isCaptureGateEnabled } from './artifact.js';
+import { isTestEvidenceGateEnabled } from './artifact.js';
 import {
   checkSkill,
   readSetupProgress,
@@ -444,7 +444,7 @@ function assessSurfaces(projectRoot: string): SurfacesDimension {
  * The test-evidence gate is three-way: `on` when the flag is on and a test
  * command resolves, `on-inactive` when the flag is on but no command resolves
  * (configured on but unable to enforce), and `off` otherwise. The active
- * carve-out is owned by {@link isCaptureGateEnabled}; process capture and strict
+ * carve-out is owned by {@link isTestEvidenceGateEnabled}; process capture and strict
  * are trivial `=== 'on'` reads from the same raw parse.
  *
  * @param projectRoot - Absolute path to the project root
@@ -459,9 +459,9 @@ function assessEnforcement(projectRoot: string): EnforcementDimension {
     return { status: 'info', test_evidence_gate: 'off', process_capture: 'off', process_capture_strict: 'off' };
   }
 
-  const gateFlag = anaContent['captureGate'] === 'on';
+  const gateFlag = anaContent['testEvidenceGate'] === 'on';
   const testEvidenceGate: EnforcementDimension['test_evidence_gate'] = gateFlag
-    ? (isCaptureGateEnabled(projectRoot) ? 'on' : 'on-inactive')
+    ? (isTestEvidenceGateEnabled(projectRoot) ? 'on' : 'on-inactive')
     : 'off';
 
   return {

@@ -54,7 +54,7 @@ export interface CaptureMarker {
 }
 
 /** Result of the warn-vs-block save-time gate. */
-export interface CaptureGateResult {
+export interface TestEvidenceGateResult {
   blocked: boolean;
   warnings: string[];
   errors: string[];
@@ -238,7 +238,7 @@ export function validateCapturePresent(filePath: string): string | null {
 /**
  * Decide warn-vs-block for a build report's capture seal.
  *
- * Enablement is a committed-config decision (`captureGate` in `ana.json`),
+ * Enablement is a committed-config decision (`testEvidenceGate` in `ana.json`),
  * resolved by the caller and passed in as `opts.enabled`. With nothing inlined,
  * the gate weighs ONLY presence: a well-formed build seal must exist. When the
  * gate is NOT enabled, a missing seal surfaces as a warning and never
@@ -249,7 +249,7 @@ export function validateCapturePresent(filePath: string): string | null {
  * @param opts.enabled - Whether the capture gate is enabled for this project
  * @returns The gate decision with messages partitioned into warnings/errors
  */
-export function evaluateCaptureGate(filePath: string, opts: { enabled: boolean }): CaptureGateResult {
+export function evaluateTestEvidenceGate(filePath: string, opts: { enabled: boolean }): TestEvidenceGateResult {
   const messages: string[] = [];
   const msg = validateCapturePresent(filePath);
   if (msg) messages.push(msg);

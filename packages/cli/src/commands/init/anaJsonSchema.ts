@@ -102,11 +102,11 @@ export const AnaJsonSchema = z
       .catch(undefined),
     // No `.default` — absent must stay `undefined` so an absent flag stays
     // absent through re-init and reads as gate-off (the migration mechanism).
-    captureGate: z
+    testEvidenceGate: z
       .enum(['on', 'off'])
       .optional()
       .catch(undefined),
-    // No `.default` — same migration-safe posture as captureGate. Absent must
+    // No `.default` — same migration-safe posture as testEvidenceGate. Absent must
     // stay `undefined` so it survives re-init untouched and reads as off (the
     // customer default). The default-off is emitted by createAnaJson, not here.
     processCapture: z

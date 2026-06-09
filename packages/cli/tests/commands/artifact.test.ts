@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey, isCaptureGateEnabled } from '../../src/commands/artifact.js';
+import { saveArtifact, saveAllArtifacts, validateVerifyDataFormat, validateBuildDataFormat, deriveOpposingReportKey, isTestEvidenceGateEnabled } from '../../src/commands/artifact.js';
 import { determineStage } from '../../src/commands/work-state.js';
 import { formatMarker } from '../../src/utils/capture-marker.js';
 
@@ -394,7 +394,7 @@ Content...`;
      * config-driven replacement for the retired `armProject()` helper.
      */
     async function enableGate(opts?: { surfaceOnly?: boolean }): Promise<void> {
-      const cfg: Record<string, unknown> = { artifactBranch: 'main', captureGate: 'on' };
+      const cfg: Record<string, unknown> = { artifactBranch: 'main', testEvidenceGate: 'on' };
       if (opts?.surfaceOnly) {
         cfg['surfaces'] = { cli: { commands: { test: 'pnpm vitest run' } } };
       } else {
@@ -405,7 +405,7 @@ Content...`;
     }
 
     /** Run a function that calls process.exit, returning its console.error output. */
-    function captureGateError(fn: () => void): string {
+    function testEvidenceGateError(fn: () => void): string {
       const originalExit = process.exit;
       const originalError = console.error;
       const errors: string[] = [];
@@ -509,69 +509,74 @@ Content...`;
       expect(() => saveArtifact('spec', 'test-slug')).not.toThrow();
     });
 
-    // ── isCaptureGateEnabled (the function's home) ──────────────────────
+    // ── isTestEvidenceGateEnabled (the function's home) ──────────────────────
 
     // missing or malformed ana.json reads as off and never throws (gate-enablement, not a compact-seal assertion).
-    it('isCaptureGateEnabled returns false for a missing or malformed ana.json', async () => {
+    // @ana A004
+    it('isTestEvidenceGateEnabled returns false for a missing or malformed ana.json', async () => {
       // No .ana/ana.json at all.
-      expect(() => isCaptureGateEnabled(tempDir)).not.toThrow();
-      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+      expect(() => isTestEvidenceGateEnabled(tempDir)).not.toThrow();
+      expect(isTestEvidenceGateEnabled(tempDir)).toBe(false);
 
       // Malformed JSON.
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(path.join(tempDir, '.ana', 'ana.json'), '{ not valid json', 'utf-8');
-      expect(() => isCaptureGateEnabled(tempDir)).not.toThrow();
-      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+      expect(() => isTestEvidenceGateEnabled(tempDir)).not.toThrow();
+      expect(isTestEvidenceGateEnabled(tempDir)).toBe(false);
     });
 
     // gate on but no resolvable test command → false (gate-enablement, not a compact-seal assertion).
-    it('isCaptureGateEnabled returns false when the gate is on but no test command resolves', async () => {
+    it('isTestEvidenceGateEnabled returns false when the gate is on but no test command resolves', async () => {
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(
         path.join(tempDir, '.ana', 'ana.json'),
-        JSON.stringify({ captureGate: 'on', commands: {}, surfaces: {} }),
+        JSON.stringify({ testEvidenceGate: 'on', commands: {}, surfaces: {} }),
         'utf-8'
       );
-      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+      expect(isTestEvidenceGateEnabled(tempDir)).toBe(false);
     });
 
     // gate on + a surface-only test command (no top-level) → true (gate-enablement, not a compact-seal assertion).
-    it('isCaptureGateEnabled returns true when only a per-surface test command resolves', async () => {
+    // @ana A002
+    it('isTestEvidenceGateEnabled returns true when only a per-surface test command resolves', async () => {
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(
         path.join(tempDir, '.ana', 'ana.json'),
-        JSON.stringify({ captureGate: 'on', surfaces: { cli: { commands: { test: 'pnpm vitest run' } } } }),
+        JSON.stringify({ testEvidenceGate: 'on', surfaces: { cli: { commands: { test: 'pnpm vitest run' } } } }),
         'utf-8'
       );
-      expect(isCaptureGateEnabled(tempDir)).toBe(true);
+      expect(isTestEvidenceGateEnabled(tempDir)).toBe(true);
     });
 
-    it('isCaptureGateEnabled returns true when the gate is on and a top-level test command resolves', async () => {
+    // @ana A002
+    it('isTestEvidenceGateEnabled returns true when the gate is on and a top-level test command resolves', async () => {
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(
         path.join(tempDir, '.ana', 'ana.json'),
-        JSON.stringify({ captureGate: 'on', commands: { test: 'pnpm vitest run' } }),
+        JSON.stringify({ testEvidenceGate: 'on', commands: { test: 'pnpm vitest run' } }),
         'utf-8'
       );
-      expect(isCaptureGateEnabled(tempDir)).toBe(true);
+      expect(isTestEvidenceGateEnabled(tempDir)).toBe(true);
     });
 
-    it('isCaptureGateEnabled returns false when the gate flag is off', async () => {
+    // @ana A003
+    it('isTestEvidenceGateEnabled returns false when the gate flag is off', async () => {
       await fs.mkdir(path.join(tempDir, '.ana'), { recursive: true });
       await fs.writeFile(
         path.join(tempDir, '.ana', 'ana.json'),
-        JSON.stringify({ captureGate: 'off', commands: { test: 'pnpm vitest run' } }),
+        JSON.stringify({ testEvidenceGate: 'off', commands: { test: 'pnpm vitest run' } }),
         'utf-8'
       );
-      expect(isCaptureGateEnabled(tempDir)).toBe(false);
+      expect(isTestEvidenceGateEnabled(tempDir)).toBe(false);
     });
 
     // ── Block message content ───────────────────────────────────────────
 
     // A report carrying only a malformed (non-hex sha256) placeholder fails the
     // strict present-check and blocks; the message names the real reason (no
-    // captured test run), the `ana test` fix, and the `captureGate` disable
+    // captured test run), the `ana test` fix, and the `testEvidenceGate` disable
     // instruction.
+    // @ana A005
     it('block message names the missing-evidence reason, the ana test fix, and how to disable', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       await enableGate();
@@ -585,10 +590,10 @@ Content...`;
       await fs.writeFile(path.join(dir, 'build_report.md'), report, 'utf-8');
       await fs.writeFile(path.join(dir, 'build_data.yaml'), getValidBuildDataContent(), 'utf-8');
 
-      const message = captureGateError(() => saveArtifact('build-report', 'test-slug'));
+      const message = testEvidenceGateError(() => saveArtifact('build-report', 'test-slug'));
       expect(message).toContain('No captured test run'); // real present-check reason
       expect(message).toContain('ana test');             // the fix
-      expect(message).toContain('captureGate');          // how to disable
+      expect(message).toContain('testEvidenceGate');          // how to disable
     });
   });
 

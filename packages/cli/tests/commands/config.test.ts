@@ -357,11 +357,11 @@ describe('ana config', () => {
       expect(errorOutput).not.toContain('not a known');
     });
 
-    // @ana A016 — captureGate is a real schema field; setting it must not warn.
-    it('does not warn when setting captureGate', async () => {
+    // @ana A006 — testEvidenceGate is a real schema field; setting it must not warn.
+    it('does not warn when setting testEvidenceGate', async () => {
       await writeConfig(TEST_CONFIG);
       const program = await createProgram();
-      await runCommand(program, ['config', 'set', 'captureGate', 'off']);
+      await runCommand(program, ['config', 'set', 'testEvidenceGate', 'off']);
 
       const errorOutput = getErrorOutput();
       expect(errorOutput).not.toContain('not a known ana.json field');

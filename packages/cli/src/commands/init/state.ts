@@ -566,20 +566,20 @@ export async function createAnaJson(
     coAuthor: 'Ana <build@anatomia.dev>',
     artifactBranch: detectArtifactBranch(result),
     branchPrefix: 'feature/',
-    // Fresh init opts the project into the capture gate. Re-init never imposes
+    // Fresh init opts the project into the test-evidence gate. Re-init never imposes
     // this onto a project that lacked the flag — see preserveUserState, which
-    // deliberately keeps captureGate out of its mechanical-override list.
-    captureGate: 'on',
+    // deliberately keeps testEvidenceGate out of its mechanical-override list.
+    testEvidenceGate: 'on',
     // Customer default OFF. Opted-out installs get zero capture hooks and run
     // zero per-session Anatomia code. Guarded by a test so a future edit can't
     // silently flip every customer on. Re-init preserves an explicit on/off
     // (rides along in preserveUserState's `...parsed.data`, excluded from the
-    // mechanical-override list — same treatment as captureGate).
+    // mechanical-override list — same treatment as testEvidenceGate).
     processCapture: 'off',
     // Default OFF (warn-and-record). A team opts into strict completeness blocking
     // explicitly. Re-init preserves an explicit on/off — it rides along in
     // preserveUserState's `...parsed.data` and is deliberately excluded from the
-    // mechanical-override list, same treatment as captureGate/processCapture.
+    // mechanical-override list, same treatment as testEvidenceGate/processCapture.
     processCaptureStrict: 'off',
     lastScanAt: result.overview.scannedAt,
     custom: {},
@@ -739,7 +739,7 @@ export async function preserveUserState(
 
   const parsed = AnaJsonSchema.safeParse(existingRaw);
   if (parsed.success && Object.keys(existingRaw as Record<string, unknown>).length > 0) {
-    // `captureGate` is intentionally preserved-not-refreshed: it rides along in
+    // `testEvidenceGate` is intentionally preserved-not-refreshed: it rides along in
     // `...parsed.data` and is deliberately excluded from the mechanical-override
     // list below. An explicit on/off is kept; an absent flag stays absent (so a
     // re-init never imposes fresh-init's `on` onto a project that never set it).

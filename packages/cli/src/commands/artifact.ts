@@ -22,7 +22,7 @@ import * as yaml from 'yaml';
 import { runContractPreCheck } from './verify.js';
 import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
-import { evaluateCaptureGate } from '../utils/capture-marker.js';
+import { evaluateTestEvidenceGate } from '../utils/capture-marker.js';
 import { resolveTestCommandString } from './test.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
@@ -802,9 +802,9 @@ function validateBranch(
 }
 
 /**
- * Whether the capture gate is enabled for this project.
+ * Whether the test-evidence gate is enabled for this project.
  *
- * Enablement = the committed `captureGate` flag is `"on"` AND a test command
+ * Enablement = the committed `testEvidenceGate` flag is `"on"` AND a test command
  * resolves (top-level `commands.test` OR any per-surface test command). The
  * carve-out keys on ANY resolvable test command so a surface-only monorepo
  * (no top-level test, but `surfaces.cli.commands.test`) stays enforced.
@@ -816,7 +816,7 @@ function validateBranch(
  * @param projectRoot - Project root directory
  * @returns True only when the gate is on AND a test command resolves
  */
-export function isCaptureGateEnabled(projectRoot: string): boolean {
+export function isTestEvidenceGateEnabled(projectRoot: string): boolean {
   let anaJson: Record<string, unknown>;
   try {
     const raw = JSON.parse(fs.readFileSync(path.join(projectRoot, '.ana', 'ana.json'), 'utf-8')) as unknown;
@@ -825,7 +825,7 @@ export function isCaptureGateEnabled(projectRoot: string): boolean {
     return false;
   }
 
-  if (anaJson['captureGate'] !== 'on') return false;
+  if (anaJson['testEvidenceGate'] !== 'on') return false;
 
   // Carve-out: enabled only when a test command actually resolves. Check the
   // top-level command first, then every surface — any single hit is enough.
@@ -838,35 +838,35 @@ export function isCaptureGateEnabled(projectRoot: string): boolean {
 }
 
 /**
- * Run the capture gate on a build report.
+ * Run the test-evidence gate on a build report.
  *
  * Nothing is inlined any more — the committed compact marker IS the sealed
  * account. The gate's job has shrunk to a present-check: a well-formed `build`
  * capture marker must exist. Enablement is read from committed config
- * (`isCaptureGateEnabled`): when the `captureGate` flag is on AND a test command
+ * (`isTestEvidenceGateEnabled`): when the `testEvidenceGate` flag is on AND a test command
  * resolves, an absent seal blocks the save (process.exit(1), BEFORE the seal
  * hash). When the gate is off or no test command resolves, an absent seal
  * surfaces as a warning and never blocks. Counts and verdict never block.
  *
  * The block message is built from the ACTUAL gate error (`gate.errors`), so it
  * names the real reason and points the user at both the `ana test` fix and the
- * `captureGate: "off"` escape hatch.
+ * `testEvidenceGate: "off"` escape hatch.
  *
  * @param filePath - Absolute path to the build report
- * @param projectRoot - Project root (resolves the `captureGate` config flag)
+ * @param projectRoot - Project root (resolves the `testEvidenceGate` config flag)
  */
-function applyCaptureGate(filePath: string, projectRoot: string): void {
-  const enabled = isCaptureGateEnabled(projectRoot);
-  const gate = evaluateCaptureGate(filePath, { enabled });
+function applyTestEvidenceGate(filePath: string, projectRoot: string): void {
+  const enabled = isTestEvidenceGateEnabled(projectRoot);
+  const gate = evaluateTestEvidenceGate(filePath, { enabled });
 
   if (gate.blocked) {
     console.error(chalk.red('Error: build_report.md has no valid captured test evidence.'));
-    console.error(chalk.red('  The capture gate is on for this project, so test evidence is required.'));
+    console.error(chalk.red('  The test-evidence gate is on for this project, so test evidence is required.'));
     for (const err of gate.errors) {
       console.error(chalk.red(`  ${err}`));
     }
     console.error(chalk.gray('  Fix: run `ana test` (it seals a harmless abstain even when no tests run), then re-save.'));
-    console.error(chalk.gray('  To turn the gate off for this project: set "captureGate": "off" in .ana/ana.json.'));
+    console.error(chalk.gray('  To turn the gate off for this project: set "testEvidenceGate": "off" in .ana/ana.json.'));
     process.exit(1);
   }
 
@@ -1074,7 +1074,7 @@ export function saveArtifact(type: string, slug: string): void {
     // Nothing is inlined — the gate is a present-check that blocks only when the
     // gate is enabled in config AND no well-formed build seal is present;
     // otherwise warn-only.
-    applyCaptureGate(filePath, projectRoot);
+    applyTestEvidenceGate(filePath, projectRoot);
   }
 
   if (typeInfo.baseType === 'contract') {
@@ -1496,7 +1496,7 @@ export function saveAllArtifacts(slug: string): void {
       // Blocks only when the gate is enabled in config AND no well-formed build
       // seal is present. Wiring BOTH save sites is required — saveArtifact and
       // saveAllArtifacts are independent build-report paths.
-      applyCaptureGate(artifact.path, projectRoot);
+      applyTestEvidenceGate(artifact.path, projectRoot);
     }
 
     if (artifact.typeInfo.baseType === 'contract') {

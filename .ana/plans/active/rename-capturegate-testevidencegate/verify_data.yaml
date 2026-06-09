@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Residual prose 'capture gate' (concept, not the symbol) survives the total rename in 4 source comments/JSDoc"
+    file: "packages/cli/src/utils/capture-marker.ts"
+    line: 249
+    severity: debt
+    suggested_action: acknowledge
+    related_assertions: ["A009", "A010"]
+    anchor: "evaluateTestEvidenceGate @param JSDoc"
+  - category: code
+    summary: "artifact.ts comments still call the policy 'the capture gate' in prose (1041, 1073, 1495) — concept now named test-evidence gate"
+    file: "packages/cli/src/commands/artifact.ts"
+    line: 1073
+    severity: debt
+    suggested_action: acknowledge
+    related_assertions: ["A009"]
+  - category: test
+    summary: "capture-marker.test.ts edited but absent from contract file_changes — a necessary consequence of renaming the exported evaluateCaptureGate/CaptureGateResult symbols"
+    file: "packages/cli/tests/utils/capture-marker.test.ts"
+    line: 12
+    severity: observation
+    suggested_action: acknowledge
+  - category: test
+    summary: "A004's tagged test exercises missing/malformed ana.json, not the precise 'valid config, flag absent' fail-safe; that exact case is covered untagged in init.test.ts"
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 513
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004"]
+  - category: test
+    summary: "@ana A006 appears on both config.test.ts (this contract's KNOWN_FIELDS assertion) and doctor.test.ts (a predecessor contract's A006) — tags are not globally unique, muddying traceability"
+    file: "packages/cli/tests/commands/doctor.test.ts"
+    line: 630
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A006", "A008"]
+  - category: code
+    summary: "Pre-existing lint warning: unused eslint-disable (no-control-regex) in git-operations.ts — not introduced by this build (file not in diff), surfaced by the full lint run"
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: observation
+    suggested_action: monitor
