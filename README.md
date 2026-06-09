@@ -6,8 +6,6 @@
 
 Anatomia is a CLI and agent harness for Claude Code and Codex. It scans your codebase — detecting your stack, conventions, and patterns — then runs every change through a five-agent pipeline that saves every artifact: scope, spec, contract, build report, and independent verification. Other harnesses are prompt libraries. This one has an engine.
 
-The cost of building is near zero. The cost of building the wrong thing is the same as it ever was. AI agents rush to implementation — they don't push back on your approach, surface tradeoffs you missed, or record why one design was chosen over another. Anatomia enforces the thinking that fast building skips.
-
 ## Scan any project in 10 seconds
 
 <img alt="ana scan running on dub — detecting TypeScript, Next.js, Prisma with 80 models, auth, AI, payments, and contributor activity" width="800" src="assets/demo/dub-scan.gif">
