@@ -52991,6 +52991,433 @@
         "base_commit": "40148fb87cb9595f33068bb1e47f7cc2e4ce9ed9"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "rename-capturegate-testevidencegate",
+      "feature": "Rename captureGate → testEvidenceGate (clean rename, no back-compat)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 10,
+        "satisfied": 10,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "New projects turn the test-evidence gate on under its new name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Turning the gate on requires test evidence before a build report saves",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Turning the gate off lets a build report save without test evidence",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A config with no gate setting is treated as off",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The block message tells users about the testEvidenceGate setting",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Setting the gate flag is recognized without a warning",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Config files can carry the gate setting under its new name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The doctor view reports the gate state from the new key",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The legacy gate flag name is gone from source",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "No legacy gate symbol remains in source",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 167,
+        "think": 84,
+        "plan": 33,
+        "build": 47,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:0a8cfa55f425d901edbdb8edd0e9eefcc2fd319b5ad4d9f1b14f2ae290af8a5f",
+        "contract": "sha256:ba2d93a9959fd23175fbbd6291b6a8beb669aaaa7a44b974799fb30f0fe44c74",
+        "plan": "sha256:13ec65b204b592f7e65063d56678aef2d061f6ccc3dbe14de906e22e8de326f9",
+        "spec": "sha256:4b4fe25053e0814173942171f9317a80fa259735933608092943689c9233760f",
+        "build-report": "sha256:a38990cc8f861dc4f87d2005fe4cc8272ab3f6a001e049142324d5c478e72ff3",
+        "build-data": "sha256:33eafc9d3800f95beaab3d2914633926c1749f56ae7e2ebf1acc6661d908ee5f",
+        "verify-report": "sha256:97ebbf0efb8ffe72128a38182d070a62f8ec2c3d3cd9525bdb7b4c47eb1d3766",
+        "verify-data": "sha256:fe0c46c21b2de5f8cbf8e857802aa939e3f0bd4c951ab0cf23c5d978208e2546"
+      },
+      "completed_at": "2026-06-09T00:03:02.472Z",
+      "modules_touched": [
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/config.ts",
+        "packages/cli/src/commands/doctor.ts",
+        "packages/cli/src/commands/init/anaJsonSchema.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/utils/capture-marker.ts",
+        "packages/cli/src/utils/forensics.ts",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/config.test.ts",
+        "packages/cli/tests/commands/doctor.test.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/capture-marker.test.ts",
+        "website/content/docs/guides/configurability.mdx"
+      ],
+      "scope_summary": "The `ana.json` flag `captureGate` doesn't describe what it does — it gates whether a `build_report.md` save must carry **real captured test-run evidence**. Worse, \"capture\" is *overloaded*: it names this subsystem (the \"capture marker\" / seal that proves tests ran) **and** the unrelated provenance subsystem (`processCapture` / `processCaptureStrict`, the harness payload). Two different things wearing one word.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Residual prose 'capture gate' (concept, not the symbol) survives the total rename in 4 source comments/JSDoc",
+          "file": "packages/cli/src/utils/capture-marker.ts",
+          "anchor": "evaluateTestEvidenceGate @param JSDoc",
+          "line": 249,
+          "severity": "debt",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A009",
+            "A010"
+          ],
+          "id": "rename-capturegate-testevidencegate-C1",
+          "status": "closed",
+          "closed_reason": "code changed, anchor absent",
+          "closed_at": "2026-06-09T00:03:02.535Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "artifact.ts comments still call the policy 'the capture gate' in prose (1041, 1073, 1495) — concept now named test-evidence gate",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "anchor": null,
+          "line": 1073,
+          "severity": "debt",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "rename-capturegate-testevidencegate-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "capture-marker.test.ts edited but absent from contract file_changes — a necessary consequence of renaming the exported evaluateCaptureGate/CaptureGateResult symbols",
+          "file": "packages/cli/tests/utils/capture-marker.test.ts",
+          "anchor": null,
+          "line": 12,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "rename-capturegate-testevidencegate-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A004's tagged test exercises missing/malformed ana.json, not the precise 'valid config, flag absent' fail-safe; that exact case is covered untagged in init.test.ts",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 513,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "rename-capturegate-testevidencegate-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana A006 appears on both config.test.ts (this contract's KNOWN_FIELDS assertion) and doctor.test.ts (a predecessor contract's A006) — tags are not globally unique, muddying traceability",
+          "file": "packages/cli/tests/commands/doctor.test.ts",
+          "anchor": null,
+          "line": 630,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006",
+            "A008"
+          ],
+          "id": "rename-capturegate-testevidencegate-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warning: unused eslint-disable (no-control-regex) in git-operations.ts — not introduced by this build (file not in diff), surfaced by the full lint run",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "anchor": null,
+          "line": 198,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "rename-capturegate-testevidencegate-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Test-evidence seal proves nothing about the run. The marker's sha256 is computed over the marker's OWN visible fields (canonicalCaptureString = stage+slug+counts+verdict, capture-marker.ts:105/119), NOT over the raw test output (capture-marker.ts:6-7 says so explicitly). The present-check only requires a 64-hex sha (capture-marker.ts:185-186) and never recomputes it. Consequences: (1) every passing run yields a byte-identical marker, so re-sealing is a no-op; (2) a valid marker is hand-forgeable with zero tests run — `counts=Np/0f/Ms verdict=pass sha256=<any 64 hex>` passes. The gate enforces format, not truth. Pre-existing and out of scope for this rename (capture-marker mechanism is the untouched boundary); already noted in the risk profile as the deferred enginebind token. Filed as GitHub issue #311.",
+          "file": "packages/cli/src/utils/capture-marker.ts",
+          "severity": "risk",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Rare full-suite flake: the FIRST `ana test` run reported 3586p/1f/2s (verdict fail); every subsequent run was clean (3587p/0f/2s). Could NOT reproduce across ~21 further runs (9 full-suite + 10 work.test.ts/pr.test.ts + confirmations). The original failing run's raw capture is unrecoverable — `ana test` deletes the .captures/*.log sink after sealing. The failing run's stderr was dominated by work.test.ts git/push-failure paths, matching the risk profile's documented flaky tests (conditional PID guards, heavyweight bare-remote git setups). Almost certainly a cold-start git race on the first run after worktree build; cannot be caused by a pure string rename. Test isolation, not isolated.",
+          "file": "packages/cli/tests/commands/work.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "@ana assertion IDs are reused per-work-item across the test suite (pre-existing convention): every test file already carries A001-A0xx tags from its own historical/merged contract. This rename's contract tags (A001-A008) therefore coexist with same-numbered predecessor tags on unrelated tests. Verify must map tags against THIS work item's active contract.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "capture-marker.test.ts was modified (renamed evaluateCaptureGate -> evaluateTestEvidenceGate import/usages) but is NOT in the contract's file_changes list. The change was mandatory: the test imports the renamed evaluator symbol, so omitting it would break the suite.",
+          "file": "packages/cli/tests/utils/capture-marker.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 10,
+          "assertions_total": 10,
+          "findings": {
+            "risk": 0,
+            "debt": 2,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "chore",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 16,
+            "deleted": 16
+          },
+          "packages/cli/src/commands/config.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/doctor.ts": {
+            "added": 4,
+            "deleted": 4
+          },
+          "packages/cli/src/commands/init/anaJsonSchema.ts": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/init/state.ts": {
+            "added": 6,
+            "deleted": 6
+          },
+          "packages/cli/src/utils/capture-marker.ts": {
+            "added": 3,
+            "deleted": 3
+          },
+          "packages/cli/src/utils/forensics.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/tests/commands/artifact.test.ts": {
+            "added": 29,
+            "deleted": 24
+          },
+          "packages/cli/tests/commands/config.test.ts": {
+            "added": 3,
+            "deleted": 3
+          },
+          "packages/cli/tests/commands/doctor.test.ts": {
+            "added": 7,
+            "deleted": 7
+          },
+          "packages/cli/tests/commands/init.test.ts": {
+            "added": 12,
+            "deleted": 12
+          },
+          "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+            "added": 9,
+            "deleted": 8
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 7,
+            "deleted": 7
+          },
+          "packages/cli/tests/utils/capture-marker.test.ts": {
+            "added": 6,
+            "deleted": 6
+          },
+          "website/content/docs/guides/configurability.mdx": {
+            "added": 5,
+            "deleted": 5
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:4a6877ff7630a60f018c522f3959fa0941ad61f6f702b7bb6467d94ad8781202",
+            "cli_version": "1.2.2",
+            "session_id": "7e7753d1-9bf2-441b-8ee2-1b251f293416",
+            "captured_at": "2026-06-08T22:28:39.139Z",
+            "derived": {
+              "tokens": {
+                "input": 4040,
+                "output": 33604,
+                "cache_create": 69372,
+                "cache_read": 1484865
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1633020,
+              "turns": 59,
+              "tool_calls": 26,
+              "commands_run": 11,
+              "tests_executed": 146,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "f0e78821-d102-4eaf-8ec3-cc9ec5a6e6c5",
+            "captured_at": "2026-06-08T22:35:58.289Z",
+            "derived": {
+              "tokens": {
+                "input": 7484,
+                "output": 95226,
+                "cache_create": 164052,
+                "cache_read": 6213377
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 5988480,
+              "turns": 130,
+              "tool_calls": 47,
+              "commands_run": 29,
+              "tests_executed": 3587,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "ac3a02b1-64c9-4a75-a9aa-e2d00d8d904c",
+            "captured_at": "2026-06-08T23:49:03.257Z",
+            "derived": {
+              "tokens": {
+                "input": 6312,
+                "output": 80156,
+                "cache_create": 153718,
+                "cache_read": 10456408
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2931872,
+              "turns": 246,
+              "tool_calls": 125,
+              "commands_run": 59,
+              "tests_executed": 25290,
+              "failures_encountered": 7175,
+              "files_touched": 16,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "4050797b-c1e9-45f4-b1f2-5eec102dc546",
+            "captured_at": "2026-06-08T23:50:03.737Z",
+            "derived": {
+              "tokens": {
+                "input": 6234,
+                "output": 20868,
+                "cache_create": 77830,
+                "cache_read": 1457207
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 547569,
+              "turns": 64,
+              "tool_calls": 28,
+              "commands_run": 20,
+              "tests_executed": 7174,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-08T23:02:18.729Z",
+        "completed_at": "2026-06-09T00:03:02.461Z",
+        "commit_count": 0,
+        "base_commit": "a1d81a974472ff4271a2e245781f86baf390e440"
+      }
     }
   ],
   "schema": 1,
