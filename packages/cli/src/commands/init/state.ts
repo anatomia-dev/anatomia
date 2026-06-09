@@ -19,6 +19,7 @@ import { getStackSummary, CONTEXT_FILES, CORE_SKILLS, computeSkillManifest, DOCS
 import { matchGotchas } from '../../utils/gotchas.js';
 import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
+import { mergeGitignore, ANA_GITIGNORE_STOCK } from './gitignore.js';
 import { getCurrentBranch } from '../../utils/git-operations.js';
 import { isNonProductPath } from '../../engine/detectors/surfaces.js';
 import { getSkillsDirRel, agentCommand } from '../platform.js';
@@ -691,8 +692,15 @@ export function mergeSurfaces(
  *   - plans/active/ → copied wholesale. In-flight pipeline work (scopes,
  *     specs, contracts, build reports) must survive re-init. Without this,
  *     the atomic swap replaces active plans with an empty .gitkeep.
- *   - .gitignore → NOT copied. Infrastructure-owned by createDirectoryStructure;
- *     must match current CLI version's expectations (state/, worktrees/).
+ *   - .gitignore → MERGED pre-swap (not copied, not clobbered). The original
+ *     policy clobbered it wholesale so stock always regenerated to the current
+ *     CLI's expectations (state/, worktrees/). That intent is preserved — we
+ *     still regenerate our managed block from current stock — but the overreach
+ *     (destroying user lines that were never ours) is removed. We read the OLD
+ *     live .ana/.gitignore here (the only place with access to it before the
+ *     atomic swap) and re-merge it into the temp file written by
+ *     createDirectoryStructure. Absent old file → the temp block-only file
+ *     already stands (merge from null yields the same block-only output).
  *
  * Note on merge semantics: six mechanical fields refresh from the new
  * scan: anaVersion, lastScanAt, name, language, framework, packageManager.
@@ -881,6 +889,25 @@ export async function preserveUserState(
     }
   } catch {
     // No skills directory — scaffoldAndSeedSkills will create fresh
+  }
+
+  // 9. Merge the OLD live .ana/.gitignore into the temp file (pre-swap).
+  // This is the only place with access to the old .gitignore before the atomic
+  // swap destroys it. We regenerate our managed block from current stock and
+  // preserve any user lines. If the old file is absent, the block-only temp
+  // file from createDirectoryStructure already stands (merge from null is the
+  // same output) — the guarded read degrades gracefully.
+  const oldAnaGitignorePath = path.join(existingAnaPath, '.gitignore');
+  const tmpAnaGitignorePath = path.join(tmpAnaPath, '.gitignore');
+  try {
+    const oldContent = await fs.readFile(oldAnaGitignorePath, 'utf-8');
+    await fs.writeFile(
+      tmpAnaGitignorePath,
+      mergeGitignore(oldContent, ANA_GITIGNORE_STOCK),
+      'utf-8',
+    );
+  } catch {
+    // No old .ana/.gitignore — keep the block-only temp file already written.
   }
 
   return mergedConfig;

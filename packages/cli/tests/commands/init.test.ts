@@ -9,7 +9,9 @@ import { fileExists } from '../../src/commands/init/preflight.js';
 import { displayBlindSpots, displaySuccessMessage } from '../../src/commands/init/state.js';
 import { createDirectoryStructure } from '../../src/commands/init/assets.js';
 import { createSkillSymlinks, copyCodexAgentFiles } from '../../src/commands/init/assets.js';
+import { createClaudeConfiguration, createCodexConfiguration } from '../../src/commands/init/assets.js';
 import { preserveUserState, migrateSkillsToCanonical, createAnaJson } from '../../src/commands/init/state.js';
+import * as initStateModule from '../../src/commands/init/state.js';
 import { isTestEvidenceGateEnabled } from '../../src/commands/artifact.js';
 import { AGENT_FILES, CODEX_AGENT_FILES, DOCS_QUICKSTART, DOCS_SETUP_GUIDE } from '../../src/constants.js';
 
@@ -672,6 +674,150 @@ describe('ana init', () => {
       expect(preservedState.last_session_at).toBe(existingTimestamp);
     });
   });
+  describe('.gitignore merge (not clobber) across surfaces', () => {
+    // createClaudeConfiguration/createCodexConfiguration resolve templates via
+    // getTemplatesDir(), which only points at the real tree from dist/. Under
+    // vitest-from-src it mis-resolves to src/templates, so point it at the
+    // package's real templates/ dir for these full-flow tests.
+    const realTemplatesDir = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      '..',
+      'templates',
+    );
+    let templatesSpy: ReturnType<typeof vi.spyOn>;
+    let logSpy: ReturnType<typeof vi.spyOn>;
+    beforeEach(() => {
+      templatesSpy = vi
+        .spyOn(initStateModule, 'getTemplatesDir')
+        .mockReturnValue(realTemplatesDir);
+      logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      templatesSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
+    // @ana A001, A005
+    it('.ana: preserveUserState preserves a user line and regenerates stock', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      // Seed an OLD live .ana/.gitignore: a managed block missing `state/`
+      // (user deleted it) plus a user-custom line below.
+      await fs.writeFile(
+        path.join(existingAnaPath, '.gitignore'),
+        '# >>> Anatomia managed (do not edit) >>>\n' +
+          'worktrees/\n' +
+          '# <<< Anatomia managed <<<\n\n' +
+          'user-custom-ignore-line\n',
+      );
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({ artifactBranch: 'main' }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+      await createDirectoryStructure(tmpAnaPath);
+      const newConfig = { anaVersion: '1.0.0', lastScanAt: '2026-05-18T00:00:00Z' };
+      await preserveUserState(existingAnaPath, tmpAnaPath, newConfig);
+
+      const merged = await fs.readFile(path.join(tmpAnaPath, '.gitignore'), 'utf-8');
+      expect(merged).toContain('user-custom-ignore-line'); // A001
+      expect(merged).toContain('state/'); // A005 — stock regenerated
+      expect(merged).toContain('# >>> Anatomia managed (do not edit) >>>');
+    });
+
+    // @ana A001 — absent old .ana/.gitignore: temp block-only file stands.
+    it('.ana: absent old .gitignore leaves the block-only temp file intact', async () => {
+      const existingAnaPath = path.join(tmpDir, '.ana-existing-nogi');
+      await fs.mkdir(existingAnaPath, { recursive: true });
+      await fs.writeFile(
+        path.join(existingAnaPath, 'ana.json'),
+        JSON.stringify({ artifactBranch: 'main' }),
+      );
+
+      const tmpAnaPath = path.join(tmpDir, '.ana-tmp-nogi');
+      await createDirectoryStructure(tmpAnaPath);
+      await preserveUserState(existingAnaPath, tmpAnaPath, {
+        anaVersion: '1.0.0',
+        lastScanAt: '2026-05-18T00:00:00Z',
+      });
+
+      const result = await fs.readFile(path.join(tmpAnaPath, '.gitignore'), 'utf-8');
+      expect(result).toContain('state/');
+      expect(result).toContain('# <<< Anatomia managed <<<');
+    });
+
+    // @ana A002 — Claude surface preserves a user line on re-init.
+    it('.claude: createClaudeConfiguration preserves a user line and lists the session lock', async () => {
+      const claudePath = path.join(tmpDir, '.claude');
+      await fs.mkdir(claudePath, { recursive: true });
+      // Existing .claude/ with a user-modified .gitignore.
+      await fs.writeFile(
+        path.join(claudePath, '.gitignore'),
+        '# >>> Anatomia managed (do not edit) >>>\n' +
+          'agent-memory/\n' +
+          'settings.local.json\n' +
+          '# <<< Anatomia managed <<<\n\n' +
+          'user-custom-ignore-line\n',
+      );
+      await fs.writeFile(path.join(claudePath, 'settings.json'), '{}', 'utf-8');
+
+      await createClaudeConfiguration(tmpDir, createEmptyEngineResult(), 'reinit');
+
+      const merged = await fs.readFile(path.join(claudePath, '.gitignore'), 'utf-8');
+      expect(merged).toContain('user-custom-ignore-line'); // A002
+      expect(merged).toContain('scheduled_tasks.lock'); // A008 — stock now lists the lock
+    });
+
+    // @ana A003 — Codex gets its own .gitignore on fresh init.
+    it('.codex: fresh init creates .gitignore with Codex stock', async () => {
+      await createCodexConfiguration(tmpDir, 'fresh');
+
+      const created = await fs.readFile(path.join(tmpDir, '.codex', '.gitignore'), 'utf-8');
+      expect(created).toContain('agent-memory/'); // A003
+      expect(created).toContain('settings.local.json');
+      expect(created).toContain('# >>> Anatomia managed (do not edit) >>>');
+    });
+
+    // @ana A004 — Codex preserves a user line on re-init.
+    it('.codex: re-init preserves a user line in .codex/.gitignore', async () => {
+      await createCodexConfiguration(tmpDir, 'fresh');
+      // User appends a custom line.
+      const codexGitignore = path.join(tmpDir, '.codex', '.gitignore');
+      const fresh = await fs.readFile(codexGitignore, 'utf-8');
+      await fs.writeFile(codexGitignore, `${fresh}\nuser-custom-ignore-line\n`);
+
+      await createCodexConfiguration(tmpDir, 'reinit');
+
+      const merged = await fs.readFile(codexGitignore, 'utf-8');
+      expect(merged).toContain('user-custom-ignore-line'); // A004
+      expect(merged).toContain('agent-memory/');
+    });
+
+    // @ana A014, A015, A016 — provenance never ignored on any surface.
+    it('generated .gitignore for all three surfaces never ignores provenance', async () => {
+      // .ana via createDirectoryStructure
+      const anaTmp = path.join(tmpDir, '.ana-prov');
+      await createDirectoryStructure(anaTmp);
+      expect(await fs.readFile(path.join(anaTmp, '.gitignore'), 'utf-8')).not.toContain(
+        'provenance',
+      );
+
+      // .claude via createClaudeConfiguration (fresh)
+      await createClaudeConfiguration(tmpDir, createEmptyEngineResult(), 'fresh');
+      expect(await fs.readFile(path.join(tmpDir, '.claude', '.gitignore'), 'utf-8')).not.toContain(
+        'provenance',
+      );
+
+      // .codex via createCodexConfiguration (fresh)
+      await createCodexConfiguration(tmpDir, 'fresh');
+      expect(await fs.readFile(path.join(tmpDir, '.codex', '.gitignore'), 'utf-8')).not.toContain(
+        'provenance',
+      );
+    });
+  });
+
   describe('re-init refreshes metadata fields from new scan', () => {
     it('refreshes name, language, framework, packageManager from new config', async () => {
       const existingAnaPath = path.join(tmpDir, '.ana-existing');
