@@ -1,0 +1,196 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card"
+
+assertions:
+  # ── AC4: sparkline primitive (render.ts) ──
+  - id: A001
+    says: "Trends render as a real bar chart, not arrow-joined numbers"
+    block: "sparkline renders block-glyph bars for a varied series"
+    target: "output"
+    matcher: "contains"
+    value: "█"
+
+  - id: A002
+    says: "A trend with no variation still renders cleanly without crashing"
+    block: "sparkline renders one glyph per value for a flat series"
+    target: "spark.length"
+    matcher: "equals"
+    value: 3
+
+  - id: A003
+    says: "The trend chart degrades to plain ASCII on low-fidelity terminals"
+    block: "sparkline ascii fallback emits no block glyphs"
+    target: "asciiSpark"
+    matcher: "not_contains"
+    value: "█"
+
+  - id: A004
+    says: "An empty trend renders as nothing rather than an error"
+    block: "sparkline returns an empty string for an empty series"
+    target: "emptySpark.length"
+    matcher: "equals"
+    value: 0
+
+  # ── AC4: scan card adopts the sparkline ──
+  - id: A005
+    says: "The scan card shows the weekly-commit trend as a real sparkline"
+    block: "scan card Activity row renders a sparkline for weekly commits"
+    target: "output"
+    matcher: "contains"
+    value: "█"
+
+  - id: A006
+    says: "The weekly-activity label is preserved on the scan card"
+    block: "scan card Activity row keeps the weekly label"
+    target: "output"
+    matcher: "contains"
+    value: "weekly"
+
+  # ── AC1/AC3: health header + sections on the shared vocabulary ──
+  - id: A007
+    says: "The health dashboard uses the same rounded header as the proof card"
+    block: "health dashboard renders the identity header with rounded corners"
+    target: "output"
+    matcher: "contains"
+    value: "╭"
+
+  - id: A008
+    says: "The old hand-rolled square box is gone from the health dashboard"
+    block: "health dashboard renders the identity header with rounded corners"
+    target: "output"
+    matcher: "not_contains"
+    value: "┌"
+
+  - id: A009
+    says: "The Quality section is introduced by a clean inset rule"
+    block: "health dashboard renders the Quality section as an inset rule"
+    target: "output"
+    matcher: "contains"
+    value: "── Quality"
+
+  - id: A010
+    says: "The Verification section is introduced by a clean inset rule"
+    block: "health dashboard renders the Verification section as an inset rule"
+    target: "output"
+    matcher: "contains"
+    value: "── Verification"
+
+  - id: A011
+    says: "The Hot Spots section is introduced by a clean inset rule"
+    block: "health dashboard renders the Hot Spots section as an inset rule"
+    target: "output"
+    matcher: "contains"
+    value: "── Hot Spots"
+
+  - id: A012
+    says: "The risk trend numbers are still reported on the dashboard"
+    block: "health dashboard reports risks-per-run last-5 and all-time"
+    target: "output"
+    matcher: "contains"
+    value: "(last 5)"
+
+  # ── AC5: section-omission rules preserved exactly ──
+  - id: A013
+    says: "A dashboard with no runs shows a clear no-data message"
+    block: "health dashboard zero-runs path shows No data."
+    target: "output"
+    matcher: "contains"
+    value: "No data."
+
+  - id: A014
+    says: "The Pipeline section is hidden when too few runs have timing"
+    block: "health dashboard omits Pipeline under three timed entries"
+    target: "output"
+    matcher: "not_contains"
+    value: "── Pipeline"
+
+  - id: A015
+    says: "The Hot Spots section is hidden when there are no hot spots"
+    block: "health dashboard omits Hot Spots when empty"
+    target: "output"
+    matcher: "not_contains"
+    value: "── Hot Spots"
+
+  - id: A016
+    says: "The Next Actions list never shows more than five items"
+    block: "health dashboard caps Next Actions at five"
+    target: "nextActionCount"
+    matcher: "equals"
+    value: 5
+
+  # ── AC8: Hot Spots alignment, disambiguation, truncation ──
+  - id: A017
+    says: "Hot Spots disambiguates files that share a name by showing their folder"
+    block: "health dashboard Hot Spots disambiguates colliding basenames"
+    target: "output"
+    matcher: "contains"
+    value: "/"
+
+  - id: A018
+    says: "An over-long module name is truncated instead of shearing the grid"
+    block: "health dashboard Hot Spots truncates an over-long module name"
+    target: "output"
+    matcher: "contains"
+    value: "…"
+
+  # ── AC2/AC3: summary list table on the shared vocabulary ──
+  - id: A019
+    says: "The proof summary list uses a clean inset header, not a bold label"
+    block: "summary list table renders Proof History as an inset rule"
+    target: "output"
+    matcher: "contains"
+    value: "── Proof History"
+
+  - id: A020
+    says: "The summary list shows each proof's pass/fail result"
+    block: "summary list table renders a PASS result for a passing entry"
+    target: "output"
+    matcher: "contains"
+    value: "PASS"
+
+  - id: A021
+    says: "A very long slug is truncated in the summary list rather than misaligning it"
+    block: "summary list table truncates an over-long slug"
+    target: "output"
+    matcher: "contains"
+    value: "…"
+
+  # ── AC7: presentation-only — JSON outputs unchanged ──
+  - id: A022
+    says: "The health JSON still carries the trajectory data unchanged"
+    block: "ana proof health --json still includes trajectory"
+    target: "output"
+    matcher: "contains"
+    value: "trajectory"
+
+  - id: A023
+    says: "The proof list JSON still carries the entries unchanged"
+    block: "ana proof --json still includes entries"
+    target: "output"
+    matcher: "contains"
+    value: "entries"
+
+  # ── AC6: color discipline — legible with color stripped ──
+  - id: A024
+    says: "The dashboard is fully legible with color stripped, with no stray escape codes"
+    block: "health dashboard emits no ANSI escapes when color is stripped"
+    target: "ansiCount"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/utils/render.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/scan.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/render.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/scan.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/health-golden.test.ts"
+    action: create
