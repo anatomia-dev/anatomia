@@ -24,5 +24,45 @@
   "spec": {
     "saved_at": "2026-06-09T10:04:17.553Z",
     "hash": "sha256:340fa8714b6b19e3ccacb81927b94c767b8750d752fb899661bc730c3ec69599"
-  }
+  },
+  "build_started_at": "2026-06-09T19:55:52.737Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-09T20:12:57.003Z",
+    "hash": "sha256:bfd99fc381d428cf3e079089d885702bc497625ede4c7acbd5b229f0c98629d5"
+  },
+  "build-data": {
+    "saved_at": "2026-06-09T20:12:57.004Z",
+    "hash": "sha256:5bdf43da71a2427f3734fdc7a59ab3f33632934de95d03a72bb52b83e2dc2cf6"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/utils/displayNames.ts",
+    "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/scan-card-golden.test.ts",
+    "packages/cli/tests/commands/scan.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/scan.ts": {
+      "added": 116,
+      "deleted": 71
+    },
+    "packages/cli/src/utils/displayNames.ts": {
+      "added": 4,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap": {
+      "added": 91,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/scan-card-golden.test.ts": {
+      "added": 246,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/scan.test.ts": {
+      "added": 79,
+      "deleted": 15
+    }
+  },
+  "commit_hygiene": []
 }
