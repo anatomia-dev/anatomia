@@ -37,6 +37,12 @@ assertions:
     target: "validatePlanFormat(planMissingPhasesHeading)"
     matcher: "exists"
 
+  - id: A019
+    says: "A plan whose phases section is empty is rejected"
+    block: "validatePlanFormat rejects a plan with a ## Phases heading but zero phase entries"
+    target: "validatePlanFormat(planWithEmptyPhasesSection)"
+    matcher: "exists"
+
   # --- countPhases unchanged: format-agnostic counting (AC7) ---
   - id: A006
     says: "Phase counting reads the old checkbox format correctly"
@@ -97,11 +103,11 @@ assertions:
 
   # --- Agent instructions: glyph and tick removed, wording coherent (AC3, AC4, AC9) ---
   - id: A014
-    says: "The planning agent no longer emits the checkbox glyph in its phase format"
-    block: "ana-plan templates' ## Phases format blocks contain no '- [ ]' checkbox glyph"
-    target: "ana-plan template phase-format section"
-    matcher: "not_contains"
-    value: "- [ ]"
+    says: "The planning agent emits phases as a plain list with no checkbox glyph"
+    block: "ana-plan templates' ## Phases format block uses the glyph-free phase line"
+    target: "ana-plan template ## Phases format block (single-spec)"
+    matcher: "contains"
+    value: "- {phase description matching the scope}"
 
   - id: A015
     says: "The verify agent is no longer told to tick a plan checkbox"

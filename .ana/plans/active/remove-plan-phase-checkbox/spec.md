@@ -211,6 +211,8 @@ From scope (verified against current commands/architecture), plus implementation
   - Multi-phase new-format plan (two `- Phase` items each with a `Spec:`) → passes (NEW).
   - Plan with a phase line but no `Spec:` ref before the next phase → fails (replaces the
     "rejects plan.md without checkboxes" test; proves the real contract is still enforced).
+  - `## Phases` heading present but zero phase entries (empty section) → fails (guards the
+    empty-section case; the re-anchored validator requires ≥1 phase).
   - Missing `## Phases` heading → still fails (keep existing).
 - **countPhases regression:** Add a focused test (new file `tests/commands/work-state.test.ts`
   or co-locate where `countPhases` consumers are tested) asserting `countPhases` returns the
