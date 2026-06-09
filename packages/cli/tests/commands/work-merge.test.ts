@@ -699,4 +699,101 @@ describe('ana work complete --merge', () => {
     // A009: the recorded proof annotates the gap.
     expect(entry!.process!.completeness!.complete).toBe(false);
   });
+
+  // @ana A012, A013
+  // Reproduces the disease: a tracked-modified plan.md collides with the
+  // `git pull --rebase --autostash` in the merge-completion path. origin/main is
+  // ahead by a commit that rewrites the SAME plan.md line the local working tree
+  // has uncommitted — without the restore-from-HEAD defense, the autostash pop
+  // conflicts and completion fails. With the defense, plan.md is restored from
+  // HEAD before the pull, the rebase is clean, and completion leaves a clean tree.
+  it('completes --merge with a tracked-modified plan.md (autostash collision) and leaves a clean tree', async () => {
+    const slug = 'test-slug';
+    const originDir = await fs.mkdtemp(path.join(os.tmpdir(), 'work-merge-origin-'));
+    realExecSync('git init --bare', { cwd: originDir, stdio: 'ignore' });
+
+    // Working repo wired to the bare origin.
+    realExecSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync(`git remote add origin "${originDir}"`, { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main', mergeStrategy: 'merge' }),
+      'utf-8',
+    );
+    realExecSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git push -u origin main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Planning artifacts: plan.md V1 (the committed baseline / HEAD content).
+    const slugPath = path.join(tempDir, '.ana', 'plans', 'active', slug);
+    await fs.mkdir(slugPath, { recursive: true });
+    await fs.writeFile(path.join(slugPath, 'scope.md'), '# Scope', 'utf-8');
+    const planV1 = '# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md\n';
+    await fs.writeFile(path.join(slugPath, 'plan.md'), planV1, 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'spec.md'), '# Spec', 'utf-8');
+    realExecSync('git add -A && git commit -m "add planning"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git push origin main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Origin advances: a pushed commit that rewrites the Phase 1 line, then local
+    // resets back so origin/main is strictly ahead with a conflicting plan.md.
+    const relPlan = `.ana/plans/active/${slug}/plan.md`;
+    await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1 ORIGIN\n  Spec: spec.md\n', 'utf-8');
+    realExecSync(`git commit -am "origin edits plan"`, { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git push origin main', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git reset --hard HEAD~1', { cwd: tempDir, stdio: 'ignore' });
+
+    // Feature branch with reports, merged into local main (the completion baseline).
+    realExecSync(`git checkout -b feature/${slug}`, { cwd: tempDir, stdio: 'ignore' });
+    await fs.writeFile(path.join(slugPath, 'build_report.md'), '# Build Report', 'utf-8');
+    await fs.writeFile(path.join(slugPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
+    const savesEntries: Record<string, { saved_at: string; hash: string }> = {
+      'build-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+      'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) },
+    };
+    await fs.writeFile(path.join(slugPath, '.saves.json'), JSON.stringify(savesEntries), 'utf-8');
+    realExecSync('git add -A && git commit -m "add reports"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync(`git merge --no-ff feature/${slug} -m "merge"`, { cwd: tempDir, stdio: 'ignore' });
+
+    // The dirty working tree predating the fix: plan.md tracked-modified on the
+    // same line origin rewrote — guarantees an autostash-pop conflict if not restored.
+    await fs.writeFile(path.join(slugPath, 'plan.md'), '# Plan\n## Phases\n- [ ] Phase 1 LOCAL\n  Spec: spec.md\n', 'utf-8');
+
+    // Sanity: plan.md is genuinely tracked-modified before completion.
+    const preStatus = realExecSync(`git status --porcelain -- ${relPlan}`, { cwd: tempDir, encoding: 'utf-8' });
+    expect(preStatus.trim()).not.toBe('');
+
+    mockGh((args) => {
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'MERGED', baseRefName: 'main' }), stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    // A012: completion succeeds (does not throw / process.exit on a pull conflict).
+    await completeWork(slug, { merge: true });
+    const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', slug);
+    expect(fsSync.existsSync(completedPath)).toBe(true);
+
+    // A013: no uncommitted/modified plan.md remains on the working tree.
+    const postStatus = realExecSync('git status --porcelain', { cwd: tempDir, encoding: 'utf-8' });
+    expect(postStatus.trim()).toBe('');
+
+    // The discriminating check: without the restore-from-HEAD defense, the
+    // autostash pop conflicts and completion silently commits a plan.md full of
+    // `<<<<<<<` conflict markers (the pull returns exit 0 despite the conflict).
+    // With the defense, plan.md is restored from HEAD, the rebase is clean, and
+    // the archived plan.md is the well-formed merged content — never corrupted.
+    const archivedPlan = fsSync.readFileSync(path.join(completedPath, 'plan.md'), 'utf-8');
+    expect(archivedPlan).not.toContain('<<<<<<<');
+    expect(archivedPlan).not.toContain('Stashed changes');
+
+    await fs.rm(originDir, { recursive: true, force: true });
+  });
 });
