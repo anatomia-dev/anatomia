@@ -1,0 +1,91 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scan card golden snapshots > renders the full deep-tier card 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  anatomia-workspace                                                 │
+│  TypeScript · Vitest · 2 packages                                cli│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Stack ──────────────────────────────────────────────────────────────
+  Language     TypeScript
+  Testing      Vitest
+  Workspace    pnpm · primary: packages/cli
+
+── How your team writes ───────────────────────────────────────────────
+  Naming       camelCase functions · SCREAMING_SNAKE_CASE constants
+  Indentation  spaces, 2-wide
+  Error style  exceptions
+  Validation   Zod
+
+── Intelligence ───────────────────────────────────────────────────────
+  Activity     3 active contributors · 2→5→4→6 weekly
+
+  Full data: .ana/scan.json
+  Run \`ana init\` to scaffold 5 skills for TypeScript"
+`;
+
+exports[`scan card golden snapshots > renders the gate fixture with mixed and low-confidence signals omitted 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  gated                                                              │
+│  TypeScript                                                      cli│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Stack ──────────────────────────────────────────────────────────────
+  Language     TypeScript
+
+── How your team writes ───────────────────────────────────────────────
+  Naming       camelCase functions · SCREAMING_SNAKE_CASE constants
+  Indentation  spaces, 2-wide
+  Validation   Zod
+
+  Full data: .ana/scan.json
+  Run \`ana init\` to scaffold 5 skills for TypeScript"
+`;
+
+exports[`scan card golden snapshots > renders the monorepo overflow card with a +N more indicator 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  big-monorepo                                                       │
+│  TypeScript · 0 packages                                            │
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Stack ──────────────────────────────────────────────────────────────
+  Language     TypeScript
+  Workspace    monorepo (0 packages)
+
+── Surfaces ───────────────────────────────────────────────────────────
+  svc1   NestJS · Vitest
+  svc2   NestJS · Vitest
+  svc3   NestJS · Vitest
+  svc4   NestJS · Vitest
+         (+2 more)
+
+  Full data: .ana/scan.json
+  Run \`ana init\` to scaffold 5 skills for TypeScript"
+`;
+
+exports[`scan card golden snapshots > renders the no-stack ancestor-walk fallback 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  subdir                                                             │
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Stack ──────────────────────────────────────────────────────────────
+  No package manifest in this directory
+  Run \`ana scan\` from the project root for full detection.
+  (found at <ROOT>)
+
+  Run \`ana init\` to get started."
+`;
+
+exports[`scan card golden snapshots > renders the surface-tier card with the section absent (no empty header) 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  anatomia-workspace                                                 │
+│  TypeScript · Vitest                                             cli│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Stack ──────────────────────────────────────────────────────────────
+  Language     TypeScript
+  Testing      Vitest
+
+  Full data: .ana/scan.json
+  Run \`ana init\` to scaffold 5 skills for TypeScript"
+`;
