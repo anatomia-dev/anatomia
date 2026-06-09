@@ -1,0 +1,116 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Surface the proof after work complete + ana proof --last"
+
+assertions:
+  # Part A — work complete hint (normal path)
+  - id: A001
+    says: "Completing a work item points you to the command that shows its full proof"
+    block: "work complete prints the View the full proof hint on the normal path"
+    target: "stdout"
+    matcher: "contains"
+    value: "View the full proof: ana proof"
+
+  - id: A002
+    says: "The completion JSON tells an agent exactly which command to run next"
+    block: "work complete --json includes next_command on the normal path"
+    target: "json.results.next_command"
+    matcher: "contains"
+    value: "ana proof"
+
+  # Part A — work complete hint (recovery / already-merged path)
+  - id: A003
+    says: "Even an already-completed work item still points you to its proof"
+    block: "work complete prints the hint on the recovery/already-merged path"
+    target: "stdout"
+    matcher: "contains"
+    value: "View the full proof: ana proof"
+
+  - id: A004
+    says: "An already-completed work item still returns the next command in JSON"
+    block: "work complete --json includes next_command on the recovery path"
+    target: "json.results.next_command"
+    matcher: "contains"
+    value: "ana proof"
+
+  # Part B — --last selection
+  - id: A005
+    says: "Asking for the latest proof shows the most recently completed one"
+    block: "proof --last shows the entry with the most-recent completed_at"
+    target: "stdout"
+    matcher: "contains"
+    value: "recent-slug"
+
+  - id: A006
+    says: "The latest proof in JSON is labelled with its real work item name"
+    block: "proof --last --json envelope uses the resolved entry's real slug"
+    target: "json.command"
+    matcher: "contains"
+    value: "recent-slug"
+
+  - id: A007
+    says: "Asking for the latest proof gives the same JSON shape as asking by name"
+    block: "proof --last --json matches proof <slug> --json for the same entry"
+    target: "json.results.slug"
+    matcher: "equals"
+    value: "recent-slug"
+
+  # Part B — alias
+  - id: A008
+    says: "The --latest spelling works the same as --last"
+    block: "proof --latest reaches the same code path as --last"
+    target: "stdout"
+    matcher: "contains"
+    value: "recent-slug"
+
+  # Part B — mutual exclusion
+  - id: A009
+    says: "Naming a proof and asking for the latest at once is rejected, not guessed"
+    block: "proof <slug> --last errors with a clear message"
+    target: "stderr"
+    matcher: "contains"
+    value: "Pick one selector"
+
+  - id: A010
+    says: "Combining a name with the latest selector fails loudly"
+    block: "proof <slug> --last exits non-zero"
+    target: "exitCode"
+    matcher: "equals"
+    value: 1
+
+  # Part B — empty chain grace
+  - id: A011
+    says: "Asking for the latest proof before any exist gives a friendly message, not a crash"
+    block: "proof --last on an empty chain prints No proofs yet."
+    target: "stdout"
+    matcher: "contains"
+    value: "No proofs yet."
+
+  - id: A012
+    says: "Asking for the latest proof before any exist does not error out"
+    block: "proof --last on an empty chain exits zero"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  # Part B — tie-break (the trap)
+  - id: A013
+    says: "When two proofs finished at the same instant, the latest one is the most recently added"
+    block: "proof --last tie-break selects the last-appended entry among equal completed_at"
+    target: "stdout"
+    matcher: "contains"
+    value: "newer-slug"
+
+file_changes:
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work-merge.test.ts"
+    action: modify
+  - path: "website/content/docs/guides/reading-a-proof.mdx"
+    action: modify
