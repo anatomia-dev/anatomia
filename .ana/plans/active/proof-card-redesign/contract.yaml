@@ -1,0 +1,234 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Proof card visual redesign on a shared render vocabulary"
+
+assertions:
+  # ── AC1: render primitives exist and behave (render.test.ts) ──
+  - id: A001
+    says: "The render module provides all six building blocks the cards are built from"
+    block: "render module exports the six primitives"
+    target: "exports"
+    matcher: "contains"
+    value: "statGrid"
+
+  - id: A002
+    says: "A section divider shows its label and fills the line to a fixed width"
+    block: "sectionRule renders an inset rule with its label"
+    target: "rule"
+    matcher: "contains"
+    value: "Contract"
+
+  - id: A003
+    says: "A section divider can show a summary aligned to the right edge"
+    block: "sectionRule right-aligns the rollup within the width"
+    target: "rule.endsWith.rollup"
+    matcher: "truthy"
+
+  - id: A004
+    says: "The header box keeps its established width so existing cards stay stable"
+    block: "headerBox reproduces the 71-column width by default"
+    target: "headerBox.lineWidth"
+    matcher: "equals"
+    value: 71
+
+  - id: A005
+    says: "The header box can render rounded corners for the proof card"
+    block: "headerBox renders rounded corners when requested"
+    target: "headerBox.rounded.topLeft"
+    matcher: "equals"
+    value: "╭"
+
+  - id: A006
+    says: "The header box renders square corners by default so the health card is unchanged"
+    block: "headerBox renders square corners by default"
+    target: "headerBox.default.topLeft"
+    matcher: "equals"
+    value: "┌"
+
+  - id: A007
+    says: "Labelled rows line their values up into a clean column"
+    block: "keyValueRows aligns the label column"
+    target: "rows.aligned"
+    matcher: "truthy"
+
+  - id: A008
+    says: "Number columns in the stat grid line up on their right edge"
+    block: "statGrid right-aligns numeric columns"
+    target: "grid.numericColumns.rightAligned"
+    matcher: "truthy"
+
+  - id: A009
+    says: "An over-long cell is trimmed so it never breaks the grid's alignment"
+    block: "statGrid truncates an over-width cell instead of shearing the grid"
+    target: "grid.maxWidthCell.truncated"
+    matcher: "truthy"
+
+  - id: A010
+    says: "The proportion bar falls back to plain ASCII characters when block glyphs are off"
+    block: "proportionBar degrades to ASCII when ascii option is set"
+    target: "bar.ascii"
+    matcher: "not_contains"
+    value: "█"
+
+  - id: A011
+    says: "Each verification status maps to its own status symbol"
+    block: "statusGlyph returns the satisfied glyph for SATISFIED"
+    target: "glyph.satisfied"
+    matcher: "contains"
+    value: "✓"
+
+  # ── AC2/AC3: card built on primitives, inset rules with roll-ups ──
+  - id: A012
+    says: "The proof card shows the verdict prominently in its header"
+    block: "card header shows the PASS verdict"
+    target: "card"
+    matcher: "contains"
+    value: "PASS"
+
+  - id: A013
+    says: "Every section of the card is introduced by an inset divider rule"
+    block: "card section headers render as inset rules"
+    target: "card"
+    matcher: "contains"
+    value: "── Contract"
+
+  - id: A014
+    says: "The Contract section summarises how many assertions were satisfied"
+    block: "Contract rule carries a satisfied roll-up"
+    target: "card.contractRule"
+    matcher: "contains"
+    value: "/"
+
+  # ── AC4: collapse passing, expand exceptional ──
+  - id: A015
+    says: "Passing assertions are summarised in one line rather than listed individually"
+    block: "passing assertions collapse to a single counted line"
+    target: "card.passingAssertions"
+    matcher: "contains"
+    value: "satisfied"
+
+  - id: A016
+    says: "A failed assertion is always shown in full with its plain-English statement"
+    block: "UNSATISFIED assertion renders individually with its says text"
+    target: "card.unsatisfied"
+    matcher: "truthy"
+
+  - id: A017
+    says: "A deviated assertion is shown with the detail of how it deviated"
+    block: "DEVIATED assertion renders with its deviation detail"
+    target: "card.deviated.detail"
+    matcher: "truthy"
+
+  # ── AC5: findings roll-up + actionable overflow ──
+  - id: A018
+    says: "The Findings section leads with a count of issues by severity"
+    block: "Findings rule carries a severity roll-up"
+    target: "card.findingsRule"
+    matcher: "truthy"
+
+  - id: A019
+    says: "When findings overflow the list, the card points to the full data instead of a dead end"
+    block: "findings overflow line points to --json"
+    target: "card.findingsOverflow"
+    matcher: "contains"
+    value: "--json"
+
+  - id: A020
+    says: "The card never trails off with a bare 'and N more'"
+    block: "findings overflow is not a bare and-N-more"
+    target: "card.findingsOverflow"
+    matcher: "not_contains"
+    value: "and"
+
+  # ── AC6: Provenance grid with cache, total row, completeness ──
+  - id: A021
+    says: "The cost breakdown shows cached tokens, so each session's cost reconciles"
+    block: "Provenance grid includes a cache token column"
+    target: "card.provenance"
+    matcher: "contains"
+    value: "cache"
+
+  - id: A022
+    says: "The cost breakdown shows input and output tokens per session"
+    block: "Provenance grid includes input and output token columns"
+    target: "card.provenance.columns"
+    matcher: "contains"
+    value: "out"
+
+  - id: A023
+    says: "The cost breakdown ends with a clearly separated total and the price-table version"
+    block: "Provenance TOTAL row is present with the price-table version"
+    target: "card.provenance"
+    matcher: "contains"
+    value: "TOTAL"
+
+  - id: A024
+    says: "Whether the build is complete is stated on one line"
+    block: "completeness renders on one line"
+    target: "card.completeness"
+    matcher: "contains"
+    value: "completeness"
+
+  # ── AC7: alignment / 80 columns ──
+  - id: A025
+    says: "The whole card fits within a standard 80-column terminal"
+    block: "card stays within 80 columns across all fixtures"
+    target: "card.maxLineWidth.within80"
+    matcher: "truthy"
+
+  - id: A026
+    says: "An unpriced model is shown honestly as not-available, never as free"
+    block: "unpriced model session renders n/a, never $0.00"
+    target: "card.unpriced"
+    matcher: "not_contains"
+    value: "$0.00"
+
+  # ── AC8: color-independence ──
+  - id: A027
+    says: "The card lays out correctly with color disabled, so layout never depends on color"
+    block: "card is plain-text aligned with color stripped"
+    target: "card.plain.containsAnsiEscape"
+    matcher: "not_equals"
+    value: true
+
+  # ── AC9: json untouched ──
+  - id: A028
+    says: "The machine-readable JSON output is unchanged by this visual redesign"
+    block: "proof --json output still carries the assertions array unchanged"
+    target: "json.assertions"
+    matcher: "exists"
+
+  # ── AC10: golden snapshots ──
+  - id: A029
+    says: "The card without a provenance section still reads as a finished receipt"
+    block: "golden snapshot: provenance-absent card matches"
+    target: "golden.provenanceAbsent"
+    matcher: "truthy"
+
+  - id: A030
+    says: "A card with many agent sessions stays aligned"
+    block: "golden snapshot: six-or-more sessions card matches"
+    target: "golden.manySessions"
+    matcher: "truthy"
+
+  - id: A031
+    says: "A failing card shows its failed and deviated assertions in full"
+    block: "golden snapshot: FAIL/DEVIATED card matches"
+    target: "golden.failDeviated"
+    matcher: "truthy"
+
+file_changes:
+  - path: "packages/cli/src/utils/render.ts"
+    action: create
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/render.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/proof-card-golden.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/proof.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/commit-hygiene.test.ts"
+    action: modify
