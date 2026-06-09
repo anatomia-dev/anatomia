@@ -48,6 +48,7 @@ No data changes. The `HealthReport` shape, the zero-runs path, all section-omiss
 - AC7: `ana proof health --json` and `ana proof --json` outputs are byte-identical to before this change (presentation-only).
 - AC8: Hot Spots column alignment holds for long/disambiguated module names (the existing basename-disambiguation behavior is preserved) and many findings.
 - AC9: All existing proof health and list-table tests pass (updated where the visible format changed, including the exact-format `A005` check); test count does not decrease.
+- AC10: Golden/snapshot tests pin the full rendered dashboard and summary table with color stripped (`FORCE_COLOR=0`, asserting plain-text layout) across fixtures: full dashboard, zero-runs ("No data."), Pipeline omitted (<3 timed entries), Hot Spots empty, Next Actions empty, the summary list table, and a sparkline fixture exercising both the UTF-8 and the ASCII-fallback path. `toContain` cannot catch a sheared Hot Spots grid or a misaligned column; the golden files can.
 
 ## Edge Cases & Risks
 
@@ -87,7 +88,7 @@ No data changes. The `HealthReport` shape, the zero-runs path, all section-omiss
 - [OBSERVED] No `process.stdout.columns` usage; width is hardcoded.
 
 ### Test Infrastructure
-- `packages/cli/tests/commands/proof.test.ts` (5,465 lines) — health and list-table assertions live here alongside the card's; mostly substring `toContain`, with the exact-format `A005` double-space/right-border check being the one brittle case. The health dashboard health-trajectory tests are in `tests/utils/proof-health.test.ts` (data-level, unaffected by render).
+- `packages/cli/tests/commands/proof.test.ts` (5,588 lines) — health and list-table assertions live here alongside the card's; mostly substring `toContain`, with the exact-format `A005` double-space/right-border check being the one brittle case. The health dashboard health-trajectory tests are in `tests/utils/proof-health.test.ts` (data-level, unaffected by render).
 
 ## For AnaPlan
 
@@ -119,3 +120,5 @@ The redesigned `formatHumanReadable` (proof card) in the same file is the direct
 ## DEPENDENCY
 
 This scope **requires `proof-card-redesign` to land first** — it ships `utils/render.ts`. Natural sequence: `proof-card-redesign` → (`scan-card-redesign` and `health-dashboard-redesign`, either order; health is the smaller/safer of the two). The module API is the integration contract.
+
+`formatHealthDisplay`'s Hot Spots grid is one of the two real renderers that `proof-card-redesign`'s API pressure-test must validate the primitive surface against (the other is scan.ts). Any primitive this scope needs that the module lacks is added to `utils/render.ts` — never re-inlined in proof.ts. If adoption here reveals a gap, that is a signal the pressure-test missed a case, not a license to inline.
