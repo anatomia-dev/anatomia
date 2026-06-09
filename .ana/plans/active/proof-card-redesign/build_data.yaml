@@ -1,0 +1,22 @@
+schema: 1
+concerns:
+  - summary: "AC2: one chalk.bold('Phase breakdown') Timing sub-header remains instead of a sectionRule (it is a sub-section of Timing, not a top-level card section, and proofSummary.test.ts asserts the token so it must change in lockstep). Explicitly out of scope for the fix cycle by agreement."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing @ana tag-ID collision: proof.test.ts and proof.ts carry @ana A0xx tags from the ORIGINAL proof contract, while this feature's contract reuses A001-A031 for different assertions. A verifier's tag scan could mis-map the old tags. This feature's genuine coverage lives in render.test.ts (A001-A011) and proof-card-golden.test.ts + the A028 test (A012-A031)."
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Stale @ana A020 tag in proofSummary.test.ts:2409 points at the phase-breakdown test, but A020 in this contract is the findings-overflow rule. Pre-existing mis-tag in a file this build does not modify; A020 is correctly covered by the golden test. Flagged for a future tag sweep."
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Finding / Build-Concern summaries are free text and are not width-bounded in the card; a pathological long summary could exceed 80 columns. The card's structural layout (header box, provenance grid, rules, footer) stays <=80 across all seven golden fixtures. The statGrid/keyValueRows truncation primitives are the eventual fix when health adopts them (cli-polish-C3)."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive). Not a file this build touches; flagged pre-existing by the verifier in cycle 1. Not introduced by this build."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge

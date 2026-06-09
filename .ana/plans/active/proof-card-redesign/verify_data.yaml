@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Ad-hoc bold sub-header `chalk.bold('  Phase breakdown')` still present inside formatHumanReadable. AC2 says no inline section-header construction should remain; this sub-header (inside the Timing block, multi-phase path) was not converted to a primitive. Carried from the FAIL round — never a blocker (AC2 was PARTIAL), and a defensible call since it is a sub-header inside a section, not a top-level section header."
+    file: "packages/cli/src/commands/proof.ts"
+    line: 386
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A002"]
+  - category: test
+    summary: "Golden test pins the timezone by mutating process.env['TZ']='UTC' in beforeAll and restoring in afterAll. Correct and robust for this file (verified green under UTC/Tokyo/New_York, and full suite green under TZ=UTC). But process.env.TZ is process-global: if vitest ever runs this file in a worker shared with another time-dependent test file, that file could transiently observe UTC during this file's run. No leak observed in practice; the restore is clean."
+    file: "packages/cli/tests/commands/proof-card-golden.test.ts"
+    line: 28
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Counts-unavailable session (derived absent) renders as a standalone `<label>  counts unavailable` line above the grid (proof.ts:452-455), not as an in-grid row spanning the numeric columns as the spec mockup depicts. This is arguably cleaner (keeps numeric columns from widening) and the substance — the session is shown loudly and contributes nothing to totals — is fully met. No contract assertion governs the exact rendering."
+    file: "packages/cli/src/commands/proof.ts"
+    line: 452
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A025"]
+  - category: test
+    summary: "Stale `@ana A020` tag points at the wrong assertion. In this contract A020 is the findings-overflow no-bare-and-N-more rule, but the tag sits on the single-phase phase-breakdown test in an unmodified file. Pre-existing mis-tag; harmless here (A020 is correctly covered by the golden test at line 251) but would mislead tag-driven verification. Carried from the FAIL round; the fix cycle did not touch this file."
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 2409
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Contract file_changes lists proofSummary.test.ts and commit-hygiene.test.ts as 'modify', but their substring toContain assertions survive the new format with minimal/no change. Harmless over-prediction; a planner could mark such resilient files as optional. Carried from the FAIL round."
+    severity: observation
+    suggested_action: acknowledge

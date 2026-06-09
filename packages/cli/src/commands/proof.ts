@@ -50,6 +50,18 @@ import {
   pullBeforeRead,
   commitAndPushProofChanges,
 } from '../utils/git-operations.js';
+import {
+  BOX,
+  headerBox,
+  sectionRule,
+  keyValueRows,
+  statGrid,
+  proportionBar,
+  statusGlyph,
+  formatTokenCount,
+  columnWidth,
+} from '../utils/render.js';
+import type { KeyValueRow } from '../utils/render.js';
 
 /**
  * Format an ISO timestamp as a local-timezone YYYY-MM-DD date string.
@@ -67,35 +79,6 @@ function formatLocalDate(iso: string): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 import { isWorktreeDirectory } from '../utils/worktree.js';
-
-/**
- * Compute a dynamic column width from data.
- *
- * Scans items via `accessor`, finds the longest visible value, adds a `gap`
- * for spacing, and clamps to `[minWidth, maxWidth]`. Values exceeding
- * `maxWidth` should be truncated with `…` at display time.
- *
- * @param items - Array of items to scan
- * @param accessor - Function to extract the visible string from each item
- * @param minWidth - Minimum column width
- * @param maxWidth - Maximum column width (default 40)
- * @param gap - Number of padding characters after the longest value (default 2)
- * @returns Clamped column width
- */
-function columnWidth(
-  items: readonly unknown[],
-  accessor: (item: unknown) => string,
-  minWidth: number,
-  maxWidth = 40,
-  gap = 2
-): number {
-  let longest = 0;
-  for (const item of items) {
-    const len = accessor(item).length;
-    if (len > longest) longest = len;
-  }
-  return Math.min(maxWidth, Math.max(minWidth, longest + gap));
-}
 
 /**
  * Validate a surface name against ana.json surfaces configuration.
@@ -124,19 +107,6 @@ function validateSurface(
     return { valid: false, available: [], configured: false };
   }
 }
-
-/**
- * Box-drawing characters for terminal output
- * Compatible across iTerm, Terminal.app, VS Code terminal, Windows Terminal
- */
-const BOX = {
-  horizontal: '\u2500', // ─
-  vertical: '\u2502', // │
-  topLeft: '\u250C', // ┌
-  topRight: '\u2510', // ┐
-  bottomLeft: '\u2514', // └
-  bottomRight: '\u2518', // ┘
-};
 
 /**
  * Factory that creates an exitError closure for proof subcommands.
@@ -214,274 +184,330 @@ const EMPTY_AUDIT_MATRIX = {
   stale_medium: 0,
 };
 
-// @ana A005, A006
 /**
  * Severity ordering for display sorting: risk → debt → observation → unclassified
  */
 const SEVERITY_ORDER: Record<string, number> = { risk: 0, debt: 1, observation: 2 };
 
+/** A severity-classified item rendered in the Findings / Build Concerns lists. */
+interface SeverityItem {
+  summary: string;
+  severity?: string;
+  suggested_action?: string;
+}
+
 /**
- * Get status icon for assertion status
+ * Sort severity-classified items risk → debt → observation → unclassified.
  *
- * @param status - Assertion status (SATISFIED, UNSATISFIED, DEVIATED, UNCOVERED)
- * @returns Colored icon character
+ * @param items - The items to sort (not mutated)
+ * @returns A new array in severity order
  */
-function getStatusIcon(status: string): string {
-  switch (status.toUpperCase()) {
-    case 'SATISFIED':
-      return chalk.green('✓');
-    case 'UNSATISFIED':
-      return chalk.red('✗');
-    case 'DEVIATED':
-      return chalk.yellow('⚠');
-    case 'UNVERIFIED':
-      return chalk.gray('?');
-    case 'UNCOVERED':
-      return chalk.gray('?');
-    default:
-      return chalk.gray('·');
+function sortBySeverity<T extends { severity?: string }>(items: readonly T[]): T[] {
+  return [...items].sort((a, b) => {
+    const wa = a.severity ? (SEVERITY_ORDER[a.severity] ?? 3) : 3;
+    const wb = b.severity ? (SEVERITY_ORDER[b.severity] ?? 3) : 3;
+    return wa - wb;
+  });
+}
+
+/**
+ * Build a severity roll-up string for a section rule, e.g. `1 debt · 4 obs`.
+ *
+ * @param items - The classified items to summarise
+ * @returns A `·`-joined count-by-severity string (empty when no items)
+ */
+function severityRollup(items: readonly { severity?: string }[]): string {
+  const counts: Record<string, number> = {};
+  for (const it of items) counts[it.severity ?? 'unclassified'] = (counts[it.severity ?? 'unclassified'] ?? 0) + 1;
+  const labels: Array<[string, string]> = [
+    ['risk', 'risk'],
+    ['debt', 'debt'],
+    ['observation', 'obs'],
+    ['unclassified', 'unclassified'],
+  ];
+  return labels
+    .filter(([k]) => counts[k])
+    .map(([k, label]) => `${counts[k]} ${label}`)
+    .join(' · ');
+}
+
+/**
+ * Render a severity-tagged list section (Findings / Build Concerns) onto `lines`.
+ *
+ * Leads with an inset rule carrying a severity roll-up, lists up to five items
+ * with `[severity · action]` badges, and replaces any overflow with an
+ * actionable `--json` pointer (never a bare "and N more").
+ *
+ * @param lines - The output buffer to append to
+ * @param title - The section label (e.g. `Findings`)
+ * @param slug - The proof slug, for the `--json` overflow pointer
+ * @param items - The classified items to render
+ */
+function renderSeverityList(
+  lines: string[],
+  title: string,
+  slug: string,
+  items: readonly SeverityItem[]
+): void {
+  if (items.length === 0) return;
+  const sorted = sortBySeverity(items);
+  lines.push('');
+  lines.push(sectionRule(title, { rollup: severityRollup(sorted) }));
+  const MAX_DISPLAY = 5;
+  for (const it of sorted.slice(0, MAX_DISPLAY)) {
+    if (it.severity && it.suggested_action) {
+      lines.push(`  [${it.severity} · ${it.suggested_action}] ${it.summary}`);
+    } else {
+      lines.push(`  ${it.summary}`);
+    }
+  }
+  if (sorted.length > MAX_DISPLAY) {
+    lines.push(`  ${sorted.length - MAX_DISPLAY} more — see \`ana proof ${slug} --json\``);
   }
 }
 
 /**
- * Format a token count compactly (e.g. `48211` → `48.2k`, `1442301` → `1.4M`).
+ * Render the human-readable proof card for `ana proof <slug>`.
  *
- * @param n - The token count
- * @returns A short human-readable string
- */
-function formatTokenCount(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return String(n);
-}
-
-/**
- * Format human-readable terminal output
+ * Built entirely on the shared render vocabulary (utils/render.ts): a rounded
+ * header box, inset section rules with roll-ups, a contract proportion bar,
+ * aligned timing rows, severity-tagged finding lists, and a borderless
+ * Provenance stat grid with a TOTAL footer. Presentation only — it never reads
+ * or mutates proof data and renders fields that already exist on the entry.
  *
  * @param entry - Proof chain entry to display
- * @returns Formatted terminal output string
+ * @returns Formatted terminal card string
  */
 export function formatHumanReadable(entry: ProofChainEntry): string {
   const lines: string[] = [];
+  const width = 71;
 
-  // Parse completed_at for timestamp
+  // ── Provenance cost summary (needed up front for the header subtitle) ──
+  let provTotalCost = 0;
+  let provPriced = false;
+  let provTableVersion = '';
+  let provUnpriced = 0;
+  if (entry.process) {
+    for (const s of entry.process.sessions) {
+      if (!s.derived) continue;
+      const c = computeCost(s.derived.tokens, s.derived.model);
+      if (c.priced) {
+        provTotalCost += c.cost_usd;
+        provPriced = true;
+      } else {
+        provUnpriced += 1;
+      }
+      if (!provTableVersion) provTableVersion = s.derived.price_table_version;
+    }
+  }
+
+  // ── Header ──
   const completedDate = new Date(entry.completed_at);
   const dateStr = formatLocalDate(entry.completed_at);
   const timeStr = completedDate.toTimeString().slice(0, 5);
   const timestamp = `${dateStr} ${timeStr}`;
 
-  // Box width (fits in 80 columns)
-  const boxWidth = 71;
-  const innerWidth = boxWidth - 2;
+  const verdictGlyph = entry.result === 'PASS' ? chalk.green('✓') : chalk.red('✗');
+  // Truncate the feature so a long title never shears the rounded box border.
+  const headlinePrefixWidth = 2 + 1 + 1 + entry.result.length + 3; // "  G W · "
+  const maxFeature = width - 2 - headlinePrefixWidth;
+  const feature =
+    entry.feature.length > maxFeature
+      ? entry.feature.slice(0, maxFeature - 1) + '…'
+      : entry.feature;
+  const headline = `  ${verdictGlyph} ${entry.result} · ${feature}`;
 
-  // Header box
-  const titleLine = `  ana proof`;
-  const minTrailingGap = 2;
-  let featureText = entry.feature;
-  const featurePrefix = '  ';
-  const maxFeatureLen = innerWidth - featurePrefix.length - timestamp.length - minTrailingGap;
-  if (featureText.length > maxFeatureLen) {
-    featureText = featureText.slice(0, maxFeatureLen - 1) + '…';
-  }
-  const featureLine = `${featurePrefix}${featureText}`;
-  const padding = innerWidth - featureLine.length - timestamp.length;
-  const featureWithTimestamp = `${featureLine}${' '.repeat(Math.max(minTrailingGap, padding))}${timestamp}`;
-
-  lines.push(chalk.cyan(BOX.topLeft + BOX.horizontal.repeat(innerWidth) + BOX.topRight));
-  lines.push(
-    chalk.cyan(BOX.vertical) + chalk.bold(titleLine.padEnd(innerWidth)) + chalk.cyan(BOX.vertical)
+  const subtitleSegments = [entry.surface, `${entry.timing.total_minutes} min`].filter(
+    (x): x is string => Boolean(x)
   );
+  let subtitleLeft = `  ${subtitleSegments.join(' · ')}`;
+  if (provPriced) subtitleLeft += ` · $${provTotalCost.toFixed(2)}`;
+
   lines.push(
-    chalk.cyan(BOX.vertical) + featureWithTimestamp.padEnd(innerWidth) + chalk.cyan(BOX.vertical)
-  );
-  lines.push(chalk.cyan(BOX.bottomLeft + BOX.horizontal.repeat(innerWidth) + BOX.bottomRight));
-
-  lines.push('');
-
-  // Result
-  const resultColor = entry.result === 'PASS' ? chalk.green : chalk.red;
-  lines.push(`  Result: ${resultColor(entry.result)}`);
-  if (entry.surface) {
-    lines.push(`  Surface: ${entry.surface}`);
-  }
-
-  lines.push('');
-
-  // Contract section
-  lines.push(chalk.bold('  Contract'));
-  lines.push(chalk.gray('  ' + BOX.horizontal.repeat(8)));
-  lines.push(
-    `  ${entry.contract.satisfied}/${entry.contract.total} satisfied · ${entry.contract.unsatisfied} unsatisfied · ${entry.contract.deviated} deviated`
+    ...headerBox({
+      title: headline,
+      subtitleLeft,
+      subtitleRight: timestamp,
+      corners: 'rounded',
+      width,
+    })
   );
 
+  // ── Contract ──
+  const ct = entry.contract;
+  const clean = ct.unsatisfied === 0 && ct.deviated === 0;
+  let rollup = `${ct.satisfied}/${ct.total}`;
+  if (clean) {
+    rollup += ` ${chalk.green('✓')}`;
+  } else {
+    if (ct.unsatisfied > 0) rollup += ` · ${ct.unsatisfied} ${chalk.red('✗')}`;
+    if (ct.deviated > 0) rollup += ` · ${ct.deviated} ${chalk.yellow('⚠')}`;
+  }
   lines.push('');
-
-  // Assertions section
-  lines.push(chalk.bold('  Assertions'));
-  lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
-
-  for (const assertion of entry.assertions) {
-    const icon = getStatusIcon(assertion.status);
-    lines.push(`  ${icon} ${assertion.says}`);
+  lines.push(sectionRule('Contract', { rollup, width }));
+  lines.push(
+    '  ' +
+      proportionBar(ct.satisfied, ct.total, {
+        width: 64,
+        filledColor: chalk.green,
+        emptyColor: chalk.gray,
+      })
+  );
+  const countedLead = clean ? `${chalk.green('✓')} ` : '';
+  lines.push(
+    `  ${countedLead}${ct.satisfied} satisfied · ${ct.unsatisfied} unsatisfied · ${ct.deviated} deviated`
+  );
+  // Exceptional assertions render individually (the old standalone Deviations
+  // section folds in here); passing assertions stay collapsed in the line above.
+  for (const a of entry.assertions) {
+    if (a.status === 'SATISFIED') continue;
+    lines.push(`  ${statusGlyph(a.status)} ${a.id}  ${a.says}`);
+    if (a.status === 'DEVIATED' && a.deviation) {
+      lines.push(`        → ${a.deviation}`);
+    }
   }
 
+  // ── Timing ──
   lines.push('');
+  lines.push(sectionRule('Timing', { width }));
+  const timingRows: KeyValueRow[] = [
+    { label: 'Total', value: `${entry.timing.total_minutes} min` },
+  ];
+  if (entry.timing.think != null) timingRows.push({ label: 'Think', value: `${entry.timing.think} min` });
+  if (entry.timing.plan != null) timingRows.push({ label: 'Plan', value: `${entry.timing.plan} min` });
+  if (entry.timing.build != null) timingRows.push({ label: 'Build', value: `${entry.timing.build} min` });
+  if (entry.timing.verify != null) timingRows.push({ label: 'Verify', value: `${entry.timing.verify} min` });
+  lines.push(...keyValueRows(timingRows, { labelWidth: 12 }));
 
-  // Timing section
-  lines.push(chalk.bold('  Timing'));
-  lines.push(chalk.gray('  ' + BOX.horizontal.repeat(6)));
-  lines.push(`  ${'Total'.padEnd(12)} ${entry.timing.total_minutes} min`);
-
-  // Only show phase breakdown if available
-  if (entry.timing.think != null) {
-    lines.push(`  ${'Think'.padEnd(12)} ${entry.timing.think} min`);
-  }
-  if (entry.timing.plan != null) {
-    lines.push(`  ${'Plan'.padEnd(12)} ${entry.timing.plan} min`);
-  }
-  if (entry.timing.build != null) {
-    lines.push(`  ${'Build'.padEnd(12)} ${entry.timing.build} min`);
-  }
-  if (entry.timing.verify != null) {
-    lines.push(`  ${'Verify'.padEnd(12)} ${entry.timing.verify} min`);
-  }
-
-  // Phase breakdown for multi-phase proofs
   if (entry.timing.segments) {
     const phaseSegments = entry.timing.segments.filter((s) => s.phase != null);
     if (phaseSegments.length > 0) {
       lines.push('');
       lines.push(chalk.bold('  Phase breakdown'));
-      for (const seg of phaseSegments) {
-        const label = `${seg.stage === 'build' ? 'Build' : 'Verify'} ${seg.phase}`;
-        lines.push(`  ${chalk.gray('  ')}${label.padEnd(12)} ${seg.minutes} min`);
-      }
+      lines.push(
+        ...keyValueRows(
+          phaseSegments.map((seg) => ({
+            label: `${seg.stage === 'build' ? 'Build' : 'Verify'} ${seg.phase}`,
+            value: `${seg.minutes} min`,
+          })),
+          { labelWidth: 12 }
+        )
+      );
     }
   }
 
-  // Findings section (only if there are findings)
-  const findings = entry.findings || [];
-  if (findings.length > 0) {
-    lines.push('');
-    lines.push(chalk.bold('  Findings'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(8)));
+  // ── Findings / Build Concerns (shared severity-list helper) ──
+  renderSeverityList(lines, 'Findings', entry.slug, entry.findings || []);
+  renderSeverityList(lines, 'Build Concerns', entry.slug, entry.build_concerns || []);
 
-    const sortedFindings = [...findings].sort((a, b) => {
-      const wa = a.severity ? (SEVERITY_ORDER[a.severity] ?? 3) : 3;
-      const wb = b.severity ? (SEVERITY_ORDER[b.severity] ?? 3) : 3;
-      return wa - wb;
-    });
-
-    const MAX_DISPLAY = 5;
-    const displayed = sortedFindings.slice(0, MAX_DISPLAY);
-    for (const finding of displayed) {
-      if (finding.severity && finding.suggested_action) {
-        lines.push(`  [${finding.severity} · ${finding.suggested_action}] ${finding.summary}`);
-      } else {
-        lines.push(`  ${finding.summary}`);
-      }
-    }
-
-    if (sortedFindings.length > MAX_DISPLAY) {
-      lines.push(`  ... and ${sortedFindings.length - MAX_DISPLAY} more`);
-    }
-  }
-
-  // Build Concerns section (only if there are build concerns)
-  const buildConcerns = entry.build_concerns || [];
-  if (buildConcerns.length > 0) {
-    lines.push('');
-    lines.push(chalk.bold('  Build Concerns'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(14)));
-
-    const sortedConcerns = [...buildConcerns].sort((a, b) => {
-      const wa = a.severity ? (SEVERITY_ORDER[a.severity] ?? 3) : 3;
-      const wb = b.severity ? (SEVERITY_ORDER[b.severity] ?? 3) : 3;
-      return wa - wb;
-    });
-
-    const MAX_DISPLAY = 5;
-    const displayedConcerns = sortedConcerns.slice(0, MAX_DISPLAY);
-    for (const concern of displayedConcerns) {
-      if (concern.severity && concern.suggested_action) {
-        lines.push(`  [${concern.severity} · ${concern.suggested_action}] ${concern.summary}`);
-      } else {
-        lines.push(`  ${concern.summary}`);
-      }
-    }
-
-    if (sortedConcerns.length > MAX_DISPLAY) {
-      lines.push(`  ... and ${sortedConcerns.length - MAX_DISPLAY} more`);
-    }
-  }
-
-  // Commit Hygiene section (only if there are findings)
+  // ── Commit Hygiene ──
   const commitHygiene = entry.commit_hygiene || [];
   if (commitHygiene.length > 0) {
     lines.push('');
-    lines.push(chalk.bold('  Commit Hygiene'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(14)));
-
+    lines.push(sectionRule('Commit Hygiene', { width }));
     const MAX_DISPLAY = 5;
-    const displayed = commitHygiene.slice(0, MAX_DISPLAY);
-    for (const finding of displayed) {
-      lines.push(`  ⚠ ${finding.message}`);
+    for (const f of commitHygiene.slice(0, MAX_DISPLAY)) {
+      lines.push(`  ${chalk.yellow('⚠')} ${f.message}`);
     }
-
     if (commitHygiene.length > MAX_DISPLAY) {
-      lines.push(`  ... and ${commitHygiene.length - MAX_DISPLAY} more`);
+      lines.push(
+        `  ${commitHygiene.length - MAX_DISPLAY} more — see \`ana proof ${entry.slug} --json\``
+      );
     }
   }
 
-  // Provenance section (Phase 2) — display-only, shown only when a process
-  // attestation is present. NEVER influences PASS/FAIL; it is pure provenance.
+  // ── Provenance (display-only; NEVER influences PASS/FAIL) ──
   if (entry.process) {
     const p = entry.process;
     lines.push('');
-    lines.push(chalk.bold('  Provenance'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
+    lines.push(sectionRule('Provenance', { width }));
 
-    // One line per session — preserves the per-role dataset (plan/build/verify
-    // and every build rework cycle).
+    // Model-collapse only when every session has counts AND shares one model;
+    // a single differing or counts-unavailable session keeps models per-row.
+    const allSameModel =
+      p.sessions.length > 0 &&
+      p.sessions.every((s) => s.derived != null) &&
+      p.sessions.every((s) => s.derived!.model === p.sessions[0]!.derived!.model);
+
+    // Per-session labels with a rework index (e.g. `build 2`), computed once in
+    // dataset order so the indices are stable across the unavailable + grid passes.
+    const roleSeen: Record<string, number> = {};
+    const labelOf = new Map<(typeof p.sessions)[number], string>();
+    for (const s of p.sessions) {
+      const n = (roleSeen[s.role] = (roleSeen[s.role] ?? 0) + 1);
+      let label = n > 1 ? `${s.role} ${n}` : s.role;
+      if (!allSameModel) {
+        const m = (s.derived?.model || s.model).replace(/^claude-/, '');
+        label += ` · ${m}`;
+      }
+      labelOf.set(s, label);
+    }
+
+    if (allSameModel) {
+      lines.push(`  ${chalk.gray('model')}  ${p.sessions[0]!.derived!.model}`);
+    }
+
+    // Counts-unavailable sessions render loudly (Verified-over-trusted) as free
+    // lines — kept out of the grid so they never widen a numeric column.
+    for (const s of p.sessions) {
+      if (s.derived) continue;
+      lines.push(`  ${labelOf.get(s)}  ${chalk.gray('counts unavailable')}`);
+    }
+
+    // Derived sessions → aligned grid with a TOTAL footer under a rule. The
+    // in/out/cache columns surface the cache tokens that already exist on the
+    // schema (the credibility fix). Codex sessions (cache_create = 0) render
+    // their cache_read figure as-is.
+    const rows: string[][] = [];
     for (const s of p.sessions) {
       const d = s.derived;
-      const modelShort = (d?.model || s.model).replace(/^claude-/, '');
-      const head = `  ${[s.harness, s.role, modelShort].filter(Boolean).join(' · ')}`;
-      if (d) {
-        const cost = computeCost(d.tokens, d.model);
-        // Unpriced model → show "n/a", never a misleading "$0.00" (a missing
-        // price is not a free session). Add a row to data/pricing.ts to fix.
-        const costLabel = cost.priced ? `$${cost.cost_usd.toFixed(2)}` : 'n/a (unpriced)';
-        lines.push(
-          head +
-            `   ${d.turns} turns · ${d.tool_calls} tools` +
-            ` · in ${formatTokenCount(d.tokens.input)}/out ${formatTokenCount(d.tokens.output)}` +
-            ` · est. ${costLabel}`,
-        );
-      } else {
-        // Counts-less session (hook never fired AND transcript deleted) — still
-        // listed so the dataset stays complete; counts simply unavailable.
-        lines.push(head + chalk.gray('   counts unavailable'));
-      }
+      if (!d) continue;
+      const cost = computeCost(d.tokens, d.model);
+      // Unpriced model -> "n/a", never a misleading "$0.00".
+      const costLabel = cost.priced ? `$${cost.cost_usd.toFixed(2)}` : 'n/a';
+      rows.push([
+        labelOf.get(s)!,
+        String(d.turns),
+        String(d.tool_calls),
+        formatTokenCount(d.tokens.input),
+        formatTokenCount(d.tokens.output),
+        formatTokenCount(d.tokens.cache_create + d.tokens.cache_read),
+        costLabel,
+      ]);
+    }
+    if (rows.length > 0) {
+      // Unpriced count rides the (roomy) left label; the (table vX) version is
+      // the only trailing token — keeps the TOTAL line within 80 columns even
+      // when a long suffix would otherwise overflow past the grid's right edge.
+      const sessionCount = `${p.sessions.length} session${p.sessions.length === 1 ? '' : 's'}`;
+      const totalLabel =
+        `TOTAL  ${sessionCount}` + (provUnpriced > 0 ? ` · ${provUnpriced} unpriced` : '');
+      lines.push(
+        ...statGrid({
+          columns: [
+            { align: 'left', maxWidth: 22 },
+            { align: 'right' },
+            { align: 'right' },
+            { align: 'right' },
+            { align: 'right' },
+            { align: 'right' },
+            { align: 'right' },
+          ],
+          header: ['session', 'turns', 'tools', 'in', 'out', 'cache', 'cost'],
+          rows,
+          footer: {
+            // When no session priced, the total is a non-figure: showing
+            // "$0.00" would advertise a paid run as free (e.g. a new model id
+            // missing from pricing.ts). Mirror the per-session "n/a" honestly.
+            label: totalLabel,
+            value: provPriced ? `$${provTotalCost.toFixed(2)}` : 'n/a',
+            ...(provTableVersion ? { trailing: `(table ${provTableVersion})` } : {}),
+          },
+        })
+      );
     }
 
-    // Work-item-level totals, once: combined cost + table version, then churn.
-    // Counts-less sessions contribute nothing to the cost total.
-    let totalCost = 0;
-    let tableVersion = '';
-    let unpriced = 0;
-    for (const s of p.sessions) {
-      if (!s.derived) continue;
-      const c = computeCost(s.derived.tokens, s.derived.model);
-      if (c.priced) totalCost += c.cost_usd;
-      else unpriced += 1;
-      if (!tableVersion) tableVersion = s.derived.price_table_version;
-    }
-    lines.push(
-      `  total   ${p.sessions.length} session${p.sessions.length === 1 ? '' : 's'}` +
-        ` · est. $${totalCost.toFixed(2)}${tableVersion ? ` (table ${tableVersion})` : ''}` +
-        (unpriced > 0 ? ` · ${unpriced} unpriced` : ''),
-    );
+    // Churn (work-item level).
     const churnFiles = Object.keys(p.module_churn).length;
     if (churnFiles > 0) {
       let added = 0;
@@ -490,32 +516,18 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
         added += c.added;
         deleted += c.deleted;
       }
-      lines.push(`  churn   ${churnFiles} files · +${added}/−${deleted}`);
+      lines.push(`  ${chalk.gray('churn')}  ${churnFiles} files · +${added}/−${deleted}`);
     }
 
-    // Completeness line (Phase 2). Display-only — NEVER influences PASS/FAIL.
-    // Optional-guarded: entries written before Phase 2 lack `completeness`.
-    const c = p.completeness;
-    if (c) {
-      const counts = `plan ${c.present.plan}/${c.expected.plan} · build ${c.present.build}/${c.expected.build} · verify ${c.present.verify}/${c.expected.verify}`;
-      if (c.complete) {
+    // Completeness (display-only; optional-guarded for pre-Phase-2 entries).
+    const comp = p.completeness;
+    if (comp) {
+      const counts = `plan ${comp.present.plan}/${comp.expected.plan} · build ${comp.present.build}/${comp.expected.build} · verify ${comp.present.verify}/${comp.expected.verify}`;
+      if (comp.complete) {
         lines.push(`  completeness  ${chalk.green('✓')} complete (${counts})`);
       } else {
         lines.push(`  completeness  ${chalk.yellow('⚠')} incomplete — ${counts}`);
       }
-    }
-  }
-
-  // Deviations section (only if there are deviations)
-  const deviatedAssertions = entry.assertions.filter((a) => a.status === 'DEVIATED' && a.deviation);
-  if (deviatedAssertions.length > 0) {
-    lines.push('');
-    lines.push(chalk.bold('  Deviations'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
-
-    for (const assertion of deviatedAssertions) {
-      lines.push(`  ${assertion.id}: ${assertion.says}`);
-      lines.push(`        → ${assertion.deviation}`);
     }
   }
 
@@ -542,25 +554,20 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
   // Date for header
   const dateStr = formatLocalDate(new Date().toISOString());
 
-  // Box header — same dimensions as formatHumanReadable
+  // Box header — adopts the shared headerBox primitive with default (square)
+  // corners, which reproduces the legacy 71-wide box byte-for-byte. Health flips
+  // to rounded in its own redesign scope; square here is a transition default.
   const boxWidth = 71;
-  const innerWidth = boxWidth - 2;
 
-  const titleLine = '  ana proof health';
   const runLabel = `${runs} ${runs !== 1 ? 'runs' : 'run'}`;
-  const secondLine = `  ${runLabel}`;
-  const healthMinGap = 2;
-  const padding = innerWidth - secondLine.length - dateStr.length;
-  const secondWithDate = `${secondLine}${' '.repeat(Math.max(healthMinGap, padding))}${dateStr}`;
-
-  lines.push(chalk.cyan(BOX.topLeft + BOX.horizontal.repeat(innerWidth) + BOX.topRight));
   lines.push(
-    chalk.cyan(BOX.vertical) + chalk.bold(titleLine.padEnd(innerWidth)) + chalk.cyan(BOX.vertical)
+    ...headerBox({
+      title: '  ana proof health',
+      subtitleLeft: `  ${runLabel}`,
+      subtitleRight: dateStr,
+      width: boxWidth,
+    })
   );
-  lines.push(
-    chalk.cyan(BOX.vertical) + secondWithDate.padEnd(innerWidth) + chalk.cyan(BOX.vertical)
-  );
-  lines.push(chalk.cyan(BOX.bottomLeft + BOX.horizontal.repeat(innerWidth) + BOX.bottomRight));
 
   // Zero-runs: just show "No data." and return
   if (isZero || runs === 0) {
