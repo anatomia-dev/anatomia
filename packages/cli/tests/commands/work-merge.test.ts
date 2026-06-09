@@ -620,4 +620,83 @@ describe('ana work complete --merge', () => {
     expect(output).not.toContain('Merging PR');
     expect(output).not.toContain('PR merged');
   });
+
+  /** Seed a committed provenance file under active/{slug}/provenance/. */
+  function seedProvenance(slug: string, role: string, sessionId: string): void {
+    const dir = path.join(tempDir, '.ana', 'plans', 'active', slug, 'provenance');
+    fsSync.mkdirSync(dir, { recursive: true });
+    fsSync.writeFileSync(
+      path.join(dir, `${role}-${sessionId}.json`),
+      JSON.stringify({
+        role,
+        harness: 'claude',
+        model: 'claude-opus-4-6',
+        agent_def_hash: `sha256:${role}`,
+        cli_version: '1.2.2',
+        session_id: sessionId,
+        captured_at: '2026-06-01T01:00:00.000Z',
+        derived: {
+          tokens: { input: 1000, output: 100, cache_create: 0, cache_read: 0 },
+          price_table_version: '2026-06-01',
+          duration_ms: 1000,
+          turns: 1,
+          tool_calls: 1,
+          commands_run: 1,
+          tests_executed: 0,
+          failures_encountered: 0,
+          files_touched: 1,
+          model: 'claude-opus-4-6',
+        },
+      }),
+      'utf-8',
+    );
+  }
+
+  /** Read the proof chain entry for a slug, or null if absent. */
+  function readChainEntry(
+    slug: string,
+  ): { process?: { completeness?: { complete?: boolean } } } | null {
+    const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
+    if (!fsSync.existsSync(chainPath)) return null;
+    const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
+    return chain.entries.find((e: { slug: string }) => e.slug === slug) ?? null;
+  }
+
+  // @ana A008, A009
+  it('lands the merge AND still records the proof entry (gap annotated) when provenance is incomplete', async () => {
+    // The exact disease this scope cures: under the old strict guard, --merge would
+    // land the PR and then process.exit(1) — code merged, no audit trail. This proves
+    // the merge proceeds AND the proof entry is still written with the gap recorded.
+    await createMergedProject('test-slug', { artifactBranch: 'main', mergeStrategy: 'merge', processCapture: 'on' });
+
+    // Incomplete provenance: plan + build present, verify MISSING (verify_report.md
+    // exists from the fixture, so `expected.verify` is 1 → a recorded gap).
+    seedProvenance('test-slug', 'plan', 'sp');
+    seedProvenance('test-slug', 'build', 'sb');
+    realExecSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
+
+    const ghCalls: string[][] = [];
+    mockGh((args) => {
+      ghCalls.push(args);
+      if (args[0] === '--version') return { status: 0, stdout: 'gh version 2.0.0', stderr: '' };
+      if (args[0] === 'pr' && args[1] === 'view' && args.includes('state,baseRefName')) {
+        return { status: 0, stdout: JSON.stringify({ state: 'OPEN', baseRefName: 'main' }), stderr: '' };
+      }
+      if (args[0] === 'pr' && args[1] === 'merge') {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      return { status: 1, stdout: '', stderr: '' };
+    });
+
+    await completeWork('test-slug', { merge: true });
+
+    // A008: the gh merge proceeded — code landed.
+    const mergeCall = ghCalls.find((a) => a[0] === 'pr' && a[1] === 'merge');
+    expect(mergeCall).toBeDefined();
+    // A008: the proof-chain entry was still written — never lands without an audit trail.
+    const entry = readChainEntry('test-slug');
+    expect(entry).not.toBeNull();
+    // A009: the recorded proof annotates the gap.
+    expect(entry!.process!.completeness!.complete).toBe(false);
+  });
 });

@@ -655,24 +655,31 @@ describe('enforcement dimension', () => {
     expect(results.dimensions.enforcement.process_capture).toBe('on');
   });
 
-  // @ana A010 — process_capture_strict flag is reported.
-  it('reports process_capture_strict "on" when the flag is set', async () => {
-    await createMinimalProject(tmpDir, { anaJson: { processCaptureStrict: 'on' } });
-    const results = await runDoctor(tmpDir);
-    expect(results.dimensions.enforcement.process_capture_strict).toBe('on');
-  });
-
-  it('defaults all three gates to off for a minimal project', async () => {
+  // @ana A012, A013 — both surviving gates default to off for a minimal project.
+  it('defaults both surviving gates to off for a minimal project', async () => {
     await createMinimalProject(tmpDir);
     const results = await runDoctor(tmpDir);
     expect(results.dimensions.enforcement.test_evidence_gate).toBe('off');
     expect(results.dimensions.enforcement.process_capture).toBe('off');
-    expect(results.dimensions.enforcement.process_capture_strict).toBe('off');
+  });
+
+  // @ana A011, A012, A013, A014 — strict flag gone, two survivors reported, exits 0 on valid config.
+  it('enforcement output omits process_capture_strict, keeps the two survivors, and passes', async () => {
+    await createMinimalProject(tmpDir, { anaJson: { testEvidenceGate: 'on', processCapture: 'on' } });
+    const results = await runDoctor(tmpDir);
+    // A011: the strict flag is gone from the enforcement surface (object + rendered output).
+    expect(JSON.stringify(results.dimensions.enforcement)).not.toContain('process_capture_strict');
+    expect(formatTerminalOutput(results)).not.toContain('strict');
+    // A012 / A013: the two survivors are still reported.
+    expect(results.dimensions.enforcement.test_evidence_gate).toBeDefined();
+    expect(results.dimensions.enforcement.process_capture).toBeDefined();
+    // A014: doctor still exits 0 (overall pass) on a valid config.
+    expect(results.overall).toBe('pass');
   });
 
   // @ana A013, A015 — informational status, never a failure grade.
   it('always carries status "info" (never pass/warn/fail)', async () => {
-    await createMinimalProject(tmpDir, { anaJson: { testEvidenceGate: 'on', processCapture: 'on', processCaptureStrict: 'on' } });
+    await createMinimalProject(tmpDir, { anaJson: { testEvidenceGate: 'on', processCapture: 'on' } });
     const results = await runDoctor(tmpDir);
     expect(results.dimensions.enforcement.status).toBe('info');
     expect(results.dimensions.enforcement.status).not.toBe('fail');
@@ -680,7 +687,7 @@ describe('enforcement dimension', () => {
 
   // @ana A014 — a fully-configured enforcement state never flips overall to fail.
   it('does not make overall fail when only enforcement flags are set', async () => {
-    await createMinimalProject(tmpDir, { anaJson: { testEvidenceGate: 'on', processCapture: 'on', processCaptureStrict: 'on' } });
+    await createMinimalProject(tmpDir, { anaJson: { testEvidenceGate: 'on', processCapture: 'on' } });
     const results = await runDoctor(tmpDir);
     expect(results.overall).toBe('pass');
   });

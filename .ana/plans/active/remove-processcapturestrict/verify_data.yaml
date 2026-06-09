@@ -1,0 +1,29 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Strict guard's inlined duplicate provenance reader is deleted — cross-machine-provenance-C7 resolved"
+    file: "packages/cli/src/commands/work.ts"
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A001", "A008"]
+    resolves:
+      - "cross-machine-provenance-C7"
+  - category: test
+    summary: "A014 verified via results.overall === 'pass' proxy, not the literal exit code the contract names (doctorExitCode equals 0)"
+    file: "packages/cli/tests/commands/doctor.test.ts"
+    line: 668
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A014"]
+  - category: test
+    summary: "Coverage gate — the spec's designated 'real gate' (vitest.config thresholds 80/75/80/80) — is not mechanically runnable; @vitest/coverage-v8 is not a declared dependency, so the threshold check silently no-ops wherever the provider is absent"
+    file: "packages/cli/vitest.config.ts"
+    line: 26
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "Keystone merge test re-declares seedProvenance/readChainEntry helpers that duplicate seedActiveProvenance/readChainEntry in work.test.ts; cross-file duplication is justified by the child_process mock isolation but worth noting"
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    line: 624
+    severity: observation
+    suggested_action: acknowledge

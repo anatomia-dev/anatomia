@@ -106,7 +106,6 @@ interface EnforcementDimension {
   status: 'info';
   test_evidence_gate: 'on' | 'on-inactive' | 'off';
   process_capture: 'on' | 'off';
-  process_capture_strict: 'on' | 'off';
 }
 
 interface StaleWorkItem {
@@ -438,14 +437,14 @@ function assessSurfaces(projectRoot: string): SurfacesDimension {
 }
 
 /**
- * Assess the enforcement dimension — the test-evidence gate, process capture,
- * and strict process-completeness flags reported as one informational view.
+ * Assess the enforcement dimension — the test-evidence gate and process capture
+ * flags reported as one informational view.
  *
  * The test-evidence gate is three-way: `on` when the flag is on and a test
  * command resolves, `on-inactive` when the flag is on but no command resolves
  * (configured on but unable to enforce), and `off` otherwise. The active
- * carve-out is owned by {@link isTestEvidenceGateEnabled}; process capture and strict
- * are trivial `=== 'on'` reads from the same raw parse.
+ * carve-out is owned by {@link isTestEvidenceGateEnabled}; process capture is a
+ * trivial `=== 'on'` read from the same raw parse.
  *
  * @param projectRoot - Absolute path to the project root
  * @returns Enforcement dimension result (always `status: 'info'`)
@@ -456,7 +455,7 @@ function assessEnforcement(projectRoot: string): EnforcementDimension {
   try {
     anaContent = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
   } catch {
-    return { status: 'info', test_evidence_gate: 'off', process_capture: 'off', process_capture_strict: 'off' };
+    return { status: 'info', test_evidence_gate: 'off', process_capture: 'off' };
   }
 
   const gateFlag = anaContent['testEvidenceGate'] === 'on';
@@ -468,7 +467,6 @@ function assessEnforcement(projectRoot: string): EnforcementDimension {
     status: 'info',
     test_evidence_gate: testEvidenceGate,
     process_capture: anaContent['processCapture'] === 'on' ? 'on' : 'off',
-    process_capture_strict: anaContent['processCaptureStrict'] === 'on' ? 'on' : 'off',
   };
 }
 
@@ -690,7 +688,6 @@ export function formatTerminalOutput(results: DoctorResults): string {
   lines.push(`  ${chalk.gray('ℹ')} ${chalk.dim('Enforcement')}`);
   lines.push(`      ${'test-evidence gate'.padEnd(20)}${testEvidenceReadout}`);
   lines.push(`      ${'process capture'.padEnd(20)}${d.enforcement.process_capture}`);
-  lines.push(`      ${'strict'.padEnd(20)}${d.enforcement.process_capture_strict}`);
 
   // Stale work items
   for (const item of results.stale_work) {
