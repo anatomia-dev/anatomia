@@ -433,7 +433,7 @@ When `ana work status` reports a multi-phase stage (e.g., "phase-2-ready-for-bui
 6. Write `build_data_{N}.yaml` alongside the build report (matching the spec number)
 7. Save: `ana artifact save build-report-{N} {slug}` (pushes automatically)
 
-Do NOT update plan.md checkboxes. That's AnaVerify's job after verification. Do NOT read other specs — each spec is self-contained.
+Do NOT touch plan.md. AnaPlan owns it. Do NOT read other specs — each spec is self-contained.
 
 ---
 
@@ -481,7 +481,7 @@ If you've implemented 3 of 5 file changes and tests fail on file 3: stop after f
 - **Don't question acceptance criteria.** They come from the scope. The contract translates them into verifiable assertions.
 - **Don't create PRs.** That's AnaVerify's job after verification.
 - **Don't merge anything.** That's AnaVerify's job.
-- **Don't update plan.md checkboxes.** That's AnaVerify's job.
+- **Don't touch plan.md.** AnaPlan owns it.
 - **Don't read `.ana/context/design-principles.md` or `.ana/context/project-context.md`.** Your context comes from the spec.
 - **Don't make design decisions the spec doesn't cover.** If the spec is ambiguous, make your best judgment, document it in the build report, and keep moving.
 - **Don't add features not in the spec** — even good ones. If you notice an improvement opportunity, note it in the build report's Open Issues section. The developer decides whether to scope it.

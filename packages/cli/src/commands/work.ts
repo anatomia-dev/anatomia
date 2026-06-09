@@ -746,6 +746,21 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   {
     const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
     if (remotes) {
+      // Defend the autostash pull against a tracked-modified plan.md. plan.md is
+      // non-authoritative and fixed once Plan writes it, but an in-flight item
+      // started before the staging removal may carry an uncommitted working-tree
+      // diff on disk. Autostash would stash it and the rebase could collide.
+      // Restore it from HEAD so there's nothing to stash. Scope strictly to this
+      // one path — never the sibling artifacts — so a real artifact edit is safe.
+      const relPlanPath = `.ana/plans/active/${slug}/plan.md`;
+      const planStatus = runGit(['status', '--porcelain', '--', relPlanPath], { cwd: projectRoot }).stdout;
+      if (planStatus.trim() && !planStatus.trimStart().startsWith('??')) {
+        runGit(['checkout', 'HEAD', '--', relPlanPath], { cwd: projectRoot });
+        if (!options?.json) {
+          console.log(chalk.yellow(`  ⚠ Restored non-authoritative ${relPlanPath} from HEAD before pull.`));
+        }
+      }
+
       let pullResult = runGit(['pull', '--rebase', '--autostash'], { cwd: projectRoot });
 
       // Handle "untracked working tree files would be overwritten" — caused by

@@ -1197,15 +1197,6 @@ export function saveArtifact(type: string, slug: string): void {
       runGit(['add', archivePath], { cwd: projectRoot });
       stagedPaths.push(archivePath);
     }
-
-    // Special case: verify-report also stages plan.md if it exists
-    if (typeInfo.baseType === 'verify-report') {
-      const relPlanPath = path.join('.ana', 'plans', 'active', slug, 'plan.md');
-      if (fs.existsSync(path.join(projectRoot, relPlanPath))) {
-        runGit(['add', relPlanPath], { cwd: projectRoot });
-        stagedPaths.push(relPlanPath);
-      }
-    }
   } catch (error) {
     console.error(chalk.red(`Error: Failed to stage files. ${error instanceof Error ? error.message : 'Unknown error'}`));
     process.exit(1);
@@ -1625,16 +1616,6 @@ export function saveAllArtifacts(slug: string): void {
     for (const archivePath of archiveRelPaths) {
       runGit(['add', archivePath], { cwd: projectRoot });
       stagedPaths.push(archivePath);
-    }
-
-    // Special case: if verify-report exists, also stage plan.md
-    if (artifacts.some(a => a.typeInfo.baseType === 'verify-report')) {
-      const planPath = path.join(planDir, 'plan.md');
-      const relPlanPath = path.relative(projectRoot, planPath);
-      if (fs.existsSync(planPath) && !artifactPaths.includes(relPlanPath)) {
-        runGit(['add', planPath], { cwd: projectRoot });
-        stagedPaths.push(relPlanPath);
-      }
     }
 
     // Clean up orphaned artifacts — files tracked in git but no longer on disk

@@ -54,26 +54,55 @@ export function validatePlanFormat(filePath: string): string | null {
 
   // Check for ## Phases heading
   if (!content.includes('## Phases')) {
-    return "Missing '## Phases' heading. Plan must contain a '## Phases' section with checkbox items.";
+    return "Missing '## Phases' heading. Plan must contain a '## Phases' section with a phase entry per phase.";
   }
 
-  // Check for at least one checkbox
-  const checkboxPattern = /- \[([ x])\]/;
-  if (!checkboxPattern.test(content)) {
-    return "No checkbox items found. Plan must contain at least one '- [ ]' or '- [x]' checkbox.";
-  }
-
-  // Check that checkbox lines contain Spec: reference
+  // Walk the ## Phases section and collect phase entries. A phase entry is any
+  // unindented list line (`- ...`) inside the section — this matches BOTH the
+  // old checkbox format (`- [ ] desc`) and the new plain-list format (`- desc`),
+  // since the glyph is just leading text. Indented sub-items (e.g. `  - Spec:`,
+  // `  - Depends on:`) start with whitespace and are excluded.
+  //
+  // Mirror of countPhases (work-state.ts:111-133) — the same ## Phases walk and
+  // the same Spec: regex. The canonical copy lives in work-state.ts; keep these
+  // two copies in lockstep. Do NOT import countPhases here: it returns
+  // {total, specs} for counting and is consumed by status/pr/work; this
+  // validator needs per-phase Spec enforcement, a different contract.
+  const specRegex = /Spec:\s*(spec(?:-\d+)?\.md)/; // verbatim mirror of work-state.ts:125
   const lines = content.split('\n');
+  let inPhases = false;
+  const phaseLineIndexes: number[] = [];
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line === undefined) continue; // noUncheckedIndexedAccess guard
-    if (checkboxPattern.test(line)) {
-      // Check this line and next 2 lines for Spec: reference
-      const nextLines = lines.slice(i, i + 3).join('\n');
-      if (!nextLines.includes('Spec:')) {
-        return `Checkbox item "${line.trim()}" is missing a 'Spec:' reference. Each phase must reference its spec file.`;
-      }
+    if (line.trim() === '## Phases') {
+      inPhases = true;
+      continue;
+    }
+    if (inPhases && line.startsWith('## ')) {
+      break; // next section
+    }
+    if (inPhases && line.startsWith('- ')) {
+      phaseLineIndexes.push(i);
+    }
+  }
+
+  if (phaseLineIndexes.length === 0) {
+    return "No phases found. The '## Phases' section must contain at least one phase entry ('- {description}').";
+  }
+
+  // Each phase must carry a Spec: reference between it and the next phase
+  // (or the end of the collected phase list).
+  for (let p = 0; p < phaseLineIndexes.length; p++) {
+    const start = phaseLineIndexes[p];
+    const next = phaseLineIndexes[p + 1];
+    if (start === undefined) continue; // noUncheckedIndexedAccess guard
+    const end = next ?? lines.length;
+    const block = lines.slice(start, end).join('\n');
+    if (!specRegex.test(block)) {
+      const phaseLine = lines[start];
+      return `Phase "${(phaseLine ?? '').trim()}" is missing a 'Spec:' reference. Each phase must reference its spec file.`;
     }
   }
 

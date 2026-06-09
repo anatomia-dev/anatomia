@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "Contract assertion A010 (verify-report multi-save does not commit plan.md) does not match saveAllArtifacts reality: the multi-save staging block was dead code and save-all commits plan.md as a primary artifact. Tested the real guarantee instead (no verify-report-coupled staging; clean tree)."
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "work-merge.test.ts carries pre-existing @ana A001-A009 tags from a different feature's contract; this contract reuses those IDs, so a naive per-file tag scan could mis-attribute them. New tags A012/A013 do not collide; pre-existing tags left untouched."
+    file: "packages/cli/tests/commands/work-merge.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Content assertions A014-A018 (agent/doc file wording) are verified by file inspection, not by executable tests, matching the spec's testing strategy (no agent-file unit tests requested)."
+    severity: observation
+    suggested_action: acknowledge

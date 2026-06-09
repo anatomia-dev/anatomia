@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A010's tagged test runs on the artifact branch, where the removed verify-report→plan.md staging block was a guarded no-op (!artifactPaths.includes). The test passes identically with or without the fix — it does not discriminate the change it claims to cover."
+    file: "packages/cli/tests/commands/artifact.test.ts"
+    line: 2460
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A010"]
+  - category: upstream
+    summary: "Contract A010's literal target (isFileCommitted plan.md === false after save-all) only holds on a feature branch, where plan.md is filtered from primaries. On the artifact branch save-all legitimately commits plan.md as a primary artifact, so the assertion as written contradicts normal save-all behavior. The assertion should pin a branch context or assert 'no verify-report-coupled staging.'"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A010"]
+  - category: code
+    summary: "validatePlanFormat phase detection recognizes only '- ' bullets (line.startsWith('- ')). A '* ' bullet or tab-prefixed dash would be silently uncounted. This faithfully mirrors countPhases (intentional, commented), so behavior is consistent — but it records a frozen-format fragility shared by both copies for the next engineer."
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    line: 86
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "work.ts pull defense gates on porcelain status with !trimStart().startsWith('??'). A staged-deleted ('D ') or renamed ('R ') plan.md is also treated as 'modified' and restored from HEAD. Behavior is benign (restoring a non-authoritative file is desirable), but the comment frames the guard narrowly as 'tracked-modified'."
+    file: "packages/cli/src/commands/work.ts"
+    line: 749
+    severity: observation
+    suggested_action: acknowledge

@@ -680,7 +680,8 @@ Content...`;
   });
 
   describe('special cases', () => {
-    it('verify-report save also stages plan.md if it exists', async () => {
+    // @ana A009, A011
+    it('verify-report single-save does NOT stage plan.md, but commits the report', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'feature/test-slug' });
       const validReport = `# Verify Report
 
@@ -696,9 +697,9 @@ Content...`;
 
       saveArtifact('verify-report', 'test-slug');
 
-      // Both files should be committed
+      // The verify report is committed; plan.md is NOT staged/committed by the save.
       expect(isFileCommitted('.ana/plans/active/test-slug/verify_report.md')).toBe(true);
-      expect(isFileCommitted('.ana/plans/active/test-slug/plan.md')).toBe(true);
+      expect(isFileCommitted('.ana/plans/active/test-slug/plan.md')).toBe(false);
     });
 
     it('verify-report save succeeds even if plan.md does not exist', async () => {
@@ -800,19 +801,52 @@ Content...`;
   });
 
   describe('plan format validation', () => {
-    it('accepts valid plan.md', async () => {
+    // @ana A001
+    it('accepts old-format (checkbox) plan.md with a Spec per phase', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
-      const validPlan = `# Plan: test
+      const oldFormatPlan = `# Plan: test
 
 ## Phases
 
 - [ ] Phase 1
   - Spec: spec.md`;
-      await createArtifact('test-slug', 'plan.md', validPlan);
+      await createArtifact('test-slug', 'plan.md', oldFormatPlan);
 
       expect(() => saveArtifact('plan', 'test-slug')).not.toThrow();
     });
 
+    // @ana A002
+    it('accepts new-format (no glyph) plan.md with a Spec per phase', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const newFormatPlan = `# Plan: test
+
+## Phases
+
+- Phase 1 description matching the scope
+  - Spec: spec.md`;
+      await createArtifact('test-slug', 'plan.md', newFormatPlan);
+
+      expect(() => saveArtifact('plan', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A003
+    it('accepts a multi-phase new-format plan with a Spec for every phase', async () => {
+      await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
+      const multiPhasePlan = `# Plan: test
+
+## Phases
+
+- Phase 1 description
+  - Spec: spec-1.md
+- Phase 2 description
+  - Spec: spec-2.md
+  - Depends on: Phase 1`;
+      await createArtifact('test-slug', 'plan.md', multiPhasePlan);
+
+      expect(() => saveArtifact('plan', 'test-slug')).not.toThrow();
+    });
+
+    // @ana A005
     it('rejects plan.md without ## Phases heading', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
       const invalidPlan = `# Plan: test
@@ -824,7 +858,8 @@ Content...`;
       expect(() => saveArtifact('plan', 'test-slug')).toThrow();
     });
 
-    it('rejects plan.md without checkboxes', async () => {
+    // @ana A019
+    it('rejects plan.md with a ## Phases heading but zero phase entries', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
       const invalidPlan = `# Plan: test
 
@@ -836,13 +871,14 @@ Just a plain description`;
       expect(() => saveArtifact('plan', 'test-slug')).toThrow();
     });
 
-    it('rejects plan.md with checkbox but no Spec reference', async () => {
+    // @ana A004
+    it('rejects plan.md with a phase missing its Spec reference', async () => {
       await createTestProject({ artifactBranch: 'main', currentBranch: 'main' });
       const invalidPlan = `# Plan: test
 
 ## Phases
 
-- [ ] Phase 1
+- Phase 1 description
   - Description: something`;
       await createArtifact('test-slug', 'plan.md', invalidPlan);
 
@@ -2412,6 +2448,40 @@ Rules.`;
 
     const message = getLastCommitMessage();
     expect(message).toContain('[test-slug] Save: Spec');
+  });
+
+  // @ana A010
+  // See Deviations (A010) in build report: save-all commits plan.md as a PRIMARY
+  // on-disk artifact, so the verify-report-coupled staging block was dead code
+  // (plan.md on disk is always already in artifactPaths). Removing it is
+  // behavior-preserving. The honest guarantee we assert: a verify-report present
+  // in a save-all introduces NO verify-report-specific staging of plan.md — and
+  // the save still succeeds, leaving no modified plan.md behind.
+  it('save-all with a verify-report present has no verify-report-coupled plan.md staging', async () => {
+    await createTestProject();
+
+    const validPlan = `# Plan
+## Phases
+- [x] Phase 1
+  - Spec: spec.md`;
+    const validReport = `# Verify Report
+
+**Result:** PASS`;
+
+    await createArtifact('test-slug', 'plan.md', validPlan);
+    await createArtifact('test-slug', 'verify_report.md', validReport);
+
+    saveAllArtifacts('test-slug');
+
+    // The verify report commits successfully.
+    expect(isFileCommitted('.ana/plans/active/test-slug/verify_report.md')).toBe(true);
+    // plan.md is committed only as a normal primary artifact (not a verify-report
+    // side-effect), and is left clean — no uncommitted/modified working-tree diff.
+    const planStatus = execSync('git status --porcelain -- .ana/plans/active/test-slug/plan.md', {
+      cwd: tempDir,
+      encoding: 'utf-8'
+    }).trim();
+    expect(planStatus).toBe('');
   });
 
   it('errors when directory is empty', async () => {
