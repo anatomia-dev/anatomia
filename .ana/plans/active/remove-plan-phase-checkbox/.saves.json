@@ -30,5 +30,115 @@
         "hash": "sha256:5f09702b43d8c3e16b8ec63497267174f19c60fa780273a87f2df77605cb8d76"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-06-09T01:43:02.017Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-09T02:02:25.369Z",
+    "hash": "sha256:ff84348a5663649dbc06ab31a1b3ecaac97f5f4b910a5dfc16ccc71d2faec3f0"
+  },
+  "build-data": {
+    "saved_at": "2026-06-09T02:02:25.370Z",
+    "hash": "sha256:fbb9de99fe216a33542b209eb5a2e0b9485c62c482a399d097e850595b5c7f8b"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-build.md",
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-verify.md",
+    ".codex/agents/ana-build.md",
+    ".codex/agents/ana-plan.md",
+    ".codex/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/templates/.claude/agents/ana-build.md",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana-build.md",
+    "packages/cli/templates/.codex/agents/ana-plan.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/commands/artifact.test.ts",
+    "packages/cli/tests/commands/work-merge.test.ts",
+    "packages/cli/tests/commands/work-state.test.ts",
+    "website/content/docs/concepts/artifacts.mdx"
+  ],
+  "module_churn": {
+    ".claude/agents/ana-build.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    ".claude/agents/ana-plan.md": {
+      "added": 6,
+      "deleted": 6
+    },
+    ".claude/agents/ana-verify.md": {
+      "added": 5,
+      "deleted": 6
+    },
+    ".codex/agents/ana-build.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    ".codex/agents/ana-plan.md": {
+      "added": 6,
+      "deleted": 6
+    },
+    ".codex/agents/ana-verify.md": {
+      "added": 5,
+      "deleted": 6
+    },
+    "packages/cli/src/commands/artifact-validators.ts": {
+      "added": 45,
+      "deleted": 16
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 0,
+      "deleted": 19
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 15,
+      "deleted": 0
+    },
+    "packages/cli/templates/.claude/agents/ana-build.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/templates/.claude/agents/ana-plan.md": {
+      "added": 6,
+      "deleted": 6
+    },
+    "packages/cli/templates/.claude/agents/ana-verify.md": {
+      "added": 5,
+      "deleted": 6
+    },
+    "packages/cli/templates/.codex/agents/ana-build.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/templates/.codex/agents/ana-plan.md": {
+      "added": 6,
+      "deleted": 6
+    },
+    "packages/cli/templates/.codex/agents/ana-verify.md": {
+      "added": 5,
+      "deleted": 6
+    },
+    "packages/cli/tests/commands/artifact.test.ts": {
+      "added": 79,
+      "deleted": 9
+    },
+    "packages/cli/tests/commands/work-merge.test.ts": {
+      "added": 97,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-state.test.ts": {
+      "added": 58,
+      "deleted": 0
+    },
+    "website/content/docs/concepts/artifacts.mdx": {
+      "added": 1,
+      "deleted": 1
+    }
+  },
+  "commit_hygiene": []
 }
