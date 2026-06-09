@@ -50,6 +50,8 @@ Out of scope, explicitly: **live animated scan progress (issue #299)** — that 
 - AC7: Funnel mode (`isFunnel`) behavior is preserved — clean-acknowledgment line and `ana init` CTA on funnel, scan.json reference and skill-manifest CTA off funnel.
 - AC8: Graceful degradation — surface-tier scans (`conventions`/`patterns` null), monorepos with many surfaces (existing `MAX_SURFACES` cap), the no-stack ancestor-walk fallback, and long project names all render without breaking alignment.
 - AC9: All existing scan tests pass (updated where the visible format changed); test count does not decrease; new coverage is added for the Conventions section.
+- AC10: Golden/snapshot tests pin the full rendered scan card with color stripped (`FORCE_COLOR=0`, asserting plain-text layout) across fixtures: a full deep-tier card, a surface-tier card (`conventions`/`patterns` null → section omitted, no empty header), a monorepo with surface overflow, the no-stack ancestor-walk fallback, and — critically — a fixture proving the confidence gate OMITS the mixed/low-confidence signals (file naming, import-path style, null-style). `toContain` cannot catch a sheared grid or a leaked low-confidence guess; the golden files can. This makes PR review mechanical, not eyeballed.
+- AC11: The confidence threshold for the Conventions section is calibrated against real scan output on ≥3 diverse repos (a clean TypeScript repo, a mixed/vibe-coded repo, and a non-TypeScript stack) before it is finalized, and the resulting shown-vs-omitted decision is pinned by the AC10 golden fixtures. The gate is the credibility crux — it is a Plan calibration deliverable, not a magic constant.
 
 ## Edge Cases & Risks
 
@@ -72,9 +74,9 @@ Out of scope, explicitly: **live animated scan progress (issue #299)** — that 
 
 ## Open Questions
 
-- The confidence threshold for the Conventions section (single global threshold vs per-signal) — a taste/calibration call for Plan, informed by real scan output on a few repos.
+- Threshold shape only: single global threshold vs per-signal (the calibration itself is now AC11, a Plan deliverable, not an open question).
 - Width strategy: adopt the module's chosen width (recommended, for cross-card consistency) — confirm the module exposes it.
-- Whether a new primitive is needed (confidence indicator / distribution strip) or the existing proof-card primitives suffice.
+- Whether a new primitive is needed (confidence indicator / distribution strip) or the existing proof-card primitives suffice. **If a primitive is missing, it is added to the shared `utils/render.ts` module — never re-inlined in scan.ts.** Scan's Stack and Conventions rows are an input to the module's API pressure-test in `proof-card-redesign` (its AC for validating the API against real consumers), so any gap should surface there first.
 - Exact ordering/placement of the Conventions section relative to Stack and Intelligence (likely right after Stack, as the second "money" block).
 
 ## Exploration Findings
