@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "getTemplatesDir() mis-resolves to src/templates under vitest-from-src; integration tests work around it with a vi.spyOn on the state.js namespace export"
+    file: "packages/cli/src/commands/init/state.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "atomicWriteFile SHA-256 integrity-failure throw branch is untested; the new .claude/.codex .gitignore writes now route through it"
+    file: "packages/cli/src/commands/init/assets.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "A044 implemented as a runtime throw in mergeGitignore in addition to test-time assertions; an interpretation of the spec's 'hard gate ... assert it' beyond the literal letter"
+    file: "packages/cli/src/commands/init/gitignore.ts"
+    severity: observation
+    suggested_action: acknowledge

@@ -1,0 +1,32 @@
+schema: 1
+findings:
+  - category: test
+    summary: "atomicWriteFile SHA-256 integrity-failure branch still untested; .claude/.codex gitignore writes now route through it"
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 190
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A002", "A004"]
+  - category: test
+    summary: "Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts"
+    file: "packages/cli/tests/commands/init/commit.test.ts"
+    line: 70
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Legacy migration (case 3) strips any user line equal to a current stock value anywhere in the file — a user's own copy of a stock line is absorbed into the managed block on first re-init. Documented benign (still ignored), one-time only."
+    file: "packages/cli/src/commands/init/gitignore.ts"
+    line: 159
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A011", "A021"]
+  - category: code
+    summary: "mergeAndWriteGitignore wrapper added beyond the literal spec (which said 'route through atomicWriteFile'). Thin DRY helper used at 3 call sites — good factoring, not scope creep. Over-build check: no unused exports, no dead paths."
+    file: "packages/cli/src/commands/init/assets.ts"
+    line: 205
+    severity: observation
+    suggested_action: acknowledge
+  - category: upstream
+    summary: "Verify worktree is 2 commits behind main, but both are .ana artifact updates for the unrelated remove-plan-phase-checkbox slug — no source overlap with this build, no conflict risk."
+    severity: observation
+    suggested_action: monitor

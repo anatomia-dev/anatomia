@@ -54,6 +54,12 @@ import {
 import type { InitState } from './types.js';
 import { dirExists, fileExists } from './preflight.js';
 import { getTemplatesDir, makeTestCommandNonInteractive } from './state.js';
+import {
+  mergeGitignore,
+  ANA_GITIGNORE_STOCK,
+  CLAUDE_GITIGNORE_STOCK,
+  CODEX_GITIGNORE_STOCK,
+} from './gitignore.js';
 // scaffoldAndSeedSkills is now called from the init orchestrator (index.ts)
 import { getPatternLibrary } from '../../engine/types/patterns.js';
 
@@ -92,14 +98,16 @@ export async function createDirectoryStructure(tmpAnaPath: string): Promise<void
   await fs.writeFile(path.join(tmpAnaPath, 'plans/active/.gitkeep'), '', 'utf-8');
   await fs.writeFile(path.join(tmpAnaPath, 'plans/completed/.gitkeep'), '', 'utf-8');
 
-  // Create .gitignore for runtime state files
-  const gitignoreContent = `# Anatomia runtime state — local to each developer
-state/
-worktrees/
-# Raw test-capture logs — scratch; deleted after the count + sha are sealed into the compact build_report.md marker
-plans/active/*/.captures/
-`;
-  await fs.writeFile(path.join(tmpAnaPath, '.gitignore'), gitignoreContent, 'utf-8');
+  // Create the managed .gitignore for runtime state files. Block-only here
+  // (no existing user content in the fresh temp tree); on re-init
+  // preserveUserState re-merges the OLD live .gitignore's user lines into this
+  // temp file before the atomic swap. Plain writeFile — temp tree, swapped
+  // atomically later.
+  await fs.writeFile(
+    path.join(tmpAnaPath, '.gitignore'),
+    mergeGitignore(null, ANA_GITIGNORE_STOCK),
+    'utf-8',
+  );
 
   spinner.succeed('Directory structure created');
 }
@@ -183,6 +191,32 @@ async function atomicWriteFile(
 }
 
 /**
+ * Read an existing live-tree `.gitignore` (if present), merge our managed
+ * block via mergeGitignore, and write the result atomically.
+ *
+ * Used for the in-place `.claude/` and `.codex/` writes. The `.ana/` surface
+ * is handled separately — its merge runs pre-swap in preserveUserState because
+ * only that path can read the OLD `.ana/.gitignore` before the atomic swap.
+ *
+ * @param gitignorePath - Absolute path to the surface's `.gitignore`
+ * @param stockBlock - Raw stock lines for this surface (no sentinels)
+ * @param displayName - Display name for integrity-check errors
+ */
+async function mergeAndWriteGitignore(
+  gitignorePath: string,
+  stockBlock: string,
+  displayName: string,
+): Promise<void> {
+  let existing: string | null = null;
+  try {
+    existing = await fs.readFile(gitignorePath, 'utf-8');
+  } catch {
+    // No existing .gitignore — merge from null (block-only output).
+  }
+  await atomicWriteFile(gitignorePath, mergeGitignore(existing, stockBlock), displayName);
+}
+
+/**
  * Create .claude/ configuration
  *
  * Creates .claude/ directory with settings.json, agents/ directory, agent files,
@@ -218,13 +252,10 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
 
   const claudeExists = await dirExists(claudePath);
 
-  // Ensure .gitignore exists for per-developer state (agent-memory/, settings.local.json).
-  // Written on every run (fresh and re-init) — infrastructure-owned, same as .ana/.gitignore.
+  // Merge (not clobber) the .gitignore for per-developer state on every run.
+  // Our managed block regenerates from stock; any user lines are preserved.
+  // Routed through atomicWriteFile — it's an in-place live-tree write.
   const claudeGitignorePath = path.join(claudePath, '.gitignore');
-  const claudeGitignoreContent = `# Per-developer state — not committed
-agent-memory/
-settings.local.json
-`;
 
   const changed: string[] = [];
 
@@ -233,7 +264,7 @@ settings.local.json
     await fs.mkdir(claudePath, { recursive: true });
     await fs.mkdir(agentsPath, { recursive: true });
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
-    await fs.writeFile(claudeGitignorePath, claudeGitignoreContent, 'utf-8');
+    await mergeAndWriteGitignore(claudeGitignorePath, CLAUDE_GITIGNORE_STOCK, '.claude/.gitignore');
 
     // Copy all agent files (fresh — never reports changes)
     changed.push(...await copyAgentFiles(agentsPath, templatesDir));
@@ -247,8 +278,8 @@ settings.local.json
   }
 
   // .claude/ exists - handle merge
-  // Always refresh .gitignore — infrastructure-owned, same as .ana/.gitignore
-  await fs.writeFile(claudeGitignorePath, claudeGitignoreContent, 'utf-8');
+  // Merge .gitignore — regenerate our managed block, preserve user lines.
+  await mergeAndWriteGitignore(claudeGitignorePath, CLAUDE_GITIGNORE_STOCK, '.claude/.gitignore');
 
   const settingsExists = await fileExists(settingsPath);
 
@@ -760,6 +791,7 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
 
   const codexPath = path.join(cwd, '.codex');
   const agentsPath = path.join(codexPath, 'agents');
+  const codexGitignorePath = path.join(codexPath, '.gitignore');
   const templatesDir = getTemplatesDir();
 
   const codexExists = await dirExists(codexPath);
@@ -774,6 +806,9 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
 
     await applyCodexCaptureHooks(codexPath, templatesDir);
 
+    // Create .gitignore for Codex per-developer state (agent-memory/, settings.local.json).
+    await mergeAndWriteGitignore(codexGitignorePath, CODEX_GITIGNORE_STOCK, '.codex/.gitignore');
+
     spinner.succeed('Created .codex/ configuration');
     return changed;
   }
@@ -787,6 +822,9 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
   const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
 
   await applyCodexCaptureHooks(codexPath, templatesDir);
+
+  // Merge .gitignore — regenerate our managed block, preserve user lines.
+  await mergeAndWriteGitignore(codexGitignorePath, CODEX_GITIGNORE_STOCK, '.codex/.gitignore');
 
   spinner.succeed('Created .codex/ configuration (merged)');
   return changed;

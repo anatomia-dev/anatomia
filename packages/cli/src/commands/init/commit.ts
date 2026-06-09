@@ -52,6 +52,7 @@ const EXCLUDED_PREFIXES = [
   '.ana/worktrees/',
   '.claude/settings.local.json',
   '.claude/agent-memory/',
+  '.claude/scheduled_tasks.lock',
   '.codex/settings.local.json',
   '.codex/agent-memory/',
   '.agents/settings.local.json',
