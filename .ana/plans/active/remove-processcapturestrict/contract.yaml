@@ -1,0 +1,128 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Remove processCaptureStrict — provenance records-and-annotates, never blocks"
+
+assertions:
+  # AC2 — incomplete provenance records the gap and completes (never blocks)
+  - id: A001
+    says: "Completing work with incomplete provenance still records a proof entry instead of blocking"
+    block: "incomplete provenance records the gap and completes"
+    target: "chainEntry"
+    matcher: "exists"
+
+  - id: A002
+    says: "An incomplete provenance gap is recorded as not-complete, never hidden"
+    block: "incomplete provenance records the gap and completes"
+    target: "chainEntry.process.completeness.complete"
+    matcher: "equals"
+    value: false
+
+  - id: A003
+    says: "The recorded gap names the missing pipeline stage"
+    block: "incomplete provenance records the gap and completes"
+    target: "chainEntry.process.completeness.gaps"
+    matcher: "contains"
+    value: "verify"
+
+  # AC2-zero — zero recorded sessions still record an incomplete entry
+  - id: A004
+    says: "Completing work with no recorded sessions still writes a proof entry"
+    block: "zero sessions are recorded as incomplete, not hidden"
+    target: "zeroSessionEntry"
+    matcher: "exists"
+
+  - id: A005
+    says: "Zero recorded sessions are marked incomplete, not complete"
+    block: "zero sessions are recorded as incomplete, not hidden"
+    target: "zeroSessionEntry.process.completeness.complete"
+    matcher: "equals"
+    value: false
+
+  # AC3 — full provenance: record path unchanged
+  - id: A006
+    says: "With full provenance the proof entry is still written"
+    block: "full provenance marks provenance complete"
+    target: "fullEntry"
+    matcher: "exists"
+
+  - id: A007
+    says: "With full provenance the proof marks provenance complete"
+    block: "full provenance marks provenance complete"
+    target: "fullEntry.process.completeness.complete"
+    matcher: "equals"
+    value: true
+
+  # Keystone — the --merge inversion is cured: merge lands AND the proof is still written
+  - id: A008
+    says: "Merging with incomplete provenance still records the proof entry — code never lands without an audit trail"
+    block: "merge with incomplete provenance still writes the proof entry"
+    target: "mergeEntry"
+    matcher: "exists"
+
+  - id: A009
+    says: "After a merge with incomplete provenance, the recorded proof annotates the gap"
+    block: "merge with incomplete provenance still writes the proof entry"
+    target: "mergeEntry.process.completeness.complete"
+    matcher: "equals"
+    value: false
+
+  # AC4 — flag gone from new-project config
+  - id: A010
+    says: "A new project's config contains no strict provenance flag"
+    block: "createAnaJson emits no processCaptureStrict key"
+    target: "anaJsonContents"
+    matcher: "not_contains"
+    value: "processCaptureStrict"
+
+  # AC5 — doctor Enforcement view drops the strict flag, keeps the two survivors
+  - id: A011
+    says: "Doctor's enforcement report no longer includes the strict flag"
+    block: "doctor enforcement omits the strict flag"
+    target: "enforcementOutput"
+    matcher: "not_contains"
+    value: "process_capture_strict"
+
+  - id: A012
+    says: "Doctor still reports the test-evidence gate"
+    block: "doctor enforcement omits the strict flag"
+    target: "enforcement.test_evidence_gate"
+    matcher: "exists"
+
+  - id: A013
+    says: "Doctor still reports the process-capture state"
+    block: "doctor enforcement omits the strict flag"
+    target: "enforcement.process_capture"
+    matcher: "exists"
+
+  - id: A014
+    says: "Doctor still exits successfully on a valid config"
+    block: "doctor exits zero on a valid config"
+    target: "doctorExitCode"
+    matcher: "equals"
+    value: 0
+
+file_changes:
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/utils/forensics.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/anaJsonSchema.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/config.ts"
+    action: modify
+  - path: "packages/cli/src/commands/doctor.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/work-merge.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/doctor.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/config.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/anaJsonSchema.test.ts"
+    action: modify
