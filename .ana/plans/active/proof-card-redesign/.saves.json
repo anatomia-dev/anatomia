@@ -82,19 +82,31 @@
     }
   },
   "commit_hygiene": [],
-  "verify_started_at": "2026-06-09T08:36:39.361Z",
+  "verify_started_at": "2026-06-09T09:17:28.596Z",
   "verify_agent": "ana-verify",
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:3c785de70ad7d4c68cf1de057ee9c472aef9a64e97e0470ca6e9d01df0ee3431",
-    "run_at": "2026-06-09T08:53:03.706Z"
+    "run_at": "2026-06-09T09:26:43.204Z"
   },
   "verify-report": {
-    "saved_at": "2026-06-09T08:53:03.738Z",
-    "hash": "sha256:505d1cc1405037bfa98e3392281404320453c1209c34a3b60e2c3f81a0231ffb"
+    "saved_at": "2026-06-09T09:26:43.252Z",
+    "hash": "sha256:8ae36abecf4eea4da7c7c30cf4780236c027374eeea4b55d36c368892ab0b6b1",
+    "history": [
+      {
+        "saved_at": "2026-06-09T08:53:03.738Z",
+        "hash": "sha256:505d1cc1405037bfa98e3392281404320453c1209c34a3b60e2c3f81a0231ffb"
+      }
+    ]
   },
   "verify-data": {
-    "saved_at": "2026-06-09T08:53:03.738Z",
-    "hash": "sha256:a1d634eccf6180e550a2e767d5b1076f53eba59bd910d3bf492a533beecd2ebb"
+    "saved_at": "2026-06-09T09:26:43.252Z",
+    "hash": "sha256:2c92cb93817e8e27068d05e955f1dfaf6d85af719d21e694e3c61c60ba3081a6",
+    "history": [
+      {
+        "saved_at": "2026-06-09T08:53:03.738Z",
+        "hash": "sha256:a1d634eccf6180e550a2e767d5b1076f53eba59bd910d3bf492a533beecd2ebb"
+      }
+    ]
   }
 }

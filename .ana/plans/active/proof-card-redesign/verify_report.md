@@ -1,10 +1,14 @@
 # Verify Report: Proof card visual redesign on a shared render vocabulary
 
-**Result:** FAIL
+**Result:** PASS
 **Created by:** AnaVerify
 **Date:** 2026-06-09
 **Spec:** .ana/plans/active/proof-card-redesign/spec.md
 **Branch:** feature/proof-card-redesign
+
+> Re-verification after the FAIL round. The previous report's three UNSATISFIED
+> assertions (A029/A030/A031, TZ-dependent golden snapshots) and the A026
+> all-unpriced `$0.00` risk are the focus. See **Previous Findings Resolution**.
 
 ## Pre-Check Results
 
@@ -14,122 +18,137 @@
   Seal: INTACT (hash sha256:3c785de70ad7d4c68cf1de057ee9c472aef9a64e97e0470ca6e9d01df0ee3431)
 ```
 
-Seal status: **INTACT** — the contract was not modified after sealing.
+Seal status: **INTACT** — contract unmodified since the planner sealed it.
 
-Build: **success** (`pnpm run build` — tsup ESM build, 36ms).
-Lint: **pass** — 0 errors. 1 warning (`src/utils/git-operations.ts:198` unused eslint-disable) is **pre-existing**, in a file this build does not touch.
-Tests (local, MDT): **3673 passed, 0 failed, 2 skipped** (150 files). Baseline was 3642 passed + 2 skipped (148 files) → +31 tests, +2 files. Test count did not decrease.
+- **Build:** success (`pnpm run build` — tsup ESM, 38ms).
+- **Lint:** pass — 0 errors, 1 warning (`packages/cli/src/utils/git-operations.ts:198`, unused eslint-disable) which is **pre-existing** in a file this build does not touch.
+- **Tests (full cli suite, sealed verify run):** **3675 passed, 0 failed, 2 skipped** (150 files). Baseline was 3642 + 2 skipped (148 files); previous verify saw 3673. +2 this round from the two new golden fixtures (all-unpriced, counts-unavailable+Codex). Count increased, never decreased.
+- **CI-condition re-run (`TZ=UTC pnpm vitest run`, full cli suite):** **150 files, 3675 passed, 0 failed, 2 skipped.** This is the exact condition that failed last round; it is now fully green. The previously-noted non-reproducible single failure did not recur across this and the golden-only UTC/Tokyo/New_York runs.
 
 Sealed verify run marker:
-`<!-- ana:capture stage=verify slug=proof-card-redesign counts=3673p/0f/2s verdict=pass sha256=f0fa55454085066122c1b2f93c454ab767d088c1a7813a18375348c278923731 -->`
-
-**Critical caveat:** the local suite is green only because it runs in the author's timezone (MDT). Under `TZ=UTC` — which is what CI (`ubuntu-latest`) uses — the 5 golden snapshot tests fail deterministically. See Blockers.
+`<!-- ana:capture stage=verify slug=proof-card-redesign counts=3675p/0f/2s verdict=pass sha256=93b0fc17852cbca8a76ea62374fec64fe72e4c2cc7d46dbb5de09f9341ce118b -->`
 
 ## Contract Compliance
 
 | ID | Says | Status | Evidence |
 |----|------|--------|----------|
-| A001 | render module provides all six building blocks | ✅ SATISFIED | render.test.ts:34 — asserts all six are functions |
-| A002 | section divider shows label, fills to width | ✅ SATISFIED | render.test.ts:89 — rule contains 'Contract', starts `── ` |
-| A003 | divider can right-align a summary | ✅ SATISFIED | render.test.ts:96 — rollup ends at right edge within width |
-| A004 | header box keeps 71-column width | ✅ SATISFIED | render.test.ts:43 — every line visibleWidth === 71; DEFAULT_WIDTH===71 |
-| A005 | header box rounded corners on request | ✅ SATISFIED | render.test.ts:61 — topLeft `╭` |
-| A006 | header box square corners by default | ✅ SATISFIED | render.test.ts:52 — topLeft `┌` (health stays unchanged) |
-| A007 | labelled rows align into a column | ✅ SATISFIED | render.test.ts:111 — values share a column across differing labels |
-| A008 | numeric columns right-align | ✅ SATISFIED | render.test.ts:134 — right edges align across rows |
-| A009 | over-long cell truncated, grid not sheared | ✅ SATISFIED | render.test.ts:152 — `…` appears, both rows equal width |
-| A010 | proportion bar degrades to ASCII | ✅ SATISFIED | render.test.ts:183 — ascii bar has no `█`, equals `####----` |
-| A011 | status maps to its glyph | ✅ SATISFIED | render.test.ts:204 — SATISFIED → `✓` |
-| A012 | card shows verdict prominently in header | ✅ SATISFIED | snapshot line 75 `✓ PASS`; golden test:182 toContain 'PASS' (logic valid; see blocker — containing test fails in CI) |
-| A013 | every section introduced by inset rule | ✅ SATISFIED | golden test:183 `── Contract`; snapshot confirms all section rules |
-| A014 | Contract section summarises satisfied ratio | ✅ SATISFIED | golden test:184 — Contract rule contains `/` (`44/44`) |
-| A015 | passing assertions collapse to one line | ✅ SATISFIED | golden test:195 (non-snapshot, **passes under UTC**) — 'satisfied' counted line |
-| A016 | failed assertion shown in full with says | ✅ SATISFIED | snapshot line 40-41; golden test:232 UNSATISFIED says text present |
-| A017 | deviated assertion shows deviation detail | ✅ SATISFIED | snapshot line 42-43; golden test:233-234 says + `→` detail |
-| A018 | Findings leads with severity count | ✅ SATISFIED | golden test:185 — Findings rule matches /debt\|obs/ |
-| A019 | overflow points to full data (--json) | ✅ SATISFIED | golden test:197 (non-snapshot, **passes under UTC**) — overflow contains '--json' |
-| A020 | never a bare 'and N more' | ✅ SATISFIED | golden test:198 (non-snapshot, **passes under UTC**) — overflow not.toContain 'and'; proof.test.ts:375 confirms via dist |
-| A021 | cost breakdown shows cached tokens | ✅ SATISFIED | golden test:186 — 'cache' column header; snapshot line 100 |
-| A022 | shows input and output tokens | ✅ SATISFIED | golden test:187 — 'out' column; snapshot line 100 (`in out cache`) |
-| A023 | ends with separated TOTAL + table version | ✅ SATISFIED | golden test:188 — /TOTAL.*table v3/; snapshot lines 105-106 |
-| A024 | completeness stated on one line | ✅ SATISFIED | golden test:189 — 'completeness'; snapshot line 108 |
-| A025 | card fits within 80 columns | ✅ SATISFIED | golden test:241 (non-snapshot, **passes under UTC**) — maxLineWidth ≤ 80 across all 5 fixtures |
-| A026 | unpriced shown as n/a, never free | ✅ SATISFIED | golden test:221-222 — 'n/a' present, no '$0.00'. **But see Findings: all-unpriced edge renders $0.00 and is untested** |
-| A027 | layout correct with color disabled | ✅ SATISFIED | golden test:242 (non-snapshot, **passes under UTC**) — no ANSI escape with chalk.level 0 |
-| A028 | --json assertions array unchanged | ✅ SATISFIED | proof.test.ts:625 (new) — runs vs dist, asserts array + length + says; --json path untouched in diff |
-| A029 | provenance-absent golden matches | ❌ UNSATISFIED | golden snapshot test fails under UTC (TZ-dependent timestamp) — does not match in CI |
-| A030 | ≥6-sessions golden matches | ❌ UNSATISFIED | golden snapshot test fails under UTC (TZ-dependent timestamp) — does not match in CI |
-| A031 | FAIL/DEVIATED golden matches | ❌ UNSATISFIED | golden snapshot test fails under UTC — proven: subtitle renders `22:40` vs baked `16:40` |
+| A001 | render module provides all six building blocks | ✅ SATISFIED | render.test.ts (module unchanged since round 1); all six primitives exported, unit-tested |
+| A002 | section divider shows label, fills to width | ✅ SATISFIED | render.test.ts; live card shows `── Contract ──── 13/13 ✓` |
+| A003 | divider can right-align a summary | ✅ SATISFIED | render.test.ts; rollup right-aligned within width |
+| A004 | header box keeps 71-column width | ✅ SATISFIED | live card: all 4 header lines measured exactly 71 visible cols |
+| A005 | header box rounded corners on request | ✅ SATISFIED | live card header topLeft `╭` |
+| A006 | header box square corners by default | ✅ SATISFIED | render.test.ts; health header unchanged (square `┌`) |
+| A007 | labelled rows align into a column | ✅ SATISFIED | render.test.ts; Timing block values share a column |
+| A008 | numeric columns right-align | ✅ SATISFIED | render.test.ts; live Provenance grid in/out/cache right-aligned |
+| A009 | over-long cell truncated, grid not sheared | ✅ SATISFIED | render.test.ts; statGrid maxWidth truncation tested |
+| A010 | proportion bar degrades to ASCII | ✅ SATISFIED | render.test.ts; ascii bar has no `█` |
+| A011 | status maps to its glyph | ✅ SATISFIED | render.test.ts; SATISFIED → `✓` |
+| A012 | card shows verdict prominently in header | ✅ SATISFIED | golden test:237; live card `✓ PASS`; **golden snapshots now pass under UTC** |
+| A013 | every section introduced by inset rule | ✅ SATISFIED | golden test:237; live card all sections are `── Label` rules |
+| A014 | Contract section summarises satisfied ratio | ✅ SATISFIED | golden test:243 — Contract rule contains `/` (`13/13`) |
+| A015 | passing assertions collapse to one line | ✅ SATISFIED | golden test:251 — counted `satisfied` line |
+| A016 | failed assertion shown in full with says | ✅ SATISFIED | golden test:287,291 — UNSATISFIED says text present |
+| A017 | deviated assertion shows deviation detail | ✅ SATISFIED | golden test:287,292-293 — says + `→` detail present |
+| A018 | Findings leads with severity count | ✅ SATISFIED | golden test:244 — Findings rule matches /debt\|obs/ |
+| A019 | overflow points to full data (--json) | ✅ SATISFIED | golden test:251,255 — overflow contains `--json` |
+| A020 | never a bare 'and N more' | ✅ SATISFIED | golden test:251 — overflow `more — see`, not bare 'and N more' |
+| A021 | cost breakdown shows cached tokens | ✅ SATISFIED | golden test:237; live grid has `cache` column |
+| A022 | shows input and output tokens | ✅ SATISFIED | golden test:237; live grid `in out cache` columns |
+| A023 | ends with separated TOTAL + table version | ✅ SATISFIED | golden test:237; live `TOTAL ... (table 2026-06-08)` under a rule |
+| A024 | completeness stated on one line | ✅ SATISFIED | golden test:237; live `completeness ✓ complete (...)` |
+| A025 | card fits within 80 columns | ✅ SATISFIED | golden test:268,318-320 — maxLineWidth ≤ 80 across all 7 fixtures |
+| A026 | unpriced shown as n/a, never free | ✅ SATISFIED | golden test:277 (mixed) **+ new test:297 (all-unpriced)** — TOTAL is `n/a`, `not.toContain('$')`, `3 unpriced`. **Round-1 finding closed.** |
+| A027 | layout correct with color disabled | ✅ SATISFIED | golden test:318-320 — no ANSI escape with chalk.level 0 |
+| A028 | --json assertions array unchanged | ✅ SATISFIED | proof.test.ts:624 — `--json` path untouched; only proof.ts footer ternary changed in the fix |
+| A029 | provenance-absent golden matches | ✅ SATISFIED | golden test:260 — **passes under UTC** (was UNSATISFIED) |
+| A030 | ≥6-sessions golden matches | ✅ SATISFIED | golden test:268 — **passes under UTC** (was UNSATISFIED) |
+| A031 | FAIL/DEVIATED golden matches | ✅ SATISFIED | golden test:286 — **passes under UTC**; subtitle renders deterministic `22:40` (was UNSATISFIED) |
 
-**Note on A012–A024/A026:** the *content* of these assertions is correct (verified directly against the snapshot file and the code) and their `toContain` logic is sound. However, the assertions tagged to the provenance-rich / unpriced / fail-deviated golden tests sit *after* a `toMatchSnapshot` call that throws under UTC, so those containing tests fail in CI. Their substance is met; the test harness has the TZ defect tracked as the blocker. A029/A030/A031, whose mechanical matcher *is* "golden snapshot matches", are marked UNSATISFIED outright.
+All 31 assertions SATISFIED.
 
 ## Independent Findings
 
-**The redesign is genuinely good work.** The render module (`utils/render.ts`) is clean, pure, and correctly solves the spec's #1 flagged risk — every primitive computes alignment on *visible* width via `visibleWidth()` and pads with plain spaces before applying chalk, so embedded ANSI never shears a column. The snapshots render beautifully: right-aligned numeric grids, rules that fill to width, rounded header, `n/a` for unpriced cells, model-collapse when sessions share a model, rework indices (`build 2`), all within 80 columns. The `SEVERITY_ORDER` duplication (build-concern carried for several cycles) is genuinely collapsed into one `renderSeverityList` helper. No duplicate `BOX`/`getStatusIcon`/`formatTokenCount`/`columnWidth` remain in proof.ts — all imported from the module. `formatHealthDisplay` adopts `headerBox` with square defaults and is byte-identical (55 health assertions pass; verified by reasoning that square-corner headerBox reproduces the legacy construction line-for-line).
+**The fix cycle is clean and surgical.** Two commits, both tightly scoped:
+- `dcc3d3b4` touches only `proof-card-golden.test.ts` + its snapshot: pins `process.env['TZ']='UTC'` in `beforeAll`, restores in `afterAll`, and regenerates the snapshots (10-line snapshot delta — the baked timestamps shifted to UTC).
+- `8b38881a` is a **5-line** change to `proof.ts` (the TOTAL footer value becomes `provPriced ? '$'+total : 'n/a'`) plus two new golden fixtures with strong assertions.
 
-**Predictions resolved (Step 3):**
-1. *padEnd on colored string mis-aligning* — **Not found.** The builder built `visibleWidth`/`padVisible` precisely to avoid this; truncation only ever runs on plain label cells. Got it right.
-2. *unpriced/counts-unavailable edge incompletely handled* — **Surprised + confirmed.** counts-unavailable and model-collapse are handled well, but the **all-unpriced** case renders `$0.00` in the TOTAL footer (the credibility violation A026 exists to prevent) and no fixture exercises it.
-3. *flaky time-dependent test* — **Confirmed, bigger than predicted.** Not just a latent flake: the golden snapshots are categorically timezone-dependent and fail in CI. This is the blocker.
-4. *proofSummary/commit-hygiene tests untouched despite contract* — **Confirmed.** They were resilient substring checks and didn't need changes; harmless over-prediction by the contract.
-5. *partial SEVERITY_ORDER collapse* — **Not found.** Fully collapsed. Good.
+`render.ts` was **not touched** this round — the high-quality, pure render module verified in the FAIL round is unchanged, so its assessment carries forward.
 
-**Production-risk prediction** ("what breaks in prod the spec didn't address"): a brand-new model id absent from `pricing.ts` makes *every* session unpriced → the card advertises a `$0.00` total for a run that genuinely cost money. This is the same all-unpriced gap surfaced above.
+**The TZ fix is genuinely robust, not a snapshot-pin band-aid.** I re-ran the golden file under `TZ=UTC`, `TZ=Asia/Tokyo`, and `TZ=America/New_York` (9 passing each), then the **entire cli suite under `TZ=UTC`** (3675 passing, 0 failing) — the exact CI condition. The root cause (local-time rendering vs. baked snapshots) is neutralized by forcing a fixed zone for the snapshot file; the code still renders runtime-local time at runtime (correct behavior for a human reading their own terminal), and only the deterministic test harness is pinned. The file comment correctly notes Node re-reads `process.env.TZ` per `Date` construction, which is why the in-test mutation works.
+
+**The all-unpriced fix closes a real credibility hole, not a hypothetical.** The fix targets the exact trigger I flagged last round: a new model id shipping before `pricing.ts` knows it → every session unpriced → `provTotalCost === 0` → a paid run advertised as `$0.00`. The new `allUnpriced` fixture asserts the TOTAL line contains `n/a` and `not.toContain('$')` — it cannot pass on the mixed-priced gap the old `unpricedModel` fixture left open. The previously-untested counts-unavailable and Codex (`cache_create=0`) paths now have a dedicated fixture (`mixedCounts`) asserting `counts unavailable` and the Codex cache figure `600.0k` (0 create + 600k read).
+
+**Live render confirms the design goal.** `ana proof --last` against real proof data renders a polished card: rounded 71-col header, inset section rules with roll-ups, full proportion bar, collapsed passing line, severity-tagged findings, a right-aligned in/out/cache grid with model-collapse (`model claude-opus-4-8`) and a TOTAL footer under a rule with the price-table version, and a one-line completeness. I measured all four header lines at exactly 71 visible columns — the apparent right-border misalignment in raw output is a multi-byte (3-byte box glyph) artifact, not a real shear.
+
+**Predictions resolved (re-verify focus — did the fix introduce regressions?):**
+1. *TZ pin leaks across files / fails to restore* — **Not found.** `afterAll` restores `ORIGINAL_TZ`; full suite green under both local and UTC.
+2. *all-unpriced fix breaks the mixed-priced path* — **Not found.** Both `unpricedModel` (mixed → priced TOTAL) and `allUnpriced` (→ `n/a` TOTAL) pass.
+3. *TZ pin doesn't actually take effect* — **Not found.** Empirically green under three zones.
+4. *new fixtures use weak assertions* — **Not found.** Assertions are specific (`not.toContain('$')`, exact `600.0k`).
+5. *counts-unavailable deviates from spec mockup* — **Confirmed, minor.** Rendered as a standalone line, not an in-grid row; substance met, no assertion governs it. Logged as an observation.
+
+## Previous Findings Resolution
+
+### Previously UNSATISFIED Assertions
+| ID | Previous Issue | Current Status | Resolution |
+|----|----------------|----------------|------------|
+| A029 | Provenance-absent golden snapshot failed under UTC (TZ-dependent timestamp) | ✅ SATISFIED | TZ pinned to UTC in `beforeAll`; snapshot regenerated; passes under UTC/Tokyo/NY |
+| A030 | ≥6-session golden snapshot failed under UTC | ✅ SATISFIED | Same TZ pin; verified green under `TZ=UTC` |
+| A031 | FAIL/DEVIATED golden failed under UTC (`22:40` vs baked `16:40`) | ✅ SATISFIED | Same TZ pin; snapshot now bakes the UTC time deterministically |
+
+### Previous Findings
+| Finding | Status | Notes |
+|---------|--------|-------|
+| Golden snapshots are timezone-dependent (Blocker 1) | Fixed | `beforeAll` pins `process.env['TZ']='UTC'`; full suite green under `TZ=UTC` |
+| All-unpriced run renders `$0.00` in TOTAL footer | Fixed | 5-line proof.ts fix: footer value `provPriced ? '$'+total : 'n/a'`; new `allUnpriced` fixture proves it |
+| counts-unavailable and Codex sessions untested | Fixed | New `mixedCounts` fixture asserts `counts unavailable` + Codex cache `600.0k` |
+| Ad-hoc bold `Phase breakdown` sub-header (AC2) | Still present | proof.ts:386 — not a blocker (AC2 was PARTIAL); defensible as an in-section sub-header. Logged again as debt |
+| Stale `@ana A020` tag in proofSummary.test.ts | Still present | Unmodified file; harmless (A020 covered by golden test). Observation |
+| Contract over-predicted test file changes (upstream) | Still present | proofSummary.test.ts / commit-hygiene.test.ts needed minimal change. Observation |
+| One non-reproducible suite failure | No longer applicable | Did not recur across the sealed run, full UTC run, or three golden-file zone runs |
 
 ## AC Walkthrough
 
-- **AC1** — primitives typed, JSDoc'd, unit-tested: ✅ PASS (render.test.ts, 11 cases, TZ-independent)
-- **AC2** — card uses only shared primitives, no inline construction remains: ⚠️ PARTIAL — one ad-hoc `chalk.bold('  Phase breakdown')` sub-header survives in formatHumanReadable (proof.ts:322)
-- **AC3** — every section header is an inset rule with roll-ups: ✅ PASS (Contract ratio, Findings/Concerns severity roll-ups; main section headers all `sectionRule`)
-- **AC4** — passing collapse, UNSATISFIED/DEVIATED individual with says: ✅ PASS (snapshot lines 40-43; proof.test.ts:822, 853)
-- **AC5** — severity roll-up + capped list + actionable --json overflow: ✅ PASS (renderSeverityList; proof.test.ts:375)
-- **AC6** — provenance grid in/out/cache + TOTAL under rule + completeness: ✅ PASS (snapshot lines 100-108)
-- **AC7** — 80 cols, single-width, alignment for long ids/≥6/unavailable/unpriced/Codex: ⚠️ PARTIAL — 80-col and long-id/≥6/unpriced verified; **counts-unavailable and Codex (cache_create=0) code paths exist but are untested by any fixture**
-- **AC8** — color independence, NO_COLOR / non-TTY legible: ✅ PASS (golden test:242 passes under UTC)
-- **AC9** — --json byte-identical: ✅ PASS (A028; --json path untouched in diff)
-- **AC10** — all tests pass (updated where format changed), count not decrease, render.test + 5 golden color-stripped: ❌ FAIL — the golden tests exist and are color-stripped, but **fail in CI** (TZ). Locally green; the suite is not green where it must be
-- **AC11** — Plan paper-validation deliverable: ✅ PASS (satisfied in spec's AC11 table; no build action)
-- **headerBox square default; health byte-identical**: ✅ PASS (55 health assertions pass; verified construction equivalence)
-- **No duplicate BOX/getStatusIcon/formatTokenCount/columnWidth in proof.ts**: ✅ PASS (grep confirms none; imported from render.ts)
-- **build/test/lint pass**: ⚠️ PARTIAL — build ✅, lint ✅, test ✅ locally but ❌ under UTC/CI
+- **AC1** — primitives typed, JSDoc'd, unit-tested: ✅ PASS (render.test.ts, unchanged; module not touched this round)
+- **AC2** — card uses only shared primitives, no inline construction: ⚠️ PARTIAL — one `chalk.bold('  Phase breakdown')` sub-header survives (proof.ts:386). Not a blocker; in-section sub-header, no top-level section header is hand-built
+- **AC3** — every section header is an inset rule with roll-ups: ✅ PASS (live card: Contract ratio, Findings/Build-Concerns severity roll-ups, all `sectionRule`)
+- **AC4** — passing collapse, UNSATISFIED/DEVIATED individual with says: ✅ PASS (golden test:251, 287)
+- **AC5** — severity roll-up + capped list + actionable `--json` overflow: ✅ PASS (golden test:251,255; live `more — see ... --json`)
+- **AC6** — provenance grid in/out/cache + TOTAL under rule + completeness: ✅ PASS (live card; golden test:237)
+- **AC7** — 80 cols, single-width, alignment for long ids/≥6/unavailable/unpriced/Codex: ✅ PASS — **previously PARTIAL; now complete.** counts-unavailable and Codex covered by `mixedCounts`; all 7 fixtures ≤80 cols (golden test:318-320)
+- **AC8** — color independence, NO_COLOR / non-TTY legible: ✅ PASS (golden test:318-320 — no ANSI with chalk.level 0)
+- **AC9** — --json byte-identical: ✅ PASS (A028; fix touched only the human TOTAL footer ternary)
+- **AC10** — all tests pass, count not decrease, render.test + golden color-stripped: ✅ PASS — **previously FAIL; now green in CI condition.** 3675 passed under `TZ=UTC`, 0 failed; +2 vs prior round; 5 golden fixtures (now 7 cases)
+- **AC11** — Plan paper-validation deliverable: ✅ PASS (satisfied in spec; no build action)
+- **headerBox square default; health byte-identical**: ✅ PASS (health header unchanged; 55 health assertions pass)
+- **No duplicate BOX/getStatusIcon/formatTokenCount/columnWidth in proof.ts**: ✅ PASS (imported from render.ts; module unchanged)
+- **build/test/lint pass**: ✅ PASS — build ✅, lint ✅ (1 pre-existing warning), test ✅ locally AND under `TZ=UTC`
 
 ## Blockers
 
-**BLOCKER 1 — Golden snapshot tests fail across the entire CI matrix (timezone-dependent timestamps).**
+**None.** Every previous blocker is resolved and re-proven under the CI condition that exposed them:
+- The golden-snapshot timezone failure (the round-1 blocker) is fixed — I ran the full cli suite under `TZ=UTC` (3675 passed, 0 failed) and the golden file under three distinct zones.
+- The all-unpriced `$0.00` credibility risk is fixed and now has a dedicated failing-on-regression fixture.
 
-`formatHumanReadable` renders the header timestamp with `completedDate.toTimeString().slice(0,5)` and `formatLocalDate` — both **local-timezone**. The golden snapshots were generated in the author's timezone (MDT, UTC−6) and bake in MDT-local times (`16:40`, `08:32`, `03:11`). CI runs on `ubuntu-latest` (Node 22 & 24) with no `TZ` pinning, so it runs in **UTC**.
-
-Proven empirically:
-```
-$ TZ=UTC pnpm vitest run tests/commands/proof-card-golden.test.ts
- FAIL  ... renders the FAIL/DEVIATED card ...
-- │  cli · 31 min                                       2026-06-05 16:40│
-+ │  cli · 31 min                                       2026-06-05 22:40│
-  Snapshots  5 failed
-  Tests  5 failed | 2 passed (7)
-```
-
-All 5 snapshot tests fail in UTC. This is **deterministic in CI**, not flaky. The local green suite is misleading. AC10 — the headline deliverable of this scope — is red in CI.
-
-*Fix direction (for Build, not prescriptive):* pin `process.env.TZ = 'UTC'` before the fixtures (a `beforeAll` or test-setup file) and regenerate the snapshots; or normalize the timestamp to a fixed zone in fixtures. The vitest config has no global setup file, so a per-file `process.env.TZ` set before import, or a shared setup, is needed. Note the same latent time-dependency already flagged in proof.ts/health (build concern: "formatHealthDisplay date uses runtime new Date()").
-
-**Searched and cleared as non-blockers:** unused exports in render.ts (all six primitives + helpers are imported by proof.ts/tests; `visibleWidth`/`truncateCell` exported for test access — intentional per testing-standards); error paths (primitives are pure, no throw paths beyond clamping which is tested); external-state assumptions (none — pure functions, no `process.stdout.columns` read); engine boundary (render.ts correctly in `utils/`, uses chalk, never imported by engine).
+Searched and cleared as non-blockers this round: the TZ-pin's `process.env` mutation (restored in `afterAll`, no leak observed in the full-suite UTC run); the 5-line footer change (does not affect the mixed-priced path — both fixtures pass; does not touch `--json`); test-count regression (count rose +2, never fell); lint (only the pre-existing unrelated warning).
 
 ## Findings
 
-- **Test — Golden snapshots are timezone-dependent:** `packages/cli/tests/commands/proof-card-golden.test.ts:19` — fixtures use UTC `completed_at` but the card renders local-time; snapshots baked in MDT fail under UTC/CI. This is Blocker 1. (severity: risk)
-- **Code — All-unpriced run renders "$0.00" in the TOTAL footer:** `packages/cli/src/commands/proof.ts:487` — the footer value is unconditionally `$${provTotalCost.toFixed(2)}`; when every session is unpriced, `provTotalCost === 0` → `$0.00`, exactly the "free run" lie A026 guards against. The unpriced golden fixture mixes priced + unpriced sessions (snapshot TOTAL `$1.77`), so the all-unpriced edge passes the `not.toContain('$0.00')` check on a gap. A real future trigger: a new model id missing from `pricing.ts`. Consider rendering the TOTAL value as `n/a` (or omitting it) when `provPriced` is false. (severity: risk)
-- **Code — Ad-hoc bold sub-header remains in formatHumanReadable:** `packages/cli/src/commands/proof.ts:322` — `chalk.bold('  Phase breakdown')` is the one inline section-header construction AC2 says should not remain after the rebuild. Minor (it's a sub-header inside Timing, no underline pair), but it is literally what AC2 prohibits. (severity: debt)
-- **Test — counts-unavailable and Codex sessions untested:** `packages/cli/tests/commands/proof-card-golden.test.ts:140` — AC7 lists "counts-unavailable sessions" and "Codex sessions (cache_create=0)" as alignment cases. Both code paths exist and read correct (the "counts unavailable" line; cache summed as `cache_create + cache_read`), but no fixture (golden or unit) exercises either. The `session()` helper supports `withCounts=false` but it's never used. (severity: debt)
-- **Test — Stale `@ana A020` tag:** `packages/cli/tests/utils/proofSummary.test.ts:2409` — tag points at the single-phase phase-breakdown test, but A020 in this contract is the findings-overflow rule. Pre-existing mis-tag in an unmodified file; harmless here (A020 is correctly covered by the golden test) but would mislead tag-driven verification. (severity: observation)
-- **Upstream — Contract over-predicted test file changes:** `proofSummary.test.ts` and `commit-hygiene.test.ts` are listed `modify` in contract file_changes but needed no change — their assertions are substring `toContain` checks that survive the new format. Harmless; planners could mark such resilient files as optional. (severity: observation)
-- **Test — One non-reproducible suite failure:** the first sealed `ana test` run reported `3672p/1f/2s`; 7 subsequent runs (sealed + 6 direct, including JSON-reporter) all reported 0 failures. The seal marker records only counts, so the failing test could not be identified. Most likely a pre-existing flaky/time-dependent test (proof.ts and health both render runtime `new Date()`), not this build's deterministic new tests. Flagging so it isn't lost. (severity: observation)
+- **Code — Ad-hoc bold sub-header remains in formatHumanReadable:** `packages/cli/src/commands/proof.ts:386` — `chalk.bold('  Phase breakdown')` is the one inline header construction AC2 nominally prohibits. It is a *sub*-header inside the Timing section (multi-phase path), not a top-level section header, so it is a defensible call — but it is literally the pattern AC2 names. Carried unchanged from the FAIL round; was never a blocker. (severity: debt, action: scope)
+- **Test — Golden TZ pin mutates process-global `process.env['TZ']`:** `packages/cli/tests/commands/proof-card-golden.test.ts:28` — pinning is correct and robust (green under UTC/Tokyo/NY and full-suite UTC), and `afterAll` restores cleanly. But `process.env.TZ` is process-global; were vitest to ever co-locate this file with another time-dependent test in one worker, that file could transiently see UTC during this run. No leak observed in practice. (severity: observation, action: monitor)
+- **Code — counts-unavailable renders as a standalone line, not an in-grid row:** `packages/cli/src/commands/proof.ts:452` — the spec mockup shows the derived-absent session as a row with `counts unavailable` spanning the numeric columns; the implementation renders it as a separate `<label>  counts unavailable` line above the grid. Arguably cleaner (numeric columns never widen), substance fully met, no assertion governs the exact form. (severity: observation, action: acknowledge)
+- **Test — Stale `@ana A020` tag:** `packages/cli/tests/utils/proofSummary.test.ts:2409` — tag points at the single-phase phase-breakdown test, but A020 in this contract is the findings-overflow rule. Pre-existing mis-tag in an unmodified file; A020 is correctly covered by the golden test. (severity: observation, action: monitor)
+- **Upstream — Contract over-predicted test file changes:** `proofSummary.test.ts` and `commit-hygiene.test.ts` are listed `modify` but their substring `toContain` assertions survive the new format with minimal/no change. Planners could mark such resilient files optional. (severity: observation, action: acknowledge)
+
+Note on proof-chain context: the active findings on `proof.ts` from `ana proof context` (`audit-matrix-orientation-C5`, `learn-session-memory-C1`, `cli-polish-C3`, `proof-last-and-completion-hint-C1/C4`) are **not** resolved by this build — they live in code paths this scope does not change (JSON payloads, helper exports, the health Hot-Spots block). `cli-polish-C3` in particular is only *enabled* to be fixed later: `statGrid` carries the max-width truncation, but `formatHealthDisplay`'s Hot Spots still uses `padEnd` (proof.ts:648+) and adopts the grid in a future scope. No resolution claimed.
 
 ## Deployer Handoff
 
-**Do not merge.** This goes back to Build. The single code change required is small but essential: pin the test timezone (or normalize fixture timestamps) so the golden snapshots pass in CI, then regenerate the `.snap`. While in there, two cheap wins worth folding into the fix cycle: (a) render the Provenance TOTAL as `n/a` when no session is priced, to close the all-unpriced `$0.00` gap A026 implies; (b) add an all-unpriced fixture and a counts-unavailable/Codex fixture to actually cover AC7's listed edges. The AC2 `Phase breakdown` sub-header is optional polish (convert to `sectionRule` or accept as a documented sub-header). The render module itself is high quality and needs no changes.
+**Shippable — merge it.** The fix cycle did exactly what the FAIL report asked and nothing more: pinned the golden snapshots to UTC (the headline AC10 deliverable now passes on every CI runner — I proved it with a full-suite `TZ=UTC` run), and closed the A026 all-unpriced `$0.00` credibility gap with a 5-line change plus genuine coverage. All 31 contract assertions are SATISFIED; AC7 and AC10 moved from PARTIAL/FAIL to PASS. The render module is unchanged from its already-strong round-1 state.
+
+Residual, all non-blocking and safe to merge as-is: (a) the AC2 `Phase breakdown` bold sub-header is an in-section sub-header, not a top-level header — optional to convert to `sectionRule`; (b) the stale `@ana A020` tag lives in an unmodified file and could be corrected opportunistically; (c) `cli-polish-C3` (Hot-Spots truncation) is intentionally deferred to the health-redesign scope that adopts `statGrid`. The lone lint warning (`git-operations.ts:198`) is pre-existing and out of scope.
 
 ## Verdict
-**Shippable:** NO
+**Shippable:** YES
 
-The render vocabulary and the rebuilt card are excellent work and the design goal is clearly met. But the headline deliverable — AC10's golden snapshot tests — fails deterministically on every CI runner because timestamps are rendered in local time and the snapshots were captured in MDT. I proved this with `TZ=UTC` (5/5 snapshots fail). A green local suite that goes red in CI is not shippable. Three contract assertions (A029/A030/A031) are UNSATISFIED, AC10 fails, AC2 and AC7 are PARTIAL. Back to Build for a small, well-scoped fix.
+The round-1 blocker — AC10's golden snapshots failing deterministically in CI — is conclusively fixed. I re-ran the full cli suite under `TZ=UTC` (3675 passed, 0 failed) and the golden file under three timezones; the failure cannot reproduce. The all-unpriced `$0.00` risk is closed with a surgical fix and a fixture that fails on regression, and the previously-uncovered counts-unavailable/Codex paths are now tested. All 31 assertions SATISFIED, every AC PASS except a cosmetic AC2 sub-header (PARTIAL, not a blocker). Two independent sealed test accounts agree. I'd stake my name on this shipping.
