@@ -166,6 +166,11 @@ describe('ana init commit', () => {
       expect(isExcluded('.claude/settings.local.json')).toBe(true);
     });
 
+    // @ana A012 — the Claude session lock must never be committed by setup.
+    it('excludes .claude/scheduled_tasks.lock', () => {
+      expect(isExcluded('.claude/scheduled_tasks.lock')).toBe(true);
+    });
+
     it('does not exclude regular infrastructure files', () => {
       expect(isExcluded('.ana/ana.json')).toBe(false);
       expect(isExcluded('.ana/scan.json')).toBe(false);
