@@ -620,6 +620,129 @@ describe('ana proof', () => {
     });
   });
 
+  // ─── --last / --latest Selection Tests (Part B) ───────────────────
+  describe('proof --last selects the most recent entry', () => {
+    // Distinct timestamps: 'recent-slug' is the most recently completed.
+    // The human card identifies an entry by its FEATURE title (the slug is not
+    // a printed field), so the feature carries the slug token to make the
+    // stdout assertions meaningful and parity with the verifier's selectors.
+    const recentEntry = {
+      ...sampleEntry,
+      slug: 'recent-slug',
+      feature: 'Recent Feature for recent-slug',
+      completed_at: '2026-05-10T10:00:00Z',
+    };
+    const olderEntry2 = {
+      ...sampleEntry,
+      slug: 'older-slug',
+      feature: 'Older Feature for older-slug',
+      completed_at: '2026-05-01T10:00:00Z',
+    };
+
+    // @ana A005
+    it('shows the detail card for the entry with the most-recent completed_at', async () => {
+      // Push older first so selection — not append order — picks the winner.
+      await createProofChain([olderEntry2, recentEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['--last']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('recent-slug');
+      expect(stdout).toContain('Recent Feature for recent-slug');
+      expect(stdout).not.toContain('Older Feature');
+    });
+
+    // @ana A006, A007
+    it('--last --json envelope uses the resolved entry\'s real slug and matches proof <slug> --json', async () => {
+      await createProofChain([olderEntry2, recentEntry]);
+      process.chdir(tempDir);
+
+      const last = runProof(['--last', '--json']);
+      expect(last.exitCode).toBe(0);
+      const lastJson = JSON.parse(last.stdout);
+      // A006: envelope command labelled with the real slug
+      expect(lastJson.command).toBe('proof recent-slug');
+      // A007: results.slug is the resolved entry's slug
+      expect(lastJson.results.slug).toBe('recent-slug');
+
+      // Byte-shape parity with naming the slug directly.
+      const byName = runProof(['recent-slug', '--json']);
+      expect(byName.exitCode).toBe(0);
+      const byNameJson = JSON.parse(byName.stdout);
+      expect(lastJson.command).toBe(byNameJson.command);
+      expect(lastJson.results).toEqual(byNameJson.results);
+    });
+
+    // @ana A008
+    it('--latest is an alias that reaches the same code path as --last', async () => {
+      await createProofChain([olderEntry2, recentEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['--latest']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('recent-slug');
+      expect(stdout).toContain('Recent Feature for recent-slug');
+    });
+
+    // @ana A009, A010
+    it('rejects combining a slug with --last and exits non-zero', async () => {
+      await createProofChain([recentEntry]);
+      process.chdir(tempDir);
+
+      const { stderr, exitCode } = runProof(['recent-slug', '--last']);
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain('Pick one selector');
+    });
+
+    // @ana A011, A012
+    it('prints "No proofs yet." on an empty chain and exits zero (graceful read)', async () => {
+      // Valid .ana/ but no proof_chain.json — must not hit the detail-view hard exit.
+      await createTestProject(tempDir);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['--last']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('No proofs yet.');
+    });
+
+    it('treats a corrupt proof_chain.json like an empty chain (no crash)', async () => {
+      await createTestProject(tempDir);
+      await fs.writeFile(
+        path.join(tempDir, '.ana', 'proof_chain.json'),
+        '{ this is not valid json',
+      );
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['--last']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('No proofs yet.');
+    });
+
+    // @ana A013
+    it('tie-break: among equal completed_at, the last-appended entry wins', async () => {
+      const tieOld = {
+        ...sampleEntry,
+        slug: 'tie-old',
+        feature: 'Tie feature for tie-old',
+        completed_at: '2026-05-05T10:00:00Z',
+      };
+      const tieNew = {
+        ...sampleEntry,
+        slug: 'newer-slug',
+        feature: 'Tie feature for newer-slug',
+        completed_at: '2026-05-05T10:00:00Z',
+      };
+      // Push order [older, newer] — newer-slug is the last-appended (highest index).
+      await createProofChain([tieOld, tieNew]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['--last']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('newer-slug');
+      expect(stdout).not.toContain('tie-old');
+    });
+  });
+
   // @ana A001
   describe('displays proof card for valid slug', () => {
     it('displays feature name from entry', async () => {
