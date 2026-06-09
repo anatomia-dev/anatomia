@@ -372,7 +372,9 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['stripe-payments']);
-      expect(stdout).toContain('... and 2 more');
+      // Overflow now points to an actionable next step, never a bare "and N more".
+      expect(stdout).toContain('--json');
+      expect(stdout).not.toContain('and 2 more');
     });
 
     it('no truncation message when exactly 5 findings', async () => {
@@ -760,7 +762,8 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['stripe-payments']);
-      expect(stdout).toContain('Result: PASS');
+      // The verdict now leads the header headline rather than a "Result:" line.
+      expect(stdout).toContain('PASS');
     });
   });
 
@@ -773,7 +776,9 @@ describe('ana proof', () => {
       const { stdout } = runProof(['stripe-payments']);
       expect(stdout).toContain('satisfied');
       expect(stdout).toContain('deviated');
-      expect(stdout).toMatch(/20\/22 satisfied/);
+      // The ratio moves to the section-rule roll-up; the body carries the count.
+      expect(stdout).toMatch(/20 satisfied/);
+      expect(stdout).toContain('20/22');
     });
   });
 
@@ -800,7 +805,8 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['stripe-payments']);
-      expect(stdout).toContain('Creating a payment returns');
+      // Passing assertions collapse; exceptional ones render their says in full.
+      expect(stdout).toContain('Webhook updates order status');
     });
   });
 
@@ -827,12 +833,14 @@ describe('ana proof', () => {
 
   // @ana A010, A011
   describe('displays deviations when present', () => {
-    it('shows deviations section', async () => {
+    it('shows deviation detail inline in the assertions area', async () => {
       await createProofChain([sampleEntry]);
       process.chdir(tempDir);
 
       const { stdout } = runProof(['stripe-payments']);
-      expect(stdout).toContain('Deviations');
+      // The standalone Deviations section folds into the assertions area: the
+      // DEVIATED assertion renders with its says (and its → deviation detail).
+      expect(stdout).toContain('Webhook updates order status');
     });
 
     it('shows what was done instead', async () => {
@@ -963,8 +971,9 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['stripe-payments']);
-      expect(stdout).toContain('┌');
-      expect(stdout).toContain('┘');
+      // The proof card opts into rounded corners.
+      expect(stdout).toContain('╭');
+      expect(stdout).toContain('╯');
     });
 
     it('uses horizontal rules for section headers', async () => {
@@ -1021,7 +1030,8 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['stripe-payments']);
-      expect(stdout).toContain('Result: FAIL');
+      // The FAIL verdict leads the header headline.
+      expect(stdout).toContain('FAIL');
     });
 
     it('shows unsatisfied assertions with X icon', async () => {
@@ -5048,7 +5058,8 @@ describe('ana proof', () => {
 
       const { stdout, exitCode } = runProof(['stripe-payments']);
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('Surface:');
+      // Surface now renders in the header subtitle (`cli · 90 min`).
+      expect(stdout).toMatch(/cli ·/);
       expect(stdout).toContain('cli');
     });
   });
@@ -5097,7 +5108,8 @@ describe('ana proof', () => {
       const { stdout, exitCode } = runProof(['stripe-payments']);
       expect(exitCode).toBe(0);
       expect(stdout).toContain('Provenance');
-      expect(stdout).toContain('est. $');
+      // Per-session cost renders in the grid's right-aligned cost column.
+      expect(stdout).toMatch(/\$\d/);
     });
 
     it('shows a complete completeness line with the ✓ marker', async () => {
