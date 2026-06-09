@@ -1,0 +1,27 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Empty-chain JSON payload now triplicated — --last empty branch adds a third copy of wrapJsonResponse('proof', { entries }, chain)"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 838
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A011", "A012"]
+  - category: test
+    summary: "No coverage for `proof --last --json` on an empty/missing chain — A011/A012 only exercise human stdout + exit code, so the new duplicated JSON empty branch is unexercised"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 690
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A011", "A012"]
+  - category: upstream
+    summary: "A005 stdout-contains-'recent-slug' is satisfied via the slug token embedded in the fixture's `feature` text, not a printed slug field — the detail card does not render the bare slug. Mechanically correct, but the contract assertion couples to fixture naming."
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005"]
+  - category: code
+    summary: "sortEntriesByRecency kept module-private (not exported) — good restraint given proof.ts's documented history of over-exporting helpers (learn-session-memory-C1)"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 742
+    severity: observation
+    suggested_action: acknowledge
