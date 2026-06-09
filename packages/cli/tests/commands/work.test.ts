@@ -1399,12 +1399,12 @@ describe('ana work status', () => {
       });
     });
 
-    describe('strict process-completeness guard (Phase 2)', () => {
-      /** Overwrite ana.json with capture + strict flags, then commit it on main. */
-      function setCaptureFlags(processCapture: 'on' | 'off', processCaptureStrict: 'on' | 'off'): void {
+    describe('process provenance recording', () => {
+      /** Overwrite ana.json with the capture flag, then commit it on main. */
+      function setCaptureFlags(processCapture: 'on' | 'off'): void {
         fsSync.writeFileSync(
           path.join(tempDir, '.ana', 'ana.json'),
-          JSON.stringify({ artifactBranch: 'main', processCapture, processCaptureStrict }),
+          JSON.stringify({ artifactBranch: 'main', processCapture }),
           'utf-8',
         );
       }
@@ -1441,95 +1441,69 @@ describe('ana work status', () => {
       }
 
       /** Read the proof chain entry for a slug, or null if absent. */
-      function readChainEntry(slug: string): { process?: { completeness?: { complete?: boolean } } } | null {
+      function readChainEntry(
+        slug: string,
+      ): { process?: { completeness?: { complete?: boolean; gaps?: string[] } } } | null {
         const chainPath = path.join(tempDir, '.ana', 'proof_chain.json');
         if (!fsSync.existsSync(chainPath)) return null;
         const chain = JSON.parse(fsSync.readFileSync(chainPath, 'utf-8'));
         return chain.entries.find((e: { slug: string }) => e.slug === slug) ?? null;
       }
 
-      // @ana A027, A028, A045
-      it('blocks completion with exit 1 on a gap, writes no entry, leaves active/ + worktree intact', async () => {
+      // @ana A001, A002, A003
+      it('records and completes when provenance is incomplete (verify missing), annotating the gap', async () => {
         await createMergedProject({ slug: 'test-slug', phases: 1 });
-        setCaptureFlags('on', 'on');
+        setCaptureFlags('on');
         // plan + build present, verify MISSING → gap on verify.
         seedActiveProvenance('test-slug', 'plan', 'sp');
         seedActiveProvenance('test-slug', 'build', 'sb');
         execSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
 
-        const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
-          throw new Error('process.exit');
-        }) as never);
-        try {
-          await expect(completeWork('test-slug')).rejects.toThrow('process.exit');
-        } finally {
-          mockExit.mockRestore();
-        }
-
-        const activePath = path.join(tempDir, '.ana', 'plans', 'active', 'test-slug');
-        const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
-        // A045: blocked before removeWorktree/cp — active intact, nothing archived.
-        expect(fsSync.existsSync(activePath)).toBe(true);
-        expect(fsSync.existsSync(completedPath)).toBe(false);
-        // A028: no proof chain entry was written.
-        expect(readChainEntry('test-slug')).toBeNull();
-      });
-
-      // @ana A029, A030, A046
-      it('after a strict block, flipping strict off re-runs via the ordinary path and records the gap', async () => {
-        await createMergedProject({ slug: 'test-slug', phases: 1 });
-        setCaptureFlags('on', 'on');
-        seedActiveProvenance('test-slug', 'plan', 'sp');
-        seedActiveProvenance('test-slug', 'build', 'sb');
-        execSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
-
-        // First run blocks under strict.
-        const mockExit = vi.spyOn(process, 'exit').mockImplementation((() => {
-          throw new Error('process.exit');
-        }) as never);
-        try {
-          await expect(completeWork('test-slug')).rejects.toThrow('process.exit');
-        } finally {
-          mockExit.mockRestore();
-        }
-        expect(fsSync.existsSync(path.join(tempDir, '.ana', 'plans', 'active', 'test-slug'))).toBe(true);
-
-        // Flip strict off and re-run — ordinary completion path, NOT crash recovery.
-        setCaptureFlags('on', 'off');
-        execSync('git add -A && git commit -m "strict off"', { cwd: tempDir, stdio: 'ignore' });
-
-        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-        try {
-          // A029: exits 0 (resolves, never throws process.exit).
-          await expect(completeWork('test-slug')).resolves.not.toThrow();
-        } finally {
-          const logged = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
-          logSpy.mockRestore();
-          // Must NOT have routed into the crash-recovery branch.
-          expect(logged).not.toContain('Recovering incomplete completion');
-          expect(logged).not.toContain('was already completed');
-        }
+        // A001: completion resolves — never blocks on a provenance gap.
+        await expect(completeWork('test-slug')).resolves.not.toThrow();
 
         const completedPath = path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug');
         expect(fsSync.existsSync(completedPath)).toBe(true);
-        // A030/A046: the written entry records the gap.
+
+        // A001: the proof entry is still written.
         const entry = readChainEntry('test-slug');
         expect(entry).not.toBeNull();
+        // A002: the gap is recorded as not-complete, never hidden.
+        expect(entry!.process!.completeness!.complete).toBe(false);
+        // A003: the recorded gap names the missing pipeline stage.
+        expect(entry!.process!.completeness!.gaps!.some((g) => g.includes('verify'))).toBe(true);
+      });
+
+      // @ana A004, A005
+      it('records an incomplete entry even when zero provenance sessions exist', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+        setCaptureFlags('on');
+        // No provenance seeded at all → zero sessions.
+        execSync('git add -A && git commit -m "capture on, no provenance"', { cwd: tempDir, stdio: 'ignore' });
+
+        // A004: completion resolves and the entry is written.
+        await expect(completeWork('test-slug')).resolves.not.toThrow();
+        const entry = readChainEntry('test-slug');
+        expect(entry).not.toBeNull();
+        // A005: zero sessions are marked incomplete, not hidden.
         expect(entry!.process!.completeness!.complete).toBe(false);
       });
 
-      it('strict on + complete proof → completes normally (exit 0)', async () => {
+      // @ana A006, A007
+      it('marks provenance complete when all roles are present (record path unchanged)', async () => {
         await createMergedProject({ slug: 'test-slug', phases: 1 });
-        setCaptureFlags('on', 'on');
-        // All three roles present → complete → no block.
+        setCaptureFlags('on');
+        // All three roles present → complete.
         seedActiveProvenance('test-slug', 'plan', 'sp');
         seedActiveProvenance('test-slug', 'build', 'sb');
         seedActiveProvenance('test-slug', 'verify', 'sv');
         execSync('git add -A && git commit -m "add provenance"', { cwd: tempDir, stdio: 'ignore' });
 
+        // A006: the proof entry is written.
         await expect(completeWork('test-slug')).resolves.not.toThrow();
         const entry = readChainEntry('test-slug');
         expect(entry).not.toBeNull();
+        // A007: full provenance marks completeness complete.
         expect(entry!.process!.completeness!.complete).toBe(true);
       });
     });

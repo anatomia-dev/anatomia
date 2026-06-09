@@ -268,29 +268,6 @@ export function isProcessCaptureEnabled(projectRoot: string): boolean {
   return anaJson['processCapture'] === 'on';
 }
 
-/**
- * Whether STRICT process-completeness enforcement is enabled for this project.
- *
- * Mirrors {@link isProcessCaptureEnabled} exactly: reads the committed
- * `processCaptureStrict` flag and returns `true` only when it is `'on'`.
- * Undefined-safe by construction — a missing or malformed `ana.json` returns
- * `false` (warn, never block), so a broken config can never unexpectedly block a
- * completion. The default posture (absent/`'off'`) is warn-and-record.
- *
- * @param projectRoot - Project root directory
- * @returns True only when the committed `processCaptureStrict` flag is `'on'`
- */
-export function isProcessCaptureStrictEnabled(projectRoot: string): boolean {
-  let anaJson: Record<string, unknown>;
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.join(projectRoot, '.ana', 'ana.json'), 'utf-8')) as unknown;
-    anaJson = AnaJsonSchema.parse(raw) as Record<string, unknown>;
-  } catch {
-    return false;
-  }
-  return anaJson['processCaptureStrict'] === 'on';
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Deterministic transcript derive (provenance ONLY, never the engine)
 // ─────────────────────────────────────────────────────────────────────────────
