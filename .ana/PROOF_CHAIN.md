@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-200 runs · 236 active · 5 promoted · 912 closed
+201 runs · 238 active · 5 promoted · 914 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 138 | 165 | 2026-06-09 |
+| cli | 139 | 167 | 2026-06-09 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 236 total)
+## Active Findings (30 shown of 238 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -56,14 +56,13 @@
 - **code:** Empty-chain JSON payload now triplicated — --last empty branch adds a third copy of wrapJsonResponse('proof', { entries }, chain) — *Surface the proof after work complete + ana proof --last*
 - **code:** sortEntriesByRecency kept module-private (not exported) — good restraint given proof.ts's documented history of over-exporting helpers (learn-session-memory-C1) — *Surface the proof after work complete + ana proof --last*
 
-### packages/cli/src/commands/work-proof.ts
-
-- **code:** computeCompleteness signature drops the spec's provenanceDir param — implemented as (reportsDir, sessions) vs spec's (provenanceDir, reportsDir, sessions) — *Cross-machine process provenance (capture v2)*
-
 ### packages/cli/src/commands/work.ts
 
 - **code:** work.ts pull defense gates on porcelain status with !trimStart().startsWith('??'). A staged-deleted ('D ') or renamed ('R ') plan.md is also treated as 'modified' and restored from HEAD. Behavior is benign (restoring a non-authoritative file is desirable), but the comment frames the guard narrowly as 'tracked-modified'. — *Remove the non-authoritative plan.md phase checkbox*
-- **code:** Provenance-file reader is duplicated: the strict guard in work.ts inlines the same readdirSync+JSON.parse loop that assembleProcessAttestation uses; the two could drift (and the guard copy omits the sort). Spec permitted it, but a shared readSessionsFromDir helper would remove the drift risk. — *Cross-machine process provenance (capture v2)*
+
+### packages/cli/src/utils/displayNames.ts
+
+- **code:** Seven of eight new validation display-name entries (joi, yup, valibot, superstruct, ajv, pydantic, marshmallow) are unexercised — only 'zod' is reached. Consistent with the map's existing forward-coverage convention, low risk. — *Scan card redesign — shared render vocabulary + gated 'How your team writes' section*
 
 ### packages/cli/src/utils/forensics.ts
 
@@ -102,6 +101,10 @@
 ### packages/cli/tests/commands/proof.test.ts
 
 - **test:** No coverage for `proof --last --json` on an empty/missing chain — A011/A012 only exercise human stdout + exit code, so the new duplicated JSON empty branch is unexercised — *Surface the proof after work complete + ana proof --last*
+
+### packages/cli/tests/commands/scan.test.ts
+
+- **test:** Stale @ana tags in scan.test.ts collide with this contract's assertion IDs — *Scan card redesign — shared render vocabulary + gated 'How your team writes' section*
 
 ### packages/cli/tests/commands/work-merge.test.ts
 

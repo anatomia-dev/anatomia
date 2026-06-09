@@ -55633,6 +55633,411 @@
         "base_commit": "9c03ad30cb754627fce541abaf0c0d8e6d5bd1f1"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "scan-card-redesign",
+      "feature": "Scan card redesign — shared render vocabulary + gated 'How your team writes' section",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 19,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The scan card uses the same rounded header as the proof card",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The old hand-rolled square box is gone from the scan card",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each section is introduced by a clean inset rule, not a bold label over dashes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The card header aligns to a consistent width",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The header's summary line aligns to the same width",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A 'How your team writes' section appears, proving scan read the code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The card reports the team's naming style",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The card reports the team's indentation style",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The card reports how the team handles errors",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The card reports the team's validation library",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Low-confidence, mixed signals are hidden so the card never bluffs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "On a fast scan with nothing measured, the section vanishes cleanly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The card stays aligned and legible with color turned off",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Machine-readable scan output is unaffected by the visual redesign",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "First-time users still get the 'run ana init' next step",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "Existing projects still get the pointer to the full scan data",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "A monorepo with many surfaces shows a tidy overflow indicator",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Scanning a subfolder still guides the user to the project root",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The full scan card layout is pinned so visual regressions are caught mechanically",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 855,
+        "think": 76,
+        "plan": 16,
+        "build": 17,
+        "verify": 8
+      },
+      "hashes": {
+        "scope": "sha256:ae525850360ff5034fea5012cf22abb359d271b37afcbf434444b76bcc98eac8",
+        "contract": "sha256:60ef1fe6e01b60109e05b4f3ee5444ddefc6a2dc4659d9a892493c83bf5100ab",
+        "plan": "sha256:29a7a936e96f55305117700945e042ae9fffb62399dfb26cc652051504b459ee",
+        "spec": "sha256:340fa8714b6b19e3ccacb81927b94c767b8750d752fb899661bc730c3ec69599",
+        "build-report": "sha256:bfd99fc381d428cf3e079089d885702bc497625ede4c7acbd5b229f0c98629d5",
+        "build-data": "sha256:5bdf43da71a2427f3734fdc7a59ab3f33632934de95d03a72bb52b83e2dc2cf6",
+        "verify-report": "sha256:fcf4f0f00fa5a127af3f641aff6feeb47b679920b864c520f84707eac547a107",
+        "verify-data": "sha256:ae4f48fbd688e177d885cad6a864814d4742a19dac851983c96e21a0179cc8f9"
+      },
+      "completed_at": "2026-06-09T20:37:41.619Z",
+      "modules_touched": [
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/utils/displayNames.ts",
+        "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/scan-card-golden.test.ts",
+        "packages/cli/tests/commands/scan.test.ts"
+      ],
+      "scope_summary": "`ana scan` is the top-of-funnel surface — `npx anatomia-cli scan .`, no install, ten seconds, the first thing a newcomer ever sees and the asset the README GIF records. Two problems:",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Stale @ana tags in scan.test.ts collide with this contract's assertion IDs",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "anchor": null,
+          "line": 1027,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004",
+            "A005",
+            "A006",
+            "A007",
+            "A008",
+            "A009",
+            "A010",
+            "A011"
+          ],
+          "id": "scan-card-redesign-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A011 not_contains 'mixed' is a weak proxy — the fields that could render 'mixed' (imports.style, nullStyle.preference) are never rendered by the Conventions section regardless of the gate",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "scan-card-redesign-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T20:37:41.620Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes omitted packages/cli/src/utils/displayNames.ts, which the builder had to modify to satisfy A010 (getPatternLibrary returns lowercase 'zod'; A010 requires 'Zod')",
+          "file": "packages/cli/src/utils/displayNames.ts",
+          "anchor": null,
+          "line": 38,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "scan-card-redesign-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T20:37:41.620Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Seven of eight new validation display-name entries (joi, yup, valibot, superstruct, ajv, pydantic, marshmallow) are unexercised — only 'zod' is reached. Consistent with the map's existing forward-coverage convention, low risk.",
+          "file": "packages/cli/src/utils/displayNames.ts",
+          "anchor": null,
+          "line": 39,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "scan-card-redesign-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "validation library display names (zod->Zod, joi->Joi, …) were added to displayNames.ts, a 4th file beyond the contract's 3-file list, to satisfy contract A010 which demands 'Zod' while the spec gate table said the raw 'library' (which is 'zod').",
+          "file": "packages/cli/src/utils/displayNames.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "scan.test.ts carries pre-existing // @ana A001–A013 tags from a prior scan contract whose IDs numerically collide with this contract's A001–A019 but mean different things. Authoritative coverage for THIS contract lives in scan-card-golden.test.ts and the new direct-render describe; the stale tags were left untouched to avoid out-of-scope churn.",
+          "file": "packages/cli/tests/commands/scan.test.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "The header subtitle right slot renders the raw applicationShape ('cli'); the spec mockup illustratively showed 'cli tool'. No display-name mapping exists for shapes and the contract does not assert the shape text, so raw value preserves existing behavior.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 19,
+          "assertions_total": 19,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 3
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "feature",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/scan.ts": {
+            "added": 116,
+            "deleted": 71
+          },
+          "packages/cli/src/utils/displayNames.ts": {
+            "added": 4,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap": {
+            "added": 91,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/scan-card-golden.test.ts": {
+            "added": 246,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/scan.test.ts": {
+            "added": 79,
+            "deleted": 15
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "31483f97-1a7a-4aec-b64e-0225a934ff09",
+            "captured_at": "2026-06-09T07:30:23.521Z",
+            "derived": {
+              "tokens": {
+                "input": 14669,
+                "output": 88092,
+                "cache_create": 450199,
+                "cache_read": 5698113
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 39313761,
+              "turns": 125,
+              "tool_calls": 51,
+              "commands_run": 22,
+              "tests_executed": 3373,
+              "failures_encountered": 1,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "735283ec-e72b-441e-b7c2-7ba4c5d7bb1b",
+            "captured_at": "2026-06-09T09:48:16.885Z",
+            "derived": {
+              "tokens": {
+                "input": 6398,
+                "output": 38301,
+                "cache_create": 111806,
+                "cache_read": 3460027
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 958618,
+              "turns": 83,
+              "tool_calls": 38,
+              "commands_run": 15,
+              "tests_executed": 2,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "13e427d2-025b-494a-8cfe-dc91c7f9e30a",
+            "captured_at": "2026-06-09T19:50:07.808Z",
+            "derived": {
+              "tokens": {
+                "input": 7262,
+                "output": 73998,
+                "cache_create": 182651,
+                "cache_read": 8138688
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1367499,
+              "turns": 148,
+              "tool_calls": 68,
+              "commands_run": 25,
+              "tests_executed": 3693,
+              "failures_encountered": 0,
+              "files_touched": 6,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "f9e20896-8b13-4ebd-9607-ad24b7d05761",
+            "captured_at": "2026-06-09T20:17:16.344Z",
+            "derived": {
+              "tokens": {
+                "input": 6540,
+                "output": 30142,
+                "cache_create": 97601,
+                "cache_read": 1771018
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 670082,
+              "turns": 77,
+              "tool_calls": 34,
+              "commands_run": 17,
+              "tests_executed": 3687,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-09T19:55:52.737Z",
+        "completed_at": "2026-06-09T20:37:41.608Z",
+        "commit_count": 0,
+        "base_commit": "d373e7be022d4c47ea6eb38e4dd2306f805f4af8"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
