@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Golden snapshots bake in author-local (MDT) timestamps; toMatchSnapshot fails under UTC. CI (ubuntu-latest) runs in UTC, so all 5 golden snapshot tests fail across the matrix — the AC10 deliverable is red in CI while green locally."
+    file: "packages/cli/tests/commands/proof-card-golden.test.ts"
+    line: 19
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A029", "A030", "A031", "A012", "A026"]
+  - category: code
+    summary: "When EVERY provenance session is unpriced, provTotalCost is 0 and the TOTAL footer renders \"$0.00\" — the exact \"never show a free run\" credibility violation A026 guards against. The unpriced golden fixture mixes priced+unpriced sessions, so the all-unpriced edge is never exercised and the test passes on a gap."
+    file: "packages/cli/src/commands/proof.ts"
+    line: 487
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A026"]
+  - category: code
+    summary: "An ad-hoc bold sub-header `chalk.bold('  Phase breakdown')` remains inside formatHumanReadable. AC2 requires no inline section-header construction to remain; this one was not converted to sectionRule."
+    file: "packages/cli/src/commands/proof.ts"
+    line: 322
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A002"]
+  - category: test
+    summary: "No golden/unit fixture exercises a counts-unavailable session (derived absent → 'counts unavailable' line) or a Codex session (cache_create = 0). Both code paths exist and read correct, but AC7 explicitly lists them as alignment cases and they are untested."
+    file: "packages/cli/tests/commands/proof-card-golden.test.ts"
+    line: 140
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "Stale `@ana A020` tag points at the wrong assertion. In this contract A020 is the findings-overflow no-bare-and-N-more rule, but the tag sits on the single-phase phase-breakdown test. Pre-existing mis-tag in an unmodified file; would mislead tag-based verification."
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 2409
+    severity: observation
+    suggested_action: monitor
+  - category: upstream
+    summary: "Contract file_changes lists proofSummary.test.ts and commit-hygiene.test.ts as 'modify', but neither needed changes — their assertions are substring toContain checks that survive the new format. Harmless over-prediction; the planner could mark such resilient files as 'maybe-modify'."
+    severity: observation
+    suggested_action: acknowledge
+  - category: test
+    summary: "One non-reproducible failure observed: the first sealed `ana test` run reported 1 failed (3672p/1f/2s); 7 subsequent runs (sealed + direct, JSON-reporter) all reported 0 failures. Could not identify the test (the seal marker records only counts). Likely a pre-existing flaky/time-dependent test (proof.ts/health use runtime new Date()), not attributable to this build's deterministic new tests."
+    severity: observation
+    suggested_action: monitor
