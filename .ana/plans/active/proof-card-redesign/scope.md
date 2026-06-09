@@ -27,7 +27,7 @@ In the user's words: "make the proof output pretty, we can do much better... I r
   - `packages/cli/tests/commands/commit-hygiene.test.ts` — commit-hygiene render assertions
   - (health) `packages/cli/tests/commands/proof.test.ts` health-display assertions if the shared header primitive shifts any spacing
 - **Blast radius:** Contained to the `proof` command's human render path, one new util, and their tests. The `--json` path, the proof-chain schema, `forensics.ts`, and `pricing.ts` are untouched. `scan.ts` has its *own* `formatHumanReadable` and is NOT modified in this scope (it is the next adopter). Risk concentration is **test churn**, not runtime behavior.
-- **Estimated effort:** ~1.5–2.5 days. The card rewrite and module are ~1 day; the bulk is updating format assertions across three large test files (proof.test.ts is 5,465 lines, 307 format assertions — most are substring `toContain` and survive; a minority assert exact severity-tag / spacing formats and must change).
+- **Estimated effort:** ~1.5–2.5 days. The card rewrite and module are ~1 day; the bulk is updating format assertions across three large test files (proof.test.ts is 5,588 lines, ~307 format assertions — most are substring `toContain` and survive; a minority assert exact severity-tag / spacing formats and must change).
 - **Multi-phase:** no
 
 ## Approach
@@ -52,13 +52,14 @@ The module is the foundation; the proof card is the first and only consumer wire
 - AC7: Card output stays within 80 columns and uses only single-width glyphs; alignment is preserved for long model ids, ≥6 sessions (rejection cycles), counts-unavailable sessions, unpriced models, and Codex sessions (`cache_create = 0`).
 - AC8: Color is one accent + grayscale + semantic-status-only; every colored element is paired with a glyph/word; the full card is legible and correctly aligned with `NO_COLOR=1` and when piped to a non-TTY (no layout depends on ANSI).
 - AC9: `ana proof <slug> --json` output is byte-identical to before this change (presentation-only; no data/schema change).
-- AC10: All existing proof, proofSummary, commit-hygiene, and health tests pass (updated where the visible format changed); total test count does not decrease; new `render.test.ts` adds coverage for the primitives.
+- AC10: All existing proof, proofSummary, commit-hygiene, and health tests pass (updated where the visible format changed); total test count does not decrease; new `render.test.ts` adds coverage for the primitives. **Golden/snapshot tests** of the *full rendered card* exist across representative fixtures — provenance-rich, provenance-absent, ≥6 sessions, unpriced model, and a FAIL/DEVIATED card. Snapshots render with color stripped (`FORCE_COLOR=0`) so they assert plain-text layout — alignment, grid columns, rule widths — which `toContain` cannot catch. These golden files make PR review mechanical instead of eyeballed.
+- AC11: **The module API is validated against its future adopters before it is finalized.** As a Plan deliverable (not a build-time discovery), the spec must express — on paper — `scan.ts`'s Stack/Conventions rows and `formatHealthDisplay`'s Hot Spots grid in the proposed primitives, and confirm zero primitive gaps. The render module is the integration contract for `scan-card-redesign` and `health-dashboard-redesign`; a missing or wrongly-shaped primitive must surface in design, not at adoption. If a needed primitive can't be expressed cleanly, the API changes before any code is written.
 
 ## Edge Cases & Risks
 
 - **NO_COLOR / non-TTY / pipe:** chalk auto-strips ANSI when not a TTY or when `NO_COLOR` is set — verify nothing in the layout (padding, bar widths, alignment) depends on color escape presence.
 - **Narrow terminals (<80 cols):** inset rules and the stat grid must degrade gracefully (truncate the rule, never shear the grid). Plan to decide: hard-assume 80, or read `process.stdout.columns` with an 80 floor.
-- **Entries without a `process` block:** 192 of 193 current entries have no Provenance — the card must look complete and intentional without that section.
+- **Entries without a `process` block are the DEFAULT, not an edge case:** 192 of 199 current entries have no Provenance. The card with no Provenance section is the primary rendering path and must look complete and intentional on its own — design the card to read as finished without Provenance first, then add the section for the 7 entries that carry it.
 - **Provenance variability:** ≥6 sessions from rejection cycles; `derived` omitted (counts-unavailable rows); unpriced models render `n/a` not `$0.00`; Codex sessions have `cache_create = 0` and only `cache_read`.
 - **Long / suffixed model ids** (`claude-opus-4-8[1m]`) must not break column alignment.
 - **Single-phase vs multi-phase timing** (`timing.segments`) — both render paths preserved.
@@ -132,5 +133,6 @@ The module is the foundation; the proof card is the first and only consumer wire
 
 ### Things to Investigate
 - Whether to read `process.stdout.columns` for responsive width or hard-assume 80 (and how scan/health will want the same answer).
-- The cleanest module API surface so scan/health adoption is a wiring exercise, not a redesign — i.e. what the *right* set of primitives is (this is the taste decision; the worked redesign in the thinking session is the reference target).
 - Whether `getStatusIcon`/`formatTokenCount` belong in the module or stay local and are imported by it.
+
+> Note: "what is the *right* set of primitives" is no longer an open investigation — it is a required deliverable (AC11). The taste decision is made *in the spec* by expressing scan's Stack/Conventions rows and health's Hot Spots grid in the primitives and proving zero gaps, with the worked redesign from the thinking session as the reference target.
