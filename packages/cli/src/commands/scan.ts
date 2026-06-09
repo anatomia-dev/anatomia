@@ -23,24 +23,14 @@ import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { EngineResult } from '../engine/types/engineResult.js';
+import type { NamingConventionResult } from '../engine/types/conventions.js';
+import type { KeyValueRow, HeaderBoxOptions } from '../utils/render.js';
 import { computeSkillManifest, CORE_SKILLS } from '../constants.js';
 import { selectPrimarySchema } from '../utils/scaffold-generators.js';
 import { isWorktreeDirectory } from '../utils/worktree.js';
-
-/**
- * Display names imported from shared utility
- */
-/**
- * Box-drawing characters for terminal output
- */
-const BOX = {
-  horizontal: '\u2500',
-  vertical: '\u2502',
-  topLeft: '\u250C',
-  topRight: '\u2510',
-  bottomLeft: '\u2514',
-  bottomRight: '\u2518',
-};
+import { headerBox, sectionRule, keyValueRows } from '../utils/render.js';
+import { getPatternLibrary } from '../engine/types/patterns.js';
+import { getPatternDisplayName } from '../utils/displayNames.js';
 
 
 /**
@@ -124,7 +114,7 @@ export function formatHumanReadable(
     return display;
   }
 
-  // ── 1. Identity Header (3-line box) ──
+  // ── 1. Identity Header ──
   const projectName = result.overview.project;
   const shape = result.applicationShape !== 'unknown' ? result.applicationShape : '';
 
@@ -137,39 +127,41 @@ export function formatHumanReadable(
   if (result.monorepo.isMonorepo) {
     summaryParts.push(`${result.monorepo.packages.length} packages`);
   }
-  const summaryLine = summaryParts.length > 0 ? summaryParts.join(' · ') : '';
 
-  // Render box
-  const namePad = innerWidth - projectName.length - shape.length - 4;
-  // Compute visible width explicitly — chalk.dim(shape) adds ANSI codes that break padEnd
-  const nameVisibleWidth = 2 + projectName.length + Math.max(1, namePad) + shape.length;
-  const nameTrailing = ' '.repeat(Math.max(0, innerWidth - nameVisibleWidth));
-  const nameWithShape = `  ${projectName}${' '.repeat(Math.max(1, namePad))}${chalk.dim(shape)}${nameTrailing}`;
-
-  lines.push(chalk.cyan(BOX.topLeft + BOX.horizontal.repeat(innerWidth) + BOX.topRight));
-  lines.push(chalk.cyan(BOX.vertical) + chalk.bold(nameWithShape) + chalk.cyan(BOX.vertical));
-  if (summaryLine) {
-    // Drop package count if summary would overflow innerWidth
-    let finalSummary = summaryLine;
-    if (`  ${finalSummary}`.length > innerWidth && result.monorepo.isMonorepo) {
-      const withoutPackages = summaryParts
-        .filter(p => !p.endsWith('packages'))
-        .join(' · ');
-      finalSummary = withoutPackages;
-    }
-    // Truncate with ellipsis as last resort
-    if (`  ${finalSummary}`.length > innerWidth) {
-      finalSummary = finalSummary.slice(0, innerWidth - 3) + '…';
-    }
-    const summaryPadded = `  ${finalSummary}`;
-    lines.push(chalk.cyan(BOX.vertical) + summaryPadded.padEnd(innerWidth) + chalk.cyan(BOX.vertical));
+  // headerBox does not truncate. Preserve scan's fit ladder, but budget the
+  // summary against the subtitle's full width: it carries the summary (left) and
+  // the right-aligned shape, so the budget must reserve the shape + the minimum
+  // gap or the composed subtitle overflows the 71-column box (A005).
+  const minGap = 2;
+  const summaryBudget = innerWidth - 2 - shape.length - minGap;
+  let finalSummary = summaryParts.join(' · ');
+  if (finalSummary.length > summaryBudget && result.monorepo.isMonorepo) {
+    finalSummary = summaryParts.filter(p => !p.endsWith('packages')).join(' · ');
   }
-  lines.push(chalk.cyan(BOX.bottomLeft + BOX.horizontal.repeat(innerWidth) + BOX.bottomRight));
+  if (finalSummary.length > summaryBudget) {
+    finalSummary = finalSummary.slice(0, Math.max(0, summaryBudget - 1)) + '…';
+  }
+
+  // headerBox does not truncate the title either — clamp a long project name so
+  // it can never shear the rounded border (A004).
+  const maxName = innerWidth - 2;
+  const displayName = projectName.length > maxName ? projectName.slice(0, maxName - 1) + '…' : projectName;
+
+  const headerOpts: HeaderBoxOptions = {
+    title: `  ${displayName}`,
+    corners: 'rounded',
+    minGap,
+    width: boxWidth,
+  };
+  if (summaryParts.length > 0 || shape !== '') {
+    headerOpts.subtitleLeft = `  ${finalSummary}`;
+    if (shape) headerOpts.subtitleRight = chalk.dim(shape);
+  }
+  lines.push(...headerBox(headerOpts));
   lines.push('');
 
   // ── 2. Stack Section ──
-  lines.push(chalk.bold('  Stack'));
-  lines.push(chalk.gray('  ' + BOX.horizontal.repeat(5)));
+  lines.push(sectionRule('Stack', { width: boxWidth }));
 
   const stackItems: Array<[string, string | null]> = [
     ['Language', result.stack.language],
@@ -182,22 +174,20 @@ export function formatHumanReadable(
     ['UI', result.stack.uiSystem],
   ];
 
-  let hasStack = false;
+  const stackRows: KeyValueRow[] = [];
   for (const [label, value] of stackItems) {
     if (!value) continue;
-    hasStack = true;
-    lines.push(`  ${chalk.gray(label.padEnd(12))} ${value}`);
+    stackRows.push({ label, value });
   }
 
   // Services — compact one-liner inside Stack
   const filteredServices = result.externalServices.filter(svc => svc.stackRoles.length === 0);
   if (filteredServices.length > 0) {
-    hasStack = true;
     const collapsed = collapseServiceVariants(filteredServices.map(s => s.name));
     const MAX_SVC = 5;
     const displayed = collapsed.slice(0, MAX_SVC).join(' · ');
     const overflow = collapsed.length > MAX_SVC ? ` ${chalk.dim(`(+${collapsed.length - MAX_SVC} more)`)}` : '';
-    lines.push(`  ${chalk.gray('Services'.padEnd(12))} ${displayed}${overflow}`);
+    stackRows.push({ label: 'Services', value: `${displayed}${overflow}` });
   }
 
   // Deploy + CI — one line
@@ -205,18 +195,21 @@ export function formatHumanReadable(
   if (result.deployment.platform) deployParts.push(result.deployment.platform);
   if (result.deployment.ci) deployParts.push(result.deployment.ci);
   if (deployParts.length > 0) {
-    hasStack = true;
-    lines.push(`  ${chalk.gray('Deploy'.padEnd(12))} ${deployParts.join(' · ')}`);
+    stackRows.push({ label: 'Deploy', value: deployParts.join(' · ') });
   }
 
   // Workspace — monorepo info with primary package
   if (result.monorepo.isMonorepo) {
-    hasStack = true;
     let wsDisplay = result.stack.workspace || `monorepo (${result.monorepo.packages.length} packages)`;
     if (result.monorepo.primaryPackage?.path) {
       wsDisplay += ` · primary: ${result.monorepo.primaryPackage.path}`;
     }
-    lines.push(`  ${chalk.gray('Workspace'.padEnd(12))} ${wsDisplay}`);
+    stackRows.push({ label: 'Workspace', value: wsDisplay });
+  }
+
+  const hasStack = stackRows.length > 0;
+  if (hasStack) {
+    lines.push(...keyValueRows(stackRows, { labelWidth: 12 }));
   }
 
   // Surfaces — standalone section for monorepo surfaces
@@ -226,19 +219,21 @@ export function formatHumanReadable(
     const namePad = Math.max(...displayed.map(s => s.name.length)) + 2;
 
     lines.push('');
-    lines.push(chalk.bold('  Surfaces'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(8)));
+    lines.push(sectionRule('Surfaces', { width: boxWidth }));
 
-    for (const s of displayed) {
+    const surfaceRows: KeyValueRow[] = displayed.map(s => {
       const identity = s.framework || s.language || '';
       const testing = s.testing?.[0] || '';
       const detail = testing ? `${identity} · ${testing}` : identity;
-      lines.push(`  ${chalk.gray(s.name.padEnd(namePad))} ${detail}`);
-    }
-
+      return { label: s.name, value: detail };
+    });
     if (result.surfaces.length > MAX_SURFACES) {
-      lines.push(`  ${' '.repeat(namePad)} ${chalk.dim(`(+${result.surfaces.length - MAX_SURFACES} more)`)}`);
+      surfaceRows.push({
+        label: '',
+        value: chalk.dim(`(+${result.surfaces.length - MAX_SURFACES} more)`),
+      });
     }
+    lines.push(...keyValueRows(surfaceRows, { labelWidth: namePad }));
   }
 
   if (!hasStack) {
@@ -265,8 +260,59 @@ export function formatHumanReadable(
     }
   }
 
-  // ── 3. Intelligence Section ──
-  const intelLines: string[] = [];
+  // ── 3. How your team writes — confidence-gated conventions + patterns ──
+  // Single global gate of 0.7 — the engine's own `mixed` cutoff and the pattern
+  // detector's threshold. A row is computed only if its source clears the gate;
+  // the whole section is omitted if no row survives (no empty header).
+  const CONV_GATE = 0.7;
+  const conventionRows: KeyValueRow[] = [];
+  const conventions = result.conventions;
+  const patterns = result.patterns;
+
+  // Naming — per sub-category (functions, classes, constants). `mixed === true`
+  // means no real majority, so it is omitted even at a high "majority" share.
+  // `variables` (mirrors functions) and `files` are intentionally skipped.
+  const namingParts: string[] = [];
+  const addNaming = (n: NamingConventionResult | undefined, kind: string): void => {
+    if (n && n.confidence >= CONV_GATE && n.mixed === false) {
+      namingParts.push(`${n.majority} ${kind}`);
+    }
+  };
+  addNaming(conventions?.naming?.functions, 'functions');
+  addNaming(conventions?.naming?.classes, 'classes');
+  addNaming(conventions?.naming?.constants, 'constants');
+  if (namingParts.length > 0) {
+    conventionRows.push({ label: 'Naming', value: namingParts.join(' · ') });
+  }
+
+  // Indentation
+  if (conventions?.indentation && conventions.indentation.confidence >= CONV_GATE) {
+    const ind = conventions.indentation;
+    const value =
+      ind.style === 'spaces' && ind.width != null ? `${ind.style}, ${ind.width}-wide` : ind.style;
+    conventionRows.push({ label: 'Indentation', value });
+  }
+
+  // Error style + Validation — pattern libraries read through the union accessor.
+  const errPattern = patterns?.errorHandling;
+  const errLib = getPatternLibrary(errPattern);
+  if (errLib && errPattern && errPattern.confidence >= CONV_GATE) {
+    conventionRows.push({ label: 'Error style', value: getPatternDisplayName(errLib) });
+  }
+  const valPattern = patterns?.validation;
+  const valLib = getPatternLibrary(valPattern);
+  if (valLib && valPattern && valPattern.confidence >= CONV_GATE) {
+    conventionRows.push({ label: 'Validation', value: getPatternDisplayName(valLib) });
+  }
+
+  if (conventionRows.length > 0) {
+    lines.push('');
+    lines.push(sectionRule('How your team writes', { width: boxWidth }));
+    lines.push(...keyValueRows(conventionRows, { labelWidth: 12 }));
+  }
+
+  // ── 4. Intelligence Section ──
+  const intelRows: KeyValueRow[] = [];
 
   // Activity: contributors + weekly sparkline
   const activity = result.git.recentActivity;
@@ -279,7 +325,7 @@ export function formatHumanReadable(
       parts.push(activity.weeklyCommits.join(chalk.gray('→')) + ' weekly');
     }
     if (parts.length > 0) {
-      intelLines.push(`  ${chalk.gray('Activity'.padEnd(12))} ${parts.join(' · ')}`);
+      intelRows.push({ label: 'Activity', value: parts.join(' · ') });
     }
   }
 
@@ -289,7 +335,7 @@ export function formatHumanReadable(
       const name = f.path.split('/').pop() || f.path;
       return `${name} (${f.commits})`;
     });
-    intelLines.push(`  ${chalk.gray('Hot files'.padEnd(12))} ${hotFiles.join(', ')}`);
+    intelRows.push({ label: 'Hot files', value: hotFiles.join(', ') });
   }
 
   // Documentation inventory
@@ -298,7 +344,7 @@ export function formatHumanReadable(
     const MAX_DOCS = 3;
     const displayed = docs.slice(0, MAX_DOCS).map(d => d.path.split('/').pop() || d.path);
     const overflow = docs.length > MAX_DOCS ? ` + ${docs.length - MAX_DOCS} more` : '';
-    intelLines.push(`  ${chalk.gray('Docs'.padEnd(12))} ${displayed.join(' · ')}${chalk.dim(overflow)}`);
+    intelRows.push({ label: 'Docs', value: `${displayed.join(' · ')}${chalk.dim(overflow)}` });
   }
 
   // Pre-commit hooks
@@ -308,15 +354,14 @@ export function formatHumanReadable(
     if (result.git.hooks.preCommit.runsLint) hookParts.push('lint');
     if (result.git.hooks.preCommit.runsTests) hookParts.push('test');
     if (hookParts.length > 0) {
-      intelLines.push(`  ${chalk.gray('Pre-commit'.padEnd(12))} ${hookParts.join(' + ')}`);
+      intelRows.push({ label: 'Pre-commit', value: hookParts.join(' + ') });
     }
   }
 
-  if (intelLines.length > 0) {
+  if (intelRows.length > 0) {
     lines.push('');
-    lines.push(chalk.bold('  Intelligence'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(12)));
-    lines.push(...intelLines);
+    lines.push(sectionRule('Intelligence', { width: boxWidth }));
+    lines.push(...keyValueRows(intelRows, { labelWidth: 12 }));
   }
 
   // ── 4. Footer ──

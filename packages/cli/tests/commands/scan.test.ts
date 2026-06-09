@@ -16,6 +16,8 @@ import {
   getFrameworkDisplayName,
   getPatternDisplayName,
 } from '../../src/utils/displayNames.js';
+import { formatHumanReadable } from '../../src/commands/scan.js';
+import { createEmptyEngineResult } from '../../src/engine/types/engineResult.js';
 
 // @ana A012, A013
 describe('ana scan', () => {
@@ -394,6 +396,7 @@ describe('ana scan', () => {
   });
 
   describe('--quick flag', () => {
+    // @ana A014
     it('forces surface tier with patterns and conventions null', async () => {
       await createTestFiles({
         'package.json': '{}',
@@ -401,6 +404,8 @@ describe('ana scan', () => {
 
       const { stdout, exitCode } = runScan([tempDir, '--quick', '--json']);
       expect(exitCode).toBe(0);
+      // A014: the JSON path still emits the conventions key (presentation-only redesign).
+      expect(stdout).toContain('"conventions"');
       const parsed = JSON.parse(stdout);
       expect(parsed.overview.depth).toBe('surface');
       expect(parsed.patterns).toBeNull();
@@ -909,8 +914,8 @@ describe('ana scan', () => {
 
       const { stdout, exitCode } = runScan();
       expect(exitCode).toBe(0);
-      // Should not crash - produces output with the box header
-      expect(stdout).toContain('┌');
+      // Should not crash - produces output with the rounded header box
+      expect(stdout).toContain('╭');
     });
 
     it('includes payments in JSON output', async () => {
@@ -1075,12 +1080,12 @@ describe('ana scan', () => {
       const { stdout } = runScan();
       const lines = stdout.split('\n');
 
-      // Find lines after "Surfaces" header
-      const surfIdx = lines.findIndex((l: string) => l.includes('Surfaces') && !l.includes('────'));
+      // Find the Surfaces section rule (label + dashes now share one line)
+      const surfIdx = lines.findIndex((l: string) => l.includes('── Surfaces'));
       expect(surfIdx).toBeGreaterThan(-1);
 
-      // Check for surface data lines (after header + divider)
-      const surfaceBlock = lines.slice(surfIdx + 2, surfIdx + 6).join('\n');
+      // Check for surface data lines (immediately after the section rule)
+      const surfaceBlock = lines.slice(surfIdx + 1, surfIdx + 5).join('\n');
       expect(surfaceBlock).toContain('cli');
       expect(surfaceBlock).toContain('web');
 
@@ -1098,10 +1103,10 @@ describe('ana scan', () => {
 
       const { stdout } = runScan();
       const lines = stdout.split('\n');
-      const surfIdx = lines.findIndex((l: string) => l.includes('Surfaces') && !l.includes('────'));
+      const surfIdx = lines.findIndex((l: string) => l.includes('── Surfaces'));
       expect(surfIdx).toBeGreaterThan(-1);
       // The cli surface line should not contain " · " separator since no testing
-      const cliLine = lines.slice(surfIdx + 2).find((l: string) => l.includes('cli'));
+      const cliLine = lines.slice(surfIdx + 1).find((l: string) => l.includes('cli'));
       expect(cliLine).toBeDefined();
       expect(cliLine).not.toContain(' · ');
     });
@@ -1141,11 +1146,9 @@ describe('ana scan', () => {
       process.chdir(tempDir);
 
       const { stdout } = runScan();
-      // "Surfaces" should not appear as a section header
+      // The "── Surfaces" section rule should not appear for a single-repo project
       const lines = stdout.split('\n');
-      const hasSurfaceSection = lines.some((l: string) =>
-        l.trim() === 'Surfaces' || l.match(/^\s+Surfaces\s*$/),
-      );
+      const hasSurfaceSection = lines.some((l: string) => l.includes('── Surfaces'));
       expect(hasSurfaceSection).toBe(false);
     });
   });
@@ -1193,9 +1196,8 @@ describe('ana scan', () => {
       const summaryLine = lines.find((l: string) =>
         l.includes('Next.js') && l.includes('│') && !l.includes('test-project'),
       );
-      if (summaryLine) {
-        expect(summaryLine.length).toBe(71);
-      }
+      expect(summaryLine).toBeDefined();
+      expect(summaryLine!.length).toBe(71);
     });
 
     // @ana A003, A004
@@ -1330,5 +1332,67 @@ describe('display name mapping', () => {
 
   it('maps prisma to Prisma', () => {
     expect(getPatternDisplayName('prisma')).toBe('Prisma');
+  });
+
+  it('maps zod to Zod', () => {
+    expect(getPatternDisplayName('zod')).toBe('Zod');
+  });
+});
+
+// @ana A006, A007, A008, A009, A010, A011, A012
+describe('How your team writes section (direct render)', () => {
+  const FUNNEL = { isFunnel: false, rootPath: '/tmp/x' };
+
+  /** A deep-tier result with confident, clearable convention + pattern signals. */
+  function deepResult() {
+    const r = createEmptyEngineResult();
+    r.overview.project = 'team-writes';
+    r.stack.language = 'TypeScript';
+    r.conventions = {
+      naming: {
+        functions: { majority: 'camelCase', confidence: 0.95, mixed: false, distribution: {}, sampleSize: 100 },
+        constants: { majority: 'SCREAMING_SNAKE_CASE', confidence: 0.98, mixed: false, distribution: {}, sampleSize: 50 },
+      },
+      indentation: { style: 'spaces', width: 2, confidence: 1 },
+      sampledFiles: 50,
+      detectionTime: 10,
+    };
+    r.patterns = {
+      errorHandling: { library: 'exceptions', confidence: 0.9, evidence: [] },
+      validation: { library: 'zod', confidence: 0.95, evidence: [] },
+      sampledFiles: 20,
+      detectionTime: 10,
+      threshold: 0.7,
+    };
+    return r;
+  }
+
+  it('renders the section with naming, indentation, error, and validation', () => {
+    const card = formatHumanReadable(deepResult(), FUNNEL);
+    expect(card).toContain('── How your team writes');
+    expect(card).toContain('camelCase functions');
+    expect(card).toContain('SCREAMING_SNAKE_CASE constants');
+    expect(card).toContain('spaces, 2-wide');
+    expect(card).toContain('exceptions');
+    expect(card).toContain('Zod'); // display-named, not raw 'zod'
+  });
+
+  it('omits a sub-category that is mixed even when its majority share is high', () => {
+    const r = deepResult();
+    // A mixed signal: high "majority" share but no real dominance — never shown.
+    r.conventions!.naming!.classes = { majority: 'PascalCase', confidence: 0.6, mixed: true, distribution: {}, sampleSize: 6 };
+    const card = formatHumanReadable(r, FUNNEL);
+    expect(card).not.toContain('mixed');
+    expect(card).not.toContain('PascalCase classes');
+  });
+
+  it('omits the entire section when conventions and patterns are null (surface tier)', () => {
+    const r = createEmptyEngineResult();
+    r.overview.project = 'surface';
+    r.stack.language = 'TypeScript';
+    expect(r.conventions).toBeNull();
+    expect(r.patterns).toBeNull();
+    const card = formatHumanReadable(r, FUNNEL);
+    expect(card).not.toContain('How your team writes');
   });
 });
