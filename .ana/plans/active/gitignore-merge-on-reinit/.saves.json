@@ -30,5 +30,55 @@
         "hash": "sha256:0f0cd49c104ee80f68e2f4a975fbf3c1c66ce0f16845ff6141667206811c14fc"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-06-09T01:35:22.300Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-09T01:48:24.751Z",
+    "hash": "sha256:e843c8fc27d936cdd94e379ff828b212355b87a166d9baabdc3e196ab23e41d0"
+  },
+  "build-data": {
+    "saved_at": "2026-06-09T01:48:24.753Z",
+    "hash": "sha256:49511f56112f106f91a03a0cfdc29add82773b20d2fc7cb05114d47bf3d85df9"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/init/assets.ts",
+    "packages/cli/src/commands/init/commit.ts",
+    "packages/cli/src/commands/init/gitignore.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/commit.test.ts",
+    "packages/cli/tests/commands/init/gitignore.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/init/assets.ts": {
+      "added": 55,
+      "deleted": 17
+    },
+    "packages/cli/src/commands/init/commit.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/init/gitignore.ts": {
+      "added": 168,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 29,
+      "deleted": 2
+    },
+    "packages/cli/tests/commands/init.test.ts": {
+      "added": 146,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/init/commit.test.ts": {
+      "added": 5,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/init/gitignore.test.ts": {
+      "added": 288,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
