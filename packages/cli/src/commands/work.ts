@@ -928,6 +928,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
               },
               new_findings: 0,
               rejection_cycles: proof.rejection_cycles ?? 0,
+              next_command: `ana proof ${slug}`,
             };
             console.log(JSON.stringify(wrapJsonResponse('work complete', jsonResults, recoveryChain), null, 2));
           } else {
@@ -935,6 +936,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
             console.log(`\n${statusIcon} ${proof.result} — ${proof.feature}`);
             console.log(`  ${proof.contract.satisfied}/${proof.contract.total} satisfied · ${proof.deviations.length} deviation${proof.deviations.length !== 1 ? 's' : ''}`);
             console.log(chalk.gray(`  Chain: ${runs} ${runs !== 1 ? 'runs' : 'run'} · ${findingsCount} finding${findingsCount !== 1 ? 's' : ''}`));
+            console.log(chalk.gray(`  View the full proof: ana proof ${slug}`));
           }
           return;
         }
@@ -1207,6 +1209,7 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
       },
       new_findings: stats.newFindings,
       rejection_cycles: proof.rejection_cycles ?? 0,
+      next_command: `ana proof ${slug}`,
       quality: {
         changed: healthChange.changed,
         trajectory: healthChange.trajectory,
@@ -1246,6 +1249,9 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     if (resolvesClaimsCount > 0) {
       console.log(chalk.gray(`  Verify claims ${resolvesClaimsCount} finding${resolvesClaimsCount !== 1 ? 's' : ''} resolved — review with \`ana proof stale\``));
     }
+
+    // Final line: point to the full proof for the item just completed.
+    console.log(chalk.gray(`  View the full proof: ana proof ${slug}`));
   }
 }
 

@@ -796,4 +796,74 @@ describe('ana work complete --merge', () => {
 
     await fs.rm(originDir, { recursive: true, force: true });
   });
+
+  /**
+   * Seed a crashed-completion state for the recovery/already-completed branch:
+   * a `completed/<slug>/` dir plus an uncommitted proof_chain.json, with NO
+   * `active/<slug>/` dir. On the artifact branch, no remote (pull skipped).
+   * This is exactly the state the recovery branch keys off: active missing,
+   * completed present, `.ana/` porcelain non-empty.
+   */
+  async function createRecoveryScenario(slug: string): Promise<void> {
+    realExecSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+
+    const anaDir = path.join(tempDir, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'ana.json'),
+      JSON.stringify({ artifactBranch: 'main', mergeStrategy: 'merge' }),
+      'utf-8',
+    );
+    realExecSync('git add -A && git commit -m "init"', { cwd: tempDir, stdio: 'ignore' });
+    realExecSync('git branch -M main', { cwd: tempDir, stdio: 'ignore' });
+
+    // Completed artifacts (uncommitted → porcelain non-empty), no active dir.
+    const completedPath = path.join(anaDir, 'plans', 'completed', slug);
+    await fs.mkdir(completedPath, { recursive: true });
+    await fs.writeFile(path.join(completedPath, 'scope.md'), '# Scope', 'utf-8');
+    await fs.writeFile(path.join(completedPath, 'plan.md'), '# Plan', 'utf-8');
+    await fs.writeFile(path.join(completedPath, 'spec.md'), '# Spec', 'utf-8');
+    await fs.writeFile(path.join(completedPath, 'build_report.md'), '# Build Report', 'utf-8');
+    await fs.writeFile(path.join(completedPath, 'verify_report.md'), '# Verify Report\n\n**Result:** PASS', 'utf-8');
+    await fs.writeFile(
+      path.join(completedPath, '.saves.json'),
+      JSON.stringify({ 'verify-report': { saved_at: new Date().toISOString(), hash: 'sha256:' + '0'.repeat(64) } }),
+      'utf-8',
+    );
+
+    // proof_chain.json + PROOF_CHAIN.md exist (written by the crashed run) so the
+    // recovery commit's pathspecs all match. Left uncommitted on purpose.
+    await fs.writeFile(
+      path.join(anaDir, 'proof_chain.json'),
+      JSON.stringify({ entries: [{ slug, result: 'PASS', findings: [] }] }, null, 2),
+      'utf-8',
+    );
+    await fs.writeFile(path.join(anaDir, 'PROOF_CHAIN.md'), '# Proof Chain\n', 'utf-8');
+  }
+
+  // @ana A003
+  it('recovery path prints the "View the full proof" hint (human)', async () => {
+    const slug = 'recovery-slug';
+    await createRecoveryScenario(slug);
+
+    await completeWork(slug);
+
+    console.log = originalLog;
+    const output = logs.join('\n');
+    expect(output).toContain(`View the full proof: ana proof ${slug}`);
+  });
+
+  // @ana A004
+  it('recovery path includes next_command in the --json results', async () => {
+    const slug = 'recovery-slug';
+    await createRecoveryScenario(slug);
+
+    await completeWork(slug, { json: true });
+
+    console.log = originalLog;
+    const json = JSON.parse(logs.join('\n'));
+    expect(json.results.next_command).toBe(`ana proof ${slug}`);
+  });
 });

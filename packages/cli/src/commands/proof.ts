@@ -727,6 +727,38 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
  * @param entries - Proof chain entries to display
  * @returns Formatted table string
  */
+/**
+ * Sort proof chain entries by recency — most recent first.
+ *
+ * Primary key: `completed_at` descending, with missing/undefined timestamps
+ * pushed to the end. Secondary key (the tie-break): original append index
+ * descending, so among entries with equal or missing `completed_at` the
+ * last-appended entry sorts first. Append order is oldest-first
+ * (`chain.entries.push`), so the highest index is the most recently recorded.
+ *
+ * @param entries - Proof chain entries in their original append order.
+ * @returns A new array sorted most-recent-first; the input is not mutated.
+ */
+function sortEntriesByRecency(entries: ProofChainEntry[]): ProofChainEntry[] {
+  return entries
+    .map((entry, idx) => ({ entry, idx }))
+    .sort((a, b) => {
+      const aAt = a.entry.completed_at;
+      const bAt = b.entry.completed_at;
+      if (aAt && bAt) {
+        const cmp = bAt.localeCompare(aAt);
+        if (cmp !== 0) return cmp;
+      } else if (!aAt && bAt) {
+        return 1;
+      } else if (aAt && !bAt) {
+        return -1;
+      }
+      // Equal or both-missing completed_at: last-appended (higher idx) wins.
+      return b.idx - a.idx;
+    })
+    .map(({ entry }) => entry);
+}
+
 function formatListTable(entries: ProofChainEntry[]): string {
   const lines: string[] = [];
 
@@ -747,12 +779,7 @@ function formatListTable(entries: ProofChainEntry[]): string {
   lines.push(chalk.bold(`  ${slugCol}${resultCol}${assertCol}${surfaceCol}${dateCol}`));
 
   // Sort entries: most recent first, undefined completed_at pushed to end
-  const sorted = [...entries].sort((a, b) => {
-    if (!a.completed_at && !b.completed_at) return 0;
-    if (!a.completed_at) return 1;
-    if (!b.completed_at) return -1;
-    return b.completed_at.localeCompare(a.completed_at);
-  });
+  const sorted = sortEntriesByRecency(entries);
 
   for (const entry of sorted) {
     const slugText =
@@ -782,13 +809,59 @@ function formatListTable(entries: ProofChainEntry[]): string {
  * @param slug - Optional work item slug to display proof for
  * @param options - Command options
  * @param options.json - Output JSON format
+ * @param options.last - Select the most-recent proof instead of naming a slug
  */
 async function handleProofList(
   slug: string | undefined,
-  options: { json?: boolean }
+  options: { json?: boolean; last?: boolean }
 ): Promise<void> {
   const proofRoot = findProjectRoot();
   const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
+
+  // Mutual exclusion: a slug and --last are two different selectors.
+  if (slug && options.last) {
+    console.error(chalk.red('Error: Cannot combine a slug with --last. Pick one selector.'));
+    process.exit(1);
+  }
+
+  // --last view: resolve the most-recent entry, then render through the
+  // existing detail path. Use the graceful read (missing/corrupt → empty),
+  // never the detail-view hard exit that crashes on a fresh repo.
+  if (options.last) {
+    let chain: ProofChain = { entries: [] };
+    if (fs.existsSync(proofChainPath)) {
+      try {
+        const content = fs.readFileSync(proofChainPath, 'utf-8');
+        chain = JSON.parse(content);
+      } catch {
+        // If file is corrupt, treat as empty
+        chain = { entries: [] };
+      }
+    }
+
+    const entries = chain.entries ?? [];
+
+    // Resolve "most recent" through the shared comparator.
+    const entry = entries.length > 0 ? sortEntriesByRecency(entries)[0] : undefined;
+    if (!entry) {
+      // Mirror the list-view empty branch — never the detail-view hard error.
+      if (options.json) {
+        console.log(JSON.stringify(wrapJsonResponse('proof', { entries }, chain), null, 2));
+      } else {
+        console.log('No proofs yet.');
+      }
+      return;
+    }
+
+    // Render through the IDENTICAL detail branch, using the resolved entry's
+    // real slug so the JSON envelope is byte-shape-identical to `ana proof <slug>`.
+    if (options.json) {
+      console.log(JSON.stringify(wrapJsonResponse(`proof ${entry.slug}`, entry, chain), null, 2));
+    } else {
+      console.log(formatHumanReadable(entry));
+    }
+    return;
+  }
 
   // List view: no slug provided
   if (!slug) {
@@ -2793,6 +2866,8 @@ export function registerProofCommand(program: Command): void {
     .description('View proof chain entries, health, and findings')
     .argument('[slug]', 'Work item slug to display proof for')
     .option('--json', 'Output JSON format for programmatic consumption')
+    // Order `--latest, --last` so commander's canonical key is `options.last`.
+    .option('--latest, --last', 'Show the most recent proof')
     .action(async (slug, options) => handleProofList(slug, options));
 
   const contextCommand = new Command('context')
