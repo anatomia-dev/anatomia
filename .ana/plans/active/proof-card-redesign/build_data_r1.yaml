@@ -1,0 +1,18 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing @ana tag-ID collision: proof.test.ts and proof.ts carry @ana A0xx tags from the ORIGINAL proof contract, while this feature's contract reuses A001–A031 for different assertions. A verifier's tag scan could mis-map the old tags. This feature's genuine coverage lives in render.test.ts (A001–A011) and proof-card-golden.test.ts + the A028 test (A012–A031), all tagged for THIS contract."
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Finding / Build-Concern summaries are free text and are not width-bounded in the card; a pathological long summary could exceed 80 columns. The card's structural layout (header box, provenance grid, rules, footer) stays <=80 across all five golden fixtures. The statGrid/keyValueRows truncation primitives are the eventual fix when health adopts them (matches the known cli-polish build concern)."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Counts-unavailable provenance sessions render as free gray lines before the derived-session grid (not interleaved in dataset order). Chosen to keep the grid's numeric-column alignment intact and to surface the data gap loudly (Verified-over-trusted). No in-scope fixture exercises this path beyond the unit reasoning."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "The 'Phase breakdown' sub-label inside Timing is a plain chalk.bold label rather than a sectionRule, because it is a sub-section of Timing, not a top-level card section. Preserved to keep the multi-phase tokens (Build N / Verify N) that proofSummary.test.ts asserts."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: acknowledge

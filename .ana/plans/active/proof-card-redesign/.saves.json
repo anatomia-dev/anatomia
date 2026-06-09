@@ -28,12 +28,24 @@
   "build_started_at": "2026-06-09T07:57:51.912Z",
   "build_agent": "ana-build",
   "build-report": {
-    "saved_at": "2026-06-09T08:34:19.894Z",
-    "hash": "sha256:70c5736d3cef4e0b3c03fd0d8b983f3254790b4ee8ebd1d4f5c931126febc3bc"
+    "saved_at": "2026-06-09T09:13:53.685Z",
+    "hash": "sha256:9a84c7b8cad08518f57dc442949583719c8cfc3faf31b3defd95ce01500bcc0b",
+    "history": [
+      {
+        "saved_at": "2026-06-09T08:34:19.894Z",
+        "hash": "sha256:70c5736d3cef4e0b3c03fd0d8b983f3254790b4ee8ebd1d4f5c931126febc3bc"
+      }
+    ]
   },
   "build-data": {
-    "saved_at": "2026-06-09T08:34:19.895Z",
-    "hash": "sha256:df69db0bbf203f46c7b9abb90b4802a01c56cc85f42d66d1690a8f18a6aed3a6"
+    "saved_at": "2026-06-09T09:13:53.686Z",
+    "hash": "sha256:23c5ac94ca849aa2f61482475c08a8bcd4af8588a8d63f8d22b9c82921813a99",
+    "history": [
+      {
+        "saved_at": "2026-06-09T08:34:19.895Z",
+        "hash": "sha256:df69db0bbf203f46c7b9abb90b4802a01c56cc85f42d66d1690a8f18a6aed3a6"
+      }
+    ]
   },
   "modules_touched": [
     "packages/cli/src/commands/proof.ts",
@@ -45,7 +57,7 @@
   ],
   "module_churn": {
     "packages/cli/src/commands/proof.ts": {
-      "added": 282,
+      "added": 285,
       "deleted": 278
     },
     "packages/cli/src/utils/render.ts": {
@@ -53,11 +65,11 @@
       "deleted": 0
     },
     "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
-      "added": 143,
+      "added": 200,
       "deleted": 0
     },
     "packages/cli/tests/commands/proof-card-golden.test.ts": {
-      "added": 245,
+      "added": 326,
       "deleted": 0
     },
     "packages/cli/tests/commands/proof.test.ts": {
