@@ -54703,6 +54703,371 @@
         "base_commit": "e321014da7bd9e6cf04009443787b6e99f0fd2e2"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "proof-last-and-completion-hint",
+      "feature": "Surface the proof after work complete + ana proof --last",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 13,
+        "satisfied": 13,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Completing a work item points you to the command that shows its full proof",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The completion JSON tells an agent exactly which command to run next",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Even an already-completed work item still points you to its proof",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "An already-completed work item still returns the next command in JSON",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Asking for the latest proof shows the most recently completed one",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The latest proof in JSON is labelled with its real work item name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Asking for the latest proof gives the same JSON shape as asking by name",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The --latest spelling works the same as --last",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Naming a proof and asking for the latest at once is rejected, not guessed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Combining a name with the latest selector fails loudly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Asking for the latest proof before any exist gives a friendly message, not a crash",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Asking for the latest proof before any exist does not error out",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "When two proofs finished at the same instant, the latest one is the most recently added",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 144,
+        "think": 13,
+        "plan": 5,
+        "build": 18,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:fd5851db970904dc6cd03f92c730489db86c395df3bb560975d0bbfc2a738077",
+        "contract": "sha256:2add731fd017535176563c7c511aba952f292365f3847aeba9257fc08eab7b91",
+        "plan": "sha256:3502abd400c8fb4753f7dcb18d53bc58a42cd82d063839a976ae6c61964a044e",
+        "spec": "sha256:5fd5d96a04eace79cf9ef629cb5f901220b81d38664c2dfad9ab9f788a6ec5f0",
+        "build-report": "sha256:62b89bd1212f765af5587834a07078eaebbd720f822f9f53a224601d64c4dec7",
+        "build-data": "sha256:c36d9f3e8c6d61c8647dc5443954955bc85d6afe2439907d61e5e0f5bc5994ac",
+        "verify-report": "sha256:7dcbaaf70eed6754f67c713a85da5e68d8910253fac5e6f9a7d1481df20522ab",
+        "verify-data": "sha256:dc73d99ee87c09e408593534cec9f62d9f57c9bcccea3be1d2775aae75873e60"
+      },
+      "completed_at": "2026-06-09T07:05:01.394Z",
+      "modules_touched": [
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "website/content/docs/guides/reading-a-proof.mdx"
+      ],
+      "scope_summary": "The proof is the pipeline's payoff, but reading the *just-minted* one carries friction at two touchpoints, and both force a human or agent to remember and retype a slug:",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Empty-chain JSON payload now triplicated — --last empty branch adds a third copy of wrapJsonResponse('proof', { entries }, chain)",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 838,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011",
+            "A012"
+          ],
+          "id": "proof-last-and-completion-hint-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "No coverage for `proof --last --json` on an empty/missing chain — A011/A012 only exercise human stdout + exit code, so the new duplicated JSON empty branch is unexercised",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 690,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011",
+            "A012"
+          ],
+          "id": "proof-last-and-completion-hint-C2",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "A005 stdout-contains-'recent-slug' is satisfied via the slug token embedded in the fixture's `feature` text, not a printed slug field — the detail card does not render the bare slug. Mechanically correct, but the contract assertion couples to fixture naming.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "proof-last-and-completion-hint-C3",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T07:05:01.394Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "sortEntriesByRecency kept module-private (not exported) — good restraint given proof.ts's documented history of over-exporting helpers (learn-session-memory-C1)",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 742,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "proof-last-and-completion-hint-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Human proof card (formatHumanReadable) never prints the slug — only the feature title. Contract A005/A008/A013 assert the slug token in stdout, so test fixtures encode the slug into the feature text to exercise those assertions. A verifier whose fixture feature omits the slug would not see it in human output.",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "proof.test.ts already carries @ana A001–A024 tags from the proof command's own historical contract. The new --last tests reuse A005–A013 for THIS spec's contract; the tag namespace is shared within the file. New tests are isolated in a clearly-labelled describe block to avoid confusion.",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning in src/utils/git-operations.ts:198 (unused eslint-disable directive for no-control-regex). Not introduced by this build; outside scope.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "debt",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 13,
+          "assertions_total": 13,
+          "findings": {
+            "risk": 0,
+            "debt": 2,
+            "observation": 2
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "feature",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/proof.ts": {
+            "added": 82,
+            "deleted": 7
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 6,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 123,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-merge.test.ts": {
+            "added": 70,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 19,
+            "deleted": 0
+          },
+          "website/content/docs/guides/reading-a-proof.mdx": {
+            "added": 2,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "ce852d0a-006d-4ffb-9066-75d431ba71e1",
+            "captured_at": "2026-06-09T04:24:50.966Z",
+            "derived": {
+              "tokens": {
+                "input": 6043,
+                "output": 17384,
+                "cache_create": 52018,
+                "cache_read": 762367
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 775011,
+              "turns": 42,
+              "tool_calls": 20,
+              "commands_run": 11,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "d89edb3e-52b6-4b5c-a96a-32a63433caf6",
+            "captured_at": "2026-06-09T04:41:27.284Z",
+            "derived": {
+              "tokens": {
+                "input": 6000,
+                "output": 18004,
+                "cache_create": 52043,
+                "cache_read": 621811
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 338113,
+              "turns": 34,
+              "tool_calls": 15,
+              "commands_run": 6,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "79c7ef1b-fbc5-4cf6-b391-0424908d5514",
+            "captured_at": "2026-06-09T06:12:12.605Z",
+            "derived": {
+              "tokens": {
+                "input": 7423,
+                "output": 49131,
+                "cache_create": 135645,
+                "cache_read": 7784472
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1209447,
+              "turns": 170,
+              "tool_calls": 82,
+              "commands_run": 41,
+              "tests_executed": 4072,
+              "failures_encountered": 1,
+              "files_touched": 8,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "fda098eb-ceb6-4189-8668-2e89ccc1139b",
+            "captured_at": "2026-06-09T06:40:19.079Z",
+            "derived": {
+              "tokens": {
+                "input": 6407,
+                "output": 18593,
+                "cache_create": 63431,
+                "cache_read": 1136479
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 489628,
+              "turns": 57,
+              "tool_calls": 24,
+              "commands_run": 16,
+              "tests_executed": 3642,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-09T06:14:33.633Z",
+        "completed_at": "2026-06-09T07:05:01.383Z",
+        "commit_count": 0,
+        "base_commit": "3c4b07fb122c7077c109ca1ecd01ef3c78dedf4b"
+      }
     }
   ],
   "schema": 1,

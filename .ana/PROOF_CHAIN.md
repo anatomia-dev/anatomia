@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-198 runs · 229 active · 5 promoted · 910 closed
+199 runs · 232 active · 5 promoted · 911 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 37 | 45 | 2026-06-09 |
+| Unscoped | 38 | 48 | 2026-06-09 |
 | cli | 137 | 161 | 2026-06-09 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 229 total)
+## Active Findings (30 shown of 232 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -46,11 +46,15 @@
 - **code:** mergeAndWriteGitignore wrapper added beyond the literal spec (which said 'route through atomicWriteFile'). Thin DRY helper used at 3 call sites — good factoring, not scope creep. Over-build check: no unused exports, no dead paths. — *Merge (not clobber) managed .gitignore files on re-init*
 - **test:** pruneHookCommand never-throw guards for malformed shapes are unexercised — non-object hooks and non-array event value branches have no direct test — *Cross-machine process provenance (capture v2)*
 - **code:** pruneHookCommand drops the WHOLE entry if any hooks[].command matches — a user co-locating their command in the same entry object as the derive hook would lose it (faithful to spec wording; Anatomia installs one command per entry so unreachable in practice) — *Cross-machine process provenance (capture v2)*
-- **code:** session-capture build concern remains live (out of Phase 3 scope): ensureCodexHooksFlag flips any `hooks =` key via regex regardless of TOML table, so `hooks =` under a non-[features] table could be flipped. Not touched by this phase. — *Cross-machine process provenance (capture v2)*
 
 ### packages/cli/src/commands/init/gitignore.ts
 
 - **code:** Legacy migration (case 3) strips any user line equal to a current stock value anywhere in the file — a user's own copy of a stock line is absorbed into the managed block on first re-init. Documented benign (still ignored), one-time only. — *Merge (not clobber) managed .gitignore files on re-init*
+
+### packages/cli/src/commands/proof.ts
+
+- **code:** Empty-chain JSON payload now triplicated — --last empty branch adds a third copy of wrapJsonResponse('proof', { entries }, chain) — *Surface the proof after work complete + ana proof --last*
+- **code:** sortEntriesByRecency kept module-private (not exported) — good restraint given proof.ts's documented history of over-exporting helpers (learn-session-memory-C1) — *Surface the proof after work complete + ana proof --last*
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -69,7 +73,6 @@
 ### packages/cli/src/utils/git-operations.ts
 
 - **code:** Pre-existing lint warning: unused eslint-disable (no-control-regex) in git-operations.ts — not introduced by this build (file not in diff), surfaced by the full lint run — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
-- **code:** Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts — not introduced by Phase 3 (file not in changeset); flagged so it is not mistaken for new debt — *Cross-machine process provenance (capture v2)*
 
 ### packages/cli/tests/commands/artifact-provenance.test.ts
 
@@ -89,13 +92,13 @@
 - **test:** A014 verified via results.overall === 'pass' proxy, not the literal exit code the contract names (doctorExitCode equals 0) — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
 - **test:** @ana A006 appears on both config.test.ts (this contract's KNOWN_FIELDS assertion) and doctor.test.ts (a predecessor contract's A006) — tags are not globally unique, muddying traceability — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
 
-### packages/cli/tests/commands/init/assets-capture-hooks.test.ts
-
-- **test:** Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude — *session-capture — agent-session capture & provenance unlock*
-
 ### packages/cli/tests/commands/init/commit.test.ts
 
 - **test:** Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts — *Merge (not clobber) managed .gitignore files on re-init*
+
+### packages/cli/tests/commands/proof.test.ts
+
+- **test:** No coverage for `proof --last --json` on an empty/missing chain — A011/A012 only exercise human stdout + exit code, so the new duplicated JSON empty branch is unexercised — *Surface the proof after work complete + ana proof --last*
 
 ### packages/cli/tests/commands/work-merge.test.ts
 
