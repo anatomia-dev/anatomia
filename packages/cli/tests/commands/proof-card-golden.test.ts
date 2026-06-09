@@ -184,6 +184,50 @@ const failDeviated = makeEntry({
   ],
 });
 
+// Every session runs on a model with no price row. This is the edge the
+// mixed-priced `unpricedModel` fixture can't reach: provPriced is false, so the
+// TOTAL itself must read "n/a", never "$0.00". The real-world trigger is a brand
+// new model id that pricing.ts doesn't know yet — a paid run must not advertise
+// itself as free.
+const allUnpriced = makeEntry({
+  slug: 'all-unpriced-run',
+  feature: 'A run entirely on a model with no price row',
+  process: {
+    outcome: { first_pass_verify: true, assertions_satisfied: 44, assertions_total: 44, findings: { risk: 0, debt: 0, observation: 0 } },
+    task_shape: { size: 'small', kind: 'feature', multi_phase: false },
+    module_churn: {},
+    completeness: { complete: true, expected: { plan: 1, build: 1, verify: 1 }, present: { plan: 1, build: 1, verify: 1 }, gaps: [] },
+    sessions: [
+      session('plan', 'claude-opus-5-0', 12, 48, 12100, 4200, 80000, 800000),
+      session('build', 'claude-opus-5-0', 31, 140, 18000, 9100, 100000, 2000000),
+      session('verify', 'claude-opus-5-0', 14, 61, 10200, 3000, 20000, 900000),
+    ],
+  },
+});
+
+// Two alignment cases AC7 lists that no other fixture exercised: a
+// counts-unavailable session (no `derived` — renders as a free "counts
+// unavailable" line, kept out of the grid so it can't shear a numeric column)
+// and a Codex session (cache_create = 0 — the cache column sums create + read,
+// so it must render the read figure alone without breaking the grid).
+const mixedCounts = makeEntry({
+  slug: 'mixed-counts',
+  feature: 'A run with a counts-unavailable session and a Codex session',
+  process: {
+    outcome: { first_pass_verify: true, assertions_satisfied: 44, assertions_total: 44, findings: { risk: 0, debt: 0, observation: 0 } },
+    task_shape: { size: 'medium', kind: 'feature', multi_phase: false },
+    module_churn: {},
+    completeness: { complete: true, expected: { plan: 1, build: 1, verify: 1 }, present: { plan: 1, build: 1, verify: 1 }, gaps: [] },
+    sessions: [
+      session('plan', SHARED_MODEL, 12, 48, 12100, 4200, 80000, 800000),
+      // Codex session: cache_create = 0, cache column shows the read figure only.
+      session('build', 'gpt-5-codex', 20, 90, 14000, 5000, 0, 600000),
+      // Counts-unavailable session: no derived counts at all.
+      session('verify', 'claude-opus-4-8', 0, 0, 0, 0, 0, 0, false),
+    ],
+  },
+});
+
 /** Assert the whole card stays within an 80-column terminal. */
 function maxLineWidth(card: string): number {
   return Math.max(...card.split('\n').map((l) => l.length));
@@ -249,9 +293,31 @@ describe('proof card golden snapshots', () => {
     expect(card).toContain('built with a 5-minute TTL instead of permanent dedup'); // A017 deviation detail
   });
 
+  // @ana A026
+  it('renders an all-unpriced run with an n/a TOTAL, never $0.00', () => {
+    const card = formatHumanReadable(allUnpriced);
+    expect(card).toMatchSnapshot();
+    expect(card).not.toContain('$0.00'); // a paid run must never read as free
+    expect(card).toContain('n/a');
+    // The TOTAL line itself carries no dollar figure — it is "n/a".
+    const total = card.split('\n').find((l) => l.includes('TOTAL'))!;
+    expect(total).toContain('n/a');
+    expect(total).not.toContain('$');
+    expect(total).toContain('3 unpriced'); // every session counted as unpriced
+    expect(maxLineWidth(card)).toBeLessThanOrEqual(80);
+  });
+
+  it('renders counts-unavailable and Codex (cache_create=0) sessions aligned', () => {
+    const card = formatHumanReadable(mixedCounts);
+    expect(card).toMatchSnapshot();
+    expect(card).toContain('counts unavailable'); // the no-derived session is loud
+    expect(card).toContain('600.0k'); // Codex cache column = 0 create + 600k read
+    expect(maxLineWidth(card)).toBeLessThanOrEqual(80);
+  });
+
   // @ana A025, A027
   it('stays within 80 columns and emits no ANSI escapes when color is stripped', () => {
-    for (const fixture of [provenanceRich, provenanceAbsent, manySessions, unpricedModel, failDeviated]) {
+    for (const fixture of [provenanceRich, provenanceAbsent, manySessions, unpricedModel, failDeviated, allUnpriced, mixedCounts]) {
       const card = formatHumanReadable(fixture);
       expect(maxLineWidth(card)).toBeLessThanOrEqual(80); // A025
       expect(/\x1b\[/.test(card)).toBe(false); // A027 layout never depends on ANSI

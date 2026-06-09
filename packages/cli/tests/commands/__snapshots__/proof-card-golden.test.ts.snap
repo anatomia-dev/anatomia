@@ -1,5 +1,34 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`proof card golden snapshots > renders an all-unpriced run with an n/a TOTAL, never $0.00 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ✓ PASS · A run entirely on a model with no price row               │
+│  cli · 23 min                                       2026-06-08 14:32│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Contract ─────────────────────────────────────────────────── 44/44 ✓
+  ████████████████████████████████████████████████████████████████
+  ✓ 44 satisfied · 0 unsatisfied · 0 deviated
+
+── Timing ─────────────────────────────────────────────────────────────
+  Total        23 min
+  Think        4 min
+  Plan         5 min
+  Build        10 min
+  Verify       4 min
+
+── Provenance ─────────────────────────────────────────────────────────
+  model  claude-opus-5-0
+  session  turns  tools     in   out   cache  cost
+  plan        12     48  12.1k  4.2k  880.0k   n/a
+  build       31    140  18.0k  9.1k    2.1M   n/a
+  verify      14     61  10.2k  3.0k  920.0k   n/a
+  ────────────────────────────────────────────────
+  TOTAL  3 sessions · 3 unpriced               n/a  (table v3)
+  completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
+"
+`;
+
 exports[`proof card golden snapshots > renders an unpriced model as n/a, never $0.00 1`] = `
 "╭─────────────────────────────────────────────────────────────────────╮
 │  ✓ PASS · A run on a model with no price row                        │
@@ -24,6 +53,34 @@ exports[`proof card golden snapshots > renders an unpriced model as n/a, never $
   verify · opus-4-8     14     61  10.2k  3.0k  920.0k  $0.70
   ───────────────────────────────────────────────────────────
   TOTAL  3 sessions · 1 unpriced                        $1.77  (table v3)
+  completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
+"
+`;
+
+exports[`proof card golden snapshots > renders counts-unavailable and Codex (cache_create=0) sessions aligned 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ✓ PASS · A run with a counts-unavailable session and a Codex sessi…│
+│  cli · 23 min · $1.07                               2026-06-08 14:32│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Contract ─────────────────────────────────────────────────── 44/44 ✓
+  ████████████████████████████████████████████████████████████████
+  ✓ 44 satisfied · 0 unsatisfied · 0 deviated
+
+── Timing ─────────────────────────────────────────────────────────────
+  Total        23 min
+  Think        4 min
+  Plan         5 min
+  Build        10 min
+  Verify       4 min
+
+── Provenance ─────────────────────────────────────────────────────────
+  verify · opus-4-8  counts unavailable
+  session              turns  tools     in   out   cache   cost
+  plan · opus-4-8         12     48  12.1k  4.2k  880.0k  $1.07
+  build · gpt-5-codex     20     90  14.0k  5.0k  600.0k    n/a
+  ─────────────────────────────────────────────────────────────
+  TOTAL  3 sessions · 1 unpriced                          $1.07  (table v3)
   completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
 "
 `;

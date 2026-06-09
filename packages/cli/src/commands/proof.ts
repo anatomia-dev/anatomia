@@ -496,8 +496,11 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
           header: ['session', 'turns', 'tools', 'in', 'out', 'cache', 'cost'],
           rows,
           footer: {
+            // When no session priced, the total is a non-figure: showing
+            // "$0.00" would advertise a paid run as free (e.g. a new model id
+            // missing from pricing.ts). Mirror the per-session "n/a" honestly.
             label: totalLabel,
-            value: `$${provTotalCost.toFixed(2)}`,
+            value: provPriced ? `$${provTotalCost.toFixed(2)}` : 'n/a',
             ...(provTableVersion ? { trailing: `(table ${provTableVersion})` } : {}),
           },
         })
