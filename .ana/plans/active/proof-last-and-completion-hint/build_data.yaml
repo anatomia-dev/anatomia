@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Human proof card (formatHumanReadable) never prints the slug — only the feature title. Contract A005/A008/A013 assert the slug token in stdout, so test fixtures encode the slug into the feature text to exercise those assertions. A verifier whose fixture feature omits the slug would not see it in human output."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "proof.test.ts already carries @ana A001–A024 tags from the proof command's own historical contract. The new --last tests reuse A005–A013 for THIS spec's contract; the tag namespace is shared within the file. New tests are isolated in a clearly-labelled describe block to avoid confusion."
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warning in src/utils/git-operations.ts:198 (unused eslint-disable directive for no-control-regex). Not introduced by this build; outside scope."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: debt
+    suggested_action: acknowledge

@@ -18,5 +18,50 @@
   "spec": {
     "saved_at": "2026-06-09T04:47:11.684Z",
     "hash": "sha256:5fd5d96a04eace79cf9ef629cb5f901220b81d38664c2dfad9ab9f788a6ec5f0"
-  }
+  },
+  "build_started_at": "2026-06-09T06:14:33.633Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-09T06:32:28.366Z",
+    "hash": "sha256:62b89bd1212f765af5587834a07078eaebbd720f822f9f53a224601d64c4dec7"
+  },
+  "build-data": {
+    "saved_at": "2026-06-09T06:32:28.367Z",
+    "hash": "sha256:c36d9f3e8c6d61c8647dc5443954955bc85d6afe2439907d61e5e0f5bc5994ac"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/work-merge.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "website/content/docs/guides/reading-a-proof.mdx"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/proof.ts": {
+      "added": 82,
+      "deleted": 7
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 6,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 123,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-merge.test.ts": {
+      "added": 70,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 19,
+      "deleted": 0
+    },
+    "website/content/docs/guides/reading-a-proof.mdx": {
+      "added": 2,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
