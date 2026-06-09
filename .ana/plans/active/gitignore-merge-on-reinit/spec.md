@@ -25,6 +25,7 @@ Replace three wholesale `.gitignore` writes with **one pure merge helper applied
 
 ### Open items resolved (carry into implementation)
 - **Codex stock content is GROUNDED, not guessed.** Derived from the concrete Codex per-developer entries already in `EXCLUDED_PREFIXES` at **commit.ts:55–56** (`.codex/settings.local.json`, `.codex/agent-memory/`) — the same code path that enumerates Codex per-dev state for force-add. Codex stock = `agent-memory/` + `settings.local.json` (paths relative to `.codex/`). It does NOT include `scheduled_tasks.lock` (a Claude-harness runtime lock with no Codex equivalent).
+- **`.agents/` is a 4th init-created surface — OUT OF SCOPE (decided).** Init creates `.agents/` (assets.ts:955, the Codex skills-symlink dir) and `EXCLUDED_PREFIXES` lists its per-dev state (`.agents/settings.local.json`, `.agents/agent-memory/`). It is deliberately excluded from this work because: (1) there is no `.agents/.gitignore` today, so there is nothing being clobbered — this is the #292 bug, and `.agents/` has no bug; (2) its per-developer state is already force-add-excluded, so nothing leaks into `ana init commit`. A `.agents/.gitignore` parity pass (same `mergeGitignore` + an `AGENTS_GITIGNORE_STOCK` constant) is a clean follow-up, not part of the clobber fix. Do NOT add a 4th stock constant or call site here.
 - **state.ts:694 policy flip.** The `.gitignore → NOT copied` policy becomes a pre-swap merge. Update the doc comment to record WHY: the original commit's intent (stock regenerates to the current CLI's expectations) is preserved — we still regenerate our block from current stock — while the overreach (destroying user lines that were never ours) is removed.
 
 ## Output Mockups
@@ -96,7 +97,9 @@ Three input cases:
 
 1. **`existingContent` is null, empty, or whitespace-only** → return `BLOCK + "\n"`. (Block only, one terminating newline.)
 
-2. **Well-formed managed block present** — exactly one `START` line AND exactly one `END` line, with `START` appearing before `END`:
+**Line-ending-agnostic matching (applies to cases 2 AND 3):** all sentinel and stock-line comparisons match on the line's content **after trimming a trailing `\r`** (and surrounding whitespace). A whole-file-CRLF input (sentinels + stock written with `\r\n`) MUST be recognized as well-formed and regenerate idempotently — it must not be misdetected as legacy and demoted. Case 3 already trims for stock-strip; case 2 sentinel detection must trim identically.
+
+2. **Well-formed managed block present** — exactly one `START` line AND exactly one `END` line (matched line-ending-agnostically, per above), with `START` appearing before `END`:
    - `before` = everything before the `START` line.
    - `after` = everything after the `END` line.
    - `userContent` = `before` concatenated with `after` (in that order; join with a newline only if both are non-empty). This **consolidates any user content that appeared above the start sentinel down below the regenerated block** — deterministic ordering, block always first.
@@ -152,7 +155,7 @@ Three input cases:
 - [ ] AC1: After a user adds a line to `.ana/.gitignore`, re-init preserves that line.
 - [ ] AC2: After a user adds a line to `.claude/.gitignore`, re-init preserves that line.
 - [ ] AC3: `.codex/.gitignore` is created on init with a managed block of Codex stock (`agent-memory/`, `settings.local.json`), and user lines survive re-init.
-- [ ] AC4: Stock entries are always present and deduped inside the managed block after re-init, even if a user deleted one.
+- [ ] AC4: Stock entries are always present inside the managed block after re-init, even if a user deleted one. "Deduped" here means the managed block itself carries no duplicate stock lines — it does NOT mean cross-region dedup: a user-region line that happens to equal a stock line is preserved verbatim and intentionally left as-is (see AC6/A021), never stripped against the block.
 - [ ] AC5: Re-init twice produces a byte-identical `.gitignore` for all three surfaces, with and without user content.
 - [ ] AC6: A user `!negation` placed after the managed block continues to win (stays below the block) after re-init.
 - [ ] AC7: Legacy migration: a pre-existing un-marked file (bare stock lines, no sentinels) is migrated on first re-init — stock wrapped into the block, all other lines preserved below.
@@ -161,6 +164,7 @@ Three input cases:
 - [ ] AC10: Stock content is identical regardless of project language/framework (no per-language branching).
 - [ ] AC11: User content that appeared above the start sentinel is consolidated below the regenerated block (deterministic ordering).
 - [ ] AC12: A partial/duplicate/hand-authored sentinel degrades to user content — never deleted (fail-safe).
+- [ ] AC13: A whole-file-CRLF managed file (sentinels + stock as `\r\n`) is detected as well-formed and regenerates byte-identically — not misdetected as legacy and demoted.
 - [ ] Full CLI suite passes: `(cd packages/cli && pnpm vitest run)` — 3582 → 3582 + new tests.
 - [ ] No build errors: `(cd packages/cli && pnpm run build)`.
 - [ ] Lint clean: `(cd packages/cli && pnpm run lint)`.
@@ -176,6 +180,7 @@ Three input cases:
   - legacy benign promotion → a line matching OLD/removed stock (not in current `stockBlock`) survives as user content (documented benign behavior — extra ignore, not data loss).
   - user line identical to a current stock line, in well-formed user region → preserved verbatim (not stripped — preserve-verbatim).
   - CRLF inside a user line → preserved byte-for-byte.
+  - whole-file-CRLF managed input (sentinels + stock written as `\r\n`) → detected well-formed, regenerates byte-identical, no legacy-demotion (AC13).
   - fail-safe: only a START marker / only an END / duplicate START / END-before-START → entire content treated as user content, nothing deleted (AC12).
   - A044: `mergeGitignore(null, X)` for X ∈ {ANA, CLAUDE, CODEX} never contains `provenance`.
   - stock identity: ANA/CLAUDE/CODEX stock constants contain no language/framework tokens (AC10) — assert exact expected stock strings.
@@ -202,6 +207,7 @@ None. All touched modules exist; `atomicWriteFile` already present.
 - Adding `scheduled_tasks.lock` to stock without adding it to `EXCLUDED_PREFIXES` does NOT stop the commit — it relocates it to the force-add path. Both required.
 - On re-init the `.ana` temp `.gitignore` is written twice (block-only by `createDirectoryStructure`, then re-merged by `preserveUserState`). Harmless — both writes are to the temp tree before the atomic swap.
 - The marker parser must fail safe: partial/duplicate/hand-authored sentinels degrade to user content, never trigger a delete.
+- Sentinel AND stock-line matching is line-ending-agnostic — trim a trailing `\r` before comparing in BOTH case 2 (well-formed detection) and case 3 (stock-strip). A whole-CRLF managed file misdetected as legacy would demote its own block to user content and break idempotency (AC13).
 - Separator between block and user region is OURS (normalize to one blank line) — but user content interior is preserved verbatim (including CRLF). Don't over-normalize.
 - `worktree.test.ts:306` asserts `.ana/.gitignore` contains `worktrees/` via a different code path (worktree util) — `worktrees/` stays in stock, so it still passes. Don't remove it from `ANA_GITIGNORE_STOCK`.
 

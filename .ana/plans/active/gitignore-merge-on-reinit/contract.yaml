@@ -157,6 +157,13 @@ assertions:
     matcher: "not_contains"
     value: "TypeScript"
 
+  - id: A023
+    says: "A managed ignore file written with Windows line endings is recognized and left stable on re-setup"
+    block: "mergeGitignore detects a whole-file-CRLF managed block as well-formed and regenerates byte-identical"
+    target: "second-pass mergeGitignore output (whole-file CRLF input)"
+    matcher: "equals"
+    value: "first-pass mergeGitignore output"
+
 file_changes:
   - path: "packages/cli/src/commands/init/gitignore.ts"
     action: create
