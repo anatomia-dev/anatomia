@@ -24,5 +24,50 @@
   "spec": {
     "saved_at": "2026-06-09T07:54:46.318Z",
     "hash": "sha256:5fff4c205959d1f9ea404f6e8c397b8e04b252de44d04edd591093c5e9ac4188"
-  }
+  },
+  "build_started_at": "2026-06-09T07:57:51.912Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-09T08:34:19.894Z",
+    "hash": "sha256:70c5736d3cef4e0b3c03fd0d8b983f3254790b4ee8ebd1d4f5c931126febc3bc"
+  },
+  "build-data": {
+    "saved_at": "2026-06-09T08:34:19.895Z",
+    "hash": "sha256:df69db0bbf203f46c7b9abb90b4802a01c56cc85f42d66d1690a8f18a6aed3a6"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/utils/render.ts",
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/proof-card-golden.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/utils/render.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/proof.ts": {
+      "added": 282,
+      "deleted": 278
+    },
+    "packages/cli/src/utils/render.ts": {
+      "added": 436,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+      "added": 143,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof-card-golden.test.ts": {
+      "added": 245,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 37,
+      "deleted": 11
+    },
+    "packages/cli/tests/utils/render.test.ts": {
+      "added": 238,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
