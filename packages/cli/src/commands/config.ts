@@ -59,7 +59,6 @@ const KNOWN_FIELDS = new Set([
   'lastScanAt',
   'testEvidenceGate',
   'processCapture',
-  'processCaptureStrict',
   'custom',
 ]);
 

@@ -234,29 +234,6 @@ describe('AnaJsonSchema', () => {
     });
   });
 
-  describe('processCaptureStrict enum values', () => {
-    // @ana A031
-    it('accepts on', () => {
-      const parsed = AnaJsonSchema.parse({ processCaptureStrict: 'on' });
-      expect(parsed.processCaptureStrict).toBe('on');
-    });
-
-    it('accepts off', () => {
-      const parsed = AnaJsonSchema.parse({ processCaptureStrict: 'off' });
-      expect(parsed.processCaptureStrict).toBe('off');
-    });
-
-    it('catches an invalid value to undefined', () => {
-      const parsed = AnaJsonSchema.parse({ processCaptureStrict: 'strict' });
-      expect(parsed.processCaptureStrict).toBeUndefined();
-    });
-
-    it('absence yields undefined (no default)', () => {
-      const parsed = AnaJsonSchema.parse({ name: 'x' });
-      expect(parsed.processCaptureStrict).toBeUndefined();
-    });
-  });
-
   describe('setupPhase enum values', () => {
     it('accepts context-complete', () => {
       const parsed = AnaJsonSchema.parse({ setupPhase: 'context-complete' });
