@@ -1,12 +1,12 @@
 # Proof Chain Dashboard
 
-196 runs · 222 active · 5 promoted · 908 closed
+197 runs · 225 active · 5 promoted · 909 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
-| Unscoped | 36 | 42 | 2026-06-09 |
+| Unscoped | 37 | 45 | 2026-06-09 |
 | cli | 136 | 157 | 2026-06-09 |
 | website | 24 | 23 | 2026-06-01 |
 
@@ -14,9 +14,9 @@
 
 | File | Active | Entries |
 |------|--------|--------|
-| packages/cli/src/commands/work.ts | 15 | 10 |
+| packages/cli/src/commands/work.ts | 16 | 11 |
+| packages/cli/tests/commands/artifact.test.ts | 8 | 7 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
-| packages/cli/tests/commands/artifact.test.ts | 7 | 6 |
 | packages/cli/src/engine/detectors/surfaces.ts | 7 | 4 |
 | packages/cli/src/commands/artifact.ts | 7 | 5 |
 
@@ -24,7 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 222 total)
+## Active Findings (30 shown of 225 total)
+
+### packages/cli/src/commands/artifact-validators.ts
+
+- **code:** validatePlanFormat phase detection recognizes only '- ' bullets (line.startsWith('- ')). A '* ' bullet or tab-prefixed dash would be silently uncounted. This faithfully mirrors countPhases (intentional, commented), so behavior is consistent — but it records a frozen-format fragility shared by both copies for the next engineer. — *Remove the non-authoritative plan.md phase checkbox*
 
 ### packages/cli/src/commands/artifact.ts
 
@@ -52,11 +56,10 @@
 
 - **code:** computeCompleteness signature drops the spec's provenanceDir param — implemented as (reportsDir, sessions) vs spec's (provenanceDir, reportsDir, sessions) — *Cross-machine process provenance (capture v2)*
 - **code:** Completeness is a presence floor (present >= expected): missing provenance is caught, but an extra/orphan build or verify session (present > expected) never flags. Intended for rework tolerance, but worth recording — the check only detects under-counting. — *Cross-machine process provenance (capture v2)*
-- **code:** Unrequested scope expansion during the fix cycle: commit 41cdc1cb ('prefer banked counts, never drop a matched session') changed SessionProvenance.derived from required to optional, made assembleProcessAttestation keep a matched-but-counts-less session as a metadata-only row, and updated proof.ts to render 'counts unavailable' and skip such rows in cost totals. Beyond the FAIL's single required fix. It is a genuine robustness improvement (prevents silent session loss on a dangling/deleted transcript), well-tested (two new tests, both green) and type-safe (proof.ts handles d? everywhere). Not a blocker — recorded because a fix cycle widened beyond its mandate. — *session-capture — agent-session capture & provenance unlock*
-- **code:** Partially mitigated, not resolved: assembleProcessAttestation still reads the home-global forensics buffer (~/.ana/forensics/sessions.jsonl, machine-wide, never pruned in Phase 1) in full at every work-complete, and recordBelongsToWorktree still reads each non-slug/non-cwd-matched record's entire transcript end-to-end for the per-line cwd scan. The 41cdc1cb banked-counts preference removed the redundant RE-derive for already-counted matched sessions, so per-matched-session cost is lower, but the unbounded buffer scan and per-candidate transcript read remain. Cost still grows with lifetime session count. — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/src/commands/work.ts
 
+- **code:** work.ts pull defense gates on porcelain status with !trimStart().startsWith('??'). A staged-deleted ('D ') or renamed ('R ') plan.md is also treated as 'modified' and restored from HEAD. Behavior is benign (restoring a non-authoritative file is desirable), but the comment frames the guard narrowly as 'tracked-modified'. — *Remove the non-authoritative plan.md phase checkbox*
 - **code:** Provenance-file reader is duplicated: the strict guard in work.ts inlines the same readdirSync+JSON.parse loop that assembleProcessAttestation uses; the two could drift (and the guard copy omits the sort). Spec permitted it, but a shared readSessionsFromDir helper would remove the drift risk. — *Cross-machine process provenance (capture v2)*
 
 ### packages/cli/src/utils/forensics.ts
@@ -71,7 +74,6 @@
 ### packages/cli/tests/commands/_capture.test.ts
 
 - **test:** A013 no-network is a static source-scan (asserts no network-module imports / no fetch() in the capture source), not a runtime network counter — would not catch network I/O reached via an already-imported transitive module. Spec-sanctioned enforcement approach; low risk given capture path is fs+os only — *session-capture — agent-session capture & provenance unlock*
-- **test:** AC12 no-network enforcement scan (_capture.test.ts:156) covers the derive/cost core (_capture.ts, forensics.ts, pricing.ts) but not the work-proof.ts assembly wrapper or artifact.ts churn path. Source inspection confirms no network code on the assembly path, so the guarantee holds where it matters, but the scanned set is narrower than the AC phrasing ('the capture + derive path'). — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/tests/commands/artifact-provenance.test.ts
 
@@ -79,6 +81,7 @@
 
 ### packages/cli/tests/commands/artifact.test.ts
 
+- **test:** A010's tagged test runs on the artifact branch, where the removed verify-report→plan.md staging block was a guarded no-op (!artifactPaths.includes). The test passes identically with or without the fix — it does not discriminate the change it claims to cover. — *Remove the non-authoritative plan.md phase checkbox*
 - **test:** A004's tagged test exercises missing/malformed ana.json, not the precise 'valid config, flag absent' fail-safe; that exact case is covered untagged in init.test.ts — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
 
 ### packages/cli/tests/commands/config.test.ts

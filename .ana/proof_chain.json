@@ -53818,6 +53818,462 @@
         "base_commit": "2963dbe9ae0bcd061c5f6aaca2a5972fa9b78007"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "remove-plan-phase-checkbox",
+      "feature": "Remove the non-authoritative plan.md phase checkbox",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 19,
+        "satisfied": 18,
+        "unsatisfied": 0,
+        "deviated": 1
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A plan written in the old checkbox style is still accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A plan written in the new plain-list style is accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A multi-phase plan with a spec for every phase is accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A plan with a phase that has no spec reference is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A plan with no phases section is still rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A plan whose phases section is empty is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Phase counting reads the old checkbox format correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Phase counting reads the new plain-list format correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Phase counting handles a multi-phase plan correctly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Saving a verify report no longer commits the plan file (single save)",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "Saving a verify report no longer commits the plan file (bulk save)",
+          "status": "DEVIATED",
+          "deviation": "The save-all test asserts the verify report commits successfully and that plan.md is"
+        },
+        {
+          "id": "A011",
+          "says": "Saving a verify report still succeeds when a plan file is present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Finishing a work item succeeds even when the plan file has uncommitted edits",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Finishing a work item leaves no uncommitted changes to the plan file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The planning agent emits phases as a plain list with no checkbox glyph",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The verify agent is no longer told to tick a plan checkbox",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The verify agent is no longer told that saving stages the plan file",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The build agent's guidance no longer references a plan checkbox",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The docs no longer describe plan checkbox updates",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 10,
+        "met": 9
+      },
+      "timing": {
+        "total_minutes": 130,
+        "think": 11,
+        "plan": 14,
+        "build": 19,
+        "verify": 9
+      },
+      "hashes": {
+        "scope": "sha256:d7710a414f717197811eb53852ea2c467b82fea8d5ba8964b963bd6b9d7039df",
+        "contract": "sha256:f899bf46c2c644d1e90fee2889aefa5862015836c0c22e455f4d98c03c42dadc",
+        "plan": "sha256:7c9afda542689b541e247a38c24ac2223c2428eb2a61385c142f4417b7eea9fd",
+        "spec": "sha256:86498484d2d8e6c4c56a5d6108611f0793cd96beb36e24d410de808b89496752",
+        "build-report": "sha256:ff84348a5663649dbc06ab31a1b3ecaac97f5f4b910a5dfc16ccc71d2faec3f0",
+        "build-data": "sha256:fbb9de99fe216a33542b209eb5a2e0b9485c62c482a399d097e850595b5c7f8b",
+        "verify-report": "sha256:7ae9ce1e986eb59666b636117d140b2c991796f80e9b81b1dea50e76775ae39b",
+        "verify-data": "sha256:ed59a46dcf82490e00b01493f02217d879ceb7fe3cc4fab2add1332aab4ef53c"
+      },
+      "completed_at": "2026-06-09T03:51:30.875Z",
+      "modules_touched": [
+        ".claude/agents/ana-build.md",
+        ".claude/agents/ana-plan.md",
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-build.md",
+        ".codex/agents/ana-plan.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/templates/.claude/agents/ana-build.md",
+        "packages/cli/templates/.claude/agents/ana-plan.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-build.md",
+        "packages/cli/templates/.codex/agents/ana-plan.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/commands/artifact.test.ts",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "packages/cli/tests/commands/work-state.test.ts",
+        "website/content/docs/concepts/artifacts.mdx"
+      ],
+      "scope_summary": "Make `plan.md` phase status honest by deleting the hand-maintained `- [ ]`/`- [x]`\ncheckbox entirely. Phase completion is currently tracked twice: once mechanically\n(build/verify artifacts + seals — the only source `ana work status` and `countPhases`\nactually read) and once as an agent-hand-edited markdown checkbox that **no code reads**.\nThe redundant copy has a cross-tree commit path that mis-fires, producing split-brain\nstate and a dirty working tree that can block `ana work complete --merge`.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "A010's tagged test runs on the artifact branch, where the removed verify-report→plan.md staging block was a guarded no-op (!artifactPaths.includes). The test passes identically with or without the fix — it does not discriminate the change it claims to cover.",
+          "file": "packages/cli/tests/commands/artifact.test.ts",
+          "anchor": null,
+          "line": 2460,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "remove-plan-phase-checkbox-C1",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A010's literal target (isFileCommitted plan.md === false after save-all) only holds on a feature branch, where plan.md is filtered from primaries. On the artifact branch save-all legitimately commits plan.md as a primary artifact, so the assertion as written contradicts normal save-all behavior. The assertion should pin a branch context or assert 'no verify-report-coupled staging.'",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A010"
+          ],
+          "id": "remove-plan-phase-checkbox-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T03:51:30.875Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "validatePlanFormat phase detection recognizes only '- ' bullets (line.startsWith('- ')). A '* ' bullet or tab-prefixed dash would be silently uncounted. This faithfully mirrors countPhases (intentional, commented), so behavior is consistent — but it records a frozen-format fragility shared by both copies for the next engineer.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 86,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "remove-plan-phase-checkbox-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "work.ts pull defense gates on porcelain status with !trimStart().startsWith('??'). A staged-deleted ('D ') or renamed ('R ') plan.md is also treated as 'modified' and restored from HEAD. Behavior is benign (restoring a non-authoritative file is desirable), but the comment frames the guard narrowly as 'tracked-modified'.",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 749,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "remove-plan-phase-checkbox-C4",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Contract assertion A010 (verify-report multi-save does not commit plan.md) does not match saveAllArtifacts reality: the multi-save staging block was dead code and save-all commits plan.md as a primary artifact. Tested the real guarantee instead (no verify-report-coupled staging; clean tree).",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "work-merge.test.ts carries pre-existing @ana A001-A009 tags from a different feature's contract; this contract reuses those IDs, so a naive per-file tag scan could mis-attribute them. New tags A012/A013 do not collide; pre-existing tags left untouched.",
+          "file": "packages/cli/tests/commands/work-merge.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Content assertions A014-A018 (agent/doc file wording) are verified by file inspection, not by executable tests, matching the spec's testing strategy (no agent-file unit tests requested).",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 18,
+          "assertions_total": 19,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 3
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          ".claude/agents/ana-build.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          ".claude/agents/ana-plan.md": {
+            "added": 6,
+            "deleted": 6
+          },
+          ".claude/agents/ana-verify.md": {
+            "added": 5,
+            "deleted": 6
+          },
+          ".codex/agents/ana-build.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          ".codex/agents/ana-plan.md": {
+            "added": 6,
+            "deleted": 6
+          },
+          ".codex/agents/ana-verify.md": {
+            "added": 5,
+            "deleted": 6
+          },
+          "packages/cli/src/commands/artifact-validators.ts": {
+            "added": 45,
+            "deleted": 16
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 0,
+            "deleted": 19
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 15,
+            "deleted": 0
+          },
+          "packages/cli/templates/.claude/agents/ana-build.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/templates/.claude/agents/ana-plan.md": {
+            "added": 6,
+            "deleted": 6
+          },
+          "packages/cli/templates/.claude/agents/ana-verify.md": {
+            "added": 5,
+            "deleted": 6
+          },
+          "packages/cli/templates/.codex/agents/ana-build.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/templates/.codex/agents/ana-plan.md": {
+            "added": 6,
+            "deleted": 6
+          },
+          "packages/cli/templates/.codex/agents/ana-verify.md": {
+            "added": 5,
+            "deleted": 6
+          },
+          "packages/cli/tests/commands/artifact.test.ts": {
+            "added": 79,
+            "deleted": 9
+          },
+          "packages/cli/tests/commands/work-merge.test.ts": {
+            "added": 97,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-state.test.ts": {
+            "added": 58,
+            "deleted": 0
+          },
+          "website/content/docs/concepts/artifacts.mdx": {
+            "added": 1,
+            "deleted": 1
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "0c277a1e-abc2-4ad4-9b2a-e3dcdada42f2",
+            "captured_at": "2026-06-09T01:16:24.167Z",
+            "derived": {
+              "tokens": {
+                "input": 6176,
+                "output": 22261,
+                "cache_create": 71942,
+                "cache_read": 989552
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 660805,
+              "turns": 51,
+              "tool_calls": 27,
+              "commands_run": 15,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:4a6877ff7630a60f018c522f3959fa0941ad61f6f702b7bb6467d94ad8781202",
+            "cli_version": "1.2.2",
+            "session_id": "3693e6b8-08ce-4f53-8510-226af85bb28a",
+            "captured_at": "2026-06-09T01:42:11.329Z",
+            "derived": {
+              "tokens": {
+                "input": 6185,
+                "output": 31067,
+                "cache_create": 78904,
+                "cache_read": 1316938
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 836040,
+              "turns": 53,
+              "tool_calls": 21,
+              "commands_run": 9,
+              "tests_executed": 146,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "4889d9a4-aef3-4b61-b346-e0016de2043c",
+            "captured_at": "2026-06-09T01:42:26.581Z",
+            "derived": {
+              "tokens": {
+                "input": 8304,
+                "output": 69863,
+                "cache_create": 152916,
+                "cache_read": 8940361
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1178259,
+              "turns": 190,
+              "tool_calls": 87,
+              "commands_run": 46,
+              "tests_executed": 7325,
+              "failures_encountered": 2,
+              "files_touched": 9,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "850cfd6c-8680-402f-a011-42f6f840476c",
+            "captured_at": "2026-06-09T03:16:03.286Z",
+            "derived": {
+              "tokens": {
+                "input": 6786,
+                "output": 34289,
+                "cache_create": 93763,
+                "cache_read": 2304566
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 632994,
+              "turns": 83,
+              "tool_calls": 36,
+              "commands_run": 21,
+              "tests_executed": 7171,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-09T01:43:02.017Z",
+        "completed_at": "2026-06-09T03:51:30.863Z",
+        "commit_count": 0,
+        "base_commit": "00059c868f9ec2f5871f64655669bcfa796b1cf3"
+      }
     }
   ],
   "schema": 1,
