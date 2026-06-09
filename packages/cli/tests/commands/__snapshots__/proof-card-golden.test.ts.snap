@@ -3,7 +3,7 @@
 exports[`proof card golden snapshots > renders an unpriced model as n/a, never $0.00 1`] = `
 "╭─────────────────────────────────────────────────────────────────────╮
 │  ✓ PASS · A run on a model with no price row                        │
-│  cli · 23 min · $1.77                               2026-06-08 08:32│
+│  cli · 23 min · $1.77                               2026-06-08 14:32│
 ╰─────────────────────────────────────────────────────────────────────╯
 
 ── Contract ─────────────────────────────────────────────────── 44/44 ✓
@@ -31,7 +31,7 @@ exports[`proof card golden snapshots > renders an unpriced model as n/a, never $
 exports[`proof card golden snapshots > renders the FAIL/DEVIATED card with failures and deviation detail 1`] = `
 "╭─────────────────────────────────────────────────────────────────────╮
 │  ✗ FAIL · Some half-built feature                                   │
-│  cli · 31 min                                       2026-06-05 16:40│
+│  cli · 31 min                                       2026-06-05 22:40│
 ╰─────────────────────────────────────────────────────────────────────╯
 
 ── Contract ────────────────────────────────────────── 9/12 · 2 ✗ · 1 ⚠
@@ -54,7 +54,7 @@ exports[`proof card golden snapshots > renders the FAIL/DEVIATED card with failu
 exports[`proof card golden snapshots > renders the provenance-absent card (the default) 1`] = `
 "╭─────────────────────────────────────────────────────────────────────╮
 │  ✓ PASS · Close the loop on proof context                           │
-│  cli · 18 min                                       2026-06-07 03:11│
+│  cli · 18 min                                       2026-06-07 09:11│
 ╰─────────────────────────────────────────────────────────────────────╯
 
 ── Contract ─────────────────────────────────────────────────── 12/12 ✓
@@ -73,7 +73,7 @@ exports[`proof card golden snapshots > renders the provenance-absent card (the d
 exports[`proof card golden snapshots > renders the provenance-rich card 1`] = `
 "╭─────────────────────────────────────────────────────────────────────╮
 │  ✓ PASS · Proof card visual redesign                                │
-│  cli · 23 min · $4.02                               2026-06-08 08:32│
+│  cli · 23 min · $4.02                               2026-06-08 14:32│
 ╰─────────────────────────────────────────────────────────────────────╯
 
 ── Contract ─────────────────────────────────────────────────── 44/44 ✓
@@ -112,7 +112,7 @@ exports[`proof card golden snapshots > renders the provenance-rich card 1`] = `
 exports[`proof card golden snapshots > renders the ≥6-session card aligned within 80 columns 1`] = `
 "╭─────────────────────────────────────────────────────────────────────╮
 │  ✓ PASS · A feature that took many build attempts                   │
-│  cli · 23 min · $6.68                               2026-06-08 08:32│
+│  cli · 23 min · $6.68                               2026-06-08 14:32│
 ╰─────────────────────────────────────────────────────────────────────╯
 
 ── Contract ─────────────────────────────────────────────────── 44/44 ✓

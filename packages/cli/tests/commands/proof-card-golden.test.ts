@@ -10,14 +10,29 @@
  * the runner's TTY, the same reason proofSummary.test.ts's toContain checks pass.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import chalk from 'chalk';
 import { formatHumanReadable } from '../../src/commands/proof.js';
 import type { ProofChainEntry } from '../../src/types/proof.js';
 import type { SessionProvenance } from '../../src/types/proof.js';
 
+// The card renders its header timestamp in the *local* timezone (correct UX for
+// a CLI receipt). That makes these golden snapshots timezone-dependent: captured
+// in the author's zone, they would fail under CI's UTC (proven: `16:40` MDT vs
+// `22:40` UTC). Pin TZ to UTC for the duration of this file so the snapshots are
+// deterministic everywhere, and restore it afterwards so no other suite inherits
+// the change. Node re-reads process.env.TZ on each Date construction, so setting
+// it here takes effect before any fixture is rendered.
+const ORIGINAL_TZ = process.env['TZ'];
+
 beforeAll(() => {
   chalk.level = 0;
+  process.env['TZ'] = 'UTC';
+});
+
+afterAll(() => {
+  if (ORIGINAL_TZ === undefined) delete process.env['TZ'];
+  else process.env['TZ'] = ORIGINAL_TZ;
 });
 
 /** Build a derived-counts session for the provenance grid. */
