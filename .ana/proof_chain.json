@@ -55068,6 +55068,571 @@
         "commit_count": 0,
         "base_commit": "3c4b07fb122c7077c109ca1ecd01ef3c78dedf4b"
       }
+    },
+    {
+      "slug": "proof-card-redesign",
+      "feature": "Proof card visual redesign on a shared render vocabulary",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 31,
+        "satisfied": 31,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The render module provides all six building blocks the cards are built from",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A section divider shows its label and fills the line to a fixed width",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A section divider can show a summary aligned to the right edge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The header box keeps its established width so existing cards stay stable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The header box can render rounded corners for the proof card",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The header box renders square corners by default so the health card is unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Labelled rows line their values up into a clean column",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Number columns in the stat grid line up on their right edge",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "An over-long cell is trimmed so it never breaks the grid's alignment",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The proportion bar falls back to plain ASCII characters when block glyphs are off",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Each verification status maps to its own status symbol",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The proof card shows the verdict prominently in its header",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Every section of the card is introduced by an inset divider rule",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The Contract section summarises how many assertions were satisfied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Passing assertions are summarised in one line rather than listed individually",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A failed assertion is always shown in full with its plain-English statement",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "A deviated assertion is shown with the detail of how it deviated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "The Findings section leads with a count of issues by severity",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "When findings overflow the list, the card points to the full data instead of a dead end",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The card never trails off with a bare 'and N more'",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The cost breakdown shows cached tokens, so each session's cost reconciles",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The cost breakdown shows input and output tokens per session",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The cost breakdown ends with a clearly separated total and the price-table version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "Whether the build is complete is stated on one line",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The whole card fits within a standard 80-column terminal",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "An unpriced model is shown honestly as not-available, never as free",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The card lays out correctly with color disabled, so layout never depends on color",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The machine-readable JSON output is unchanged by this visual redesign",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The card without a provenance section still reads as a finished receipt",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "A card with many agent sessions stays aligned",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "A failing card shows its failed and deviated assertions in full",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 13
+      },
+      "timing": {
+        "total_minutes": 772,
+        "think": 650,
+        "plan": 26,
+        "build": 60,
+        "verify": 32
+      },
+      "hashes": {
+        "scope": "sha256:e4a0ef7634ef1bce902f5d934c27c6a7d7962f97b619a38e4c7826e79f1bae59",
+        "contract": "sha256:3c785de70ad7d4c68cf1de057ee9c472aef9a64e97e0470ca6e9d01df0ee3431",
+        "plan": "sha256:fc39e8254a928de2f29ec76656da8dddd8e60371d2f8846f044a2b5ecc151dea",
+        "spec": "sha256:5fff4c205959d1f9ea404f6e8c397b8e04b252de44d04edd591093c5e9ac4188",
+        "build-report": "sha256:9a84c7b8cad08518f57dc442949583719c8cfc3faf31b3defd95ce01500bcc0b",
+        "build-data": "sha256:23c5ac94ca849aa2f61482475c08a8bcd4af8588a8d63f8d22b9c82921813a99",
+        "verify-report": "sha256:8ae36abecf4eea4da7c7c30cf4780236c027374eeea4b55d36c368892ab0b6b1",
+        "verify-data": "sha256:2c92cb93817e8e27068d05e955f1dfaf6d85af719d21e694e3c61c60ba3081a6"
+      },
+      "completed_at": "2026-06-09T09:32:32.364Z",
+      "modules_touched": [
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/utils/render.ts",
+        "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/proof-card-golden.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/utils/render.test.ts"
+      ],
+      "scope_summary": "Make `ana proof <slug>` *pop*. The proof card is the product's signature artifact — the receipt that proves an AI-built feature was scoped, planned, built, and independently verified, with per-agent turns/tokens/cost computed deterministically and committed to git. Nobody else can produce this data. But the **presentation is dated**: bold labels over dashed-underline rules, flat one-line-per-item lists, a hard `... and N more` truncation, every assertion listed (46 green lines for a large feature), and a Provenance cost that looks like bad math because the cache tokens that justify it are captured but never shown.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Ad-hoc bold sub-header `chalk.bold('  Phase breakdown')` still present inside formatHumanReadable. AC2 says no inline section-header construction should remain; this sub-header (inside the Timing block, multi-phase path) was not converted to a primitive. Carried from the FAIL round — never a blocker (AC2 was PARTIAL), and a defensible call since it is a sub-header inside a section, not a top-level section header.",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 386,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "proof-card-redesign-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Golden test pins the timezone by mutating process.env['TZ']='UTC' in beforeAll and restoring in afterAll. Correct and robust for this file (verified green under UTC/Tokyo/New_York, and full suite green under TZ=UTC). But process.env.TZ is process-global: if vitest ever runs this file in a worker shared with another time-dependent test file, that file could transiently observe UTC during this file's run. No leak observed in practice; the restore is clean.",
+          "file": "packages/cli/tests/commands/proof-card-golden.test.ts",
+          "anchor": null,
+          "line": 28,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "proof-card-redesign-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Counts-unavailable session (derived absent) renders as a standalone `<label>  counts unavailable` line above the grid (proof.ts:452-455), not as an in-grid row spanning the numeric columns as the spec mockup depicts. This is arguably cleaner (keeps numeric columns from widening) and the substance — the session is shown loudly and contributes nothing to totals — is fully met. No contract assertion governs the exact rendering.",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 452,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A025"
+          ],
+          "id": "proof-card-redesign-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Stale `@ana A020` tag points at the wrong assertion. In this contract A020 is the findings-overflow no-bare-and-N-more rule, but the tag sits on the single-phase phase-breakdown test in an unmodified file. Pre-existing mis-tag; harmless here (A020 is correctly covered by the golden test at line 251) but would mislead tag-driven verification. Carried from the FAIL round; the fix cycle did not touch this file.",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 2409,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "proof-card-redesign-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes lists proofSummary.test.ts and commit-hygiene.test.ts as 'modify', but their substring toContain assertions survive the new format with minimal/no change. Harmless over-prediction; a planner could mark such resilient files as optional. Carried from the FAIL round.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "proof-card-redesign-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T09:32:32.364Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 1,
+      "previous_failures": [
+        {
+          "id": "A029",
+          "summary": "Provenance-absent golden snapshot failed under UTC (TZ-dependent timestamp)"
+        },
+        {
+          "id": "A030",
+          "summary": "≥6-session golden snapshot failed under UTC"
+        },
+        {
+          "id": "A031",
+          "summary": "FAIL/DEVIATED golden failed under UTC (`22:40` vs baked `16:40`)"
+        }
+      ],
+      "build_concerns": [
+        {
+          "summary": "AC2: one chalk.bold('Phase breakdown') Timing sub-header remains instead of a sectionRule (it is a sub-section of Timing, not a top-level card section, and proofSummary.test.ts asserts the token so it must change in lockstep). Explicitly out of scope for the fix cycle by agreement.",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Pre-existing @ana tag-ID collision: proof.test.ts and proof.ts carry @ana A0xx tags from the ORIGINAL proof contract, while this feature's contract reuses A001-A031 for different assertions. A verifier's tag scan could mis-map the old tags. This feature's genuine coverage lives in render.test.ts (A001-A011) and proof-card-golden.test.ts + the A028 test (A012-A031).",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Stale @ana A020 tag in proofSummary.test.ts:2409 points at the phase-breakdown test, but A020 in this contract is the findings-overflow rule. Pre-existing mis-tag in a file this build does not modify; A020 is correctly covered by the golden test. Flagged for a future tag sweep.",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Finding / Build-Concern summaries are free text and are not width-bounded in the card; a pathological long summary could exceed 80 columns. The card's structural layout (header box, provenance grid, rules, footer) stays <=80 across all seven golden fixtures. The statGrid/keyValueRows truncation primitives are the eventual fix when health adopts them (cli-polish-C3).",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warning at git-operations.ts:198 (unused eslint-disable directive). Not a file this build touches; flagged pre-existing by the verifier in cycle 1. Not introduced by this build.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": false,
+          "assertions_satisfied": 31,
+          "assertions_total": 31,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "feature",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/proof.ts": {
+            "added": 285,
+            "deleted": 278
+          },
+          "packages/cli/src/utils/render.ts": {
+            "added": 436,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+            "added": 200,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof-card-golden.test.ts": {
+            "added": 326,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 37,
+            "deleted": 11
+          },
+          "packages/cli/tests/utils/render.test.ts": {
+            "added": 238,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "31483f97-1a7a-4aec-b64e-0225a934ff09",
+            "captured_at": "2026-06-08T20:35:01.683Z",
+            "derived": {
+              "tokens": {
+                "input": 10872,
+                "output": 43609,
+                "cache_create": 264808,
+                "cache_read": 1640049
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 29640421,
+              "turns": 72,
+              "tool_calls": 31,
+              "commands_run": 15,
+              "tests_executed": 3373,
+              "failures_encountered": 1,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "00690818-a6d9-43bb-a9b4-88ddb8dfc45c",
+            "captured_at": "2026-06-09T07:15:01.748Z",
+            "derived": {
+              "tokens": {
+                "input": 5957,
+                "output": 11709,
+                "cache_create": 51934,
+                "cache_read": 556281
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 626578,
+              "turns": 31,
+              "tool_calls": 15,
+              "commands_run": 5,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "2cac213a-97b3-4993-a289-2d399e7596d7",
+            "captured_at": "2026-06-09T07:26:49.612Z",
+            "derived": {
+              "tokens": {
+                "input": 11440,
+                "output": 34844,
+                "cache_create": 96801,
+                "cache_read": 1336672
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1671432,
+              "turns": 55,
+              "tool_calls": 24,
+              "commands_run": 10,
+              "tests_executed": 148,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "73a8320d-64a4-4028-ac3b-8d07771215de",
+            "captured_at": "2026-06-09T07:56:47.209Z",
+            "derived": {
+              "tokens": {
+                "input": 15641,
+                "output": 126038,
+                "cache_create": 251892,
+                "cache_read": 18701217
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2244291,
+              "turns": 240,
+              "tool_calls": 108,
+              "commands_run": 54,
+              "tests_executed": 14853,
+              "failures_encountered": 12,
+              "files_touched": 7,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "d12a1af4-a8b6-478b-9813-bc6163f10d18",
+            "captured_at": "2026-06-09T08:35:56.986Z",
+            "derived": {
+              "tokens": {
+                "input": 6699,
+                "output": 33742,
+                "cache_create": 109247,
+                "cache_read": 2859701
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1021755,
+              "turns": 93,
+              "tool_calls": 39,
+              "commands_run": 28,
+              "tests_executed": 11146,
+              "failures_encountered": 6,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "e9a4d3b5-ee34-4990-9f97-b967d6a32c9b",
+            "captured_at": "2026-06-09T08:58:48.251Z",
+            "derived": {
+              "tokens": {
+                "input": 10220,
+                "output": 34483,
+                "cache_create": 85549,
+                "cache_read": 2523444
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 899045,
+              "turns": 92,
+              "tool_calls": 36,
+              "commands_run": 19,
+              "tests_executed": 11451,
+              "failures_encountered": 5,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "65e5f05d-55ac-4d6c-86e5-8669d090f2fe",
+            "captured_at": "2026-06-09T09:15:29.411Z",
+            "derived": {
+              "tokens": {
+                "input": 6683,
+                "output": 25787,
+                "cache_create": 71296,
+                "cache_read": 2300497
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 668160,
+              "turns": 91,
+              "tool_calls": 40,
+              "commands_run": 27,
+              "tests_executed": 11148,
+              "failures_encountered": 1,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-09T07:57:51.912Z",
+        "completed_at": "2026-06-09T09:32:32.353Z",
+        "commit_count": 0,
+        "base_commit": "9c03ad30cb754627fce541abaf0c0d8e6d5bd1f1"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

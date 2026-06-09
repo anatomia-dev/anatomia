@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-199 runs · 232 active · 5 promoted · 911 closed
+200 runs · 236 active · 5 promoted · 912 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 137 | 161 | 2026-06-09 |
+| cli | 138 | 165 | 2026-06-09 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -18,13 +18,13 @@
 | packages/cli/src/commands/init/assets.ts | 9 | 4 |
 | packages/cli/tests/commands/artifact.test.ts | 8 | 7 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
-| packages/cli/src/engine/detectors/surfaces.ts | 7 | 4 |
+| packages/cli/src/commands/proof.ts | 7 | 5 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 232 total)
+## Active Findings (30 shown of 236 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -44,8 +44,6 @@
 
 - **test:** atomicWriteFile SHA-256 integrity-failure branch still untested; .claude/.codex gitignore writes now route through it — *Merge (not clobber) managed .gitignore files on re-init*
 - **code:** mergeAndWriteGitignore wrapper added beyond the literal spec (which said 'route through atomicWriteFile'). Thin DRY helper used at 3 call sites — good factoring, not scope creep. Over-build check: no unused exports, no dead paths. — *Merge (not clobber) managed .gitignore files on re-init*
-- **test:** pruneHookCommand never-throw guards for malformed shapes are unexercised — non-object hooks and non-array event value branches have no direct test — *Cross-machine process provenance (capture v2)*
-- **code:** pruneHookCommand drops the WHOLE entry if any hooks[].command matches — a user co-locating their command in the same entry object as the derive hook would lose it (faithful to spec wording; Anatomia installs one command per entry so unreachable in practice) — *Cross-machine process provenance (capture v2)*
 
 ### packages/cli/src/commands/init/gitignore.ts
 
@@ -53,13 +51,14 @@
 
 ### packages/cli/src/commands/proof.ts
 
+- **code:** Ad-hoc bold sub-header `chalk.bold('  Phase breakdown')` still present inside formatHumanReadable. AC2 says no inline section-header construction should remain; this sub-header (inside the Timing block, multi-phase path) was not converted to a primitive. Carried from the FAIL round — never a blocker (AC2 was PARTIAL), and a defensible call since it is a sub-header inside a section, not a top-level section header. — *Proof card visual redesign on a shared render vocabulary*
+- **code:** Counts-unavailable session (derived absent) renders as a standalone `<label>  counts unavailable` line above the grid (proof.ts:452-455), not as an in-grid row spanning the numeric columns as the spec mockup depicts. This is arguably cleaner (keeps numeric columns from widening) and the substance — the session is shown loudly and contributes nothing to totals — is fully met. No contract assertion governs the exact rendering. — *Proof card visual redesign on a shared render vocabulary*
 - **code:** Empty-chain JSON payload now triplicated — --last empty branch adds a third copy of wrapJsonResponse('proof', { entries }, chain) — *Surface the proof after work complete + ana proof --last*
 - **code:** sortEntriesByRecency kept module-private (not exported) — good restraint given proof.ts's documented history of over-exporting helpers (learn-session-memory-C1) — *Surface the proof after work complete + ana proof --last*
 
 ### packages/cli/src/commands/work-proof.ts
 
 - **code:** computeCompleteness signature drops the spec's provenanceDir param — implemented as (reportsDir, sessions) vs spec's (provenanceDir, reportsDir, sessions) — *Cross-machine process provenance (capture v2)*
-- **code:** Completeness is a presence floor (present >= expected): missing provenance is caught, but an extra/orphan build or verify session (present > expected) never flags. Intended for rework tolerance, but worth recording — the check only detects under-counting. — *Cross-machine process provenance (capture v2)*
 
 ### packages/cli/src/commands/work.ts
 
@@ -96,6 +95,10 @@
 
 - **test:** Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts — *Merge (not clobber) managed .gitignore files on re-init*
 
+### packages/cli/tests/commands/proof-card-golden.test.ts
+
+- **test:** Golden test pins the timezone by mutating process.env['TZ']='UTC' in beforeAll and restoring in afterAll. Correct and robust for this file (verified green under UTC/Tokyo/New_York, and full suite green under TZ=UTC). But process.env.TZ is process-global: if vitest ever runs this file in a worker shared with another time-dependent test file, that file could transiently observe UTC during this file's run. No leak observed in practice; the restore is clean. — *Proof card visual redesign on a shared render vocabulary*
+
 ### packages/cli/tests/commands/proof.test.ts
 
 - **test:** No coverage for `proof --last --json` on an empty/missing chain — A011/A012 only exercise human stdout + exit code, so the new duplicated JSON empty branch is unexercised — *Surface the proof after work complete + ana proof --last*
@@ -104,13 +107,13 @@
 
 - **test:** Keystone merge test re-declares seedProvenance/readChainEntry helpers that duplicate seedActiveProvenance/readChainEntry in work.test.ts; cross-file duplication is justified by the child_process mock isolation but worth noting — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
 
-### packages/cli/tests/commands/work.test.ts
-
-- **test:** Strict guard under --merge is not directly exercised — the strict integration tests pre-merge via createMergedProject then call completeWork without --merge. The documented 'merge precedes guard' boundary message is unverified by test. — *Cross-machine process provenance (capture v2)*
-
 ### packages/cli/tests/utils/capture-marker.test.ts
 
 - **test:** capture-marker.test.ts edited but absent from contract file_changes — a necessary consequence of renaming the exported evaluateCaptureGate/CaptureGateResult symbols — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+
+### packages/cli/tests/utils/proofSummary.test.ts
+
+- **test:** Stale `@ana A020` tag points at the wrong assertion. In this contract A020 is the findings-overflow no-bare-and-N-more rule, but the tag sits on the single-phase phase-breakdown test in an unmodified file. Pre-existing mis-tag; harmless here (A020 is correctly covered by the golden test at line 251) but would mislead tag-driven verification. Carried from the FAIL round; the fix cycle did not touch this file. — *Proof card visual redesign on a shared render vocabulary*
 
 ### packages/cli/vitest.config.ts
 
