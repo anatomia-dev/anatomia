@@ -1,0 +1,28 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Stale @ana tags in scan.test.ts collide with this contract's assertion IDs"
+    file: "packages/cli/tests/commands/scan.test.ts"
+    line: 1027
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001", "A002", "A003", "A004", "A005", "A006", "A007", "A008", "A009", "A010", "A011"]
+  - category: upstream
+    summary: "Contract A011 not_contains 'mixed' is a weak proxy — the fields that could render 'mixed' (imports.style, nullStyle.preference) are never rendered by the Conventions section regardless of the gate"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A011"]
+  - category: upstream
+    summary: "Contract file_changes omitted packages/cli/src/utils/displayNames.ts, which the builder had to modify to satisfy A010 (getPatternLibrary returns lowercase 'zod'; A010 requires 'Zod')"
+    file: "packages/cli/src/utils/displayNames.ts"
+    line: 38
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A010"]
+  - category: code
+    summary: "Seven of eight new validation display-name entries (joi, yup, valibot, superstruct, ajv, pydantic, marshmallow) are unexercised — only 'zod' is reached. Consistent with the map's existing forward-coverage convention, low risk."
+    file: "packages/cli/src/utils/displayNames.ts"
+    line: 39
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A010"]

@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "validation library display names (zod->Zod, joi->Joi, …) were added to displayNames.ts, a 4th file beyond the contract's 3-file list, to satisfy contract A010 which demands 'Zod' while the spec gate table said the raw 'library' (which is 'zod')."
+    file: "packages/cli/src/utils/displayNames.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "scan.test.ts carries pre-existing // @ana A001–A013 tags from a prior scan contract whose IDs numerically collide with this contract's A001–A019 but mean different things. Authoritative coverage for THIS contract lives in scan-card-golden.test.ts and the new direct-render describe; the stale tags were left untouched to avoid out-of-scope churn."
+    file: "packages/cli/tests/commands/scan.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "The header subtitle right slot renders the raw applicationShape ('cli'); the spec mockup illustratively showed 'cli tool'. No display-name mapping exists for shapes and the contract does not assert the shape text, so raw value preserves existing behavior."
+    severity: observation
+    suggested_action: acknowledge

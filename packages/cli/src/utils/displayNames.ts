@@ -35,6 +35,10 @@ const PATTERN_DISPLAY_NAMES: Record<string, string> = {
   mocha: 'Mocha', pytest: 'pytest', unittest: 'unittest',
   rspec: 'RSpec', minitest: 'Minitest', go_testing: 'Go testing',
   cargo_test: 'Cargo test', junit: 'JUnit', phpunit: 'PHPUnit',
+  // Validation libraries — surfaced by scan's "How your team writes" section.
+  zod: 'Zod', joi: 'Joi', yup: 'Yup', valibot: 'Valibot',
+  superstruct: 'Superstruct', ajv: 'Ajv', pydantic: 'Pydantic',
+  marshmallow: 'Marshmallow',
 };
 
 function displayName(map: Record<string, string>, key: string | null | undefined): string {
