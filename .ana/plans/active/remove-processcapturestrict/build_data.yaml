@@ -1,0 +1,12 @@
+schema: 1
+concerns:
+  - summary: "Coverage gate (vitest.config.ts thresholds 80/75/80/80) could not be executed — @vitest/coverage-v8 is not in package.json and not installed in either tree; `pnpm vitest run --coverage` fails with MISSING DEPENDENCY. The spec names this as the 'real gate' but it is unrunnable as configured. Thresholds should hold (deletion removes covered code with its tests; record-path coverage increased) but this is reasoned, not verified."
+    file: "packages/cli/vitest.config.ts"
+    severity: risk
+    suggested_action: scope
+  - summary: "@ana tag collisions across contracts in shared test files — this contract's A001-A014 overlap with historical A001-A016 tags from prior merged contracts in work.test.ts, work-merge.test.ts, doctor.test.ts, init.test.ts. A naive grep cannot distinguish them. Pre-existing/acknowledged; historical tags are immutable and were not touched."
+    severity: debt
+    suggested_action: monitor
+  - summary: "Net test delta is -5 (removed 10, added 5) vs the spec's predicted ~-4. Difference is one folded doctor test (A014 exit-0 merged into the AC5 test per 'extend rather than duplicate'). Within the spec's stated tolerance; behavioral coverage of the record path increased."
+    severity: observation
+    suggested_action: acknowledge

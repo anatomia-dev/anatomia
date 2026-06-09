@@ -24,5 +24,80 @@
   "spec": {
     "saved_at": "2026-06-09T00:17:24.501Z",
     "hash": "sha256:776fcb70326c7fd239029ab934059275fcdce9f98df44a9bfa94ab13a9e09de1"
-  }
+  },
+  "build_started_at": "2026-06-09T00:21:01.815Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-09T00:33:34.999Z",
+    "hash": "sha256:3e7f99da97d6c21a14d3d876e0b9daf61799459374d8c108658656c40ca22a67"
+  },
+  "build-data": {
+    "saved_at": "2026-06-09T00:33:35.000Z",
+    "hash": "sha256:17ed6712ed48666187af6d59ff0968d65f1c28be3a997feecdc24c70a5cdae81"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/config.ts",
+    "packages/cli/src/commands/doctor.ts",
+    "packages/cli/src/commands/init/anaJsonSchema.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/tests/commands/config.test.ts",
+    "packages/cli/tests/commands/doctor.test.ts",
+    "packages/cli/tests/commands/init.test.ts",
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts",
+    "packages/cli/tests/commands/work-merge.test.ts",
+    "packages/cli/tests/commands/work.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/config.ts": {
+      "added": 0,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/doctor.ts": {
+      "added": 5,
+      "deleted": 8
+    },
+    "packages/cli/src/commands/init/anaJsonSchema.ts": {
+      "added": 0,
+      "deleted": 8
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 0,
+      "deleted": 5
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 1,
+      "deleted": 43
+    },
+    "packages/cli/src/utils/forensics.ts": {
+      "added": 0,
+      "deleted": 23
+    },
+    "packages/cli/tests/commands/config.test.ts": {
+      "added": 0,
+      "deleted": 9
+    },
+    "packages/cli/tests/commands/doctor.test.ts": {
+      "added": 18,
+      "deleted": 11
+    },
+    "packages/cli/tests/commands/init.test.ts": {
+      "added": 4,
+      "deleted": 38
+    },
+    "packages/cli/tests/commands/init/anaJsonSchema.test.ts": {
+      "added": 0,
+      "deleted": 23
+    },
+    "packages/cli/tests/commands/work-merge.test.ts": {
+      "added": 79,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 35,
+      "deleted": 61
+    }
+  },
+  "commit_hygiene": []
 }
