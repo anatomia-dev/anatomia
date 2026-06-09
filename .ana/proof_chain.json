@@ -54274,6 +54274,435 @@
         "commit_count": 0,
         "base_commit": "00059c868f9ec2f5871f64655669bcfa796b1cf3"
       }
+    },
+    {
+      "slug": "gitignore-merge-on-reinit",
+      "feature": "Merge (not clobber) managed .gitignore files on re-init",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 23,
+        "satisfied": 23,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A line a user added to .ana's ignore file survives re-setup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A line a user added to Claude's ignore file survives re-setup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Codex gets its own ignore file on first setup, listing its private files",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A line a user added to Codex's ignore file survives re-setup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "Stock ignore entries are always restored even if the user deleted them",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Running setup twice leaves the .ana ignore file unchanged the second time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Running setup twice leaves the Claude ignore file unchanged the second time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Running setup twice leaves the Codex ignore file unchanged the second time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A user override placed below the managed block keeps winning after re-setup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "An old ignore file with no markers is upgraded into the managed-block format",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "Upgrading an old ignore file preserves the user's non-stock lines",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The Claude session lock is never committed by setup",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "The Claude ignore file lists the session lock so git skips it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The .ana ignore file never hides provenance from git",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The Claude ignore file never hides provenance from git",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The Codex ignore file never hides provenance from git",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "User lines mistakenly placed above the managed block are tidied below it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "A broken or hand-written marker is treated as the user's content, never deleted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Starting from nothing produces a clean managed ignore block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "A user's Windows-style line endings are kept exactly as written",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "A user line that happens to match a stock entry is kept as the user wrote it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The ignore entries are the same for every project regardless of language",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A managed ignore file written with Windows line endings is recognized and left stable on re-setup",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 16,
+        "met": 16
+      },
+      "timing": {
+        "total_minutes": 137,
+        "think": 10,
+        "plan": 15,
+        "build": 13,
+        "verify": 5
+      },
+      "hashes": {
+        "scope": "sha256:320c6e19bee9e121e45c55c344c3b0c614b842bd09082c6820d27a0fee5fd9b9",
+        "contract": "sha256:4c8355461a47a39d974ada58e196b5a8e63e52529ed1e7f63828fc37fdf75fff",
+        "plan": "sha256:3ff6918b3bff36453fd5936616cf90f829b9a41dd3b6ae6a155f7d9fc648ce9d",
+        "spec": "sha256:a8a5e0cc8c1f45478b3e3c107bc48e3ac8d42137055dc919e5c57ca25a728ef9",
+        "build-report": "sha256:e843c8fc27d936cdd94e379ff828b212355b87a166d9baabdc3e196ab23e41d0",
+        "build-data": "sha256:49511f56112f106f91a03a0cfdc29add82773b20d2fc7cb05114d47bf3d85df9",
+        "verify-report": "sha256:33a08ec49d231108b8b5197b73a9c7d6e563c8865d377ec7fe889c0cfb07cd85",
+        "verify-data": "sha256:1259ca46f3e17141e415888b148e98100d3af8ef689da1f06b3f832da105ae69"
+      },
+      "completed_at": "2026-06-09T04:04:12.225Z",
+      "modules_touched": [
+        "packages/cli/src/commands/init/assets.ts",
+        "packages/cli/src/commands/init/commit.ts",
+        "packages/cli/src/commands/init/gitignore.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/tests/commands/init.test.ts",
+        "packages/cli/tests/commands/init/commit.test.ts",
+        "packages/cli/tests/commands/init/gitignore.test.ts"
+      ],
+      "scope_summary": "Re-init silently destroys user-added lines in `.claude/.gitignore` and `.ana/.gitignore`, and `.codex/` ships no `.gitignore` at all. Users legitimately customize these files; their additions vanish on the next `ana init` with no warning. Concretely, the Claude Code harness runtime lock `.claude/scheduled_tasks.lock` is not ignored by stock and gets swept into `ana init commit`, re-dirtying the tree every session.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "atomicWriteFile SHA-256 integrity-failure branch still untested; .claude/.codex gitignore writes now route through it",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 190,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A002",
+            "A004"
+          ],
+          "id": "gitignore-merge-on-reinit-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts",
+          "file": "packages/cli/tests/commands/init/commit.test.ts",
+          "anchor": null,
+          "line": 70,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "gitignore-merge-on-reinit-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Legacy migration (case 3) strips any user line equal to a current stock value anywhere in the file — a user's own copy of a stock line is absorbed into the managed block on first re-init. Documented benign (still ignored), one-time only.",
+          "file": "packages/cli/src/commands/init/gitignore.ts",
+          "anchor": null,
+          "line": 159,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A011",
+            "A021"
+          ],
+          "id": "gitignore-merge-on-reinit-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "mergeAndWriteGitignore wrapper added beyond the literal spec (which said 'route through atomicWriteFile'). Thin DRY helper used at 3 call sites — good factoring, not scope creep. Over-build check: no unused exports, no dead paths.",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "anchor": null,
+          "line": 205,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "gitignore-merge-on-reinit-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Verify worktree is 2 commits behind main, but both are .ana artifact updates for the unrelated remove-plan-phase-checkbox slug — no source overlap with this build, no conflict risk.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "gitignore-merge-on-reinit-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-09T04:04:12.225Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "getTemplatesDir() mis-resolves to src/templates under vitest-from-src; integration tests work around it with a vi.spyOn on the state.js namespace export",
+          "file": "packages/cli/src/commands/init/state.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "atomicWriteFile SHA-256 integrity-failure throw branch is untested; the new .claude/.codex .gitignore writes now route through it",
+          "file": "packages/cli/src/commands/init/assets.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A044 implemented as a runtime throw in mergeGitignore in addition to test-time assertions; an interpretation of the spec's 'hard gate ... assert it' beyond the literal letter",
+          "file": "packages/cli/src/commands/init/gitignore.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 23,
+          "assertions_total": 23,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/init/assets.ts": {
+            "added": 55,
+            "deleted": 17
+          },
+          "packages/cli/src/commands/init/commit.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/init/gitignore.ts": {
+            "added": 168,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/init/state.ts": {
+            "added": 29,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/init.test.ts": {
+            "added": 146,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/init/commit.test.ts": {
+            "added": 5,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/init/gitignore.test.ts": {
+            "added": 288,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "fddcb74f-e650-4ee0-8fca-781e73986fcb",
+            "captured_at": "2026-06-09T01:04:27.215Z",
+            "derived": {
+              "tokens": {
+                "input": 6136,
+                "output": 29018,
+                "cache_create": 82567,
+                "cache_read": 1093545
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 585462,
+              "turns": 58,
+              "tool_calls": 28,
+              "commands_run": 14,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:4a6877ff7630a60f018c522f3959fa0941ad61f6f702b7bb6467d94ad8781202",
+            "cli_version": "1.2.2",
+            "session_id": "5651953c-c76f-44a1-8b76-8c5aeb1d18f4",
+            "captured_at": "2026-06-09T01:31:19.072Z",
+            "derived": {
+              "tokens": {
+                "input": 6328,
+                "output": 32981,
+                "cache_create": 96540,
+                "cache_read": 2292241
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 935343,
+              "turns": 66,
+              "tool_calls": 30,
+              "commands_run": 8,
+              "tests_executed": 148,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:771a5b926bf7dbab885d165370d4f61d0f34596affc997384ac4c2910f5adb7b",
+            "cli_version": "1.2.2",
+            "session_id": "20c23cc8-d9a5-4a7f-958b-7843efafab7c",
+            "captured_at": "2026-06-09T01:32:50.471Z",
+            "derived": {
+              "tokens": {
+                "input": 7275,
+                "output": 50341,
+                "cache_create": 120646,
+                "cache_read": 6345956
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 930260,
+              "turns": 142,
+              "tool_calls": 71,
+              "commands_run": 34,
+              "tests_executed": 3691,
+              "failures_encountered": 1,
+              "files_touched": 9,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:46f1af71aa217bc255dd2551edf86305408e28125963b75e563dc1b6bfd0c59b",
+            "cli_version": "1.2.2",
+            "session_id": "e5a71cc2-5a7d-4a8a-981e-e8f82764f34a",
+            "captured_at": "2026-06-09T03:15:52.027Z",
+            "derived": {
+              "tokens": {
+                "input": 6510,
+                "output": 21150,
+                "cache_create": 96578,
+                "cache_read": 1022393
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 366297,
+              "turns": 57,
+              "tool_calls": 28,
+              "commands_run": 15,
+              "tests_executed": 3621,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-09T01:35:22.300Z",
+        "completed_at": "2026-06-09T04:04:12.214Z",
+        "commit_count": 0,
+        "base_commit": "e321014da7bd9e6cf04009443787b6e99f0fd2e2"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,

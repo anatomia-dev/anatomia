@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-197 runs · 225 active · 5 promoted · 909 closed
+198 runs · 229 active · 5 promoted · 910 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 37 | 45 | 2026-06-09 |
-| cli | 136 | 157 | 2026-06-09 |
+| cli | 137 | 161 | 2026-06-09 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -15,16 +15,16 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 16 | 11 |
+| packages/cli/src/commands/init/assets.ts | 9 | 4 |
 | packages/cli/tests/commands/artifact.test.ts | 8 | 7 |
 | packages/cli/tests/commands/work.test.ts | 8 | 7 |
 | packages/cli/src/engine/detectors/surfaces.ts | 7 | 4 |
-| packages/cli/src/commands/artifact.ts | 7 | 5 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 225 total)
+## Active Findings (30 shown of 229 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -42,15 +42,15 @@
 
 ### packages/cli/src/commands/init/assets.ts
 
+- **test:** atomicWriteFile SHA-256 integrity-failure branch still untested; .claude/.codex gitignore writes now route through it — *Merge (not clobber) managed .gitignore files on re-init*
+- **code:** mergeAndWriteGitignore wrapper added beyond the literal spec (which said 'route through atomicWriteFile'). Thin DRY helper used at 3 call sites — good factoring, not scope creep. Over-build check: no unused exports, no dead paths. — *Merge (not clobber) managed .gitignore files on re-init*
 - **test:** pruneHookCommand never-throw guards for malformed shapes are unexercised — non-object hooks and non-array event value branches have no direct test — *Cross-machine process provenance (capture v2)*
 - **code:** pruneHookCommand drops the WHOLE entry if any hooks[].command matches — a user co-locating their command in the same entry object as the derive hook would lose it (faithful to spec wording; Anatomia installs one command per entry so unreachable in practice) — *Cross-machine process provenance (capture v2)*
 - **code:** session-capture build concern remains live (out of Phase 3 scope): ensureCodexHooksFlag flips any `hooks =` key via regex regardless of TOML table, so `hooks =` under a non-[features] table could be flipped. Not touched by this phase. — *Cross-machine process provenance (capture v2)*
-- **code:** Codex config.toml [features] hooks=true is written only when the file is absent — a customer with a pre-existing .codex/config.toml that lacks the flag, turning capture on, gets hooks.json but no enablement, so the SessionStart hook silently never fires — *session-capture — agent-session capture & provenance unlock*
-- **code:** pruneCaptureHook leaves empty hook-event arrays — a project whose only SessionStart entry was ours becomes "SessionStart": [] after flip-off (harmless cruft, no hook fires) — *session-capture — agent-session capture & provenance unlock*
 
-### packages/cli/src/commands/run.ts
+### packages/cli/src/commands/init/gitignore.ts
 
-- **code:** Empirical cwd/slug checkpoint from spec-1 (confirm real cwd of an ana run build/verify launch) has no in-repo evidence. Slug resolves via detectWorktreeSlug(projectRoot), unit-tested with a worktree-meta fixture; clean-degrade (empty slug) covers the worst case regardless — *session-capture — agent-session capture & provenance unlock*
+- **code:** Legacy migration (case 3) strips any user line equal to a current stock value anywhere in the file — a user's own copy of a stock line is absorbed into the managed block on first re-init. Documented benign (still ignored), one-time only. — *Merge (not clobber) managed .gitignore files on re-init*
 
 ### packages/cli/src/commands/work-proof.ts
 
@@ -70,10 +70,6 @@
 
 - **code:** Pre-existing lint warning: unused eslint-disable (no-control-regex) in git-operations.ts — not introduced by this build (file not in diff), surfaced by the full lint run — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
 - **code:** Pre-existing lint warning (unused eslint-disable for no-control-regex) in git-operations.ts — not introduced by Phase 3 (file not in changeset); flagged so it is not mistaken for new debt — *Cross-machine process provenance (capture v2)*
-
-### packages/cli/tests/commands/_capture.test.ts
-
-- **test:** A013 no-network is a static source-scan (asserts no network-module imports / no fetch() in the capture source), not a runtime network counter — would not catch network I/O reached via an already-imported transitive module. Spec-sanctioned enforcement approach; low risk given capture path is fs+os only — *session-capture — agent-session capture & provenance unlock*
 
 ### packages/cli/tests/commands/artifact-provenance.test.ts
 
@@ -96,6 +92,10 @@
 ### packages/cli/tests/commands/init/assets-capture-hooks.test.ts
 
 - **test:** Codex capture install/prune path (applyCodexCaptureHooks) has zero automated test coverage — init integration test runs only --platforms claude — *session-capture — agent-session capture & provenance unlock*
+
+### packages/cli/tests/commands/init/commit.test.ts
+
+- **test:** Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts — *Merge (not clobber) managed .gitignore files on re-init*
 
 ### packages/cli/tests/commands/work-merge.test.ts
 
