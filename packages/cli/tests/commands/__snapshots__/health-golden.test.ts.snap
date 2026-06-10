@@ -1,0 +1,129 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`health dashboard golden snapshots > caps Next Actions at five items 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ana proof health                                                   │
+│  7 runs                                                   2026-06-09│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Quality ────────────────────────────────────────────────────────────
+  Trend        improving
+  Risks/run    1 (last 5) · 2 (all)
+
+── Verification ───────────────────────────────────────────────────────
+  First-pass   86% (6 of 7)
+  Caught       4 issues before shipping
+
+── Pipeline ───────────────────────────────────────────────────────────
+  Median       42m (scope 5m · plan 8m · build 21m · verify 8m)
+
+── Next Actions ───────────────────────────────────────────────────────
+  Promote: [risk] Promote candidate number 7 — file7.ts
+  Promote: [risk] Promote candidate number 6 — file6.ts
+  Promote: [risk] Promote candidate number 5 — file5.ts
+  Promote: [risk] Promote candidate number 4 — file4.ts
+  Promote: [risk] Promote candidate number 3 — file3.ts
+"
+`;
+
+exports[`health dashboard golden snapshots > omits Next Actions when there are no candidates 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ana proof health                                                   │
+│  7 runs                                                   2026-06-09│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Quality ────────────────────────────────────────────────────────────
+  Trend        improving
+  Risks/run    1 (last 5) · 2 (all)
+
+── Verification ───────────────────────────────────────────────────────
+  First-pass   86% (6 of 7)
+  Caught       4 issues before shipping
+
+── Pipeline ───────────────────────────────────────────────────────────
+  Median       42m (scope 5m · plan 8m · build 21m · verify 8m)
+"
+`;
+
+exports[`health dashboard golden snapshots > omits the Hot Spots section when there are no hot spots 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ana proof health                                                   │
+│  7 runs                                                   2026-06-09│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Quality ────────────────────────────────────────────────────────────
+  Trend        improving
+  Risks/run    1 (last 5) · 2 (all)
+
+── Verification ───────────────────────────────────────────────────────
+  First-pass   86% (6 of 7)
+  Caught       4 issues before shipping
+
+── Pipeline ───────────────────────────────────────────────────────────
+  Median       42m (scope 5m · plan 8m · build 21m · verify 8m)
+"
+`;
+
+exports[`health dashboard golden snapshots > omits the Pipeline section when timing is insufficient 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ana proof health                                                   │
+│  7 runs                                                   2026-06-09│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Quality ────────────────────────────────────────────────────────────
+  Trend        improving
+  Risks/run    1 (last 5) · 2 (all)
+
+── Verification ───────────────────────────────────────────────────────
+  First-pass   86% (6 of 7)
+  Caught       4 issues before shipping
+"
+`;
+
+exports[`health dashboard golden snapshots > renders the full dashboard 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ana proof health                                                   │
+│  7 runs                                                   2026-06-09│
+╰─────────────────────────────────────────────────────────────────────╯
+
+── Quality ────────────────────────────────────────────────────────────
+  Trend        improving
+  Risks/run    1 (last 5) · 2 (all)
+
+── Verification ───────────────────────────────────────────────────────
+  First-pass   86% (6 of 7)
+  Caught       4 issues before shipping
+
+── Pipeline ───────────────────────────────────────────────────────────
+  Median       42m (scope 5m · plan 8m · build 21m · verify 8m)
+
+── Hot Spots ──────────────────────────────────────────────────────────
+  commands/proof.ts       12 findings (3 risk, 5 debt, 4 obs)  6 runs
+  engine/proof.ts         4 findings (1 risk, 3 debt)          3 runs
+  a-very-long-module-fi…  2 findings (2 debt)                  1 runs
+
+── Next Actions ───────────────────────────────────────────────────────
+  Fix: SEVERITY_ORDER duplicated across two blocks (3 entries)
+  Promote: [risk] Empty catch swallows detector failure — scan-engine.ts
+"
+`;
+
+exports[`health dashboard golden snapshots > renders the zero-runs path with a No data. message 1`] = `
+"╭─────────────────────────────────────────────────────────────────────╮
+│  ana proof health                                                   │
+│  0 runs                                                   2026-06-09│
+╰─────────────────────────────────────────────────────────────────────╯
+
+  No data.
+"
+`;
+
+exports[`proof summary list table golden snapshots > renders the summary list table 1`] = `
+"
+── Proof History ──────────────────────────────────────────────────────
+  Slug                  Result  Assertions  Surface  Date
+  health-dashboard-re…  PASS    22/22       cli      2026-06-09
+  cli-telemetry         PASS    14/14       cli      2026-06-08
+  scan-card-redesign    FAIL    18/19       --       2026-06-07
+"
+`;
