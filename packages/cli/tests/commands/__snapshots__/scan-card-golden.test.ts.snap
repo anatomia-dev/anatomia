@@ -18,7 +18,7 @@ exports[`scan card golden snapshots > renders the full deep-tier card 1`] = `
   Validation   Zod
 
 ── Intelligence ───────────────────────────────────────────────────────
-  Activity     3 active contributors · 2→5→4→6 weekly
+  Activity     3 active contributors · ▁▆▅█ weekly
 
   Full data: .ana/scan.json
   Run \`ana init\` to scaffold 5 skills for TypeScript"

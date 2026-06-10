@@ -17,6 +17,7 @@ import {
   keyValueRows,
   statGrid,
   proportionBar,
+  sparkline,
   statusGlyph,
   formatTokenCount,
   columnWidth,
@@ -196,6 +197,47 @@ describe('proportionBar', () => {
     expect(proportionBar(10, 10, { width: 6 })).toBe('██████');
     // Zero total never divides by zero — renders empty.
     expect(proportionBar(0, 0, { width: 4 })).toBe('░░░░');
+  });
+});
+
+describe('sparkline', () => {
+  // @ana A001
+  it('renders block-glyph bars for a varied series, max value as the full block', () => {
+    const output = sparkline([2, 5, 4, 6]);
+    expect(output).toContain('█'); // the series max maps to the full block
+    expect(output).toContain('▁'); // the series min maps to the lowest block
+    expect(output.length).toBe(4); // one glyph per value
+  });
+
+  // @ana A002
+  it('renders one glyph per value for a flat series without crashing', () => {
+    const spark = sparkline([3, 3, 3]);
+    expect(spark.length).toBe(3);
+    // No variation → every value sits on the lowest glyph.
+    expect(spark).toBe('▁▁▁');
+  });
+
+  it('renders a single glyph for a single value', () => {
+    expect(sparkline([7]).length).toBe(1);
+  });
+
+  // @ana A003
+  it('degrades to an ASCII ramp with no block glyphs when ascii is set', () => {
+    const asciiSpark = sparkline([1, 4, 2, 8], { ascii: true });
+    expect(asciiSpark).not.toContain('█');
+    for (const block of ['▁', '▂', '▃', '▄', '▅', '▆', '▇']) {
+      expect(asciiSpark).not.toContain(block);
+    }
+    expect(asciiSpark.length).toBe(4);
+    // Series max maps to the top of the ASCII ramp.
+    expect(asciiSpark).toContain('@');
+  });
+
+  // @ana A004
+  it('returns an empty string for an empty series', () => {
+    const emptySpark = sparkline([]);
+    expect(emptySpark.length).toBe(0);
+    expect(emptySpark).toBe('');
   });
 });
 

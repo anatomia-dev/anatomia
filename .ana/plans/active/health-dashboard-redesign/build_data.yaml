@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "proof.test.ts carries ~50 stale @ana tags (A001–A024) from prior proof contracts that now collide with this contract's assertion IDs. Authoritative coverage for this contract lives in the new health-golden suite + render/scan tests; the proof.test.ts collisions are noise, not missing coverage."
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Hot Spots entry-count cell renders '1 runs' (always plural) — pre-existing grammar from the original formatHealthDisplay, preserved unchanged. Cosmetic only."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Spec baseline documented 15 pre-existing failing git-merge tests; under `ana test` in the worktree the full suite is fully green (0 failed). The 15 are environmental (git-config sensitive) and unrelated to this change — no regression either way, but the documented baseline did not reproduce."
+    severity: observation
+    suggested_action: acknowledge

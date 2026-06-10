@@ -1281,7 +1281,6 @@ describe('contributor display label', () => {
     }
   }
 
-  // @ana A005, A006, A007
   it('displays active contributor count', async () => {
     // Create a git repo with commits so activity data is populated
     execSync('git init', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -1302,6 +1301,45 @@ describe('contributor display label', () => {
     if (activityLine!.includes('1 active contributor')) {
       expect(activityLine).not.toContain('1 active contributors');
     }
+  });
+
+  // @ana A005, A006
+  it('renders the weekly-commit trend as a sparkline, not arrow-joined numbers', async () => {
+    execSync('git init', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync('git config user.email "test@test.com"', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    await fs.writeFile(path.join(tempDir, 'package.json'), '{"name":"test","version":"1.0.0"}');
+
+    // Backdate commits across weekly buckets so the series VARIES — a varied
+    // series guarantees a full-block glyph (series max). The git detector buckets
+    // by committer date (%ct), so set GIT_COMMITTER_DATE.
+    const commitAt = (daysAgo: number, n: number): void => {
+      const iso = new Date(Date.now() - daysAgo * 24 * 3600 * 1000).toISOString();
+      const env = {
+        ...process.env,
+        GIT_AUTHOR_DATE: iso,
+        GIT_COMMITTER_DATE: iso,
+      };
+      execSync(`git config user.email "test@test.com"`, { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+      execSync(`echo "${daysAgo}-${n}" > file-${daysAgo}-${n}.ts`, { cwd: tempDir, stdio: ['pipe', 'pipe', 'pipe'] });
+      execSync(`git add -A && git commit -m "c-${daysAgo}-${n}"`, { cwd: tempDir, env, stdio: ['pipe', 'pipe', 'pipe'] });
+    };
+    // bucket 0 (≈1d): 4 commits, bucket 1 (≈8d): 2, bucket 2 (≈15d): 1 → e.g. [4,2,1,0]
+    for (let i = 0; i < 4; i++) commitAt(1, i);
+    for (let i = 0; i < 2; i++) commitAt(8, i);
+    commitAt(15, 0);
+
+    process.chdir(tempDir);
+    const { stdout } = runScan();
+
+    const activityLine = stdout.split('\n').find((l: string) => l.includes('Activity'));
+    expect(activityLine).toBeDefined();
+    // The weekly label is preserved (A006).
+    expect(activityLine).toContain('weekly');
+    // A real sparkline: the series max renders as the full block (A005), and the
+    // old arrow-joined number string is gone.
+    expect(activityLine).toContain('█');
+    expect(activityLine).not.toContain('→');
   });
 });
 

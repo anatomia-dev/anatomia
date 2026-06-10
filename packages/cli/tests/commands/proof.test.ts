@@ -2295,9 +2295,9 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['health']);
-      const trendLineIndex = stdout.split('\n').findIndex(l => l.includes('Trend:'));
+      const trendLineIndex = stdout.split('\n').findIndex(l => l.includes('Trend'));
       expect(trendLineIndex).toBeGreaterThan(0);
-      const risksLineIndex = stdout.split('\n').findIndex(l => l.includes('Risks/run:'));
+      const risksLineIndex = stdout.split('\n').findIndex(l => l.includes('Risks/run'));
       expect(trendLineIndex).toBeLessThan(risksLineIndex);
     });
 
@@ -2802,7 +2802,7 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['health']);
-      expect(stdout).toContain('First-pass:');
+      expect(stdout).toContain('First-pass');
       expect(stdout).toContain('60%');
       expect(stdout).toContain('3 of 5');
     });
@@ -2856,7 +2856,7 @@ describe('ana proof', () => {
 
       const { stdout } = runProof(['health']);
       expect(stdout).toContain('Pipeline');
-      expect(stdout).toContain('Median:');
+      expect(stdout).toContain('Median');
       expect(stdout).toContain('scope');
       expect(stdout).toContain('plan');
       expect(stdout).toContain('build');
@@ -2899,7 +2899,7 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['health']);
-      expect(stdout).not.toContain('Median:');
+      expect(stdout).not.toContain('Median');
       expect(stdout).not.toContain('Pipeline');
     });
 
@@ -2940,7 +2940,7 @@ describe('ana proof', () => {
       process.chdir(tempDir);
 
       const { stdout } = runProof(['health']);
-      expect(stdout).not.toContain('Median:');
+      expect(stdout).not.toContain('Median');
       expect(stdout).not.toContain('Pipeline');
     });
 

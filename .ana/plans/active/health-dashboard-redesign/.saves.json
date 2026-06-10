@@ -24,5 +24,80 @@
   "spec": {
     "saved_at": "2026-06-09T23:24:22.866Z",
     "hash": "sha256:b33d1d94401c0a289d7f39b594e6ca4653cd0a7db65a563fcc8873dc023b9007"
+  },
+  "build_started_at": "2026-06-10T00:28:57.946Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-10T00:56:01.189Z",
+    "hash": "sha256:e8a4fabea16b2fd8e3ea4ef619fd8fc67369827ab04e9896429e48fd196261be"
+  },
+  "build-data": {
+    "saved_at": "2026-06-10T00:56:01.191Z",
+    "hash": "sha256:2165eadd911d313f3b0cefb43aaca65c552944c3020707e4abf55dd8cce23a74"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/utils/render.ts",
+    "packages/cli/tests/commands/__snapshots__/health-golden.test.ts.snap",
+    "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/health-golden.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "packages/cli/tests/utils/render.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/proof.ts": {
+      "added": 94,
+      "deleted": 81
+    },
+    "packages/cli/src/commands/scan.ts": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/src/utils/render.ts": {
+      "added": 56,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/__snapshots__/health-golden.test.ts.snap": {
+      "added": 129,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/health-golden.test.ts": {
+      "added": 229,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 6,
+      "deleted": 6
+    },
+    "packages/cli/tests/commands/scan.test.ts": {
+      "added": 39,
+      "deleted": 1
+    },
+    "packages/cli/tests/utils/render.test.ts": {
+      "added": 42,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-10T01:50:01.118Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:1d37e682fd7af4a382ab8f06b453253518f71f6cf4ea3d3b2cf30271167b6631",
+    "run_at": "2026-06-10T02:05:19.112Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-10T02:05:19.155Z",
+    "hash": "sha256:17a6a5a24708e882857e60e25ad49d4a110fee3d346f39ac7dd0e72ab945dae2"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-10T02:05:19.155Z",
+    "hash": "sha256:d39c61a61752323207f365b6e7413b377ac0ee439431ee276601cc32a60fa86a"
   }
 }

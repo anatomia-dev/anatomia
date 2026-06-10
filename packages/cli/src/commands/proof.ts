@@ -51,7 +51,6 @@ import {
   commitAndPushProofChanges,
 } from '../utils/git-operations.js';
 import {
-  BOX,
   headerBox,
   sectionRule,
   keyValueRows,
@@ -540,32 +539,35 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
  * Format health display for terminal output.
  *
  * Accepts either a HealthReport object or `0` for the zero-runs case
- * (chain missing or empty). Produces a box-header display matching
- * the proof card pattern from formatHumanReadable.
+ * (chain missing or empty). Renders on the shared `render.ts` vocabulary —
+ * a rounded identity box, inset `sectionRule` headers, aligned `keyValueRows`,
+ * and a `statGrid` Hot Spots table — so it converges with the proof and scan
+ * cards. Presentation-only: the `HealthReport` shape and every section-omission
+ * rule are preserved exactly.
  *
  * @param reportOrZero - HealthReport or 0 for zero-runs
  * @returns Formatted terminal output string
  */
-function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthReport | 0): string {
+export function formatHealthDisplay(
+  reportOrZero: import('../types/proof.js').HealthReport | 0
+): string {
   const lines: string[] = [];
+  const width = 71;
   const isZero = reportOrZero === 0;
   const runs = isZero ? 0 : reportOrZero.runs;
 
   // Date for header
   const dateStr = formatLocalDate(new Date().toISOString());
 
-  // Box header — adopts the shared headerBox primitive with default (square)
-  // corners, which reproduces the legacy 71-wide box byte-for-byte. Health flips
-  // to rounded in its own redesign scope; square here is a transition default.
-  const boxWidth = 71;
-
+  // Rounded identity box — converges with the proof and scan cards.
   const runLabel = `${runs} ${runs !== 1 ? 'runs' : 'run'}`;
   lines.push(
     ...headerBox({
       title: '  ana proof health',
       subtitleLeft: `  ${runLabel}`,
       subtitleRight: dateStr,
-      width: boxWidth,
+      corners: 'rounded',
+      width,
     })
   );
 
@@ -579,20 +581,19 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
 
   const report = reportOrZero;
 
-  // Quality section (renamed from Trajectory)
+  // \u2500\u2500 Quality (renamed from Trajectory) \u2500\u2500
   lines.push('');
-  lines.push(chalk.bold('  Quality'));
-  lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
-
+  lines.push(sectionRule('Quality', { width }));
+  const qualityRows: KeyValueRow[] = [];
   if (report.trajectory.trend === 'no_classified_data') {
-    lines.push('  Trend:      no classified data');
-    lines.push('  Risks/run:  no classified data');
+    qualityRows.push({ label: 'Trend', value: 'no classified data' });
+    qualityRows.push({ label: 'Risks/run', value: 'no classified data' });
   } else {
     const trendDisplay =
       report.trajectory.trend === 'insufficient_data'
         ? `insufficient data (need ${MIN_ENTRIES_FOR_TREND}+ runs)`
         : report.trajectory.trend;
-    lines.push(`  Trend:      ${trendDisplay}`);
+    qualityRows.push({ label: 'Trend', value: trendDisplay });
 
     const last5 =
       report.trajectory.risks_per_run_last5 !== null
@@ -602,28 +603,35 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
       report.trajectory.risks_per_run_all !== null
         ? String(report.trajectory.risks_per_run_all)
         : 'no data';
-
-    const risksLine = `  Risks/run:  ${last5} (last 5) \u00b7 ${all} (all)`;
-    lines.push(risksLine);
+    qualityRows.push({ label: 'Risks/run', value: `${last5} (last 5) \u00b7 ${all} (all)` });
   }
+  lines.push(...keyValueRows(qualityRows, { labelWidth: 12 }));
 
-  // Verification section — always shown when runs > 0
+  // ── Verification — always shown when runs > 0 ──
   if (report.verification) {
     lines.push('');
-    lines.push(chalk.bold('  Verification'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
-
+    lines.push(sectionRule('Verification', { width }));
     lines.push(
-      `  First-pass:  ${report.verification.first_pass_pct}% (${report.verification.first_pass_count} of ${report.verification.total_runs})`
+      ...keyValueRows(
+        [
+          {
+            label: 'First-pass',
+            value: `${report.verification.first_pass_pct}% (${report.verification.first_pass_count} of ${report.verification.total_runs})`,
+          },
+          {
+            label: 'Caught',
+            value: `${report.verification.total_caught} issues before shipping`,
+          },
+        ],
+        { labelWidth: 12 }
+      )
     );
-    lines.push(`  Caught:      ${report.verification.total_caught} issues before shipping`);
   }
 
-  // Pipeline section — omitted when fewer than 3 entries have timing
+  // ── Pipeline — omitted when fewer than 3 entries have timing ──
   if (report.pipeline) {
     lines.push('');
-    lines.push(chalk.bold('  Pipeline'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
+    lines.push(sectionRule('Pipeline', { width }));
 
     const parts: string[] = [];
     if (report.pipeline.median_scope !== null) parts.push(`scope ${report.pipeline.median_scope}m`);
@@ -632,7 +640,12 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
     if (report.pipeline.median_verify !== null)
       parts.push(`verify ${report.pipeline.median_verify}m`);
     const breakdown = parts.length > 0 ? ` (${parts.join(' \u00b7 ')})` : '';
-    lines.push(`  Median:  ${report.pipeline.median_total}m${breakdown}`);
+    lines.push(
+      ...keyValueRows(
+        [{ label: 'Median', value: `${report.pipeline.median_total}m${breakdown}` }],
+        { labelWidth: 12 }
+      )
+    );
   }
 
   // Hot Spots section (renamed from Hot Modules) — omit when empty
@@ -645,19 +658,15 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
     }
 
     lines.push('');
-    lines.push(chalk.bold('  Hot Spots'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(10)));
+    lines.push(sectionRule('Hot Spots', { width }));
 
-    // Pre-compute display names for dynamic width calculation
-    const displayNames: string[] = [];
-    const findingsTexts: string[] = [];
+    const rows: string[][] = [];
     for (const mod of report.hot_modules) {
       const base = path.basename(mod.file);
       const displayName =
         (basenameCounts.get(base) ?? 0) > 1
           ? `${path.basename(path.dirname(mod.file))}/${base}`
           : base;
-      displayNames.push(displayName);
 
       const sevParts: string[] = [];
       if (mod.by_severity.risk > 0) sevParts.push(`${mod.by_severity.risk} risk`);
@@ -665,18 +674,22 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
       if (mod.by_severity.observation > 0) sevParts.push(`${mod.by_severity.observation} obs`);
       if (mod.by_severity.unclassified > 0)
         sevParts.push(`${mod.by_severity.unclassified} unclassified`);
-      findingsTexts.push(`${mod.finding_count} findings (${sevParts.join(', ')})`);
+      const findingsText = `${mod.finding_count} findings (${sevParts.join(', ')})`;
+
+      // Name/findings cells stay PLAIN so statGrid's maxWidth truncation works.
+      rows.push([displayName, findingsText, `${mod.entry_count} runs`]);
     }
 
-    const nameW = columnWidth(displayNames, (n) => n as string, 8);
-    const findingsW = columnWidth(findingsTexts, (f) => f as string, 12);
-
-    for (let i = 0; i < report.hot_modules.length; i++) {
-      const nameCol = displayNames[i]!.slice(0, nameW).padEnd(nameW);
-      lines.push(
-        `  ${nameCol}${findingsTexts[i]!.padEnd(findingsW)}${report.hot_modules[i]!.entry_count} runs`
-      );
-    }
+    lines.push(
+      ...statGrid({
+        columns: [
+          { align: 'left', minWidth: 8, maxWidth: 22 },
+          { align: 'left' },
+          { align: 'right' },
+        ],
+        rows,
+      })
+    );
   }
 
   // Next Actions section — merged Promote + Recurring, capped at 5
@@ -715,8 +728,7 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
 
   if (cappedActions.length > 0) {
     lines.push('');
-    lines.push(chalk.bold('  Next Actions'));
-    lines.push(chalk.gray('  ' + BOX.horizontal.repeat(12)));
+    lines.push(sectionRule('Next Actions', { width }));
 
     for (const action of cappedActions) {
       lines.push(action.label);
@@ -728,12 +740,6 @@ function formatHealthDisplay(reportOrZero: import('../types/proof.js').HealthRep
   return lines.join('\n');
 }
 
-/**
- * Format human-readable summary table for list view
- *
- * @param entries - Proof chain entries to display
- * @returns Formatted table string
- */
 /**
  * Sort proof chain entries by recency — most recent first.
  *
@@ -766,44 +772,51 @@ function sortEntriesByRecency(entries: ProofChainEntry[]): ProofChainEntry[] {
     .map(({ entry }) => entry);
 }
 
-function formatListTable(entries: ProofChainEntry[]): string {
+/**
+ * Format the human-readable proof summary table for the list view.
+ *
+ * Renders on the shared `render.ts` vocabulary — a lighter inset
+ * `── Proof History ──` rule (a multi-row list is not a single-subject card) over
+ * a borderless `statGrid`. The recency sort, PASS/FAIL coloring, the dim `--`
+ * surface fallback, and slug truncation (now via the Slug column's `maxWidth`)
+ * are all preserved.
+ *
+ * @param entries - Proof chain entries to display
+ * @returns Formatted table string
+ */
+export function formatListTable(entries: ProofChainEntry[]): string {
   const lines: string[] = [];
+  const width = 71;
 
   lines.push('');
-  lines.push(chalk.bold('  Proof History'));
-  lines.push('');
+  lines.push(sectionRule('Proof History', { width }));
 
-  // Dynamic column widths from data
-  const slugW = columnWidth(entries, (e) => (e as ProofChainEntry).slug, 8);
-  const surfaceW = columnWidth(entries, (e) => (e as ProofChainEntry).surface ?? '--', 6);
-
-  // Header row
-  const slugCol = 'Slug'.padEnd(slugW);
-  const resultCol = 'Result'.padEnd(9);
-  const assertCol = 'Assertions'.padEnd(13);
-  const surfaceCol = 'Surface'.padEnd(surfaceW);
-  const dateCol = 'Date';
-  lines.push(chalk.bold(`  ${slugCol}${resultCol}${assertCol}${surfaceCol}${dateCol}`));
-
-  // Sort entries: most recent first, undefined completed_at pushed to end
+  // Sort entries: most recent first, undefined completed_at pushed to end.
   const sorted = sortEntriesByRecency(entries);
 
-  for (const entry of sorted) {
-    const slugText =
-      entry.slug.length > slugW - 2 ? entry.slug.slice(0, slugW - 3) + '…' : entry.slug;
-    const slug = slugText.padEnd(slugW);
+  const rows: string[][] = sorted.map((entry) => {
+    // Slug stays PLAIN so the Slug column's maxWidth truncation applies.
     const resultColor = entry.result === 'PASS' ? chalk.green : chalk.red;
-    const resultPadded = entry.result.padEnd(9);
-    const result = resultColor(resultPadded);
     const ratio = `${entry.contract.satisfied}/${entry.contract.total}`;
-    const assertions = ratio.padEnd(13);
     const surfaceRaw = entry.surface ?? '';
     const surfaceDisplay = surfaceRaw || chalk.dim('--');
-    const surfacePadLen = surfaceRaw ? surfaceRaw.length : 2; // '--' is 2 visible chars
-    const surfacePad = ' '.repeat(Math.max(0, surfaceW - surfacePadLen));
     const date = entry.completed_at ? formatLocalDate(entry.completed_at) : '';
-    lines.push(`  ${slug}${result}${assertions}${surfaceDisplay}${surfacePad}${date}`);
-  }
+    return [entry.slug, resultColor(entry.result), ratio, surfaceDisplay, date];
+  });
+
+  lines.push(
+    ...statGrid({
+      columns: [
+        { align: 'left', minWidth: 8, maxWidth: 20 },
+        { align: 'left' },
+        { align: 'left' },
+        { align: 'left' },
+        { align: 'left' },
+      ],
+      header: ['Slug', 'Result', 'Assertions', 'Surface', 'Date'],
+      rows,
+    })
+  );
 
   lines.push('');
 

@@ -1,0 +1,49 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Hot Spots migrated to statGrid with maxWidth:22 truncation — closes cli-polish-C3 (displayNames now truncate with … instead of padEnd pass-through)"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 683
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A018"]
+    resolves:
+      - "cli-polish-C3"
+
+  - category: code
+    summary: "scan.ts adopts sparkline but never wires the ascii fallback — the tested ascii path has zero production consumers, so a non-UTF-8 terminal gets block glyphs"
+    file: "packages/cli/src/commands/scan.ts"
+    line: 325
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005"]
+
+  - category: code
+    summary: "sparkline flat non-zero series renders as all-lowest glyphs (▁▁▁) — a steady weekly-commit series reads visually as near-zero/declining activity; documented spark-tool convention but a perceptual gotcha for this use case"
+    file: "packages/cli/src/utils/render.ts"
+    line: 486
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A002"]
+
+  - category: upstream
+    summary: "Contract A017 matcher (contains '/') is loose — passes on any slash in the dashboard (e.g. Next Actions file paths), not specifically the Hot Spots disambiguation; real coverage comes from the golden snapshot, not the substring check"
+    file: "packages/cli/tests/commands/health-golden.test.ts"
+    line: 173
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A017"]
+
+  - category: code
+    summary: "Hot Spots statGrid middle column (findings text) is unbounded — only name (maxWidth:22) and runs columns are constrained; a pathological severity breakdown could push the runs column right. Bounded in practice by small integer counts"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 688
+    severity: observation
+    suggested_action: monitor
+
+  - category: test
+    summary: "Build touches the health header box but relies on the pre-existing weak trailing-gap test (local A005, proof.test.ts:5505) which asserts only toContain('  ') anywhere on the line — already a recurring proof-chain finding, not strengthened here"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 5505
+    severity: debt
+    suggested_action: monitor
