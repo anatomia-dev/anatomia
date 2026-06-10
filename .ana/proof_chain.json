@@ -56038,6 +56038,472 @@
         "base_commit": "d373e7be022d4c47ea6eb38e4dd2306f805f4af8"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "health-dashboard-redesign",
+      "feature": "Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 24,
+        "satisfied": 24,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Trends render as a real bar chart, not arrow-joined numbers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A trend with no variation still renders cleanly without crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The trend chart degrades to plain ASCII on low-fidelity terminals",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "An empty trend renders as nothing rather than an error",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The scan card shows the weekly-commit trend as a real sparkline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "The weekly-activity label is preserved on the scan card",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The health dashboard uses the same rounded header as the proof card",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The old hand-rolled square box is gone from the health dashboard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The Quality section is introduced by a clean inset rule",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "The Verification section is introduced by a clean inset rule",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The Hot Spots section is introduced by a clean inset rule",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The risk trend numbers are still reported on the dashboard",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "A dashboard with no runs shows a clear no-data message",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "The Pipeline section is hidden when too few runs have timing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The Hot Spots section is hidden when there are no hot spots",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The Next Actions list never shows more than five items",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Hot Spots disambiguates files that share a name by showing their folder",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "An over-long module name is truncated instead of shearing the grid",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The proof summary list uses a clean inset header, not a bold label",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The summary list shows each proof's pass/fail result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "A very long slug is truncated in the summary list rather than misaligning it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The health JSON still carries the trajectory data unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "The proof list JSON still carries the entries unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The dashboard is fully legible with color stripped, with no stray escape codes",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 13,
+        "met": 12
+      },
+      "timing": {
+        "total_minutes": 1191,
+        "think": 77,
+        "plan": 16,
+        "build": 27,
+        "verify": 15
+      },
+      "hashes": {
+        "scope": "sha256:eddee000c579c239a99c489966fa9d062e675d98afa5bd3a16f6bf7d04d12e31",
+        "contract": "sha256:1d37e682fd7af4a382ab8f06b453253518f71f6cf4ea3d3b2cf30271167b6631",
+        "plan": "sha256:8e9bcea6a285a0828d84eecc467c86aa08353f426c2325bc0a7e2f3f377707b1",
+        "spec": "sha256:b33d1d94401c0a289d7f39b594e6ca4653cd0a7db65a563fcc8873dc023b9007",
+        "build-report": "sha256:e8a4fabea16b2fd8e3ea4ef619fd8fc67369827ab04e9896429e48fd196261be",
+        "build-data": "sha256:2165eadd911d313f3b0cefb43aaca65c552944c3020707e4abf55dd8cce23a74",
+        "verify-report": "sha256:17a6a5a24708e882857e60e25ad49d4a110fee3d346f39ac7dd0e72ab945dae2",
+        "verify-data": "sha256:d39c61a61752323207f365b6e7413b377ac0ee439431ee276601cc32a60fa86a"
+      },
+      "completed_at": "2026-06-10T06:43:48.990Z",
+      "modules_touched": [
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/scan.ts",
+        "packages/cli/src/utils/render.ts",
+        "packages/cli/tests/commands/__snapshots__/health-golden.test.ts.snap",
+        "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/health-golden.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/scan.test.ts",
+        "packages/cli/tests/utils/render.test.ts"
+      ],
+      "scope_summary": "After `proof-card-redesign` ships, `proof.ts` will contain **three** human renderers: the redesigned proof card (`formatHumanReadable`), the health dashboard (`formatHealthDisplay`), and the no-slug summary table (`formatListTable`). The card will be rebuilt on the shared `utils/render.ts` vocabulary; the other two will still hand-roll the old idiom — the same cyan box, bold labels over gray dashed underlines, magic-number widths — in the very same file. Leaving them dated means `ana proof health` and `ana proof` look like a different, older product than `ana proof <slug>` one screen away. *Finished means consistent.*",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Hot Spots migrated to statGrid with maxWidth:22 truncation — closes cli-polish-C3 (displayNames now truncate with … instead of padEnd pass-through)",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 683,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A018"
+          ],
+          "resolves": [
+            "cli-polish-C3"
+          ],
+          "id": "health-dashboard-redesign-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-10T06:43:48.990Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "scan.ts adopts sparkline but never wires the ascii fallback — the tested ascii path has zero production consumers, so a non-UTF-8 terminal gets block glyphs",
+          "file": "packages/cli/src/commands/scan.ts",
+          "anchor": null,
+          "line": 325,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005"
+          ],
+          "id": "health-dashboard-redesign-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "sparkline flat non-zero series renders as all-lowest glyphs (▁▁▁) — a steady weekly-commit series reads visually as near-zero/declining activity; documented spark-tool convention but a perceptual gotcha for this use case",
+          "file": "packages/cli/src/utils/render.ts",
+          "anchor": null,
+          "line": 486,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A002"
+          ],
+          "id": "health-dashboard-redesign-C3",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A017 matcher (contains '/') is loose — passes on any slash in the dashboard (e.g. Next Actions file paths), not specifically the Hot Spots disambiguation; real coverage comes from the golden snapshot, not the substring check",
+          "file": "packages/cli/tests/commands/health-golden.test.ts",
+          "anchor": null,
+          "line": 173,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A017"
+          ],
+          "id": "health-dashboard-redesign-C4",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-10T06:43:48.990Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Hot Spots statGrid middle column (findings text) is unbounded — only name (maxWidth:22) and runs columns are constrained; a pathological severity breakdown could push the runs column right. Bounded in practice by small integer counts",
+          "file": "packages/cli/src/commands/proof.ts",
+          "anchor": null,
+          "line": 688,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "health-dashboard-redesign-C5",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Build touches the health header box but relies on the pre-existing weak trailing-gap test (local A005, proof.test.ts:5505) which asserts only toContain('  ') anywhere on the line — already a recurring proof-chain finding, not strengthened here",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "anchor": null,
+          "line": 5505,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "health-dashboard-redesign-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "proof.test.ts carries ~50 stale @ana tags (A001–A024) from prior proof contracts that now collide with this contract's assertion IDs. Authoritative coverage for this contract lives in the new health-golden suite + render/scan tests; the proof.test.ts collisions are noise, not missing coverage.",
+          "file": "packages/cli/tests/commands/proof.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "Hot Spots entry-count cell renders '1 runs' (always plural) — pre-existing grammar from the original formatHealthDisplay, preserved unchanged. Cosmetic only.",
+          "file": "packages/cli/src/commands/proof.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Spec baseline documented 15 pre-existing failing git-merge tests; under `ana test` in the worktree the full suite is fully green (0 failed). The 15 are environmental (git-config sensitive) and unrelated to this change — no regression either way, but the documented baseline did not reproduce.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 24,
+          "assertions_total": 24,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 5
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "feature",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/commands/proof.ts": {
+            "added": 94,
+            "deleted": 81
+          },
+          "packages/cli/src/commands/scan.ts": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/src/utils/render.ts": {
+            "added": 56,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/__snapshots__/health-golden.test.ts.snap": {
+            "added": 129,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/tests/commands/health-golden.test.ts": {
+            "added": 229,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 6,
+            "deleted": 6
+          },
+          "packages/cli/tests/commands/scan.test.ts": {
+            "added": 39,
+            "deleted": 1
+          },
+          "packages/cli/tests/utils/render.test.ts": {
+            "added": 42,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "31483f97-1a7a-4aec-b64e-0225a934ff09",
+            "captured_at": "2026-06-09T07:30:25.182Z",
+            "derived": {
+              "tokens": {
+                "input": 14669,
+                "output": 88092,
+                "cache_create": 450199,
+                "cache_read": 5698113
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 39313761,
+              "turns": 125,
+              "tool_calls": 51,
+              "commands_run": 22,
+              "tests_executed": 3373,
+              "failures_encountered": 1,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "f9782ba0-b0b9-483c-83ce-9fa2efb5611d",
+            "captured_at": "2026-06-09T22:31:09.013Z",
+            "derived": {
+              "tokens": {
+                "input": 6756,
+                "output": 38425,
+                "cache_create": 93168,
+                "cache_read": 1909025
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 3188262,
+              "turns": 68,
+              "tool_calls": 27,
+              "commands_run": 17,
+              "tests_executed": 156,
+              "failures_encountered": 5,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "67b24e92-b81c-415a-aec4-1734aa7f6101",
+            "captured_at": "2026-06-09T23:59:10.866Z",
+            "derived": {
+              "tokens": {
+                "input": 7829,
+                "output": 77644,
+                "cache_create": 195237,
+                "cache_read": 10238655
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 3405677,
+              "turns": 205,
+              "tool_calls": 93,
+              "commands_run": 41,
+              "tests_executed": 7872,
+              "failures_encountered": 20,
+              "files_touched": 9,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "40c6612e-0693-4d9e-8f48-799a744ea6a0",
+            "captured_at": "2026-06-10T01:49:40.479Z",
+            "derived": {
+              "tokens": {
+                "input": 6832,
+                "output": 36488,
+                "cache_create": 119326,
+                "cache_read": 2901610
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 933526,
+              "turns": 106,
+              "tool_calls": 42,
+              "commands_run": 29,
+              "tests_executed": 7532,
+              "failures_encountered": 17,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-10T00:28:57.946Z",
+        "completed_at": "2026-06-10T06:43:48.978Z",
+        "commit_count": 0,
+        "base_commit": "9f64309a6d102c0f3605431e6819a658cc93f0d7"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
