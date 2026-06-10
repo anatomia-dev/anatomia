@@ -24,5 +24,65 @@
   "spec": {
     "saved_at": "2026-06-09T23:24:22.866Z",
     "hash": "sha256:b33d1d94401c0a289d7f39b594e6ca4653cd0a7db65a563fcc8873dc023b9007"
-  }
+  },
+  "build_started_at": "2026-06-10T00:28:57.946Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-10T00:56:01.189Z",
+    "hash": "sha256:e8a4fabea16b2fd8e3ea4ef619fd8fc67369827ab04e9896429e48fd196261be"
+  },
+  "build-data": {
+    "saved_at": "2026-06-10T00:56:01.191Z",
+    "hash": "sha256:2165eadd911d313f3b0cefb43aaca65c552944c3020707e4abf55dd8cce23a74"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/scan.ts",
+    "packages/cli/src/utils/render.ts",
+    "packages/cli/tests/commands/__snapshots__/health-golden.test.ts.snap",
+    "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/health-golden.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/scan.test.ts",
+    "packages/cli/tests/utils/render.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/proof.ts": {
+      "added": 94,
+      "deleted": 81
+    },
+    "packages/cli/src/commands/scan.ts": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/src/utils/render.ts": {
+      "added": 56,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/__snapshots__/health-golden.test.ts.snap": {
+      "added": 129,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/__snapshots__/scan-card-golden.test.ts.snap": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/health-golden.test.ts": {
+      "added": 229,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 6,
+      "deleted": 6
+    },
+    "packages/cli/tests/commands/scan.test.ts": {
+      "added": 39,
+      "deleted": 1
+    },
+    "packages/cli/tests/utils/render.test.ts": {
+      "added": 42,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
