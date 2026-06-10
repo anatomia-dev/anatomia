@@ -28,7 +28,7 @@ import type { KeyValueRow, HeaderBoxOptions } from '../utils/render.js';
 import { computeSkillManifest, CORE_SKILLS } from '../constants.js';
 import { selectPrimarySchema } from '../utils/scaffold-generators.js';
 import { isWorktreeDirectory } from '../utils/worktree.js';
-import { headerBox, sectionRule, keyValueRows } from '../utils/render.js';
+import { headerBox, sectionRule, keyValueRows, sparkline } from '../utils/render.js';
 import { getPatternLibrary } from '../engine/types/patterns.js';
 import { getPatternDisplayName } from '../utils/displayNames.js';
 
@@ -322,7 +322,7 @@ export function formatHumanReadable(
       parts.push(`${activity.activeContributors} active contributor${activity.activeContributors === 1 ? '' : 's'}`);
     }
     if (activity.weeklyCommits && activity.weeklyCommits.length > 0) {
-      parts.push(activity.weeklyCommits.join(chalk.gray('→')) + ' weekly');
+      parts.push(`${sparkline(activity.weeklyCommits, { color: chalk.gray })} weekly`);
     }
     if (parts.length > 0) {
       intelRows.push({ label: 'Activity', value: parts.join(' · ') });
