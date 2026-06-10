@@ -434,3 +434,59 @@ export function proportionBar(
   const ec = opts?.emptyColor ?? ((s) => s);
   return fc(fillCh.repeat(fillN)) + ec(emptyCh.repeat(emptyN));
 }
+
+/** The eight block glyphs used by {@link sparkline}, low to high. */
+const SPARK_BLOCKS = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+/**
+ * The ASCII fallback ramp for {@link sparkline}, low to high ink density.
+ * Single-width characters only — no block glyphs — for low-fidelity/non-UTF-8
+ * terminals.
+ */
+const SPARK_ASCII = ['.', '-', '=', '+', '*', '#', '%', '@'];
+
+/** Options for {@link sparkline}. */
+export interface SparklineOptions {
+  /** Degrade block glyphs (`▁…█`) to a single-width ASCII ramp for low-fidelity fonts. */
+  ascii?: boolean;
+  /** Color applied to the whole rendered series (default: none). */
+  color?: (s: string) => string;
+}
+
+/**
+ * Render a numeric series as a single-line sparkline of block glyphs, e.g.
+ * `▁▄▂▆█`.
+ *
+ * Each value is normalized across the series' own min–max range and mapped to
+ * one of eight block glyphs (`▁▂▃▄▅▆▇█`); the series maximum renders as the full
+ * block `█` and the minimum as `▁`. One glyph is emitted per value, so the output
+ * length always equals the input length.
+ *
+ * Like {@link proportionBar}, this MUST be used on its OWN line — block glyphs
+ * render wider in some fonts and would shear an aligned column. The `ascii`
+ * option degrades to a single-width ramp (`.-=+*#%@`) for low-fidelity terminals.
+ *
+ * Edge cases: an empty series returns `''`; a flat series (no variation) renders
+ * every value as the lowest glyph, matching the convention of the `spark` tool
+ * (a relative chart has no baseline to lift a flat line off of).
+ *
+ * @param values - The numeric series to chart
+ * @param opts - Sparkline options (see {@link SparklineOptions})
+ * @returns A single sparkline string (empty for an empty series)
+ */
+export function sparkline(values: number[], opts?: SparklineOptions): string {
+  if (values.length === 0) return '';
+  const ramp = opts?.ascii ? SPARK_ASCII : SPARK_BLOCKS;
+  const top = ramp.length - 1;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min;
+  const spark = values
+    .map((v) => {
+      // Flat series (range 0): every value sits on the lowest glyph.
+      const level = range > 0 ? Math.round(((v - min) / range) * top) : 0;
+      return ramp[level]!;
+    })
+    .join('');
+  const color = opts?.color ?? ((s) => s);
+  return color(spark);
+}
