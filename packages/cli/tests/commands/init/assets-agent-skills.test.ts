@@ -373,4 +373,81 @@ describe('ana agents skills — writes the mapping to ana.json', () => {
     expect(process.exitCode).toBe(1);
     expect((await readAnaJson())['agents']).toBeUndefined();
   });
+
+  // ── Gap 4: auto-projection into both platforms, --add, replace-warning ────
+  it('AUTO-PROJECTS the skills into the live Claude agent file immediately', async () => {
+    await seedAgents();
+    const program = await createProgram();
+    await runCommand(program, ['agents', 'skills', 'ana-build', 'git-workflow,api-patterns']);
+
+    // No `ana init` was run — the Claude file is updated right now.
+    const claudeMd = await fs.readFile(path.join(tempDir, '.claude/agents/ana-build.md'), 'utf-8');
+    expect(claudeMd).toContain('skills: [git-workflow, api-patterns]');
+  });
+
+  it('AUTO-PROJECTS into Codex (.agent.toml + ## Skills block) when present', async () => {
+    await seedAgents();
+    // Lay down Codex agent files for ana-build.
+    const codexDir = path.join(tempDir, '.codex/agents');
+    await fs.mkdir(codexDir, { recursive: true });
+    await fs.writeFile(path.join(codexDir, 'ana-build.md'), '# ana-build\n\nbody\n', 'utf-8');
+    await fs.writeFile(path.join(codexDir, 'ana-build.agent.toml'), 'name = "ana-build"\n', 'utf-8');
+
+    const program = await createProgram();
+    await runCommand(program, ['agents', 'skills', 'ana-build', 'git-workflow']);
+
+    const toml = await fs.readFile(path.join(codexDir, 'ana-build.agent.toml'), 'utf-8');
+    expect(toml).toContain('skills = ["git-workflow"]');
+    const codexMd = await fs.readFile(path.join(codexDir, 'ana-build.md'), 'utf-8');
+    expect(codexMd).toContain(CODEX_SKILLS_BEGIN('ana-build'));
+    expect(codexMd).toContain('- git-workflow');
+    expect(codexMd).toContain(CODEX_SKILLS_END('ana-build'));
+  });
+
+  it('--add appends to existing skills (dedup, order-preserving) and re-projects', async () => {
+    await seedAgents();
+    await runCommand(await createProgram(), ['agents', 'skills', 'ana-build', 'git-workflow']);
+    await runCommand(await createProgram(), ['agents', 'skills', 'ana-build', 'api-patterns,git-workflow', '--add']);
+
+    const agents = (await readAnaJson())['agents'] as Record<string, { skills: string[] }>;
+    expect(agents['ana-build']?.skills).toEqual(['git-workflow', 'api-patterns']);
+    const claudeMd = await fs.readFile(path.join(tempDir, '.claude/agents/ana-build.md'), 'utf-8');
+    expect(claudeMd).toContain('skills: [git-workflow, api-patterns]');
+  });
+
+  it('a plain (non --add) set warns when it drops prior skills', async () => {
+    await seedAgents();
+    await runCommand(await createProgram(), ['agents', 'skills', 'ana-build', 'git-workflow']);
+    logSpy.mockClear();
+    await runCommand(await createProgram(), ['agents', 'skills', 'ana-build', 'api-patterns']);
+
+    const logged = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
+    expect(logged).toContain('replacing [git-workflow]');
+    expect(logged).toContain('--add');
+    // The new set replaced (not appended).
+    const agents = (await readAnaJson())['agents'] as Record<string, { skills: string[] }>;
+    expect(agents['ana-build']?.skills).toEqual(['api-patterns']);
+  });
+
+  it('--clear restores the stock Claude skills line (lockstep with init)', async () => {
+    await seedAgents();
+    // Point getTemplatesDir at the real templates so clear can read the stock
+    // `skills:` value (ana-build ships `skills: [git-workflow]`).
+    const initState = await import('../../../src/commands/init/state.js');
+    const realTemplates = path.join(
+      path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'templates',
+    );
+    const spy = vi.spyOn(initState, 'getTemplatesDir').mockReturnValue(realTemplates);
+    try {
+      await runCommand(await createProgram(), ['agents', 'skills', 'ana-build', 'api-patterns']);
+      await runCommand(await createProgram(), ['agents', 'skills', 'ana-build', '--clear']);
+
+      const claudeMd = await fs.readFile(path.join(tempDir, '.claude/agents/ana-build.md'), 'utf-8');
+      // Reverted to stock `skills: [git-workflow]`, not a forced empty list.
+      expect(claudeMd).toContain('skills: [git-workflow]');
+      expect(claudeMd).not.toContain('api-patterns');
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });

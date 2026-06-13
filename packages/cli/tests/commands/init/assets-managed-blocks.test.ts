@@ -255,4 +255,121 @@ describe('capabilities wiring in createClaudeConfiguration', () => {
     // Nothing written outside the commands dir; the traversal name produced no file.
     await expect(fs.access(path.join(cwd, '.claude', 'escape.md'))).rejects.toThrow();
   });
+
+  // ── Gap 1: delete-config restores stock (the spec's headline demo) ────────
+  describe('delete-config restores stock (absent = today)', () => {
+    it('stock → configure → DELETE config → re-init == stock (byte-equality)', async () => {
+      // 1. Stock: no capabilities at all. Capture the settings.json bytes.
+      await createClaudeConfiguration(cwd, null, initState, {});
+      const settingsPath = path.join(cwd, '.claude', 'settings.json');
+      const stockSettings = await fs.readFile(settingsPath, 'utf-8');
+      // Stock has no commands dir and no .mcp.json.
+      await expect(fs.access(path.join(cwd, '.claude', 'commands'))).rejects.toThrow();
+
+      // 2. Configure: a command + an outputStyle.
+      await createClaudeConfiguration(cwd, null, 'reinit', {
+        capabilities: { commands: { ship: 'Run the ship checklist.' }, outputStyle: 'concise' },
+      });
+      // The configured state is real: ship.md exists, outputStyle is set.
+      const shipPath = path.join(cwd, '.claude', 'commands', 'ship.md');
+      expect(await fs.readFile(shipPath, 'utf-8')).toContain('Run the ship checklist.');
+      expect(JSON.parse(await fs.readFile(settingsPath, 'utf-8'))['outputStyle']).toBe('concise');
+
+      // 3. DELETE the whole capabilities block → re-init with absent config.
+      await createClaudeConfiguration(cwd, null, 'reinit', {});
+
+      // ship.md is PRUNED (the previously-failing orphaned-file case).
+      await expect(fs.access(shipPath)).rejects.toThrow();
+      // The now-empty commands dir is gone OR empty — either way, no orphan.
+      const commandsDir = path.join(cwd, '.claude', 'commands');
+      const remaining = await fs.readdir(commandsDir).catch(() => []);
+      expect(remaining).toEqual([]);
+
+      // settings.json is BYTE-IDENTICAL to stock (outputStyle removed, no sentinel).
+      const restoredSettings = await fs.readFile(settingsPath, 'utf-8');
+      expect(restoredSettings).toBe(stockSettings);
+      expect(JSON.parse(restoredSettings)['outputStyle']).toBeUndefined();
+      expect(JSON.parse(restoredSettings)['_anatomiaManaged']).toBeUndefined();
+    });
+
+    it('removing outputStyle leaves a user-authored sibling settings key intact', async () => {
+      await createClaudeConfiguration(cwd, null, initState, {});
+      const settingsPath = path.join(cwd, '.claude', 'settings.json');
+      const existing = JSON.parse(await fs.readFile(settingsPath, 'utf-8'));
+      existing['permissions'] = { allow: ['Bash(ls:*)'] };
+      await fs.writeFile(settingsPath, JSON.stringify(existing, null, 2), 'utf-8');
+
+      // Set then unset outputStyle.
+      await createClaudeConfiguration(cwd, null, 'reinit', { capabilities: { outputStyle: 'verbose' } });
+      await createClaudeConfiguration(cwd, null, 'reinit', {});
+
+      const settings = await readSettings();
+      expect(settings['outputStyle']).toBeUndefined();
+      expect(settings['_anatomiaManaged']).toBeUndefined();
+      // The user's sibling key survived the whole cycle.
+      expect(settings['permissions']).toEqual({ allow: ['Bash(ls:*)'] });
+    });
+
+    it('does NOT remove a user-authored outputStyle Anatomia never managed', async () => {
+      await createClaudeConfiguration(cwd, null, initState, {});
+      const settingsPath = path.join(cwd, '.claude', 'settings.json');
+      const existing = JSON.parse(await fs.readFile(settingsPath, 'utf-8'));
+      // User sets outputStyle by hand — no Anatomia sentinel claims it.
+      existing['outputStyle'] = 'my-own-style';
+      await fs.writeFile(settingsPath, JSON.stringify(existing, null, 2), 'utf-8');
+
+      // Re-init with absent capabilities — we must NOT delete a key we never wrote.
+      await createClaudeConfiguration(cwd, null, 'reinit', {});
+      const settings = await readSettings();
+      expect(settings['outputStyle']).toBe('my-own-style');
+    });
+  });
+
+  // ── Gap 3: capabilities.commands accepts the object shape ─────────────────
+  describe('capabilities.commands object shape { run, description, body }', () => {
+    it('projects { run, description } into the command markdown body', async () => {
+      await createClaudeConfiguration(cwd, null, initState, {
+        capabilities: {
+          commands: {
+            ship: { description: 'Ship the release', run: 'npm run release' },
+          },
+        },
+      });
+      const content = await fs.readFile(path.join(cwd, '.claude', 'commands', 'ship.md'), 'utf-8');
+      expect(content).toContain(BEGIN('command:ship'));
+      expect(content).toContain('Ship the release');
+      expect(content).toContain('```bash');
+      expect(content).toContain('npm run release');
+      expect(content).toContain(END('command:ship'));
+    });
+
+    it('accepts a free-form body field', async () => {
+      await createClaudeConfiguration(cwd, null, initState, {
+        capabilities: { commands: { audit: { body: '# Audit\n\nStep 1.' } } },
+      });
+      const content = await fs.readFile(path.join(cwd, '.claude', 'commands', 'audit.md'), 'utf-8');
+      expect(content).toContain('# Audit');
+      expect(content).toContain('Step 1.');
+    });
+
+    it('string and object forms coexist in one commands map', async () => {
+      await createClaudeConfiguration(cwd, null, initState, {
+        capabilities: {
+          commands: {
+            ship: 'plain string body',
+            audit: { description: 'object body' },
+          },
+        },
+      });
+      expect(await fs.readFile(path.join(cwd, '.claude', 'commands', 'ship.md'), 'utf-8')).toContain('plain string body');
+      expect(await fs.readFile(path.join(cwd, '.claude', 'commands', 'audit.md'), 'utf-8')).toContain('object body');
+    });
+
+    it('an object with no usable string field is dropped (no file created)', async () => {
+      await createClaudeConfiguration(cwd, null, initState, {
+        capabilities: { commands: { broken: { run: 42, description: null } } },
+      });
+      await expect(fs.access(path.join(cwd, '.claude', 'commands', 'broken.md'))).rejects.toThrow();
+    });
+  });
 });

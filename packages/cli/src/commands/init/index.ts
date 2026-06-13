@@ -57,6 +57,7 @@ import {
   getCliVersion,
 } from './state.js';
 import { scaffoldAndSeedSkills } from './skills.js';
+import { collectConfigWarnings } from './configWarnings.js';
 
 /**
  * Register the `init` command.
@@ -108,6 +109,20 @@ export function registerInitCommand(program: Command): void {
       const { ASTCache } = await import('../../engine/index.js');
       const tmpCacheDir = path.join(tmpAnaPath, 'state', 'cache');
       ASTCache.setCacheDir(tmpCacheDir);
+
+      // Read the RAW pre-merge ana.json (before the Zod schema's per-field
+      // `.catch` strips malformed values) so the fail-soft validation pass can
+      // warn on fields like `agents.<a>.skills:"notanarray"` that
+      // preserveUserState would otherwise silently drop. Captured here, before
+      // the swap mutates `.ana/`. A fresh install has no prior config → [].
+      let rawPriorAnaJson: unknown = {};
+      if (preflight.anaExisted) {
+        try {
+          rawPriorAnaJson = JSON.parse(await fs.readFile(path.join(anaPath, 'ana.json'), 'utf-8'));
+        } catch {
+          // Missing/unparseable prior ana.json — nothing to validate against.
+        }
+      }
 
       const scanStart = Date.now();
       const engineResult = await runAnalyzer(cwd);
@@ -168,6 +183,19 @@ export function registerInitCommand(program: Command): void {
       } catch {
         // ana.json missing or malformed — resolver falls back to computed manifest
       }
+
+      // Fail-soft validation pass — make malformed configurability keys LOUD.
+      // The resolvers still degrade to stock (never crash, never clobber); this
+      // surfaces a clear, field-named warning for each value being ignored so a
+      // typo like `agents.x.skills:"notanarray"` is not silently swallowed.
+      // Validates the RAW pre-merge config (rawPriorAnaJson) so per-field
+      // schema `.catch` stripping doesn't hide the bad value; on a fresh install
+      // there is no prior config, so it falls back to the just-written file.
+      const configToValidate = preflight.anaExisted ? rawPriorAnaJson : anaJsonForSkills;
+      for (const w of collectConfigWarnings(configToValidate)) {
+        preflight.warnings.push(`Config ignored: ${w}`);
+      }
+
       await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState, anaJsonForSkills);
 
       // Platform-conditional configuration.
