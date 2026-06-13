@@ -44,5 +44,100 @@
   "spec-3": {
     "saved_at": "2026-06-13T21:46:20.848Z",
     "hash": "sha256:1903173ce13f84f58f5d47d4c9c69b64add5ec343785b513250ec145f288e98b"
-  }
+  },
+  "build_started_at": "2026-06-13T22:18:53.922Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-13T23:01:00.205Z",
+    "hash": "sha256:a5e3830f27fe9c6412d116e6123c0f7c029bdc809a94583e1464577fd06532ca"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-13T23:01:00.206Z",
+    "hash": "sha256:ce5198342dce12495e8426f72d2e25f6feb51eed301863bbf5f07ef17e3659c1"
+  },
+  "modules_touched": [
+    "packages/cli/package.json",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/data/pricing.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/proof-card-golden.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/work-merge.test.ts",
+    "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts",
+    "pnpm-lock.yaml"
+  ],
+  "module_churn": {
+    "packages/cli/package.json": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 7,
+      "deleted": 4
+    },
+    "packages/cli/src/data/pricing.ts": {
+      "added": 12,
+      "deleted": 98
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 10,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/forensics.ts": {
+      "added": 72,
+      "deleted": 334
+    },
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+      "added": 15,
+      "deleted": 15
+    },
+    "packages/cli/tests/commands/_capture.test.ts": {
+      "added": 25,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof-card-golden.test.ts": {
+      "added": 12,
+      "deleted": 5
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-merge.test.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-proof-process.test.ts": {
+      "added": 42,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/data/pricing.test.ts": {
+      "added": 16,
+      "deleted": 9
+    },
+    "packages/cli/tests/utils/forensics-derive.test.ts": {
+      "added": 90,
+      "deleted": 34
+    },
+    "packages/cli/tests/utils/forensics.test.ts": {
+      "added": 25,
+      "deleted": 7
+    },
+    "pnpm-lock.yaml": {
+      "added": 11,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
