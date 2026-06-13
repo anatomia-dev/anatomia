@@ -23,7 +23,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain } from '../types/proof.js';
-import { computeCost } from '../data/pricing.js';
+import { computeCost, PRICES } from '../data/pricing.js';
 import { getSkillsDir, getSkillsDirRel } from './platform.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import {
@@ -289,14 +289,17 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
   if (entry.process) {
     for (const s of entry.process.sessions) {
       if (!s.derived) continue;
-      const c = computeCost(s.derived.tokens, s.derived.model);
+      const c = computeCost(s.derived.tokens, s.derived.model, { priceTable: PRICES });
       if (c.priced) {
         provTotalCost += c.cost_usd;
         provPriced = true;
       } else {
         provUnpriced += 1;
       }
-      if (!provTableVersion) provTableVersion = s.derived.price_table_version;
+      // Source the displayed table version from the CostResult — the version the
+      // cost was actually computed against — never the per-record stamp (which
+      // could disagree once the shared table moves forward).
+      if (!provTableVersion) provTableVersion = c.price_table_version;
     }
   }
 
@@ -461,7 +464,7 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     for (const s of p.sessions) {
       const d = s.derived;
       if (!d) continue;
-      const cost = computeCost(d.tokens, d.model);
+      const cost = computeCost(d.tokens, d.model, { priceTable: PRICES });
       // Unpriced model -> "n/a", never a misleading "$0.00".
       const costLabel = cost.priced ? `$${cost.cost_usd.toFixed(2)}` : 'n/a';
       rows.push([
