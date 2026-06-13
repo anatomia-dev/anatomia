@@ -28,6 +28,7 @@ import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import { captureProvenanceAtSave } from '../utils/forensics.js';
+import { captureComplianceAtSave } from '../utils/compliance.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
 
 // Re-export public validators for backward compatibility
@@ -1237,12 +1238,23 @@ export function saveArtifact(type: string, slug: string): void {
     } catch { /* */ }
   }
 
-  // 8a0. Capture this session's provenance (capture v2). Total/never-throws —
-  // returns the committed file path or null. Staged into a SEPARATE list so the
-  // no-changes guard (which checks artifact paths only) never absorbs it — the
-  // transcript always grows between saves, so including it would make every
-  // re-save commit. It rides the SAME commit only when artifacts actually changed.
+  // 8a0. Capture this session's provenance + behavioral compliance (capture v2).
+  // Both total/never-throws — each returns the committed file path or null. Staged
+  // into a SEPARATE list so the no-changes guard (which checks artifact paths only)
+  // never absorbs them — the transcript always grows between saves, so including
+  // them would make every re-save commit. They ride the SAME commit only when
+  // artifacts actually changed. Compliance MUST run before provenance: provenance
+  // consumes (deletes) the pending pointer, and Codex has no env fallback once
+  // it's gone.
   const provenancePaths: string[] = [];
+  const compliancePath = captureComplianceAtSave(projectRoot, slug, process.env);
+  if (compliancePath) {
+    try {
+      const compRelPath = path.relative(projectRoot, compliancePath);
+      runGit(['add', compRelPath], { cwd: projectRoot });
+      provenancePaths.push(compRelPath);
+    } catch { /* capture is non-blocking — a staging failure never fails the save */ }
+  }
   const provenancePath = captureProvenanceAtSave(projectRoot, slug, process.env);
   if (provenancePath) {
     try {
@@ -1252,11 +1264,11 @@ export function saveArtifact(type: string, slug: string): void {
     } catch { /* capture is non-blocking — a staging failure never fails the save */ }
   }
 
-  // 8a. Check if there are staged changes (ARTIFACT paths only — never provenance).
+  // 8a. Check if there are staged changes (ARTIFACT paths only — never provenance/compliance).
   const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
-    // status 0 means no differences — nothing to commit. Un-stage any provenance
-    // we added so a no-work re-validation leaves nothing staged-but-uncommitted.
+    // status 0 means no differences — nothing to commit. Un-stage any provenance/
+    // compliance we added so a no-work re-validation leaves nothing staged-but-uncommitted.
     if (provenancePaths.length > 0) {
       try { runGit(['reset', '--', ...provenancePaths], { cwd: projectRoot }); } catch { /* */ }
     }
@@ -1264,7 +1276,7 @@ export function saveArtifact(type: string, slug: string): void {
     process.exit(0);
   }
 
-  // 9. Commit — artifact + provenance ride the same commit (provenance only when present).
+  // 9. Commit — artifact + provenance + compliance ride the same commit (each only when present).
   const coAuthor = readCoAuthor(projectRoot);
 
   const prefix = isTracked ? 'Update: ' : '';
@@ -1661,10 +1673,20 @@ export function saveAllArtifacts(slug: string): void {
     } catch { /* */ }
   }
 
-  // 6a. Capture this session's provenance (capture v2). Same contract as the
-  // single-save site: total/never-throws, staged into a SEPARATE list kept out of
-  // the no-changes guard, folded into the commit only when artifacts changed.
+  // 6a. Capture this session's provenance + behavioral compliance (capture v2).
+  // Same contract as the single-save site: both total/never-throws, staged into a
+  // SEPARATE list kept out of the no-changes guard, folded into the commit only
+  // when artifacts changed. Compliance runs BEFORE provenance (provenance consumes
+  // the pending pointer; Codex has no env fallback once it's gone).
   const provenancePaths: string[] = [];
+  const compliancePath = captureComplianceAtSave(projectRoot, slug, process.env);
+  if (compliancePath) {
+    try {
+      const compRelPath = path.relative(projectRoot, compliancePath);
+      runGit(['add', compRelPath], { cwd: projectRoot });
+      provenancePaths.push(compRelPath);
+    } catch { /* capture is non-blocking — a staging failure never fails the save */ }
+  }
   const provenancePath = captureProvenanceAtSave(projectRoot, slug, process.env);
   if (provenancePath) {
     try {
@@ -1674,7 +1696,7 @@ export function saveAllArtifacts(slug: string): void {
     } catch { /* capture is non-blocking — a staging failure never fails the save */ }
   }
 
-  // 7. Check if there are staged changes (ARTIFACT paths only — never provenance).
+  // 7. Check if there are staged changes (ARTIFACT paths only — never provenance/compliance).
   const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
     if (provenancePaths.length > 0) {
@@ -1684,7 +1706,7 @@ export function saveAllArtifacts(slug: string): void {
     process.exit(0);
   }
 
-  // 8. Commit — artifacts + provenance ride the same commit (provenance only when present).
+  // 8. Commit — artifacts + provenance + compliance ride the same commit (each only when present).
   const typeNames = artifacts.map(a => a.typeInfo.displayName).join(', ');
   const action = allTracked ? 'Update' : 'Save';
   const commitMessage = `[${slug}] ${action}: ${typeNames}\n\nCo-authored-by: ${coAuthor}`;
