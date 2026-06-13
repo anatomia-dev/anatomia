@@ -22,7 +22,9 @@ import {
   resolveSkillManifest,
   resolveAgentRoster,
   resolveAgentSkills,
+  resolveAgentMap,
   BUILTIN_AGENT_ROSTER,
+  CORE_AGENT,
 } from '../src/manifest.js';
 import { computeSkillManifest, AGENT_FILES } from '../src/constants.js';
 import { createEmptyEngineResult } from '../src/engine/types/engineResult.js';
@@ -145,6 +147,45 @@ describe('resolveAgentRoster — config-driven roster', () => {
   it('a config block that only sets skills/model keeps the built-in enabled', () => {
     const resolved = resolveAgentRoster({ agents: { 'ana-build': { skills: ['api-patterns'] } } });
     expect(resolved).toEqual([...BUILTIN_AGENT_ROSTER]);
+  });
+
+  it('never drops the Think core agent, even with enabled:false (Slice 6)', () => {
+    const resolved = resolveAgentRoster({ agents: { [CORE_AGENT]: { enabled: false } } });
+    expect(resolved).toContain(CORE_AGENT);
+    // Only the core-agent guard fires; the rest of the roster is untouched.
+    expect(resolved).toEqual([...BUILTIN_AGENT_ROSTER]);
+  });
+});
+
+describe('resolveAgentMap — config-driven dispatch surface (Slice 6)', () => {
+  it('absent agents → byte-identical to the prior hardcoded literal', () => {
+    expect(resolveAgentMap({})).toEqual({
+      '': 'ana',
+      build: 'ana-build',
+      plan: 'ana-plan',
+      verify: 'ana-verify',
+      setup: 'ana-setup',
+      learn: 'ana-learn',
+    });
+  });
+
+  it('drops a disabled built-in and keys a config agent by stripped suffix', () => {
+    const map = resolveAgentMap({
+      agents: { 'ana-learn': { enabled: false }, 'ana-release': { skills: [] } },
+    });
+    expect(map['learn']).toBeUndefined();
+    expect(map['release']).toBe('ana-release');
+    expect(map['']).toBe('ana');
+  });
+
+  it('a config agent without the ana- prefix is keyed by its full name', () => {
+    expect(resolveAgentMap({ agents: { reviewer: {} } })['reviewer']).toBe('reviewer');
+  });
+
+  it('malformed ana.json → the built-in default map', () => {
+    for (const bad of [null, undefined, 42, 'str', ['a'], true]) {
+      expect(resolveAgentMap(bad)).toEqual(resolveAgentMap({}));
+    }
   });
 });
 

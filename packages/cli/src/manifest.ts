@@ -58,6 +58,17 @@ export const BUILTIN_AGENT_ROSTER: readonly string[] = AGENT_FILES.map((f) =>
 );
 
 /**
+ * The Think core agent's base name — the always-on orchestrator (`ana`).
+ *
+ * This agent is load-bearing: it is the default dispatch target (`ana run` with
+ * no suffix → `ANA_ROLE=ana`) and every other agent is reached through it. It
+ * can NEVER be dropped from the roster, even by an explicit `enabled:false` in
+ * `ana.json.agents.ana` — {@link resolveAgentRoster} ignores that flag for this
+ * one agent so a config can never strand a project with no entry point.
+ */
+export const CORE_AGENT = 'ana';
+
+/**
  * Read the `skills` config map off an ana.json, returning null when absent or
  * malformed (so the caller falls through to the computed manifest verbatim).
  *
@@ -122,8 +133,11 @@ export function resolveSkillManifest(anaJson: unknown, engineResult: EngineResul
  *
  * Identity contract: when `ana.json.agents` is absent or malformed, the result
  * is byte-identical to {@link BUILTIN_AGENT_ROSTER} (the stock six). A built-in
- * agent with `enabled:false` is dropped; an `agents` key naming an agent not in
- * the built-in roster appends it after the built-ins (config-supplied agent).
+ * agent with `enabled:false` is dropped — EXCEPT the {@link CORE_AGENT} (Think),
+ * which is always retained no matter what the config says (a config can never
+ * leave a project with no orchestrator / dispatch entry point). An `agents` key
+ * naming an agent not in the built-in roster appends it after the built-ins
+ * (config-supplied agent), unless it too is flagged `enabled:false`.
  *
  * @param anaJson - Parsed ana.json (validated or raw), or anything
  * @returns Ordered agent base names (e.g. ['ana', 'ana-plan', ...])
@@ -135,7 +149,8 @@ export function resolveAgentRoster(anaJson: unknown): string[] {
   const roster: string[] = [];
   for (const name of BUILTIN_AGENT_ROSTER) {
     const entry = asRecord(agentsConfig[name]) as AgentConfigEntry | null;
-    if (entry?.enabled === false) continue;
+    // The Think core agent is never droppable — ignore enabled:false for it.
+    if (name !== CORE_AGENT && entry?.enabled === false) continue;
     roster.push(name);
   }
   for (const name of Object.keys(agentsConfig)) {
@@ -147,6 +162,31 @@ export function resolveAgentRoster(anaJson: unknown): string[] {
     roster.push(name);
   }
   return roster;
+}
+
+/**
+ * Resolve the `ana run` agent map: user-facing suffix → full agent name.
+ *
+ * Derived from {@link resolveAgentRoster} so the dispatch surface tracks the
+ * scaffolded roster exactly — a disabled built-in disappears from the map, and
+ * a config-supplied agent becomes dispatchable. The suffix is the agent's base
+ * name with the leading `ana-` stripped; the {@link CORE_AGENT} (`ana`) maps
+ * from the empty suffix (the default `ana run` target). A config-supplied agent
+ * without the `ana-` prefix is keyed by its full name.
+ *
+ * Identity contract: with `ana.json.agents` absent the map is byte-identical to
+ * the prior hardcoded literal (`'' → ana`, `build → ana-build`, …).
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @returns A suffix→full-name map (the empty-string key is the Think default)
+ */
+export function resolveAgentMap(anaJson: unknown): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const fullName of resolveAgentRoster(anaJson)) {
+    const suffix = fullName === CORE_AGENT ? '' : fullName.replace(/^ana-/, '');
+    map[suffix] = fullName;
+  }
+  return map;
 }
 
 /**

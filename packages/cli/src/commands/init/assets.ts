@@ -39,8 +39,6 @@ import {
   generateDesignPrinciplesTemplate,
 } from '../../utils/scaffold-generators.js';
 import {
-  AGENT_FILES,
-  CODEX_AGENT_FILES,
   CLAUDE_AGENT_CONFIG_KEYS,
   CODEX_AGENT_CONFIG_KEYS,
   getStackSummary,
@@ -51,7 +49,12 @@ import {
   stripFrontmatter,
   preserveTomlConfigKeys,
 } from '../../utils/agent-config.js';
-import { resolveAgentSkills } from '../../manifest.js';
+import {
+  resolveAgentSkills,
+  resolveAgentRoster,
+  BUILTIN_AGENT_ROSTER,
+} from '../../manifest.js';
+import { resolvePlatformDescriptor } from '../../platforms/registry.js';
 import type { InitState } from './types.js';
 import { dirExists, fileExists } from './preflight.js';
 import { getTemplatesDir, makeTestCommandNonInteractive } from './state.js';
@@ -400,6 +403,37 @@ function renderCodexSkillsBlock(skills: string[]): string {
 }
 
 /**
+ * Build a minimal Codex `.agent.toml` manifest for a config-supplied agent.
+ *
+ * Built-in agents ship a hand-authored `.agent.toml` with the CLI; a
+ * config-supplied agent (declared in `ana.json.agents`, instructions in
+ * `.ana/agent-templates/<name>.md`) has none, so this synthesizes one. The
+ * machine fields (`name`, `description`, `developer_instructions`) mirror the
+ * stock manifest shape, and the runtime defaults (`model`, `sandbox_mode`) are
+ * seeded from the codex platform descriptor so a synthesized agent matches the
+ * built-ins' Codex runtime exactly. The user can override the runtime fields —
+ * they are CONFIG-class and preserved across re-init.
+ *
+ * @param baseName - Agent base name (e.g. 'ana-release')
+ * @returns Full `.agent.toml` content
+ */
+function buildCodexAgentToml(baseName: string): string {
+  const codex = resolvePlatformDescriptor('codex');
+  const lines = [
+    `name = "${baseName}"`,
+    `description = "${baseName} — custom agent scaffolded by Anatomia."`,
+    `developer_instructions = "Full instructions in ${baseName}.md. Invoke via: ana run"`,
+  ];
+  if (codex.runDefaults.model !== undefined) {
+    lines.push(`model = "${codex.runDefaults.model}"`);
+  }
+  if (codex.runDefaults.sandboxMode !== undefined) {
+    lines.push(`sandbox_mode = "${codex.runDefaults.sandboxMode}"`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+/**
  * Copy agent files to .claude/agents/, refreshing instruction content from stock.
  *
  * Re-init propagates the machine-owned instruction body from each tree's own
@@ -426,11 +460,25 @@ function renderCodexSkillsBlock(skills: string[]): string {
  */
 export async function copyAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
-  for (const agentFile of AGENT_FILES) {
-    const sourcePath = path.join(templatesDir, '.claude/agents', agentFile);
+  // The project root (parent of `.claude/agents`) — where a config-supplied
+  // agent's `.ana/agent-templates/<name>.md` source lives.
+  const projectRoot = path.resolve(agentsPath, '..', '..');
+  // Iterate the resolved roster, not the raw AGENT_FILES constant: a built-in
+  // dropped via `enabled:false` is skipped, and a config-supplied agent is
+  // appended. Absent `ana.json.agents` → byte-identical to AGENT_FILES order.
+  for (const baseName of resolveAgentRoster(anaJson)) {
+    const agentFile = `${baseName}.md`;
     const destPath = path.join(agentsPath, agentFile);
     const displayName = `.claude/agents/${agentFile}`;
-    const baseName = agentFile.replace(/\.md$/, '');
+
+    // Source: built-ins come from the CLI's bundled templates; a config-supplied
+    // agent (not in the built-in roster) supplies its own template under the
+    // project's `.ana/agent-templates/<name>.md`. A config agent with no such
+    // template is skipped (fail-soft — never crash init over a missing file).
+    const sourcePath = BUILTIN_AGENT_ROSTER.includes(baseName)
+      ? path.join(templatesDir, '.claude/agents', agentFile)
+      : path.join(projectRoot, '.ana', 'agent-templates', agentFile);
+    if (!(await fileExists(sourcePath))) continue;
     const stockContent = await fs.readFile(sourcePath, 'utf-8');
 
     // Per-agent skills projected from ana.json (absent = [] = leave stock alone).
@@ -1316,14 +1364,27 @@ async function ensureCodexHooksFlag(configPath: string, templatesDir: string): P
  */
 export async function copyCodexAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
-  for (const agentFile of CODEX_AGENT_FILES) {
-    const baseName = agentFile.replace('.md', '');
+  // Project root (parent of `.codex/agents`) — source of a config-supplied
+  // agent's `.ana/agent-templates/<name>.md` instruction template.
+  const projectRoot = path.resolve(agentsPath, '..', '..');
+  // Iterate the resolved roster (not CODEX_AGENT_FILES): a `enabled:false`
+  // built-in is dropped, a config-supplied agent is appended. Absent
+  // `ana.json.agents` → byte-identical to the CODEX_AGENT_FILES order.
+  for (const baseName of resolveAgentRoster(anaJson)) {
+    const agentFile = `${baseName}.md`;
+    const isBuiltin = BUILTIN_AGENT_ROSTER.includes(baseName);
     const skillsMarker = `skills:${baseName}`;
     const projectedSkills = resolveAgentSkills(anaJson, baseName);
 
     // .md instruction body — overwrite wholesale from stock (no frontmatter),
     // then project the skills roster as a marker-bounded `## Skills` block.
-    const mdSource = path.join(templatesDir, '.codex/agents', agentFile);
+    // Built-ins source from the CLI templates; a config-supplied agent sources
+    // from `.ana/agent-templates/<name>.md`. A config agent missing that file is
+    // skipped entirely (fail-soft — never crash init over a missing template).
+    const mdSource = isBuiltin
+      ? path.join(templatesDir, '.codex/agents', agentFile)
+      : path.join(projectRoot, '.ana', 'agent-templates', agentFile);
+    if (!(await fileExists(mdSource))) continue;
     const mdDest = path.join(agentsPath, agentFile);
     const stockMd = await fs.readFile(mdSource, 'utf-8');
     if (await fileExists(mdDest)) {
@@ -1340,11 +1401,15 @@ export async function copyCodexAgentFiles(agentsPath: string, templatesDir: stri
     await atomicWriteFile(mdDest, finalMd, `.codex/agents/${agentFile}`);
 
     // .agent.toml manifest — preserve config keys, refresh machine fields,
-    // then project the flat `skills = [...]` line from ana.json.
+    // then project the flat `skills = [...]` line from ana.json. A built-in's
+    // stock toml ships with the CLI; a config-supplied agent has none, so we
+    // synthesize a minimal manifest seeded from the codex platform run defaults.
     const tomlFile = `${baseName}.agent.toml`;
-    const tomlSource = path.join(templatesDir, '.codex/agents', tomlFile);
     const tomlDest = path.join(agentsPath, tomlFile);
-    const stockToml = await fs.readFile(tomlSource, 'utf-8');
+    const tomlSource = path.join(templatesDir, '.codex/agents', tomlFile);
+    const stockToml = isBuiltin && (await fileExists(tomlSource))
+      ? await fs.readFile(tomlSource, 'utf-8')
+      : buildCodexAgentToml(baseName);
     let finalToml = stockToml;
     if (await fileExists(tomlDest)) {
       const existingToml = await fs.readFile(tomlDest, 'utf-8');
