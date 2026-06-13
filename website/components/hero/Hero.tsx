@@ -4,6 +4,7 @@ import { getProofFeed, formatAge } from "@/lib/proof-feed";
 import { Formatted } from "@/components/ui/Formatted";
 import { Container } from "@/components/ui/Container";
 import { HeroNoise } from "./HeroNoise";
+import { HeroWordmark } from "./HeroWordmark";
 import { ScrollHint } from "./ScrollHint";
 import styles from "./hero.module.css";
 
@@ -100,6 +101,7 @@ export async function Hero() {
         </div>
       </Container>
 
+      <HeroWordmark />
       <ScrollHint />
     </section>
   );
