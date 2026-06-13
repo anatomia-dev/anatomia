@@ -110,7 +110,9 @@ export function registerInitCommand(program: Command): void {
       ASTCache.setCacheDir(tmpCacheDir);
 
       const scanStart = Date.now();
-      const engineResult = await runAnalyzer(cwd);
+      // Persist the Slice-2 import graph into the staging state dir so it
+      // travels through the same atomic swap as scan.json / symbol-index.json.
+      const engineResult = await runAnalyzer(cwd, path.join(tmpAnaPath, 'state'));
 
       ASTCache.setCacheDir(null);
       await createDirectoryStructure(tmpAnaPath);

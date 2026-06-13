@@ -608,6 +608,13 @@ export function extractImports(
     const query = queryCache.getQuery(language as Language, 'imports', tsLang);
     const captures = query.captures(tree.rootNode);
 
+    // Named-import identifiers keyed by the import statement's source line.
+    // The `namedImport` query (TS/TSX) was written but never executed; wiring
+    // it here turns `names: []` into the real specifier list so the import
+    // graph can attribute edges to concrete symbols. Other languages keep an
+    // empty list (their queries capture only the module path).
+    const namesByLine = extractNamedImports(tree, language, tsLang);
+
     const imports: ImportInfo[] = [];
     const seen = new Set<string>();
 
@@ -645,7 +652,9 @@ export function extractImports(
 
       imports.push({
         module: moduleName,
-        names: [],  // Simplified - just capture module names for now
+        // Named identifiers for this statement (deduped, source-ordered) for
+        // TS/TSX; empty for languages whose import query has no name capture.
+        names: namesByLine.get(line) ?? [],
         line,
       });
     }
@@ -654,6 +663,76 @@ export function extractImports(
   } catch (_error) {
     return [];
   }
+}
+
+/**
+ * Extract named-import identifiers per import statement.
+ *
+ * Runs the written-but-previously-unused `namedImport` query for TypeScript
+ * and TSX. The query captures both the source string (`@source`) and each
+ * imported identifier (`@name`); we group the identifiers by the source
+ * string's line so {@link extractImports} can attach them to the matching
+ * `ImportInfo`. Returns an empty map for languages without a `namedImport`
+ * query (the only ones whose `imports` query lacks a name capture) and is
+ * fail-soft — any query error yields an empty map rather than throwing.
+ *
+ * Only `named_imports` (`import { A, B } from '...'`) are captured; default
+ * and namespace imports have no `@name` capture and so contribute no names,
+ * which is correct — the import graph keys on the module specifier, not names.
+ *
+ * @param tree - Parsed syntax tree.
+ * @param language - Language being parsed.
+ * @param tsLang - Pre-loaded WASM Language object.
+ * @returns Map of statement line → deduped, source-ordered identifier names.
+ */
+function extractNamedImports(
+  tree: Tree,
+  language: string,
+  tsLang: TSLanguage,
+): Map<number, string[]> {
+  const byLine = new Map<number, string[]>();
+
+  if (language !== 'typescript' && language !== 'tsx') {
+    return byLine;
+  }
+
+  try {
+    const query = queryCache.getQuery(language as Language, 'namedImport', tsLang);
+    // matches() (not captures()) keeps each import_statement's @source and
+    // @name captures grouped, so multi-import files never cross-attribute
+    // names to the wrong statement.
+    for (const match of query.matches(tree.rootNode)) {
+      let line: number | null = null;
+      const names: string[] = [];
+
+      for (const capture of match.captures) {
+        if (capture.name === 'source') {
+          line = capture.node.startPosition.row + 1;
+        } else if (capture.name === 'name') {
+          names.push(capture.node.text);
+        }
+      }
+
+      if (line === null || names.length === 0) {
+        continue;
+      }
+
+      // Merge in case the same source line appears across matches; dedupe
+      // while preserving first-seen (source) order for determinism.
+      const existing = byLine.get(line) ?? [];
+      for (const name of names) {
+        if (!existing.includes(name)) {
+          existing.push(name);
+        }
+      }
+      byLine.set(line, existing);
+    }
+  } catch {
+    // Fail-soft: a missing/invalid query degrades to no names, never crashes.
+    return byLine;
+  }
+
+  return byLine;
 }
 
 /**

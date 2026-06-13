@@ -687,6 +687,11 @@ function extractStructureFromDirect(
  * @param options - Scan options.
  * @param options.depth - `'deep'` (default) for full analysis including
  *   patterns and conventions; `'surface'` to skip tree-sitter entirely.
+ * @param options.persistGraphTo - OPT-IN write hook (Slice 2). When set to a
+ *   `.ana/state` directory, the deep-tier import graph is persisted there as
+ *   `code-graph.json`. Omit it (the default) to keep `scanProject` read-only —
+ *   `ana scan` relies on this for its no-files-written contract. Only write
+ *   contexts (init, the completeWork rescan) should pass it.
  * @returns A `Promise<EngineResult>` containing the unified scan output.
  *   The result is always well-formed — check `stack.language` and the
  *   `blindSpots` array to determine what was successfully detected.
@@ -709,7 +714,7 @@ function extractStructureFromDirect(
  */
 export async function scanProject(
   rootPath: string,
-  options: { depth: 'surface' | 'deep' } = { depth: 'deep' }
+  options: { depth: 'surface' | 'deep'; persistGraphTo?: string } = { depth: 'deep' }
 ): Promise<EngineResult> {
   const projectName = await getProjectName(rootPath);
   const now = new Date().toISOString();
@@ -858,6 +863,24 @@ export async function scanProject(
           preSampledFiles: sampledFiles,
           tsconfigEntries: census.configs.tsconfigs,
         });
+
+        // Slice 2 — import-graph primitive. Deep-tier only and over the same
+        // 750-capped sample as the parse; builds a deterministic file→file
+        // digraph (unresolved specifiers → no edge) and persists it under the
+        // caller-supplied state dir. Persistence is OPT-IN via `persistGraphTo`
+        // so `scanProject` itself stays read-only — `ana scan` (which passes no
+        // dir) writes nothing and keeps its byte-parity contract; write
+        // contexts (init, completeWork rescan) pass their state dir. Wrapped in
+        // its own try so a graph failure never invalidates the analysis above.
+        if (options.persistGraphTo) {
+          try {
+            const { buildImportGraph, persistCodeGraph } = await import('./analyzers/graph/buildGraph.js');
+            const graph = buildImportGraph(parsed, census.configs.tsconfigs, rootPath);
+            await persistCodeGraph(options.persistGraphTo, graph);
+          } catch {
+            // Best-effort: the import graph is a derived artifact, never a gate.
+          }
+        }
       }
     } catch (err) {
       analyzerFailure = err instanceof Error ? err.message : 'unknown error';

@@ -75,16 +75,18 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   )
 )`,
 
+    // The non-field `(import_clause …)` child must precede the `source:`
+    // field to match the grammar's child order; leading with the field triggers
+    // a "Bad pattern structure" compile error. `import_specifier.name` is a
+    // field, so capture it as `name: (identifier)`. Each specifier yields its
+    // own match (sharing the same `@source`), which extractNamedImports merges
+    // back together by the source line.
     namedImport: `(import_statement
-  source: (string) @source
   (import_clause
     (named_imports
       (import_specifier
-        (identifier) @name
-      )
-    )
-  )
-)`,
+        name: (identifier) @name)))
+  source: (string) @source)`,
 
     // Convention detection queries
     // Identical to the tsx.variables entry — both grammars share the same base
@@ -116,16 +118,14 @@ export const QUERIES: Record<Language, Record<string, string>> = {
   )
 )`,
 
+    // See the typescript.namedImport note: clause-before-source ordering and
+    // the `name:` field are required for this query to compile and group.
     namedImport: `(import_statement
-  source: (string) @source
   (import_clause
     (named_imports
       (import_specifier
-        (identifier) @name
-      )
-    )
-  )
-)`,
+        name: (identifier) @name)))
+  source: (string) @source)`,
 
     // Convention detection queries
     variables: `(lexical_declaration
