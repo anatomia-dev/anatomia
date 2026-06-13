@@ -57,18 +57,27 @@
   },
   "modules_touched": [
     "packages/cli/package.json",
+    "packages/cli/src/commands/artifact.ts",
     "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/work-proof.ts",
     "packages/cli/src/data/pricing.ts",
     "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/compliance-context.ts",
+    "packages/cli/src/utils/compliance.ts",
     "packages/cli/src/utils/forensics.ts",
     "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
     "packages/cli/tests/commands/_capture.test.ts",
     "packages/cli/tests/commands/proof-card-golden.test.ts",
+    "packages/cli/tests/commands/proof-compliance-display.test.ts",
     "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
     "packages/cli/tests/commands/work-merge.test.ts",
     "packages/cli/tests/commands/work-proof-process.test.ts",
     "packages/cli/tests/commands/work.test.ts",
     "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/compliance-context.test.ts",
+    "packages/cli/tests/utils/compliance.test.ts",
     "packages/cli/tests/utils/forensics-derive.test.ts",
     "packages/cli/tests/utils/forensics.test.ts",
     "pnpm-lock.yaml"
@@ -78,16 +87,36 @@
       "added": 1,
       "deleted": 0
     },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 36,
+      "deleted": 14
+    },
     "packages/cli/src/commands/proof.ts": {
-      "added": 7,
-      "deleted": 4
+      "added": 110,
+      "deleted": 5
+    },
+    "packages/cli/src/commands/run.ts": {
+      "added": 12,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/work-proof.ts": {
+      "added": 19,
+      "deleted": 0
     },
     "packages/cli/src/data/pricing.ts": {
       "added": 12,
       "deleted": 98
     },
     "packages/cli/src/types/proof.ts": {
-      "added": 10,
+      "added": 86,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/compliance-context.ts": {
+      "added": 99,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 299,
       "deleted": 0
     },
     "packages/cli/src/utils/forensics.ts": {
@@ -106,8 +135,16 @@
       "added": 12,
       "deleted": 5
     },
+    "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+      "added": 131,
+      "deleted": 0
+    },
     "packages/cli/tests/commands/proof.test.ts": {
       "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/run.test.ts": {
+      "added": 7,
       "deleted": 0
     },
     "packages/cli/tests/commands/work-merge.test.ts": {
@@ -125,6 +162,14 @@
     "packages/cli/tests/data/pricing.test.ts": {
       "added": 16,
       "deleted": 9
+    },
+    "packages/cli/tests/utils/compliance-context.test.ts": {
+      "added": 241,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 284,
+      "deleted": 0
     },
     "packages/cli/tests/utils/forensics-derive.test.ts": {
       "added": 90,
@@ -154,5 +199,13 @@
   "verify-data-1": {
     "saved_at": "2026-06-13T23:10:58.646Z",
     "hash": "sha256:6f7ce7af07ef6f2694d0e17806554671516d0f232540fdfc4756598e194498bd"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-13T23:47:20.426Z",
+    "hash": "sha256:7cf9f05a2fe98ed9a4706137c8522e27697ceb9589ed5e3e673399699aeca7fa"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-13T23:47:20.427Z",
+    "hash": "sha256:252222dab95f83b716c7a932befb6f4dc901c2d68303cd694245c2f41e2a2ee6"
   }
 }
