@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateProjectContextScaffold } from '../../src/utils/scaffold-generators.js';
+import {
+  generateProjectContextScaffold,
+  generateReadingOrderBlock,
+} from '../../src/utils/scaffold-generators.js';
 import { createEmptyEngineResult } from '../../src/engine/types/engineResult.js';
 
 describe('generateProjectContextScaffold', () => {
@@ -36,5 +39,60 @@ describe('generateProjectContextScaffold', () => {
     result.surfaces = [];
     const scaffold = generateProjectContextScaffold(result);
     expect(scaffold).not.toContain('Detected surfaces');
+  });
+
+  it('injects the Start Here reading-order block when readingOrder is present', () => {
+    const result = createEmptyEngineResult();
+    result.readingOrder = {
+      budget: 1000,
+      personalizedTo: null,
+      entries: [
+        { file: 'src/commands/work.ts', score: 1.0, reasons: ['68 work items, 4 rework cycles', 'import centrality 1.00'] },
+        { file: 'src/utils/proofSummary.ts', score: 0.8, reasons: ['import centrality 0.80'] },
+      ],
+    };
+    const scaffold = generateProjectContextScaffold(result);
+    expect(scaffold).toContain('## Start Here');
+    expect(scaffold).toContain('`src/commands/work.ts`');
+    expect(scaffold).toContain('68 work items, 4 rework cycles');
+  });
+
+  it('omits the Start Here block when readingOrder is null', () => {
+    const result = createEmptyEngineResult();
+    expect(result.readingOrder).toBeNull();
+    const scaffold = generateProjectContextScaffold(result);
+    expect(scaffold).not.toContain('## Start Here');
+  });
+});
+
+describe('generateReadingOrderBlock', () => {
+  it('returns an empty string when readingOrder is null', () => {
+    expect(generateReadingOrderBlock(null)).toBe('');
+  });
+
+  it('returns an empty string when there are no entries', () => {
+    expect(generateReadingOrderBlock({ budget: 1000, personalizedTo: null, entries: [] })).toBe('');
+  });
+
+  it('marks the scope slug when personalized', () => {
+    const block = generateReadingOrderBlock({
+      budget: 1000,
+      personalizedTo: 'my-task',
+      entries: [{ file: 'src/a.ts', score: 1, reasons: ['import centrality 1.00'] }],
+    });
+    expect(block).toContain('## Start Here (scoped to `my-task`)');
+    expect(block).toContain('`src/a.ts` — import centrality 1.00');
+  });
+
+  it('caps the list and notes the overflow', () => {
+    const entries = Array.from({ length: 10 }, (_, i) => ({
+      file: `src/mod${i}.ts`,
+      score: 1 - i / 10,
+      reasons: ['import centrality 0.50'],
+    }));
+    const block = generateReadingOrderBlock({ budget: 1000, personalizedTo: null, entries });
+    expect(block).toContain('`src/mod6.ts`');
+    expect(block).not.toContain('`src/mod7.ts`');
+    expect(block).toContain('+3 more');
   });
 });

@@ -364,6 +364,30 @@ export function formatHumanReadable(
     lines.push(...keyValueRows(intelRows, { labelWidth: 12 }));
   }
 
+  // ── Start here — fused reading list (Slice 3) ──
+  // The top of the token-budgeted reading order: the files PageRank centrality,
+  // proven rework risk, and co-change agree you should read first. Each entry
+  // shows its measured reasons. Omitted entirely when the ranking is null
+  // (surface tier or too-sparse graph) so a clean scan stays uncluttered.
+  const reading = result.readingOrder;
+  if (reading && reading.entries.length > 0) {
+    lines.push('');
+    const title = reading.personalizedTo
+      ? `Start here · scoped to ${reading.personalizedTo}`
+      : 'Start here';
+    lines.push(sectionRule(title, { width: boxWidth }));
+    const MAX_READING = 5;
+    for (const entry of reading.entries.slice(0, MAX_READING)) {
+      lines.push(`  ${chalk.bold(entry.file)}`);
+      if (entry.reasons.length > 0) {
+        lines.push(`    ${chalk.gray(entry.reasons.join(' · '))}`);
+      }
+    }
+    if (reading.entries.length > MAX_READING) {
+      lines.push(chalk.dim(`  (+${reading.entries.length - MAX_READING} more in .ana/scan.json)`));
+    }
+  }
+
   // ── 4. Footer ──
   lines.push('');
 

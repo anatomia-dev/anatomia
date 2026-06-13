@@ -34,6 +34,42 @@ export function selectPrimarySchema(
 }
 
 /**
+ * Render the "Start Here" reading-order block for the project-context scaffold.
+ *
+ * This is the agent-facing form of the `ana scan` "Start here" card (Slice 3):
+ * the top of the fused, token-budgeted reading list — the files import
+ * centrality, proven rework risk, and co-change agree are the highest-leverage
+ * to read before making a change. Each line carries its measured reasons so the
+ * ranking is explainable, never asserted.
+ *
+ * @param readingOrder - The EngineResult `readingOrder` (null below the edge
+ *   threshold or at surface tier — yields an empty string, no header).
+ * @returns A markdown section (with trailing blank line), or `''` when there is
+ *   no reading order to show.
+ */
+export function generateReadingOrderBlock(
+  readingOrder: EngineResult['readingOrder'],
+): string {
+  if (!readingOrder || readingOrder.entries.length === 0) return '';
+
+  const MAX_ENTRIES = 7;
+  const scoped = readingOrder.personalizedTo
+    ? ` (scoped to \`${readingOrder.personalizedTo}\`)`
+    : '';
+  let block = `## Start Here${scoped}\n\n`;
+  block += `*Fused from import centrality, proven rework risk, and co-change — read these first.*\n\n`;
+  for (const entry of readingOrder.entries.slice(0, MAX_ENTRIES)) {
+    const reasons = entry.reasons.length > 0 ? ` — ${entry.reasons.join('; ')}` : '';
+    block += `- \`${entry.file}\`${reasons}\n`;
+  }
+  if (readingOrder.entries.length > MAX_ENTRIES) {
+    block += `- *(+${readingOrder.entries.length - MAX_ENTRIES} more in \`.ana/scan.json\`)*\n`;
+  }
+  block += '\n';
+  return block;
+}
+
+/**
  * Generate project-context.md scaffold
  *
  * Produces 6 sections with scan-seeded **Detected:** lines.
@@ -174,6 +210,14 @@ export function generateProjectContextScaffold(result: EngineResult): string {
   } else {
     s += `*Add: entry points, shared types, config files, test helpers.*\n\n`;
   }
+
+  // Section: Start Here — fused reading list (Slice 3), injected only when the
+  // deep scan produced a non-empty reading order. This is the agent-facing
+  // version of the "Start here" scan card: the files import centrality, proven
+  // rework risk, and co-change agree are highest-leverage to read first, each
+  // with its measured basis. Omitted entirely when null so a sparse repo's
+  // scaffold isn't padded with an empty header.
+  s += generateReadingOrderBlock(result.readingOrder);
 
   // Section: What Looks Wrong But Is Intentional
   s += `## What Looks Wrong But Is Intentional\n\n`;

@@ -828,6 +828,10 @@ export async function scanProject(
   let analyzerFailure: string | null = null;
   let sampledFiles: string[] = [];  // hoisted for findings access
   let parsed: import('./types/parsed.js').ParsedAnalysis | undefined;
+  // Slice 2/3: the in-memory import graph, hoisted so Slice 3's reading-order
+  // fusion (built near the result construction below) can run PageRank over it
+  // without re-parsing. `undefined` at surface tier or when the parse failed.
+  let codeGraph: import('./analyzers/graph/buildGraph.js').CodeGraph | undefined;
 
   if (options.depth === 'deep') {
     try {
@@ -866,20 +870,21 @@ export async function scanProject(
 
         // Slice 2 — import-graph primitive. Deep-tier only and over the same
         // 750-capped sample as the parse; builds a deterministic file→file
-        // digraph (unresolved specifiers → no edge) and persists it under the
-        // caller-supplied state dir. Persistence is OPT-IN via `persistGraphTo`
-        // so `scanProject` itself stays read-only — `ana scan` (which passes no
-        // dir) writes nothing and keeps its byte-parity contract; write
-        // contexts (init, completeWork rescan) pass their state dir. Wrapped in
-        // its own try so a graph failure never invalidates the analysis above.
-        if (options.persistGraphTo) {
-          try {
-            const { buildImportGraph, persistCodeGraph } = await import('./analyzers/graph/buildGraph.js');
-            const graph = buildImportGraph(parsed, census.configs.tsconfigs, rootPath);
-            await persistCodeGraph(options.persistGraphTo, graph);
-          } catch {
-            // Best-effort: the import graph is a derived artifact, never a gate.
+        // digraph (unresolved specifiers → no edge). It is always built in
+        // memory here (Slice 3's reading-order fusion runs PageRank over it),
+        // and persisted to disk ONLY when `persistGraphTo` is set — so
+        // `scanProject` stays read-only for `ana scan` (which passes no dir,
+        // keeping its byte-parity contract) while write contexts (init,
+        // completeWork rescan) pass their state dir. Wrapped in its own try so
+        // a graph failure never invalidates the analysis above.
+        try {
+          const { buildImportGraph, persistCodeGraph } = await import('./analyzers/graph/buildGraph.js');
+          codeGraph = buildImportGraph(parsed, census.configs.tsconfigs, rootPath);
+          if (options.persistGraphTo) {
+            await persistCodeGraph(options.persistGraphTo, codeGraph);
           }
+        } catch {
+          // Best-effort: the import graph is a derived artifact, never a gate.
         }
       }
     } catch (err) {
@@ -1133,7 +1138,7 @@ export async function scanProject(
   // other gitIntelligence sub-fields (churn/busFactor/co-change) belong to the
   // git-churn path and remain null here.
   const proofHistory = await readProofHistory(rootPath);
-  const gitIntelligence: EngineResult['gitIntelligence'] = proofHistory
+  let gitIntelligence: EngineResult['gitIntelligence'] = proofHistory
     ? {
         churnHotspots: null,
         busFactor: null,
@@ -1141,6 +1146,42 @@ export async function scanProject(
         bugMagnetFiles: toBugMagnetFiles(proofHistory),
       }
     : null;
+
+  // Slice 3: Fused reading list. Deep-tier only — it runs PageRank over the
+  // in-memory Slice-2 import graph and fuses centrality with Slice-1 bug-magnet
+  // rate and co-change into a token-budgeted "read these first" list,
+  // personalized toward the active scope's "Files affected" when exactly one is
+  // active. `null` below the edge threshold (too-sparse graph) or at surface
+  // tier (no graph). As a side effect it cross-references co-change rows against
+  // the graph to resolve `hasImportRelationship` (null when low-confidence).
+  let readingOrder: EngineResult['readingOrder'] = null;
+  if (codeGraph) {
+    try {
+      const { buildReadingOrder, resolveImportRelationships } = await import('./analyzers/reading-order/index.js');
+      const { findActiveScope } = await import('./analyzers/reading-order/scope.js');
+
+      // Resolve hasImportRelationship on any co-change rows against the graph,
+      // then fuse the resolved rows into the reading list.
+      if (gitIntelligence && gitIntelligence.coChangeCoupling) {
+        gitIntelligence = {
+          ...gitIntelligence,
+          coChangeCoupling: resolveImportRelationships(gitIntelligence.coChangeCoupling, codeGraph),
+        };
+      }
+      const coChange = gitIntelligence?.coChangeCoupling ?? [];
+
+      const activeScope = await findActiveScope(rootPath);
+      readingOrder = buildReadingOrder({
+        graph: codeGraph,
+        bugMagnets: gitIntelligence?.bugMagnetFiles ?? [],
+        coChange,
+        scopeFiles: activeScope?.files ?? [],
+        scopeSlug: activeScope?.slug ?? null,
+      });
+    } catch {
+      // Best-effort: the reading list is a derived convenience, never a gate.
+    }
+  }
 
   return {
     schemaVersion: '1.0',
@@ -1185,7 +1226,7 @@ export async function scanProject(
     inconsistencies: null,
     conventionBreaks: null,
     aiReadinessScore: null,
-    // Phase 0 shape-freeze: Slice 3 (fused reading list) populates this.
-    readingOrder: null,
+    // Slice 3: fused reading list (deep tier; null below edge threshold).
+    readingOrder,
   };
 }
