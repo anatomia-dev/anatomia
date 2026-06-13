@@ -108,6 +108,13 @@ export interface EngineResult {
     project: string;
     scannedAt: string;
     depth: 'surface' | 'deep';
+    /**
+     * Git HEAD (short SHA) at scan time. Stamped by Slice 5
+     * (context-never-rots) so consumers can detect when the indexed scan has
+     * drifted from the current HEAD. `null` when no git repo or HEAD is
+     * unavailable. Phase 0 freezes the shape; the stamp lands in Slice 5.
+     */
+    indexedCommit: string | null;
   };
   stack: {
     language: string | null;
@@ -290,13 +297,28 @@ export interface EngineResult {
       fileA: string;
       fileB: string;
       coChangePercentage: number;
-      hasImportRelationship: boolean;
+      /**
+       * Whether the co-changing files also share an import edge in the
+       * symbol graph. Widened to `boolean | null` (CORRECTION #1): emit
+       * `null` — never `false` — when import resolution is low-confidence,
+       * so consumers can distinguish "no relationship" from "couldn't tell".
+       */
+      hasImportRelationship: boolean | null;
     }> | null;
     bugMagnetFiles: Array<{
       file: string;
+      // Commit-churn semantics (git path). Kept intact — do NOT overload
+      // these with proof-chain counts (CORRECTION #3).
       bugCommitCount: number;
       totalCommitCount: number;
       ratio: number;
+      // Proof-chain semantics (Slice 1 populates these from
+      // `.ana/proof_chain.json`). Distinct from the git-churn fields above.
+      // `null` when the proof-history analyzer didn't contribute a rate for
+      // this file (e.g. under the ≥3-touch gate or no proof chain).
+      touchCount: number | null;
+      findingsPerTouch: number | null;
+      rejectionCycles: number | null;
     }> | null;
   } | null;
 
@@ -361,6 +383,26 @@ export interface EngineResult {
     };
   } | null;
 
+  // Phase 2 (Slice 3): Fused "read these first" reading order — centrality +
+  // bug-magnet rate + co-change, ranked and trimmed to a token budget,
+  // optionally personalized toward the active scope. `null` below the edge
+  // threshold (no graph) or when reading-order analysis didn't run. Phase 0
+  // freezes the shape; Slice 3 populates `entries`.
+  readingOrder: {
+    // Approximate token budget the entries were trimmed to.
+    budget: number;
+    // The scope slug the ranking was personalized toward, or `null` when the
+    // ranking is the unpersonalized default (no active `scope.md`).
+    personalizedTo: string | null;
+    entries: Array<{
+      file: string;
+      score: number;
+      // Human-readable, measured bases for the ranking (e.g. churn, work
+      // items, co-change). Never fabricated — each reason states its basis.
+      reasons: string[];
+    }>;
+  } | null;
+
 }
 
 /**
@@ -380,7 +422,7 @@ export function createEmptyEngineResult(): EngineResult {
   return {
     schemaVersion: '1.0',
     applicationShape: 'unknown',
-    overview: { project: 'unknown', scannedAt: new Date().toISOString(), depth: 'surface' },
+    overview: { project: 'unknown', scannedAt: new Date().toISOString(), depth: 'surface', indexedCommit: null },
     stack: { language: null, framework: null, database: null, auth: null, testing: [], payments: null, workspace: null, aiSdk: null, uiSystem: null },
     stackProvenance: {},
     versions: {},
@@ -413,5 +455,6 @@ export function createEmptyEngineResult(): EngineResult {
     inconsistencies: null,
     conventionBreaks: null,
     aiReadinessScore: null,
+    readingOrder: null,
   };
 }

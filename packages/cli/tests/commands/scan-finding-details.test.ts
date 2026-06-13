@@ -16,7 +16,7 @@ import type { EngineResult } from '../../src/engine/types/engineResult.js';
 function makeResult(findings: EngineResult['findings']): EngineResult {
   const result = createEmptyEngineResult();
   result.findings = findings;
-  result.overview = { project: 'test-project', scannedAt: new Date().toISOString(), depth: 'surface' };
+  result.overview = { project: 'test-project', scannedAt: new Date().toISOString(), depth: 'surface', indexedCommit: null };
   result.stack = { language: 'TypeScript', framework: null, database: null, auth: null, testing: [], payments: null, workspace: null, aiSdk: null, uiSystem: null };
   return result;
 }

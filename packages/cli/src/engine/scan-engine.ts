@@ -1104,7 +1104,9 @@ export async function scanProject(
   return {
     schemaVersion: '1.0',
     applicationShape: shapeResult.shape,
-    overview: { project: projectName, scannedAt: now, depth: options.depth },
+    // indexedCommit is shape-frozen here at `null` (Phase 0). Slice 5
+    // (context-never-rots) stamps it with the git HEAD at scan time.
+    overview: { project: projectName, scannedAt: now, depth: options.depth, indexedCommit: null },
     stack,
     stackProvenance,
     versions,
@@ -1140,5 +1142,7 @@ export async function scanProject(
     inconsistencies: null,
     conventionBreaks: null,
     aiReadinessScore: null,
+    // Phase 0 shape-freeze: Slice 3 (fused reading list) populates this.
+    readingOrder: null,
   };
 }

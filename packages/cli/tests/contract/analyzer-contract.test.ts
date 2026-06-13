@@ -59,7 +59,7 @@ describe('Engine Interface Contract', () => {
     it('handles full EngineResult with patterns and conventions', () => {
       const result: EngineResult = {
         ...createEmptyEngineResult(),
-        overview: { project: 'test', scannedAt: '2026-03-19T10:00:00Z', depth: 'deep' },
+        overview: { project: 'test', scannedAt: '2026-03-19T10:00:00Z', depth: 'deep', indexedCommit: null },
         stack: {
           language: 'Python',
           framework: 'FastAPI',
@@ -181,6 +181,7 @@ describe('Engine Interface Contract', () => {
         'conventionBreaks',
         'surfaces',
         'aiReadinessScore',
+        'readingOrder',
       ];
 
       for (const key of expectedKeys) {
@@ -188,6 +189,71 @@ describe('Engine Interface Contract', () => {
       }
 
       expect(keys).toHaveLength(expectedKeys.length);
+    });
+  });
+
+  // Phase 0 shape-freeze gates — assert the new/widened fields exist with the
+  // frozen all-null defaults so later slices (1/3/5) populate a stable shape.
+  describe('phase 0 shape-freeze gates', () => {
+    it('overview carries an indexedCommit field defaulting to null', () => {
+      const result = createEmptyEngineResult();
+      expect(result.overview).toHaveProperty('indexedCommit');
+      expect(result.overview.indexedCommit).toBeNull();
+    });
+
+    it('top-level readingOrder is present and null by default', () => {
+      const result = createEmptyEngineResult();
+      expect(result).toHaveProperty('readingOrder');
+      expect(result.readingOrder).toBeNull();
+    });
+
+    it('coChangeCoupling.hasImportRelationship accepts boolean | null', () => {
+      const result: EngineResult = {
+        ...createEmptyEngineResult(),
+        gitIntelligence: {
+          churnHotspots: null,
+          busFactor: null,
+          coChangeCoupling: [
+            { fileA: 'a.ts', fileB: 'b.ts', coChangePercentage: 0.5, hasImportRelationship: null },
+            { fileA: 'c.ts', fileB: 'd.ts', coChangePercentage: 0.9, hasImportRelationship: true },
+          ],
+          bugMagnetFiles: null,
+        },
+      };
+      // null = low-confidence import resolution; never fabricated as false.
+      expect(result.gitIntelligence?.coChangeCoupling?.[0]?.hasImportRelationship).toBeNull();
+      expect(result.gitIntelligence?.coChangeCoupling?.[1]?.hasImportRelationship).toBe(true);
+    });
+
+    it('bugMagnetFiles carries proof-chain fields alongside commit-churn fields', () => {
+      const result: EngineResult = {
+        ...createEmptyEngineResult(),
+        gitIntelligence: {
+          churnHotspots: null,
+          busFactor: null,
+          coChangeCoupling: null,
+          bugMagnetFiles: [
+            {
+              file: 'src/commands/work.ts',
+              bugCommitCount: 0,
+              totalCommitCount: 0,
+              ratio: 0,
+              touchCount: 68,
+              findingsPerTouch: 0.5,
+              rejectionCycles: 4,
+            },
+          ],
+        },
+      };
+      const magnet = result.gitIntelligence?.bugMagnetFiles?.[0];
+      // Commit-churn semantics preserved (CORRECTION #3 — not overloaded).
+      expect(magnet?.bugCommitCount).toBe(0);
+      expect(magnet?.totalCommitCount).toBe(0);
+      expect(magnet?.ratio).toBe(0);
+      // Proof-chain semantics are distinct fields.
+      expect(magnet?.touchCount).toBe(68);
+      expect(magnet?.findingsPerTouch).toBe(0.5);
+      expect(magnet?.rejectionCycles).toBe(4);
     });
   });
 });
