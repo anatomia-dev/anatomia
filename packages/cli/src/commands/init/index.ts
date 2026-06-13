@@ -159,7 +159,16 @@ export function registerInitCommand(program: Command): void {
       // Skills go to .ana/skills/ (canonical location, shared by all platforms)
       const skillsPath = path.join(anaPath, 'skills');
       const templatesDir = getTemplatesDir();
-      await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState);
+      // Read the just-written ana.json so config-added skills (ana.json.skills)
+      // are scaffolded alongside the scan-computed manifest. Absent/malformed
+      // config falls through to the computed manifest (resolver is fail-soft).
+      let anaJsonForSkills: unknown = {};
+      try {
+        anaJsonForSkills = JSON.parse(await fs.readFile(anaJsonPath, 'utf-8'));
+      } catch {
+        // ana.json missing or malformed — resolver falls back to computed manifest
+      }
+      await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState, anaJsonForSkills);
 
       // Platform-conditional configuration.
       // Re-init refreshes agent instruction bodies + CLAUDE.md from stock;

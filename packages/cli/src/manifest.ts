@@ -1,0 +1,180 @@
+/**
+ * Manifest resolver — the spine of ultimate configurability.
+ *
+ * `ana.json` is the single source of truth that today's hardcoded constants
+ * are the **default value of**. This module sits between the constants and
+ * every consumer so that **"absent = today" is the identity function**:
+ *
+ *   resolveSkillManifest({}, r)  ≡  computeSkillManifest(r)
+ *   resolveAgentRoster({})       ≡  the built-in 6 agents
+ *   resolveAgentSkills({}, name) ≡  [] (no projected skills)
+ *
+ * Each resolver returns today's constant verbatim when its `ana.json` key is
+ * absent — provable by the byte-identity regression tests in manifest.test.ts.
+ *
+ * Inputs are typed `unknown` on purpose: callers pass either a Zod-validated
+ * `AnaJson` or the raw `Record<string, unknown>` read straight off disk. We
+ * narrow defensively here so a malformed config falls through to the built-in
+ * default rather than crashing or clobbering — the same fail-soft posture the
+ * engine uses (constants.ts catch-and-default). Never throw from a resolver.
+ */
+
+import type { EngineResult } from './engine/types/engineResult.js';
+import { computeSkillManifest, CORE_SKILLS, AGENT_FILES } from './constants.js';
+
+/** Per-agent config block as it appears under `ana.json.agents.<name>`. */
+interface AgentConfigEntry {
+  enabled?: boolean;
+  skills?: string[];
+  model?: string;
+}
+
+/** Single skill config block under `ana.json.skills.<name>`. */
+interface SkillConfigEntry {
+  always?: boolean;
+}
+
+/**
+ * Narrow an unknown value to a plain (non-array) object record.
+ *
+ * @param value - Candidate value
+ * @returns The value as a record, or null if it is not a plain object
+ */
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+/**
+ * Built-in agent roster — the six stock agents, base names (no `.md`).
+ * Derived from `AGENT_FILES` so the roster can never drift from the files
+ * that actually ship. This is the verbatim default `resolveAgentRoster({})`
+ * returns when `ana.json.agents` is absent.
+ */
+export const BUILTIN_AGENT_ROSTER: readonly string[] = AGENT_FILES.map((f) =>
+  f.replace(/\.md$/, ''),
+);
+
+/**
+ * Read the `skills` config map off an ana.json, returning null when absent or
+ * malformed (so the caller falls through to the computed manifest verbatim).
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @returns The skills record, or null when the key is absent/malformed
+ */
+function readSkillsConfig(anaJson: unknown): Record<string, SkillConfigEntry> | null {
+  const root = asRecord(anaJson);
+  if (!root) return null;
+  return asRecord(root['skills']) as Record<string, SkillConfigEntry> | null;
+}
+
+/**
+ * Read the `agents` config map off an ana.json, returning null when absent or
+ * malformed.
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @returns The agents record, or null when the key is absent/malformed
+ */
+function readAgentsConfig(anaJson: unknown): Record<string, AgentConfigEntry> | null {
+  const root = asRecord(anaJson);
+  if (!root) return null;
+  return asRecord(root['agents']) as Record<string, AgentConfigEntry> | null;
+}
+
+/**
+ * Resolve the full skill manifest: the computed (scan-derived) manifest plus
+ * any always-on skills declared in `ana.json.skills`.
+ *
+ * Identity contract: when `ana.json.skills` is absent or malformed, the result
+ * is byte-identical to `computeSkillManifest(engineResult)`. Config-declared
+ * always-on skills are appended after the computed set, deduplicated, with the
+ * computed set winning ties (core/conditional skills are never duplicated and
+ * never reordered).
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @param engineResult - Scan engine result driving the computed manifest
+ * @returns Ordered skill names: computed manifest first, then config additions
+ */
+export function resolveSkillManifest(anaJson: unknown, engineResult: EngineResult): string[] {
+  const computed = computeSkillManifest(engineResult);
+  const skillsConfig = readSkillsConfig(anaJson);
+  if (!skillsConfig) return computed;
+
+  const seen = new Set(computed);
+  const additions: string[] = [];
+  for (const [name, entry] of Object.entries(skillsConfig)) {
+    const cfg = asRecord(entry) as SkillConfigEntry | null;
+    // Only `always:true` skills are unconditionally appended. A skill present
+    // in the map without `always` is a trigger/custom declaration handled by
+    // later slices (Slice 5); appending it here would over-scaffold.
+    if (cfg?.always !== true) continue;
+    if (seen.has(name)) continue;
+    seen.add(name);
+    additions.push(name);
+  }
+  return [...computed, ...additions];
+}
+
+/**
+ * Resolve the agent roster: the ordered list of agent base names to scaffold.
+ *
+ * Identity contract: when `ana.json.agents` is absent or malformed, the result
+ * is byte-identical to {@link BUILTIN_AGENT_ROSTER} (the stock six). A built-in
+ * agent with `enabled:false` is dropped; an `agents` key naming an agent not in
+ * the built-in roster appends it after the built-ins (config-supplied agent).
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @returns Ordered agent base names (e.g. ['ana', 'ana-plan', ...])
+ */
+export function resolveAgentRoster(anaJson: unknown): string[] {
+  const agentsConfig = readAgentsConfig(anaJson);
+  if (!agentsConfig) return [...BUILTIN_AGENT_ROSTER];
+
+  const roster: string[] = [];
+  for (const name of BUILTIN_AGENT_ROSTER) {
+    const entry = asRecord(agentsConfig[name]) as AgentConfigEntry | null;
+    if (entry?.enabled === false) continue;
+    roster.push(name);
+  }
+  for (const name of Object.keys(agentsConfig)) {
+    if (roster.includes(name) || (BUILTIN_AGENT_ROSTER as readonly string[]).includes(name)) {
+      continue;
+    }
+    const entry = asRecord(agentsConfig[name]) as AgentConfigEntry | null;
+    if (entry?.enabled === false) continue;
+    roster.push(name);
+  }
+  return roster;
+}
+
+/**
+ * Resolve the skills to project onto a single agent's frontmatter / config.
+ *
+ * Identity contract: when `ana.json.agents.<name>.skills` is absent or
+ * malformed, the result is `[]` (no projected skills — stock behavior). When
+ * present, returns the declared list deduplicated, preserving authoring order.
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @param name - Agent base name (e.g. 'ana-build')
+ * @returns Deduplicated skill names to project onto the agent, or []
+ */
+export function resolveAgentSkills(anaJson: unknown, name: string): string[] {
+  const agentsConfig = readAgentsConfig(anaJson);
+  if (!agentsConfig) return [];
+  const entry = asRecord(agentsConfig[name]) as AgentConfigEntry | null;
+  if (!entry || !Array.isArray(entry.skills)) return [];
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const skill of entry.skills) {
+    if (typeof skill !== 'string' || seen.has(skill)) continue;
+    seen.add(skill);
+    out.push(skill);
+  }
+  return out;
+}
+
+/** Re-export so consumers can read the core list without a second import. */
+export { CORE_SKILLS };

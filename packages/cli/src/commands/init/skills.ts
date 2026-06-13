@@ -31,7 +31,8 @@ import { matchGotchas, matchTriggers } from '../../utils/gotchas.js';
 import { RULES } from '../../data/rules-library.js';
 import { COMMON_ISSUES } from '../../data/troubleshooting-library.js';
 import { agentCommand } from '../platform.js';
-import { TEST_DIRECTORY_NAMES, computeSkillManifest } from '../../constants.js';
+import { TEST_DIRECTORY_NAMES } from '../../constants.js';
+import { resolveSkillManifest } from '../../manifest.js';
 import type { InitState } from './types.js';
 import { fileExists } from './preflight.js';
 import { makeTestCommandNonInteractive } from './state.js';
@@ -67,7 +68,7 @@ function extractDominanceFromEvidence(
 /**
  * Scaffold and seed skill files using dynamic manifest.
  *
- * Uses computeSkillManifest() to determine which skills to scaffold.
+ * Uses resolveSkillManifest() to determine which skills to scaffold.
  * Fresh init: copy template + inject Detected.
  * Re-init: read existing file, REPLACE ## Detected section, preserve human content.
  * Custom user skills (not in manifest) are never touched.
@@ -105,7 +106,7 @@ function injectDetectedIfAvailable(
 /**
  * Scaffold and seed skill files using dynamic manifest.
  *
- * Uses computeSkillManifest() to determine which skills to scaffold.
+ * Uses resolveSkillManifest() to determine which skills to scaffold.
  * Fresh init: copy template + inject Detected + optional gotchas.
  * Re-init: read existing file, REPLACE ## Detected section, preserve
  * human content (and skip gotcha injection).
@@ -114,15 +115,17 @@ function injectDetectedIfAvailable(
  * @param templatesDir - Path to CLI templates directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
  * @param initState - Installation state (fresh/reinit/upgrade/corrupted)
+ * @param anaJson - Parsed ana.json driving config-added skills (absent = today)
  */
 export async function scaffoldAndSeedSkills(
   skillsPath: string,
   templatesDir: string,
   engineResult: EngineResult | null,
-  initState: InitState
+  initState: InitState,
+  anaJson: unknown = {}
 ): Promise<void> {
   const analysis = engineResult || createEmptyEngineResult();
-  const skillsToScaffold = computeSkillManifest(analysis);
+  const skillsToScaffold = resolveSkillManifest(anaJson, analysis);
   const isReinit = initState === 'reinit' || initState === 'upgrade';
 
   for (const skillName of skillsToScaffold) {

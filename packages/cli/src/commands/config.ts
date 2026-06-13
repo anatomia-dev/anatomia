@@ -22,6 +22,7 @@ import chalk from 'chalk';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { findProjectRoot } from '../utils/validators.js';
+import { AnaJsonSchema } from './init/anaJsonSchema.js';
 
 /**
  * Machine-managed fields that `config set` rejects.
@@ -40,27 +41,13 @@ const MACHINE_MANAGED_FIELDS: Record<string, string> = {
 /**
  * Known top-level fields in the ana.json schema.
  * Used for the unknown-key warning on `config set`.
+ *
+ * Derived from `AnaJsonSchema.shape` so the set can never drift from the
+ * schema: adding an optional field to the schema (e.g. the configurability
+ * fields agents/skills/capabilities/platformDefaults) automatically widens
+ * the known set, so `config set` stops warning on it without a second edit.
  */
-const KNOWN_FIELDS = new Set([
-  'anaVersion',
-  'name',
-  'language',
-  'framework',
-  'packageManager',
-  'commands',
-  'surfaces',
-  'platforms',
-  'platformFlags',
-  'coAuthor',
-  'artifactBranch',
-  'branchPrefix',
-  'mergeStrategy',
-  'setupPhase',
-  'lastScanAt',
-  'testEvidenceGate',
-  'processCapture',
-  'custom',
-]);
+const KNOWN_FIELDS = new Set(Object.keys(AnaJsonSchema.shape));
 
 /**
  * Read ana.json as raw JSON (not through Zod schema).

@@ -115,6 +115,65 @@ export const AnaJsonSchema = z
       .catch(undefined),
     lastScanAt: z.string().nullable().optional().default(null).catch(null),
     custom: z.record(z.string(), z.unknown()).optional().default({}).catch({}),
+    // ── Ultimate-configurability fields (additive, NO `.default`) ──────────
+    //
+    // These four make the hardcoded constants the *default value of*
+    // ana.json. The resolver in src/manifest.ts treats "key absent" as the
+    // identity function (absent = today). They are deliberately optional with
+    // NO `.default`: absent must stay `undefined` so an absent key survives
+    // re-init untouched and reads as "use the built-in default" — the same
+    // migration-safe posture as testEvidenceGate/processCapture above.
+    //
+    // Each field carries a per-element `.catch` so a single malformed entry
+    // falls through to the built-in default rather than nuking the config
+    // (the no-regression contract: degrade, never crash, never clobber).
+
+    // Per-agent overrides. `skills` projects into Claude frontmatter + Codex
+    // `.agent.toml`; `enabled:false` drops a built-in agent from the roster.
+    agents: z
+      .record(
+        z.string(),
+        z
+          .object({
+            enabled: z.boolean().optional().catch(undefined),
+            skills: z.array(z.string()).optional().catch(undefined),
+            model: z.string().optional().catch(undefined),
+          })
+          .passthrough()
+          .catch({}),
+      )
+      .optional()
+      .catch(undefined),
+
+    // Custom / always-on skills layered onto the computed manifest. A skill
+    // marked `always:true` is appended to every install regardless of scan.
+    skills: z
+      .record(
+        z.string(),
+        z
+          .object({
+            always: z.boolean().optional().catch(undefined),
+          })
+          .passthrough()
+          .catch({}),
+      )
+      .optional()
+      .catch(undefined),
+
+    // Opt-in managed-block surfaces (commands / outputStyle / mcpServers).
+    // Absent = no new files. Shape is intentionally permissive here; the
+    // surface owners (Slice 4) validate their own sub-shapes.
+    capabilities: z
+      .record(z.string(), z.unknown())
+      .optional()
+      .catch(undefined),
+
+    // Per-platform default overrides (model, sandbox, flags). Absent = the
+    // built-in platform descriptor defaults (Slice 3).
+    platformDefaults: z
+      .record(z.string(), z.record(z.string(), z.unknown()).catch({}))
+      .optional()
+      .catch(undefined),
   })
   .passthrough();
 
