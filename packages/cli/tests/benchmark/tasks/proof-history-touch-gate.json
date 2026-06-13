@@ -1,0 +1,11 @@
+{
+  "id": "proof-history-touch-gate",
+  "prompt": "Find where the proof-history risk-map analyzer decides whether a file has enough completed work items to rank (the minimum-touches gate), and where it reads the proof chain it ranks over.",
+  "pinnedCommit": "9e438085678b03339a5a25d2eabe07b23dcdaaab",
+  "readOnly": true,
+  "relevantFiles": [
+    "src/engine/analyzers/proof-history/index.ts",
+    "src/types/proof.ts",
+    "src/utils/proofSummary.ts"
+  ]
+}
