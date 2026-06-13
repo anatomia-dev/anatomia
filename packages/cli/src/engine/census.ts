@@ -287,6 +287,80 @@ function discoverFrameworkHints(
   return hints;
 }
 
+/**
+ * Strip JSONC (`//` line + `/* *​/` block comments and trailing commas) so a
+ * tsconfig that uses comments/trailing commas can be parsed with `JSON.parse`.
+ * String-aware so a `//` inside a quoted value is never treated as a comment.
+ * Best-effort: the result is fed to `JSON.parse`, which still validates shape.
+ */
+function stripJsonc(src: string): string {
+  let out = '';
+  let inStr = false;
+  let quote = '';
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]!;
+    const n = src[i + 1];
+    if (inStr) {
+      out += c;
+      if (c === '\\') {
+        // Copy the escaped char verbatim so an escaped quote doesn't end the string.
+        if (n !== undefined) out += n;
+        i++;
+        continue;
+      }
+      if (c === quote) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      inStr = true;
+      quote = c;
+      out += c;
+      continue;
+    }
+    if (c === '/' && n === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+      continue;
+    }
+    if (c === '/' && n === '*') {
+      i += 2;
+      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++;
+      i++; // land on the '/' of '*/' (loop's i++ steps past it)
+      continue;
+    }
+    out += c;
+  }
+  // Drop trailing commas before a closing } or ].
+  return out.replace(/,(\s*[}\]])/g, '$1');
+}
+
+/**
+ * Read a tsconfig's OWN `compilerOptions.paths`/`baseUrl` directly from disk,
+ * tolerating JSONC. Used as a fallback when {@link getTsconfig} throws because
+ * the file `extends` a config package that isn't installed in the checkout — a
+ * very common case for monorepo apps (`extends: "tsconfig/nextjs.json"`) where
+ * the path aliases (`@/*`) are nonetheless declared locally. Inherited paths
+ * from a resolvable parent are NOT recovered here (that needs the extends
+ * chain), but locally-declared aliases — the dominant case — are.
+ */
+function readOwnTsconfigPaths(tsconfigPath: string): {
+  paths: Record<string, string[]> | null;
+  baseUrl: string | null;
+} {
+  try {
+    const raw = readFileSync(tsconfigPath, 'utf-8');
+    const parsed = JSON.parse(stripJsonc(raw)) as {
+      compilerOptions?: { paths?: Record<string, string[]>; baseUrl?: string };
+    };
+    const opts = parsed.compilerOptions;
+    return {
+      paths: opts?.paths ?? null,
+      baseUrl: opts?.baseUrl ?? null,
+    };
+  } catch {
+    return { paths: null, baseUrl: null };
+  }
+}
+
 function discoverTsconfigs(
   rootPath: string,
   roots: Array<{ absolutePath: string; relativePath: string }>,
@@ -308,7 +382,20 @@ function discoverTsconfigs(
           if (opts?.baseUrl) baseUrl = opts.baseUrl as string;
         }
       } catch {
-        // Malformed or unresolvable tsconfig — record it exists but skip paths
+        // get-tsconfig throws when `extends` points at an uninstalled config
+        // package (e.g. monorepo apps extending `tsconfig/nextjs.json`). The
+        // local `paths` (the `@/*` alias that dominates real imports) is still
+        // on disk — recover it directly so the import graph isn't alias-blind.
+      }
+      // If extends-resolution yielded nothing usable, fall back to the file's
+      // own paths/baseUrl. This is the alias-blindness fix: locally-declared
+      // `@/*`/`~/*`/`$lib/*` aliases survive even when `extends` is broken.
+      if (!paths) {
+        const own = readOwnTsconfigPaths(tsconfigPath);
+        if (own.paths) {
+          paths = own.paths;
+          baseUrl = baseUrl ?? own.baseUrl;
+        }
       }
       entries.push({
         sourceRootPath: root.relativePath,

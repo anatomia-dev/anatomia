@@ -879,7 +879,18 @@ export async function scanProject(
         // a graph failure never invalidates the analysis above.
         try {
           const { buildImportGraph, persistCodeGraph } = await import('./analyzers/graph/buildGraph.js');
-          codeGraph = buildImportGraph(parsed, census.configs.tsconfigs, rootPath);
+          // In-repo workspace package map (name → repo-relative dir) so monorepo
+          // cross-package imports (`import … from '@scope/pkg'`) resolve to a
+          // real file and enter the graph. Built from census source roots; the
+          // primary/root entry ('.') is excluded — a bare root package name is
+          // never an in-repo specifier.
+          const workspacePackages = new Map<string, string>();
+          for (const sr of census.sourceRoots) {
+            if (sr.packageName && sr.relativePath && sr.relativePath !== '.') {
+              workspacePackages.set(sr.packageName, sr.relativePath);
+            }
+          }
+          codeGraph = buildImportGraph(parsed, census.configs.tsconfigs, rootPath, workspacePackages);
           if (options.persistGraphTo) {
             await persistCodeGraph(options.persistGraphTo, codeGraph);
           }
@@ -1171,12 +1182,19 @@ export async function scanProject(
       const coChange = gitIntelligence?.coChangeCoupling ?? [];
 
       const activeScope = await findActiveScope(rootPath);
+      // The import graph is always TS/JS. When the repo's primary language is
+      // something else (Python/Go/PHP/Ruby), the graph is a JS island — flag it
+      // so the reading order carries an honest scope caveat rather than
+      // presenting that island as the whole-repo order.
+      const primaryLanguageIsGraphLanguage = projectTypeResult.type === 'node';
       readingOrder = buildReadingOrder({
         graph: codeGraph,
         bugMagnets: gitIntelligence?.bugMagnetFiles ?? [],
         coChange,
         scopeFiles: activeScope?.files ?? [],
         scopeSlug: activeScope?.slug ?? null,
+        totalSourceFiles: files.source,
+        primaryLanguageIsGraphLanguage,
       });
     } catch {
       // Best-effort: the reading list is a derived convenience, never a gate.

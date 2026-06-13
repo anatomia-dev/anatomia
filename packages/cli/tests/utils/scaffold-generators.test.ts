@@ -46,6 +46,7 @@ describe('generateProjectContextScaffold', () => {
     result.readingOrder = {
       budget: 1000,
       personalizedTo: null,
+      coverageNote: null,
       entries: [
         { file: 'src/commands/work.ts', score: 1.0, reasons: ['68 work items, 4 rework cycles', 'import centrality 1.00'] },
         { file: 'src/utils/proofSummary.ts', score: 0.8, reasons: ['import centrality 0.80'] },
@@ -63,6 +64,18 @@ describe('generateProjectContextScaffold', () => {
     const scaffold = generateProjectContextScaffold(result);
     expect(scaffold).not.toContain('## Start Here');
   });
+
+  it('surfaces the coverage caveat when the graph covers only a JS subgraph', () => {
+    const result = createEmptyEngineResult();
+    result.readingOrder = {
+      budget: 1000,
+      personalizedTo: null,
+      coverageNote: 'ranking covers the TS/JS import subgraph only (~9% of source files)',
+      entries: [{ file: 'src/a.ts', score: 1, reasons: ['core hub — imported by 29 files across the repo'] }],
+    };
+    const scaffold = generateProjectContextScaffold(result);
+    expect(scaffold).toContain('Note: ranking covers the TS/JS import subgraph only');
+  });
 });
 
 describe('generateReadingOrderBlock', () => {
@@ -71,13 +84,14 @@ describe('generateReadingOrderBlock', () => {
   });
 
   it('returns an empty string when there are no entries', () => {
-    expect(generateReadingOrderBlock({ budget: 1000, personalizedTo: null, entries: [] })).toBe('');
+    expect(generateReadingOrderBlock({ budget: 1000, personalizedTo: null, coverageNote: null, entries: [] })).toBe('');
   });
 
   it('marks the scope slug when personalized', () => {
     const block = generateReadingOrderBlock({
       budget: 1000,
       personalizedTo: 'my-task',
+      coverageNote: null,
       entries: [{ file: 'src/a.ts', score: 1, reasons: ['import centrality 1.00'] }],
     });
     expect(block).toContain('## Start Here (scoped to `my-task`)');
@@ -90,7 +104,7 @@ describe('generateReadingOrderBlock', () => {
       score: 1 - i / 10,
       reasons: ['import centrality 0.50'],
     }));
-    const block = generateReadingOrderBlock({ budget: 1000, personalizedTo: null, entries });
+    const block = generateReadingOrderBlock({ budget: 1000, personalizedTo: null, coverageNote: null, entries });
     expect(block).toContain('`src/mod6.ts`');
     expect(block).not.toContain('`src/mod7.ts`');
     expect(block).toContain('+3 more');

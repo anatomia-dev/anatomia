@@ -394,11 +394,17 @@ export interface EngineResult {
     // The scope slug the ranking was personalized toward, or `null` when the
     // ranking is the unpersonalized default (no active `scope.md`).
     personalizedTo: string | null;
+    // Honest scope caveat when the resolved import graph covers only a minority
+    // of source files (e.g. a polyglot repo whose primary language is Python/Go
+    // but whose only import graph is a small JS island). `null` when the graph
+    // faithfully covers the primary language. Never claims more than it resolved.
+    coverageNote: string | null;
     entries: Array<{
       file: string;
       score: number;
-      // Human-readable, measured bases for the ranking (e.g. churn, work
-      // items, co-change). Never fabricated — each reason states its basis.
+      // Human-readable, measured bases for the ranking (e.g. raw import
+      // in-degree, work items, co-change, centrality). Never fabricated — each
+      // reason states its measured basis.
       reasons: string[];
     }>;
   } | null;

@@ -58,6 +58,9 @@ export function generateReadingOrderBlock(
     : '';
   let block = `## Start Here${scoped}\n\n`;
   block += `*Fused from import centrality, proven rework risk, and co-change — read these first.*\n\n`;
+  if (readingOrder.coverageNote) {
+    block += `> Note: ${readingOrder.coverageNote}.\n\n`;
+  }
   for (const entry of readingOrder.entries.slice(0, MAX_ENTRIES)) {
     const reasons = entry.reasons.length > 0 ? ` — ${entry.reasons.join('; ')}` : '';
     block += `- \`${entry.file}\`${reasons}\n`;

@@ -28,6 +28,7 @@ describe('Start here reading-order card', () => {
       makeResult({
         budget: 1000,
         personalizedTo: null,
+        coverageNote: null,
         entries: [
           { file: 'src/commands/work.ts', score: 1.0, reasons: ['68 work items, 4 rework cycles', 'import centrality 1.00'] },
           { file: 'src/utils/proofSummary.ts', score: 0.7, reasons: ['import centrality 0.70'] },
@@ -47,6 +48,7 @@ describe('Start here reading-order card', () => {
       makeResult({
         budget: 1000,
         personalizedTo: 'my-task',
+        coverageNote: null,
         entries: [{ file: 'src/a.ts', score: 1, reasons: ['in active scope', 'import centrality 1.00'] }],
       }),
       { isFunnel: false, rootPath: '/tmp/test' },
@@ -67,7 +69,7 @@ describe('Start here reading-order card', () => {
       reasons: ['import centrality 0.50'],
     }));
     const output = formatHumanReadable(
-      makeResult({ budget: 1000, personalizedTo: null, entries }),
+      makeResult({ budget: 1000, personalizedTo: null, coverageNote: null, entries }),
       { isFunnel: false, rootPath: '/tmp/test' },
     );
     expect(output).toContain('src/mod4.ts');

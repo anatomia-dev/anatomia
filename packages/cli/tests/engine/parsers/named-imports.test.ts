@@ -102,3 +102,61 @@ describe.skipIf(!wasmAvailable)('extractImports — named-import wiring', () => 
     expect(imports[0]?.names).toEqual([]);
   });
 });
+
+describe.skipIf(!wasmAvailable)('extractImports — CommonJS require() & dynamic import() (TARGET 3)', () => {
+  const manager = ParserManager.getInstance();
+
+  beforeAll(async () => {
+    await ParserManager.getInstance().initialize();
+  });
+
+  it('captures a CommonJS require() specifier in JavaScript', () => {
+    const parser = manager.getParser('javascript');
+    const code = "const express = require('./lib/express');";
+    const tree = parser.parse(code);
+    const imports = extractImports(tree!, code, 'javascript');
+    tree!.delete();
+
+    expect(imports.map((i) => i.module)).toContain('./lib/express');
+  });
+
+  it('captures multiple require() calls and a dynamic import()', () => {
+    const parser = manager.getParser('javascript');
+    const code = [
+      "const a = require('./a');",
+      "const b = require('./b');",
+      "async function load() { return import('./lazy'); }",
+    ].join('\n');
+    const tree = parser.parse(code);
+    const imports = extractImports(tree!, code, 'javascript');
+    tree!.delete();
+
+    const mods = imports.map((i) => i.module);
+    expect(mods).toContain('./a');
+    expect(mods).toContain('./b');
+    expect(mods).toContain('./lazy');
+  });
+
+  it('does NOT treat a non-require single-string call as an import', () => {
+    const parser = manager.getParser('javascript');
+    const code = "console.log('hello'); doThing('./not-an-import');";
+    const tree = parser.parse(code);
+    const imports = extractImports(tree!, code, 'javascript');
+    tree!.delete();
+
+    // Only `require(...)` (and dynamic `import(...)`) become specifiers; an
+    // arbitrary function call with a string argument must not.
+    expect(imports.map((i) => i.module)).not.toContain('./not-an-import');
+    expect(imports.map((i) => i.module)).not.toContain('hello');
+  });
+
+  it('captures a dynamic import() in TypeScript', () => {
+    const parser = manager.getParser('typescript');
+    const code = "export const load = () => import('./feature');";
+    const tree = parser.parse(code);
+    const imports = extractImports(tree!, code, 'typescript');
+    tree!.delete();
+
+    expect(imports.map((i) => i.module)).toContain('./feature');
+  });
+});

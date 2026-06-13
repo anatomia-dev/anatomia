@@ -376,6 +376,9 @@ export function formatHumanReadable(
       ? `Start here · scoped to ${reading.personalizedTo}`
       : 'Start here';
     lines.push(sectionRule(title, { width: boxWidth }));
+    if (reading.coverageNote) {
+      lines.push(`  ${chalk.yellow(`Note: ${reading.coverageNote}`)}`);
+    }
     const MAX_READING = 5;
     for (const entry of reading.entries.slice(0, MAX_READING)) {
       lines.push(`  ${chalk.bold(entry.file)}`);

@@ -168,6 +168,112 @@ describe('buildImportGraph — tsconfig path aliases', () => {
     expect(graph.edges).toHaveLength(0);
     expect(graph.unresolved).toBe(1);
   });
+
+  it('resolves the SAME alias key per-package against the nearest tsconfig (monorepo)', () => {
+    // Two packages each declare `@/*` pointing at their own root. An `@/x`
+    // import in apps/web must resolve under apps/web — NOT leak to apps/docs.
+    const monorepoTsconfigs: TsconfigEntry[] = [
+      { sourceRootPath: 'apps/web', path: 'apps/web/tsconfig.json', baseUrl: './', paths: { '@/*': ['./*'] } },
+      { sourceRootPath: 'apps/docs', path: 'apps/docs/tsconfig.json', baseUrl: './', paths: { '@/*': ['./*'] } },
+    ];
+    const parsed = analysis([
+      file('apps/web/pages/home.ts', [{ module: '@/lib/db' }]),
+      file('apps/web/lib/db.ts', []),
+      file('apps/docs/lib/db.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, monorepoTsconfigs);
+    expect(graph.edges).toEqual([
+      { from: 'apps/web/pages/home.ts', to: 'apps/web/lib/db.ts', names: [] },
+    ]);
+  });
+});
+
+describe('buildImportGraph — workspace package imports', () => {
+  it('resolves an in-repo workspace package import to its entry file', () => {
+    const ws = new Map<string, string>([['@scope/db', 'packages/db']]);
+    const parsed = analysis([
+      file('apps/web/app.ts', [{ module: '@scope/db', names: ['prisma'] }]),
+      file('packages/db/src/index.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, [], '', ws);
+    expect(graph.edges).toEqual([
+      { from: 'apps/web/app.ts', to: 'packages/db/src/index.ts', names: ['prisma'] },
+    ]);
+  });
+
+  it('resolves a deep workspace package sub-path import', () => {
+    const ws = new Map<string, string>([['@scope/db', 'packages/db']]);
+    const parsed = analysis([
+      file('apps/web/app.ts', [{ module: '@scope/db/client' }]),
+      file('packages/db/client.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, [], '', ws);
+    expect(graph.edges).toEqual([{ from: 'apps/web/app.ts', to: 'packages/db/client.ts', names: [] }]);
+  });
+
+  it('does NOT create an edge for a published package whose source was not sampled', () => {
+    const ws = new Map<string, string>([['@scope/db', 'packages/db']]);
+    const parsed = analysis([file('apps/web/app.ts', [{ module: '@scope/db' }])]);
+    const graph = buildImportGraph(parsed, [], '', ws);
+    expect(graph.edges).toHaveLength(0);
+  });
+});
+
+describe('buildImportGraph — in-degree, barrels & generated', () => {
+  it('reports raw in-degree (distinct importers) per node', () => {
+    const parsed = analysis([
+      file('src/a.ts', [{ module: './hub' }]),
+      file('src/b.ts', [{ module: './hub' }]),
+      file('src/c.ts', [{ module: './hub' }]),
+      file('src/hub.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, []);
+    expect(graph.inDegree['src/hub.ts']).toBe(3);
+    expect(graph.inDegree['src/a.ts']).toBe(0);
+  });
+
+  it('counts a repeated import from the same file once toward in-degree', () => {
+    const parsed = analysis([
+      file('src/a.ts', [{ module: './hub', names: ['x'] }, { module: './hub', names: ['y'] }]),
+      file('src/hub.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, []);
+    expect(graph.inDegree['src/hub.ts']).toBe(1); // one distinct importer
+  });
+
+  it('flags a pure re-export module as a barrel (exports, no own declarations)', () => {
+    const barrel: ParsedFile = {
+      file: 'src/index.ts',
+      language: 'typescript',
+      functions: [],
+      classes: [],
+      imports: [{ module: './widget', names: ['Widget'], line: 1 }],
+      exports: [{ name: 'Widget', type: 'const', line: 1 }],
+      parseTime: 0,
+      parseMethod: 'tree-sitter',
+      errors: 0,
+    };
+    const parsed = analysis([
+      barrel,
+      file('src/widget.ts', []),
+      file('src/app.ts', [{ module: './index' }]),
+    ]);
+    const graph = buildImportGraph(parsed, []);
+    expect(graph.barrelFiles).toContain('src/index.ts');
+    // A file with its own declarations is NOT a barrel even if it re-exports.
+    expect(graph.barrelFiles).not.toContain('src/widget.ts');
+  });
+
+  it('flags generated / vendored paths', () => {
+    const parsed = analysis([
+      file('src/app.ts', [{ module: './generated/client' }, { module: './types.d' }]),
+      file('src/generated/client.ts', []),
+      file('src/types.d.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, []);
+    expect(graph.generatedFiles).toContain('src/generated/client.ts');
+    expect(graph.generatedFiles).toContain('src/types.d.ts');
+  });
 });
 
 describe('buildImportGraph — determinism & shape', () => {

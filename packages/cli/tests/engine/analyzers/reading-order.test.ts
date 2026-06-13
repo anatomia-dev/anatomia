@@ -173,6 +173,109 @@ describe('buildReadingOrder — token budget', () => {
   });
 });
 
+describe('buildReadingOrder — in-degree floor & blend (TARGET 1/5)', () => {
+  /**
+   * A real hub (high in-degree) plus a "near-leaf" that inherits centrality:
+   * `leaf.ts` is imported by exactly ONE file (`hub.ts`), but that importer is
+   * itself the centrality hub — so pure normalized PageRank would float `leaf.ts`
+   * into the head. The geometric-mean blend + the near-leaf floor must keep it
+   * out of the top decile.
+   */
+  function hubWithInheritingLeaf() {
+    // A dense core where EVERY core file has in-degree 3 (each imported by its
+    // three predecessors in a ring), plus one near-leaf imported exactly once —
+    // and its single importer is a core node, so the leaf inherits centrality.
+    // Because the whole core is head-eligible, the top decile is fully populated
+    // by real (in-degree ≥ 3) files and the in-degree-1 leaf must stay out.
+    const CORE = 12;
+    const core = Array.from({ length: CORE }, (_, i) => `core${i}.ts`);
+    const nodes = [...core, 'leaf.ts'];
+    const edges: ImportEdge[] = [];
+    for (let i = 0; i < CORE; i++) {
+      // core[i] is imported by its 3 successors → in-degree 3 for every core node.
+      for (let k = 1; k <= 3; k++) {
+        edges.push(edge(core[(i + k) % CORE]!, core[i]!));
+      }
+    }
+    edges.push(edge('core0.ts', 'leaf.ts')); // the lone inheriting importer
+    const inDegree: Record<string, number> = {};
+    for (const n of nodes) inDegree[n] = 0;
+    for (const e of edges) inDegree[e.to] = (inDegree[e.to] ?? 0) + 1;
+    return { nodes, edges, inDegree, barrelFiles: [], generatedFiles: [] };
+  }
+
+  it('keeps an in-degree-1 file out of the top decile despite inherited centrality', () => {
+    const graph = hubWithInheritingLeaf();
+    const order = buildReadingOrder(baseInput({ graph }))!;
+    const topDecile = Math.max(1, Math.ceil(order.entries.length / 10));
+    const head = order.entries.slice(0, topDecile).map((e) => e.file);
+    // The head is filled by in-degree-3 core files; the near-leaf is barred.
+    expect(head.every((f) => f.startsWith('core'))).toBe(true);
+    expect(head).not.toContain('leaf.ts');
+  });
+
+  it('an in-degree hub outranks a sibling-coupled leaf (geometric-mean blend)', () => {
+    const graph = hubWithInheritingLeaf();
+    const order = buildReadingOrder(baseInput({ graph }))!;
+    const rankOf = (f: string) => order.entries.findIndex((e) => e.file === f);
+    // Every core file (in-degree 3) outranks the in-degree-1 leaf.
+    const leafRank = rankOf('leaf.ts');
+    for (let i = 0; i < 12; i++) {
+      expect(rankOf(`core${i}.ts`)).toBeLessThan(leafRank);
+    }
+  });
+
+  it('cites raw in-degree in the reasons instead of only an opaque centrality', () => {
+    const graph = hubWithInheritingLeaf();
+    const order = buildReadingOrder(baseInput({ graph }))!;
+    const core = order.entries.find((e) => e.file === 'core0.ts')!;
+    expect(core.reasons.some((r) => /imported by \d+|core hub/.test(r))).toBe(true);
+  });
+
+  it('down-weights a barrel file relative to a real implementation hub of equal in-degree', () => {
+    // hub.ts and barrel.ts each imported by 4 files; barrel.ts is a re-export.
+    const nodes = ['hub.ts', 'barrel.ts'];
+    const edges: ImportEdge[] = [];
+    for (let i = 0; i < 4; i++) {
+      nodes.push(`a${i}.ts`, `b${i}.ts`);
+      edges.push(edge(`a${i}.ts`, 'hub.ts'));
+      edges.push(edge(`b${i}.ts`, 'barrel.ts'));
+    }
+    const inDegree: Record<string, number> = {};
+    for (const n of nodes) inDegree[n] = 0;
+    for (const e of edges) inDegree[e.to] = (inDegree[e.to] ?? 0) + 1;
+    const order = buildReadingOrder(
+      baseInput({ graph: { nodes, edges, inDegree, barrelFiles: ['barrel.ts'], generatedFiles: [] } }),
+    )!;
+    const rankOf = (f: string) => order.entries.findIndex((e) => e.file === f);
+    expect(rankOf('hub.ts')).toBeLessThan(rankOf('barrel.ts'));
+  });
+});
+
+describe('buildReadingOrder — coverage caveat (TARGET 2)', () => {
+  it('attaches a caveat when the graph covers a minority of source files', () => {
+    const order = buildReadingOrder(
+      baseInput({ totalSourceFiles: 1000, primaryLanguageIsGraphLanguage: true }),
+    )!;
+    // hubGraph has 6 nodes; 6/1000 < 30% → caveat present.
+    expect(order.coverageNote).toMatch(/TS\/JS import subgraph only/);
+  });
+
+  it('attaches a caveat when the primary language is not the graph language', () => {
+    const order = buildReadingOrder(
+      baseInput({ totalSourceFiles: 6, primaryLanguageIsGraphLanguage: false }),
+    )!;
+    expect(order.coverageNote).toMatch(/TS\/JS import subgraph only/);
+  });
+
+  it('leaves coverageNote null when coverage is faithful', () => {
+    const order = buildReadingOrder(
+      baseInput({ totalSourceFiles: 6, primaryLanguageIsGraphLanguage: true }),
+    )!;
+    expect(order.coverageNote).toBeNull();
+  });
+});
+
 describe('buildReadingOrder — degrade-not-crash', () => {
   it('returns null on an empty graph (no nodes, no edges) rather than throwing', () => {
     expect(buildReadingOrder(baseInput({ graph: { nodes: [], edges: [] } }))).toBeNull();

@@ -88,6 +88,19 @@ export const QUERIES: Record<Language, Record<string, string>> = {
         name: (identifier) @name)))
   source: (string) @source)`,
 
+    // CommonJS require('x') AND dynamic import('x'). Both are call_expressions:
+    // require → function is an identifier (filtered to "require" in code, since
+    // web-tree-sitter predicates aren't applied here); dynamic import → function
+    // is the `import` keyword node. The string argument is captured as
+    // @import.module so the same edge-builder path consumes it. Lets pure-CJS
+    // repos (express) and lazy-loaded modules produce a real import graph.
+    cjsDynamicImports: `(call_expression
+  function: (identifier) @callee
+  arguments: (arguments (string) @import.module))
+(call_expression
+  function: (import)
+  arguments: (arguments (string) @import.module))`,
+
     // Convention detection queries
     // Identical to the tsx.variables entry — both grammars share the same base
     // and use the same lexical_declaration → variable_declarator structure.
@@ -127,6 +140,14 @@ export const QUERIES: Record<Language, Record<string, string>> = {
         name: (identifier) @name)))
   source: (string) @source)`,
 
+    // See typescript.cjsDynamicImports — require()/dynamic import() capture.
+    cjsDynamicImports: `(call_expression
+  function: (identifier) @callee
+  arguments: (arguments (string) @import.module))
+(call_expression
+  function: (import)
+  arguments: (arguments (string) @import.module))`,
+
     // Convention detection queries
     variables: `(lexical_declaration
   (variable_declarator
@@ -152,6 +173,15 @@ export const QUERIES: Record<Language, Record<string, string>> = {
     property: (property_identifier) @method
   )
 )`,
+
+    // CommonJS require('x') AND dynamic import('x') — the dominant import form
+    // in pure-CJS JavaScript repos (express). See typescript.cjsDynamicImports.
+    cjsDynamicImports: `(call_expression
+  function: (identifier) @callee
+  arguments: (arguments (string) @import.module))
+(call_expression
+  function: (import)
+  arguments: (arguments (string) @import.module))`,
 
     // Convention detection queries
     variables: `(variable_declaration
@@ -214,6 +244,7 @@ export type QueryType =
   | 'tryCatch'       // TypeScript/JavaScript
   | 'memberCall'     // TypeScript/JavaScript
   | 'namedImport'    // TypeScript
+  | 'cjsDynamicImports' // TypeScript/JavaScript — require() + dynamic import()
   | 'ifErrNotNil'    // Go
   | 'structWithTags' // Go
   // Convention detection queries

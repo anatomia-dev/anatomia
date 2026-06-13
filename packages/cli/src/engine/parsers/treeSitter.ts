@@ -618,6 +618,11 @@ export function extractImports(
     const imports: ImportInfo[] = [];
     const seen = new Set<string>();
 
+    const stripQuotes = (raw: string): string =>
+      raw.startsWith('"') || raw.startsWith("'") || raw.startsWith('`')
+        ? raw.slice(1, -1)
+        : raw;
+
     for (const capture of captures) {
       const isModuleCapture =
         capture.name === 'import.module' ||
@@ -659,10 +664,71 @@ export function extractImports(
       });
     }
 
+    // Merge CommonJS require('x') and dynamic import('x') specifiers (TS/JS).
+    // These are call_expressions, not import_statements, so the `imports` query
+    // misses them — pure-CJS repos (express) would otherwise yield no edges.
+    for (const { module: mod, line } of extractCjsDynamicImports(tree, language, tsLang)) {
+      const moduleName = stripQuotes(mod);
+      const key = `${moduleName}:${line}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      imports.push({ module: moduleName, names: namesByLine.get(line) ?? [], line });
+    }
+
     return imports;
   } catch (_error) {
     return [];
   }
+}
+
+/**
+ * Extract CommonJS `require('x')` and dynamic `import('x')` specifiers.
+ *
+ * Both are `call_expression`s. The query has two patterns: one whose function
+ * is an `(identifier)` (captured as `@callee`, kept only when its text is
+ * `require`) and one whose function is the `import` keyword (no callee — always
+ * a dynamic import). Only a single string-literal argument is treated as a
+ * specifier; computed/template `require(var)` calls contribute nothing (no
+ * resolvable target). Fail-soft: any query error yields an empty list.
+ *
+ * @returns `{ module, line }` per detected specifier (quotes NOT stripped here —
+ *   the caller strips them, matching the `imports`-query path).
+ */
+function extractCjsDynamicImports(
+  tree: Tree,
+  language: string,
+  tsLang: TSLanguage,
+): Array<{ module: string; line: number }> {
+  const out: Array<{ module: string; line: number }> = [];
+  if (language !== 'javascript' && language !== 'typescript' && language !== 'tsx') {
+    return out;
+  }
+  try {
+    const query = queryCache.getQuery(language as Language, 'cjsDynamicImports', tsLang);
+    // matches() keeps each call_expression's @callee and @import.module grouped
+    // so a `foo('x')` call isn't mistaken for a require by borrowing another
+    // node's module capture.
+    for (const match of query.matches(tree.rootNode)) {
+      let callee: string | null = null;
+      let moduleNode: { text: string; row: number } | null = null;
+      for (const capture of match.captures) {
+        if (capture.name === 'callee') {
+          callee = capture.node.text;
+        } else if (capture.name === 'import.module') {
+          moduleNode = { text: capture.node.text, row: capture.node.startPosition.row };
+        }
+      }
+      if (!moduleNode) continue;
+      // Pattern with a callee must be `require`; pattern without a callee is a
+      // dynamic `import(...)` and is always accepted.
+      if (callee !== null && callee !== 'require') continue;
+      out.push({ module: moduleNode.text, line: moduleNode.row + 1 });
+    }
+  } catch {
+    // Fail-soft: degrade to no CJS/dynamic edges, never crash.
+    return out;
+  }
+  return out;
 }
 
 /**
