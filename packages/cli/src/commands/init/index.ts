@@ -175,7 +175,7 @@ export function registerInitCommand(program: Command): void {
       // the returned lists name files whose instruction content actually changed.
       const changedFiles: string[] = [];
       if (platforms.includes('claude')) {
-        changedFiles.push(...await createClaudeConfiguration(cwd, engineResult, preflight.initState));
+        changedFiles.push(...await createClaudeConfiguration(cwd, engineResult, preflight.initState, anaJsonForSkills));
       }
       if (platforms.includes('codex')) {
         changedFiles.push(...await createCodexConfiguration(cwd, preflight.initState));

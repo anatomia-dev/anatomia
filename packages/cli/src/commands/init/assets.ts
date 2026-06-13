@@ -229,9 +229,10 @@ async function mergeAndWriteGitignore(
  * @param cwd - Project root directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
  * @param _initState - Installation state (unused — skills scaffolding moved to orchestrator)
+ * @param anaJson - Parsed ana.json driving opt-in `capabilities` surfaces (absent = today; no new files)
  * @returns Filenames whose instruction content changed (empty on a fresh install or no-op re-init)
  */
-export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState): Promise<string[]> {
+export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState, anaJson: unknown = {}): Promise<string[]> {
   const spinner = ora('Creating .claude/ configuration...').start();
 
   const claudePath = path.join(cwd, '.claude');
@@ -263,6 +264,9 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
     // First run: create everything fresh
     await fs.mkdir(claudePath, { recursive: true });
     await fs.mkdir(agentsPath, { recursive: true });
+    // Layer the opt-in outputStyle onto the template settings BEFORE writing —
+    // absent capabilities leaves templateSettings byte-identical to stock.
+    applyOutputStyleCapability(templateSettings, anaJson);
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
     await mergeAndWriteGitignore(claudeGitignorePath, CLAUDE_GITIGNORE_STOCK, '.claude/.gitignore');
 
@@ -272,6 +276,10 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
     // Copy CLAUDE.md to project root (fresh — never reports a change)
     const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
     if (claudeMdChanged) changed.push(claudeMdChanged);
+
+    // Opt-in managed-block surfaces — absent capabilities writes no new files.
+    await applyCommandCapabilities(claudePath, anaJson);
+    await applyMcpServersCapability(cwd, anaJson);
 
     spinner.succeed('Created .claude/ configuration');
     return changed;
@@ -285,6 +293,7 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
 
   if (!settingsExists) {
     // settings.json doesn't exist - create it
+    applyOutputStyleCapability(templateSettings, anaJson);
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
   } else {
     // settings.json exists - try to merge our hooks
@@ -300,12 +309,16 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
       // hook idempotently while preserving user-authored hooks. The flag is the
       // runtime switch, so the SessionStart hook is never flip-off pruned.
       const mergedSettings = mergeHooksSettings(existingSettings, templateSettings);
+      // Layer the opt-in outputStyle onto the merged settings — preserves every
+      // sibling key; absent capabilities is a no-op (byte-identical to the merge).
+      applyOutputStyleCapability(mergedSettings, anaJson);
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2), 'utf-8');
     } catch {
       // Malformed JSON - warn and overwrite with our defaults
       console.log(
         chalk.yellow('\n  Warning: existing .claude/settings.json is malformed, overwriting with Anatomia defaults')
       );
+      applyOutputStyleCapability(templateSettings, anaJson);
       await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
     }
   }
@@ -322,6 +335,12 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
   // Refresh CLAUDE.md from stock (re-interpolated)
   const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
   if (claudeMdChanged) changed.push(claudeMdChanged);
+
+  // Opt-in managed-block surfaces. Re-init reconciles the command-file set:
+  // entries dropped from config are pruned (marker-headed files only), and a
+  // hand-authored command file (no marker) is never touched. Absent = no-op.
+  await applyCommandCapabilities(claudePath, anaJson);
+  await applyMcpServersCapability(cwd, anaJson);
 
   spinner.succeed('Created .claude/ configuration (merged)');
   return changed;
@@ -773,6 +792,271 @@ function pruneHookCommand(hooks: unknown, event: string, command: string): void 
   } else {
     hooksObj[event] = kept;
   }
+}
+
+// ── Managed-block surfaces (Slice 4) ───────────────────────────────────────
+//
+// `mergeManagedBlock` is NET-NEW code modeled on two existing disciplines, NOT
+// an extraction or rename of `mergeHooksSettings` (which is hook-array
+// dedup-by-command — a different mechanism left fully intact above):
+//
+//   1. The hooks-merge BOUNDARY discipline — only ever touch the Anatomia-owned
+//      region of a file; every byte the user authored outside it survives.
+//   2. The `## Detected` / .gitignore-sentinel INJECTION discipline — the owned
+//      region is delimited by begin/end markers, so re-init replaces exactly
+//      that region in place (or strips it entirely when the source is removed).
+//
+// Capability surfaces wired through it: `capabilities.commands.<name>` →
+// `.claude/commands/<name>.md` (marker-headed), `capabilities.outputStyle` →
+// `settings.json` key, `capabilities.mcpServers` → `.mcp.json`. Absent
+// capabilities writes zero new files (the no-regression contract).
+
+/**
+ * HTML-comment begin marker for an Anatomia-managed block in a markdown file.
+ *
+ * @param markerKey - Stable key identifying the managed region
+ * @returns The begin-marker line
+ */
+function managedBlockBegin(markerKey: string): string {
+  return `<!-- >>> Anatomia managed: ${markerKey} (do not edit this block) >>> -->`;
+}
+
+/**
+ * HTML-comment end marker for an Anatomia-managed block in a markdown file.
+ *
+ * @param markerKey - Stable key identifying the managed region
+ * @returns The end-marker line
+ */
+function managedBlockEnd(markerKey: string): string {
+  return `<!-- <<< Anatomia managed: ${markerKey} <<< -->`;
+}
+
+/**
+ * Merge an Anatomia-managed block into existing file content, touching only the
+ * marker-delimited region keyed by `markerKey` and preserving every other byte.
+ *
+ * Boundary + injection discipline (see the section comment above):
+ *  - `existing` null/absent → return the wrapped block alone (fresh write).
+ *  - `existing` already carries this marker block → replace just that region in
+ *    place, preserving all surrounding user content.
+ *  - `existing` has no such block → append the wrapped block after the user's
+ *    content (a single trailing newline of separation), preserving it verbatim.
+ *  - `managed` null → PRUNE: strip this marker block out entirely, returning the
+ *    surrounding user content (or `null` when nothing user-authored remains, so
+ *    the caller can delete a now-empty managed-only file).
+ *
+ * Never throws. A file whose markers were hand-mangled (begin without end)
+ * degrades to the append path rather than corrupting the file.
+ *
+ * @param existing - Existing file content, or null when the file is absent
+ * @param managed - The managed block body (no markers), or null to prune the block
+ * @param markerKey - Stable key identifying this managed region
+ * @returns The merged file content, or null when pruning leaves nothing
+ */
+export function mergeManagedBlock(
+  existing: string | null,
+  managed: string | null,
+  markerKey: string,
+): string | null {
+  const begin = managedBlockBegin(markerKey);
+  const end = managedBlockEnd(markerKey);
+  const wrapped = managed === null ? null : `${begin}\n${managed}\n${end}`;
+
+  if (existing === null || existing === '') {
+    // Fresh file: emit the wrapped block (or nothing when pruning a non-file).
+    return wrapped === null ? null : `${wrapped}\n`;
+  }
+
+  const beginIdx = existing.indexOf(begin);
+  const endIdx = existing.indexOf(end);
+  const hasBlock = beginIdx !== -1 && endIdx !== -1 && endIdx > beginIdx;
+
+  if (!hasBlock) {
+    // No managed region present.
+    if (wrapped === null) return existing; // nothing to prune — leave as-is
+    // Append our block, preserving the user's content with one blank line gap.
+    const base = existing.endsWith('\n') ? existing : `${existing}\n`;
+    return `${base}\n${wrapped}\n`;
+  }
+
+  // Replace or strip the existing managed region in place.
+  const before = existing.slice(0, beginIdx);
+  const after = existing.slice(endIdx + end.length);
+
+  if (wrapped === null) {
+    // PRUNE: drop the block, collapse the blank line that separated it, and
+    // trim trailing whitespace introduced by removal.
+    const stitched = `${before.replace(/\n+$/, '')}${after.replace(/^\n+/, '\n')}`;
+    const trimmed = stitched.replace(/\s+$/, '');
+    return trimmed === '' ? null : `${trimmed}\n`;
+  }
+
+  return `${before}${wrapped}${after}`;
+}
+
+/** Per-name command body map under `capabilities.commands`. */
+type CommandsCapability = Record<string, string>;
+
+/**
+ * Narrow an unknown value to a plain (non-array) object record.
+ *
+ * @param value - Candidate value
+ * @returns The record, or null when not a plain object
+ */
+function asRecordValue(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+/**
+ * Read the `capabilities` object off a parsed ana.json, fail-soft.
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @returns The capabilities record, or null when absent/malformed
+ */
+function readCapabilities(anaJson: unknown): Record<string, unknown> | null {
+  const root = asRecordValue(anaJson);
+  if (!root) return null;
+  return asRecordValue(root['capabilities']);
+}
+
+/**
+ * Read `capabilities.commands` as a `{ name: body }` map, dropping any entry
+ * whose body is not a string (fail-soft — a malformed entry is ignored, never a
+ * crash, never a clobber).
+ *
+ * @param anaJson - Parsed ana.json (validated or raw), or anything
+ * @returns A name→body map (possibly empty), or null when the key is absent
+ */
+function readCommandsCapability(anaJson: unknown): CommandsCapability | null {
+  const caps = readCapabilities(anaJson);
+  if (!caps) return null;
+  const commands = asRecordValue(caps['commands']);
+  if (!commands) return null;
+  const out: CommandsCapability = {};
+  for (const [name, body] of Object.entries(commands)) {
+    // Slashes/traversal in a command name would escape the commands dir.
+    if (!/^[A-Za-z0-9._-]+$/.test(name)) continue;
+    if (typeof body === 'string') out[name] = body;
+  }
+  return out;
+}
+
+/**
+ * Wire `capabilities.commands` to `.claude/commands/<name>.md`.
+ *
+ * Each declared command becomes a marker-headed `.claude/commands/<name>.md`.
+ * On re-init the managed set is reconciled: a command dropped from config has
+ * its managed file pruned (only if it still carries our marker — a file a human
+ * took over by deleting the marker is left untouched). A hand-authored
+ * `mine.md` with no marker is never created, modified, or deleted. Absent
+ * `capabilities.commands` writes/touches nothing.
+ *
+ * @param claudePath - Path to the `.claude/` directory
+ * @param anaJson - Parsed ana.json driving the command set
+ */
+async function applyCommandCapabilities(claudePath: string, anaJson: unknown): Promise<void> {
+  const commands = readCommandsCapability(anaJson);
+  if (!commands) return; // absent capability — no new files, no reconciliation
+
+  const commandsDir = path.join(claudePath, 'commands');
+  const declared = new Set(Object.keys(commands));
+
+  // Write/refresh each declared command's managed block.
+  if (declared.size > 0) {
+    await fs.mkdir(commandsDir, { recursive: true });
+  }
+  for (const [name, body] of Object.entries(commands)) {
+    const destPath = path.join(commandsDir, `${name}.md`);
+    const existing = (await fileExists(destPath))
+      ? await fs.readFile(destPath, 'utf-8')
+      : null;
+    const merged = mergeManagedBlock(existing, body, `command:${name}`);
+    if (merged !== null) {
+      await atomicWriteFile(destPath, merged, `.claude/commands/${name}.md`);
+    }
+  }
+
+  // Reconcile: prune managed command files that are no longer declared. Only
+  // marker-carrying files are pruned — hand-authored files survive untouched.
+  if (!(await dirExists(commandsDir))) return;
+  let entries: string[];
+  try {
+    entries = await fs.readdir(commandsDir);
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    if (!entry.endsWith('.md')) continue;
+    const name = entry.slice(0, -'.md'.length);
+    if (declared.has(name)) continue;
+    const destPath = path.join(commandsDir, entry);
+    const content = await fs.readFile(destPath, 'utf-8').catch(() => null);
+    if (content === null) continue;
+    if (!content.includes(managedBlockBegin(`command:${name}`))) continue; // hand-authored — leave it
+    const pruned = mergeManagedBlock(content, null, `command:${name}`);
+    if (pruned === null) {
+      await fs.rm(destPath, { force: true });
+    } else {
+      await atomicWriteFile(destPath, pruned, `.claude/commands/${entry}`);
+    }
+  }
+}
+
+/**
+ * Wire `capabilities.outputStyle` to a `settings.json` `outputStyle` key.
+ *
+ * Mutates the settings object in place, adding/overwriting only the
+ * `outputStyle` key and leaving every sibling (hooks, user keys) intact. A
+ * non-string value is ignored (fail-soft). Absent capability is a no-op, so
+ * stock settings.json stays byte-identical.
+ *
+ * @param settings - The settings object to mutate
+ * @param anaJson - Parsed ana.json driving the outputStyle value
+ */
+function applyOutputStyleCapability(settings: Record<string, unknown>, anaJson: unknown): void {
+  const caps = readCapabilities(anaJson);
+  if (!caps) return;
+  const value = caps['outputStyle'];
+  if (typeof value !== 'string') return; // absent/malformed — leave settings as-is
+  settings['outputStyle'] = value;
+}
+
+/**
+ * Wire `capabilities.mcpServers` to a project-root `.mcp.json`.
+ *
+ * The whole `mcpServers` object is the managed surface. The file's
+ * `{ "mcpServers": {...} }` shape is merged: our declared servers are written
+ * under `mcpServers`, every other top-level key and every user-authored server
+ * not in our set survives. Absent capability writes no file. A malformed
+ * existing `.mcp.json` degrades to a fresh write of our block rather than a
+ * crash.
+ *
+ * @param cwd - Project root directory
+ * @param anaJson - Parsed ana.json driving the MCP server set
+ */
+async function applyMcpServersCapability(cwd: string, anaJson: unknown): Promise<void> {
+  const caps = readCapabilities(anaJson);
+  if (!caps) return;
+  const servers = asRecordValue(caps['mcpServers']);
+  if (!servers) return; // absent/malformed — no file written
+
+  const mcpPath = path.join(cwd, '.mcp.json');
+  let doc: Record<string, unknown> = {};
+  if (await fileExists(mcpPath)) {
+    try {
+      const parsed = JSON.parse(await fs.readFile(mcpPath, 'utf-8'));
+      const rec = asRecordValue(parsed);
+      if (rec) doc = rec;
+    } catch {
+      // Malformed existing .mcp.json — fall back to a fresh document.
+      doc = {};
+    }
+  }
+
+  const existingServers = asRecordValue(doc['mcpServers']) ?? {};
+  doc['mcpServers'] = { ...existingServers, ...servers };
+  await atomicWriteFile(mcpPath, `${JSON.stringify(doc, null, 2)}\n`, '.mcp.json');
 }
 
 /**
