@@ -16,6 +16,7 @@ import type { ProofChainEntry, ProofChain, ProofChainStats, ProcessAttestation, 
 import { agentCommand } from './platform.js';
 import { countPhases } from './work-state.js';
 import { isProcessCaptureEnabled } from '../utils/forensics.js';
+import { assembleComplianceAttestations } from '../utils/compliance.js';
 
 /** Per-file churn map as stored in `.saves.json`. */
 type ModuleChurnMap = Record<string, { added: number; deleted: number }>;
@@ -333,6 +334,23 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     );
   }
 
+  // Assemble the optional behavioral attestations (Phase 2) — one committed
+  // compliance record per transcript. Capture-on only; EVIDENCE, never a gate (a
+  // violated verdict never changes proof.result). A record with incomplete
+  // coverage is announced loudly here but never blocks completion.
+  const compliance = isProcessCaptureEnabled(projectRoot)
+    ? assembleComplianceAttestations(projectRoot, slug)
+    : [];
+  const incompleteCompliance = compliance.filter((c) => !c.complete);
+  if (incompleteCompliance.length > 0) {
+    console.error(
+      chalk.yellow(
+        `Warning: ${incompleteCompliance.length} session attestation(s) have incomplete coverage — ` +
+          `behavioral verdicts are evidence, never a gate.`,
+      ),
+    );
+  }
+
   const entry: ProofChainEntry = {
     slug,
     feature: proof.feature,
@@ -368,6 +386,7 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     build_concerns: proof.build_concerns ?? [],
     ...(commitHygiene.length > 0 ? { commit_hygiene: commitHygiene } : {}),
     ...(processAttestation ? { process: processAttestation } : {}),
+    ...(compliance.length > 0 ? { compliance } : {}),
     ...(worktreeMeta ? { worktree: worktreeMeta } : {}),
   };
 
