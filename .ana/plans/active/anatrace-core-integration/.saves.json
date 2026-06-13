@@ -18,16 +18,28 @@
     "hash": "sha256:59f34b384715784b106096d04f61bbc891730e7c3c21ea3212ecc041baa263a4"
   },
   "plan": {
-    "saved_at": "2026-06-13T21:46:20.848Z",
-    "hash": "sha256:3527cb3acb4cbe91ae46a7d756c24f73acd792b41f3695ed9c53f8ca64182330"
+    "saved_at": "2026-06-13T21:59:48.253Z",
+    "hash": "sha256:f37f61b5a1682acf5fcdd2217ae83e2ab1cb1de0ef50e04f2014b1541ed17ed0",
+    "history": [
+      {
+        "saved_at": "2026-06-13T21:46:20.848Z",
+        "hash": "sha256:3527cb3acb4cbe91ae46a7d756c24f73acd792b41f3695ed9c53f8ca64182330"
+      }
+    ]
   },
   "spec-1": {
     "saved_at": "2026-06-13T21:46:20.848Z",
     "hash": "sha256:62b72a2bb2d9737cfc979719583631a4b8fc0e5ba8438014349feaa90745f37f"
   },
   "spec-2": {
-    "saved_at": "2026-06-13T21:46:20.848Z",
-    "hash": "sha256:85aaf1268ed98ed7ec82125c34275c91f37c2d7b12117903245f00405ba1618f"
+    "saved_at": "2026-06-13T21:59:48.255Z",
+    "hash": "sha256:385d24894d461056c1b53db8ff5d543edbd2c89663286374ea867585f1033578",
+    "history": [
+      {
+        "saved_at": "2026-06-13T21:46:20.848Z",
+        "hash": "sha256:85aaf1268ed98ed7ec82125c34275c91f37c2d7b12117903245f00405ba1618f"
+      }
+    ]
   },
   "spec-3": {
     "saved_at": "2026-06-13T21:46:20.848Z",
