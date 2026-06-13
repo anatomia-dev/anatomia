@@ -29,6 +29,9 @@ importers:
       '@manypkg/get-packages':
         specifier: ^3.1.0
         version: 3.1.0
+      anatrace-core:
+        specifier: 0.2.0
+        version: 0.2.0
       chalk:
         specifier: ^5.3.0
         version: 5.6.2
@@ -1852,6 +1855,10 @@ packages:
 
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
+
+  anatrace-core@0.2.0:
+    resolution: {integrity: sha512-o3n3KNu5++kf7jGXQ0hkYbjKzmp67Oc+r0zRPF5zPdUZM+VpTKExXMruZY+P4lHfX05DQa9K7iYJrkhIzca6LQ==}
+    engines: {node: '>=22.0.0'}
 
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
@@ -5676,6 +5683,10 @@ snapshots:
       fast-json-stable-stringify: 2.1.0
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
+
+  anatrace-core@0.2.0:
+    dependencies:
+      yaml: 2.8.3
 
   ansi-regex@5.0.1: {}
 
