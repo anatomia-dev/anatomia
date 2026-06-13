@@ -173,6 +173,31 @@ describe('buildReadingOrder — token budget', () => {
   });
 });
 
+describe('buildReadingOrder — degrade-not-crash', () => {
+  it('returns null on an empty graph (no nodes, no edges) rather than throwing', () => {
+    expect(buildReadingOrder(baseInput({ graph: { nodes: [], edges: [] } }))).toBeNull();
+  });
+
+  it('returns null when edges reference only out-of-node-set files (sparse after filtering)', () => {
+    // Edges exist but reference ghosts; below the edge threshold is the gate, so
+    // a 1-edge graph is null regardless. Proves the threshold guards crashes.
+    const order = buildReadingOrder(
+      baseInput({ graph: { nodes: ['a.ts'], edges: [edge('a.ts', 'ghost.ts')] } }),
+    );
+    expect(order).toBeNull();
+  });
+
+  it('tolerates a bug-magnet row for a file not in the graph (no entry, no crash)', () => {
+    const order = buildReadingOrder(
+      baseInput({
+        bugMagnets: [{ file: 'not-in-graph.ts', touchCount: 9, findingsPerTouch: 2, rejectionCycles: 1 }],
+      }),
+    )!;
+    // The orphan magnet contributes no entry (entries come from graph nodes).
+    expect(order.entries.some((e) => e.file === 'not-in-graph.ts')).toBe(false);
+  });
+});
+
 describe('resolveImportRelationships', () => {
   const graph = {
     nodes: ['a.ts', 'b.ts', 'c.ts'],

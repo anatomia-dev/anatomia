@@ -256,4 +256,25 @@ describe('persistCodeGraph', () => {
     await fs.writeFile(filePath, 'x', 'utf-8');
     await expect(persistCodeGraph(path.join(filePath, 'state'), graph)).resolves.toBeUndefined();
   });
+
+  it('re-persisting overwrites idempotently (byte-identical modulo timestamp)', async () => {
+    // Re-init persists the graph again into the (swapped) state dir. Persisting
+    // the same graph twice must produce byte-identical content except for the
+    // `generated` timestamp — no accumulation, no stale residue.
+    const parsed = analysis([
+      file('src/a.ts', [{ module: './b', names: ['x'] }]),
+      file('src/b.ts', []),
+    ]);
+    const graph = buildImportGraph(parsed, []);
+    const stateDir = path.join(tmp, '.ana', 'state');
+
+    await persistCodeGraph(stateDir, graph);
+    const first = JSON.parse(await fs.readFile(path.join(stateDir, 'code-graph.json'), 'utf-8'));
+    await persistCodeGraph(stateDir, graph);
+    const second = JSON.parse(await fs.readFile(path.join(stateDir, 'code-graph.json'), 'utf-8'));
+
+    const strip = (g: { generated: string }) => ({ ...g, generated: '' });
+    expect(JSON.stringify(strip(first))).toBe(JSON.stringify(strip(second)));
+    expect(second.nodes).toEqual(['src/a.ts', 'src/b.ts']);
+  });
 });

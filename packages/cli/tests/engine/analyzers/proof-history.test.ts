@@ -200,6 +200,44 @@ describe('readProofHistory — synthetic fixtures', () => {
     const result = await readProofHistory(tmp);
     expect(result).toBeNull();
   });
+
+  it('returns null when entries is not an array (malformed shape, degrade not crash)', async () => {
+    const anaDir = path.join(tmp, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    // Valid JSON, wrong shape — `entries` is an object, not an array.
+    await fs.writeFile(
+      path.join(anaDir, 'proof_chain.json'),
+      JSON.stringify({ schema: 1, entries: { nope: true } }),
+      'utf-8',
+    );
+    const result = await readProofHistory(tmp);
+    expect(result).toBeNull();
+  });
+
+  it('tolerates entries with missing findings / rejection_cycles (?? defaults)', async () => {
+    // Entries carry modules_touched but neither findings nor rejection_cycles —
+    // the analyzer must default both to 0 (rate 0) and still gate/rank, not throw.
+    const anaDir = path.join(tmp, '.ana');
+    await fs.mkdir(anaDir, { recursive: true });
+    await fs.writeFile(
+      path.join(anaDir, 'proof_chain.json'),
+      JSON.stringify({
+        schema: 1,
+        entries: [
+          { slug: 'a', modules_touched: ['bare.ts'] },
+          { slug: 'b', modules_touched: ['bare.ts'] },
+          { slug: 'c', modules_touched: ['bare.ts'] },
+        ],
+      }),
+      'utf-8',
+    );
+    const result = (await readProofHistory(tmp)) as ProofHistory;
+    expect(result).not.toBeNull();
+    const bare = result.bugMagnetFiles.find((m) => m.file === 'bare.ts');
+    expect(bare?.touchCount).toBe(3);
+    expect(bare?.findingsPerTouch).toBe(0);
+    expect(bare?.rejectionCycles).toBe(0);
+  });
 });
 
 describe('readProofHistory — real .ana/proof_chain.json', () => {
@@ -234,6 +272,38 @@ describe('readProofHistory — real .ana/proof_chain.json', () => {
       expect(couple.fileA < couple.fileB).toBe(true);
       expect(couple.slugs.length).toBe(couple.coTouchCount);
       expect(couple.coTouchCount).toBeGreaterThan(0);
+    }
+  });
+
+  it('matches the build spec verified premises exactly (full-path touch counts)', async () => {
+    // These are the spec's independently-confirmed numbers (line 13). Locking
+    // them in turns a silent regression in ledger parsing into a red test.
+    const result = (await readProofHistory(REPO_ROOT)) as ProofHistory;
+    const byFile = new Map(result.bugMagnetFiles.map((m) => [m.file, m]));
+
+    expect(byFile.get('packages/cli/src/commands/work.ts')?.touchCount).toBe(68);
+    expect(byFile.get('packages/cli/src/commands/proof.ts')?.touchCount).toBe(42);
+    expect(byFile.get('packages/cli/src/utils/proofSummary.ts')?.touchCount).toBe(36);
+
+    // Two `proof.ts` files exist; ranking is by FULL path, not basename. The
+    // commands/proof.ts row above must NOT be conflated with src/types/proof.ts.
+    const proofTs = result.bugMagnetFiles.filter((m) => m.file.endsWith('/proof.ts'));
+    const distinctPaths = new Set(proofTs.map((m) => m.file));
+    expect(distinctPaths.has('packages/cli/src/commands/proof.ts')).toBe(true);
+    // Each path is its own ranked row (no basename collapse).
+    expect(distinctPaths.size).toBe(proofTs.length);
+  });
+
+  it('survives the 2 legacy entries that lack modules_touched (?? [] guard)', async () => {
+    // 2 of 202 real entries predate modules_touched. The analyzer must skip
+    // them via `?? []` and still produce a populated map — never crash, never
+    // count a legacy entry as a touch.
+    const result = await readProofHistory(REPO_ROOT);
+    expect(result).not.toBeNull();
+    expect((result as ProofHistory).bugMagnetFiles.length).toBeGreaterThan(0);
+    // No file's touch count can exceed the 200 entries that carry the field.
+    for (const m of (result as ProofHistory).bugMagnetFiles) {
+      expect(m.touchCount).toBeLessThanOrEqual(200);
     }
   });
 });
