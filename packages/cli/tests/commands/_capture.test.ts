@@ -18,10 +18,12 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI_PATH = path.resolve(__dirname, '../../dist/index.js');
+const require = createRequire(import.meta.url);
 
 describe('ana _capture', () => {
   let tmpHome: string;
@@ -212,6 +214,29 @@ describe('ana _capture', () => {
     for (const pattern of networkPatterns) {
       expect(combined).not.toMatch(pattern);
     }
+  });
+
+  // @ana A001
+  it('pins anatrace-core to an exact version (no caret/tilde)', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'),
+    ) as { dependencies?: Record<string, string> };
+    expect(pkg.dependencies?.['anatrace-core']).toBe('0.2.0');
+  });
+
+  // @ana A012
+  it('keeps the no-network guarantee transitive: anatrace-core runtime deps ⊆ { yaml }', () => {
+    // The engine is now a runtime dependency, so its OWN dependency tree must stay
+    // inside the no-network guarantee — not just Anatomia's source. Read the
+    // installed package.json and assert every runtime dep is on the allowlist.
+    const ALLOWLIST = new Set(['yaml']);
+    const corePkgPath = require.resolve('anatrace-core/package.json');
+    const corePkg = JSON.parse(fs.readFileSync(corePkgPath, 'utf-8')) as {
+      dependencies?: Record<string, string>;
+    };
+    const runtimeDeps = Object.keys(corePkg.dependencies ?? {});
+    const disallowed = runtimeDeps.filter((d) => !ALLOWLIST.has(d));
+    expect(disallowed).toEqual([]); // fails loudly with the offending dep name(s)
   });
 
   // ── Retired --derive (SessionEnd/Stop) is a tolerated no-op ──────────────
