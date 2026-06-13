@@ -35,6 +35,7 @@ import { detectProjectType } from './detectors/projectType.js';
 import { detectFramework } from './detectors/framework.js';
 import { detectApplicationShape } from './detectors/applicationShape.js';
 import { analyzeStructure } from './analyzers/structure/index.js';
+import { readProofHistory, toBugMagnetFiles } from './analyzers/proof-history/index.js';
 import { annotateServiceRoles } from './utils/serviceAnnotation.js';
 import { countFiles } from '../utils/fileCounts.js';
 import { buildCensus } from './census.js';
@@ -1101,6 +1102,23 @@ export async function scanProject(
     parsedFiles: parsed?.files ?? [],
   });
 
+  // Slice 1: Proof-history risk map. Runs at every tier (surface + deep) — it
+  // reads the proof-chain ledger, not the symbol graph, so it has no
+  // tree-sitter dependency. `null` when there is no usable proof chain, in
+  // which case gitIntelligence stays null (the shape-frozen default). When
+  // present, it populates ONLY the proof-chain fields of bugMagnetFiles; the
+  // other gitIntelligence sub-fields (churn/busFactor/co-change) belong to the
+  // git-churn path and remain null here.
+  const proofHistory = await readProofHistory(rootPath);
+  const gitIntelligence: EngineResult['gitIntelligence'] = proofHistory
+    ? {
+        churnHotspots: null,
+        busFactor: null,
+        coChangeCoupling: null,
+        bugMagnetFiles: toBugMagnetFiles(proofHistory),
+      }
+    : null;
+
   return {
     schemaVersion: '1.0',
     applicationShape: shapeResult.shape,
@@ -1136,7 +1154,9 @@ export async function scanProject(
     circularDeps: null,
     orphanFiles: null,
     complexityHotspots: null,
-    gitIntelligence: null,
+    // Slice 1: proof-history risk map populates bugMagnetFiles' proof-chain
+    // fields; null when no proof chain (see above).
+    gitIntelligence,
     dependencyIntelligence: null,
     technicalDebtMarkers: null,
     inconsistencies: null,
