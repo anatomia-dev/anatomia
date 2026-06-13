@@ -252,6 +252,120 @@ describe('buildReadingOrder — in-degree floor & blend (TARGET 1/5)', () => {
   });
 });
 
+describe('buildReadingOrder — informativeness over ubiquity (Round 2)', () => {
+  /**
+   * The locking test for the Round-2 objective shift. A ubiquitous UI primitive
+   * imported by almost the whole repo (a "stopword") must rank BELOW a
+   * high-out-degree orchestrator/entrypoint that is imported far less but
+   * composes the system. This pins the IDF ubiquity down-weight + the
+   * orchestrator/entrypoint boost + the strengthened UI-atom demotion together:
+   * raw in-degree would rank the button first; informativeness must not.
+   */
+  function ubiquitousPrimitiveVsOrchestrator() {
+    // 40 leaf modules. EVERY one imports the UI atom `components/ui/button.tsx`
+    // (in-degree ~40, out-degree 0 — the canonical ubiquitous stopword). A
+    // smaller cohort routes through `src/server/api/router.ts`, which BOTH is
+    // imported by several files AND imports many modules (a real orchestrator /
+    // entrypoint). Pure in-degree ranks the button #1; the new ranking must not.
+    const N = 40;
+    const nodes: string[] = ['components/ui/button.tsx', 'src/server/api/router.ts'];
+    const edges: ImportEdge[] = [];
+    for (let i = 0; i < N; i++) {
+      const leaf = `src/leaf${i}.ts`;
+      nodes.push(leaf);
+      edges.push(edge(leaf, 'components/ui/button.tsx')); // everyone imports the atom
+    }
+    // The router is imported by 6 leaves (real fan-in) AND imports 12 modules
+    // (high out-degree → orchestrator), so it both consumes and is consumed.
+    for (let i = 0; i < 6; i++) edges.push(edge(`src/leaf${i}.ts`, 'src/server/api/router.ts'));
+    for (let i = 0; i < 12; i++) {
+      const dep = `src/handlers/h${i}.ts`;
+      nodes.push(dep);
+      edges.push(edge('src/server/api/router.ts', dep));
+    }
+    // Several genuine domain/data seams (db, schema, services) each imported by
+    // a chunk of the repo — informative "read first" files that, with the IDF +
+    // domain boost, must all outrank the ubiquitous primitive and bury it past
+    // the top-5 (as they do in a real codebase).
+    const domain = ['src/db/index.ts', 'src/db/schema.ts', 'src/services/auth.service.ts', 'src/models/user.ts'];
+    for (const d of domain) nodes.push(d);
+    for (let i = 0; i < N; i++) {
+      for (const [j, d] of domain.entries()) {
+        if (i % (j + 2) === 0) edges.push(edge(`src/leaf${i}.ts`, d)); // staggered fan-in
+      }
+    }
+    const inDegree: Record<string, number> = {};
+    for (const n of nodes) inDegree[n] = 0;
+    for (const e of edges) inDegree[e.to] = (inDegree[e.to] ?? 0) + 1;
+    return { nodes, edges, inDegree, barrelFiles: [], generatedFiles: [] };
+  }
+
+  it('ranks a high-out-degree orchestrator/entrypoint ABOVE a ubiquitous low-out-degree UI primitive', () => {
+    const graph = ubiquitousPrimitiveVsOrchestrator();
+    // Sanity: the button really is the most-imported file (raw in-degree would
+    // rank it first) — the test is meaningful only if that premise holds.
+    expect(graph.inDegree['components/ui/button.tsx']).toBeGreaterThan(
+      graph.inDegree['src/server/api/router.ts']!,
+    );
+
+    const order = buildReadingOrder(baseInput({ graph }))!;
+    const rankOf = (f: string) => order.entries.findIndex((e) => e.file === f);
+    expect(rankOf('src/server/api/router.ts')).toBeLessThan(rankOf('components/ui/button.tsx'));
+    // And the ubiquitous primitive is pushed out of the top-5 entirely.
+    expect(rankOf('components/ui/button.tsx')).toBeGreaterThanOrEqual(5);
+  });
+
+  it('keeps a domain/data hub (db) ranked above a more-imported UI atom', () => {
+    // The button is imported by MORE files than the db module, yet the db hub —
+    // a domain/data seam — must outrank it. Pins the domain boost + IDF penalty.
+    const nodes = ['components/ui/button.tsx', 'src/db/index.ts'];
+    const edges: ImportEdge[] = [];
+    for (let i = 0; i < 30; i++) {
+      const f = `src/m${i}.ts`;
+      nodes.push(f);
+      edges.push(edge(f, 'components/ui/button.tsx'));
+    }
+    for (let i = 0; i < 18; i++) edges.push(edge(`src/m${i}.ts`, 'src/db/index.ts'));
+    const inDegree: Record<string, number> = {};
+    for (const n of nodes) inDegree[n] = 0;
+    for (const e of edges) inDegree[e.to] = (inDegree[e.to] ?? 0) + 1;
+    const order = buildReadingOrder(
+      baseInput({ graph: { nodes, edges, inDegree, barrelFiles: [], generatedFiles: [] } }),
+    )!;
+    const rankOf = (f: string) => order.entries.findIndex((e) => e.file === f);
+    expect(inDegree['components/ui/button.tsx']).toBeGreaterThan(inDegree['src/db/index.ts']!);
+    expect(rankOf('src/db/index.ts')).toBeLessThan(rankOf('components/ui/button.tsx'));
+  });
+
+  it('does not down-weight a primitive-named file that actually orchestrates (high out-degree)', () => {
+    // `card.ts` is named like a UI primitive but imports 10 modules (out-degree
+    // 10) and is imported by 5 — it composes, so the UI-atom crush must NOT fire.
+    const nodes = ['components/ui/card.tsx', 'components/ui/badge.tsx'];
+    const edges: ImportEdge[] = [];
+    for (let i = 0; i < 5; i++) {
+      const f = `src/p${i}.ts`;
+      nodes.push(f);
+      edges.push(edge(f, 'components/ui/card.tsx'));
+      edges.push(edge(f, 'components/ui/badge.tsx')); // badge: pure leaf, same in-degree
+    }
+    for (let i = 0; i < 10; i++) {
+      const dep = `components/ui/parts/part${i}.tsx`;
+      nodes.push(dep);
+      edges.push(edge('components/ui/card.tsx', dep)); // card orchestrates
+    }
+    const inDegree: Record<string, number> = {};
+    for (const n of nodes) inDegree[n] = 0;
+    for (const e of edges) inDegree[e.to] = (inDegree[e.to] ?? 0) + 1;
+    const order = buildReadingOrder(
+      baseInput({ graph: { nodes, edges, inDegree, barrelFiles: [], generatedFiles: [] } }),
+    )!;
+    const rankOf = (f: string) => order.entries.findIndex((e) => e.file === f);
+    // Same in-degree, but card orchestrates (out-degree 10) while badge is a
+    // pure leaf — the orchestrator-spared card must outrank the crushed badge.
+    expect(rankOf('components/ui/card.tsx')).toBeLessThan(rankOf('components/ui/badge.tsx'));
+  });
+});
+
 describe('buildReadingOrder — coverage caveat (TARGET 2)', () => {
   it('attaches a caveat when the graph covers a minority of source files', () => {
     const order = buildReadingOrder(

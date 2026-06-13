@@ -139,6 +139,57 @@ const NONHEAD_DAMP = 0.15;
  */
 const NEAR_LEAF_INDEGREE = 2;
 
+// ── Round 2: rank by informativeness, not ubiquity ─────────────────────────
+// The Round-1 graph is faithful, but pure in-degree/PageRank rewards exactly
+// the wrong thing for UI-heavy apps: a button imported by 16% of the repo
+// outranks the database client. Ubiquity is ANTI-signal — a file imported
+// almost everywhere is a "stopword" whose omnipresence makes it LESS
+// informative to read first. The three levers below shift the objective from
+// "most imported" to "most informative / architecturally central".
+
+/**
+ * IDF-style ubiquity down-weight. A file imported by a large fraction of the
+ * repo behaves like a stopword: its centrality is multiplied by a smooth factor
+ * that is ~1.0 while fan-in stays below {@link UBIQUITY_KNEE} of all files, then
+ * falls off as the fraction climbs, bottoming out at {@link UBIQUITY_FLOOR} once
+ * a file is imported nearly everywhere. Computed as
+ * `clamp(log(N/inDeg) / log(1/KNEE), FLOOR, 1)` — the log ratio is 1.0 exactly
+ * at the knee and shrinks toward 0 as inDeg → N, so a 50%-of-repo barrel is
+ * crushed while an 8%-of-repo data hub is barely touched. O(1) per node.
+ */
+const UBIQUITY_KNEE = 0.08; // fan-in fraction at which the penalty begins
+const UBIQUITY_FLOOR = 0.18; // hardest down-weight for a near-universal import
+
+/**
+ * Architectural-signal boosts (multiplicative, applied to centrality). These
+ * reward files that carry "understand the system" value rather than raw fan-in:
+ *  - ENTRYPOINT: app/server/main/router/index at an app or package root, route
+ *    or handler files, `api/` — the seams a senior engineer opens first.
+ *  - DOMAIN: schema/prisma/db/models/services and `features/<domain>/` — the
+ *    data shapes and domain logic the rest of the code is organized around.
+ *  - ORCHESTRATOR: a file that both consumes and is consumed (high out-degree
+ *    AND non-trivial in-degree) composes the system rather than being a leaf
+ *    imported everywhere; scaled smoothly by out-degree.
+ */
+const ENTRYPOINT_BOOST = 1.6;
+const DOMAIN_BOOST = 1.45;
+/** Max multiplier from the orchestrator (out-degree) signal; reached asymptotically. */
+const ORCHESTRATOR_MAX_BOOST = 1.5;
+/** Out-degree at which the orchestrator boost reaches ~half its max (smooth ramp). */
+const ORCHESTRATOR_HALF_OUT = 8;
+/** A file needs at least this in-degree before its out-degree counts as orchestration. */
+const ORCHESTRATOR_MIN_IN = 3;
+
+/**
+ * Strengthened UI-atom / pure-barrel down-weight. A small leaf primitive under a
+ * UI/design-system directory with a primitive name (button, badge, toast, …)
+ * and low out-degree is the canonical stopword: high fan-in, near-zero reading
+ * value. We crush its centrality so it cannot hold a top-5 slot in a large app.
+ * Pure export-only barrels (no own declarations) are likewise demoted harder
+ * than the conservative {@link BARREL_DAMP} when they are also UI barrels.
+ */
+const UI_ATOM_DAMP = 0.12;
+
 /**
  * Coverage threshold: if the resolved import subgraph covers fewer than this
  * fraction of the repo's source files, attach a scope caveat so the ranking
@@ -228,6 +279,16 @@ export function buildReadingOrder(input: ReadingOrderInput): ReadingOrder | null
     if (d > maxInDegree) maxInDegree = d;
   }
 
+  // Raw out-degree (distinct imports) — "how many in-repo files this consumes".
+  // Drives the orchestrator boost: a file that both consumes and is consumed
+  // composes the system. O(E), deduped on (from, to) like in-degree.
+  const outDegree = computeOutDegree(graph);
+
+  // Total file universe for the IDF ubiquity penalty. The graph's node count is
+  // the population a fan-in fraction is measured against (every file that
+  // participated in an import). nFiles ≥ 1 keeps the log well-defined.
+  const nFiles = Math.max(1, graph.nodes.length);
+
   const barrelSet = new Set(graph.barrelFiles ?? []);
   const generatedSet = new Set(graph.generatedFiles ?? []);
 
@@ -269,15 +330,48 @@ export function buildReadingOrder(input: ReadingOrderInput): ReadingOrder | null
     const raw = inDegree[file] ?? 0;
     const normDeg = maxInDegree > 0 ? raw / maxInDegree : 0;
 
+    const outDeg = outDegree[file] ?? 0;
+
     // TARGET 5 — geometric mean of normalized PageRank and normalized
     // in-degree. A file that inherits PageRank but has few real importers
     // (small normDeg) can't inflate: sqrt(high * low) stays low. A real hub
     // scores high on BOTH, so the blend rewards it.
     let centrality = Math.sqrt(pr * normDeg);
 
+    // ROUND 2 — rank by informativeness, not ubiquity. A file imported by a
+    // large fraction of the repo is a stopword: its omnipresence makes it LESS
+    // informative to read first. Multiply centrality by the smooth IDF penalty
+    // so a 50%-of-repo barrel falls out of the head while an 8%-of-repo data hub
+    // is barely touched.
+    centrality *= ubiquityMultiplier(raw, nFiles);
+
+    // A re-export barrel (a UI/marketing index, or any non-domain package-root
+    // index with high fan-in and zero captured out-edges) is the worst stopword:
+    // it matches the index-at-package-root entrypoint shape yet teaches nothing.
+    // Detect it once so it is denied the entrypoint boost and crushed below. The
+    // shape rule catches `export * from`-only barrels the parser records as
+    // exports (so they carry no out-edge) without flagging the data-layer index.
+    const reexportBarrel = isUiBarrelIndex(file) || isReexportBarrelByShape(file, raw, outDeg);
+
+    // Reward architectural signal over raw fan-in. Entrypoints (app/server/
+    // route/api/index-at-root) and domain/data files (schema/prisma/db/services/
+    // features) carry "understand the system" value; orchestrators that both
+    // consume and are consumed compose it. Boosts stack multiplicatively but are
+    // bounded, so they re-order among real hubs without manufacturing one. A
+    // re-export barrel is explicitly excluded from the entrypoint boost.
+    if (!reexportBarrel && isEntrypointPath(file)) centrality *= ENTRYPOINT_BOOST;
+    if (isDomainPath(file)) centrality *= DOMAIN_BOOST;
+    centrality *= orchestratorMultiplier(raw, outDeg);
+
     // Down-weight barrels and generated files — high fan-in, low reading value.
     if (generatedSet.has(file)) centrality *= GENERATED_DAMP;
     else if (barrelSet.has(file)) centrality *= BARREL_DAMP;
+    // Strengthened leaf-primitive demotion: a UI atom (button/badge/toast/…)
+    // with low out-degree, and any re-export barrel, are the canonical
+    // stopwords — high fan-in, near-zero reading value. Crush them so they
+    // cannot hold a top-5 slot in a large app. A primitive-named file that
+    // actually orchestrates (high out-degree) is spared.
+    if (reexportBarrel || (isUiAtom(file) && outDeg <= 2)) centrality *= UI_ATOM_DAMP;
     // Down-weight obvious non-head paths (e2e helpers, Cypress fixtures, test
     // scaffolds): a shared test helper can carry real fan-in but is never the
     // architectural reading order, so it must not outscore real hubs. The
@@ -371,6 +465,25 @@ function computeInDegree(graph: Pick<CodeGraph, 'nodes' | 'edges'>): Record<stri
 }
 
 /**
+ * Raw out-degree (distinct in-repo imports) per node, deduped on (from, to) so a
+ * file importing the same target twice counts once — the mirror of in-degree.
+ * Drives the orchestrator boost. O(E); never carried on the graph today, so
+ * always derived here.
+ */
+function computeOutDegree(graph: Pick<CodeGraph, 'nodes' | 'edges'>): Record<string, number> {
+  const seen = new Set<string>();
+  const deg: Record<string, number> = {};
+  for (const n of graph.nodes) deg[n] = 0;
+  for (const e of graph.edges) {
+    const key = `${e.from} ${e.to}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deg[e.from] = (deg[e.from] ?? 0) + 1;
+  }
+  return deg;
+}
+
+/**
  * Concrete, measured importance reason citing raw in-degree, replacing the
  * opaque "import centrality 1.00". A high-fan-in file reads as a "core hub";
  * a moderate one as "imported by N files"; a 0-importer node (a pure importer
@@ -440,6 +553,143 @@ function isNonHeadPath(p: string): boolean {
     /(^|\/)(test|tests|__tests__|fixtures|mocks)\//i.test(p) ||
     /\.(cy|e2e|spec|test|stories)\.[a-z]+$/i.test(p)
   );
+}
+
+/**
+ * UI-primitive leaf: a small atom under a UI / design-system / components
+ * directory whose basename is a known primitive (button, badge, toast, …). It
+ * is matched on BOTH a UI-ish path AND a primitive name so a domain file that
+ * merely lives under `components/` (e.g. a feature page) is not caught. The
+ * caller additionally gates on out-degree so a composite that happens to be
+ * named like a primitive but orchestrates many imports is spared.
+ */
+const UI_PRIMITIVE_NAME =
+  /^(button|badge|toast|spinner|input|textarea|typography|text|heading|loading|loadingcontent|tooltip|tooltipexplanation|alert|skeleton|avatar|label|checkbox|radio|switch|toggle|separator|divider|card|chip|tag|icon|iconcircle|spacer|kbd|progress)(\.[a-z]+)?$/i;
+
+/** A path segment that marks a UI / design-system / components location. */
+const UI_DIR_SEGMENT = /(^|\/)(ui|design-system|primitives|atoms|components)(\/|$)/i;
+
+function isUiAtom(p: string): boolean {
+  const base = p.split('/').pop() ?? p;
+  const stem = base.replace(/\.[a-z]+$/i, '');
+  if (!UI_PRIMITIVE_NAME.test(base)) return false;
+  // Require a UI-ish location OR a clearly primitive standalone name so a
+  // top-level `components/Toast.tsx` (no `ui/` segment) is still caught, but an
+  // arbitrary `lib/input.ts` parser is not unless it sits under a UI dir.
+  const uiDir = UI_DIR_SEGMENT.test(p);
+  return uiDir || /^(button|badge|toast|spinner|typography|skeleton|avatar)$/i.test(stem);
+}
+
+/** Whether the file is an `index.*` sitting at a directory/package root. */
+function isIndexFile(p: string): boolean {
+  const base = (p.split('/').pop() ?? p).toLowerCase();
+  return /^index\.[a-z]+$/.test(base);
+}
+
+/** The directory segment immediately enclosing `index.*` (lowercased). */
+function indexEnclosingSegment(p: string): string {
+  const base = p.split('/').pop() ?? p;
+  const dir = p.slice(0, p.length - base.length).replace(/\/$/, '');
+  return (dir.split('/').pop() ?? '').toLowerCase();
+}
+
+/**
+ * A UI / presentation re-export barrel: an `index` file whose enclosing
+ * package/dir is a UI, design-system, or marketing/content surface
+ * (`packages/ui/index.tsx`, `ui-patterns/index.tsx`, `marketing/index.ts`).
+ * These accumulate enormous fan-in (everything imports the design system or
+ * content through one entry) yet are the canonical stopword — reading the barrel
+ * teaches you nothing about the architecture. They must NOT receive the
+ * entrypoint boost and ARE crushed like a UI atom.
+ */
+function isUiBarrelIndex(p: string): boolean {
+  if (!isIndexFile(p)) return false;
+  const seg = indexEnclosingSegment(p);
+  return /(^|-)(ui|design-system|components|primitives|atoms|icons|marketing|content|emails?|email-templates?)$/.test(seg);
+}
+
+/**
+ * A pure re-export barrel inferred from graph shape: a package/dir-root `index`
+ * file with substantial fan-in but ZERO captured out-edges — it is imported by
+ * many yet imports nothing itself, the signature of an `export * from './x'`
+ * barrel (whose re-exports the graph records as exports, not import edges). A
+ * domain/data index (e.g. a `db`/`schema` package entry) is exempt: it is a
+ * legitimate "read first" data seam, not a presentation barrel.
+ */
+function isReexportBarrelByShape(p: string, inDeg: number, outDeg: number): boolean {
+  if (outDeg !== 0 || inDeg < 4) return false;
+  if (!isIndexFile(p)) return false;
+  // A domain/data index (db/schema/models/services) is a legitimate read-first
+  // data seam, not a presentation barrel — exempt it. (An `api/` route index is
+  // also real, caught by isDomainPath being false but the route shape elsewhere;
+  // here we only need to spare the data layer.)
+  if (isDomainPath(p)) return false;
+  return true;
+}
+
+/**
+ * Likely entrypoint: the seams a reader opens first. App/package-root
+ * `app`/`server`/`main`/`index`/`router` files, route/handler files, and
+ * anything under an `api/` segment. Index files only count as entrypoints at an
+ * app/package boundary (`src/index`, `<pkg>/index`), not a deep barrel.
+ */
+function isEntrypointPath(p: string): boolean {
+  const base = (p.split('/').pop() ?? p).toLowerCase();
+  const stem = base.replace(/\.[a-z]+$/i, '');
+  if (/(^|\/)api(\/|$)/i.test(p)) return true;
+  if (/(^|\.)(route|router|handler|controller|middleware)(\.[a-z]+)?$/i.test(base)) return true;
+  if (/^(server|main|app|bootstrap|application)$/i.test(stem)) return true;
+  if (/^(env|config|settings)$/i.test(stem)) return true; // server/env config entry
+  if (stem === 'index') {
+    // Only an app/package-root index is an entrypoint; a deep `foo/bar/index`
+    // is usually a re-export barrel, handled by the barrel down-weight instead.
+    return /(^|\/)(src|app|server|apps\/[^/]+|packages\/[^/]+)\/index\.[a-z]+$/i.test(p)
+      || /^[^/]+\/index\.[a-z]+$/i.test(p);
+  }
+  return false;
+}
+
+/**
+ * Domain / data file: schema, prisma, db, models, services, and a
+ * `features/<domain>/` or `domain/` layout. These carry the data shapes and
+ * business logic the rest of the system is organized around — high "understand
+ * the system" value independent of fan-in.
+ */
+function isDomainPath(p: string): boolean {
+  return (
+    /(^|\/)(schema|prisma|db|database|models?|entities|services?|domain|repositories)(\/|\b)/i.test(p) ||
+    /(^|\/)features?\/[^/]+\//i.test(p) ||
+    /(schema|prisma|\.model|\.entity|\.service|\.repository)(\.[a-z]+)?$/i.test(p.split('/').pop() ?? p)
+  );
+}
+
+/**
+ * Smooth IDF-style ubiquity multiplier in `[UBIQUITY_FLOOR, 1]`. Identity while
+ * fan-in stays under the knee fraction of all files; decays toward the floor as
+ * the fraction approaches 1 (a near-universal import). `log(N/inDeg)` is the
+ * classic IDF; dividing by `log(1/KNEE)` normalizes it to 1.0 at the knee.
+ */
+function ubiquityMultiplier(inDeg: number, nFiles: number): number {
+  if (inDeg <= 0 || nFiles <= 0) return 1;
+  const frac = inDeg / nFiles;
+  if (frac <= UBIQUITY_KNEE) return 1;
+  const idf = Math.log(nFiles / inDeg);
+  const norm = idf / Math.log(1 / UBIQUITY_KNEE);
+  return Math.max(UBIQUITY_FLOOR, Math.min(1, norm));
+}
+
+/**
+ * Smooth orchestrator multiplier in `[1, ORCHESTRATOR_MAX_BOOST]`, scaled by
+ * out-degree once a file is consumed by at least {@link ORCHESTRATOR_MIN_IN}
+ * others. A file that both imports many modules AND is itself imported composes
+ * the system; a pure leaf (out-degree 0) gets no boost. Uses a saturating ramp
+ * so a route handler with 8 imports gets ~half the max and big page components
+ * don't run away.
+ */
+function orchestratorMultiplier(inDeg: number, outDeg: number): number {
+  if (inDeg < ORCHESTRATOR_MIN_IN || outDeg <= 0) return 1;
+  const ramp = outDeg / (outDeg + ORCHESTRATOR_HALF_OUT); // 0→1, =0.5 at HALF_OUT
+  return 1 + (ORCHESTRATOR_MAX_BOOST - 1) * ramp;
 }
 
 /**
