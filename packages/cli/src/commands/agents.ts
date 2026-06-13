@@ -7,6 +7,8 @@
  *   ana agents model <agent> <model>    Set an agent's model
  *   ana agents model <agent> --default  Clear an agent's model override
  *   ana agents model --all <model>      Set model for all agents
+ *   ana agents skills <agent> <list>    Set an agent's projected skills (comma-separated)
+ *   ana agents skills <agent> --clear   Clear an agent's projected skills
  *
  * Exit codes:
  *   0 - Success
@@ -291,6 +293,134 @@ function getAvailableAgentNames(agentsDir: string): string[] {
 }
 
 /**
+ * Read ana.json as a raw object from the project root.
+ *
+ * @param root - Project root directory
+ * @returns The parsed ana.json object
+ * @throws Error when ana.json is missing or invalid JSON
+ */
+function readAnaJson(root: string): Record<string, unknown> {
+  const configPath = path.join(root, '.ana', 'ana.json');
+  if (!fs.existsSync(configPath)) {
+    throw new Error('No ana.json found. Run `ana init` first.');
+  }
+  return JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Record<string, unknown>;
+}
+
+/**
+ * Write ana.json back to the project root (2-space indent, trailing newline).
+ *
+ * @param root - Project root directory
+ * @param config - The config object to serialize
+ */
+function writeAnaJson(root: string, config: Record<string, unknown>): void {
+  const configPath = path.join(root, '.ana', 'ana.json');
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
+}
+
+/**
+ * Parse a comma-separated skills list into an ordered, deduplicated array.
+ *
+ * Whitespace around each entry is trimmed and empty entries dropped, so
+ * `"git-workflow, api-patterns"` and `"git-workflow,api-patterns"` both yield
+ * `['git-workflow', 'api-patterns']`.
+ *
+ * @param list - The raw comma-separated argument
+ * @returns Ordered, deduplicated skill names
+ */
+function parseSkillsList(list: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of list.split(',')) {
+    const name = raw.trim();
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
+}
+
+/**
+ * Set a single agent's projected skills in ana.json (`agents.<agent>.skills`).
+ *
+ * Writes the list into ana.json so it is projected into both the Claude
+ * frontmatter and the Codex `.agent.toml` + `## Skills` block on the next init,
+ * and — because ana.json survives re-init — re-projected on every subsequent
+ * re-init (no revert). Validates the agent against the live agents directory.
+ *
+ * @param root - Project root directory
+ * @param agentsDir - Absolute path to .claude/agents
+ * @param agentName - Agent filename stem
+ * @param skills - Ordered, deduplicated skill names
+ */
+function setAgentSkills(root: string, agentsDir: string, agentName: string, skills: string[]): void {
+  if (!fs.existsSync(path.join(agentsDir, `${agentName}.md`))) {
+    const available = getAvailableAgentNames(agentsDir);
+    throw new Error(`Unknown agent '${agentName}'\nAvailable agents: ${available.join(', ')}`);
+  }
+
+  const config = readAnaJson(root);
+  const agents = (typeof config['agents'] === 'object' && config['agents'] !== null && !Array.isArray(config['agents']))
+    ? (config['agents'] as Record<string, unknown>)
+    : {};
+  const entry = (typeof agents[agentName] === 'object' && agents[agentName] !== null && !Array.isArray(agents[agentName]))
+    ? (agents[agentName] as Record<string, unknown>)
+    : {};
+
+  entry['skills'] = skills;
+  agents[agentName] = entry;
+  config['agents'] = agents;
+  writeAnaJson(root, config);
+
+  console.log(`Set ${agentName} skills to [${skills.join(', ')}]`);
+  console.log(chalk.dim('Run `ana init` to project the change into your agent files.'));
+}
+
+/**
+ * Clear a single agent's projected skills in ana.json.
+ *
+ * Removes the `skills` key from `agents.<agent>` (pruning the now-empty agent
+ * entry, then the now-empty `agents` map, so absent stays absent). On the next
+ * init the agent's `skills` reverts to stock.
+ *
+ * @param root - Project root directory
+ * @param agentsDir - Absolute path to .claude/agents
+ * @param agentName - Agent filename stem
+ */
+function clearAgentSkills(root: string, agentsDir: string, agentName: string): void {
+  if (!fs.existsSync(path.join(agentsDir, `${agentName}.md`))) {
+    const available = getAvailableAgentNames(agentsDir);
+    throw new Error(`Unknown agent '${agentName}'\nAvailable agents: ${available.join(', ')}`);
+  }
+
+  const config = readAnaJson(root);
+  const agents = (typeof config['agents'] === 'object' && config['agents'] !== null && !Array.isArray(config['agents']))
+    ? (config['agents'] as Record<string, unknown>)
+    : null;
+  const entry = (agents && typeof agents[agentName] === 'object' && agents[agentName] !== null && !Array.isArray(agents[agentName]))
+    ? (agents[agentName] as Record<string, unknown>)
+    : null;
+
+  if (!entry || entry['skills'] === undefined) {
+    console.log(`${agentName} has no projected skills`);
+    return;
+  }
+
+  delete entry['skills'];
+  // Prune now-empty entry, then a now-empty agents map, so absent stays absent.
+  if (Object.keys(entry).length === 0) {
+    delete agents![agentName];
+  }
+  if (Object.keys(agents!).length === 0) {
+    delete config['agents'];
+  }
+  writeAnaJson(root, config);
+
+  console.log(`Cleared ${agentName} skills (will use stock on next init)`);
+  console.log(chalk.dim('Run `ana init` to project the change into your agent files.'));
+}
+
+/**
  * Register agents command with the CLI.
  *
  * Parent command `agents` lists agent dashboard. Subcommand `model`
@@ -380,6 +510,42 @@ export function registerAgentsCommand(program: Command): void {
       }
     });
 
+  const skillsCommand = new Command('skills')
+    .description('Set or clear an agent\'s projected skills (written to ana.json)')
+    .argument('<agent>', 'Agent name (filename stem)')
+    .argument('[list]', 'Comma-separated skill names (e.g. git-workflow,api-patterns)')
+    .option('--clear', 'Clear the agent\'s projected skills')
+    .action((agent: string, list: string | undefined, options: { clear?: boolean }) => {
+      try {
+        const root = findProjectRoot();
+        const agentsDir = getAgentsDir(root);
+
+        if (!fs.existsSync(agentsDir)) {
+          throw new Error('No agents directory found. Run `ana init` first.');
+        }
+
+        // ana agents skills <agent> --clear
+        if (options.clear) {
+          clearAgentSkills(root, agentsDir, agent);
+          return;
+        }
+
+        // ana agents skills <agent> <list>
+        if (list === undefined) {
+          console.error('Usage: ana agents skills <agent> <list>  |  ana agents skills <agent> --clear');
+          process.exitCode = 1;
+          return;
+        }
+
+        setAgentSkills(root, agentsDir, agent, parseSkillsList(list));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(chalk.red(msg));
+        process.exitCode = 1;
+      }
+    });
+
   agentsCommand.addCommand(modelCommand);
+  agentsCommand.addCommand(skillsCommand);
   program.addCommand(agentsCommand);
 }

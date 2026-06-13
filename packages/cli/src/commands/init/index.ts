@@ -178,7 +178,7 @@ export function registerInitCommand(program: Command): void {
         changedFiles.push(...await createClaudeConfiguration(cwd, engineResult, preflight.initState, anaJsonForSkills));
       }
       if (platforms.includes('codex')) {
-        changedFiles.push(...await createCodexConfiguration(cwd, preflight.initState));
+        changedFiles.push(...await createCodexConfiguration(cwd, preflight.initState, anaJsonForSkills));
       }
 
       // Content-gated consolidated warning — one entry listing only the files

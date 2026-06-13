@@ -51,6 +51,7 @@ import {
   stripFrontmatter,
   preserveTomlConfigKeys,
 } from '../../utils/agent-config.js';
+import { resolveAgentSkills } from '../../manifest.js';
 import type { InitState } from './types.js';
 import { dirExists, fileExists } from './preflight.js';
 import { getTemplatesDir, makeTestCommandNonInteractive } from './state.js';
@@ -271,7 +272,7 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
     await mergeAndWriteGitignore(claudeGitignorePath, CLAUDE_GITIGNORE_STOCK, '.claude/.gitignore');
 
     // Copy all agent files (fresh — never reports changes)
-    changed.push(...await copyAgentFiles(agentsPath, templatesDir));
+    changed.push(...await copyAgentFiles(agentsPath, templatesDir, anaJson));
 
     // Copy CLAUDE.md to project root (fresh — never reports a change)
     const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
@@ -330,7 +331,7 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
   }
 
   // Refresh agent instruction bodies from stock (config keys preserved)
-  changed.push(...await copyAgentFiles(agentsPath, templatesDir));
+  changed.push(...await copyAgentFiles(agentsPath, templatesDir, anaJson));
 
   // Refresh CLAUDE.md from stock (re-interpolated)
   const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
@@ -347,6 +348,58 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
 }
 
 /**
+ * Render a skills list as an inline-YAML frontmatter array (stock format).
+ *
+ * Matches the stock template byte layout (`skills: [git-workflow]`,
+ * `skills: [coding-standards, testing-standards]`) so a projected value that
+ * happens to equal stock stays byte-identical.
+ *
+ * @param skills - Ordered, deduplicated skill names
+ * @returns The inline-array value (no `skills:` prefix), e.g. `[a, b]`
+ */
+function renderSkillsArray(skills: string[]): string {
+  return `[${skills.join(', ')}]`;
+}
+
+/**
+ * Set a flat `skills = [...]` array line in flat-TOML content.
+ *
+ * Replaces an existing top-level `skills = ...` line if present, otherwise
+ * appends one (with a single trailing newline boundary). Values are rendered as
+ * a TOML string array: `skills = ["git-workflow", "api-patterns"]`. Format-
+ * preserving and line-based — no TOML parser, matching `preserveTomlConfigKeys`.
+ *
+ * @param toml - Existing flat-TOML content
+ * @param skills - Ordered, deduplicated skill names
+ * @returns The TOML with the `skills` line set
+ */
+function setTomlSkills(toml: string, skills: string[]): string {
+  const line = `skills = [${skills.map((s) => `"${s}"`).join(', ')}]`;
+  const lineRegex = /^skills\s*=.*$/m;
+  if (lineRegex.test(toml)) {
+    return toml.replace(lineRegex, line);
+  }
+  const base = toml.endsWith('\n') ? toml : `${toml}\n`;
+  return `${base}${line}\n`;
+}
+
+/**
+ * Render the body of a Codex `## Skills` managed block (no markers).
+ *
+ * The block lists the agent's projected skills as a markdown bullet list under a
+ * `## Skills` heading, so a human reading the `.codex/agents/<name>.md` sees the
+ * same skill roster the `.agent.toml` declares. Markers are added by
+ * {@link mergeManagedBlock}.
+ *
+ * @param skills - Ordered, deduplicated skill names
+ * @returns The block body (heading + bullet list)
+ */
+function renderCodexSkillsBlock(skills: string[]): string {
+  const bullets = skills.map((s) => `- ${s}`).join('\n');
+  return `## Skills\n\n${bullets}`;
+}
+
+/**
  * Copy agent files to .claude/agents/, refreshing instruction content from stock.
  *
  * Re-init propagates the machine-owned instruction body from each tree's own
@@ -357,28 +410,49 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
  * merges excluded) and the filename recorded when it differs. Fresh files
  * (no existing destination) are written from stock and never reported.
  *
+ * Per-agent skills are PROJECTED from `ana.json.agents.<name>.skills` onto the
+ * frontmatter `skills:` line on EVERY init (fresh and re-init). `skills` is
+ * deliberately NOT in {@link CLAUDE_AGENT_CONFIG_KEYS}: we never carry forward
+ * the existing file's `skills:` line — that was the re-init revert bug (a stock
+ * `skills:` line would overwrite the user's edit). Instead ana.json (which
+ * survives re-init) is the source of truth, so a second re-init re-projects the
+ * same value. When the agent has no config-declared skills the stock `skills:`
+ * line stands untouched — byte-identical to stock (no-regression contract).
+ *
  * @param agentsPath - Path to .claude/agents/ directory
  * @param templatesDir - Path to CLI templates directory
+ * @param anaJson - Parsed ana.json driving per-agent skill projection (absent = stock)
  * @returns Filenames whose instruction body changed vs the prior file
  */
-export async function copyAgentFiles(agentsPath: string, templatesDir: string): Promise<string[]> {
+export async function copyAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
   for (const agentFile of AGENT_FILES) {
     const sourcePath = path.join(templatesDir, '.claude/agents', agentFile);
     const destPath = path.join(agentsPath, agentFile);
     const displayName = `.claude/agents/${agentFile}`;
+    const baseName = agentFile.replace(/\.md$/, '');
     const stockContent = await fs.readFile(sourcePath, 'utf-8');
+
+    // Per-agent skills projected from ana.json (absent = [] = leave stock alone).
+    const projectedSkills = resolveAgentSkills(anaJson, baseName);
 
     const exists = await fileExists(destPath);
     if (!exists) {
-      // Fresh — write stock as-is, no warning
-      await atomicWriteFile(destPath, stockContent, displayName);
+      // Fresh — start from stock, then project config-declared skills.
+      let fresh = stockContent;
+      if (projectedSkills.length > 0) {
+        const updated = setFrontmatterField(fresh, 'skills', renderSkillsArray(projectedSkills));
+        if (updated) fresh = updated;
+      }
+      await atomicWriteFile(destPath, fresh, displayName);
       continue;
     }
 
     const existingContent = await fs.readFile(destPath, 'utf-8');
 
-    // Carry forward CONFIG-class frontmatter keys onto stock
+    // Carry forward CONFIG-class frontmatter keys onto stock. `skills` is NOT a
+    // CONFIG key — it is projected from ana.json below, never preserved from the
+    // existing file (preserving it would reintroduce the re-init revert bug).
     let merged = stockContent;
     const existingFm = parseFrontmatter(existingContent);
     if (existingFm) {
@@ -391,8 +465,16 @@ export async function copyAgentFiles(agentsPath: string, templatesDir: string): 
       }
     }
 
+    // Project config-declared skills onto the (stock-derived) frontmatter. When
+    // there are none, the stock `skills:` line stands — byte-identical to stock.
+    if (projectedSkills.length > 0) {
+      const updated = setFrontmatterField(merged, 'skills', renderSkillsArray(projectedSkills));
+      if (updated) merged = updated;
+    }
+
     // Record an instruction change only when the body actually differs
-    // (config-key frontmatter merges are excluded — a model-only change is silent)
+    // (config-key + skills frontmatter merges are excluded — a model-only or
+    // skills-only change is silent, both live in the frontmatter we strip).
     if (stripFrontmatter(existingContent) !== stripFrontmatter(stockContent)) {
       changed.push(agentFile);
     }
@@ -1068,9 +1150,10 @@ async function applyMcpServersCapability(cwd: string, anaJson: unknown): Promise
  *
  * @param cwd - Project root directory
  * @param _initState - Installation state (unused — reserved for future merge logic)
+ * @param anaJson - Parsed ana.json driving per-agent skill projection (absent = stock)
  * @returns Filenames whose instruction body changed (empty on a fresh install or no-op re-init)
  */
-export async function createCodexConfiguration(cwd: string, _initState: InitState): Promise<string[]> {
+export async function createCodexConfiguration(cwd: string, _initState: InitState, anaJson: unknown = {}): Promise<string[]> {
   const spinner = ora('Creating .codex/ configuration...').start();
 
   const codexPath = path.join(cwd, '.codex');
@@ -1086,7 +1169,7 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
     await fs.mkdir(agentsPath, { recursive: true });
 
     // Copy agent .md files and .agent.toml manifests
-    const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
+    const changed = await copyCodexAgentFiles(agentsPath, templatesDir, anaJson);
 
     await applyCodexCaptureHooks(codexPath, templatesDir);
 
@@ -1103,7 +1186,7 @@ export async function createCodexConfiguration(cwd: string, _initState: InitStat
     await fs.mkdir(agentsPath, { recursive: true });
   }
 
-  const changed = await copyCodexAgentFiles(agentsPath, templatesDir);
+  const changed = await copyCodexAgentFiles(agentsPath, templatesDir, anaJson);
 
   await applyCodexCaptureHooks(codexPath, templatesDir);
 
@@ -1211,34 +1294,53 @@ async function ensureCodexHooksFlag(configPath: string, templatesDir: string): P
 /**
  * Copy Codex agent files to .codex/agents/, refreshing instruction content.
  *
- * For each `.md` (no frontmatter): overwrite wholesale from stock; record the
- * filename when a prior file's content differed. For each `.agent.toml`:
- * preserve CONFIG keys ({@link CODEX_AGENT_CONFIG_KEYS}) from the existing file
- * onto stock while refreshing all machine fields, then atomic-write. The
- * `.agent.toml` never contributes to the changed-files list (it carries config
- * + machine metadata, not instruction prose).
+ * For each `.md` (no frontmatter): overwrite wholesale from stock, then project
+ * the per-agent skill roster into a single marker-bounded `## Skills` block
+ * (keyed `skills:<name>`) via {@link mergeManagedBlock}. The changed-files
+ * comparison strips that managed block from BOTH sides, so a skills-only change
+ * never registers as an instruction change. For each `.agent.toml`: preserve
+ * CONFIG keys ({@link CODEX_AGENT_CONFIG_KEYS}) from the existing file onto
+ * stock while refreshing all machine fields, then write a flat `skills = [...]`
+ * line projected from ana.json, then atomic-write. The `.agent.toml` never
+ * contributes to the changed-files list (it carries config + machine metadata).
+ *
+ * `skills` is NOT a CONFIG key on either surface: it is projected from ana.json
+ * (which survives re-init), never preserved from the existing file — preserving
+ * it would reintroduce the re-init revert bug. Absent per-agent skills leaves
+ * both surfaces byte-identical to stock (no `## Skills` block, no `skills` line).
  *
  * @param agentsPath - Path to .codex/agents/ directory
  * @param templatesDir - Path to CLI templates directory
+ * @param anaJson - Parsed ana.json driving per-agent skill projection (absent = stock)
  * @returns Filenames whose `.md` instruction content changed vs the prior file
  */
-export async function copyCodexAgentFiles(agentsPath: string, templatesDir: string): Promise<string[]> {
+export async function copyCodexAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
   for (const agentFile of CODEX_AGENT_FILES) {
-    // .md instruction body — overwrite wholesale (no frontmatter)
+    const baseName = agentFile.replace('.md', '');
+    const skillsMarker = `skills:${baseName}`;
+    const projectedSkills = resolveAgentSkills(anaJson, baseName);
+
+    // .md instruction body — overwrite wholesale from stock (no frontmatter),
+    // then project the skills roster as a marker-bounded `## Skills` block.
     const mdSource = path.join(templatesDir, '.codex/agents', agentFile);
     const mdDest = path.join(agentsPath, agentFile);
     const stockMd = await fs.readFile(mdSource, 'utf-8');
     if (await fileExists(mdDest)) {
       const existingMd = await fs.readFile(mdDest, 'utf-8');
-      if (existingMd !== stockMd) {
+      // Strip the managed `## Skills` block from the existing file before the
+      // instruction comparison, so a skills-only change isn't a false positive.
+      const existingBody = mergeManagedBlock(existingMd, null, skillsMarker) ?? '';
+      if (existingBody !== stockMd) {
         changed.push(agentFile);
       }
     }
-    await atomicWriteFile(mdDest, stockMd, `.codex/agents/${agentFile}`);
+    const blockBody = projectedSkills.length > 0 ? renderCodexSkillsBlock(projectedSkills) : null;
+    const finalMd = mergeManagedBlock(stockMd, blockBody, skillsMarker) ?? stockMd;
+    await atomicWriteFile(mdDest, finalMd, `.codex/agents/${agentFile}`);
 
-    // .agent.toml manifest — preserve config keys, refresh machine fields
-    const baseName = agentFile.replace('.md', '');
+    // .agent.toml manifest — preserve config keys, refresh machine fields,
+    // then project the flat `skills = [...]` line from ana.json.
     const tomlFile = `${baseName}.agent.toml`;
     const tomlSource = path.join(templatesDir, '.codex/agents', tomlFile);
     const tomlDest = path.join(agentsPath, tomlFile);
@@ -1247,6 +1349,9 @@ export async function copyCodexAgentFiles(agentsPath: string, templatesDir: stri
     if (await fileExists(tomlDest)) {
       const existingToml = await fs.readFile(tomlDest, 'utf-8');
       finalToml = preserveTomlConfigKeys(stockToml, existingToml, CODEX_AGENT_CONFIG_KEYS);
+    }
+    if (projectedSkills.length > 0) {
+      finalToml = setTomlSkills(finalToml, projectedSkills);
     }
     await atomicWriteFile(tomlDest, finalToml, `.codex/agents/${tomlFile}`);
   }
