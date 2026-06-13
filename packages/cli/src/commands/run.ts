@@ -26,6 +26,11 @@ import { createHash, randomUUID } from 'node:crypto';
 import { getPlatformFlags } from './platform.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { detectWorktreeSlug } from '../utils/worktree.js';
+import {
+  agentsDirSegmentsFor,
+  knownPlatformIds,
+  resolvePlatformDescriptor,
+} from '../platforms/registry.js';
 
 /**
  * Known agent suffix mappings.
@@ -54,8 +59,15 @@ const AGENT_MAP: Record<string, string> = {
 // doesn't work for pipeline agents that need to read files, write code,
 // run tests, and iterate.
 
-/** Platforms recognized by ana run. Unknown values are rejected. */
-const KNOWN_PLATFORMS = new Set(['claude', 'codex']);
+/**
+ * Platforms recognized by ana run. Unknown values are rejected.
+ *
+ * Derived from the platform registry (descriptors flagged `known:true`) instead
+ * of a hardcoded literal — byte-identical to `['claude', 'codex']` today because
+ * only those two descriptors carry `known:true`. A registry-only descriptor
+ * (e.g. cursor) stays out until its dispatcher is wired.
+ */
+const KNOWN_PLATFORMS = knownPlatformIds();
 
 /**
  * Read the CLI version synchronously from the package.json.
@@ -93,8 +105,10 @@ function getCliVersionSync(): string {
  * @returns Absolute path to the resolved agent-def file
  */
 function resolveAgentDefPath(projectRoot: string, platform: string, agentName: string): string {
-  const dir = platform === 'codex' ? '.codex' : '.claude';
-  return path.join(projectRoot, dir, 'agents', `${agentName}.md`);
+  // The agents-dir shape comes from the platform registry, so this path is
+  // correct for any descriptor without a per-platform branch. Unknown platform
+  // falls back to claude's segments — byte-identical to the prior ternary.
+  return path.join(projectRoot, ...agentsDirSegmentsFor(platform), `${agentName}.md`);
 }
 
 /**
@@ -276,10 +290,13 @@ function dispatchToCodex(
   // Advisory pipeline state check (same as Claude dispatch)
   advisoryPipelineCheck(projectRoot, agentSuffix);
 
-  // Read TOML manifest
+  // Read TOML manifest. The model / sandbox fallbacks come from the codex
+  // platform descriptor (platforms/registry.ts) rather than inline literals —
+  // byte-identical to the prior `?? 'gpt-5.5'` / `?? 'danger-full-access'`.
   const toml = readAgentToml(projectRoot, agentName);
-  const model = toml?.['model'] ?? 'gpt-5.5';
-  const sandboxMode = toml?.['sandbox_mode'] ?? 'danger-full-access';
+  const runDefaults = resolvePlatformDescriptor('codex').runDefaults;
+  const model = toml?.['model'] ?? runDefaults.model ?? 'gpt-5.5';
+  const sandboxMode = toml?.['sandbox_mode'] ?? runDefaults.sandboxMode ?? 'danger-full-access';
 
   // Read prompt file path
   const promptPath = path.join(projectRoot, '.codex', 'agents', `${agentName}.md`);

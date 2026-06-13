@@ -24,6 +24,7 @@ import { mergeGitignore, ANA_GITIGNORE_STOCK } from './gitignore.js';
 import { getCurrentBranch } from '../../utils/git-operations.js';
 import { isNonProductPath } from '../../engine/detectors/surfaces.js';
 import { getSkillsDirRel, agentCommand } from '../platform.js';
+import { platformDetectProbes, DEFAULT_PLATFORM_ID } from '../../platforms/registry.js';
 
 /**
  * Prompt user for confirmation
@@ -1151,15 +1152,19 @@ export function detectPlatforms(): string[] {
   const platforms: string[] = [];
   const cmd = process.platform === 'win32' ? 'where' : 'which';
 
-  for (const name of ['claude', 'codex']) {
-    const result = spawnSync(cmd, [name], { encoding: 'utf-8', stdio: 'pipe' });
+  // Probe executables from the platform registry, in registry order. This is
+  // byte-identical to the prior `['claude', 'codex']` literal — those are the
+  // only descriptors with a `detectExecutable`, in that order. A new platform
+  // becomes auto-detectable purely by declaring its executable on its descriptor.
+  for (const { id, executable } of platformDetectProbes()) {
+    const result = spawnSync(cmd, [executable], { encoding: 'utf-8', stdio: 'pipe' });
     if (result.status === 0) {
-      platforms.push(name);
+      platforms.push(id);
     }
   }
 
   // Default to claude if nothing detected
-  return platforms.length > 0 ? platforms : ['claude'];
+  return platforms.length > 0 ? platforms : [DEFAULT_PLATFORM_ID];
 }
 
 /**

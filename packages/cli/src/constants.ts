@@ -10,6 +10,7 @@
  */
 
 import type { EngineResult } from './engine/types/engineResult.js';
+import { getPlatformDescriptor } from './platforms/registry.js';
 
 // ============================================================
 // File Manifest
@@ -158,25 +159,29 @@ export const REQUIRED_CONTEXT_FILES = [
   'context/design-principles.md',
 ] as const;
 
-/** Agent definition files (Claude Code) */
-export const AGENT_FILES = [
-  'ana.md',
-  'ana-plan.md',
-  'ana-setup.md',
-  'ana-build.md',
-  'ana-verify.md',
-  'ana-learn.md',
-] as const;
+/**
+ * Agent definition files (Claude Code).
+ *
+ * Derived from the claude platform descriptor (platforms/registry.ts) so the
+ * agent roster can never drift from the registry's single source of truth.
+ * Byte-identical to the prior literal — the descriptor seeds the same six names
+ * in the same order. The `getPlatformDescriptor('claude')` lookup is guaranteed
+ * non-null (claude is a stock registry row); the `?? []` is a defensive floor
+ * the type checker requires, never exercised at runtime.
+ */
+export const AGENT_FILES: readonly string[] =
+  getPlatformDescriptor('claude')?.agentFiles ?? [];
 
-/** Agent definition files for Codex */
-export const CODEX_AGENT_FILES = [
-  'ana.md',
-  'ana-plan.md',
-  'ana-setup.md',
-  'ana-build.md',
-  'ana-verify.md',
-  'ana-learn.md',
-] as const;
+/**
+ * Agent definition files for Codex.
+ *
+ * Derived from the codex platform descriptor (platforms/registry.ts). Both
+ * stock platforms scaffold the same six agents today, so this stays
+ * byte-identical to `AGENT_FILES`; a platform that ever needs a different
+ * roster declares its own `agentFiles` on its descriptor.
+ */
+export const CODEX_AGENT_FILES: readonly string[] =
+  getPlatformDescriptor('codex')?.agentFiles ?? [];
 
 // ============================================================
 // Re-init preserve classification (CONFIG vs INSTRUCTION)
