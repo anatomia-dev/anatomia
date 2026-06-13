@@ -9,7 +9,7 @@ vi.mock('../../src/utils/git-operations.js', () => ({
   runGit: (...args: unknown[]) => mockRunGit(...args),
 }));
 
-import { checkScanFreshness } from '../../src/utils/scan-freshness.js';
+import { checkScanFreshness, hasMaterialSourceDelta } from '../../src/utils/scan-freshness.js';
 
 describe('checkScanFreshness', () => {
   let tmpDir: string;
@@ -171,5 +171,161 @@ describe('checkScanFreshness', () => {
 
     expect(result).not.toBeNull();
     expect(result!.isStale).toBe(false);
+  });
+
+  // ── Slice 5: HEAD-divergence stale flag (context-never-rots) ──
+  describe('HEAD divergence (Slice 5)', () => {
+    // Route runGit by subcommand: rev-list (commit count), rev-parse (current
+    // short HEAD), and diff --name-only (material source-delta classification).
+    function routeGit(opts: {
+      count?: string;
+      head?: string;
+      headExit?: number;
+      diffFiles?: string;
+      diffExit?: number;
+    }): void {
+      mockRunGit.mockImplementation((args: string[]) => {
+        if (args[0] === 'rev-list') {
+          return { stdout: opts.count ?? '0', stderr: '', exitCode: 0 };
+        }
+        if (args[0] === 'rev-parse') {
+          return { stdout: opts.head ?? '', stderr: '', exitCode: opts.headExit ?? 0 };
+        }
+        if (args[0] === 'diff') {
+          return { stdout: opts.diffFiles ?? '', stderr: '', exitCode: opts.diffExit ?? 0 };
+        }
+        return { stdout: '', stderr: '', exitCode: 1 };
+      });
+    }
+
+    it('headDiverged=true and isStale=true when HEAD moved past the index with a source change, even on a fresh scan', () => {
+      writeScanJson({ git: { head: 'abc123' }, overview: { indexedCommit: 'abc123' } });
+      routeGit({ count: '1', head: 'def456', diffFiles: 'src/commands/work.ts' });
+
+      const result = checkScanFreshness(daysAgo(0), tmpDir);
+
+      expect(result).not.toBeNull();
+      expect(result!.headDiverged).toBe(true);
+      // Young scan (0 days, 1 commit) — only divergence makes it stale.
+      expect(result!.isStale).toBe(true);
+    });
+
+    it('headDiverged=false when HEAD moved but only artifact files changed (the refresh commit)', () => {
+      writeScanJson({ git: { head: 'abc123' }, overview: { indexedCommit: 'abc123' } });
+      routeGit({ count: '1', head: 'def456', diffFiles: '.ana/scan.json\n.ana/ana.json' });
+
+      const result = checkScanFreshness(daysAgo(1), tmpDir);
+
+      expect(result).not.toBeNull();
+      expect(result!.headDiverged).toBe(false);
+      expect(result!.isStale).toBe(false);
+    });
+
+    it('headDiverged=false and isStale=false when indexedCommit matches HEAD', () => {
+      writeScanJson({ git: { head: 'abc123' }, overview: { indexedCommit: 'abc123' } });
+      routeGit({ count: '0', head: 'abc123' });
+
+      const result = checkScanFreshness(daysAgo(1), tmpDir);
+
+      expect(result).not.toBeNull();
+      expect(result!.headDiverged).toBe(false);
+      expect(result!.isStale).toBe(false);
+    });
+
+    it('headDiverged=null when scan.json has no indexedCommit (pre-Slice-5 scan)', () => {
+      writeScanJson({ git: { head: 'abc123' } });
+      mockRunGit.mockReturnValue({ stdout: '5', stderr: '', exitCode: 0 });
+
+      const result = checkScanFreshness(daysAgo(2), tmpDir);
+
+      expect(result).not.toBeNull();
+      expect(result!.headDiverged).toBeNull();
+      expect(result!.isStale).toBe(false);
+    });
+
+    it('headDiverged=null when rev-parse HEAD is unavailable', () => {
+      writeScanJson({ git: { head: 'abc123' }, overview: { indexedCommit: 'abc123' } });
+      routeGit({ count: '0', head: '', headExit: 128 });
+
+      const result = checkScanFreshness(daysAgo(1), tmpDir);
+
+      expect(result).not.toBeNull();
+      expect(result!.headDiverged).toBeNull();
+      expect(result!.isStale).toBe(false);
+    });
+
+    it('headDiverged=null when HEAD moved but the diff is undeterminable', () => {
+      writeScanJson({ git: { head: 'abc123' }, overview: { indexedCommit: 'abc123' } });
+      routeGit({ count: '1', head: 'def456', diffExit: 128 });
+
+      const result = checkScanFreshness(daysAgo(1), tmpDir);
+
+      expect(result).not.toBeNull();
+      expect(result!.headDiverged).toBeNull();
+      expect(result!.isStale).toBe(false);
+    });
+  });
+});
+
+describe('hasMaterialSourceDelta', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'material-delta-'));
+    fs.mkdirSync(path.join(tmpDir, '.ana'), { recursive: true });
+    mockRunGit.mockReset();
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  function writeScanJson(content: Record<string, unknown>): void {
+    fs.writeFileSync(path.join(tmpDir, '.ana', 'scan.json'), JSON.stringify(content));
+  }
+
+  it('returns true (fail-open) when there is no prior scan.json', () => {
+    expect(hasMaterialSourceDelta(tmpDir)).toBe(true);
+    // No baseline → no diff attempted.
+    expect(mockRunGit).not.toHaveBeenCalled();
+  });
+
+  it('returns true (fail-open) when scan.json has no indexedCommit', () => {
+    writeScanJson({ git: { head: 'abc123' } });
+    expect(hasMaterialSourceDelta(tmpDir)).toBe(true);
+    expect(mockRunGit).not.toHaveBeenCalled();
+  });
+
+  it('returns true when a source file changed since the indexed commit', () => {
+    writeScanJson({ overview: { indexedCommit: 'abc123' } });
+    mockRunGit.mockReturnValue({ stdout: 'README.md\nsrc/commands/work.ts', stderr: '', exitCode: 0 });
+
+    expect(hasMaterialSourceDelta(tmpDir)).toBe(true);
+    expect(mockRunGit).toHaveBeenCalledWith(['diff', '--name-only', 'abc123..HEAD'], { cwd: tmpDir });
+  });
+
+  it('returns false when only doc/config/artifact files changed', () => {
+    writeScanJson({ overview: { indexedCommit: 'abc123' } });
+    mockRunGit.mockReturnValue({
+      stdout: 'README.md\n.ana/proof_chain.json\ndocs/guide.md\npackage.json',
+      stderr: '',
+      exitCode: 0,
+    });
+
+    expect(hasMaterialSourceDelta(tmpDir)).toBe(false);
+  });
+
+  it('returns false when nothing changed (HEAD === indexedCommit)', () => {
+    writeScanJson({ overview: { indexedCommit: 'abc123' } });
+    mockRunGit.mockReturnValue({ stdout: '', stderr: '', exitCode: 0 });
+
+    expect(hasMaterialSourceDelta(tmpDir)).toBe(false);
+  });
+
+  it('returns true (fail-open) when git diff fails', () => {
+    writeScanJson({ overview: { indexedCommit: 'abc123' } });
+    mockRunGit.mockReturnValue({ stdout: '', stderr: 'fatal: bad object', exitCode: 128 });
+
+    expect(hasMaterialSourceDelta(tmpDir)).toBe(true);
   });
 });

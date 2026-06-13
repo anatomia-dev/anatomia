@@ -1355,6 +1355,18 @@ describe('ana work status', () => {
         // Go back to main but don't merge
         execSync('git checkout main', { cwd: tempDir, stdio: 'ignore' });
       }
+
+      // Slice 5 (context-never-rots): pin a prior scan.json to the current HEAD
+      // so the auto-rescan in completeWork is gated OFF for these fixtures. They
+      // only ever touch `.ana/` artifacts during completion (no source delta), so
+      // gating off is the correct, deterministic behavior and keeps these legacy
+      // tests asserting on the archive commit exactly as before — no follow-on
+      // refresh commit, no real scanProject run.
+      const headShort = execSync('git rev-parse --short HEAD', { cwd: tempDir, encoding: 'utf-8' }).trim();
+      fsSync.writeFileSync(
+        path.join(tempDir, '.ana', 'scan.json'),
+        JSON.stringify({ overview: { indexedCommit: headShort, scannedAt: 'fixture' }, git: { head: headShort } }),
+      );
     }
 
     describe('happy path', () => {

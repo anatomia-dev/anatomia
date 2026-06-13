@@ -1186,9 +1186,11 @@ export async function scanProject(
   return {
     schemaVersion: '1.0',
     applicationShape: shapeResult.shape,
-    // indexedCommit is shape-frozen here at `null` (Phase 0). Slice 5
-    // (context-never-rots) stamps it with the git HEAD at scan time.
-    overview: { project: projectName, scannedAt: now, depth: options.depth, indexedCommit: null },
+    // Slice 5 (context-never-rots) stamps indexedCommit with the git HEAD
+    // (short SHA) at scan time, sourced from the already-resolved git.head so
+    // scan.json is self-consistent — the commit the scan describes. `null` when
+    // there is no git repo or HEAD is unresolvable.
+    overview: { project: projectName, scannedAt: now, depth: options.depth, indexedCommit: git.head ?? null },
     stack,
     stackProvenance,
     versions,

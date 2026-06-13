@@ -25,7 +25,7 @@ import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { isWorktreeDirectory, detectWorktreeSlug, worktreeExists, getWorktreeInfo, createWorktree, removeWorktree, getWorktreePath } from '../utils/worktree.js';
 import { checkForUpdates } from '../utils/update-check.js';
 import { agentCommand } from './platform.js';
-import { checkScanFreshness } from '../utils/scan-freshness.js';
+import { checkScanFreshness, hasMaterialSourceDelta } from '../utils/scan-freshness.js';
 import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, resolvePhase, compareTimestamp, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
 import type { ArtifactState } from './work-state.js';
@@ -303,12 +303,20 @@ function printNotifications(output: StatusOutput): void {
     ));
   }
   if (output.scanStale?.isStale) {
-    const commitPart = output.scanStale.commitsSinceScan !== null
-      ? ` (${output.scanStale.commitsSinceScan} commits since scan)`
-      : '';
-    console.log(chalk.gray(
-      `ℹ Scan is ${output.scanStale.daysSinceScan} days old${commitPart}. Run: ana init`
-    ));
+    if (output.scanStale.headDiverged === true) {
+      // HEAD has moved past the indexed commit — context has drifted regardless
+      // of the scan's age, so lead with the divergence rather than days-old.
+      console.log(chalk.gray(
+        'ℹ Scan no longer matches HEAD — the indexed commit has moved on. Run: ana scan --save'
+      ));
+    } else {
+      const commitPart = output.scanStale.commitsSinceScan !== null
+        ? ` (${output.scanStale.commitsSinceScan} commits since scan)`
+        : '';
+      console.log(chalk.gray(
+        `ℹ Scan is ${output.scanStale.daysSinceScan} days old${commitPart}. Run: ana init`
+      ));
+    }
   }
 }
 
@@ -1163,6 +1171,61 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   if (pushResult.exitCode !== 0) {
     console.error(chalk.yellow('Warning: Push failed. Changes committed locally. Run `git push` manually.'));
     // Don't exit - commit succeeded
+  }
+
+  // 11b. Context-never-rots: refresh the project scan so the next agent reads a
+  //      ranking that already reflects the work that just merged. Wrapped in a
+  //      TOTAL try-catch — completion has already succeeded by here, so a rescan
+  //      failure (WASM crash, git edge case, disk error) must NEVER surface or
+  //      block. Gated on a material source delta so doc/config-only merges don't
+  //      churn scan.json. Runs only from the main tree (step 0a already guards
+  //      against worktrees, so the scan.ts:470 worktree concern can't apply).
+  try {
+    if (hasMaterialSourceDelta(projectRoot)) {
+      const { scanProject } = await import('../engine/scan-engine.js');
+      const scanResult = await scanProject(projectRoot, { depth: 'deep' });
+
+      const anaDir = path.join(projectRoot, '.ana');
+      const scanJsonPath = path.join(anaDir, 'scan.json');
+      const anaJsonPath = path.join(anaDir, 'ana.json');
+
+      // overview.indexedCommit is stamped to HEAD by scanProject (git.head),
+      // so writing it here records exactly the merged commit being indexed.
+      fs.writeFileSync(scanJsonPath, JSON.stringify(scanResult, null, 2), 'utf-8');
+
+      // Keep ana.json.lastScanAt in lock-step with scan.json.overview.scannedAt
+      // (string-equality is how the dashboard reconciles the two — a fresh
+      // Date() would always read "stale"). Best-effort: skip if ana.json is gone.
+      try {
+        if (fs.existsSync(anaJsonPath)) {
+          const anaJson = JSON.parse(fs.readFileSync(anaJsonPath, 'utf-8'));
+          anaJson.lastScanAt = scanResult.overview.scannedAt;
+          fs.writeFileSync(anaJsonPath, JSON.stringify(anaJson, null, 2) + '\n', 'utf-8');
+        }
+      } catch { /* leave lastScanAt as-is on parse/write failure */ }
+
+      // Follow-on commit: scan.json + ana.json carry the same co-author trailer
+      // as the archive commit, then push. A push failure leaves the refresh
+      // committed locally (the next push picks it up) — never a hard error.
+      const rescanPaths = ['.ana/scan.json', '.ana/ana.json'];
+      runGit(['add', ...rescanPaths], { cwd: projectRoot });
+      const statusResult = runGit(['status', '--porcelain', '--', ...rescanPaths], { cwd: projectRoot });
+      if (statusResult.exitCode === 0 && statusResult.stdout.length > 0) {
+        const rescanMessage = `[${slug}] Refresh scan after merge\n\nCo-authored-by: ${coAuthor}`;
+        const rescanCommit = spawnSync('git', ['commit', '--no-verify', '-m', rescanMessage, '--', ...rescanPaths], { stdio: 'pipe', cwd: projectRoot });
+        if (rescanCommit.status === 0) {
+          const rescanPush = runGit(['push'], { cwd: projectRoot });
+          if (rescanPush.exitCode !== 0) {
+            console.error(chalk.yellow('Warning: Scan refresh committed locally but push failed. Run `git push` manually.'));
+          }
+        }
+        // commit failure (e.g. nothing staged after all): silently leave it
+      }
+    }
+  } catch {
+    // Total swallow — the scan refresh is a convenience, never a gate on
+    // completion. The merge is done; a stale-by-one scan self-heals on the next
+    // `ana scan` and `ana work status` flags it via the HEAD-divergence check.
   }
 
   // 12. Delete work branch (cleanup — force delete because squash/rebase merges
