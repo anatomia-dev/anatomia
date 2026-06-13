@@ -176,5 +176,49 @@ export function resolveAgentSkills(anaJson: unknown, name: string): string[] {
   return out;
 }
 
+/**
+ * Build the body of a minimal stub `SKILL.md` for a config-declared custom
+ * skill that ships no bundled template and has no user-authored file yet.
+ *
+ * The stub mirrors the section structure of the bundled templates so the rest
+ * of the init pipeline treats it uniformly: a machine-owned `## Detected`
+ * section (refreshed on every init — a no-op for a custom skill with no
+ * injector), plus human-owned `## Rules` / `## Gotchas` / `## Examples`
+ * sections the user (or the setup agent) fills in. The frontmatter `name`
+ * matches the directory so the harness can resolve the skill, and the
+ * `description` points the user at `setup` to flesh it out.
+ *
+ * Pure string builder (no I/O) — lives here so the stub shape sits next to the
+ * resolver that decides a custom skill is a manifest member, and so skills.ts
+ * stays focused on orchestration.
+ *
+ * @param name - Skill directory / manifest name (e.g. 'observability')
+ * @param setupCommand - Platform-appropriate setup command (e.g. 'ana run setup')
+ * @returns Full SKILL.md content for the stub
+ */
+export function buildCustomSkillStub(name: string, setupCommand: string): string {
+  return [
+    '---',
+    `name: ${name}`,
+    `description: "Custom skill scaffolded by Anatomia. Run \`${setupCommand}\` to add project-specific guidance, or edit this file directly."`,
+    '---',
+    '',
+    `# ${name}`,
+    '',
+    '## Detected',
+    '<!-- Populated by scan during init. Do not edit manually. -->',
+    '',
+    '## Rules',
+    `*Not yet configured. Run \`${setupCommand}\` to add conventions, or edit this section directly.*`,
+    '',
+    '## Gotchas',
+    '*Not yet captured. Add as you discover them during development.*',
+    '',
+    '## Examples',
+    '*Not yet captured. Add short snippets showing the RIGHT way.*',
+    '',
+  ].join('\n');
+}
+
 /** Re-export so consumers can read the core list without a second import. */
 export { CORE_SKILLS };
