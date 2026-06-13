@@ -5092,6 +5092,7 @@ describe('ana proof', () => {
         derived: {
           tokens: { input: 1400, output: 6200, cache_create: 0, cache_read: 0 },
           price_table_version: '2026-06-01',
+          derive_version: '3',
           duration_ms: 1000,
           turns: 31,
           tool_calls: 58,

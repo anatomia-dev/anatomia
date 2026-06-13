@@ -39,6 +39,16 @@ export interface SessionProvenance {
    */
   captured_at: string;
   /**
+   * sha256 of the transcript bytes this session's counts were derived from,
+   * prefixed `sha256:`. A byte-identity ATTESTATION ONLY — it fingerprints the
+   * exact bytes seen at capture so a record can be checked against a retained
+   * transcript. It does NOT imply the provenance can be regenerated without those
+   * retained bytes (the transcript is not committed). Capture metadata on the
+   * wrapper, not part of the deterministic derive. Present iff the transcript was
+   * readable at capture — OMITTED (alongside `derived`) when it was not.
+   */
+  transcript_hash?: string;
+  /**
    * Deterministic provenance counts for this session, derived from the committed
    * transcript at `ana artifact save` time. OMITTED when the transcript was
    * unreadable at capture (e.g. a dangling path) — the session row is still kept

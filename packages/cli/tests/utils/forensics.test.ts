@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -62,6 +63,7 @@ describe('forensics', () => {
         requestId: 'req_1',
         timestamp: '2026-06-01T00:00:00.000Z',
         message: {
+          id: 'msg_1',
           model: 'claude-opus-4-6',
           usage: { input_tokens: 700, output_tokens: 200, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
           // A raw body line — must NEVER appear in the committed provenance JSON.
@@ -71,6 +73,11 @@ describe('forensics', () => {
     ];
     fs.writeFileSync(p, lines.map((l) => JSON.stringify(l)).join('\n') + '\n', 'utf-8');
     return p;
+  }
+
+  /** sha256 of a file's bytes, prefixed `sha256:` (mirrors captureProvenanceAtSave). */
+  function sha256OfFile(p: string): string {
+    return 'sha256:' + createHash('sha256').update(fs.readFileSync(p)).digest('hex');
   }
 
   /** Build a capture env merged over a minimal base. */
@@ -179,8 +186,8 @@ describe('forensics', () => {
   });
 
   describe('captureProvenanceAtSave', () => {
-    // @ana A006, A007, A008, A015
-    it('writes the committed provenance shape (captured_at from pointer, no cost_usd, no body)', () => {
+    // @ana A003, A005, A006, A009
+    it('writes the committed provenance shape (transcript_hash + derive_version, no cost_usd, no body)', () => {
       writeAnaJson({ name: 'x', processCapture: 'on' });
       const transcript = writeTranscript();
       writePendingPointer('run-1', {
@@ -208,13 +215,20 @@ describe('forensics', () => {
       expect(prov.agent_def_hash).toBe('sha256:abc');
       // captured_at carried verbatim from the pointer (the primary sort key).
       expect(prov.captured_at).toBe('2026-06-07T22:00:00.000Z');
-      // A008: derived counts present with the price-table version + tokens.
+      // A005: transcript_hash is the sha256 of the exact transcript bytes derived,
+      // present on the WRAPPER (not inside derived) because the transcript was read.
+      expect(prov.transcript_hash).toBe(sha256OfFile(transcript));
+      expect(prov.transcript_hash).toMatch(/^sha256:[0-9a-f]{64}$/);
+      // derived counts present with the core stamps + tokens.
       expect(prov.derived.price_table_version).toBe('2026-06-08');
+      expect(prov.derived.derive_version).toBe('3'); // A003: engine derive version
       expect(prov.derived.tokens.input).toBe(700);
       expect(prov.derived.model).toBe('claude-opus-4-6');
-      // A007: no baked-in dollar figure in the committed object.
+      // transcript_hash lives on the wrapper, never inside core's frozen derived.
+      expect(prov.derived.transcript_hash).toBeUndefined();
+      // No baked-in dollar figure in the committed object.
       expect(raw).not.toContain('cost_usd');
-      // A015: no raw transcript body leaks into the committed object.
+      // A009: no raw transcript body leaks into the committed object.
       expect(raw).not.toContain('TRANSCRIPT_BODY_SENTINEL');
     });
 
@@ -229,7 +243,8 @@ describe('forensics', () => {
       expect(fs.existsSync(path.join(getPendingDir(), 'run-1.json'))).toBe(false);
     });
 
-    it('omits the derived block when the transcript is unreadable, still writes the file', () => {
+    // @ana A005, A006
+    it('omits derived AND transcript_hash when the transcript is unreadable, still writes the identity row', () => {
       writeAnaJson({ name: 'x', processCapture: 'on' });
       writePendingPointer('run-1', {
         session_id: 'sess-1',
@@ -242,8 +257,11 @@ describe('forensics', () => {
       const written = captureProvenanceAtSave(projectDir, 'feat', captureEnv({ ANA_RUN_ID: 'run-1' }));
       expect(written).not.toBeNull();
       const prov = JSON.parse(fs.readFileSync(written!, 'utf-8'));
+      // Both the derived block and the byte-identity hash are omitted — no guessed
+      // values when the transcript could not be read.
       expect(prov.derived).toBeUndefined();
-      // Metadata still present so the session stays visible.
+      expect(prov.transcript_hash).toBeUndefined();
+      // A006: identity metadata still present so the session stays visible.
       expect(prov.session_id).toBe('sess-1');
       expect(prov.model).toBe('claude-opus-4-6'); // carried from the pointer
     });

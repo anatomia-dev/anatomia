@@ -72,6 +72,7 @@ describe('assembleProcessAttestation', () => {
       derived: {
         tokens: { input: inputTokens, output: 100, cache_create: 0, cache_read: 0 },
         price_table_version: '2026-06-01',
+      derive_version: '3',
         duration_ms: 1000,
         turns: 1,
         tool_calls: 1,
@@ -145,6 +146,47 @@ describe('assembleProcessAttestation', () => {
     expect(att!.sessions[0]!.derived!.tokens.input).toBe(1000);
     expect(att!.sessions[0]!.model).toBe('claude-opus-4-6');
     expect(att!.module_churn).toEqual(churn);
+  });
+
+  // @ana A007
+  it('reads a legacy provenance record written before derive_version/transcript_hash', () => {
+    writeAnaJson('on');
+    // A record committed before this change: no transcript_hash on the wrapper and
+    // no derive_version inside derived. Written as raw JSON (not via prov()) so the
+    // absent fields are genuinely missing, not undefined keys.
+    const dir = path.join(projectRoot, '.ana', 'plans', 'completed', 'feat', 'provenance');
+    fs.mkdirSync(dir, { recursive: true });
+    const legacy = {
+      role: 'build',
+      harness: 'claude',
+      model: 'claude-opus-4-6',
+      agent_def_hash: 'sha256:build',
+      cli_version: '1.1.0',
+      session_id: 'sess-legacy',
+      captured_at: '2026-05-01T00:00:00.000Z',
+      derived: {
+        tokens: { input: 900, output: 100, cache_create: 0, cache_read: 0 },
+        price_table_version: '2026-05-01',
+        // NOTE: no derive_version, no transcript_hash — predates this change.
+        duration_ms: 1000,
+        turns: 1,
+        tool_calls: 1,
+        commands_run: 1,
+        tests_executed: 0,
+        failures_encountered: 0,
+        files_touched: 1,
+        model: 'claude-opus-4-6',
+      },
+    };
+    fs.writeFileSync(path.join(dir, 'build-sess-legacy.json'), JSON.stringify(legacy, null, 2), 'utf-8');
+
+    // Reads without error and surfaces the legacy session intact.
+    const att = assembleProcessAttestation(projectRoot, 'feat', makeProof(), churn, SCOPE, true);
+    expect(att).not.toBeNull();
+    expect(att!.sessions).toHaveLength(1);
+    expect(att!.sessions[0]!.session_id).toBe('sess-legacy');
+    expect(att!.sessions[0]!.derived!.tokens.input).toBe(900);
+    expect(att!.sessions[0]!.transcript_hash).toBeUndefined();
   });
 
   // @ana A018

@@ -62,6 +62,7 @@ function session(
     derived: {
       tokens: { input, output, cache_create: cacheCreate, cache_read: cacheRead },
       price_table_version: 'v3',
+      derive_version: '3',
       duration_ms: 0,
       turns,
       tool_calls: tools,
