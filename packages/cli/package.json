@@ -62,7 +62,7 @@
     "get-tsconfig": "^4.13.7",
     "glob": "^10.3.0",
     "ora": "^8.0.0",
-    "web-tree-sitter": "0.25.10",
+    "web-tree-sitter": "0.26.9",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   },
