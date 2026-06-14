@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-202 runs · 242 active · 5 promoted · 916 closed
+203 runs · 253 active · 5 promoted · 918 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 140 | 171 | 2026-06-10 |
+| cli | 141 | 182 | 2026-06-14 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,19 +24,11 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 242 total)
+## Active Findings (30 shown of 253 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
 - **code:** validatePlanFormat phase detection recognizes only '- ' bullets (line.startsWith('- ')). A '* ' bullet or tab-prefixed dash would be silently uncounted. This faithfully mirrors countPhases (intentional, commented), so behavior is consistent — but it records a frozen-format fragility shared by both copies for the next engineer. — *Remove the non-authoritative plan.md phase checkbox*
-
-### packages/cli/src/commands/artifact.ts
-
-- **code:** artifact.ts comments still call the policy 'the capture gate' in prose (1041, 1073, 1495) — concept now named test-evidence gate — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
-
-### packages/cli/src/commands/doctor.ts
-
-- **test:** assessEnforcement parse-failure fallback (all-off) is untested — every enforcement test uses createMinimalProject which always writes a valid ana.json, so the try/catch catch branch never runs — *Move enforcement-gate state from ana work status to ana doctor*
 
 ### packages/cli/src/commands/init/assets.ts
 
@@ -59,17 +51,25 @@
 
 - **code:** scan.ts adopts sparkline but never wires the ascii fallback — the tested ascii path has zero production consumers, so a non-UTF-8 terminal gets block glyphs — *Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card*
 
-### packages/cli/src/commands/work.ts
+### packages/cli/src/utils/compliance-context.ts
 
-- **code:** work.ts pull defense gates on porcelain status with !trimStart().startsWith('??'). A staged-deleted ('D ') or renamed ('R ') plan.md is also treated as 'modified' and restored from HEAD. Behavior is benign (restoring a non-authoritative file is desirable), but the comment frames the guard narrowly as 'tracked-modified'. — *Remove the non-authoritative plan.md phase checkbox*
+- **code:** buildRootLaneContext boundary param is inert (void boundary) — accepted and threaded from the call site but has zero effect on output today; spec-sanctioned future seam — *anatrace-core integration (provenance swap + behavioral attestation)*
+
+### packages/cli/src/utils/compliance.ts
+
+- **test:** Malformed-but-readable transcript branch (parseSession returns null) is never exercised; the A022 totality test uses the unreadable-file path instead, leaving compliance.ts:193 uncovered — *anatrace-core integration (provenance swap + behavioral attestation)*
+- **code:** readCoreVersion returns '' on failure; A020 ('exists') would still pass with an empty string, so a record could carry an empty engine version while satisfying the assertion — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/src/utils/displayNames.ts
 
 - **code:** Seven of eight new validation display-name entries (joi, yup, valibot, superstruct, ajv, pydantic, marshmallow) are unexercised — only 'zod' is reached. Consistent with the map's existing forward-coverage convention, low risk. — *Scan card redesign — shared render vocabulary + gated 'How your team writes' section*
 
-### packages/cli/src/utils/git-operations.ts
+### packages/cli/src/utils/forensics.ts
 
-- **code:** Pre-existing lint warning: unused eslint-disable (no-control-regex) in git-operations.ts — not introduced by this build (file not in diff), surfaced by the full lint run — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+- **code:** captureProvenanceAtSave no longer calls deriveTranscript — it re-reads bytes and calls deriveCountsFromBytes directly so the transcript_hash attests the same bytes (read-once). deriveTranscript is now reachable only from tests. Intentional, but the read-bytes+basename+derive sequence is duplicated across the two functions. — *anatrace-core integration (provenance swap + behavioral attestation)*
+- **test:** AC13 totality (a core call throwing mid-capture must not break the save) has no explicit test that forces parseSession/deriveCounts to throw. Covered structurally by the outer try/catch in captureProvenanceAtSave and by the unreadable-transcript omit test, but not directly exercised. — *anatrace-core integration (provenance swap + behavioral attestation)*
+- **code:** harness_version is still recorded empty — the session-capture build concern is NOT addressed by this phase (the spec explicitly defers filling it from the transcript version key to Phase 2). Noted so it is not assumed closed. — *anatrace-core integration (provenance swap + behavioral attestation)*
+- **code:** resolveTranscriptPath remains exported with zero external importers (cross-machine-provenance-C2 still present). Not introduced by this build and not in scope; the refactor correctly added no NEW zero-importer exports. — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/src/utils/render.ts
 
@@ -78,23 +78,18 @@
 ### packages/cli/tests/commands/artifact.test.ts
 
 - **test:** A010's tagged test runs on the artifact branch, where the removed verify-report→plan.md staging block was a guarded no-op (!artifactPaths.includes). The test passes identically with or without the fix — it does not discriminate the change it claims to cover. — *Remove the non-authoritative plan.md phase checkbox*
-- **test:** A004's tagged test exercises missing/malformed ana.json, not the precise 'valid config, flag absent' fail-safe; that exact case is covered untagged in init.test.ts — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
-
-### packages/cli/tests/commands/config.test.ts
-
-- **test:** config A016-A018 are absence-only assertions (not.toContain 'not a known ana.json field') — they would pass vacuously if the config-set validation path no-op'd; they do not positively confirm the field was written. Contract-aligned (matcher is not_contains) but fragile as regression guards — *Move enforcement-gate state from ana work status to ana doctor*
-
-### packages/cli/tests/commands/doctor.test.ts
-
-- **test:** A014 verified via results.overall === 'pass' proxy, not the literal exit code the contract names (doctorExitCode equals 0) — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
-- **test:** @ana A006 appears on both config.test.ts (this contract's KNOWN_FIELDS assertion) and doctor.test.ts (a predecessor contract's A006) — tags are not globally unique, muddying traceability — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
 
 ### packages/cli/tests/commands/init/commit.test.ts
 
 - **test:** Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts — *Merge (not clobber) managed .gitignore files on re-init*
 
+### packages/cli/tests/commands/init/template-propagation.test.ts
+
+- **test:** tests/commands/init/template-propagation.test.ts is flaky under full-suite parallel load (5000ms timeout; passes in isolation at ~9s). Pre-existing, unrelated to Phase 2 — raise its timeout or split it — *anatrace-core integration (provenance swap + behavioral attestation)*
+
 ### packages/cli/tests/commands/proof-card-golden.test.ts
 
+- **test:** Golden snapshot fixture INPUTS were changed (cache_read 80k→1M, 900k→1M; model gpt-5-codex→gpt-5) to keep the card within 80 columns once the wider real table-version label is shown — so the golden test no longer proves cost-invariance for unchanged inputs. — *anatrace-core integration (provenance swap + behavioral attestation)*
 - **test:** Golden test pins the timezone by mutating process.env['TZ']='UTC' in beforeAll and restoring in afterAll. Correct and robust for this file (verified green under UTC/Tokyo/New_York, and full suite green under TZ=UTC). But process.env.TZ is process-global: if vitest ever runs this file in a worker shared with another time-dependent test file, that file could transiently observe UTC during this file's run. No leak observed in practice; the restore is clean. — *Proof card visual redesign on a shared render vocabulary*
 
 ### packages/cli/tests/commands/proof.test.ts
@@ -106,19 +101,15 @@
 
 - **test:** Stale @ana tags in scan.test.ts collide with this contract's assertion IDs — *Scan card redesign — shared render vocabulary + gated 'How your team writes' section*
 
-### packages/cli/tests/commands/work-merge.test.ts
+### packages/cli/tests/commands/work-proof-process.test.ts
 
-- **test:** Keystone merge test re-declares seedProvenance/readChainEntry helpers that duplicate seedActiveProvenance/readChainEntry in work.test.ts; cross-file duplication is justified by the child_process mock isolation but worth noting — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
+- **test:** Stray indentation in the prov() shape helper: derive_version sits at 6 spaces while sibling keys are at 8. Lint passes (eslint indent not enforced inside this object literal) but it is inconsistent with the file. — *anatrace-core integration (provenance swap + behavioral attestation)*
 
-### packages/cli/tests/utils/capture-marker.test.ts
+### packages/cli/tests/utils/compliance.test.ts
 
-- **test:** capture-marker.test.ts edited but absent from contract file_changes — a necessary consequence of renaming the exported evaluateCaptureGate/CaptureGateResult symbols — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+- **test:** A023 scrub test cannot isolate the scrub mechanism — the record shape already excludes transcript bytes, so the test passes even if scrubDeep were removed — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/tests/utils/proofSummary.test.ts
 
 - **test:** Stale `@ana A020` tag points at the wrong assertion. In this contract A020 is the findings-overflow no-bare-and-N-more rule, but the tag sits on the single-phase phase-breakdown test in an unmodified file. Pre-existing mis-tag; harmless here (A020 is correctly covered by the golden test at line 251) but would mislead tag-driven verification. Carried from the FAIL round; the fix cycle did not touch this file. — *Proof card visual redesign on a shared render vocabulary*
-
-### packages/cli/vitest.config.ts
-
-- **test:** Coverage gate — the spec's designated 'real gate' (vitest.config thresholds 80/75/80/80) — is not mechanically runnable; @vitest/coverage-v8 is not a declared dependency, so the threshold check silently no-ops wherever the provider is absent — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
 

@@ -56504,6 +56504,773 @@
         "base_commit": "9f64309a6d102c0f3605431e6819a658cc93f0d7"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "anatrace-core-integration",
+      "feature": "anatrace-core integration (provenance swap + behavioral attestation)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 26,
+        "satisfied": 26,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Provenance counts come from the published anatrace engine, pinned to a known version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Anatomia no longer hand-parses agent transcripts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each provenance record states which engine version produced it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Deriving the same session twice produces an identical record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A captured session records a fingerprint of the transcript it was derived from",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "An unreadable transcript still records who ran, never guessed numbers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Older proof records written before this change still load",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Codex sessions now report the files they changed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Raw transcript text never leaks into a committed provenance record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "An unpriced model is shown as unpriced, never as a guessed cost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The price-table version shown is the one actually used to compute cost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The transcript engine adds no network capability to the CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Behavioral coverage is declared by the trusted launcher, not inferred",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A claim about sub-agents we did not capture is reported unverifiable, never satisfied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A behavior we could not observe is never reported as satisfied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A runtime test assertion is never faked as a behavioral pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The system never claims to have watched a sub-agent it did not capture",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Every agent session gets its own behavioral record — rework is never collapsed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Each behavioral record is tied to the session that produced it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Each behavioral record states which engine version judged it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Each behavioral record states how much of the session it could actually check",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A broken transcript can never break saving your work",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Secrets in a session command never reach committed proof",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "A behavioral concern is recorded as evidence — it never flips a passing run to failing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The proof shows how the session behaved, in its own section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "When coverage was incomplete, the proof says so loudly",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 195,
+        "think": 34,
+        "plan": 23,
+        "build": 111,
+        "verify": 17,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 34
+          },
+          {
+            "stage": "plan",
+            "minutes": 23
+          },
+          {
+            "stage": "build",
+            "minutes": 75,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 36,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 11,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:e52c193b8c21ef19bf9cd30d141c8739e086303eaa92888d19d9ff8fc916b2bb",
+        "contract": "sha256:59f34b384715784b106096d04f61bbc891730e7c3c21ea3212ecc041baa263a4",
+        "plan": "sha256:f37f61b5a1682acf5fcdd2217ae83e2ab1cb1de0ef50e04f2014b1541ed17ed0",
+        "spec-1": "sha256:62b72a2bb2d9737cfc979719583631a4b8fc0e5ba8438014349feaa90745f37f",
+        "spec-2": "sha256:385d24894d461056c1b53db8ff5d543edbd2c89663286374ea867585f1033578",
+        "spec-3": "sha256:1903173ce13f84f58f5d47d4c9c69b64add5ec343785b513250ec145f288e98b",
+        "build-report-1": "sha256:a5e3830f27fe9c6412d116e6123c0f7c029bdc809a94583e1464577fd06532ca",
+        "build-data-1": "sha256:ce5198342dce12495e8426f72d2e25f6feb51eed301863bbf5f07ef17e3659c1",
+        "verify-report-1": "sha256:2468292d62463d969f5b85fc5017852dd512c0f62017c26b8437706749d3d133",
+        "verify-data-1": "sha256:6f7ce7af07ef6f2694d0e17806554671516d0f232540fdfc4756598e194498bd",
+        "build-report-2": "sha256:7cf9f05a2fe98ed9a4706137c8522e27697ceb9589ed5e3e673399699aeca7fa",
+        "build-data-2": "sha256:252222dab95f83b716c7a932befb6f4dc901c2d68303cd694245c2f41e2a2ee6",
+        "verify-report-2": "sha256:d1ac9654bb249a7ee9f1667ab837d0586e0a2fd7dd59e0609068996768942745",
+        "verify-data-2": "sha256:3e19da5c10cb56fddb21e3343279446e02f84909226e65d93e5e81dc07a41a67"
+      },
+      "completed_at": "2026-06-14T00:04:55.285Z",
+      "modules_touched": [
+        "packages/cli/package.json",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/data/pricing.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/compliance-context.ts",
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/src/utils/forensics.ts",
+        "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/_capture.test.ts",
+        "packages/cli/tests/commands/proof-card-golden.test.ts",
+        "packages/cli/tests/commands/proof-compliance-display.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "packages/cli/tests/commands/work-proof-process.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/data/pricing.test.ts",
+        "packages/cli/tests/utils/compliance-context.test.ts",
+        "packages/cli/tests/utils/compliance.test.ts",
+        "packages/cli/tests/utils/forensics-derive.test.ts",
+        "packages/cli/tests/utils/forensics.test.ts",
+        "pnpm-lock.yaml"
+      ],
+      "scope_summary": "Replace Anatomia's hand-rolled transcript forensics with the published `anatrace-core` package, then build a behavioral-attestation layer on top of it. In the user's words: \"properly use and test anatrace within anatomia... use the real anatrace package, test it, and even expand what we currently do by leveraging anatrace.\"",
+      "kind": "milestone",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Golden snapshot fixture INPUTS were changed (cache_read 80k→1M, 900k→1M; model gpt-5-codex→gpt-5) to keep the card within 80 columns once the wider real table-version label is shown — so the golden test no longer proves cost-invariance for unchanged inputs.",
+          "file": "packages/cli/tests/commands/proof-card-golden.test.ts",
+          "anchor": null,
+          "line": 165,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "anatrace-core-integration-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "captureProvenanceAtSave no longer calls deriveTranscript — it re-reads bytes and calls deriveCountsFromBytes directly so the transcript_hash attests the same bytes (read-once). deriveTranscript is now reachable only from tests. Intentional, but the read-bytes+basename+derive sequence is duplicated across the two functions.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "line": 419,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "AC13 totality (a core call throwing mid-capture must not break the save) has no explicit test that forces parseSession/deriveCounts to throw. Covered structurally by the outer try/catch in captureProvenanceAtSave and by the unreadable-transcript omit test, but not directly exercised.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "line": 422,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Stray indentation in the prov() shape helper: derive_version sits at 6 spaces while sibling keys are at 8. Lint passes (eslint indent not enforced inside this object literal) but it is inconsistent with the file.",
+          "file": "packages/cli/tests/commands/work-proof-process.test.ts",
+          "anchor": null,
+          "line": 75,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "anatrace-core-integration-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "parseTestCounts best-effort regex (session-capture-C12) is resolved: the helper is deleted and test/failure counting is delegated to anatrace-core's command-tool-gated derive. Codex files_touched=0 build concern is also resolved (A008 now derives from a real patch_apply_end body).",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "session-capture-C12"
+          ],
+          "id": "anatrace-core-integration-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-14T00:04:55.285Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "harness_version is still recorded empty — the session-capture build concern is NOT addressed by this phase (the spec explicitly defers filling it from the transcript version key to Phase 2). Noted so it is not assumed closed.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "resolveTranscriptPath remains exported with zero external importers (cross-machine-provenance-C2 still present). Not introduced by this build and not in scope; the refactor correctly added no NEW zero-importer exports.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C7",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A023 scrub test cannot isolate the scrub mechanism — the record shape already excludes transcript bytes, so the test passes even if scrubDeep were removed",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 195,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A023"
+          ],
+          "id": "anatrace-core-integration-C8",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Malformed-but-readable transcript branch (parseSession returns null) is never exercised; the A022 totality test uses the unreadable-file path instead, leaving compliance.ts:193 uncovered",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 193,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A022"
+          ],
+          "id": "anatrace-core-integration-C9",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "buildRootLaneContext boundary param is inert (void boundary) — accepted and threaded from the call site but has zero effect on output today; spec-sanctioned future seam",
+          "file": "packages/cli/src/utils/compliance-context.ts",
+          "anchor": null,
+          "line": 75,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "anatrace-core-integration-C10",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec referenced canonicalSort for the mandate hash, but the build hashes source-blob bytes (byte-identity) instead — aligns better with AC17; canonicalSort import is unused. Worth acknowledging on next seal",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 107,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "anatrace-core-integration-C11",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-14T00:04:55.285Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "readCoreVersion returns '' on failure; A020 ('exists') would still pass with an empty string, so a record could carry an empty engine version while satisfying the assertion",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 51,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "anatrace-core-integration-C12",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "tests/commands/init/template-propagation.test.ts is flaky under full-suite parallel load (5000ms timeout; passes in isolation at ~9s). Pre-existing, unrelated to Phase 2 — raise its timeout or split it",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "anchor": null,
+          "line": 308,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "anatrace-core-integration-C13",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "@ana tag namespace is not contract-scoped: all-scaffolds.test.ts and proofSummary.test.ts reuse A001–A012 for an unrelated contract, colliding with this contract's Phase-1 ids.",
+          "file": "packages/cli/tests/scaffolds/all-scaffolds.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A002 (forensics has no hand-rolled deriveClaude) has no dedicated unit test — satisfied by deletion plus the contract's mechanical not_contains source check, not an @ana-tagged test.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Two timing-sensitive tests (parsing-performance cache-speedup ≥0.80; init template-propagation 5s timeout) flake under concurrent machine load; both pass in isolation and are untouched by this work. Not regressions.",
+          "file": "packages/cli/tests/engine/performance/parsing-performance.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "AC6 fix surfaced a pre-existing latent proof-card layout overflow: the TOTAL footer trailing '(table 2026-06-08)' reaches 81–83 cols for unpriced multi-session runs. Rendering left untouched per spec; two golden stress fixtures trimmed so the realistic card fits 80 cols (user-approved).",
+          "file": "packages/cli/src/utils/render.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "deriveCountsFromBytes casts the string harness to core's Harness union (as Harness). A harness value other than 'claude'/'codex' would still be passed to parseSession, which falls back to shape detection — benign, but the cast hides the narrowing.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "captureComplianceAtSave outer try-catch is not separately unit-triggered; only early-return no-record paths are tested (no external input reliably forces a mid-pipeline core throw)",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "parseSession never returns null for in-band garbage — the 'malformed transcript → no record' path is exercised via an unreadable (dangling) transcript, not corrupt bytes; corrupt-but-readable transcripts still produce a record",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "artifact.ts provenancePaths list now holds both compliance and provenance file paths; behavior is correct but the variable name reads narrower than its contents",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing flaky test (not introduced by this build): tests/commands/init/template-propagation.test.ts times out at 5s under full-suite load, passes 21/21 in isolation",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "anatomiaAdapter does not emit subject.delegates:'include' claims from current Anatomia agent-defs; the A014 delegate-inclusive soundness test augments a real adapter claim's subject (documented deviation). If agent-defs gain delegate-inclusive phrasing the test should switch to native adapter output",
+          "file": "packages/cli/tests/utils/compliance-context.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 26,
+          "assertions_total": 26,
+          "findings": {
+            "risk": 0,
+            "debt": 5,
+            "observation": 8
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "milestone",
+          "multi_phase": true
+        },
+        "module_churn": {
+          "packages/cli/package.json": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 36,
+            "deleted": 14
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 110,
+            "deleted": 5
+          },
+          "packages/cli/src/commands/run.ts": {
+            "added": 12,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/work-proof.ts": {
+            "added": 19,
+            "deleted": 0
+          },
+          "packages/cli/src/data/pricing.ts": {
+            "added": 12,
+            "deleted": 98
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 86,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/compliance-context.ts": {
+            "added": 99,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 299,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/forensics.ts": {
+            "added": 72,
+            "deleted": 334
+          },
+          "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+            "added": 15,
+            "deleted": 15
+          },
+          "packages/cli/tests/commands/_capture.test.ts": {
+            "added": 25,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof-card-golden.test.ts": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+            "added": 131,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/run.test.ts": {
+            "added": 7,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-merge.test.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-proof-process.test.ts": {
+            "added": 42,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/tests/data/pricing.test.ts": {
+            "added": 16,
+            "deleted": 9
+          },
+          "packages/cli/tests/utils/compliance-context.test.ts": {
+            "added": 241,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 284,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/forensics-derive.test.ts": {
+            "added": 90,
+            "deleted": 34
+          },
+          "packages/cli/tests/utils/forensics.test.ts": {
+            "added": 25,
+            "deleted": 7
+          },
+          "pnpm-lock.yaml": {
+            "added": 11,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "7e6f6f13-ef0a-4fa2-aa5e-f973041478ac",
+            "captured_at": "2026-06-13T21:18:18.421Z",
+            "derived": {
+              "tokens": {
+                "input": 6900,
+                "output": 64725,
+                "cache_create": 170409,
+                "cache_read": 4870714
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2020917,
+              "turns": 118,
+              "tool_calls": 50,
+              "commands_run": 28,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "6806e699-c2df-45ed-a1c1-e868b137b22a",
+            "captured_at": "2026-06-13T21:59:48.299Z",
+            "derived": {
+              "tokens": {
+                "input": 6716,
+                "output": 92045,
+                "cache_create": 190221,
+                "cache_read": 3625602
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2222766,
+              "turns": 85,
+              "tool_calls": 36,
+              "commands_run": 18,
+              "tests_executed": 164,
+              "failures_encountered": 2,
+              "files_touched": 5,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "884844fc-e709-424e-ac65-f73bc60e7d08",
+            "captured_at": "2026-06-13T22:17:42.250Z",
+            "derived": {
+              "tokens": {
+                "input": 13853,
+                "output": 127212,
+                "cache_create": 246584,
+                "cache_read": 18735070
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2595801,
+              "turns": 270,
+              "tool_calls": 125,
+              "commands_run": 82,
+              "tests_executed": 11738,
+              "failures_encountered": 15,
+              "files_touched": 12,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "8499946b-f271-4858-bc86-5ed29c538ce9",
+            "captured_at": "2026-06-13T23:02:25.330Z",
+            "derived": {
+              "tokens": {
+                "input": 6418,
+                "output": 22904,
+                "cache_create": 95175,
+                "cache_read": 1531390
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 507792,
+              "turns": 68,
+              "tool_calls": 29,
+              "commands_run": 21,
+              "tests_executed": 7416,
+              "failures_encountered": 2,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "be1bf267-35ff-490b-9c4c-5a28d9afc133",
+            "captured_at": "2026-06-13T23:11:34.569Z",
+            "derived": {
+              "tokens": {
+                "input": 10471,
+                "output": 110134,
+                "cache_create": 432631,
+                "cache_read": 19148372
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2140536,
+              "turns": 295,
+              "tool_calls": 150,
+              "commands_run": 75,
+              "tests_executed": 7637,
+              "failures_encountered": 5,
+              "files_touched": 13,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "c6dceb6b-a059-4378-8c53-d5ab0bc2f52c",
+            "captured_at": "2026-06-13T23:48:13.861Z",
+            "derived": {
+              "tokens": {
+                "input": 6546,
+                "output": 23606,
+                "cache_create": 80061,
+                "cache_read": 1415366
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 704578,
+              "turns": 76,
+              "tool_calls": 34,
+              "commands_run": 19,
+              "tests_executed": 3730,
+              "failures_encountered": 1,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-13T22:18:53.922Z",
+        "completed_at": "2026-06-14T00:04:55.250Z",
+        "commit_count": 0,
+        "base_commit": "4f04f5c2c8a1f0007970997bdb0ea6619bb3fa8f"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
