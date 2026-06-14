@@ -111,6 +111,13 @@ function resolveAgentDefPath(projectRoot: string, platform: string, agentName: s
  *                          SessionStart hook's pending pointer and the in-session
  *                          `ana artifact save` that consumes it (cross-harness,
  *                          concurrency-safe correlation)
+ * - `ANA_CAPTURE_BOUNDARY` ← the trusted launcher's capture-boundary declaration:
+ *                          which lanes it captured. `'root'` today (the launcher
+ *                          captures only the root agent's transcript, never
+ *                          delegate transcripts). This is a fact only the launcher
+ *                          knows — behavioral coverage is DECLARED here, not
+ *                          inferred. A future delegate-capturing phase changes
+ *                          this one value.
  *
  * Every field degrades cleanly: an unreadable agent-def file yields an empty
  * hash, a missing worktree slug yields an empty `ANA_SLUG`. Never throws.
@@ -120,7 +127,7 @@ function resolveAgentDefPath(projectRoot: string, platform: string, agentName: s
  * @param platform - Target platform ('claude' | 'codex')
  * @param agentName - Full agent name (e.g. 'ana-build')
  * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
- * @returns A record of the six `ANA_*` variables
+ * @returns A record of the seven `ANA_*` variables
  */
 export function buildCaptureEnv(
   projectRoot: string,
@@ -154,6 +161,10 @@ export function buildCaptureEnv(
     ANA_CLI_VERSION: getCliVersionSync(),
     ANA_AGENT_DEF_HASH: agentDefHash,
     ANA_RUN_ID: randomUUID(),
+    // The trusted launcher captures only the root agent's transcript today. This
+    // declares that boundary at the one place that knows it (Step 1 reads it via
+    // buildRootLaneContext; absence defaults to 'root').
+    ANA_CAPTURE_BOUNDARY: 'root',
   };
 }
 

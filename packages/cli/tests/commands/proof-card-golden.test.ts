@@ -62,6 +62,7 @@ function session(
     derived: {
       tokens: { input, output, cache_create: cacheCreate, cache_read: cacheRead },
       price_table_version: 'v3',
+      derive_version: '3',
       duration_ms: 0,
       turns,
       tool_calls: tools,
@@ -161,10 +162,13 @@ const unpricedModel = makeEntry({
     module_churn: {},
     completeness: { complete: true, expected: { plan: 1, build: 1, verify: 1 }, present: { plan: 1, build: 1, verify: 1 }, gaps: [] },
     // Two distinct models → grid keeps a per-row model column; one is unpriced.
+    // Cache totals are ≥1M (rendered "X.XM") so the cache column stays 4 wide and
+    // the TOTAL footer — now carrying the real 10-char table version "2026-06-08"
+    // (AC6) rather than a synthetic short stamp — fits within 80 columns.
     sessions: [
-      session('plan', SHARED_MODEL, 12, 48, 12100, 4200, 80000, 800000),
+      session('plan', SHARED_MODEL, 12, 48, 12100, 4200, 80000, 1000000),
       session('build', 'claude-opus-5-0', 31, 140, 18000, 9100, 100000, 2000000),
-      session('verify', SHARED_MODEL, 14, 61, 10200, 3000, 20000, 900000),
+      session('verify', SHARED_MODEL, 14, 61, 10200, 3000, 20000, 1000000),
     ],
   },
 });
@@ -220,8 +224,11 @@ const mixedCounts = makeEntry({
     completeness: { complete: true, expected: { plan: 1, build: 1, verify: 1 }, present: { plan: 1, build: 1, verify: 1 }, gaps: [] },
     sessions: [
       session('plan', SHARED_MODEL, 12, 48, 12100, 4200, 80000, 800000),
-      // Codex session: cache_create = 0, cache column shows the read figure only.
-      session('build', 'gpt-5-codex', 20, 90, 14000, 5000, 0, 600000),
+      // Codex-style session: cache_create = 0, cache column shows the read figure
+      // only. Uses the short model id `gpt-5` so the session label keeps the card
+      // within 80 columns once the TOTAL footer carries the real table version
+      // "2026-06-08" (AC6) — the cache figure (600.0k) is what this fixture asserts.
+      session('build', 'gpt-5', 20, 90, 14000, 5000, 0, 600000),
       // Counts-unavailable session: no derived counts at all.
       session('verify', 'claude-opus-4-8', 0, 0, 0, 0, 0, 0, false),
     ],
@@ -244,7 +251,7 @@ describe('proof card golden snapshots', () => {
     expect(card.split('\n').find((l) => l.includes('── Findings'))).toMatch(/debt|obs/); // A018 severity roll-up
     expect(card).toContain('cache'); // A021 cache column
     expect(card).toContain('out'); // A022 in/out columns
-    expect(card).toMatch(/TOTAL.*table v3/s); // A023 TOTAL + price-table version
+    expect(card).toMatch(/TOTAL.*table 2026-06-08/s); // A023 TOTAL + price-table version (sourced from the CostResult — AC6)
     expect(card).toContain('completeness'); // A024 completeness line
   });
 

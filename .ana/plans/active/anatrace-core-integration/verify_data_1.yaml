@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Golden snapshot fixture INPUTS were changed (cache_read 80k→1M, 900k→1M; model gpt-5-codex→gpt-5) to keep the card within 80 columns once the wider real table-version label is shown — so the golden test no longer proves cost-invariance for unchanged inputs."
+    file: "packages/cli/tests/commands/proof-card-golden.test.ts"
+    line: 165
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A011"]
+  - category: code
+    summary: "captureProvenanceAtSave no longer calls deriveTranscript — it re-reads bytes and calls deriveCountsFromBytes directly so the transcript_hash attests the same bytes (read-once). deriveTranscript is now reachable only from tests. Intentional, but the read-bytes+basename+derive sequence is duplicated across the two functions."
+    file: "packages/cli/src/utils/forensics.ts"
+    line: 419
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "AC13 totality (a core call throwing mid-capture must not break the save) has no explicit test that forces parseSession/deriveCounts to throw. Covered structurally by the outer try/catch in captureProvenanceAtSave and by the unreadable-transcript omit test, but not directly exercised."
+    file: "packages/cli/src/utils/forensics.ts"
+    line: 422
+    severity: debt
+    suggested_action: monitor
+  - category: test
+    summary: "Stray indentation in the prov() shape helper: derive_version sits at 6 spaces while sibling keys are at 8. Lint passes (eslint indent not enforced inside this object literal) but it is inconsistent with the file."
+    file: "packages/cli/tests/commands/work-proof-process.test.ts"
+    line: 75
+    severity: observation
+    suggested_action: acknowledge
+  - category: upstream
+    summary: "parseTestCounts best-effort regex (session-capture-C12) is resolved: the helper is deleted and test/failure counting is delegated to anatrace-core's command-tool-gated derive. Codex files_touched=0 build concern is also resolved (A008 now derives from a real patch_apply_end body)."
+    severity: observation
+    suggested_action: acknowledge
+    resolves:
+      - "session-capture-C12"
+  - category: code
+    summary: "harness_version is still recorded empty — the session-capture build concern is NOT addressed by this phase (the spec explicitly defers filling it from the transcript version key to Phase 2). Noted so it is not assumed closed."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "resolveTranscriptPath remains exported with zero external importers (cross-machine-provenance-C2 still present). Not introduced by this build and not in scope; the refactor correctly added no NEW zero-importer exports."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: observation
+    suggested_action: monitor

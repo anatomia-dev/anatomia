@@ -39,6 +39,16 @@ export interface SessionProvenance {
    */
   captured_at: string;
   /**
+   * sha256 of the transcript bytes this session's counts were derived from,
+   * prefixed `sha256:`. A byte-identity ATTESTATION ONLY — it fingerprints the
+   * exact bytes seen at capture so a record can be checked against a retained
+   * transcript. It does NOT imply the provenance can be regenerated without those
+   * retained bytes (the transcript is not committed). Capture metadata on the
+   * wrapper, not part of the deterministic derive. Present iff the transcript was
+   * readable at capture — OMITTED (alongside `derived`) when it was not.
+   */
+  transcript_hash?: string;
+  /**
    * Deterministic provenance counts for this session, derived from the committed
    * transcript at `ana artifact save` time. OMITTED when the transcript was
    * unreadable at capture (e.g. a dangling path) — the session row is still kept
@@ -111,6 +121,73 @@ export interface ProcessAttestation {
    * attempts from rejection cycles are kept: that rework is wanted data.
    */
   sessions: SessionProvenance[];
+}
+
+/**
+ * One behavioral verdict in a committed {@link ComplianceAttestation} (Phase 2).
+ *
+ * COMPACT + SCRUBBED — the durable, Anatomia-owned projection of a core
+ * `ComplianceVerdict`. It deliberately stores only the claim id, its `says`, the
+ * status, and the reason: NEVER copied transcript bytes. (Core verdict evidence
+ * is byte POINTERS, never excerpts — and the whole record passes `scrubDeep`
+ * before write, so an egress command carrying a token never lands in committed
+ * git history.) Snake_case to match the on-disk record, distinct from core's
+ * camelCase runtime shape so the engine can evolve without breaking stored proof.
+ */
+export interface ComplianceVerdictRecord {
+  /** Stable claim id — the join key to the mandate/proof chain. */
+  claim_id: string;
+  /** Human-readable obligation, verbatim from the mandate. */
+  says: string;
+  /** Behavioral verdict: `satisfied` | `violated` | `unverifiable`. EVIDENCE ONLY — never gates. */
+  status: 'satisfied' | 'violated' | 'unverifiable';
+  /** Coverage-aware verdict reason (subject/context-dependent, e.g. `codex-blind`). */
+  reason: string;
+}
+
+/**
+ * Behavioral attestation for ONE agent transcript (Phase 2).
+ *
+ * The deterministic, coverage-aware verdict of HOW a session behaved, produced at
+ * `ana artifact save` by {@link captureComplianceAtSave} and committed as
+ * `.ana/plans/active/{slug}/compliance/{role}-{session_id}.json`. One record per
+ * transcript — keyed `{role}-{session_id}` exactly like provenance — so plan,
+ * build, every build-rework attempt, and verify each keep their own record;
+ * rework is never collapsed.
+ *
+ * EVIDENCE, NEVER A GATE — a `violated` verdict is recorded and rendered but never
+ * changes a proof's PASS/FAIL. Mirrors {@link ProcessAttestation}'s decoupling.
+ */
+export interface ComplianceAttestation {
+  /** Pipeline role (`plan` | `build` | `verify` | …). */
+  role: string;
+  /** Harness the session ran on (`claude` | `codex`). */
+  harness: string;
+  /** Harness session id — ties the record to the session that produced it. */
+  session_id: string;
+  /** ISO-8601 wall-clock capture timestamp (carried from the pending pointer when present). */
+  captured_at: string;
+  /** The anatrace-core version that judged this session (read from core's package.json, never hardcoded). */
+  anatrace_core_version: string;
+  /** The mandate framework that judged it (e.g. `anatomia`). */
+  framework: string;
+  /** sha256 of the mandate (agent-def + contract) bytes, prefixed `sha256:`. Byte-identity attestation only. */
+  mandate_hash: string;
+  /** sha256 of the transcript bytes the verdicts were derived from, prefixed `sha256:`. Byte-identity attestation only. */
+  transcript_hash: string;
+  /** How much of the session could actually be checked. */
+  coverage: {
+    /** Total declared obligations (claims). */
+    total: number;
+    /** Claims mechanically checked against the captured transcript. */
+    fully_checked: number;
+    /** Claims that could not be verified (coverage-aware). */
+    unverifiable: number;
+  };
+  /** True when every claim was fully checked (`unverifiable === 0`). Renders a loud warning when false. */
+  complete: boolean;
+  /** The per-claim behavioral verdicts (compact, scrubbed). */
+  verdicts: ComplianceVerdictRecord[];
 }
 
 /**
@@ -207,6 +284,15 @@ export interface ProofChainEntry {
    * absent is complete and valid. Mirrors `commit_hygiene`'s decoupling.
    */
   process?: ProcessAttestation;
+  /**
+   * Optional behavioral attestations — one per agent transcript — assembled at
+   * `ana work complete` when process capture is on and committed `compliance/*.json`
+   * records exist. OPTIONAL by construction: proof integrity never depends on it; a
+   * proof with this field absent is complete and valid, and pre-existing entries
+   * remain valid. EVIDENCE, NEVER A GATE — a `violated` verdict here never changes
+   * `result`. Mirrors {@link process}'s decoupling.
+   */
+  compliance?: ComplianceAttestation[];
   phases?: number;
   worktree?: {
     used: boolean;

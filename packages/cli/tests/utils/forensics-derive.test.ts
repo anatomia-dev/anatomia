@@ -1,13 +1,21 @@
 /**
  * Tests for the deterministic transcript derive (deriveTranscript).
  *
- * Determinism is a hard contract (AC8): same transcript bytes → byte-identical
- * output. Token usage is deduped by requestId (Claude) or taken from the last
- * cumulative total (Codex). No raw transcript body is ever carried into the
- * derived counts. The derive carries token counts + model + price_table_version
- * but NEVER a baked-in cost_usd (cost is a display-time estimate in capture v2).
- * Fixtures are inline + trimmed (no message bodies beyond what each assertion
- * needs).
+ * The derive is delegated to `anatrace-core` (parseSession + deriveCounts); these
+ * tests assert the INVARIANTS Anatomia depends on, re-baselined against core:
+ *  - determinism: same bytes → `JSON.stringify`-identical output;
+ *  - no raw transcript body ever escapes into the derived counts;
+ *  - `derive_version === "3"` and `price_table_version === "2026-06-08"` stamps;
+ *  - Codex `files_touched` is derived from a real `apply_patch` body (> 0);
+ *  - no baked-in `cost_usd` (cost is a display-time estimate in capture v2).
+ *
+ * Fixtures carry the fields a real transcript carries — Claude lines have a
+ * `message.id` (core dedups token usage by message id) and `tool_use_id`-linked
+ * tool results (core only counts test output behind a command tool); Codex
+ * rollouts carry a `patch_apply_end` event (core derives `files_touched` from it)
+ * and an `exec_command` call. With those, core reproduces the prior derive's
+ * counts. Where core genuinely re-baselines a number, the assertion notes the
+ * old → new value (see the Codex block).
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -19,10 +27,17 @@ import {
   type ProvenanceCounts,
 } from '../../src/utils/forensics.js';
 
-/** A sentinel that must NEVER appear in derived output (AC12 no-raw-body). */
+/** A sentinel that must NEVER appear in derived output (A009 no-raw-body). */
 const SECRET_BODY = 'SECRET_TRANSCRIPT_BODY_DO_NOT_PERSIST';
 
-/** Build a Claude transcript fixture with a duplicated requestId for dedup coverage. */
+/**
+ * Build a Claude transcript fixture.
+ *
+ * Two lines share `message.id` (`msg_1`) so core dedups their token usage exactly
+ * once; a third (`msg_2`) adds a second request. The Bash tool_use carries an id
+ * that the trailing tool_result references via `tool_use_id`, so core attributes
+ * the "N passed / N failed" output to a command tool (its test-count gate).
+ */
 function claudeFixture(): string {
   const lines = [
     {
@@ -30,6 +45,7 @@ function claudeFixture(): string {
       requestId: 'req_A',
       timestamp: '2026-06-01T00:00:00.000Z',
       message: {
+        id: 'msg_1',
         model: 'claude-opus-4-6',
         usage: {
           input_tokens: 1000,
@@ -39,17 +55,18 @@ function claudeFixture(): string {
         },
         content: [
           { type: 'text', text: SECRET_BODY },
-          { type: 'tool_use', name: 'Bash', input: { command: 'pnpm test' } },
-          { type: 'tool_use', name: 'Write', input: { file_path: '/proj/a.ts' } },
+          { type: 'tool_use', id: 'tu_bash', name: 'Bash', input: { command: 'pnpm test' } },
+          { type: 'tool_use', id: 'tu_write', name: 'Write', input: { file_path: '/proj/a.ts' } },
         ],
       },
     },
     {
-      // Duplicate requestId — usage must be counted ONCE.
+      // Duplicate message.id — usage must be counted ONCE (core dedups by id).
       type: 'assistant',
       requestId: 'req_A',
       timestamp: '2026-06-01T00:00:10.000Z',
       message: {
+        id: 'msg_1',
         model: 'claude-opus-4-6',
         usage: {
           input_tokens: 1000,
@@ -65,6 +82,7 @@ function claudeFixture(): string {
       requestId: 'req_B',
       timestamp: '2026-06-01T00:00:20.000Z',
       message: {
+        id: 'msg_2',
         model: 'claude-opus-4-6',
         usage: {
           input_tokens: 500,
@@ -72,14 +90,14 @@ function claudeFixture(): string {
           cache_creation_input_tokens: 50,
           cache_read_input_tokens: 100,
         },
-        content: [{ type: 'tool_use', name: 'Read', input: { file_path: '/proj/b.ts' } }],
+        content: [{ type: 'tool_use', id: 'tu_read', name: 'Read', input: { file_path: '/proj/b.ts' } }],
       },
     },
     {
       type: 'user',
       timestamp: '2026-06-01T00:00:21.000Z',
       message: {
-        content: [{ type: 'tool_result', content: 'Tests 10 passed, 2 failed' }],
+        content: [{ type: 'tool_result', tool_use_id: 'tu_bash', content: 'Tests 10 passed, 2 failed' }],
       },
     },
   ];
@@ -87,8 +105,24 @@ function claudeFixture(): string {
   return lines.map((l) => JSON.stringify(l)).join('\n') + '\n{ this is not json\n';
 }
 
-/** Build a Codex rollout fixture (model on turn_context; cumulative token_count). */
+/**
+ * Build a Codex rollout fixture.
+ *
+ * Model is on `turn_context` (session_meta's is null); token usage is the LAST
+ * cumulative `token_count` total (not summed). An `exec_command` call with a
+ * `call_id`-linked output carries the test counts; a `custom_tool_call`
+ * (`apply_patch`) plus a `patch_apply_end` event give core a real edit to count
+ * (`files_touched`).
+ */
 function codexFixture(): string {
+  const patchEnd = {
+    type: 'event_msg',
+    timestamp: '2026-06-01T00:00:08.000Z',
+    payload: {
+      type: 'patch_apply_end',
+      changes: { '/proj/src/foo.ts': { type: 'update' } },
+    },
+  };
   const lines = [
     {
       type: 'session_meta',
@@ -119,8 +153,10 @@ function codexFixture(): string {
     },
     { type: 'response_item', timestamp: '2026-06-01T00:00:03.000Z', payload: { type: 'message', role: 'assistant', content: SECRET_BODY } },
     { type: 'response_item', timestamp: '2026-06-01T00:00:04.000Z', payload: { type: 'message', role: 'assistant' } },
-    { type: 'response_item', timestamp: '2026-06-01T00:00:05.000Z', payload: { type: 'function_call', name: 'shell' } },
-    { type: 'response_item', timestamp: '2026-06-01T00:00:06.000Z', payload: { type: 'custom_tool_call', name: 'apply_patch' } },
+    { type: 'response_item', timestamp: '2026-06-01T00:00:05.000Z', payload: { type: 'function_call', name: 'exec_command', call_id: 'c1', arguments: '{"command":["bash","-lc","pnpm test"]}' } },
+    { type: 'response_item', timestamp: '2026-06-01T00:00:06.000Z', payload: { type: 'function_call_output', call_id: 'c1', output: { content: 'Tests 10 passed, 2 failed' } } },
+    { type: 'response_item', timestamp: '2026-06-01T00:00:07.000Z', payload: { type: 'custom_tool_call', name: 'apply_patch' } },
+    patchEnd,
   ];
   return lines.map((l) => JSON.stringify(l)).join('\n') + '\n';
 }
@@ -152,12 +188,13 @@ describe('forensics derive', () => {
   }
 
   describe('deriveTranscript — Claude', () => {
-    it('sums input tokens across requestIds', () => {
+    it('sums input tokens across requests, deduped by message id', () => {
+      // msg_1 (1000, counted once across its two lines) + msg_2 (500) = 1500.
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(d?.tokens.input).toBe(1500);
     });
 
-    it('dedupes token usage by requestId (output counted once per request)', () => {
+    it('dedupes token usage by message id (output counted once per message)', () => {
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(d?.tokens.output).toBe(800);
     });
@@ -167,12 +204,14 @@ describe('forensics derive', () => {
       expect(d?.model).toBe('claude-opus-4-6');
     });
 
-    // @ana A007, A008
-    it('carries price_table_version + tokens + model but NEVER a cost_usd', () => {
+    // @ana A003
+    it('carries the core stamps (derive_version + price_table_version) but NEVER a cost_usd', () => {
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude') as ProvenanceCounts;
-      // A008: the version the display-time cost is computed against is present.
+      // A003: each record states the engine derive version that produced it.
+      expect(d.derive_version).toBe('3');
+      // The version the display-time cost is computed against is present.
       expect(d.price_table_version).toBe('2026-06-08');
-      // A007: no baked-in dollar figure on the derived (committed) object.
+      // No baked-in dollar figure on the derived (committed) object.
       expect(JSON.stringify(d)).not.toContain('cost_usd');
       expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
     });
@@ -190,12 +229,13 @@ describe('forensics derive', () => {
       expect(d.duration_ms).toBe(21000);
     });
 
-    it('parses best-effort test counts from tool results', () => {
+    it('parses best-effort test counts from a command tool result', () => {
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude') as ProvenanceCounts;
       expect(d.tests_executed).toBe(12);
       expect(d.failures_encountered).toBe(2);
     });
 
+    // @ana A004
     it('is deterministic — deriving twice yields JSON-identical output', () => {
       const p = writeFixture('claude.jsonl', claudeFixture());
       const a = deriveTranscript(p, 'claude');
@@ -203,7 +243,7 @@ describe('forensics derive', () => {
       expect(JSON.stringify(a)).toBe(JSON.stringify(b));
     });
 
-    // @ana A015
+    // @ana A009
     it('never carries raw transcript body into the derived counts', () => {
       const d = deriveTranscript(writeFixture('claude.jsonl', claudeFixture()), 'claude');
       expect(JSON.stringify(d)).not.toContain(SECRET_BODY);
@@ -216,29 +256,44 @@ describe('forensics derive', () => {
       expect(d?.model).toBe('gpt-5.5');
     });
 
-    it('takes the last cumulative total_token_usage (does not sum)', () => {
+    it('takes the last cumulative total, with cached subtracted from input (re-baseline: input 300 → 220)', () => {
+      // Core reports FRESH input: gross input_tokens (300) minus cached_input (80)
+      // = 220. The old hand-derive recorded the gross 300; core subtracts cache.
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
-      expect(d.tokens.input).toBe(300);
+      expect(d.tokens.input).toBe(220);
       expect(d.tokens.output).toBe(120);
       expect(d.tokens.cache_read).toBe(80);
       expect(d.tokens.cache_create).toBe(0);
     });
 
-    // @ana A007, A008
-    it('carries price_table_version but never cost_usd (Codex)', () => {
+    // @ana A003
+    it('carries the core stamps but never cost_usd (Codex)', () => {
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
+      expect(d.derive_version).toBe('3');
       expect(d.price_table_version).toBe('2026-06-08');
       expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
     });
 
-    it('counts assistant turns and tool calls', () => {
+    it('counts assistant turns, tool calls, and the command (re-baseline: duration 30000 → 28000)', () => {
+      // Duration spans the timestamped events core folds (first 00:00:02 →
+      // last 00:00:30 = 28000ms), not the raw first/last line.
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
       expect(d.turns).toBe(2);
-      expect(d.tool_calls).toBe(2);
-      expect(d.commands_run).toBe(1);
-      expect(d.duration_ms).toBe(30000);
+      expect(d.tool_calls).toBe(3); // exec_command + apply_patch tool + the patch edit
+      expect(d.commands_run).toBe(1); // exec_command is a command tool
+      expect(d.tests_executed).toBe(12);
+      expect(d.failures_encountered).toBe(2);
+      expect(d.duration_ms).toBe(28000);
     });
 
+    // @ana A008
+    it('derives files_touched from a real apply_patch body (no longer hardcoded 0)', () => {
+      const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
+      expect(d.files_touched).toBeGreaterThan(0);
+      expect(d.files_touched).toBe(1); // the single patch_apply_end change
+    });
+
+    // @ana A004
     it('is deterministic for Codex too', () => {
       const p = writeFixture('codex.jsonl', codexFixture());
       expect(JSON.stringify(deriveTranscript(p, 'codex'))).toBe(
@@ -246,7 +301,7 @@ describe('forensics derive', () => {
       );
     });
 
-    // @ana A015
+    // @ana A009
     it('never carries raw transcript body into the derived counts', () => {
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex');
       expect(JSON.stringify(d)).not.toContain(SECRET_BODY);
@@ -263,6 +318,7 @@ describe('forensics derive', () => {
       expect(d.tokens.input).toBe(0);
       expect(d.turns).toBe(0);
       expect(d.model).toBe('');
+      expect(d.derive_version).toBe('3');
       expect(d.price_table_version).toBe('2026-06-08');
     });
   });
