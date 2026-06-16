@@ -10,5 +10,7 @@
         "hash": "sha256:977962d4cf77a3a8d4fc15ed9043f58adc356ce05adfb98d0474db5b407496ad"
       }
     ]
-  }
+  },
+  "plan_started_at": "2026-06-16T21:15:58.175Z",
+  "plan_agent": "ana-plan"
 }
