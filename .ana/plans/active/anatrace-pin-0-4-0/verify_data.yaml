@@ -30,7 +30,7 @@ findings:
     summary: "Observable (non-gating): no compliance record with anatrace_core_version == 0.4.0 is on disk yet for this cycle — it emits at `ana artifact save`, not at test time. Expected to land when the verify report is saved. Absence is a ~5-min follow-on per spec, never a held PR."
     severity: observation
     suggested_action: monitor
-  - category: code
+  - category: upstream
     summary: "C12 confirmed FIXED by this build — the fail-closed gate computes the engine version once and abstains (returns null, writes no record) on empty/unresolvable, so no anatrace_core_version: '' record can ever land. Build concern (abstain path had no reliable external trigger) is now ADDRESSED via the deps.readCoreVersion seam."
     file: "packages/cli/src/utils/compliance.ts"
     line: 200
