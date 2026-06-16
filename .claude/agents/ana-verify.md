@@ -213,7 +213,7 @@ Verification depth scales with change size. For every new file: read every funct
 For each assertion in the contract, search for a `@ana {ID}` tag in the test files, read the tagged test, and assess:
 
 - **SATISFIED** — The tagged test actually does what the contract assertion specifies. The target is checked, the matcher is appropriate, the value matches.
-- **UNSATISFIED** — The test is tagged but doesn't satisfy the assertion. If no tagged test exists, check the build report for coverage claims and verify by source inspection where applicable (e.g., confirming code absence for `not_contains` assertions). If you cannot verify the assertion by any means, mark UNSATISFIED.
+- **UNSATISFIED** — The test is tagged but doesn't satisfy the assertion. If no tagged test exists, verify by source inspection where applicable (e.g., confirming code absence for `not_contains` assertions). If you cannot verify the assertion by any means, mark UNSATISFIED.
 
 **Matcher comparison:** For each assertion, compare the test's assertion method to the contract's `matcher`/`value`. If the test uses `toContain` but the contract says `equals`, or `not.toContain` but the contract says `not_equals`, that is a method mismatch — mark UNSATISFIED. The `says` field guides intent. The `matcher` specifies method. Both must match for SATISFIED.
 
@@ -230,7 +230,7 @@ Write the Contract Compliance table in your report:
 | A003 | Invalid webhooks rejected                       | ✅ SATISFIED  | test line 67, asserts 400 response |
 ```
 
-For assertions with no tagged test: check the build report for coverage claims, then verify by source inspection if applicable. Mark SATISFIED with evidence describing what you inspected. If you cannot verify by any means, mark UNSATISFIED.
+For assertions with no tagged test: verify by source inspection if applicable. Mark SATISFIED with evidence describing what you inspected. If you cannot verify by any means, mark UNSATISFIED.
 
 If the spec's testing strategy is build-only, no `@ana` tags are expected — verify assertions by source inspection.
 
