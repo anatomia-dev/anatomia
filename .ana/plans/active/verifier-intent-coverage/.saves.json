@@ -198,7 +198,7 @@
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:5095b2cec3666d3f8b3c0288ddaec41cc378473a12533bbb4e86e035fe195dd8",
-    "run_at": "2026-06-16T22:21:37.208Z"
+    "run_at": "2026-06-16T22:59:19.115Z"
   },
   "verify-report-1": {
     "saved_at": "2026-06-16T22:21:37.249Z",
@@ -215,5 +215,15 @@
   "build-data-2": {
     "saved_at": "2026-06-16T22:50:19.416Z",
     "hash": "sha256:02a9f1987306b514977f5f68d8c2cf31a2da69c0a4b57f35e246b11bd036bcf1"
+  },
+  "verify_started_at_2": "2026-06-16T22:51:25.442Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-16T22:59:19.153Z",
+    "hash": "sha256:3d1f744977093e486275263fc7ef6fc73f20752fa1a999e7ef541e479eaf3a39"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-16T22:59:19.154Z",
+    "hash": "sha256:18ccd430e582a08ce1d26ee0a31625ffe219396222411d1ea9cb52e1498ac191"
   }
 }
