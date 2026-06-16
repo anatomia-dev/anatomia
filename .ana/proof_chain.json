@@ -57695,6 +57695,769 @@
         "base_commit": "8809d5e1da83df6b85266d6fc430e4881aa5f7d1"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "verifier-intent-coverage",
+      "feature": "Verifier Intent Coverage — mechanically guarantee the contract covers scope intent",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 35,
+        "satisfied": 35,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Acceptance criteria written as a dash-bullet are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Acceptance criteria written as a heading are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Acceptance criteria written in bold are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Acceptance criteria written as a bare label are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A well-formed scope is never mistaken for an unreadable one",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Across every past project scope, none is wrongly judged unreadable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Across every past project scope, the criteria are always recovered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A scope in an unfamiliar format is flagged as unreadable, not guessed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "An unreadable scope never blocks the seal — it only warns",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A contract that drops an acceptance criterion is blocked",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A contract that covers every acceptance criterion is allowed through",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The block names exactly which acceptance criterion was left uncovered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "An acceptance criterion covered only weakly still counts as covered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "An acceptance criterion marked judgment-only is accepted without a test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A deliberately retired criterion, with a stated reason, does not block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A criterion dropped with no reason and no test is blocked",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "A build that has no acceptance criteria is never gated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Every existing contract still passes through untouched",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Adding the new coverage fields breaks no existing contract validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "A new contract that forgot to link its criteria still activates the gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "That forgotten-link contract is blocked, not silently let through",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The gate always says out loud what it decided",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Criteria that shipped only partially are counted, not hidden",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The proof card tells the human how many criteria shipped partial",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Every proof records how each acceptance criterion was covered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "A pass tells judgment-verified criteria apart from mechanically-pinned ones",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The proof card shows the coverage breakdown for the human",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The coverage preview lists each acceptance criterion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The preview clearly marks any uncovered criterion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The preview never blocks — it only informs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The new plan command is available to run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "New plans seal contracts at the version that turns the gate on",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "The verifier treats the contract and the intent as two distinct gates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "The verifier still predicts likely mistakes before reading the code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Rejection never sends work back to planning or re-seals the contract",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 16738,
+        "think": 16634,
+        "plan": 22,
+        "build": 51,
+        "verify": 28,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 16634
+          },
+          {
+            "stage": "plan",
+            "minutes": 22
+          },
+          {
+            "stage": "build",
+            "minutes": 22,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 20,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 29,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 8,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:299e88902e431bed57dab56061c27ce1177e3c8f9c3aac316b347b4430b91598",
+        "contract": "sha256:5095b2cec3666d3f8b3c0288ddaec41cc378473a12533bbb4e86e035fe195dd8",
+        "plan": "sha256:769fd994ce674ba505d517b0e42c175f6c53d4fd088c3afb437893e75336590e",
+        "spec-1": "sha256:d5f166565754198655e4c1c495e34f78adafb9dbbba16439846e1b915b1e3dc4",
+        "spec-2": "sha256:665f7fdad48da0667273a0e001ef1fb70b91be6a3529f6075d8192dc44d5c7ed",
+        "build-report-1": "sha256:8aa8795f15fd610420a3effc4b133c3a531ccbfd41c3b094411e523ef5f997d3",
+        "build-data-1": "sha256:dad91d60d5219eb1e900a0cd0ab547eddacd02107f415f4412a228a80e595541",
+        "verify-report-1": "sha256:53b1a8d8bf67e75fb19bd52c4ae6d5f917b026a5c941b5937781a84e7a729c3a",
+        "verify-data-1": "sha256:1cfe055ceeefd190fff26e0cb7c26223383f204cd9642e9c0c4aa2236da75a9b",
+        "build-report-2": "sha256:ed865254234cef3aee42ffde1f1dda2f880d23c91e928b52c6647640586122ac",
+        "build-data-2": "sha256:02a9f1987306b514977f5f68d8c2cf31a2da69c0a4b57f35e246b11bd036bcf1",
+        "verify-report-2": "sha256:3d1f744977093e486275263fc7ef6fc73f20752fa1a999e7ef541e479eaf3a39",
+        "verify-data-2": "sha256:18ccd430e582a08ce1d26ee0a31625ffe219396222411d1ea9cb52e1498ac191"
+      },
+      "completed_at": "2026-06-16T23:07:58.303Z",
+      "modules_touched": [
+        ".claude/agents/ana-plan.md",
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-plan.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/plan.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/types/contract.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana-plan.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-plan.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/commands/commit-hygiene.test.ts",
+        "packages/cli/tests/commands/coverage-gate.test.ts",
+        "packages/cli/tests/commands/plan-coverage.test.ts",
+        "packages/cli/tests/commands/pr.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/scope-ac-corpus.test.ts",
+        "packages/cli/tests/commands/template-coverage-prompts.test.ts",
+        "packages/cli/tests/commands/work-proof-process.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "Make the contract's fidelity to scope intent **mechanically trustless**. Today the contract is positioned as the authoritative specification, but it is only a *fallible proxy* for what the scope actually asked for. Whether built code satisfies intent rests on the planner's diligence translating intent→assertions and the verifier's disposition to *notice* a thin translation — with **no mechanical check that every acceptance criterion is even covered, and no gating outlet when a gap is found.**",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Flaky test in the broader suite — one test failed in the sealed verify run (3766p/1f/2s) but never reproduced across 7 full-suite runs + 5 regression-focus runs. 'Push failed after retry' noise points to a git-operation/retry test, not Phase 1 code.",
+          "file": null,
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "verifier-intent-coverage-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "scope-ac-corpus.test.ts asserts toBe(0) against the live, growing completed-scope corpus (205 today). A future completed scope using '## Acceptance Criteria' with non-AC-id criteria would flip emptyExtractionCount/falseAmbiguousCount and break this test in an unrelated future PR. Intentional safety gate, but couples future greens to historical scope formatting.",
+          "file": "packages/cli/tests/commands/scope-ac-corpus.test.ts",
+          "anchor": null,
+          "line": 87,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006",
+            "A007"
+          ],
+          "id": "verifier-intent-coverage-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Bold-form regex /\\*\\*\\s*(AC\\d+)/ matches **ACn** anywhere on a line, so a prose mention ('see **AC3** above') extracts AC3 as a criterion id. Harmless across the 205-scope corpus and the dogfood (exactly AC1-14, no spurious ids), but a future version-1.1 contract could gain a spurious prose-derived id that becomes a false 'uncovered' block. Latent, low-likelihood.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 526,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "verifier-intent-coverage-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Defensive try/catch around joinCoverage in evaluateCoverageGate is effectively unreachable — joinCoverage is total (no throw path), so the 'could not evaluate' diagnostic branch cannot trigger in practice and no test exercises it. Spec explicitly requested defensive depth, so it is intentional, but it is untested dead-ish code.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 621,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "verifier-intent-coverage-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Stale/cross-contract @ana tags in long-lived test files mis-map this contract's assertion IDs",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 693,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A024",
+            "A027"
+          ],
+          "id": "verifier-intent-coverage-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "proofSummary.ts continues to grow past the comfort threshold (Phase 2 adds coverage threading)",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "verifier-intent-coverage-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "parseACResults PARTIAL regex false-match risk only partially mitigated; section-scoping helps but in-section bullets containing PARTIAL in prose could still match",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 243,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "verifier-intent-coverage-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "plan.ts missing-slug guard prints 'Error:' to stderr but exits 0 — an error condition reports success exit code",
+          "file": "packages/cli/src/commands/plan.ts",
+          "anchor": null,
+          "line": 44,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-intent-coverage-C8",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec file_changes under-specified the test plan — A024/A027 (cardOutput) and the PR PARTIAL surface required proof.test.ts and pr.test.ts edits the spec did not list; builder added them correctly",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "verifier-intent-coverage-C9",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T23:07:58.303Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "plan.ts re-parses coverage_waivers for reason text because joinCoverage does not return the reason; minor duplication of waiver iteration",
+          "file": "packages/cli/src/commands/plan.ts",
+          "anchor": null,
+          "line": 101,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "verifier-intent-coverage-C10",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "The gate's blocking path through artifact.ts (print errors + process.exit(1)) is covered only at the unit level (evaluateCoverageGate). No integration test drives saveArtifact/saveAllArtifacts to an actual block, because the gate is inert by design — no version 1.1 contract exists to trigger it until Phase 2. The artifact.ts layer is a thin print+exit mirror of applyTestEvidenceGate.",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "AC6 (scope: 'a contract with no assertions never triggers the gate, active:false') and AC13 ('a version 1.1 contract with zero ac links over a scope with ACs reports active:true, block:true') are in tension for the zero-assertion + version-1.1 case. Resolved per the contract's explicit pins (A020/A021): activation = version>=1.1 AND scope-has-ACs AND not-ambiguous, independent of assertion count. AC6's no-assertions clause holds in the legacy 1.0 regime and via the no-AC-scope path (A017).",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "extractScopeACs recovers ids only from the four structural forms (bullet, heading, bold, bare label). An AC referenced only mid-prose without bold (e.g. 'see AC3') is intentionally not recovered, for precision. Acceptable while the gate is dormant; worth awareness when Phase 2 activates real contracts.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Syncing root dogfood agents to templates changes the agents this repo itself uses on next re-init (two-gate verifier, 1.1-emitting planner).",
+          "file": ".claude/agents/ana-verify.md",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "`ana plan coverage` is advisory, not an automatic pipeline step; real enforcement is the Phase 1 gate at `ana artifact save`. Don't mistake the preview for a gate.",
+          "file": "packages/cli/src/commands/plan.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "plan.ts reads contract.coverage_waivers directly for waiver reason display (joinCoverage returns status, not reason) — a second site touching the waiver shape.",
+          "file": "packages/cli/src/commands/plan.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Spec File Changes under-specified the .codex template + dogfood edits; the diff touches more files than the table lists (followed the spec's Both-Claude-and-Codex constraint + existing sync tests).",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "commit_hygiene": [
+        {
+          "check": "conflict-marker",
+          "file": "packages/cli/tests/commands/commit-hygiene.test.ts",
+          "severity": "warn",
+          "message": "merge conflict marker in packages/cli/tests/commands/commit-hygiene.test.ts"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 35,
+          "assertions_total": 35,
+          "findings": {
+            "risk": 0,
+            "debt": 3,
+            "observation": 7
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "feature",
+          "multi_phase": true
+        },
+        "module_churn": {
+          ".claude/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          ".claude/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          ".codex/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          ".codex/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/src/commands/artifact-validators.ts": {
+            "added": 299,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 68,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/plan.ts": {
+            "added": 169,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/pr.ts": {
+            "added": 9,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 17,
+            "deleted": 0
+          },
+          "packages/cli/src/index.ts": {
+            "added": 2,
+            "deleted": 0
+          },
+          "packages/cli/src/types/contract.ts": {
+            "added": 34,
+            "deleted": 0
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/src/utils/proofSummary.ts": {
+            "added": 59,
+            "deleted": 5
+          },
+          "packages/cli/templates/.claude/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          "packages/cli/templates/.claude/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/templates/.codex/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          "packages/cli/templates/.codex/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/tests/commands/commit-hygiene.test.ts": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/coverage-gate.test.ts": {
+            "added": 398,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/plan-coverage.test.ts": {
+            "added": 210,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/pr.test.ts": {
+            "added": 43,
+            "deleted": 1
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 58,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/scope-ac-corpus.test.ts": {
+            "added": 99,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/template-coverage-prompts.test.ts": {
+            "added": 75,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-proof-process.test.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/tests/utils/proofSummary.test.ts": {
+            "added": 109,
+            "deleted": 1
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "1622d877-14a4-49c0-8cbb-6b4b4dce75ae",
+            "captured_at": "2026-06-16T17:23:24.719Z",
+            "derived": {
+              "tokens": {
+                "input": 8406,
+                "output": 89993,
+                "cache_create": 181987,
+                "cache_read": 5097110
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 13923196,
+              "turns": 107,
+              "tool_calls": 44,
+              "commands_run": 20,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "051829ad-fb8d-4246-918b-58db883bfc2f",
+            "captured_at": "2026-06-16T21:43:00.656Z",
+            "derived": {
+              "tokens": {
+                "input": 7733,
+                "output": 70486,
+                "cache_create": 179262,
+                "cache_read": 4611292
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1713404,
+              "turns": 94,
+              "tool_calls": 41,
+              "commands_run": 11,
+              "tests_executed": 15,
+              "failures_encountered": 1,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "10d54a7b-2fa1-465e-8a7b-0b278340b7fa",
+            "captured_at": "2026-06-16T21:45:15.036Z",
+            "derived": {
+              "tokens": {
+                "input": 7744,
+                "output": 51887,
+                "cache_create": 126522,
+                "cache_read": 4011587
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 864477,
+              "turns": 102,
+              "tool_calls": 47,
+              "commands_run": 21,
+              "tests_executed": 3940,
+              "failures_encountered": 1,
+              "files_touched": 7,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "896bf565-5a94-4f8a-b05d-5ffb80e9147d",
+            "captured_at": "2026-06-16T22:00:42.272Z",
+            "derived": {
+              "tokens": {
+                "input": 8612,
+                "output": 33120,
+                "cache_create": 109164,
+                "cache_read": 3371918
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1248109,
+              "turns": 104,
+              "tool_calls": 45,
+              "commands_run": 29,
+              "tests_executed": 3769,
+              "failures_encountered": 1,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "1a8427ac-151a-4b40-81e5-ea9b0fc4d469",
+            "captured_at": "2026-06-16T22:17:57.419Z",
+            "derived": {
+              "tokens": {
+                "input": 12048,
+                "output": 87855,
+                "cache_create": 273013,
+                "cache_read": 21387309
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1685324,
+              "turns": 314,
+              "tool_calls": 166,
+              "commands_run": 63,
+              "tests_executed": 7761,
+              "failures_encountered": 3,
+              "files_touched": 20,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "f6f988b6-8a51-4a13-923f-c7422893711d",
+            "captured_at": "2026-06-16T22:50:58.284Z",
+            "derived": {
+              "tokens": {
+                "input": 7587,
+                "output": 27293,
+                "cache_create": 101226,
+                "cache_read": 2091315
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 493561,
+              "turns": 90,
+              "tool_calls": 42,
+              "commands_run": 20,
+              "tests_executed": 3797,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-16T21:46:13.608Z",
+        "completed_at": "2026-06-16T23:07:58.289Z",
+        "commit_count": 0,
+        "base_commit": "bd624cad94158c5a68eef2cbf9582b969b6e590c"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
