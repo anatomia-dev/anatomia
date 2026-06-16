@@ -40,5 +40,100 @@
   "spec-2": {
     "saved_at": "2026-06-16T21:57:25.530Z",
     "hash": "sha256:b769eb778aba59a6f06637e1795b214586d70d253f52d09b3f8c47f6f775105c"
-  }
+  },
+  "build_started_at": "2026-06-16T23:08:56.630Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-16T23:25:04.888Z",
+    "hash": "sha256:f683c4083ee32ccfd40c41428322a96641bf668915e1fbbb666d2e5dfb30dfc8"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-16T23:25:04.889Z",
+    "hash": "sha256:8ec74f34fbdd8d8a63e91b84101215992113459c520e2080f6e172ccf70f2686"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-verify.md",
+    ".codex/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/commands/work-state.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/src/utils/verdict.ts",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/commands/work-proof-guard.test.ts",
+    "packages/cli/tests/templates/agent-proof-context.test.ts",
+    "packages/cli/tests/utils/verdict.test.ts"
+  ],
+  "module_churn": {
+    ".claude/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    ".codex/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/artifact-validators.ts": {
+      "added": 6,
+      "deleted": 3
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 12,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/pr.ts": {
+      "added": 4,
+      "deleted": 3
+    },
+    "packages/cli/src/commands/work-proof.ts": {
+      "added": 19,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/work-state.ts": {
+      "added": 8,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 8,
+      "deleted": 5
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 7,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/proofSummary.ts": {
+      "added": 19,
+      "deleted": 15
+    },
+    "packages/cli/src/utils/verdict.ts": {
+      "added": 82,
+      "deleted": 0
+    },
+    "packages/cli/templates/.claude/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/templates/.codex/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/tests/commands/work-proof-guard.test.ts": {
+      "added": 77,
+      "deleted": 0
+    },
+    "packages/cli/tests/templates/agent-proof-context.test.ts": {
+      "added": 46,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/verdict.test.ts": {
+      "added": 227,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
