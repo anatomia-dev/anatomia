@@ -359,6 +359,23 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
   lines.push(
     `  ${countedLead}${ct.satisfied} satisfied · ${ct.unsatisfied} unsatisfied · ${ct.deviated} deviated`
   );
+  // AC coverage honesty (AC7) + PARTIAL surfacing (AC12). Both undefined-safe:
+  // old proof_chain.json entries predate these fields, so render nothing.
+  const ac = entry.acceptance_criteria;
+  const cov = ac?.coverage;
+  if (cov && cov.pinned + cov.judgment + cov.retired + cov.uncovered > 0) {
+    const segs = [`${cov.pinned} pinned`, `${cov.judgment} judgment-only`, `${cov.retired} retired`];
+    if (cov.uncovered > 0) segs.push(`${chalk.red(`${cov.uncovered} uncovered`)}`);
+    lines.push(`  AC coverage: ${segs.join(' · ')}`);
+    if (cov.weak_only > 0) {
+      lines.push(chalk.gray(`  ${cov.weak_only} AC covered by weak matcher only (info)`));
+    }
+  }
+  if (ac?.partial && ac.partial > 0) {
+    lines.push(
+      `  ${chalk.yellow('⚠')} ${ac.partial} acceptance criteri${ac.partial === 1 ? 'on' : 'a'} shipped PARTIAL`
+    );
+  }
   // Exceptional assertions render individually (the old standalone Deviations
   // section folds in here); passing assertions stay collapsed in the line above.
   for (const a of entry.assertions) {
