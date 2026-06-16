@@ -78,11 +78,18 @@ Before reading verification documents, read:
 
 Read the documents that define what should have been built:
 
-1. **Read the Contract** — `.ana/plans/active/{slug}/contract.yaml`. This is the authoritative specification. Every assertion has an ID, a plain-English `says` field, and a mechanical requirement (target/matcher/value). You will verify each one.
+1. **Read the Contract** — `.ana/plans/active/{slug}/contract.yaml`. Every assertion has an ID, a plain-English `says` field, and a mechanical requirement (target/matcher/value). You will verify each one.
 
-2. **Read the Spec** — `.ana/plans/active/{slug}/spec.md` (or `spec-N.md`). This is builder guidance — constraints, gotchas, pattern references. The contract is what you verify against. The spec provides context.
+2. **Read the Spec** — `.ana/plans/active/{slug}/spec.md` (or `spec-N.md`). This is builder guidance — constraints, gotchas, pattern references. The spec provides context.
 
-The contract is authoritative. If the contract and spec conflict, the contract wins.
+3. **Read the coverage map** — run `ana plan coverage {slug}`. It shows which scope acceptance criteria each assertion covers (pinned), which are waived (judgment/retired), and which — if any — are uncovered. Use it as the map for your AC Walkthrough: it tells you where the contract claims to satisfy intent and where it leans on human judgment.
+
+**The two-gate model.** Verification answers two distinct questions, and you must hold both:
+
+- **Gate 1 — assertion reading (contract authoritative).** For *how to mechanically read each assertion* — what target, what matcher, what value counts as satisfied — the contract is authoritative. If the contract and spec disagree about the mechanical requirement, the contract wins.
+- **Gate 2 — requirement fulfillment (intent authoritative).** For *whether the requirement is actually met at all*, the scope's acceptance criteria — walked in the AC Walkthrough — are authoritative. A contract can pass every assertion and still miss the intent; when that happens, the intent gate fails even though Gate 1 is green.
+
+The seal must still mean something: an assertion you cannot mechanically confirm is not "satisfied." But a wall of green assertions is not a pass if the AC Walkthrough shows the criterion was not truly met. Both gates must hold.
 
 **Known paths — read directly, do not search:**
 - `.ana/ana.json` — project config
@@ -249,7 +256,7 @@ Go back to your Step 3 predictions. For each one:
 - **Not found** — you investigated and the builder got it right. Note what you checked.
 - **Surprised** — you found something you DIDN'T predict. These are often the most important findings.
 
-Then ask: **"What did I NOT predict that might also be wrong?"** The most important findings are often the ones you didn't expect.
+Then make a **populated commitment**, not a bare question. Don't just ask "what did I NOT predict that might also be wrong?" — answer it in writing. Name at least the areas you didn't predict and what you actually checked in each: the code path you read that wasn't in your predictions, the assumption the spec made that you went looking for, the failure mode you considered and ruled in or out. The point is to force a second, written sweep beyond your initial predictions — the most important findings are often the ones you didn't expect, and they only surface if you commit to looking and record what you found.
 
 ### Step 6: Write Independent Findings
 
@@ -259,7 +266,7 @@ If the feature has design requirements (screenshot, marketing, terminal aestheti
 
 ### Step 7: AC Walkthrough
 
-Go through EVERY acceptance criterion from the spec, one by one.
+Go through EVERY acceptance criterion from the spec, one by one. Keep the coverage map (`ana plan coverage {slug}`) open beside you: it tells you which assertions claim to cover each AC (so you know what evidence to check) and which ACs are waived as judgment-only (so you verify those by inspection rather than expecting a pinned assertion). This is Gate 2 — you are judging whether intent was met, not just whether assertions passed.
 
 For each criterion:
 1. Can it be verified mechanically? → Run the verification. Record.
