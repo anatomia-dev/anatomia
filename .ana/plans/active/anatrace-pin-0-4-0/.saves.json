@@ -46,5 +46,75 @@
         "hash": "sha256:ef8e276f8b51a0a901409be83dca107a4571d94c0ec6e159329b51bb2a9aceaf"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-06-16T20:36:06.145Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-16T21:12:16.098Z",
+    "hash": "sha256:bd25233cb4f9839970a8ec1bf6993115ceed394f8ffbc0453e57f09d5761bc19"
+  },
+  "build-data": {
+    "saved_at": "2026-06-16T21:12:16.099Z",
+    "hash": "sha256:ec8418d83d7408ebc4b70f9a30f577cecc254ffbbc9471df1d1f8ed95b48ae2d"
+  },
+  "modules_touched": [
+    "packages/cli/package.json",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/compliance.ts",
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/proof-card-golden.test.ts",
+    "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/compliance.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts",
+    "pnpm-lock.yaml"
+  ],
+  "module_churn": {
+    "packages/cli/package.json": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 58,
+      "deleted": 2
+    },
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 59,
+      "deleted": 8
+    },
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+      "added": 5,
+      "deleted": 5
+    },
+    "packages/cli/tests/commands/_capture.test.ts": {
+      "added": 11,
+      "deleted": 3
+    },
+    "packages/cli/tests/commands/proof-card-golden.test.ts": {
+      "added": 3,
+      "deleted": 3
+    },
+    "packages/cli/tests/data/pricing.test.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 147,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/forensics-derive.test.ts": {
+      "added": 4,
+      "deleted": 4
+    },
+    "packages/cli/tests/utils/forensics.test.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "pnpm-lock.yaml": {
+      "added": 5,
+      "deleted": 5
+    }
+  },
+  "commit_hygiene": []
 }

@@ -1,0 +1,16 @@
+schema: 1
+concerns:
+  - summary: "anatrace-core 0.4.0 also moved PRICE_TABLE_VERSION (2026-06-08 → 2026-06-14); cost-metric layer re-baselined as a cosmetic stamp here. Prices themselves are unchanged, but the metric layer should be consciously revalidated."
+    file: "packages/cli/tests/data/pricing.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Spec AC4(iii) names ana-build.md as the no-force-push mandate source, but the obligation is the engine's built-in VERIFY_FORBIDDEN_COMMANDS for the VERIFY role (anatrace-core index.mjs:5265,5463). The build mandate has no command predicate; the A055 fixture uses the verify mandate. Spec/plan understanding should be corrected for future cycles."
+    file: "packages/cli/tests/utils/compliance.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Spec scoped only compliance.test.ts among test files and never ran the full suite against 0.4.0 (baseline was estimated by counting it() blocks). The bump in fact broke 11 tests across 5 files (price-table stamp + the _capture pin), all fixed here. Future bump specs should run the suite before scoping."
+    severity: debt
+    suggested_action: monitor
+  - summary: "Non-gating observable (a compliance record with anatrace_core_version == 0.4.0) had not yet landed on disk at build time — it emits at ana artifact save, not ana test. Verify after the build-report save; absence is a ~5-min follow-on ana run per the spec, never a held PR."
+    severity: observation
+    suggested_action: monitor
