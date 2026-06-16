@@ -124,6 +124,57 @@ export interface ProcessAttestation {
 }
 
 /**
+ * The closed set of behavioral verdict reasons the `anatrace-core` engine emits,
+ * locked to the installed 0.4.0 engine. SINGLE SOURCE OF TRUTH — the
+ * {@link VerdictReason} type and the {@link isVerdictReason} guard are both derived
+ * from this one list so the set can never drift between the type and the runtime
+ * check.
+ *
+ * Lives in this otherwise types-only module ON PURPOSE: defining the value here
+ * (rather than in `compliance.ts`) keeps it next to {@link VerdictReason}, avoids
+ * duplicating the member list across two files, and avoids a circular import
+ * (`compliance.ts` imports from `proof.ts`, never the reverse). The 0.4.0 delta vs
+ * 0.2.0 is purely additive (3 added, none removed/renamed), so narrowing the
+ * record field to this set cannot reject a reason a stored 0.2.0-era record carries.
+ */
+export const VERDICT_REASONS = [
+  'predicate-matched',
+  'predicate-not-matched',
+  'routed-to-llm',
+  'runtime-scoped',
+  'low-confidence',
+  'absent-signal',
+  'content-unresolvable',
+  'command-unresolvable',
+  'codex-blind',
+  'subject-unresolvable',
+  'delegate-coverage-incomplete',
+  'channel-coverage-incomplete',
+  'window-unresolvable',
+  'harness-version-unrecognized',
+  'session-parse-suspect',
+] as const;
+
+/**
+ * A verdict reason the installed 0.4.0 engine is known to produce — the closed
+ * union derived from {@link VERDICT_REASONS} (no duplicated member list).
+ */
+export type VerdictReason = (typeof VERDICT_REASONS)[number];
+
+/** O(1) membership set backing {@link isVerdictReason}. */
+const VERDICT_REASON_SET: ReadonlySet<string> = new Set(VERDICT_REASONS);
+
+/**
+ * Membership guard for the closed verdict-reason set.
+ *
+ * @param r - The reason string to test (typically a live engine verdict reason)
+ * @returns `true` (narrowing `r` to {@link VerdictReason}) iff `r` is in {@link VERDICT_REASONS}
+ */
+export function isVerdictReason(r: string): r is VerdictReason {
+  return VERDICT_REASON_SET.has(r);
+}
+
+/**
  * One behavioral verdict in a committed {@link ComplianceAttestation} (Phase 2).
  *
  * COMPACT + SCRUBBED — the durable, Anatomia-owned projection of a core
@@ -141,8 +192,13 @@ export interface ComplianceVerdictRecord {
   says: string;
   /** Behavioral verdict: `satisfied` | `violated` | `unverifiable`. EVIDENCE ONLY — never gates. */
   status: 'satisfied' | 'violated' | 'unverifiable';
-  /** Coverage-aware verdict reason (subject/context-dependent, e.g. `codex-blind`). */
-  reason: string;
+  /**
+   * Coverage-aware verdict reason (subject/context-dependent, e.g. `codex-blind`).
+   * Locked to the closed {@link VerdictReason} set, while `(string & {})` keeps the
+   * field forward-compatible: a reason from a FUTURE engine is still legally stored
+   * verbatim (recorded + warned, never dropped) without a cast or data loss.
+   */
+  reason: VerdictReason | (string & {});
 }
 
 /**
