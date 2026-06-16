@@ -30,6 +30,7 @@ import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, resolvePhase, compareTimestamp, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
 import type { ArtifactState } from './work-state.js';
 import { writeProofChain, guardFailResult } from './work-proof.js';
+import { deriveVerdict } from '../utils/verdict.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 
 // Re-exports from work-proof for backward compatibility
@@ -1035,11 +1036,13 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
       process.exit(1);
     }
 
-    // Read and check result
+    // Read and check result. Derive once so a coerced PASS surfaces its
+    // contradiction reasons in the guard message.
     const verifyContent = fs.readFileSync(verifyReportPath, 'utf-8');
+    const verdict = deriveVerdict(verifyContent);
     const result = getVerifyResult(verifyContent);
 
-    guardFailResult(result, `Phase ${phaseNum}`);
+    guardFailResult(result, `Phase ${phaseNum}`, verdict.contradictions);
 
     if (result === 'unknown') {
       console.error(chalk.red(`Error: Phase ${phaseNum} verify report has no Result line.`));
@@ -1338,7 +1341,7 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
             const verifyPath = path.join(localActivePath, 'verify_report.md');
             if (fs.existsSync(verifyPath)) {
               const content = fs.readFileSync(verifyPath, 'utf-8');
-              isFail = /\*\*Result:\*\*\s*FAIL/i.test(content);
+              isFail = deriveVerdict(content).result === 'FAIL';
             }
             if (isFail) {
               // Re-verify writes verify key (AC15, AC25, AC26)
@@ -1524,14 +1527,14 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
     const verifyPath = path.join(activePath, 'verify_report.md');
     if (fs.existsSync(verifyPath)) {
       const content = fs.readFileSync(verifyPath, 'utf-8');
-      isFail = /\*\*Result:\*\*\s*FAIL/i.test(content);
+      isFail = deriveVerdict(content).result === 'FAIL';
     }
     // Also check numbered
     if (!isFail) {
       const numberedReports = globSync(path.join(activePath, 'verify_report_*.md'));
       for (const report of numberedReports) {
         const content = fs.readFileSync(report, 'utf-8');
-        if (/\*\*Result:\*\*\s*FAIL/i.test(content)) {
+        if (deriveVerdict(content).result === 'FAIL') {
           isFail = true;
           break;
         }

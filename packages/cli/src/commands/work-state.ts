@@ -9,6 +9,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath } from '../utils/worktree.js';
+import { deriveVerdict } from '../utils/verdict.js';
 
 /**
  * Artifact state for a work item
@@ -133,15 +134,18 @@ export function countPhases(planContent: string): { total: number; specs: string
 }
 
 /**
- * Extract verify result from verify report content
+ * Extract the effective verify result from verify report content.
+ *
+ * Thin wrapper over the single verdict source {@link deriveVerdict}: a PASS that
+ * contradicts the verifier's own UNSATISFIED row is returned as `'FAIL'`. Maps
+ * the verdict's `'UNKNOWN'` to this function's lowercase `'unknown'` contract.
  *
  * @param content - Content of verify report
  * @returns PASS, FAIL, or unknown
  */
 export function getVerifyResult(content: string): 'PASS' | 'FAIL' | 'unknown' {
-  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
-  if (!match || !match[1]) return 'unknown';
-  return match[1].toUpperCase() as 'PASS' | 'FAIL';
+  const { result } = deriveVerdict(content);
+  return result === 'UNKNOWN' ? 'unknown' : result;
 }
 
 /**

@@ -189,12 +189,23 @@ export function assembleProcessAttestation(
  *
  * @param result - Verification result string
  * @param context - Optional context (e.g., "Phase 2") for the error message
+ * @param contradictions - Optional contradiction reasons from a coerced PASS; when
+ *   present and non-empty, they are listed instead of the generic FAIL line
  */
-export function guardFailResult(result: string, context?: string): void {
+export function guardFailResult(result: string, context?: string, contradictions?: string[]): void {
   if (result === 'FAIL') {
     const prefix = context ? `${context}: ` : '';
     console.error(chalk.red(`Error: ${prefix}Cannot complete work with a FAIL verification result.`));
-    console.error(chalk.gray('The verify report says FAIL. Fix the issues and re-verify before completing.'));
+    if (contradictions && contradictions.length > 0) {
+      // Coerced PASS: the headline said PASS but the verifier's own table contradicts it.
+      console.error(chalk.gray("The verify headline says PASS but it contradicts the verifier's own report:"));
+      for (const reason of contradictions) {
+        console.error(chalk.gray(`  • ${reason}`));
+      }
+      console.error(chalk.gray('Fix the issues and re-verify before completing.'));
+    } else {
+      console.error(chalk.gray('The verify report says FAIL. Fix the issues and re-verify before completing.'));
+    }
     console.error(chalk.gray(`Run: ${agentCommand('build')} to fix, then ${agentCommand('verify')}`));
     process.exit(1);
   }
@@ -286,8 +297,9 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     }
   } catch { /* fall back to empty */ }
 
-  // FAIL result guard — block proof chain entry for failed verification
-  guardFailResult(proof.result);
+  // FAIL result guard — block proof chain entry for failed verification.
+  // Pass any contradiction reasons so a coerced PASS explains itself.
+  guardFailResult(proof.result, undefined, proof.verdict_contradictions);
 
   // UNKNOWN result warning (AC12)
   const completedPlanDir = path.join(anaDir, 'plans', 'completed', slug);
@@ -355,6 +367,9 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     slug,
     feature: proof.feature,
     result: proof.result,
+    ...(proof.verdict_contradictions && proof.verdict_contradictions.length > 0
+      ? { verdict_contradictions: proof.verdict_contradictions }
+      : {}),
     author: proof.author,
     contract: proof.contract,
     assertions: proof.assertions.map(a => {

@@ -285,6 +285,13 @@ export interface ProofChainEntry {
   slug: string;
   feature: string;
   result: 'PASS' | 'FAIL' | 'UNKNOWN';
+  /**
+   * Reasons a PASS headline was coerced to a FAIL `result` (one per contradicting
+   * UNSATISFIED compliance row). Additive and optional — absent on a clean verdict
+   * and on pre-existing entries. Renders on the proof card so the coercion is
+   * observable, never silent.
+   */
+  verdict_contradictions?: string[];
   author: { name: string; email: string };
   contract: ProofSummary['contract'];
   assertions: Array<{

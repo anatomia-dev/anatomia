@@ -17,6 +17,7 @@ import { agentCommand } from './platform.js';
 import * as path from 'node:path';
 import { readArtifactBranch, readBranchPrefix, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { generateProofSummary, type ProofSummary } from '../utils/proofSummary.js';
+import { deriveVerdict } from '../utils/verdict.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 
 /**
@@ -39,9 +40,9 @@ function extractPrSummary(content: string): string {
  * @param content - Verify report content
  * @returns Result (PASS/FAIL) or null
  */
-function extractVerifyResult(content: string): string | null {
-  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
-  return match && match[1] ? match[1].toUpperCase() : null;
+export function extractVerifyResult(content: string): string | null {
+  const { result } = deriveVerdict(content);
+  return result === 'UNKNOWN' ? null : result;
 }
 
 /**

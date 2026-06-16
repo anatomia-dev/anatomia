@@ -10,6 +10,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as yaml from 'yaml';
 import { findProjectRoot } from '../utils/validators.js';
+import { RESULT_HEADLINE_PATTERN } from '../utils/verdict.js';
 import type { ContractSchema } from '../types/contract.js';
 
 /**
@@ -134,11 +135,13 @@ export function validateVerifyReportFormat(filePath: string): string | null {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split('\n');
 
-  // Check first 10 lines for Result line
+  // Check first 10 lines for Result line. PRESENCE check only — this guards that
+  // the machine-parsed Result line exists at save time; it deliberately does NOT
+  // derive/coerce the verdict (that is deriveVerdict's job). Shares the one
+  // headline pattern to avoid regex drift.
   const firstTenLines = lines.slice(0, 10).join('\n');
-  const resultPattern = /\*\*Result:\*\*\s*(PASS|FAIL)/i;
 
-  if (!resultPattern.test(firstTenLines)) {
+  if (!RESULT_HEADLINE_PATTERN.test(firstTenLines)) {
     return "Missing '**Result:** PASS' or '**Result:** FAIL' in the first 10 lines.\nThe Result line is machine-parsed by the pipeline. It must be present.";
   }
 

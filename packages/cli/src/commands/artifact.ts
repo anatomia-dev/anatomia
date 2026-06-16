@@ -30,6 +30,7 @@ import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../u
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import { captureProvenanceAtSave } from '../utils/forensics.js';
 import { captureComplianceAtSave } from '../utils/compliance.js';
+import { deriveVerdict } from '../utils/verdict.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
 
 // Re-export public validators for backward compatibility
@@ -578,12 +579,19 @@ function buildWasSavedAfterVerify(saves: Record<string, SaveMetadata>, phase: nu
   return Boolean(buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt));
 }
 
-function readLocalVerifyResult(filePath: string): 'PASS' | 'FAIL' | 'unknown' {
+/**
+ * Read a verify report file and return its effective result via the single
+ * verdict source. A contradicted PASS resolves to `'FAIL'`; a missing file or
+ * absent headline resolves to `'unknown'`.
+ *
+ * @param filePath - Path to the verify report
+ * @returns PASS, FAIL, or unknown
+ */
+export function readLocalVerifyResult(filePath: string): 'PASS' | 'FAIL' | 'unknown' {
   if (!fs.existsSync(filePath)) return 'unknown';
   const content = fs.readFileSync(filePath, 'utf-8');
-  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
-  if (!match?.[1]) return 'unknown';
-  return match[1].toUpperCase() as 'PASS' | 'FAIL';
+  const { result } = deriveVerdict(content);
+  return result === 'UNKNOWN' ? 'unknown' : result;
 }
 
 function getNumberedSpecPhases(slugDir: string): number[] {
