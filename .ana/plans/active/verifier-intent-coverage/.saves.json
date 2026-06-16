@@ -40,5 +40,45 @@
         "hash": "sha256:da0946679d1417585493a156dbce215b5c0f0b86ad9d8bbc1ec0afe4c88b40ca"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-06-16T21:46:13.608Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-16T21:59:44.338Z",
+    "hash": "sha256:8aa8795f15fd610420a3effc4b133c3a531ccbfd41c3b094411e523ef5f997d3"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-16T21:59:44.339Z",
+    "hash": "sha256:dad91d60d5219eb1e900a0cd0ab547eddacd02107f415f4412a228a80e595541"
+  },
+  "modules_touched": [
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/types/contract.ts",
+    "packages/cli/tests/commands/coverage-gate.test.ts",
+    "packages/cli/tests/commands/scope-ac-corpus.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/commands/artifact-validators.ts": {
+      "added": 299,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 68,
+      "deleted": 1
+    },
+    "packages/cli/src/types/contract.ts": {
+      "added": 34,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/coverage-gate.test.ts": {
+      "added": 398,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/scope-ac-corpus.test.ts": {
+      "added": 99,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
