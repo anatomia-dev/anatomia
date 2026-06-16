@@ -54,7 +54,7 @@ expect(result).toBeNull();              // abstained
 
 ## File Changes
 
-All six files exist (verified) — every change is a `modify`. The machine-readable list is in `contract.yaml` `file_changes`.
+All five files exist (verified) — every change is a `modify`. The machine-readable list is in `contract.yaml` `file_changes`. (CHANGELOG.md is intentionally NOT touched — see AC5 deferral.)
 
 ### packages/cli/package.json (modify)
 **What changes:** The `anatrace-core` dependency pin `"0.2.0"` → `"0.4.0"` exact (currently line 59).
@@ -91,11 +91,6 @@ All six files exist (verified) — every change is a `modify`. The machine-reada
 **Pattern to follow:** The existing `it()` blocks and the dynamic version read at `:142`.
 **Why:** This is where the engine is judged for real. See Testing Strategy for the matrix.
 
-### CHANGELOG.md (modify)
-**What changes:** Add entries under the existing `## [Unreleased]` heading (Keep a Changelog format, which the file already uses). Record (a) the `anatrace-core` 0.2.0 → 0.4.0 bump, and (b) the verdict-semantics shift — that previously-`satisfied`/false-passing obfuscated commands now read `violated`/`unverifiable`, and the three new `reason` members (`command-unresolvable`, `harness-version-unrecognized`, `session-parse-suspect`).
-**Pattern to follow:** The `### Added` / `### Fixed` subsections under prior version headings.
-**Why:** AC5 (HARD). This is a behavior change on a repo with an actively maintained CHANGELOG; the doc ships in THIS PR.
-
 ## Acceptance Criteria
 
 Copied from scope, expanded with implementation-specific criteria. (HARD criteria gate the PR; the observable never does.)
@@ -104,7 +99,7 @@ Copied from scope, expanded with implementation-specific criteria. (HARD criteri
 - [ ] **AC2:** `reason` locked to the 0.4.0 closed set via `VERDICT_REASONS` + `isVerdictReason`, validated at projection. An out-of-set reason is **recorded verbatim and surfaced as a stderr drift warning — never rejected or abstained.** SCOPE LIMIT: the reason set + its check ONLY; no broader `proof.ts` / proof-schema refactor.
 - [ ] **AC3:** C12 closed FAIL-CLOSED — `captureComplianceAtSave` ABSTAINS (returns `null`, writes no record) when the core version is empty/unresolvable; never stamps `anatrace_core_version: ""`. `readCoreVersion()` computed once; stamped from the same value.
 - [ ] **AC4:** Real-engine assertions green — (i) every emitted `reason` ∈ the 0.4.0 set; (ii) the emitted version stamp equals the installed engine version (dynamic); (iii) ONE obfuscated-forbidden-command fixture reads `violated` under installed 0.4.0 (honor the STOP guard — do NOT downgrade to a trivial fixture).
-- [ ] **AC5 (HARD):** `CHANGELOG.md` `## [Unreleased]` records the 0.2.0 → 0.4.0 bump AND the verdict-semantics shift + new reason members.
+- [ ] **AC5 — CHANGELOG: DEFERRED, not in this PR.** This repo writes CHANGELOG entries at release time (the `## [Unreleased]` section is empty despite ~2 weeks of merged work); the Phase-0 CHANGELOG line is slotted for the 1.3.0 cut (tracked separately). We are NOT bumping the CLI version here, so do NOT edit `CHANGELOG.md`. Instead, capture the `anatrace-core` 0.2.0 → 0.4.0 bump and the verdict-semantics shift (ANSI-C-obfuscated force-push now reads `violated`; new `command-unresolvable` / `harness-version-unrecognized` / `session-parse-suspect` reasons) in **the PR description**, and ensure this cycle's **proof entry** records it.
 - [ ] **Observable (NON-GATING):** ≥1 compliance record with `anatrace_core_version == "0.4.0"` emits on disk as exhaust of this cycle's own build/verify saves. NOT a merge gate — record it in the build report; absence is a ~5-min follow-on `ana run`, never a held PR.
 - [ ] New: `pnpm --filter anatomia-cli build` clean (typecheck + tsup).
 - [ ] New: `cd packages/cli && pnpm lint` clean (0 errors).
@@ -138,7 +133,7 @@ Copied from scope, expanded with implementation-specific criteria. (HARD criteri
 - **SCOPE LIMIT (AC2):** the reason set + its check ONLY. No broader `proof.ts` or proof-schema refactor (do NOT touch `commit_hygiene` duplication or other fields flagged in proof context — those are separate cycles).
 - **SCOPE LIMIT (AC4 iii):** exactly ONE fixture. Defer any corpus.
 - **Backward compatibility:** the `reason` narrowing must not break any existing reader. `VerdictReason | (string & {})` is assignable from any string, so it cannot, and the additive-only 0.4.0 delta means stored 0.2.0-era reasons remain valid members. `tsc` clean (AC1) is the mechanical proof.
-- **Dogfood-only:** this touches `packages/cli` source/tests + root `pnpm-lock.yaml`/`CHANGELOG.md` only. It does NOT touch `templates/` or generators — nothing ships to customers.
+- **Dogfood-only:** this touches `packages/cli` source/tests + root `pnpm-lock.yaml` only. It does NOT touch `templates/` or generators — nothing ships to customers. It also does NOT touch `CHANGELOG.md` (deferred to the 1.3.0 cut — see AC5).
 
 ## Gotchas
 

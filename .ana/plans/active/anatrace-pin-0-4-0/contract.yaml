@@ -76,25 +76,10 @@ assertions:
 
   - id: A055
     says: "An obfuscated forbidden command is caught as a violation under the real engine"
-    block: "obfuscated-forbidden-command fixture reads violated under 0.4.0"
-    target: "status of the forbidden-command verdict for the obfuscated fixture"
+    block: "ANSI-C-decodable force-push fixture reads violated under 0.4.0"
+    target: "status of the forbidden-command verdict for the ANSI-C force-push fixture"
     matcher: "equals"
     value: "violated"
-
-  # --- AC5: CHANGELOG ---
-  - id: A056
-    says: "The changelog records the engine bump to 0.4.0"
-    block: "CHANGELOG Unreleased documents the anatrace-core bump"
-    target: "CHANGELOG.md [Unreleased] section text"
-    matcher: "contains"
-    value: "anatrace-core"
-
-  - id: A057
-    says: "The changelog records the verdict-semantics shift the bump introduces"
-    block: "CHANGELOG Unreleased documents the new verdict reason members"
-    target: "CHANGELOG.md [Unreleased] section text"
-    matcher: "contains"
-    value: "command-unresolvable"
 
 file_changes:
   - path: "packages/cli/package.json"
@@ -106,6 +91,4 @@ file_changes:
   - path: "packages/cli/src/utils/compliance.ts"
     action: modify
   - path: "packages/cli/tests/utils/compliance.test.ts"
-    action: modify
-  - path: "CHANGELOG.md"
     action: modify
