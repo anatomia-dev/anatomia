@@ -1,0 +1,41 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract file_changes under-scoped the bump ripple — 0.4.0 ships a new PRICE_TABLE_VERSION (2026-06-08 → 2026-06-14) that forced edits to 5 test files the contract never listed (_capture, pricing, forensics, forensics-derive, proof-card-golden + snapshot)."
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A045", "A046"]
+  - category: upstream
+    summary: "Spec A055 guidance was factually wrong about where the no-force-push obligation lives — it said use the build mandate (ana-build.md), but the forbidden-command predicate is the engine's built-in VERIFY_FORBIDDEN_COMMANDS for the VERIFY role. Builder correctly adapted to the verify role; following the spec literally would have produced a fixture that never flips to violated."
+    file: "packages/cli/tests/utils/compliance.test.ts"
+    line: 396
+    severity: debt
+    suggested_action: promote
+    related_assertions: ["A055"]
+  - category: code
+    summary: "projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning."
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 84
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A049"]
+  - category: test
+    summary: "Real-engine happy-path tests (A052/A053/A054) judge a trivial 'doing work' transcript. A053 guards with verdicts.length > 0 before asserting zero out-of-set reasons, so it cannot pass vacuously — a good defensive assertion worth preserving if the fixture is ever simplified further."
+    file: "packages/cli/tests/utils/compliance.test.ts"
+    line: 372
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A053"]
+  - category: code
+    summary: "Observable (non-gating): no compliance record with anatrace_core_version == 0.4.0 is on disk yet for this cycle — it emits at `ana artifact save`, not at test time. Expected to land when the verify report is saved. Absence is a ~5-min follow-on per spec, never a held PR."
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "C12 confirmed FIXED by this build — the fail-closed gate computes the engine version once and abstains (returns null, writes no record) on empty/unresolvable, so no anatrace_core_version: '' record can ever land. Build concern (abstain path had no reliable external trigger) is now ADDRESSED via the deps.readCoreVersion seam."
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 200
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A050", "A051", "A052"]
+    resolves:
+      - "anatrace-core-integration-C12"
