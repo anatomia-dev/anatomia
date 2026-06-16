@@ -86,7 +86,7 @@ describe('pricing', () => {
   describe('PRICES table', () => {
     // @ana A011
     it('has a stable version stamp (re-exported from anatrace-core)', () => {
-      expect(PRICE_TABLE_VERSION).toBe('2026-06-08');
+      expect(PRICE_TABLE_VERSION).toBe('2026-06-14');
     });
 
     it('has unique model ids', () => {

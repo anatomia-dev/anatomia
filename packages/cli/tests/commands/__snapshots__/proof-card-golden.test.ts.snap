@@ -24,7 +24,7 @@ exports[`proof card golden snapshots > renders an all-unpriced run with an n/a T
   build       31    140  18.0k  9.1k    2.1M   n/a
   verify      14     61  10.2k  3.0k  920.0k   n/a
   ────────────────────────────────────────────────
-  TOTAL  3 sessions · 3 unpriced               n/a  (table 2026-06-08)
+  TOTAL  3 sessions · 3 unpriced               n/a  (table 2026-06-14)
   completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
 "
 `;
@@ -52,7 +52,7 @@ exports[`proof card golden snapshots > renders an unpriced model as n/a, never $
   build · opus-5-0      31    140  18.0k  9.1k   2.1M    n/a
   verify · opus-4-8     14     61  10.2k  3.0k   1.0M  $0.75
   ──────────────────────────────────────────────────────────
-  TOTAL  3 sessions · 1 unpriced                       $1.92  (table 2026-06-08)
+  TOTAL  3 sessions · 1 unpriced                       $1.92  (table 2026-06-14)
   completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
 "
 `;
@@ -80,7 +80,7 @@ exports[`proof card golden snapshots > renders counts-unavailable and Codex (cac
   plan · opus-4-8     12     48  12.1k  4.2k  880.0k  $1.07
   build · gpt-5       20     90  14.0k  5.0k  600.0k    n/a
   ─────────────────────────────────────────────────────────
-  TOTAL  3 sessions · 1 unpriced                      $1.07  (table 2026-06-08)
+  TOTAL  3 sessions · 1 unpriced                      $1.07  (table 2026-06-14)
   completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
 "
 `;
@@ -160,7 +160,7 @@ exports[`proof card golden snapshots > renders the provenance-rich card 1`] = `
   build 2      9     22   4.0k  1.1k  410.0k  $0.31
   verify      14     61  10.2k  3.0k  920.0k  $0.70
   ─────────────────────────────────────────────────
-  TOTAL  4 sessions                           $4.02  (table 2026-06-08)
+  TOTAL  4 sessions                           $4.02  (table 2026-06-14)
   churn  1 files · +840/−210
   completeness  ✓ complete (plan 1/1 · build 2/2 · verify 1/1)
 "
@@ -194,7 +194,7 @@ exports[`proof card golden snapshots > renders the ≥6-session card aligned wit
   build 5     11     40   7.0k  2.0k  630.0k  $0.57
   verify      14     61  10.2k  3.0k  920.0k  $0.70
   ─────────────────────────────────────────────────
-  TOTAL  7 sessions                           $6.68  (table 2026-06-08)
+  TOTAL  7 sessions                           $6.68  (table 2026-06-14)
   completeness  ✓ complete (plan 1/1 · build 5/5 · verify 1/1)
 "
 `;

@@ -41,6 +41,7 @@ import {
   resolveTranscriptPath,
 } from './forensics.js';
 import { buildRootLaneContext } from './compliance-context.js';
+import { isVerdictReason } from '../types/proof.js';
 import type { ComplianceAttestation, ComplianceVerdictRecord } from '../types/proof.js';
 
 /**
@@ -56,6 +57,47 @@ function readCoreVersion(): string {
   } catch {
     return '';
   }
+}
+
+/**
+ * Project core verdicts to the compact, scrubbed {@link ComplianceVerdictRecord}
+ * shape, validating each reason against the closed {@link isVerdictReason} set.
+ *
+ * DRIFT BEHAVIOR (AC2) — opposite of the AC3 abstain gate: an unknown reason (one a
+ * FUTURE engine emits) is RECORDED VERBATIM and surfaced as a single stderr drift
+ * warning. It is NEVER dropped, coerced, or abstained — dropping a valid verdict on
+ * an unknown label would re-break the forward-compat the distinct on-disk shape
+ * deliberately buys. The real 0.4.0 engine never emits an unknown reason, so this
+ * warn path only fires on a future bump.
+ *
+ * @param verdicts - The core compliance verdicts (claim id, status, reason)
+ * @param saysById - Map of claim id → human-readable obligation (`says`), from the mandate
+ * @param coreVersion - The resolved engine version, interpolated into the drift warning (never hardcoded)
+ * @returns One compact record per verdict, reason preserved verbatim
+ */
+export function projectVerdicts(
+  verdicts: ReadonlyArray<{
+    claimId: string;
+    status: ComplianceVerdictRecord['status'];
+    reason: string;
+  }>,
+  saysById: ReadonlyMap<string, string>,
+  coreVersion: string = readCoreVersion(),
+): ComplianceVerdictRecord[] {
+  return verdicts.map((v) => {
+    if (!isVerdictReason(v.reason)) {
+      console.warn(
+        `[anatrace] unknown verdict reason "${v.reason}" from anatrace-core@${coreVersion} — ` +
+          'the engine may have drifted; recording verbatim. Update VERDICT_REASONS in src/types/proof.ts.',
+      );
+    }
+    return {
+      claim_id: v.claimId,
+      says: saysById.get(v.claimId) ?? '',
+      status: v.status,
+      reason: v.reason, // verbatim, ALWAYS — never dropped, coerced, or abstained
+    };
+  });
 }
 
 /**
@@ -142,15 +184,24 @@ function readMandateBlobs(
  * @param projectRoot - Project root directory
  * @param slug - Work-item slug being saved
  * @param env - Process environment (carries the injected `ANA_*` vars)
+ * @param deps - Injected seams for testing (defaults to the module functions)
+ * @param deps.readCoreVersion - Override for the engine-version resolver; drives the AC3 abstain path
  * @returns The absolute path of the written compliance file, or `null` if none was written
  */
 export function captureComplianceAtSave(
   projectRoot: string,
   slug: string,
   env: Record<string, string | undefined>,
+  deps: { readCoreVersion?: () => string } = {},
 ): string | null {
   try {
     if (!isProcessCaptureEnabled(projectRoot)) return null;
+
+    // Resolve the engine version ONCE, fail-closed (AC3): an empty/unresolvable
+    // version means unknown provenance — abstain rather than stamp `""`. The same
+    // value is stamped on the record below and threaded to the drift warning.
+    const coreVersion = (deps.readCoreVersion ?? readCoreVersion)();
+    if (!coreVersion) return null; // unresolvable engine version → write nothing
 
     const role = env['ANA_ROLE'] ?? '';
     if (!role) return null; // no role → nothing to attribute
@@ -209,15 +260,15 @@ export function captureComplianceAtSave(
 
     // Project verdicts to the compact, scrubbed record shape. `says` comes from
     // the mandate claim (NEVER from transcript bytes); evidence pointers are
-    // dropped entirely.
+    // dropped entirely. An unknown reason is recorded verbatim + warned (AC2) —
+    // never dropped (the opposite of the AC3 abstain gate above).
     const saysById = new Map<string, string>();
     for (const c of mandate.claims) saysById.set(c.id, c.says);
-    const verdicts: ComplianceVerdictRecord[] = result.verdicts.map((v) => ({
-      claim_id: v.claimId,
-      says: saysById.get(v.claimId) ?? '',
-      status: v.status,
-      reason: v.reason,
-    }));
+    const verdicts: ComplianceVerdictRecord[] = projectVerdicts(
+      result.verdicts,
+      saysById,
+      coreVersion,
+    );
 
     const cov = result.verificationCoverage;
     const unverifiable = cov.unverifiableClaims.length;
@@ -226,7 +277,7 @@ export function captureComplianceAtSave(
       harness,
       session_id: sessionId,
       captured_at: pointer?.captured_at || new Date().toISOString(),
-      anatrace_core_version: readCoreVersion(),
+      anatrace_core_version: coreVersion,
       framework: mandate.framework,
       mandate_hash: mandateSource.mandateHash,
       transcript_hash: transcriptHash,
