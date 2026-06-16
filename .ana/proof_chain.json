@@ -57271,6 +57271,430 @@
       },
       "surface": "cli",
       "phases": 2
+    },
+    {
+      "slug": "anatrace-pin-0-4-0",
+      "feature": "Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 11,
+        "satisfied": 11,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A045",
+          "says": "The behavioral engine is installed at version 0.4.0",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A046",
+          "says": "The project pins the engine to exactly 0.4.0",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A047",
+          "says": "A reason the 0.4.0 engine produces is recognized as known",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A048",
+          "says": "A reason the engine does not produce is flagged as unknown",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A049",
+          "says": "An unrecognized reason is kept exactly as the engine reported it, never dropped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A050",
+          "says": "When the engine version cannot be resolved, no attestation is written",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A051",
+          "says": "An unresolvable engine version leaves no compliance record on disk",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A052",
+          "says": "A written attestation always carries a real, non-empty engine version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A053",
+          "says": "Every verdict reason the real engine emits is one we recognize",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A054",
+          "says": "The recorded engine version matches the engine that actually judged the session",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A055",
+          "says": "An obfuscated forbidden command is caught as a violation under the real engine",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 163,
+        "think": 44,
+        "plan": 84,
+        "build": 36,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:71bf57a97cd2d9ebbebdd40d55acccb402c1f1de632b6ade36e3df30db19ec50",
+        "contract": "sha256:e6c21fdab1c7507013459a9ed2fe9f56dce5a25a33a3cf75421946a36045f5d9",
+        "plan": "sha256:2978d81ce1e51472f34daad57215bc7fc490a5d3f1c02f5b50c9e1d147caf6a3",
+        "spec": "sha256:4bb5374a1212e43c3297d2392a00176d344f4005a9d5748876392a0750d53ccd",
+        "build-report": "sha256:bd25233cb4f9839970a8ec1bf6993115ceed394f8ffbc0453e57f09d5761bc19",
+        "build-data": "sha256:ec8418d83d7408ebc4b70f9a30f577cecc254ffbbc9471df1d1f8ed95b48ae2d",
+        "verify-report": "sha256:a7141d1a9a89ee24083dec87d5a9d8bf2caf1093128199a8e6a5a06ca2d94635",
+        "verify-data": "sha256:65aaa88022cfcabc934934d556642463b9e2dd2067855e824c3336a6a4dd9043"
+      },
+      "completed_at": "2026-06-16T21:30:28.594Z",
+      "modules_touched": [
+        "packages/cli/package.json",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/_capture.test.ts",
+        "packages/cli/tests/commands/proof-card-golden.test.ts",
+        "packages/cli/tests/data/pricing.test.ts",
+        "packages/cli/tests/utils/compliance.test.ts",
+        "packages/cli/tests/utils/forensics-derive.test.ts",
+        "packages/cli/tests/utils/forensics.test.ts",
+        "pnpm-lock.yaml"
+      ],
+      "scope_summary": "Anatomia's behavioral-attestation layer is fully wired but has emitted **zero** records, because the engine it consumes (`anatrace-core`) is pinned to a version that is both **uninstalled** and **known-false-PASS** (0.2.0). The product's headline differentiator is therefore undemonstrated, and emitting on 0.2.0/0.3.0 would attest *behind a forgeable engine*.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes under-scoped the bump ripple — 0.4.0 ships a new PRICE_TABLE_VERSION (2026-06-08 → 2026-06-14) that forced edits to 5 test files the contract never listed (_capture, pricing, forensics, forensics-derive, proof-card-golden + snapshot).",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A045",
+            "A046"
+          ],
+          "id": "anatrace-pin-0-4-0-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T21:30:28.594Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec A055 guidance was factually wrong about where the no-force-push obligation lives — it said use the build mandate (ana-build.md), but the forbidden-command predicate is the engine's built-in VERIFY_FORBIDDEN_COMMANDS for the VERIFY role. Builder correctly adapted to the verify role; following the spec literally would have produced a fixture that never flips to violated.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 396,
+          "severity": "debt",
+          "suggested_action": "promote",
+          "related_assertions": [
+            "A055"
+          ],
+          "id": "anatrace-pin-0-4-0-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T21:30:28.594Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 84,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A049"
+          ],
+          "id": "anatrace-pin-0-4-0-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Real-engine happy-path tests (A052/A053/A054) judge a trivial 'doing work' transcript. A053 guards with verdicts.length > 0 before asserting zero out-of-set reasons, so it cannot pass vacuously — a good defensive assertion worth preserving if the fixture is ever simplified further.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 372,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A053"
+          ],
+          "id": "anatrace-pin-0-4-0-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Observable (non-gating): no compliance record with anatrace_core_version == 0.4.0 is on disk yet for this cycle — it emits at `ana artifact save`, not at test time. Expected to land when the verify report is saved. Absence is a ~5-min follow-on per spec, never a held PR.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-pin-0-4-0-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "C12 confirmed FIXED by this build — the fail-closed gate computes the engine version once and abstains (returns null, writes no record) on empty/unresolvable, so no anatrace_core_version: '' record can ever land. Build concern (abstain path had no reliable external trigger) is now ADDRESSED via the deps.readCoreVersion seam.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 200,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A050",
+            "A051",
+            "A052"
+          ],
+          "resolves": [
+            "anatrace-core-integration-C12"
+          ],
+          "id": "anatrace-pin-0-4-0-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T21:30:28.594Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "anatrace-core 0.4.0 also moved PRICE_TABLE_VERSION (2026-06-08 → 2026-06-14); cost-metric layer re-baselined as a cosmetic stamp here. Prices themselves are unchanged, but the metric layer should be consciously revalidated.",
+          "file": "packages/cli/tests/data/pricing.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Spec AC4(iii) names ana-build.md as the no-force-push mandate source, but the obligation is the engine's built-in VERIFY_FORBIDDEN_COMMANDS for the VERIFY role (anatrace-core index.mjs:5265,5463). The build mandate has no command predicate; the A055 fixture uses the verify mandate. Spec/plan understanding should be corrected for future cycles.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Spec scoped only compliance.test.ts among test files and never ran the full suite against 0.4.0 (baseline was estimated by counting it() blocks). The bump in fact broke 11 tests across 5 files (price-table stamp + the _capture pin), all fixed here. Future bump specs should run the suite before scoping.",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Non-gating observable (a compliance record with anatrace_core_version == 0.4.0) had not yet landed on disk at build time — it emits at ana artifact save, not ana test. Verify after the build-report save; absence is a ~5-min follow-on ana run per the spec, never a held PR.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 11,
+          "assertions_total": 11,
+          "findings": {
+            "risk": 0,
+            "debt": 2,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/package.json": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 58,
+            "deleted": 2
+          },
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 59,
+            "deleted": 8
+          },
+          "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+            "added": 5,
+            "deleted": 5
+          },
+          "packages/cli/tests/commands/_capture.test.ts": {
+            "added": 11,
+            "deleted": 3
+          },
+          "packages/cli/tests/commands/proof-card-golden.test.ts": {
+            "added": 3,
+            "deleted": 3
+          },
+          "packages/cli/tests/data/pricing.test.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 147,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/forensics-derive.test.ts": {
+            "added": 4,
+            "deleted": 4
+          },
+          "packages/cli/tests/utils/forensics.test.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "pnpm-lock.yaml": {
+            "added": 5,
+            "deleted": 5
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "047ce85b-9183-4298-a8c5-a876cfb2f602",
+            "captured_at": "2026-06-16T19:20:43.321Z",
+            "derived": {
+              "tokens": {
+                "input": 7275,
+                "output": 27628,
+                "cache_create": 55705,
+                "cache_read": 1101972
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2647361,
+              "turns": 50,
+              "tool_calls": 22,
+              "commands_run": 15,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "a637d6b1-75ee-4b49-b020-80ab8666b163",
+            "captured_at": "2026-06-16T20:31:33.387Z",
+            "derived": {
+              "tokens": {
+                "input": 7786,
+                "output": 56132,
+                "cache_create": 127786,
+                "cache_read": 4008918
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 3267800,
+              "turns": 99,
+              "tool_calls": 44,
+              "commands_run": 17,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "546a9f27-6d65-4555-9eba-258ad043ef90",
+            "captured_at": "2026-06-16T20:35:23.740Z",
+            "derived": {
+              "tokens": {
+                "input": 8634,
+                "output": 73662,
+                "cache_create": 160742,
+                "cache_read": 9239866
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2195712,
+              "turns": 186,
+              "tool_calls": 83,
+              "commands_run": 46,
+              "tests_executed": 4073,
+              "failures_encountered": 6,
+              "files_touched": 11,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "04856f8b-0cc7-490e-aca4-855cd705d77f",
+            "captured_at": "2026-06-16T21:20:21.130Z",
+            "derived": {
+              "tokens": {
+                "input": 7597,
+                "output": 25629,
+                "cache_create": 96582,
+                "cache_read": 2107793
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 449364,
+              "turns": 77,
+              "tool_calls": 34,
+              "commands_run": 21,
+              "tests_executed": 3733,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-16T20:36:06.145Z",
+        "completed_at": "2026-06-16T21:30:28.583Z",
+        "commit_count": 0,
+        "base_commit": "8809d5e1da83df6b85266d6fc430e4881aa5f7d1"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
