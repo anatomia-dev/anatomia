@@ -1,0 +1,26 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Flaky test in the broader suite — one test failed in the sealed verify run (3766p/1f/2s) but never reproduced across 7 full-suite runs + 5 regression-focus runs. 'Push failed after retry' noise points to a git-operation/retry test, not Phase 1 code."
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "scope-ac-corpus.test.ts asserts toBe(0) against the live, growing completed-scope corpus (205 today). A future completed scope using '## Acceptance Criteria' with non-AC-id criteria would flip emptyExtractionCount/falseAmbiguousCount and break this test in an unrelated future PR. Intentional safety gate, but couples future greens to historical scope formatting."
+    file: "packages/cli/tests/commands/scope-ac-corpus.test.ts"
+    line: 87
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A006", "A007"]
+  - category: code
+    summary: "Bold-form regex /\\*\\*\\s*(AC\\d+)/ matches **ACn** anywhere on a line, so a prose mention ('see **AC3** above') extracts AC3 as a criterion id. Harmless across the 205-scope corpus and the dogfood (exactly AC1-14, no spurious ids), but a future version-1.1 contract could gain a spurious prose-derived id that becomes a false 'uncovered' block. Latent, low-likelihood."
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    line: 526
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A003"]
+  - category: code
+    summary: "Defensive try/catch around joinCoverage in evaluateCoverageGate is effectively unreachable — joinCoverage is total (no throw path), so the 'could not evaluate' diagnostic branch cannot trigger in practice and no test exercises it. Spec explicitly requested defensive depth, so it is intentional, but it is untested dead-ish code."
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    line: 621
+    severity: observation
+    suggested_action: acknowledge
