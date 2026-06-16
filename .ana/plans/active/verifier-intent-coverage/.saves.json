@@ -32,7 +32,13 @@
     ]
   },
   "spec-2": {
-    "saved_at": "2026-06-16T21:37:35.001Z",
-    "hash": "sha256:da0946679d1417585493a156dbce215b5c0f0b86ad9d8bbc1ec0afe4c88b40ca"
+    "saved_at": "2026-06-16T21:43:00.616Z",
+    "hash": "sha256:665f7fdad48da0667273a0e001ef1fb70b91be6a3529f6075d8192dc44d5c7ed",
+    "history": [
+      {
+        "saved_at": "2026-06-16T21:37:35.001Z",
+        "hash": "sha256:da0946679d1417585493a156dbce215b5c0f0b86ad9d8bbc1ec0afe4c88b40ca"
+      }
+    ]
   }
 }

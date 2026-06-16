@@ -71,7 +71,7 @@ All paths under `packages/cli/` unless noted. Verified current state via Read th
 **What changes:**
 - `parseACResults` (`:200-226`) already computes `partialCount` (`:219`) but returns only `{ total, met }`. Return `partial` as well: `{ total, met, partial }`.
 - Extend the `ProofSummary.acceptance_criteria` type (`:43-46`) and its default (`:873-876`) to add `partial: number` and a `coverage` object: `{ pinned: number; judgment: number; retired: number; uncovered: number; weak_only: number }`.
-- In `generateProofSummary`, after the contract is loaded (`:925-946`) and the scope is available, compute `coverage` by reusing `extractScopeACs` + the same join `evaluateCoverageGate` uses (extract the join into a small shared helper in `artifact-validators.ts` if cleaner, so the gate, the command, and this all share one implementation). Read `scope.md` from `slugDir`. Undefined-safe: old entries / missing scope → `coverage` all-zero, `partial` 0.
+- In `generateProofSummary`, after the contract is loaded (`:925-946`) and the scope is available, compute `coverage` by calling the **exported `joinCoverage(scopeContent, contract)` helper from `artifact-validators.ts`** (built in Phase 1 specifically for this reuse). Map its per-AC join to the `coverage` counts (`pinned`/`judgment`/`retired`/`uncovered`/`weak_only`). Read `scope.md` from `slugDir`. Do NOT reimplement the extractor or the join — Phase 1 exported `joinCoverage` so the gate, this summary, and the `ana plan coverage` command all share one implementation. Undefined-safe: old entries / missing scope → `coverage` all-zero, `partial` 0.
 **Pattern to follow:** the existing `acceptance_criteria` threading and the `commit_hygiene` optional-array pattern (`:914-917`) for undefined-safety.
 **Why:** AC7 (honest PASS) and AC12 (PARTIAL surfaced) require the data to exist in the summary before any surface can show it.
 
@@ -96,7 +96,7 @@ All paths under `packages/cli/` unless noted. Verified current state via Read th
 **Why:** AC12's "save-time / card 'N ACs shipped PARTIAL'" — the PR is the other place a human reads the AC outcome.
 
 ### src/commands/plan.ts (create)
-**What changes:** New command group. `registerPlanCommand(program)` adds a `plan` command with a `coverage <slug>` subcommand. The handler resolves the slug's plan dir, reads `scope.md` + `contract.yaml`, runs `extractScopeACs` + the shared coverage join, and prints the per-AC map (Output Mockups). Read-only: never `process.exit(1)`, always exit 0 (informational). Guard missing slug/plan-dir/contract the same way `runPreCheck` does (`verify.ts:96-118`).
+**What changes:** New command group. `registerPlanCommand(program)` adds a `plan` command with a `coverage <slug>` subcommand. The handler resolves the slug's plan dir, reads `scope.md` + `contract.yaml`, calls the exported `joinCoverage(scopeContent, contract)` from `artifact-validators.ts` (the same join the gate uses), and prints its per-AC result as the map (Output Mockups). Read-only: never `process.exit(1)`, always exit 0 (informational). Guard missing slug/plan-dir/contract the same way `runPreCheck` does (`verify.ts:96-118`).
 **Pattern to follow:** `src/commands/verify.ts` end-to-end — `registerVerifyCommand` + `runPreCheck` + `printContractResults` (`:36-145`). Same command-group skeleton, same slug-resolution + plan-dir guards, same never-exits-nonzero contract. The handler is richer (renders a coverage map) but the skeleton clones directly.
 **Why:** AC11 — the preview must live at plan-time (`ana plan`, a new home), where the planner uses it while writing the contract, not at verify-time.
 
@@ -166,7 +166,7 @@ Copied from scope (the surfacing ACs), expanded with build criteria:
 ## Gotchas
 - **`material-gap-as-assertion` is CUT from v1** — do not add the prompt line (scope flagged it undefined: "do not ship until concrete and testable"). The definition is recorded in Deferred Work below as the seed if funded later.
 - **The PARTIAL data is already parsed** — `parseACResults` computes `partialCount` at `proofSummary.ts:219` and discards it. AC12 is threading, not new parsing. Don't re-implement the PARTIAL regex.
-- **Share the coverage join, don't fork it.** The proof coverage computation and `ana plan coverage` must call the *same* extractor+join as the Phase 1 gate. If the join isn't already a standalone export, extract it from `evaluateCoverageGate` into a shared helper so all three agree. Three implementations of one join would drift (design principle: move logic to one place).
+- **Reuse the exported `joinCoverage`, don't fork it.** Phase 1 exported `joinCoverage(scopeContent, contract)` from `artifact-validators.ts` for exactly this. The proof coverage computation and `ana plan coverage` both call it — the same join the Phase 1 gate uses. Do not re-extract or re-join; three implementations of one join would drift (design principle: move logic to one place).
 - **Re-init overwrites agent bodies from stock.** Template improvements reach existing installs on re-init — which is the propagation mechanism for activation. Correct and intended.
 - **Undefined-safe coverage in old entries** — `generateProofSummary` runs over `completed/` dirs that may have no scope or a `1.0` contract; the coverage computation must degrade to all-zero, never throw.
 
@@ -177,7 +177,7 @@ Copied from scope (the surfacing ACs), expanded with build criteria:
 ## Build Brief
 
 ### Rules That Apply
-- **Local imports end in `.js`; `import type` for types.** Reuse `import { extractScopeACs, evaluateCoverageGate } from './artifact-validators.js'` and `import type { CoverageWaiver, ContractSchema } from '../types/contract.js'`.
+- **Local imports end in `.js`; `import type` for types.** Reuse `import { joinCoverage } from './artifact-validators.js'` (the exported Phase 1 helper — do not reimplement it) and `import type { CoverageWaiver, ContractSchema } from '../types/contract.js'`.
 - **Engine/command boundary:** the coverage join + summary computation return data; `proof.ts`/`plan.ts`/`pr.ts` do the chalk printing.
 - **Explicit return types + `@param`/`@returns` JSDoc on exports** (pre-commit eslint).
 - **Commander command group:** mirror `registerVerifyCommand` exactly; new group registered in `index.ts` PIPELINE group.
