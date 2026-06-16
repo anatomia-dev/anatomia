@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "Syncing root dogfood agents to templates changes the agents this repo itself uses on next re-init (two-gate verifier, 1.1-emitting planner)."
+    file: ".claude/agents/ana-verify.md"
+    severity: observation
+    suggested_action: monitor
+  - summary: "`ana plan coverage` is advisory, not an automatic pipeline step; real enforcement is the Phase 1 gate at `ana artifact save`. Don't mistake the preview for a gate."
+    file: "packages/cli/src/commands/plan.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "plan.ts reads contract.coverage_waivers directly for waiver reason display (joinCoverage returns status, not reason) — a second site touching the waiver shape."
+    file: "packages/cli/src/commands/plan.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Spec File Changes under-specified the .codex template + dogfood edits; the diff touches more files than the table lists (followed the spec's Both-Claude-and-Codex constraint + existing sync tests)."
+    severity: observation
+    suggested_action: acknowledge

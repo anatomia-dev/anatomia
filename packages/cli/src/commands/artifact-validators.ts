@@ -37,6 +37,21 @@ const VALID_MATCHERS = ['equals', 'exists', 'contains', 'greater', 'truthy', 'no
 const VALUE_REQUIRED_MATCHERS = ['equals', 'contains', 'greater', 'not_equals', 'not_contains'];
 
 /**
+ * Minimum contract version that activates the scope-coverage gate. Below this
+ * (every contract that exists today is "1.0") the gate is a silent no-op. The
+ * compare is numeric major.minor — NOT lexical ("1.10" must beat "1.9").
+ */
+export const COVERAGE_GATE_MIN_VERSION = '1.1';
+
+/**
+ * Matchers that establish a coverage link but say little about semantic
+ * strength. An AC pinned only by these still counts as covered (the gate
+ * checks the link exists, not that it semantically tests the AC — that stays
+ * Verify's job), but is surfaced as `info`.
+ */
+const WEAK_MATCHERS = new Set(['exists', 'contains', 'truthy']);
+
+/**
  * Valid finding categories for verify_data.yaml
  */
 const VALID_FINDING_CATEGORIES = ['code', 'test', 'upstream'];
@@ -403,6 +418,290 @@ export function validateContractFormat(filePath: string): string[] {
   }
 
   return errors;
+}
+
+/**
+ * Per-AC coverage join between a scope's acceptance criteria and a contract's
+ * assertion links + waivers. Exported deliberately: Phase 2's proof-coverage
+ * computation and `ana plan coverage` consume the same join, so it is built as
+ * a standalone foundation rather than inlined into the gate.
+ */
+export interface CoverageJoin {
+  acs: Array<{
+    /** The scope AC id, normalized upper-case (e.g. "AC1"). */
+    id: string;
+    /** How this AC is covered. `uncovered` is the only blocking status. */
+    status: 'pinned' | 'judgment' | 'retired' | 'uncovered';
+    /** Ids of the assertions whose `ac:` links this AC (empty unless pinned). */
+    assertions: string[];
+    /** True when every linking assertion uses a weak matcher only. */
+    weakOnly: boolean;
+  }>;
+  /** Mirror of {@link extractScopeACs}'s ambiguous flag (fail-open signal). */
+  ambiguous: boolean;
+}
+
+/**
+ * Structured, chalk-free result of the pre-seal coverage gate. `artifact.ts`
+ * prints `diagnostic` (always), `info`/`warnings` (yellow) and, on `block`,
+ * `errors` (red) followed by `process.exit(1)`.
+ */
+export interface CoverageGateResult {
+  /** version >= MIN AND scope has high-confidence ACs AND not ambiguous. */
+  active: boolean;
+  /** active AND >=1 AC uncovered. The only condition that fails the seal. */
+  block: boolean;
+  /** AC ids with no assertion link and no waiver. */
+  uncovered: string[];
+  /** Human-readable block reasons (printed red, then exit 1). */
+  errors: string[];
+  /** Non-blocking notes (e.g. fail-open degrade). */
+  warnings: string[];
+  /** Weak-matcher-only coverage notes — never block. */
+  info: string[];
+  /** The single always-printed decision line (never empty). */
+  diagnostic: string;
+}
+
+/**
+ * Numeric major.minor comparison for contract version strings. Avoids the
+ * lexical trap where "1.10" < "1.9". A missing/blank/garbage version is treated
+ * as below any real minimum (so a legacy or malformed contract stays inactive).
+ *
+ * @param version - The contract's `version` field (e.g. "1.0", "1.1")
+ * @param min - The minimum activating version (e.g. "1.1")
+ * @returns True when `version` is greater than or equal to `min`
+ */
+export function isVersionAtLeast(version: string | undefined, min: string): boolean {
+  const parse = (v: string): [number, number] => {
+    const parts = v.split('.');
+    const major = Number.parseInt(parts[0] ?? '', 10);
+    const minor = Number.parseInt(parts[1] ?? '', 10);
+    return [Number.isFinite(major) ? major : 0, Number.isFinite(minor) ? minor : 0];
+  };
+  if (typeof version !== 'string' || !version.trim()) return false;
+  const [vMaj, vMin] = parse(version);
+  const [mMaj, mMin] = parse(min);
+  if (vMaj !== mMaj) return vMaj > mMaj;
+  return vMin >= mMin;
+}
+
+/**
+ * Recover acceptance-criterion ids from a scope's markdown. Handles four
+ * conventions seen across the corpus: dash/star bullets (`- AC1:`), headings
+ * (`## AC1`), bold (`**AC1**`), and bare labels (`AC1:`). Ids are de-duplicated
+ * and normalized upper-case (one AC mentioned in both a heading and a bullet is
+ * a single id).
+ *
+ * The `ambiguous` flag is the per-scope fail-open classifier (AC14): it is true
+ * only when the scope shows AC-signal (an "Acceptance Criteria" heading, or an
+ * `AC<n>` token anywhere) yet no well-formed id can be recovered. A scope with
+ * no AC section at all returns `{ ids: [], ambiguous: false }` — that is a
+ * build-only scope, not an unreadable one.
+ *
+ * @param scopeContent - Raw markdown contents of scope.md
+ * @returns The recovered AC id set and whether the scope is ambiguous
+ */
+export function extractScopeACs(scopeContent: string): { ids: string[]; ambiguous: boolean } {
+  const ids = new Set<string>();
+  if (typeof scopeContent !== 'string' || scopeContent.length === 0) {
+    return { ids: [], ambiguous: false };
+  }
+
+  const lines = scopeContent.split('\n');
+  for (const line of lines) {
+    // Heading form: `## AC1`, `### **AC1**`
+    const heading = line.match(/^\s*#{1,6}\s+\*{0,2}\s*(AC\d+)\b/i);
+    if (heading?.[1]) ids.add(heading[1].toUpperCase());
+
+    // Bullet form: `- AC1:`, `* **AC1**`, `- AC1 — desc`
+    const bullet = line.match(/^\s*[-*]\s+\*{0,2}\s*(AC\d+)\b/i);
+    if (bullet?.[1]) ids.add(bullet[1].toUpperCase());
+
+    // Bare label at line start: `AC1:`, `AC1.`, `AC1)`
+    const bare = line.match(/^\s*(AC\d+)\s*[:.)\]]/i);
+    if (bare?.[1]) ids.add(bare[1].toUpperCase());
+
+    // Bold form anywhere on the line: `**AC1**`, `**AC1:**`
+    const boldRe = /\*\*\s*(AC\d+)\b/gi;
+    let m: RegExpExecArray | null;
+    while ((m = boldRe.exec(line)) !== null) {
+      if (m[1]) ids.add(m[1].toUpperCase());
+    }
+  }
+
+  const idList = [...ids];
+  if (idList.length > 0) {
+    return { ids: idList, ambiguous: false };
+  }
+
+  // No ids recovered. Ambiguous only if the scope shows AC-signal anyway.
+  const hasACHeading = /^\s*#{1,6}\s+Acceptance\s+Criteria/im.test(scopeContent);
+  const hasACToken = /\bAC\d+\b/i.test(scopeContent);
+  return { ids: [], ambiguous: hasACHeading || hasACToken };
+}
+
+/**
+ * Join a scope's acceptance criteria against a contract's assertion `ac:` links
+ * and `coverage_waivers`. The standalone helper the gate (and Phase 2) call.
+ *
+ * Coverage is structural, not semantic: an AC is `pinned` when at least one
+ * assertion lists it in `ac:`, `judgment`/`retired` when a waiver (with a
+ * non-empty reason) excuses it, and `uncovered` otherwise. A waiver missing its
+ * required `reason` does not count — that is what makes over-waiving visible.
+ *
+ * @param scopeContent - Raw markdown contents of scope.md
+ * @param contract - The parsed contract schema
+ * @returns The per-AC coverage join
+ */
+export function joinCoverage(scopeContent: string, contract: ContractSchema): CoverageJoin {
+  const { ids, ambiguous } = extractScopeACs(scopeContent);
+
+  // AC id -> covering assertion ids + their matchers.
+  const linksByAC = new Map<string, { ids: string[]; matchers: string[] }>();
+  const assertions = Array.isArray(contract?.assertions) ? contract.assertions : [];
+  for (const a of assertions) {
+    if (!a || a.ac === undefined || a.ac === null) continue;
+    const acList = Array.isArray(a.ac) ? a.ac : [a.ac];
+    for (const rawAc of acList) {
+      if (typeof rawAc !== 'string' || !rawAc.trim()) continue;
+      const acId = rawAc.trim().toUpperCase();
+      const entry = linksByAC.get(acId) ?? { ids: [], matchers: [] };
+      entry.ids.push(a.id);
+      entry.matchers.push(typeof a.matcher === 'string' ? a.matcher : '');
+      linksByAC.set(acId, entry);
+    }
+  }
+
+  // AC id -> waiver kind (only waivers with a non-empty reason count).
+  const waiverByAC = new Map<string, 'judgment' | 'retired'>();
+  const waivers = Array.isArray(contract?.coverage_waivers) ? contract.coverage_waivers : [];
+  for (const w of waivers) {
+    if (!w || typeof w.ac !== 'string' || !w.ac.trim()) continue;
+    if (w.kind !== 'judgment' && w.kind !== 'retired') continue;
+    if (typeof w.reason !== 'string' || !w.reason.trim()) continue;
+    waiverByAC.set(w.ac.trim().toUpperCase(), w.kind);
+  }
+
+  const acs = ids.map(id => {
+    const link = linksByAC.get(id);
+    if (link && link.ids.length > 0) {
+      const weakOnly = link.matchers.every(matcher => WEAK_MATCHERS.has(matcher));
+      return { id, status: 'pinned' as const, assertions: link.ids, weakOnly };
+    }
+    const waiver = waiverByAC.get(id);
+    if (waiver) {
+      return { id, status: waiver, assertions: [] as string[], weakOnly: false };
+    }
+    return { id, status: 'uncovered' as const, assertions: [] as string[], weakOnly: false };
+  });
+
+  return { acs, ambiguous };
+}
+
+/**
+ * The pure pre-seal coverage gate — a thin policy layer over {@link joinCoverage}.
+ * Never throws and never prints: a malformed contract or scope degrades to an
+ * inactive/warn result. All chalk + `process.exit` live in `artifact.ts`.
+ *
+ * Activation requires version >= 1.1 AND a non-ambiguous scope AND at least one
+ * recovered AC. When active, it blocks iff at least one AC is `uncovered`.
+ *
+ * @param input - The sibling scope.md contents and the parsed contract
+ * @param input.scopeContent - Raw markdown contents of the sibling scope.md
+ * @param input.contract - The parsed contract schema being saved
+ * @returns The structured gate result (see {@link CoverageGateResult})
+ */
+export function evaluateCoverageGate(input: { scopeContent: string; contract: ContractSchema }): CoverageGateResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const info: string[] = [];
+
+  let join: CoverageJoin;
+  try {
+    join = joinCoverage(input?.scopeContent ?? '', input?.contract ?? {});
+  } catch {
+    return {
+      active: false,
+      block: false,
+      uncovered: [],
+      errors,
+      warnings,
+      info,
+      diagnostic: 'inactive (coverage gate could not evaluate — treated as legacy)',
+    };
+  }
+
+  // Fail-open: an unrecognized AC format warns for this scope, never blocks.
+  if (join.ambiguous) {
+    warnings.push('Scope acceptance-criteria format not recognized — coverage gate degraded to warn-only for this scope.');
+    return {
+      active: false,
+      block: false,
+      uncovered: [],
+      errors,
+      warnings,
+      info,
+      diagnostic: 'skipped (AC format unrecognized — warn only, not blocking)',
+    };
+  }
+
+  const versionActive = isVersionAtLeast(input?.contract?.version, COVERAGE_GATE_MIN_VERSION);
+  const hasACs = join.acs.length > 0;
+
+  if (!versionActive) {
+    return {
+      active: false,
+      block: false,
+      uncovered: [],
+      errors,
+      warnings,
+      info,
+      diagnostic: `inactive (legacy contract, version ${input?.contract?.version ?? '1.0'})`,
+    };
+  }
+
+  if (!hasACs) {
+    // Build-only / no-AC scope: nothing to cover (AC6).
+    return {
+      active: false,
+      block: false,
+      uncovered: [],
+      errors,
+      warnings,
+      info,
+      diagnostic: 'inactive (scope has no acceptance criteria)',
+    };
+  }
+
+  // Active. Compute coverage.
+  const uncovered = join.acs.filter(ac => ac.status === 'uncovered').map(ac => ac.id);
+  for (const ac of join.acs) {
+    if (ac.status === 'pinned' && ac.weakOnly) {
+      info.push(`${ac.id} covered by weak matcher only — the link exists; semantic strength is Verify's call.`);
+    }
+  }
+
+  const block = uncovered.length > 0;
+  const total = join.acs.length;
+  const covered = total - uncovered.length;
+  const waived = join.acs.filter(ac => ac.status === 'judgment' || ac.status === 'retired').length;
+
+  if (block) {
+    errors.push(`Contract leaves ${uncovered.length} scope acceptance criteri${uncovered.length === 1 ? 'on' : 'a'} uncovered.`);
+    for (const id of uncovered) {
+      errors.push(
+        `${id} has no covering assertion and no coverage_waivers entry. ` +
+        `Either add an assertion with \`ac: ${id}\`, or add a coverage_waivers entry ` +
+        `({ ac: ${id}, kind: judgment|retired, reason: "..." }) explaining why it is not mechanically pinned.`
+      );
+    }
+  }
+
+  const waivedNote = waived > 0 ? ` (${waived} by waiver)` : '';
+  const diagnostic = `active — ${covered}/${total} acceptance criteria covered${waivedNote}`;
+
+  return { active: true, block, uncovered, errors, warnings, info, diagnostic };
 }
 
 /**

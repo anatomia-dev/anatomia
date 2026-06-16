@@ -352,6 +352,114 @@ file_changes:
     expect(summary.acceptance_criteria.met).toBe(0);
   });
 
+  // @ana A023
+  it('parseACResults returns the PARTIAL count (PARTIAL-inside-PASS)', async () => {
+    const verifyReport = `# Verify Report
+
+**Result:** PASS
+
+## AC Walkthrough
+- **AC1:** ✅ PASS — fully implemented
+- **AC2:** ⚠️ PARTIAL — only the happy path shipped
+- **AC3:** ⚠️ PARTIAL — error messaging deferred
+- **AC4:** ✅ PASS — covered
+`;
+    await fs.promises.writeFile(path.join(slugDir, 'verify_report.md'), verifyReport);
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.acceptance_criteria.partial).toBe(2);
+    expect(summary.acceptance_criteria.total).toBe(4);
+    expect(summary.acceptance_criteria.met).toBe(2);
+  });
+
+  // @ana A025, A026
+  it('generateProofSummary populates acceptance_criteria.coverage from scope + contract', async () => {
+    const scope = `# Scope
+
+## Acceptance Criteria
+- AC1: the feature works
+- AC2: error messages are helpful
+`;
+    const contract = `
+version: "1.1"
+feature: "Coverage Feature"
+assertions:
+  - id: A001
+    ac: AC1
+    says: "feature works"
+    matcher: "equals"
+  - id: A002
+    ac: AC1
+    says: "feature works strongly"
+    matcher: "equals"
+coverage_waivers:
+  - ac: AC2
+    kind: judgment
+    reason: "helpfulness is a human judgment, not mechanically testable"
+`;
+    await fs.promises.writeFile(path.join(slugDir, 'scope.md'), scope);
+    await fs.promises.writeFile(path.join(slugDir, 'contract.yaml'), contract);
+
+    const summary = generateProofSummary(slugDir);
+
+    // A025: the coverage object exists and is populated.
+    expect(summary.acceptance_criteria.coverage).toBeDefined();
+    expect(summary.acceptance_criteria.coverage.pinned).toBe(1);
+    // A026: judgment-only ACs are counted separately from pinned/retired.
+    expect(summary.acceptance_criteria.coverage.judgment).toBe(1);
+    expect(summary.acceptance_criteria.coverage.retired).toBe(0);
+    expect(summary.acceptance_criteria.coverage.uncovered).toBe(0);
+  });
+
+  // @ana A025
+  it('coverage degrades to all-zero when scope or contract is missing (undefined-safe)', async () => {
+    // No scope.md and no contract.yaml — old completed entry.
+    const verifyReport = `# Verify Report
+
+**Result:** PASS
+
+## AC Walkthrough
+- **AC1:** ✅ PASS — works
+`;
+    await fs.promises.writeFile(path.join(slugDir, 'verify_report.md'), verifyReport);
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.acceptance_criteria.coverage).toEqual({
+      pinned: 0,
+      judgment: 0,
+      retired: 0,
+      uncovered: 0,
+      weak_only: 0,
+    });
+    expect(summary.acceptance_criteria.partial).toBe(0);
+  });
+
+  it('coverage marks a weakly-pinned AC as weak_only', async () => {
+    const scope = `# Scope
+
+## Acceptance Criteria
+- AC1: the value exists
+`;
+    const contract = `
+version: "1.1"
+feature: "Weak Matcher Feature"
+assertions:
+  - id: A001
+    ac: AC1
+    says: "value exists"
+    matcher: "exists"
+`;
+    await fs.promises.writeFile(path.join(slugDir, 'scope.md'), scope);
+    await fs.promises.writeFile(path.join(slugDir, 'contract.yaml'), contract);
+
+    const summary = generateProofSummary(slugDir);
+
+    expect(summary.acceptance_criteria.coverage.pinned).toBe(1);
+    expect(summary.acceptance_criteria.coverage.weak_only).toBe(1);
+  });
+
   // @ana A010, A011
   it('handles missing verify report — bootstraps from contract.yaml', async () => {
     const contract = `
@@ -2366,7 +2474,7 @@ describe('formatHumanReadable phase breakdown', () => {
       author: { name: 'Test', email: 'test@test.com' },
       contract: { total: 1, satisfied: 1, unsatisfied: 0, deviated: 0 },
       assertions: [{ id: 'A001', says: 'test', status: 'SATISFIED' }],
-      acceptance_criteria: { total: 1, met: 1 },
+      acceptance_criteria: { total: 1, met: 1, partial: 0, coverage: { pinned: 0, judgment: 0, retired: 0, uncovered: 0, weak_only: 0 } },
       timing: {
         total_minutes: 97,
         think: 30,

@@ -112,7 +112,7 @@ describe('assembleProcessAttestation', () => {
       author: { name: 'T', email: 't@t.com' },
       assertions: [],
       contract: { total: 14, satisfied: 14, unsatisfied: 0, deviated: 0 },
-      acceptance_criteria: { total: 4, met: 4 },
+      acceptance_criteria: { total: 4, met: 4, partial: 0, coverage: { pinned: 0, judgment: 0, retired: 0, uncovered: 0, weak_only: 0 } },
       timing: { total_minutes: 10 },
       deviations: [],
       hashes: {},

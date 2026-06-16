@@ -252,7 +252,7 @@ export interface ComplianceAttestation {
  * CROSS-CUTTING: Adding a field requires changes in 4+ locations:
  *   1. Type definition below
  *   2. Default in generateProofSummary() (utils/proofSummary.ts)
- *   3. Entry construction in writeProofChain() (commands/work.ts)
+ *   3. Entry construction in writeProofChain() (commands/work-proof.ts)
  *   4. Display in formatHumanReadable() or formatListTable() (commands/proof.ts)
  * Old entries in proof_chain.json may lack new fields — consumers must handle undefined.
  */

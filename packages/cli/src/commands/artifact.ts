@@ -20,7 +20,8 @@ import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as yaml from 'yaml';
 import { runContractPreCheck } from './verify.js';
-import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
+import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat, evaluateCoverageGate } from './artifact-validators.js';
+import type { ContractSchema } from '../types/contract.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { evaluateTestEvidenceGate } from '../utils/capture-marker.js';
 import { resolveTestCommandString } from './test.js';
@@ -877,6 +878,65 @@ function applyTestEvidenceGate(filePath: string, projectRoot: string): void {
 }
 
 /**
+ * Run the pre-seal scope-coverage gate on a contract being saved.
+ *
+ * Reads the sibling scope.md, parses the contract YAML, and asks
+ * evaluateCoverageGate whether the contract covers every scope acceptance
+ * criterion. ALWAYS prints exactly one diagnostic line (so an inactive gate is
+ * never invisible — AC13). Prints info/warnings yellow and, when the gate
+ * blocks, errors red followed by process.exit(1) BEFORE the seal hash is
+ * written. Inert by design today: every existing contract is version 1.0, so
+ * the gate no-ops everywhere until Phase 2 teaches Plan to emit version 1.1.
+ *
+ * Defensive at the boundary: an unreadable scope or contract degrades the gate
+ * to a benign inactive result rather than throwing — the gate function itself
+ * is already total.
+ *
+ * @param contractPath - Absolute path to the contract.yaml being saved
+ */
+function applyCoverageGate(contractPath: string): void {
+  let scopeContent = '';
+  try {
+    const scopePath = path.join(path.dirname(contractPath), 'scope.md');
+    if (fs.existsSync(scopePath)) {
+      scopeContent = fs.readFileSync(scopePath, 'utf-8');
+    }
+  } catch {
+    scopeContent = '';
+  }
+
+  let contract: ContractSchema = {};
+  try {
+    const parsed = yaml.parse(fs.readFileSync(contractPath, 'utf-8')) as unknown;
+    if (parsed && typeof parsed === 'object') {
+      contract = parsed as ContractSchema;
+    }
+  } catch {
+    contract = {};
+  }
+
+  const gate = evaluateCoverageGate({ scopeContent, contract });
+
+  // Always surface the decision — an inactive gate is never silent (AC13).
+  console.log(`Coverage gate: ${gate.diagnostic}`);
+
+  for (const note of gate.info) {
+    console.log(chalk.gray(`  ${note}`));
+  }
+  for (const warning of gate.warnings) {
+    console.warn(chalk.yellow(`Warning: ${warning}`));
+  }
+
+  if (gate.block) {
+    for (const error of gate.errors) {
+      console.error(chalk.red(`  ${error}`));
+    }
+    console.error(chalk.red('The seal was not written. Fix the contract and re-save.'));
+    process.exit(1);
+  }
+}
+
+/**
  * Save an artifact to git with appropriate validation and commit
  *
  * @param type - Artifact type (e.g., "scope", "spec-2", "build-report")
@@ -1087,6 +1147,10 @@ export function saveArtifact(type: string, slug: string): void {
       }
       process.exit(1);
     }
+    // Pre-seal scope-coverage gate — runs BEFORE the seal hash (writeSaveMetadata).
+    // No-op on legacy version 1.0 contracts; blocks a version 1.1 contract that
+    // silently drops a scope acceptance criterion.
+    applyCoverageGate(filePath);
   }
 
   // 6b. Companion YAML discovery and validation (verify-report / build-report)
@@ -1511,6 +1575,9 @@ export function saveAllArtifacts(slug: string): void {
         }
         process.exit(1);
       }
+      // Pre-seal scope-coverage gate — mirror of the single-save wiring.
+      // Both save paths must run it; no-op on legacy version 1.0 contracts.
+      applyCoverageGate(artifact.path);
     }
   }
 

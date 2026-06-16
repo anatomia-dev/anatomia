@@ -94,7 +94,7 @@ function extractTitle(content: string): string {
  * @param proof - Proof summary data
  * @returns Markdown string for PR body
  */
-function renderProofMarkdown(proof: ProofSummary): string {
+export function renderProofMarkdown(proof: ProofSummary): string {
   const lines: string[] = [];
 
   lines.push(`## Anatomia Proof — ${proof.feature}`);
@@ -104,10 +104,17 @@ function renderProofMarkdown(proof: ProofSummary): string {
   const total = proof.contract.total;
   const acMet = proof.acceptance_criteria.met;
   const acTotal = proof.acceptance_criteria.total;
+  const acPartial = proof.acceptance_criteria.partial;
   const devCount = proof.deviations.length;
 
+  // Surface PARTIAL-inside-PASS (AC12): a passing proof that shipped some ACs
+  // partially must say so. Undefined-safe — old summaries have no partial field.
+  const acSegment = acPartial && acPartial > 0
+    ? `${acMet}/${acTotal} ACs met (${acPartial} PARTIAL)`
+    : `${acMet}/${acTotal} ACs met`;
+
   const icon = proof.result === 'PASS' ? '✅' : '❌';
-  lines.push(`${icon} **${proof.result}** · ${satisfied}/${total} assertions satisfied · ${acMet}/${acTotal} ACs met · ${devCount} deviation${devCount !== 1 ? 's' : ''}`);
+  lines.push(`${icon} **${proof.result}** · ${satisfied}/${total} assertions satisfied · ${acSegment} · ${devCount} deviation${devCount !== 1 ? 's' : ''}`);
   lines.push('');
 
   // Contract Compliance table
