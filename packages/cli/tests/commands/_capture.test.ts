@@ -216,12 +216,20 @@ describe('ana _capture', () => {
     }
   });
 
-  // @ana A001
-  it('pins anatrace-core to an exact version (no caret/tilde)', () => {
+  // @ana A001, A045, A046
+  it('pins AND installs anatrace-core at exactly 0.4.0 (no caret/tilde)', () => {
+    // The single 0.4.0 literal for the whole change lives here (the AC1 install/pin check).
+    const EXPECTED_CORE_VERSION = '0.4.0';
     const pkg = JSON.parse(
       fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'),
     ) as { dependencies?: Record<string, string> };
-    expect(pkg.dependencies?.['anatrace-core']).toBe('0.2.0');
+    // A046 (+ A001 exact-pin): package.json pins the engine to 0.4.0 exact.
+    expect(pkg.dependencies?.['anatrace-core']).toBe(EXPECTED_CORE_VERSION);
+    // A045: the engine actually resolved/installed at 0.4.0.
+    const corePkg = JSON.parse(
+      fs.readFileSync(require.resolve('anatrace-core/package.json'), 'utf-8'),
+    ) as { version: string };
+    expect(corePkg.version).toBe(EXPECTED_CORE_VERSION);
   });
 
   // @ana A012
