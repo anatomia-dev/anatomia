@@ -323,6 +323,30 @@ describe('compliance producer + reader', () => {
       expect(warnings[0]).toContain('anatrace-core@');
     });
 
+    // @ana A025 (verifier-verdict-honesty) — projectVerdicts persists the determinism channel.
+    it('carries the engine source verbatim onto the record so the veto can read it', () => {
+      const saysById = new Map<string, string>([['ana-verify:verify-independence', 'never read the build report']]);
+      const projected = projectVerdicts(
+        [{ claimId: 'ana-verify:verify-independence', status: 'violated', reason: 'predicate-not-matched', source: 'deterministic' }],
+        saysById,
+      );
+      expect(projected).toHaveLength(1);
+      expect(projected[0]!.source).toBe('deterministic');
+      expect(projected[0]!.status).toBe('violated');
+    });
+
+    // Bonus (supports A026 at the projection layer) — a verdict with no source projects to a record with no source.
+    it('omits source when core supplies none (forward-only: legacy records stay non-gating)', () => {
+      const saysById = new Map<string, string>([['c1', 'do the thing']]);
+      const projected = projectVerdicts(
+        [{ claimId: 'c1', status: 'violated', reason: 'predicate-not-matched' }],
+        saysById,
+      );
+      expect(projected).toHaveLength(1);
+      expect('source' in projected[0]!).toBe(false);
+      expect(projected[0]!.source).toBeUndefined();
+    });
+
     // @ana A050, A051
     it('ABSTAINS (returns null, writes no record) when the core version is empty', () => {
       writeAnaJson('on');
