@@ -43,7 +43,7 @@ Four moves, one PR, in dependency order:
 ### HARD / GATING (the PR does not merge without these)
 
 - **AC1:** `require.resolve('anatrace-core')` resolves 0.4.0; `package.json` pin `== "0.4.0"` exact; `pnpm-lock.yaml` regenerated to resolve 0.4.0; `tsc` + build clean.
-- **AC2:** The verdict `reason` field is locked to 0.4.0's closed `VerdictReason` set — typed union + schema validation. SCOPE LIMIT: the reason union + its schema check ONLY. Do NOT refactor the broader proof schema or `proof.ts`.
+- **AC2:** The verdict `reason` field is locked to 0.4.0's closed `VerdictReason` set — typed union + schema validation. An out-of-set reason is **recorded and surfaced as a drift signal (finding/warning), never rejected or abstained** — the lock detects silent drift, it does not hard-reject the engine's output. Contrast AC3, which abstains on an empty/unresolvable core version. (Rationale: `proof.ts` keeps the on-disk shape distinct from core's runtime shape *so the engine can evolve without breaking stored proof*; M3 is explicit that a future core minor may add/rename a reason — "don't assume additivity." The goal is to stop an unknown reason passing silently, not to drop a valid verdict from a known engine.) SCOPE LIMIT: the reason union + its schema check ONLY. Do NOT refactor the broader proof schema or `proof.ts`.
 - **AC3:** Finding C12 closed FAIL-CLOSED — the emit path ABSTAINS (writes no record) when the core version is empty/unresolvable; it never stamps `anatrace_core_version: ""`. Implemented as a gate in `captureComplianceAtSave` (the behavioral fix), not merely a CI assertion. Collapse the double `readCoreVersion()`: compute once, gate on it, stamp from the same value.
 - **AC4:** Real-engine CI assertions green:
   - (i) every emitted `reason` ∈ 0.4.0 closed set;
@@ -52,6 +52,7 @@ Four moves, one PR, in dependency order:
     - The fixture MUST stay in the class the 0.4.0 fix closed — an obfuscated / non-trivially-resolved forbidden command (ANSI-C `$'...'` force-push shape or equivalent). A plainly-violated command any version would catch proves nothing.
     - If no in-class fixture can be made to flip under 0.4.0, **STOP and surface it as a finding** — do NOT downgrade to a trivial fixture to turn CI green. That would mean the closure isn't reaching our emit path, which is exactly what this item exists to catch.
     - Do NOT attempt to prove the 0.2.0→0.4.0 differential in CI. CI proves only that 0.4.0 catches the in-class fixture. The "0.2.0 false-passed it" half of the claim is cited from anatrace's own audit (#38 / CLOSEOUT), not re-derived here.
+- **AC5 (HARD):** A `CHANGELOG.md` entry (root `CHANGELOG.md`, under `## [Unreleased]`, Keep a Changelog format) records the `anatrace-core` 0.2.0 → 0.4.0 bump AND the verdict-semantics shift — `satisfied` → `violated`/`unverifiable` flips, and the new/changed `reason` members. This is a behavior change on a repo with an actively maintained CHANGELOG heading toward 1.3.0; the doc update ships in THIS PR.
 
 ### OBSERVABLE / NON-GATING (record it; it never holds the PR)
 
@@ -61,6 +62,7 @@ Four moves, one PR, in dependency order:
 
 - **Stale lockfile = CI install failure.** `--frozen-lockfile` rejects any drift between `package.json` and `pnpm-lock.yaml`. Regenerating the lockfile is load-bearing; skipping it fails CI before tests run.
 - **Empty/unresolvable core version.** The whole point of AC3 — must abstain, never stamp `""`. Covered by the gate; verify it abstains rather than throws.
+- **The two locks have OPPOSITE failure modes — do not conflate them.** AC3 (empty/unresolvable core version → unknown provenance) **abstains**: don't write the record. AC2 (unknown `reason` from a *known* engine version → a valid verdict whose label drifted) **records it and surfaces a drift signal**: never reject or abstain. Dropping a valid verdict on an unknown reason would re-break the forward-compat that the distinct-on-disk-shape design deliberately bought. Build must not apply AC3's abstain reflex to AC2.
 - **`reason` narrowing breaks a reader.** Tightening `reason: string` → union could surface a latent assignment elsewhere. The schema validation and `tsc` clean (AC1) catch this; the scope limit keeps the change to this one field.
 - **Fixture proves nothing (trivial-command trap).** Guarded explicitly in AC4(iii): must be in-class; if it can't flip, STOP and file a finding rather than weaken it.
 - **Behavioral, not compile, exposure.** A clean compile against 0.4.0 does not prove correct behavior — the exposure is verdict flips. This is precisely why AC4 runs the real engine instead of mocking it.
