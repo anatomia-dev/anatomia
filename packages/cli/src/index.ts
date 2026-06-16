@@ -23,6 +23,7 @@ import { registerPrCommand } from './commands/pr.js';
 import { registerAgentsCommand } from './commands/agents.js';
 import { registerLearnCommand } from './commands/learn.js';
 import { registerVerifyCommand } from './commands/verify.js';
+import { registerPlanCommand } from './commands/plan.js';
 import { registerTestCommand } from './commands/test.js';
 import { registerConfigCommand } from './commands/config.js';
 import { registerDoctorCommand } from './commands/doctor.js';
@@ -66,6 +67,7 @@ registerWorkCommand(program);
 registerRunCommand(program);
 registerArtifactCommand(program);
 registerVerifyCommand(program);
+registerPlanCommand(program);
 registerTestCommand(program);
 registerPrCommand(program);
 

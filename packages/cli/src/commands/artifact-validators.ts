@@ -41,7 +41,7 @@ const VALUE_REQUIRED_MATCHERS = ['equals', 'contains', 'greater', 'not_equals', 
  * (every contract that exists today is "1.0") the gate is a silent no-op. The
  * compare is numeric major.minor — NOT lexical ("1.10" must beat "1.9").
  */
-const COVERAGE_GATE_MIN_VERSION = '1.1';
+export const COVERAGE_GATE_MIN_VERSION = '1.1';
 
 /**
  * Matchers that establish a coverage link but say little about semantic
@@ -472,7 +472,7 @@ export interface CoverageGateResult {
  * @param min - The minimum activating version (e.g. "1.1")
  * @returns True when `version` is greater than or equal to `min`
  */
-function isVersionAtLeast(version: string | undefined, min: string): boolean {
+export function isVersionAtLeast(version: string | undefined, min: string): boolean {
   const parse = (v: string): [number, number] => {
     const parts = v.split('.');
     const major = Number.parseInt(parts[0] ?? '', 10);
