@@ -60,19 +60,10 @@ assertions:
     matcher: "contains"
     value: "UNSATISFIED row"
 
-  - id: A009
-    says: "A PASS is overridden to FAIL when the verifier logged a blocking finding"
-    block: "deriveVerdict coerces PASS to FAIL when a risk-severity finding is present"
-    target: "deriveVerdict.riskFinding.result"
-    matcher: "equals"
-    value: "FAIL"
-
-  - id: A010
-    says: "The override explains which blocking finding contradicted the PASS"
-    block: "deriveVerdict reports the blocker-finding contradiction reason"
-    target: "deriveVerdict.riskFinding.contradictions"
-    matcher: "contains"
-    value: "blocker finding"
+  # A009/A010 removed: findings (severity: risk) live in verify_data.yaml, not the
+  # report .md (ana-verify.md:139), so a content-only deriveVerdict cannot read them;
+  # and risk findings do not prevent PASS (ana-verify.md:412) — only UNSATISFIED rows do.
+  # The UNSATISFIED-row contradiction is covered by A007/A008.
 
   - id: A011
     says: "A FAIL verdict stays FAIL"
