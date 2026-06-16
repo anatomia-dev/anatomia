@@ -10,7 +10,9 @@ Two reinforcing fixes on the PASS/FAIL verdict, both pure anatomia (no anatrace 
 
 1. **Component 1 — remove the prompt contradiction.** `ana-verify.md` forbids reading the build report in two places but *licenses* it in two others. Delete only the two licenses; keep the prohibition and the source-inspection fallback intact. This is what lets Spec 2's adapter emit a clean, gate-eligible obligation.
 
-2. **Component 2 — one verdict function.** The headline `**Result:** PASS|FAIL` is currently scraped by ≥6 copies of the same regex, each independently trusting one prose line the verify model typed. Collapse them into a single function in a new `utils/verdict.ts` that **cross-checks the headline against the compliance table and findings** and **coerces a contradicted PASS to FAIL** — the verdict stops blindly trusting one line. Design principle in play: *the elegant solution is the one that removes* — six regexes become one function.
+2. **Component 2 — one verdict function.** The headline `**Result:** PASS|FAIL` is currently scraped by ≥6 copies of the same regex, each independently trusting one prose line the verify model typed. Collapse them into a single function in a new `utils/verdict.ts` that **cross-checks the headline against the compliance table** and **coerces a contradicted PASS to FAIL** — the verdict stops blindly trusting one line. Design principle in play: *the elegant solution is the one that removes* — six regexes become one function.
+
+   **The contradiction signal is the UNSATISFIED table row, and only that.** `deriveVerdict(content)` is content-only; it parses the `## Contract Compliance` table from the report markdown. It must NOT key on findings: `severity: risk` lives in the companion `verify_data.yaml`, not the report `.md` (ana-verify.md:139 — "the YAML is authoritative for machines"; the `## Findings` section is prose), so it isn't reachable from `content`. And per ana-verify.md:412, findings — even `risk` ones — do not prevent a PASS; only UNSATISFIED assertions do. Coercing on a finding would manufacture false FAILs.
 
 **Sequencing:** Land this **after** `verifier-intent-coverage`'s verify-path edits merge — it also touches `ana-verify.md` and `proofSummary.ts`. **Re-derive every line number below at build time** (`proofSummary.ts` is ~1285 lines and high-churn; recent commits already moved it).
 
@@ -34,13 +36,11 @@ interface VerdictResult {
 Error: Cannot complete work with a FAIL verification result.
 The verify headline says PASS but it contradicts the verifier's own report:
   • PASS headline contradicts UNSATISFIED row A003
-  • PASS headline contradicts blocker finding: webhook signature is never checked
 Fix the issues and re-verify before completing.
 ```
 
-**Reason string formats (exact — the contract asserts these substrings):**
-- UNSATISFIED row: `PASS headline contradicts UNSATISFIED row {id}` (e.g. `A003`)
-- Risk finding: `PASS headline contradicts blocker finding: {summary}`
+**Reason string format (exact — the contract asserts this substring):**
+- UNSATISFIED row: `PASS headline contradicts UNSATISFIED row {id}` (e.g. `A003`) — one per offending row
 
 **Clean PASS (no contradiction)** is unchanged: `result: 'PASS'`, `contradictions: []`.
 
@@ -71,13 +71,13 @@ Fix the issues and re-verify before completing.
 **What changes:** New leaf util — the single home for the verdict. Exports:
 - `RESULT_HEADLINE_PATTERN` — the one `/\*\*Result:\*\*\s*(PASS|FAIL)/i` constant (the others import this; kills regex drift).
 - `deriveVerdict(content: string): VerdictResult` — scrape headline, then cross-check against the compliance table and findings, coerce contradicted PASS → FAIL, populate `contradictions`.
-**Pattern to follow:** mirror the cleanest existing parser `getVerifyResult` (`work-state.ts:141`) for the headline scrape; reuse `parseComplianceTable` (`proofSummary.ts:144`) and the findings parser for the cross-check. Both are in `utils/` so `verdict.ts` stays a leaf.
-**Cross-check logic:** if `headline === 'PASS'` and (any compliance-table row status is `UNSATISFIED`) OR (any finding has `severity: risk`) → `result = 'FAIL'` and push a reason per offending row/finding. Otherwise `result = headline`.
+**Pattern to follow:** mirror the cleanest existing parser `getVerifyResult` (`work-state.ts:141`) for the headline scrape; reuse `parseComplianceTable` (`proofSummary.ts:144`) for the cross-check. Both are in `utils/` so `verdict.ts` stays a leaf. No findings parser is needed — see the Approach for why findings are deliberately excluded.
+**Cross-check logic:** if `headline === 'PASS'` and any compliance-table row status is `UNSATISFIED` → `result = 'FAIL'` and push one reason per offending row. Otherwise `result = headline`.
 **Doc:** the JSDoc must state the honesty boundary verbatim (not one-word-forgeable; still self-authored; NOT "can't lie").
 **Why:** One function, one responsibility — removes six duplicated scrapes.
 
 ### packages/cli/src/utils/proofSummary.ts (modify)
-**What changes:** (1) `export` `parseComplianceTable` (`:144`) so `verdict.ts` can reuse it; export the findings parser too if needed. (2) Replace the private `parseResult` (`:189`) call sites in `buildProofSummary` with `deriveVerdict`; set `summary.result` to `deriveVerdict(content).result` and carry `contradictions` onto the proof summary (additive field — see below). (3) Delete the now-dead `parseResult`.
+**What changes:** (1) `export` `parseComplianceTable` (`:144`) so `verdict.ts` can reuse it. (2) Replace the private `parseResult` (`:189`) call sites in `buildProofSummary` with `deriveVerdict`; set `summary.result` to `deriveVerdict(content).result` and carry `contradictions` onto the proof summary (additive field — see below). (3) Delete the now-dead `parseResult`.
 **Why:** The proof summary is where `result` enters the proof chain — it must use the coercing verdict, and the contradiction reasons must reach the rendered proof (decision #1: surface durably in the proof entry).
 
 ### packages/cli/src/types/proof.ts (modify)
@@ -97,7 +97,7 @@ Fix the issues and re-verify before completing.
 **Why:** Route through the one function.
 
 ### packages/cli/src/commands/work.ts (modify)
-**What changes:** Replace the three FAIL-only inline `RESULT_HEADLINE_PATTERN.test(content)` forms (`:1341`, `:1527`, `:1534`) with `deriveVerdict(content).result === 'FAIL'`. A contradicted PASS now correctly routes to the Fix/re-verify branch. The per-phase guard (`:1042`, `guardFailResult(getVerifyResult(content), ...)`) already routes through the wrapper — confirm it passes `contradictions` to the message (see work-proof change).
+**What changes:** Replace the three FAIL-only inline `RESULT_HEADLINE_PATTERN.test(content)` forms (`:1341`, `:1527`, `:1534`) with `deriveVerdict(content).result === 'FAIL'`. A contradicted PASS now correctly routes to the Fix/re-verify branch. **Before replacing each, confirm at build time it is a FAIL-check** (`/…FAIL/.test(content)` → "is this a failure?"), not a verdict-*presence* check — the swap to `=== 'FAIL'` is only equivalent for the former. The per-phase guard (`:1042`, `guardFailResult(getVerifyResult(content), ...)`) already routes through the wrapper — confirm it passes `contradictions` to the message (see work-proof change).
 **Why:** Consistency — a contradicted PASS must behave like a FAIL everywhere, including worktree routing.
 
 ### packages/cli/src/commands/work-proof.ts (modify)
@@ -113,18 +113,18 @@ Fix the issues and re-verify before completing.
 - [ ] **AC1:** `ana-verify.md` (both masters + both dogfood copies) no longer contains the "check the build report for coverage claims" license; the prohibition (`:30`/`:503`) remains. `agent-proof-context.test.ts` and `codex-learn-template.test.ts` pass (all copies byte-consistent per harness).
 - [ ] **AC2:** Verify's independence and scrutiny are unweakened — the source-inspection fallback for untested assertions survives in both agent-defs ("source inspection" still present).
 - [ ] **AC3:** Exactly one function (`deriveVerdict`) parses the `**Result:**` headline; `getVerifyResult`, `readLocalVerifyResult`, `pr.ts`'s `extractVerifyResult`, and the three `work.ts` inline forms all route through it. `validateVerifyReportFormat` shares `RESULT_HEADLINE_PATTERN` but keeps its presence-only intent. `parseResult` is deleted.
-- [ ] **AC4:** `deriveVerdict` coerces a PASS headline to `result: 'FAIL'` with a non-empty `contradictions` when the compliance table has an UNSATISFIED row OR a `severity: risk` finding is present. A clean PASS stays PASS.
+- [ ] **AC4:** `deriveVerdict` coerces a PASS headline to `result: 'FAIL'` with a non-empty `contradictions` when, and only when, the compliance table has an UNSATISFIED row. A clean PASS stays PASS. (Findings are deliberately NOT a coercion signal — content-only function; risk findings don't block PASS per ana-verify.md:412.)
 - [ ] **AC5:** The contradiction is surfaced, not silent — the reason string appears in the `guardFailResult` message AND on the proof entry (`verdict_contradictions`).
 - [ ] **AC6:** The honesty framing ("not one-word-forgeable, still self-authored"; no "can't lie") is present in `deriveVerdict`'s JSDoc.
 - [ ] **AC7:** `pnpm build` regenerates a consistent `dist/` (not committed); `(cd packages/cli && pnpm vitest run)` passes with no regressions; lint clean.
 
 ## Testing Strategy
 
-- **Unit tests (`tests/utils/verdict.test.ts`, new):** `deriveVerdict` table — clean PASS → PASS; PASS + UNSATISFIED row → FAIL + reason `…row {id}`; PASS + `risk` finding → FAIL + reason `…blocker finding: {summary}`; FAIL headline → FAIL; missing headline → UNKNOWN; reason strings match the exact formats. Follow the table-driven style in `tests/utils/proof-parsers.test.ts`.
+- **Unit tests (`tests/utils/verdict.test.ts`, new):** `deriveVerdict` table — clean PASS → PASS; PASS + UNSATISFIED row → FAIL + reason `…row {id}`; FAIL headline → FAIL; missing headline → UNKNOWN; reason string matches the exact format. Follow the table-driven style in `tests/utils/proof-parsers.test.ts`.
 - **Routing tests:** `getVerifyResult` / `readLocalVerifyResult` / `extractVerifyResult` each return the *coerced* result on a contradicted-PASS fixture (one fixture, three callers).
 - **Guard message test (`tests/commands/work-proof` or existing):** `guardFailResult(result, ctx, contradictions)` prints each contradiction reason.
 - **Template tests:** the two existing sync tests must pass; add an assertion that neither master contains "check the build report".
-- **Edge cases:** empty content → UNKNOWN; PASS with both an UNSATISFIED row and a risk finding → multiple contradictions; a report with no `## Contract Compliance` table (old format) → headline trusted (no table = no contradiction signal).
+- **Edge cases:** empty content → UNKNOWN; PASS with multiple UNSATISFIED rows → one contradiction reason per row; a report with no `## Contract Compliance` table (old format) → headline trusted (no table = no contradiction signal).
 
 ## Dependencies
 
