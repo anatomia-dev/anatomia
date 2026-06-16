@@ -13,6 +13,8 @@ import { parseRejectionCycles, parseFindings, parseBuildOpenIssues, extractScope
 import type { ProofAssertion, ProofDeviation } from './proof-parsers.js';
 import { computeChainHealth } from './proof-health.js';
 import type { ChainHealth } from './proof-health.js';
+import { joinCoverage } from '../commands/artifact-validators.js';
+import type { ContractSchema } from '../types/contract.js';
 
 // Re-export from proof-parsers for backward compatibility
 export { parseBuildOpenIssues, extractFileRefs, extractScopeSummary, extractScopeKind, parseFindings, parseRejectionCycles } from './proof-parsers.js';
@@ -43,6 +45,28 @@ export interface ProofSummary {
   acceptance_criteria: {
     total: number;
     met: number;
+    /**
+     * Count of acceptance criteria that shipped PARTIAL (a PARTIAL-inside-PASS).
+     * Additive: old proof_chain.json entries lack it — consumers treat absent as 0.
+     */
+    partial: number;
+    /**
+     * Per-AC coverage breakdown from {@link joinCoverage}: how each scope AC is
+     * covered by the contract. Additive and undefined-safe — old entries or a
+     * missing scope/contract yield an all-zero object.
+     */
+    coverage: {
+      /** ACs pinned by >=1 assertion `ac:` link. */
+      pinned: number;
+      /** ACs excused by a judgment-only coverage_waivers entry. */
+      judgment: number;
+      /** ACs excused by a retired coverage_waivers entry. */
+      retired: number;
+      /** ACs with no link and no waiver (would block the seal). */
+      uncovered: number;
+      /** Pinned ACs whose linking assertions all use weak matchers only. */
+      weak_only: number;
+    };
   };
   timing: {
     total_minutes: number;
@@ -195,9 +219,9 @@ function parseResult(content: string): 'PASS' | 'FAIL' | 'UNKNOWN' {
  * Parse AC walkthrough and count results
  *
  * @param content - Verify report content
- * @returns Object with total and met AC counts
+ * @returns Object with total, met, and partial AC counts
  */
-function parseACResults(content: string): { total: number; met: number } {
+function parseACResults(content: string): { total: number; met: number; partial: number } {
   // Scope to the AC Walkthrough section to avoid false matches from other sections
   // (e.g., a Findings bullet containing "PASS" in prose).
   // Fall back to full content if heading is missing (old reports).
@@ -222,7 +246,7 @@ function parseACResults(content: string): { total: number; met: number } {
   const total = passCount + failCount + partialCount + unverifiableCount;
   const met = passCount;
 
-  return { total: total || 0, met };
+  return { total: total || 0, met, partial: partialCount };
 }
 
 /**
@@ -873,6 +897,8 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     acceptance_criteria: {
       total: 0,
       met: 0,
+      partial: 0,
+      coverage: { pinned: 0, judgment: 0, retired: 0, uncovered: 0, weak_only: 0 },
     },
     timing: {
       total_minutes: 0,
@@ -964,8 +990,14 @@ export function generateProofSummary(slugDir: string): ProofSummary {
       const phaseResult = parseResult(verifyContent);
       if (phaseResult !== 'UNKNOWN') lastResult = phaseResult;
 
-      // Accumulate AC results from last phase (most complete)
-      summary.acceptance_criteria = parseACResults(verifyContent);
+      // Accumulate AC results from last phase (most complete). Preserve the
+      // `coverage` object — it is computed from scope.md + contract.yaml below,
+      // not from the verify report, so it must survive this assignment.
+      const acCounts = parseACResults(verifyContent);
+      summary.acceptance_criteria = {
+        ...acCounts,
+        coverage: summary.acceptance_criteria.coverage,
+      };
 
       // Parse compliance table and overlay on assertions (each phase has different IDs)
       const complianceRows = parseComplianceTable(verifyContent);
@@ -1020,6 +1052,28 @@ export function generateProofSummary(slugDir: string): ProofSummary {
 
   if (lastResult) summary.result = lastResult;
   summary.findings = allFindings;
+
+  // Coverage: join scope.md ACs against the contract's `ac:` links + waivers via
+  // the same exported `joinCoverage` the pre-seal gate uses (one implementation,
+  // never forked). Undefined-safe: a missing scope, a legacy 1.0 contract, or any
+  // parse failure degrades to the all-zero default — never throws.
+  try {
+    const scopePath = path.join(slugDir, 'scope.md');
+    if (fs.existsSync(scopePath) && fs.existsSync(contractPath)) {
+      const scopeContent = fs.readFileSync(scopePath, 'utf-8');
+      const coverageContract = yaml.parse(fs.readFileSync(contractPath, 'utf-8')) as ContractSchema;
+      const join = joinCoverage(scopeContent, coverageContract);
+      summary.acceptance_criteria.coverage = {
+        pinned: join.acs.filter(ac => ac.status === 'pinned').length,
+        judgment: join.acs.filter(ac => ac.status === 'judgment').length,
+        retired: join.acs.filter(ac => ac.status === 'retired').length,
+        uncovered: join.acs.filter(ac => ac.status === 'uncovered').length,
+        weak_only: join.acs.filter(ac => ac.status === 'pinned' && ac.weakOnly).length,
+      };
+    }
+  } catch {
+    // Coverage stays at the all-zero default — never block summary generation.
+  }
 
   // Update contract counts from verify statuses (aggregated across all phases)
   summary.contract.satisfied = summary.assertions.filter(a => a.verifyStatus === 'SATISFIED').length;
