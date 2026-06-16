@@ -5,7 +5,7 @@
  * tests assert the INVARIANTS Anatomia depends on, re-baselined against core:
  *  - determinism: same bytes → `JSON.stringify`-identical output;
  *  - no raw transcript body ever escapes into the derived counts;
- *  - `derive_version === "3"` and `price_table_version === "2026-06-08"` stamps;
+ *  - `derive_version === "3"` and `price_table_version === "2026-06-14"` stamps;
  *  - Codex `files_touched` is derived from a real `apply_patch` body (> 0);
  *  - no baked-in `cost_usd` (cost is a display-time estimate in capture v2).
  *
@@ -210,7 +210,7 @@ describe('forensics derive', () => {
       // A003: each record states the engine derive version that produced it.
       expect(d.derive_version).toBe('3');
       // The version the display-time cost is computed against is present.
-      expect(d.price_table_version).toBe('2026-06-08');
+      expect(d.price_table_version).toBe('2026-06-14');
       // No baked-in dollar figure on the derived (committed) object.
       expect(JSON.stringify(d)).not.toContain('cost_usd');
       expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
@@ -270,7 +270,7 @@ describe('forensics derive', () => {
     it('carries the core stamps but never cost_usd (Codex)', () => {
       const d = deriveTranscript(writeFixture('codex.jsonl', codexFixture()), 'codex') as ProvenanceCounts;
       expect(d.derive_version).toBe('3');
-      expect(d.price_table_version).toBe('2026-06-08');
+      expect(d.price_table_version).toBe('2026-06-14');
       expect((d as unknown as Record<string, unknown>)['cost_usd']).toBeUndefined();
     });
 
@@ -319,7 +319,7 @@ describe('forensics derive', () => {
       expect(d.turns).toBe(0);
       expect(d.model).toBe('');
       expect(d.derive_version).toBe('3');
-      expect(d.price_table_version).toBe('2026-06-08');
+      expect(d.price_table_version).toBe('2026-06-14');
     });
   });
 });

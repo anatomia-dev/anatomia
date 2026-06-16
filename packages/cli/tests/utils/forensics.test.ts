@@ -220,7 +220,7 @@ describe('forensics', () => {
       expect(prov.transcript_hash).toBe(sha256OfFile(transcript));
       expect(prov.transcript_hash).toMatch(/^sha256:[0-9a-f]{64}$/);
       // derived counts present with the core stamps + tokens.
-      expect(prov.derived.price_table_version).toBe('2026-06-08');
+      expect(prov.derived.price_table_version).toBe('2026-06-14');
       expect(prov.derived.derive_version).toBe('3'); // A003: engine derive version
       expect(prov.derived.tokens.input).toBe(700);
       expect(prov.derived.model).toBe('claude-opus-4-6');
