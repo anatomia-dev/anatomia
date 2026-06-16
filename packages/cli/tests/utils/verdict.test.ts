@@ -2,11 +2,17 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { deriveVerdict, RESULT_HEADLINE_PATTERN } from '../../src/utils/verdict.js';
+import {
+  deriveVerdict,
+  RESULT_HEADLINE_PATTERN,
+  evaluateReadBuildReportVeto,
+  VERIFY_INDEPENDENCE_CLAIM_ID,
+} from '../../src/utils/verdict.js';
 import { getVerifyResult } from '../../src/commands/work-state.js';
 import { readLocalVerifyResult } from '../../src/commands/artifact.js';
 import { extractVerifyResult } from '../../src/commands/pr.js';
 import { validateVerifyReportFormat } from '../../src/commands/artifact-validators.js';
+import type { ComplianceAttestation, ComplianceVerdictRecord } from '../../src/types/proof.js';
 
 /**
  * Build a minimal verify-report markdown body.
@@ -185,6 +191,105 @@ describe('verdict routing — every consumer sees the coerced result', () => {
     it('returns unknown for a missing file', () => {
       expect(readLocalVerifyResult(path.join(tmpDir, 'nope.md'))).toBe('unknown');
     });
+  });
+});
+
+// The deterministic read-build-report veto (Component 3). The veto fires on
+// EXACTLY one claim under EXACTLY four conditions: role=verify ∧
+// claim=verify-independence ∧ status=violated ∧ source=deterministic. Each test
+// flips one condition off and asserts the veto stays silent — and gates on
+// `source`, never the drift-prone `reason`.
+describe('evaluateReadBuildReportVeto', () => {
+  /** Build one compact verdict record with sensible defaults. */
+  function verdict(over: Partial<ComplianceVerdictRecord> = {}): ComplianceVerdictRecord {
+    return {
+      claim_id: VERIFY_INDEPENDENCE_CLAIM_ID,
+      says: 'never read the build report',
+      status: 'violated',
+      reason: 'predicate-not-matched',
+      source: 'deterministic',
+      ...over,
+    };
+  }
+
+  /** Build one behavioral attestation with sensible defaults. */
+  function record(over: Partial<ComplianceAttestation> = {}): ComplianceAttestation {
+    return {
+      role: 'verify',
+      harness: 'claude',
+      session_id: 'sess-1',
+      captured_at: '2026-06-16T00:00:00.000Z',
+      anatrace_core_version: '0.4.0',
+      framework: 'anatomia',
+      mandate_hash: 'sha256:a',
+      transcript_hash: 'sha256:b',
+      coverage: { total: 5, fully_checked: 5, unverifiable: 0 },
+      complete: true,
+      verdicts: [verdict()],
+      ...over,
+    };
+  }
+
+  // @ana A021 — all four conditions met → veto applies.
+  it('applies when verify deterministically violated verify-independence', () => {
+    const veto = evaluateReadBuildReportVeto([record()]);
+    expect(veto.applied).toBe(true);
+    expect(veto.reason).toContain('build_report.md');
+  });
+
+  // @ana A022 — a satisfied verify-independence claim does NOT gate.
+  it('does not apply when the claim is satisfied (verify avoided the report)', () => {
+    const veto = evaluateReadBuildReportVeto([
+      record({ verdicts: [verdict({ status: 'satisfied', reason: 'predicate-matched' })] }),
+    ]);
+    expect(veto.applied).not.toBe(true);
+  });
+
+  // @ana A023 — a non-deterministic verdict (LLM-judged or unmarked) never gates.
+  it('does not apply when source is not deterministic (llm channel)', () => {
+    const veto = evaluateReadBuildReportVeto([
+      record({ verdicts: [verdict({ source: 'llm' })] }),
+    ]);
+    expect(veto.applied).not.toBe(true);
+  });
+
+  // @ana A026 — a legacy record (no source at all) is forward-only non-gating.
+  it('does not apply when source is absent (pre-Component-3 legacy record)', () => {
+    const legacy = verdict();
+    delete legacy.source;
+    const veto = evaluateReadBuildReportVeto([record({ verdicts: [legacy] })]);
+    expect(veto.applied).not.toBe(true);
+  });
+
+  // @ana A024 — the veto fires on exactly one claim and one role.
+  it('does not apply for a different claim id', () => {
+    const veto = evaluateReadBuildReportVeto([
+      record({ verdicts: [verdict({ claim_id: 'ana-verify:no-code-branch-mutation:git-push---force' })] }),
+    ]);
+    expect(veto.applied).not.toBe(true);
+  });
+
+  // @ana A024 — a non-verify role never gates, even with the exact violated+deterministic verdict.
+  it('does not apply for a non-verify role (build session)', () => {
+    const veto = evaluateReadBuildReportVeto([record({ role: 'build' })]);
+    expect(veto.applied).not.toBe(true);
+  });
+
+  // @ana A027 — no captured records → not applied, stated openly (never a silent skip).
+  it('does not apply with no records, and says so openly', () => {
+    const veto = evaluateReadBuildReportVeto([]);
+    expect(veto.applied).toBe(false);
+    expect(veto.reason).toContain('no captured transcript');
+  });
+
+  // Edge case (spec): multiple verify sessions (rework) where ONE read the report → veto applies.
+  it('applies when any one of several verify sessions read the report', () => {
+    const clean = record({
+      session_id: 'verify-1',
+      verdicts: [verdict({ status: 'satisfied', reason: 'predicate-matched' })],
+    });
+    const dirty = record({ session_id: 'verify-2' });
+    expect(evaluateReadBuildReportVeto([clean, dirty]).applied).toBe(true);
   });
 });
 
