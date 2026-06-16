@@ -21,8 +21,10 @@ import { createRequire } from 'node:module';
 import {
   captureComplianceAtSave,
   assembleComplianceAttestations,
+  projectVerdicts,
 } from '../../src/utils/compliance.js';
 import { writePendingPointer } from '../../src/utils/forensics.js';
+import { VERDICT_REASONS, isVerdictReason } from '../../src/types/proof.js';
 import type { ComplianceAttestation } from '../../src/types/proof.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -252,6 +254,151 @@ describe('compliance producer + reader', () => {
     // The skill channel is blind on Codex → at least one unverifiable codex-blind verdict.
     expect(rec.verdicts.some((v) => v.reason === 'codex-blind')).toBe(true);
     expect(rec.complete).toBe(false);
+  });
+
+  // ── anatrace-core 0.4.0: reason lock (AC2), fail-closed emit (AC3), real engine (AC4) ──
+  describe('0.4.0 reason lock + fail-closed emit + real-engine assertions', () => {
+    /**
+     * Write a Claude transcript whose root-lane Bash command is an ANSI-C
+     * `$'...'`-encoded force-push. 0.4.0 DECODES `git $'push' --force` to the
+     * forbidden `git push --force` and matches it → `violated`. (The eval / pipe /
+     * wrapper obfuscation class would instead read `command-unresolvable` →
+     * `unverifiable` and never flip — see the spec gotcha.)
+     */
+    function writeForcePushTranscript(name: string): string {
+      const p = path.join(projectDir, name);
+      const content: unknown[] = [
+        { type: 'text', text: 'wrapping up — pushing the branch' },
+        {
+          type: 'tool_use',
+          id: 'tu-fp',
+          name: 'Bash',
+          input: { command: "git $'push' --force origin main", description: 'push the branch' },
+        },
+      ];
+      const lines = [
+        {
+          type: 'assistant', requestId: 'r1', timestamp: '2026-06-01T00:00:00.000Z',
+          message: { id: 'm1', model: 'claude-opus-4-6', usage: { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }, content },
+        },
+      ];
+      fs.writeFileSync(p, lines.map((l) => JSON.stringify(l)).join('\n') + '\n', 'utf-8');
+      return p;
+    }
+
+    // @ana A047
+    it('recognizes a reason the 0.4.0 engine produces (command-unresolvable is new in 0.4.0)', () => {
+      // command-unresolvable did NOT exist in 0.2.0 — recognizing it proves the set
+      // was built from the live 0.4.0 engine, not inherited from the old list.
+      expect(isVerdictReason('command-unresolvable')).toBe(true);
+    });
+
+    // @ana A048
+    it('flags a reason the engine never produces as unknown', () => {
+      expect(isVerdictReason('not-a-real-reason')).toBe(false);
+    });
+
+    // @ana A049
+    it('records an unknown reason VERBATIM and warns once — never drops or coerces it', () => {
+      const warnings: string[] = [];
+      const original = console.warn;
+      console.warn = (...args: unknown[]): void => { warnings.push(args.join(' ')); };
+      try {
+        const saysById = new Map<string, string>([['c1', 'do the thing']]);
+        const projected = projectVerdicts(
+          [{ claimId: 'c1', status: 'violated', reason: 'totally-made-up' }],
+          saysById,
+        );
+        // Verbatim — the unknown reason survives unchanged (the opposite of abstain).
+        expect(projected).toHaveLength(1);
+        expect(projected[0]!.reason).toBe('totally-made-up');
+        expect(projected[0]!.status).toBe('violated');
+        expect(projected[0]!.says).toBe('do the thing');
+      } finally {
+        console.warn = original;
+      }
+      // Exactly one drift warning, naming the unknown reason.
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain('totally-made-up');
+      expect(warnings[0]).toContain('anatrace-core@');
+    });
+
+    // @ana A050, A051
+    it('ABSTAINS (returns null, writes no record) when the core version is empty', () => {
+      writeAnaJson('on');
+      installAgentDef('verify');
+      writeContract('feat');
+
+      const transcript = writeClaudeTranscript('sess-empty.jsonl');
+      writePendingPointer('run-empty', {
+        session_id: 'sess-empty', transcript_path: transcript, model: 'claude-opus-4-6',
+        source: 'startup', captured_at: '2026-06-07T22:00:00.000Z',
+      });
+      const result = captureComplianceAtSave(
+        projectDir, 'feat',
+        env({ ANA_RUN_ID: 'run-empty', ANA_CAPTURE_BOUNDARY: 'root' }),
+        { readCoreVersion: () => '' },
+      );
+      // A050: abstained.
+      expect(result).toBeNull();
+      // A051: no `""`-version record landed on disk.
+      const dir = path.join(projectDir, '.ana', 'plans', 'active', 'feat', 'compliance');
+      const records = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')) : [];
+      expect(records).toHaveLength(0);
+    });
+
+    // @ana A052, A054
+    it('stamps a non-empty version equal to the installed engine on a normal capture', () => {
+      writeAnaJson('on');
+      installAgentDef('verify');
+      writeContract('feat');
+
+      const rec = readRecord(captureClaude('feat', 'sess-stamp', 'run-stamp')!);
+      // A052: never the empty string.
+      expect(rec.anatrace_core_version).toBeTruthy();
+      // A054: matches the engine that actually judged it (dynamic — auto-tracks the next bump).
+      const installed = (createRequire(import.meta.url)('anatrace-core/package.json') as { version: string }).version;
+      expect(rec.anatrace_core_version).toBe(installed);
+    });
+
+    // @ana A053
+    it('emits zero out-of-set reasons under the real 0.4.0 engine', () => {
+      writeAnaJson('on');
+      installAgentDef('verify');
+      writeContract('feat');
+
+      const rec = readRecord(captureClaude('feat', 'sess-reasons', 'run-reasons')!);
+      expect(rec.verdicts.length).toBeGreaterThan(0);
+      const outOfSet = rec.verdicts.filter((v) => !VERDICT_REASONS.includes(v.reason as (typeof VERDICT_REASONS)[number]));
+      expect(outOfSet).toHaveLength(0);
+    });
+
+    // @ana A055
+    it('reads VIOLATED for an ANSI-C-decodable force-push under the real 0.4.0 engine', () => {
+      // NOTE (deviation from spec): the no-force-push obligation is NOT in ana-build.md;
+      // it is the engine's built-in VERIFY_FORBIDDEN_COMMANDS ("git push --force",
+      // "git rebase") generated for the VERIFY role (anatrace-core index.mjs:5265,5463).
+      // The build mandate has no command predicate, so we use the verify mandate — the
+      // role that actually owns the read-only / no-code-branch-mutation obligation.
+      writeAnaJson('on');
+      installAgentDef('verify');
+      writeContract('feat');
+
+      const transcript = writeForcePushTranscript('sess-forcepush.jsonl');
+      writePendingPointer('run-fp', {
+        session_id: 'sess-fp', transcript_path: transcript, model: 'claude-opus-4-6',
+        source: 'startup', captured_at: '2026-06-07T22:00:00.000Z',
+      });
+      const written = captureComplianceAtSave(
+        projectDir, 'feat',
+        env({ ANA_ROLE: 'verify', ANA_RUN_ID: 'run-fp', ANA_CAPTURE_BOUNDARY: 'root' }),
+      );
+      expect(written).toBeTruthy();
+      const rec = readRecord(written!);
+      // The ANSI-C `git $'push' --force` decodes to the forbidden `git push --force`
+      // and matches → violated. Assert on STATUS only — never a specific reason (spec gotcha).
+      expect(rec.verdicts.some((v) => v.status === 'violated')).toBe(true);
+    });
   });
 
   describe('assembleComplianceAttestations', () => {
