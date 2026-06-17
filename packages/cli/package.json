@@ -42,7 +42,8 @@
     "node": ">=22.0.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/.build-stale"
   ],
   "scripts": {
     "build": "pnpm typecheck && rm -rf dist && tsup && cp -r templates dist/",
