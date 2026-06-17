@@ -52,7 +52,6 @@ import {
 import {
   resolveAgentSkills,
   resolveAgentRoster,
-  BUILTIN_AGENT_ROSTER,
 } from '../../manifest.js';
 import { resolvePlatformDescriptor } from '../../platforms/registry.js';
 import type { InitState } from './types.js';
@@ -402,7 +401,7 @@ function buildCodexAgentToml(baseName: string): string {
   const codex = resolvePlatformDescriptor('codex');
   const lines = [
     `name = "${baseName}"`,
-    `description = "${baseName} — custom agent scaffolded by Anatomia."`,
+    `description = "${baseName} — agent scaffolded by Anatomia."`,
     `developer_instructions = "Full instructions in ${baseName}.md. Invoke via: ana run"`,
   ];
   if (codex.runDefaults.model !== undefined) {
@@ -1266,15 +1265,12 @@ export async function projectAgentSkillsToFiles(
 ): Promise<AgentSkillsProjection> {
   const result: AgentSkillsProjection = { claude: null, codexToml: null, codexMd: null };
   const has = skills.length > 0;
-  const isBuiltin = BUILTIN_AGENT_ROSTER.includes(agentName);
   const templatesDir = getTemplatesDir();
 
-  // Resolve the stock Claude template path. Built-ins ship with the CLI; a
-  // non-built-in (hand-authored) agent has no bundled stock, so the clear path
-  // below degrades to dropping the `skills:` line.
-  const stockClaude = isBuiltin
-    ? path.join(templatesDir, '.claude/agents', `${agentName}.md`)
-    : path.join(cwd, '.ana', 'agent-templates', `${agentName}.md`);
+  // Resolve the stock Claude template path — always the CLI's bundled built-in
+  // template. For a hand-authored (non-built-in) agent this path won't exist, so
+  // the clear path below degrades to dropping the `skills:` line.
+  const stockClaude = path.join(templatesDir, '.claude/agents', `${agentName}.md`);
 
   /**
    * Read the stock frontmatter `skills:` value for the clear path.

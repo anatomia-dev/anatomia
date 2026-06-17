@@ -15,10 +15,13 @@
  * the same detection order it did before. That identity is pinned by
  * registry.test.ts (the no-regression contract).
  *
- * Because the shape is now data, a third platform is a **data row, not a code
- * branch**: the `cursor` descriptor below adds Cursor support without touching
- * a single consumer. registry.test.ts proves a registry-only descriptor
- * resolves its agents dir with zero new branches.
+ * Because the shape is now data, a third platform's **scaffolding, detection,
+ * directory layout, and agent roster are a data row, not a code branch**: the
+ * `cursor` descriptor below resolves its dirs and detection through the existing
+ * consumers with zero edits (registry.test.ts pins this). EXECUTION is the
+ * exception — `ana run` still has a hardcoded claude/codex dispatch fork
+ * (run.ts), so a new platform stays `known:false` until a dispatcher is wired.
+ * The data-row claim is scoped to scaffolding/detection/roster, NOT dispatch.
  *
  * Resolvers here never throw — an unknown platform name falls through to the
  * default descriptor (claude), mirroring the fail-soft posture every consumer

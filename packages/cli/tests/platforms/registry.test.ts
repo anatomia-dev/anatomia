@@ -11,7 +11,9 @@
  *
  * Plus the headline proof: a registry-only descriptor (`cursor`) resolves its
  * agents dir through the SAME `getAgentsDir` consumer with zero new branches —
- * a third platform is a data row, not a code change.
+ * a third platform's SCAFFOLDING/detection is a data row, not a code change.
+ * (Execution is out of scope: `ana run` dispatch is still a claude/codex fork,
+ * so cursor stays `known:false` — see the registry header.)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -121,7 +123,7 @@ describe('platform registry — resolvePlatformDescriptor fail-soft', () => {
   });
 });
 
-describe('platform registry — third platform is a data row', () => {
+describe('platform registry — third platform scaffolding is a data row', () => {
   it('getAgentsDir resolves cursor through the unchanged consumer (no new branch)', () => {
     // The headline proof: getAgentsDir was a claude/codex ternary. Routed
     // through the registry, it resolves cursor's dir with ZERO consumer edits —

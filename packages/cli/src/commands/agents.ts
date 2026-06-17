@@ -36,6 +36,7 @@ import {
 } from '../utils/agent-config.js';
 import { projectAgentSkillsToFiles } from './init/assets.js';
 import type { AgentSkillsProjection } from './init/assets.js';
+import { isSafeNameSegment } from '../manifest.js';
 
 /** Known model names for "did you mean --all" hint */
 const KNOWN_MODEL_NAMES = ['sonnet', 'opus', 'haiku', 'opus[1m]', 'sonnet[1m]'];
@@ -445,6 +446,18 @@ async function setAgentSkills(
         chalk.yellow(`Warning: replacing [${prior.join(', ')}] — use --add to append instead. Dropping: [${dropped.join(', ')}]`),
       );
     }
+  }
+
+  // Reject skill names that aren't safe path-segment identifiers BEFORE writing
+  // ana.json or projecting — a value with a quote, newline, separator, or the
+  // managed-block marker would corrupt the generated frontmatter, `.agent.toml`,
+  // or `## Skills` block (the same class that lands through the resolver guard).
+  const invalidSkills = next.filter((s) => !isSafeNameSegment(s));
+  if (invalidSkills.length > 0) {
+    throw new Error(
+      `Invalid skill name(s): ${invalidSkills.join(', ')}\n`
+      + `Skill names may use [A-Za-z0-9._-] (no separators, '.', or '..').`,
+    );
   }
 
   const agents = (typeof config['agents'] === 'object' && config['agents'] !== null && !Array.isArray(config['agents']))

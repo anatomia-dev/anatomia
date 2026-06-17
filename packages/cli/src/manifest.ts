@@ -191,9 +191,18 @@ export function resolveAgentMap(): Record<string, string> {
  * malformed, the result is `[]` (no projected skills — stock behavior). When
  * present, returns the declared list deduplicated, preserving authoring order.
  *
+ * A projected skill name is rendered verbatim into Claude frontmatter, the Codex
+ * `.agent.toml` (`skills = ["<name>"]`), and the marker-bounded Codex `## Skills`
+ * block. A value containing a quote, a newline, or the managed-block marker
+ * string would corrupt that output — so each value must be a safe name segment
+ * ({@link isSafeNameSegment}), which a real skill (a `.ana/skills/<name>/` dir)
+ * always is. Unsafe values are dropped here (the warning surface flags them —
+ * see configWarnings.ts), closing the same marker-forgery / quote-injection
+ * class on this Tier-1 surface.
+ *
  * @param anaJson - Parsed ana.json (validated or raw), or anything
  * @param name - Agent base name (e.g. 'ana-build')
- * @returns Deduplicated skill names to project onto the agent, or []
+ * @returns Deduplicated, segment-safe skill names to project onto the agent, or []
  */
 export function resolveAgentSkills(anaJson: unknown, name: string): string[] {
   const agentsConfig = readAgentsConfig(anaJson);
@@ -205,6 +214,10 @@ export function resolveAgentSkills(anaJson: unknown, name: string): string[] {
   const out: string[] = [];
   for (const skill of entry.skills) {
     if (typeof skill !== 'string' || seen.has(skill)) continue;
+    // A skill name is a directory identifier; reject any value that isn't a safe
+    // path segment (quotes, newlines, separators, the managed-block marker) so it
+    // cannot corrupt the projected frontmatter/TOML/`## Skills` block.
+    if (!isSafeNameSegment(skill)) continue;
     seen.add(skill);
     out.push(skill);
   }

@@ -457,14 +457,41 @@ export function executeRun(
     process.exit(1);
   }
 
-  // 4. Dispatch to platform
-  if (platform === 'codex') {
+  // 4. Dispatch to platform via an explicit per-platform branch. A platform can
+  //    be known:true (passes the KNOWN_PLATFORMS allowlist) yet have no wired
+  //    dispatcher — error clearly instead of silently falling through to the
+  //    Claude dispatcher (which would spawn `claude` with the wrong agent dir).
+  const dispatchKind = resolveDispatchKind(platform);
+  if (dispatchKind === 'codex') {
     dispatchToCodex(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
     return;
   }
+  if (dispatchKind === 'claude') {
+    dispatchToClaude(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
+    return;
+  }
+  console.error(chalk.red(`Error: platform "${platform}" is recognized but has no dispatcher wired (supported: claude, codex).`));
+  console.error(chalk.gray('This is a CLI bug — please report it.'));
+  process.exit(1);
+}
 
-  // Claude dispatch (existing behavior)
-  dispatchToClaude(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
+/**
+ * Map a validated platform id to its wired dispatcher, or `null` if none exists.
+ *
+ * A platform can be `known:true` (and so pass {@link KNOWN_PLATFORMS}) yet have
+ * no dispatch path wired — only claude and codex have one today. Returning null
+ * for any other id lets {@link executeRun} error explicitly instead of silently
+ * dispatching it as claude with the wrong agent directory. Keep this in lockstep
+ * with the registry's `known` flags: a platform should not be `known:true`
+ * without a branch here.
+ *
+ * @param platform - The resolved, allowlisted platform id
+ * @returns The dispatcher kind, or null when no dispatcher is wired
+ */
+export function resolveDispatchKind(platform: string): 'claude' | 'codex' | null {
+  if (platform === 'claude') return 'claude';
+  if (platform === 'codex') return 'codex';
+  return null;
 }
 
 /**

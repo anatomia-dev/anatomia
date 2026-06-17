@@ -225,4 +225,18 @@ describe('path-traversal guard — config names that become filesystem paths', (
     // The computed (stock) manifest is still fully present and unreordered.
     expect(m.slice(0, computeSkillManifest(r).length)).toEqual(computeSkillManifest(r));
   });
+
+  it('resolveAgentSkills drops unsafe skill VALUES (quote / marker / separator)', () => {
+    // A projected skill value is rendered into Claude frontmatter, the Codex
+    // .agent.toml (skills = ["<v>"]), and the marker-bounded ## Skills block. A
+    // quote breaks the TOML, and the managed-block end-marker would forge the
+    // block boundary on re-init — the same class that got capabilities cut. Each
+    // value must be a safe segment; unsafe ones are dropped before projection.
+    const marker = '<!-- <<< Anatomia managed: skills:ana-build <<< -->';
+    const out = resolveAgentSkills(
+      { agents: { 'ana-build': { skills: ['git-workflow', 'foo"bar', marker, '../x', 'a b', 'api-patterns'] } } },
+      'ana-build',
+    );
+    expect(out).toEqual(['git-workflow', 'api-patterns']);
+  });
 });

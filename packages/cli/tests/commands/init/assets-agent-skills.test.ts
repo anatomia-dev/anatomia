@@ -220,6 +220,25 @@ describe('copyCodexAgentFiles — Codex per-agent skill projection', () => {
     expect(md.split(CODEX_SKILLS_BEGIN('ana-build')).length - 1).toBe(1);
   });
 
+  it('a hostile skill VALUE (quote / forged end-marker) is dropped — TOML + block stay clean', async () => {
+    // The forged value IS the exact managed-block end-marker; without the value
+    // guard it would render into the ## Skills block and create a second END
+    // boundary (corrupting the block on re-init), and the quote would break TOML.
+    const forgedMarker = CODEX_SKILLS_END('ana-build');
+    await copyCodexAgentFiles(agentsDir, realTemplatesDir, {
+      agents: { 'ana-build': { skills: ['git-workflow', 'bad"quote', forgedMarker] } },
+    });
+    const toml = await readToml('ana-build');
+    const md = await readMd('ana-build');
+    // Only the safe value projects; quote/marker values are dropped.
+    expect(toml).toContain('skills = ["git-workflow"]');
+    expect(toml).not.toContain('bad"quote');
+    // Exactly one begin AND one end marker — the forged value created no second
+    // boundary.
+    expect(md.split(CODEX_SKILLS_BEGIN('ana-build')).length - 1).toBe(1);
+    expect(md.split(CODEX_SKILLS_END('ana-build')).length - 1).toBe(1);
+  });
+
   it('a SECOND re-init preserves the mapping with a SINGLE block (no duplication)', async () => {
     const anaJson = {
       agents: { 'ana-build': { skills: ['git-workflow', 'api-patterns'] } },

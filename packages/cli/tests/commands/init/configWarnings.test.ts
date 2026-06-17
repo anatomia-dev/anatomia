@@ -60,6 +60,15 @@ describe('collectConfigWarnings', () => {
     expect(warnings[0]).toContain('Got: "yes"');
   });
 
+  it('agents.<a>.skills with an unsafe VALUE (quote) → invalid-skill-name warning, safe siblings unwarned', () => {
+    const warnings = collectConfigWarnings({ agents: { 'ana-build': { skills: ['git-workflow', 'foo"bar'] } } });
+    // Exactly one warning — for the unsafe value, not the safe sibling.
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('agents.ana-build.skills has an invalid skill name');
+    // The offending value is shown JSON-encoded (quote escaped).
+    expect(warnings[0]).toContain(JSON.stringify('foo"bar'));
+  });
+
   it('collects MULTIPLE field-named warnings in one pass', () => {
     const warnings = collectConfigWarnings({
       agents: { 'ana-build': { skills: 'notanarray' } },

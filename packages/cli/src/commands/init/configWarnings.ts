@@ -89,6 +89,18 @@ export function collectConfigWarnings(raw: unknown): string[] {
             `agents.${name}.skills must be an array of strings — ignoring (using stock). `
             + `Got: ${describe(e['skills'])}`,
           );
+        } else if (isStringArray(e['skills'])) {
+          // A skill name is a path-segment identifier; a value with a quote,
+          // newline, separator, or the managed-block marker would corrupt the
+          // projected frontmatter/TOML/## Skills block, so it is dropped.
+          for (const skill of e['skills']) {
+            if (!isSafeNameSegment(skill)) {
+              warnings.push(
+                `agents.${name}.skills has an invalid skill name ${describe(skill)} — dropping it `
+                + `(names may use [A-Za-z0-9._-], excluding '.' and '..').`,
+              );
+            }
+          }
         }
       }
     }
