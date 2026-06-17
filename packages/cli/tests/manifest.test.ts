@@ -25,6 +25,7 @@ import {
   resolveAgentMap,
   BUILTIN_AGENT_ROSTER,
   CORE_AGENT,
+  isSafeNameSegment,
 } from '../src/manifest.js';
 import { computeSkillManifest, AGENT_FILES } from '../src/constants.js';
 import { createEmptyEngineResult } from '../src/engine/types/engineResult.js';
@@ -61,11 +62,11 @@ describe('manifest resolver — identity contract (absent = today)', () => {
     expect(resolveSkillManifest({}, r)).toEqual(computed);
   });
 
-  it('resolveAgentRoster({}) deep-equals the built-in six agents', () => {
+  it('resolveAgentRoster() is always the built-in six agents', () => {
     const expected = AGENT_FILES.map((f) => f.replace(/\.md$/, ''));
     expect(expected).toHaveLength(6);
-    expect(resolveAgentRoster({})).toEqual(expected);
-    expect(resolveAgentRoster({})).toEqual([...BUILTIN_AGENT_ROSTER]);
+    expect(resolveAgentRoster()).toEqual(expected);
+    expect(resolveAgentRoster()).toEqual([...BUILTIN_AGENT_ROSTER]);
   });
 
   it('resolveAgentSkills({}, name) is [] for every built-in agent', () => {
@@ -130,36 +131,9 @@ describe('post-init count guard (state.ts:1015) ≡ scaffold set (skills.ts:125)
   });
 });
 
-describe('resolveAgentRoster — config-driven roster', () => {
-  it('drops a built-in agent flagged enabled:false', () => {
-    const resolved = resolveAgentRoster({ agents: { 'ana-learn': { enabled: false } } });
-    expect(resolved).not.toContain('ana-learn');
-    expect(resolved).toContain('ana');
-    expect(resolved).toHaveLength(BUILTIN_AGENT_ROSTER.length - 1);
-  });
-
-  it('appends a config-supplied agent not in the built-in roster', () => {
-    const resolved = resolveAgentRoster({ agents: { 'ana-release': { skills: [] } } });
-    expect(resolved.slice(0, BUILTIN_AGENT_ROSTER.length)).toEqual([...BUILTIN_AGENT_ROSTER]);
-    expect(resolved[resolved.length - 1]).toBe('ana-release');
-  });
-
-  it('a config block that only sets skills/model keeps the built-in enabled', () => {
-    const resolved = resolveAgentRoster({ agents: { 'ana-build': { skills: ['api-patterns'] } } });
-    expect(resolved).toEqual([...BUILTIN_AGENT_ROSTER]);
-  });
-
-  it('never drops the Think core agent, even with enabled:false (Slice 6)', () => {
-    const resolved = resolveAgentRoster({ agents: { [CORE_AGENT]: { enabled: false } } });
-    expect(resolved).toContain(CORE_AGENT);
-    // Only the core-agent guard fires; the rest of the roster is untouched.
-    expect(resolved).toEqual([...BUILTIN_AGENT_ROSTER]);
-  });
-});
-
-describe('resolveAgentMap — config-driven dispatch surface (Slice 6)', () => {
-  it('absent agents → byte-identical to the prior hardcoded literal', () => {
-    expect(resolveAgentMap({})).toEqual({
+describe('resolveAgentMap — fixed built-in dispatch surface', () => {
+  it('is byte-identical to the prior hardcoded literal', () => {
+    expect(resolveAgentMap()).toEqual({
       '': 'ana',
       build: 'ana-build',
       plan: 'ana-plan',
@@ -169,23 +143,8 @@ describe('resolveAgentMap — config-driven dispatch surface (Slice 6)', () => {
     });
   });
 
-  it('drops a disabled built-in and keys a config agent by stripped suffix', () => {
-    const map = resolveAgentMap({
-      agents: { 'ana-learn': { enabled: false }, 'ana-release': { skills: [] } },
-    });
-    expect(map['learn']).toBeUndefined();
-    expect(map['release']).toBe('ana-release');
-    expect(map['']).toBe('ana');
-  });
-
-  it('a config agent without the ana- prefix is keyed by its full name', () => {
-    expect(resolveAgentMap({ agents: { reviewer: {} } })['reviewer']).toBe('reviewer');
-  });
-
-  it('malformed ana.json → the built-in default map', () => {
-    for (const bad of [null, undefined, 42, 'str', ['a'], true]) {
-      expect(resolveAgentMap(bad)).toEqual(resolveAgentMap({}));
-    }
+  it('the Think core agent is the empty-suffix default', () => {
+    expect(resolveAgentMap()['']).toBe(CORE_AGENT);
   });
 });
 
@@ -231,20 +190,39 @@ describe('malformed config falls through to default', () => {
     expect(resolved).not.toContain('broken');
   });
 
-  it('resolveSkillManifest / resolveAgentRoster: non-object ana.json → defaults', () => {
+  it('resolveSkillManifest / resolveAgentSkills: non-object ana.json → defaults', () => {
     for (const bad of [null, undefined, 42, 'str', ['a'], true]) {
       expect(resolveSkillManifest(bad, r)).toEqual(computeSkillManifest(r));
-      expect(resolveAgentRoster(bad)).toEqual([...BUILTIN_AGENT_ROSTER]);
       expect(resolveAgentSkills(bad, 'ana-build')).toEqual([]);
     }
   });
 
-  it('resolveAgentRoster: agents not an object → built-in roster verbatim', () => {
-    expect(resolveAgentRoster({ agents: 'nope' })).toEqual([...BUILTIN_AGENT_ROSTER]);
-    expect(resolveAgentRoster({ agents: ['x'] })).toEqual([...BUILTIN_AGENT_ROSTER]);
-  });
-
   it('resolveAgentSkills: skills field not an array → []', () => {
     expect(resolveAgentSkills({ agents: { 'ana-build': { skills: 'git-workflow' } } }, 'ana-build')).toEqual([]);
+  });
+});
+
+describe('path-traversal guard — config names that become filesystem paths', () => {
+  it('isSafeNameSegment accepts ordinary names, rejects separators and dot segments', () => {
+    for (const ok of ['api-patterns', 'ana-build', 'observability', 'a.b_c-1']) {
+      expect(isSafeNameSegment(ok)).toBe(true);
+    }
+    // Separators, parent refs, and the bare dot/dot-dot segments all escape.
+    for (const bad of ['../evil', '../../evil', 'a/b', '.', '..', '', 'a\\b', 'a b']) {
+      expect(isSafeNameSegment(bad)).toBe(false);
+    }
+  });
+
+  it('resolveSkillManifest drops a traversing config skill name (keeps safe ones)', () => {
+    const r = bareResult();
+    const m = resolveSkillManifest(
+      { skills: { '../../evil': { always: true }, '..': { always: true }, 'real-skill': { always: true } } },
+      r,
+    );
+    expect(m).not.toContain('../../evil');
+    expect(m).not.toContain('..');
+    expect(m).toContain('real-skill');
+    // The computed (stock) manifest is still fully present and unreordered.
+    expect(m.slice(0, computeSkillManifest(r).length)).toEqual(computeSkillManifest(r));
   });
 });

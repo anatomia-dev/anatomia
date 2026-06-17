@@ -161,7 +161,7 @@ export async function generateScaffolds(
  * @param content - Full file content to write
  * @param fileName - Display name for errors
  */
-async function atomicWriteFile(
+export async function atomicWriteFile(
   destPath: string,
   content: string,
   fileName: string
@@ -233,7 +233,7 @@ async function mergeAndWriteGitignore(
  * @param cwd - Project root directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
  * @param _initState - Installation state (unused — skills scaffolding moved to orchestrator)
- * @param anaJson - Parsed ana.json driving opt-in `capabilities` surfaces (absent = today; no new files)
+ * @param anaJson - Parsed ana.json driving per-agent skill/model projection (absent = today; stock)
  * @returns Filenames whose instruction content changed (empty on a fresh install or no-op re-init)
  */
 export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState, anaJson: unknown = {}): Promise<string[]> {
@@ -268,9 +268,6 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
     // First run: create everything fresh
     await fs.mkdir(claudePath, { recursive: true });
     await fs.mkdir(agentsPath, { recursive: true });
-    // Layer the opt-in outputStyle onto the template settings BEFORE writing —
-    // absent capabilities leaves templateSettings byte-identical to stock.
-    applyOutputStyleCapability(templateSettings, anaJson);
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
     await mergeAndWriteGitignore(claudeGitignorePath, CLAUDE_GITIGNORE_STOCK, '.claude/.gitignore');
 
@@ -280,10 +277,6 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
     // Copy CLAUDE.md to project root (fresh — never reports a change)
     const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
     if (claudeMdChanged) changed.push(claudeMdChanged);
-
-    // Opt-in managed-block surfaces — absent capabilities writes no new files.
-    await applyCommandCapabilities(claudePath, anaJson);
-    await applyMcpServersCapability(cwd, anaJson);
 
     spinner.succeed('Created .claude/ configuration');
     return changed;
@@ -297,7 +290,6 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
 
   if (!settingsExists) {
     // settings.json doesn't exist - create it
-    applyOutputStyleCapability(templateSettings, anaJson);
     await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
   } else {
     // settings.json exists - try to merge our hooks
@@ -313,16 +305,12 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
       // hook idempotently while preserving user-authored hooks. The flag is the
       // runtime switch, so the SessionStart hook is never flip-off pruned.
       const mergedSettings = mergeHooksSettings(existingSettings, templateSettings);
-      // Layer the opt-in outputStyle onto the merged settings — preserves every
-      // sibling key; absent capabilities is a no-op (byte-identical to the merge).
-      applyOutputStyleCapability(mergedSettings, anaJson);
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2), 'utf-8');
     } catch {
       // Malformed JSON - warn and overwrite with our defaults
       console.log(
         chalk.yellow('\n  Warning: existing .claude/settings.json is malformed, overwriting with Anatomia defaults')
       );
-      applyOutputStyleCapability(templateSettings, anaJson);
       await fs.writeFile(settingsPath, JSON.stringify(templateSettings, null, 2), 'utf-8');
     }
   }
@@ -339,12 +327,6 @@ export async function createClaudeConfiguration(cwd: string, engineResult: Engin
   // Refresh CLAUDE.md from stock (re-interpolated)
   const claudeMdChanged = await copyClaudeMd(cwd, templatesDir, engineResult);
   if (claudeMdChanged) changed.push(claudeMdChanged);
-
-  // Opt-in managed-block surfaces. Re-init reconciles the command-file set:
-  // entries dropped from config are pruned (marker-headed files only), and a
-  // hand-authored command file (no marker) is never touched. Absent = no-op.
-  await applyCommandCapabilities(claudePath, anaJson);
-  await applyMcpServersCapability(cwd, anaJson);
 
   spinner.succeed('Created .claude/ configuration (merged)');
   return changed;
@@ -403,16 +385,15 @@ function renderCodexSkillsBlock(skills: string[]): string {
 }
 
 /**
- * Build a minimal Codex `.agent.toml` manifest for a config-supplied agent.
+ * Build a minimal Codex `.agent.toml` manifest (defensive fallback).
  *
- * Built-in agents ship a hand-authored `.agent.toml` with the CLI; a
- * config-supplied agent (declared in `ana.json.agents`, instructions in
- * `.ana/agent-templates/<name>.md`) has none, so this synthesizes one. The
- * machine fields (`name`, `description`, `developer_instructions`) mirror the
- * stock manifest shape, and the runtime defaults (`model`, `sandbox_mode`) are
- * seeded from the codex platform descriptor so a synthesized agent matches the
- * built-ins' Codex runtime exactly. The user can override the runtime fields —
- * they are CONFIG-class and preserved across re-init.
+ * Built-in agents ship a hand-authored `.agent.toml` with the CLI; this
+ * synthesizes one only as a fallback if that stock manifest is ever missing.
+ * The machine fields (`name`, `description`, `developer_instructions`) mirror
+ * the stock manifest shape, and the runtime defaults (`model`, `sandbox_mode`)
+ * are seeded from the codex platform descriptor so a synthesized manifest
+ * matches the built-ins' Codex runtime exactly. The user can override the
+ * runtime fields — they are CONFIG-class and preserved across re-init.
  *
  * @param baseName - Agent base name (e.g. 'ana-release')
  * @returns Full `.agent.toml` content
@@ -460,24 +441,15 @@ function buildCodexAgentToml(baseName: string): string {
  */
 export async function copyAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
-  // The project root (parent of `.claude/agents`) — where a config-supplied
-  // agent's `.ana/agent-templates/<name>.md` source lives.
-  const projectRoot = path.resolve(agentsPath, '..', '..');
-  // Iterate the resolved roster, not the raw AGENT_FILES constant: a built-in
-  // dropped via `enabled:false` is skipped, and a config-supplied agent is
-  // appended. Absent `ana.json.agents` → byte-identical to AGENT_FILES order.
-  for (const baseName of resolveAgentRoster(anaJson)) {
+  // The roster is the fixed built-in set; ana.json only PROJECTS per-agent
+  // skills/model onto these (it does not add/remove agents).
+  for (const baseName of resolveAgentRoster()) {
     const agentFile = `${baseName}.md`;
     const destPath = path.join(agentsPath, agentFile);
     const displayName = `.claude/agents/${agentFile}`;
 
-    // Source: built-ins come from the CLI's bundled templates; a config-supplied
-    // agent (not in the built-in roster) supplies its own template under the
-    // project's `.ana/agent-templates/<name>.md`. A config agent with no such
-    // template is skipped (fail-soft — never crash init over a missing file).
-    const sourcePath = BUILTIN_AGENT_ROSTER.includes(baseName)
-      ? path.join(templatesDir, '.claude/agents', agentFile)
-      : path.join(projectRoot, '.ana', 'agent-templates', agentFile);
+    // Source is always the CLI's bundled template for this built-in agent.
+    const sourcePath = path.join(templatesDir, '.claude/agents', agentFile);
     if (!(await fileExists(sourcePath))) continue;
     const stockContent = await fs.readFile(sourcePath, 'utf-8');
 
@@ -936,10 +908,9 @@ function pruneHookCommand(hooks: unknown, event: string, command: string): void 
 //      region is delimited by begin/end markers, so re-init replaces exactly
 //      that region in place (or strips it entirely when the source is removed).
 //
-// Capability surfaces wired through it: `capabilities.commands.<name>` →
-// `.claude/commands/<name>.md` (marker-headed), `capabilities.outputStyle` →
-// `settings.json` key, `capabilities.mcpServers` → `.mcp.json`. Absent
-// capabilities writes zero new files (the no-regression contract).
+// Wired through it: the Codex per-agent `## Skills` projection block
+// (keyed `skills:<agent>`) — a marker-bounded region of `.codex/agents/<a>.md`
+// that re-init replaces in place, leaving the rest of the body untouched.
 
 /**
  * HTML-comment begin marker for an Anatomia-managed block in a markdown file.
@@ -1022,311 +993,6 @@ export function mergeManagedBlock(
   }
 
   return `${before}${wrapped}${after}`;
-}
-
-/** Per-name resolved command body map under `capabilities.commands`. */
-type CommandsCapability = Record<string, string>;
-
-/**
- * Project the object form of a command declaration into a markdown body.
- *
- * The accepted object shape is `{ run?, description?, body? }`:
- *   - `description` → a leading prose line (the command's one-liner).
- *   - `run`         → a fenced shell block the command runs.
- *   - `body`        → free-form markdown appended verbatim (escape hatch).
- *
- * At least one of the three must be a string for the entry to be valid; an
- * object with none of them (or with all non-string) is genuinely malformed and
- * the caller warns + drops it. The rendered body is what lands inside the
- * managed block of `.claude/commands/<name>.md`.
- *
- * @param obj - The command declaration object
- * @returns The rendered markdown body, or null when the object has no usable field
- */
-function renderCommandObject(obj: Record<string, unknown>): string | null {
-  const parts: string[] = [];
-  if (typeof obj['description'] === 'string' && obj['description'].trim() !== '') {
-    parts.push(obj['description'].trim());
-  }
-  if (typeof obj['run'] === 'string' && obj['run'].trim() !== '') {
-    // Tight fence — no blank lines between the fence markers and the command.
-    parts.push(`\`\`\`bash\n${obj['run'].trim()}\n\`\`\``);
-  }
-  if (typeof obj['body'] === 'string' && obj['body'].trim() !== '') {
-    parts.push(obj['body'].trim());
-  }
-  if (parts.length === 0) return null;
-  return parts.join('\n\n');
-}
-
-/**
- * Narrow an unknown value to a plain (non-array) object record.
- *
- * @param value - Candidate value
- * @returns The record, or null when not a plain object
- */
-function asRecordValue(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
-  return value as Record<string, unknown>;
-}
-
-/**
- * Render a rejected config value compactly for a warning message, so the user
- * sees WHAT they wrote (`"notanarray"`, `42`, `["nope"]`) without a giant dump.
- *
- * @param value - The offending value
- * @returns A short, single-line, quoted/typed description
- */
-function describeBadValue(value: unknown): string {
-  if (typeof value === 'string') return JSON.stringify(value);
-  if (value === null) return 'null';
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  if (Array.isArray(value)) return `an array (${value.length} item${value.length === 1 ? '' : 's'})`;
-  if (typeof value === 'object') return 'an object';
-  return typeof value;
-}
-
-/**
- * Read the `capabilities` object off a parsed ana.json, fail-soft.
- *
- * @param anaJson - Parsed ana.json (validated or raw), or anything
- * @returns The capabilities record, or null when absent/malformed
- */
-function readCapabilities(anaJson: unknown): Record<string, unknown> | null {
-  const root = asRecordValue(anaJson);
-  if (!root) return null;
-  return asRecordValue(root['capabilities']);
-}
-
-/**
- * Read `capabilities.commands` as a `{ name: renderedBody }` map.
- *
- * Two body shapes are accepted per command (documented in `config schema`):
- *   - a plain STRING — used verbatim as the command markdown body, or
- *   - an OBJECT `{ run?, description?, body? }` — projected into markdown by
- *     {@link renderCommandObject} (description line + fenced `run` + free body).
- *
- * Fail-soft: a malformed entry (a non-string / non-object body, or an object
- * with no usable field) is DROPPED, never crashes, never clobbers — but a
- * field-named warning is emitted via `onWarn` so the drop is LOUD rather than
- * silent (the spec's "malformed → warn, not nuke").
- *
- * @param anaJson - Parsed ana.json (validated or raw), or anything
- * @param onWarn - Sink for a human-readable, field-named warning per bad entry
- * @returns A name→renderedBody map (possibly empty), or null when the key is absent
- */
-function readCommandsCapability(
-  anaJson: unknown,
-  onWarn: (msg: string) => void = () => {},
-): CommandsCapability | null {
-  const caps = readCapabilities(anaJson);
-  if (!caps) return null;
-  if (caps['commands'] === undefined) return null; // key absent — nothing to declare
-  const commands = asRecordValue(caps['commands']);
-  if (!commands) {
-    onWarn(
-      `capabilities.commands must be an object of { name: body } — ignoring (using stock). `
-      + `Got: ${describeBadValue(caps['commands'])}`,
-    );
-    return {};
-  }
-  const out: CommandsCapability = {};
-  for (const [name, body] of Object.entries(commands)) {
-    // Slashes/traversal in a command name would escape the commands dir.
-    if (!/^[A-Za-z0-9._-]+$/.test(name)) {
-      onWarn(`capabilities.commands has an invalid command name '${name}' — ignoring (names may use [A-Za-z0-9._-]).`);
-      continue;
-    }
-    if (typeof body === 'string') {
-      out[name] = body;
-      continue;
-    }
-    const obj = asRecordValue(body);
-    if (obj) {
-      const rendered = renderCommandObject(obj);
-      if (rendered !== null) {
-        out[name] = rendered;
-        continue;
-      }
-      onWarn(
-        `capabilities.commands.${name} object has no usable field — expected a string or `
-        + `{ run?, description?, body? } with at least one string field — ignoring.`,
-      );
-      continue;
-    }
-    onWarn(
-      `capabilities.commands.${name} must be a string body or { run?, description?, body? } object `
-      + `— ignoring (not created). Got: ${describeBadValue(body)}`,
-    );
-  }
-  return out;
-}
-
-/**
- * Wire `capabilities.commands` to `.claude/commands/<name>.md`.
- *
- * Each declared command becomes a marker-headed `.claude/commands/<name>.md`.
- * On re-init the managed set is reconciled UNCONDITIONALLY: a command dropped
- * from config — including the case where the WHOLE `capabilities` block was
- * deleted (absent = empty declared set) — has its managed file pruned (only if
- * it still carries our marker — a file a human took over by deleting the marker
- * is left untouched). A hand-authored `mine.md` with no marker is never created,
- * modified, or deleted. When no managed command file has ever existed, absent
- * `capabilities.commands` writes/touches nothing (the commands dir is absent, so
- * the prune loop no-ops) — stock stays byte-identical.
- *
- * @param claudePath - Path to the `.claude/` directory
- * @param anaJson - Parsed ana.json driving the command set
- */
-async function applyCommandCapabilities(claudePath: string, anaJson: unknown): Promise<void> {
-  // Absent `capabilities.commands` is treated as an EMPTY declared set, NOT a
-  // skip — the reconcile/prune loop below must run unconditionally so that
-  // deleting the whole `capabilities` block prunes orphaned managed command
-  // files (the "absent = today" / delete-restores-stock contract). When no
-  // managed command file has ever been written this is a pure no-op: the
-  // commands dir doesn't exist, so the prune loop returns immediately and no
-  // file is created — stock stays byte-identical.
-  const commands = readCommandsCapability(anaJson) ?? {};
-
-  const commandsDir = path.join(claudePath, 'commands');
-  const declared = new Set(Object.keys(commands));
-
-  // Write/refresh each declared command's managed block.
-  if (declared.size > 0) {
-    await fs.mkdir(commandsDir, { recursive: true });
-  }
-  for (const [name, body] of Object.entries(commands)) {
-    const destPath = path.join(commandsDir, `${name}.md`);
-    const existing = (await fileExists(destPath))
-      ? await fs.readFile(destPath, 'utf-8')
-      : null;
-    const merged = mergeManagedBlock(existing, body, `command:${name}`);
-    if (merged !== null) {
-      await atomicWriteFile(destPath, merged, `.claude/commands/${name}.md`);
-    }
-  }
-
-  // Reconcile: prune managed command files that are no longer declared. Only
-  // marker-carrying files are pruned — hand-authored files survive untouched.
-  if (!(await dirExists(commandsDir))) return;
-  let entries: string[];
-  try {
-    entries = await fs.readdir(commandsDir);
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    if (!entry.endsWith('.md')) continue;
-    const name = entry.slice(0, -'.md'.length);
-    if (declared.has(name)) continue;
-    const destPath = path.join(commandsDir, entry);
-    const content = await fs.readFile(destPath, 'utf-8').catch(() => null);
-    if (content === null) continue;
-    if (!content.includes(managedBlockBegin(`command:${name}`))) continue; // hand-authored — leave it
-    const pruned = mergeManagedBlock(content, null, `command:${name}`);
-    if (pruned === null) {
-      await fs.rm(destPath, { force: true });
-    } else {
-      await atomicWriteFile(destPath, pruned, `.claude/commands/${entry}`);
-    }
-  }
-
-  // Remove a now-empty commands dir we created so delete-config leaves no
-  // residue (rmdir fails harmlessly if a hand-authored file remains).
-  await fs.rmdir(commandsDir).catch(() => {});
-}
-
-/**
- * The settings.json sentinel that records which top-level keys Anatomia owns
- * via the `capabilities` surface. Its sole job is to make managed settings
- * keys REMOVABLE: when a capability goes absent, the key it wrote is removed
- * and the sentinel is pruned. The sentinel itself is written only while at
- * least one managed key is live and is deleted when none remain — so a project
- * that never used `capabilities.outputStyle` keeps a byte-identical stock
- * settings.json (no sentinel, no outputStyle).
- */
-const SETTINGS_MANAGED_SENTINEL = '_anatomiaManaged';
-
-/**
- * Wire `capabilities.outputStyle` to a `settings.json` `outputStyle` key — and,
- * critically, REMOVE that key when the capability goes absent.
- *
- * Mutates the settings object in place. When `capabilities.outputStyle` is a
- * string, sets `outputStyle` and records it in the {@link SETTINGS_MANAGED_SENTINEL}
- * tracking array (leaving every sibling — hooks, user keys — intact). When the
- * capability is absent or non-string, any key WE previously wrote (per the
- * sentinel) is removed; a user-authored `outputStyle` we never managed is left
- * untouched. The sentinel is pruned to empty/absent when nothing is managed, so
- * deleting the whole `capabilities` block restores byte-identical stock — the
- * delete-restores-stock contract.
- *
- * @param settings - The settings object to mutate
- * @param anaJson - Parsed ana.json driving the outputStyle value
- */
-function applyOutputStyleCapability(settings: Record<string, unknown>, anaJson: unknown): void {
-  // Prior managed keys recorded on the sentinel — the only keys we may remove.
-  const priorManaged = Array.isArray(settings[SETTINGS_MANAGED_SENTINEL])
-    ? (settings[SETTINGS_MANAGED_SENTINEL] as unknown[]).filter((k): k is string => typeof k === 'string')
-    : [];
-  const stillManaged = new Set<string>();
-
-  const caps = readCapabilities(anaJson);
-  const value = caps?.['outputStyle'];
-  if (typeof value === 'string') {
-    settings['outputStyle'] = value;
-    stillManaged.add('outputStyle');
-  } else if (priorManaged.includes('outputStyle')) {
-    // Capability went absent/non-string and WE wrote this key before — remove it.
-    delete settings['outputStyle'];
-  }
-
-  // Remove any other previously-managed key no longer claimed (future-proofing
-  // for additional managed settings keys), then reconcile the sentinel itself.
-  for (const key of priorManaged) {
-    if (!stillManaged.has(key) && key !== 'outputStyle') delete settings[key];
-  }
-  if (stillManaged.size > 0) {
-    settings[SETTINGS_MANAGED_SENTINEL] = [...stillManaged];
-  } else {
-    delete settings[SETTINGS_MANAGED_SENTINEL];
-  }
-}
-
-/**
- * Wire `capabilities.mcpServers` to a project-root `.mcp.json`.
- *
- * The whole `mcpServers` object is the managed surface. The file's
- * `{ "mcpServers": {...} }` shape is merged: our declared servers are written
- * under `mcpServers`, every other top-level key and every user-authored server
- * not in our set survives. Absent capability writes no file. A malformed
- * existing `.mcp.json` degrades to a fresh write of our block rather than a
- * crash.
- *
- * @param cwd - Project root directory
- * @param anaJson - Parsed ana.json driving the MCP server set
- */
-async function applyMcpServersCapability(cwd: string, anaJson: unknown): Promise<void> {
-  const caps = readCapabilities(anaJson);
-  if (!caps) return;
-  const servers = asRecordValue(caps['mcpServers']);
-  if (!servers) return; // absent/malformed — no file written
-
-  const mcpPath = path.join(cwd, '.mcp.json');
-  let doc: Record<string, unknown> = {};
-  if (await fileExists(mcpPath)) {
-    try {
-      const parsed = JSON.parse(await fs.readFile(mcpPath, 'utf-8'));
-      const rec = asRecordValue(parsed);
-      if (rec) doc = rec;
-    } catch {
-      // Malformed existing .mcp.json — fall back to a fresh document.
-      doc = {};
-    }
-  }
-
-  const existingServers = asRecordValue(doc['mcpServers']) ?? {};
-  doc['mcpServers'] = { ...existingServers, ...servers };
-  await atomicWriteFile(mcpPath, `${JSON.stringify(doc, null, 2)}\n`, '.mcp.json');
 }
 
 /**
@@ -1504,26 +1170,17 @@ async function ensureCodexHooksFlag(configPath: string, templatesDir: string): P
  */
 export async function copyCodexAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
-  // Project root (parent of `.codex/agents`) — source of a config-supplied
-  // agent's `.ana/agent-templates/<name>.md` instruction template.
-  const projectRoot = path.resolve(agentsPath, '..', '..');
-  // Iterate the resolved roster (not CODEX_AGENT_FILES): a `enabled:false`
-  // built-in is dropped, a config-supplied agent is appended. Absent
-  // `ana.json.agents` → byte-identical to the CODEX_AGENT_FILES order.
-  for (const baseName of resolveAgentRoster(anaJson)) {
+  // The roster is the fixed built-in set; ana.json only PROJECTS per-agent
+  // skills onto these (it does not add/remove agents).
+  for (const baseName of resolveAgentRoster()) {
     const agentFile = `${baseName}.md`;
-    const isBuiltin = BUILTIN_AGENT_ROSTER.includes(baseName);
     const skillsMarker = `skills:${baseName}`;
     const projectedSkills = resolveAgentSkills(anaJson, baseName);
 
-    // .md instruction body — overwrite wholesale from stock (no frontmatter),
-    // then project the skills roster as a marker-bounded `## Skills` block.
-    // Built-ins source from the CLI templates; a config-supplied agent sources
-    // from `.ana/agent-templates/<name>.md`. A config agent missing that file is
-    // skipped entirely (fail-soft — never crash init over a missing template).
-    const mdSource = isBuiltin
-      ? path.join(templatesDir, '.codex/agents', agentFile)
-      : path.join(projectRoot, '.ana', 'agent-templates', agentFile);
+    // .md instruction body — overwrite wholesale from the CLI's bundled stock
+    // template, then project the skills roster as a marker-bounded `## Skills`
+    // block. The flat `skills = [...]` line is projected onto the `.agent.toml`.
+    const mdSource = path.join(templatesDir, '.codex/agents', agentFile);
     if (!(await fileExists(mdSource))) continue;
     const mdDest = path.join(agentsPath, agentFile);
     const stockMd = await fs.readFile(mdSource, 'utf-8');
@@ -1541,13 +1198,12 @@ export async function copyCodexAgentFiles(agentsPath: string, templatesDir: stri
     await atomicWriteFile(mdDest, finalMd, `.codex/agents/${agentFile}`);
 
     // .agent.toml manifest — preserve config keys, refresh machine fields,
-    // then project the flat `skills = [...]` line from ana.json. A built-in's
-    // stock toml ships with the CLI; a config-supplied agent has none, so we
-    // synthesize a minimal manifest seeded from the codex platform run defaults.
+    // then project the flat `skills = [...]` line from ana.json. The built-in's
+    // stock toml ships with the CLI; the synthesized fallback is defensive.
     const tomlFile = `${baseName}.agent.toml`;
     const tomlDest = path.join(agentsPath, tomlFile);
     const tomlSource = path.join(templatesDir, '.codex/agents', tomlFile);
-    const stockToml = isBuiltin && (await fileExists(tomlSource))
+    const stockToml = (await fileExists(tomlSource))
       ? await fs.readFile(tomlSource, 'utf-8')
       : buildCodexAgentToml(baseName);
     let finalToml = stockToml;
@@ -1590,8 +1246,8 @@ export interface AgentSkillsProjection {
  * line, and removing the marker-bounded `## Skills` block — so the result is
  * byte-identical to what the next `ana init` would produce for an agent with no
  * ana.json skills entry (NOT a forced `skills: []`). When the stock template is
- * unavailable (a config-supplied agent with no `.ana/agent-templates/` file, or
- * a missing templates dir), clear falls back to dropping the line.
+ * unavailable (a non-built-in / hand-authored agent, or a missing templates
+ * dir), clear falls back to dropping the line.
  *
  * Fail-soft: a platform file that doesn't exist is skipped (reported as null),
  * never created from scratch — projection only updates files init already laid
@@ -1613,9 +1269,9 @@ export async function projectAgentSkillsToFiles(
   const isBuiltin = BUILTIN_AGENT_ROSTER.includes(agentName);
   const templatesDir = getTemplatesDir();
 
-  // Resolve the stock Claude template path, mirroring the source selection in
-  // copyAgentFiles (built-ins ship with the CLI; a config agent supplies
-  // `.ana/agent-templates/<name>.md`).
+  // Resolve the stock Claude template path. Built-ins ship with the CLI; a
+  // non-built-in (hand-authored) agent has no bundled stock, so the clear path
+  // below degrades to dropping the `skills:` line.
   const stockClaude = isBuiltin
     ? path.join(templatesDir, '.claude/agents', `${agentName}.md`)
     : path.join(cwd, '.ana', 'agent-templates', `${agentName}.md`);

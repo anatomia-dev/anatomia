@@ -31,6 +31,9 @@ import * as os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { scaffoldAndSeedSkills } from '../../../src/commands/init/skills.js';
 import { buildCustomSkillStub } from '../../../src/manifest.js';
+import { createEmptyEngineResult } from '../../../src/engine/types/engineResult.js';
+import { createEmptyPatternAnalysis } from '../../../src/engine/types/patterns.js';
+import { computeSkillManifest } from '../../../src/constants.js';
 
 const realTemplatesDir = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -198,6 +201,57 @@ describe('scaffoldAndSeedSkills — config-driven custom skills (Slice 5)', () =
     // Config-declared skill stubbed.
     expect(await skillExists('observability')).toBe(true);
     expect(await readSkill('observability')).toBe(buildCustomSkillStub('observability', 'ana run setup'));
+  });
+
+  it('an untriggered bundled skill on disk is left untouched (not reclassified as custom)', async () => {
+    // api-patterns ships a bundled template but is conditional: a scan that does
+    // NOT set stack.framework never adds it to the manifest. A user dir named
+    // `api-patterns` must NOT be reclassified as a custom skill — otherwise the
+    // library rule keyed by that bundled name (zod-safe-parse, fired by
+    // validation:zod) would splice into the user file, and because this file has
+    // no `## Detected` heading, at a WRONG insertion point (before `## Rules`).
+    const userBody =
+      '---\nname: api-patterns\n---\n\n# api-patterns\n\n## Rules\n- Our hand-written API conventions.\n';
+    await fs.mkdir(path.join(skillsPath, 'api-patterns'), { recursive: true });
+    await fs.writeFile(path.join(skillsPath, 'api-patterns', 'SKILL.md'), userBody, 'utf-8');
+
+    // framework:null → api-patterns NOT in manifest; validation:zod → the
+    // api-patterns library rule WOULD match (proving the scenario is non-vacuous).
+    const result = createEmptyEngineResult();
+    result.patterns = {
+      ...createEmptyPatternAnalysis(),
+      validation: { library: 'zod', confidence: 0.95, evidence: [] },
+    };
+    expect(computeSkillManifest(result)).not.toContain('api-patterns');
+
+    await scaffoldAndSeedSkills(skillsPath, realTemplatesDir, result, 'reinit', {});
+
+    const after = await readSkill('api-patterns');
+    expect(after).toBe(userBody); // byte-identical — never entered the scaffold loop
+    expect(after).not.toContain('Library Rules');
+  });
+
+  it('a config skill name with traversal never writes outside the skills dir', async () => {
+    // A hand- or tool-authored ana.json declaring an always-on skill whose name
+    // escapes the skills dir must be rejected by the resolver guard — no stub is
+    // written, and nothing appears above skillsPath.
+    const parent = path.dirname(skillsPath);
+    const sentinel = path.join(parent, 'evil', 'SKILL.md');
+    await fs.rm(path.join(parent, 'evil'), { recursive: true, force: true });
+
+    await scaffoldAndSeedSkills(
+      skillsPath,
+      realTemplatesDir,
+      null,
+      'fresh',
+      { skills: { '../evil': { always: true }, '..': { always: true } } },
+    );
+
+    await expect(fs.access(sentinel)).rejects.toThrow();
+    // The skills dir contains only the stock core set — no '..'/'../evil' members.
+    const entries = await fs.readdir(skillsPath);
+    expect(entries).not.toContain('..');
+    expect(entries).not.toContain('evil');
   });
 
   it('a directory without a SKILL.md is not treated as a custom skill', async () => {

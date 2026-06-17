@@ -24,7 +24,6 @@ import { computeSkillManifest, CORE_SKILLS, AGENT_FILES } from './constants.js';
 
 /** Per-agent config block as it appears under `ana.json.agents.<name>`. */
 interface AgentConfigEntry {
-  enabled?: boolean;
   skills?: string[];
   model?: string;
 }
@@ -48,6 +47,25 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 /**
+ * True when `name` is safe to use verbatim as a single filesystem path
+ * segment — letters, digits, `.`, `_`, `-`, and NOT `.`/`..` themselves.
+ *
+ * Config-supplied agent and skill names become directory/file paths during
+ * init (`.ana/skills/<name>/SKILL.md`, `.claude/agents/<name>.md`). A name
+ * containing a path separator — or a bare `.`/`..` (both pass the character
+ * class, since `.` is allowed) — would escape the intended directory. The
+ * same guard protects capability command names (assets.ts / configWarnings),
+ * so this is the single source of truth all three name→path sites share, and
+ * the agent/skill paths can no longer drift from the command path's rule.
+ *
+ * @param name - Candidate name from `ana.json` (agents/skills/commands key)
+ * @returns Whether the name is a safe, non-traversing path segment
+ */
+export function isSafeNameSegment(name: string): boolean {
+  return /^[A-Za-z0-9._-]+$/.test(name) && name !== '.' && name !== '..';
+}
+
+/**
  * Built-in agent roster — the six stock agents, base names (no `.md`).
  * Derived from `AGENT_FILES` so the roster can never drift from the files
  * that actually ship. This is the verbatim default `resolveAgentRoster({})`
@@ -61,10 +79,9 @@ export const BUILTIN_AGENT_ROSTER: readonly string[] = AGENT_FILES.map((f) =>
  * The Think core agent's base name — the always-on orchestrator (`ana`).
  *
  * This agent is load-bearing: it is the default dispatch target (`ana run` with
- * no suffix → `ANA_ROLE=ana`) and every other agent is reached through it. It
- * can NEVER be dropped from the roster, even by an explicit `enabled:false` in
- * `ana.json.agents.ana` — {@link resolveAgentRoster} ignores that flag for this
- * one agent so a config can never strand a project with no entry point.
+ * no suffix → `ANA_ROLE=ana`) and every other agent is reached through it. The
+ * roster is fixed to the built-in set ({@link resolveAgentRoster}), so this
+ * agent is always present; it is the empty-suffix key in {@link resolveAgentMap}.
  */
 export const CORE_AGENT = 'ana';
 
@@ -121,6 +138,11 @@ export function resolveSkillManifest(anaJson: unknown, engineResult: EngineResul
     // in the map without `always` is a trigger/custom declaration handled by
     // later slices (Slice 5); appending it here would over-scaffold.
     if (cfg?.always !== true) continue;
+    // A config-declared skill name becomes a path segment at scaffold time
+    // (.ana/skills/<name>/SKILL.md). Reject traversing names so a hand- or
+    // tool-authored ana.json cannot write a stub outside the skills dir
+    // (the warning surface flags it — see configWarnings.ts).
+    if (!isSafeNameSegment(name)) continue;
     if (seen.has(name)) continue;
     seen.add(name);
     additions.push(name);
@@ -131,58 +153,34 @@ export function resolveSkillManifest(anaJson: unknown, engineResult: EngineResul
 /**
  * Resolve the agent roster: the ordered list of agent base names to scaffold.
  *
- * Identity contract: when `ana.json.agents` is absent or malformed, the result
- * is byte-identical to {@link BUILTIN_AGENT_ROSTER} (the stock six). A built-in
- * agent with `enabled:false` is dropped — EXCEPT the {@link CORE_AGENT} (Think),
- * which is always retained no matter what the config says (a config can never
- * leave a project with no orchestrator / dispatch entry point). An `agents` key
- * naming an agent not in the built-in roster appends it after the built-ins
- * (config-supplied agent), unless it too is flagged `enabled:false`.
+ * The roster is ALWAYS the built-in {@link BUILTIN_AGENT_ROSTER} (the stock six).
+ * `ana.json.agents` does NOT mutate the roster — it only PROJECTS per-agent
+ * `skills`/`model` onto these built-ins ({@link resolveAgentSkills}). Adding or
+ * disabling agents via config is intentionally NOT supported here: those paths
+ * (custom agent templates under `.ana/agent-templates/`, `enabled:false` pruning)
+ * are deferred until they can be built with full re-init durability and dispatch
+ * consistency. Keeping the roster fixed makes "absent = today" trivially true and
+ * removes the dispatch-suffix-collision and lost-template-on-re-init footguns.
  *
- * @param anaJson - Parsed ana.json (validated or raw), or anything
- * @returns Ordered agent base names (e.g. ['ana', 'ana-plan', ...])
+ * @returns The built-in agent base names (e.g. ['ana', 'ana-plan', ...])
  */
-export function resolveAgentRoster(anaJson: unknown): string[] {
-  const agentsConfig = readAgentsConfig(anaJson);
-  if (!agentsConfig) return [...BUILTIN_AGENT_ROSTER];
-
-  const roster: string[] = [];
-  for (const name of BUILTIN_AGENT_ROSTER) {
-    const entry = asRecord(agentsConfig[name]) as AgentConfigEntry | null;
-    // The Think core agent is never droppable — ignore enabled:false for it.
-    if (name !== CORE_AGENT && entry?.enabled === false) continue;
-    roster.push(name);
-  }
-  for (const name of Object.keys(agentsConfig)) {
-    if (roster.includes(name) || (BUILTIN_AGENT_ROSTER as readonly string[]).includes(name)) {
-      continue;
-    }
-    const entry = asRecord(agentsConfig[name]) as AgentConfigEntry | null;
-    if (entry?.enabled === false) continue;
-    roster.push(name);
-  }
-  return roster;
+export function resolveAgentRoster(): string[] {
+  return [...BUILTIN_AGENT_ROSTER];
 }
 
 /**
  * Resolve the `ana run` agent map: user-facing suffix → full agent name.
  *
- * Derived from {@link resolveAgentRoster} so the dispatch surface tracks the
- * scaffolded roster exactly — a disabled built-in disappears from the map, and
- * a config-supplied agent becomes dispatchable. The suffix is the agent's base
- * name with the leading `ana-` stripped; the {@link CORE_AGENT} (`ana`) maps
- * from the empty suffix (the default `ana run` target). A config-supplied agent
- * without the `ana-` prefix is keyed by its full name.
+ * Derived from the fixed {@link resolveAgentRoster}, so the map is byte-identical
+ * to the prior hardcoded literal (`'' → ana`, `build → ana-build`, …). The suffix
+ * is the agent's base name with the leading `ana-` stripped; the {@link CORE_AGENT}
+ * (`ana`) maps from the empty suffix (the default `ana run` target).
  *
- * Identity contract: with `ana.json.agents` absent the map is byte-identical to
- * the prior hardcoded literal (`'' → ana`, `build → ana-build`, …).
- *
- * @param anaJson - Parsed ana.json (validated or raw), or anything
  * @returns A suffix→full-name map (the empty-string key is the Think default)
  */
-export function resolveAgentMap(anaJson: unknown): Record<string, string> {
+export function resolveAgentMap(): Record<string, string> {
   const map: Record<string, string> = {};
-  for (const fullName of resolveAgentRoster(anaJson)) {
+  for (const fullName of resolveAgentRoster()) {
     const suffix = fullName === CORE_AGENT ? '' : fullName.replace(/^ana-/, '');
     map[suffix] = fullName;
   }

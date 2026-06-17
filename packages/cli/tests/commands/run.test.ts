@@ -250,35 +250,6 @@ describe('ana run', () => {
     }
   });
 
-  // Slice 6 — the agent map is derived from the ana.json roster.
-  it('dispatches a config-supplied agent by its stripped suffix', () => {
-    createProject({ agents: { 'ana-release': { skills: [] } } });
-    runAndGetExit('release');
-
-    const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'claude');
-    expect(spawnCall).toBeDefined();
-    const spawnArgs = spawnCall![1] as string[];
-    expect(spawnArgs[spawnArgs.indexOf('--agent') + 1]).toBe('ana-release');
-  });
-
-  it('errors on a built-in suffix disabled via enabled:false', () => {
-    createProject({ agents: { 'ana-learn': { enabled: false } } });
-    const code = runAndGetExit('learn');
-    expect(code).toBe(1);
-    const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
-    expect(errorOutput).toContain('Unknown agent');
-  });
-
-  it('still dispatches the Think default when ana is flagged enabled:false', () => {
-    createProject({ agents: { ana: { enabled: false } } });
-    runAndGetExit('');
-
-    const spawnCall = mockedSpawnSync.mock.calls.find(c => c[0] === 'claude');
-    expect(spawnCall).toBeDefined();
-    const spawnArgs = spawnCall![1] as string[];
-    expect(spawnArgs[spawnArgs.indexOf('--agent') + 1]).toBe('ana');
-  });
-
   it('shows advisory warning when no work item at expected stage', () => {
     createProject();
     // Create a work item with scope only — not ready for build

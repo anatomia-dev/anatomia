@@ -7,12 +7,12 @@
  * span more than one slice and live in no single slice's home — the
  * no-regression contract the spec demands be "bulletproof":
  *
- *   1. The four additive fields (agents / skills / capabilities /
- *      platformDefaults) survive a REAL `preserveUserState` re-init round-trip
- *      untouched (spec verified-premise #2 — the load-bearing re-init safety).
- *   2. `config set` does not warn on any of the four new fields (KNOWN_FIELDS
- *      is derived from the schema shape — the spec's stated benefit).
- *   3. Schema posture: each of the four is optional, NO `.default` (absent
+ *   1. The additive fields (agents / skills) survive a REAL `preserveUserState`
+ *      re-init round-trip untouched (spec verified-premise #2 — the load-bearing
+ *      re-init safety).
+ *   2. `config set` does not warn on the new fields (KNOWN_FIELDS is derived
+ *      from the schema shape — the spec's stated benefit).
+ *   3. Schema posture: each is optional, NO `.default` (absent
  *      stays `undefined` → absent survives re-init), and each degrades
  *      per-element rather than nuking the config.
  *   4. The post-init success display (state.ts:1015 `displaySuccessMessage`)
@@ -43,8 +43,8 @@ import { computeSkillManifest, CORE_SKILLS } from '../../../src/constants.js';
 import { platformDetectProbes, knownPlatformIds } from '../../../src/platforms/registry.js';
 import { createTestProject } from '../../helpers/test-project.js';
 
-/** The four additive configurability fields under the no-regression contract. */
-const NEW_CONFIG_FIELDS = ['agents', 'skills', 'capabilities', 'platformDefaults'] as const;
+/** The additive configurability fields under the no-regression contract. */
+const NEW_CONFIG_FIELDS = ['agents', 'skills'] as const;
 
 /** Engine result whose stack fires the conditional skill triggers. */
 function richResult(): EngineResult {
@@ -59,7 +59,7 @@ function richResult(): EngineResult {
 // 1. Re-init survival via preserveUserState (spec verified-premise #2)
 // ───────────────────────────────────────────────────────────────────────────
 
-describe('re-init: the four configurability fields survive preserveUserState untouched', () => {
+describe('re-init: the configurability fields survive preserveUserState untouched', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
@@ -91,10 +91,9 @@ describe('re-init: the four configurability fields survive preserveUserState unt
     return JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
   }
 
-  it('preserves a full agents block (skills + enabled + model) verbatim across re-init', async () => {
+  it('preserves a full agents block (skills + model) verbatim across re-init', async () => {
     const agents = {
       'ana-build': { skills: ['git-workflow', 'api-patterns'], model: 'opus' },
-      'ana-learn': { enabled: false },
       'ana-release': { skills: ['git-workflow'] },
     };
     const result = await reinit({ name: 'test', agents });
@@ -107,35 +106,29 @@ describe('re-init: the four configurability fields survive preserveUserState unt
     expect(result['skills']).toEqual(skills);
   });
 
-  it('preserves a capabilities block verbatim across re-init', async () => {
-    const capabilities = {
-      commands: { ship: 'Run the ship checklist.' },
-      outputStyle: 'concise',
-      mcpServers: { weather: { command: 'weather-mcp', args: ['--stdio'] } },
+  it('a legacy/unmanaged key survives re-init via schema passthrough (migration safety)', async () => {
+    // capabilities / platformDefaults are no longer managed schema fields, but a
+    // project that set them before must not LOSE data — `.passthrough()` carries
+    // any unrecognized key through the re-init merge untouched.
+    const existing = {
+      name: 'test',
+      capabilities: { outputStyle: 'concise' },
+      platformDefaults: { codex: { model: 'gpt-5.5' } },
     };
-    const result = await reinit({ name: 'test', capabilities });
-    expect(result['capabilities']).toEqual(capabilities);
+    const result = await reinit(existing);
+    expect(result['capabilities']).toEqual(existing.capabilities);
+    expect(result['platformDefaults']).toEqual(existing.platformDefaults);
   });
 
-  it('preserves a platformDefaults block verbatim across re-init', async () => {
-    const platformDefaults = { codex: { model: 'gpt-5.5-pro', sandboxMode: 'read-only' } };
-    const result = await reinit({ name: 'test', platformDefaults });
-    expect(result['platformDefaults']).toEqual(platformDefaults);
-  });
-
-  it('preserves all four at once, alongside the mechanical overrides (name/version refreshed)', async () => {
+  it('preserves agents + skills at once, alongside the mechanical overrides (name/version refreshed)', async () => {
     const existing = {
       name: 'old-name',
       agents: { 'ana-build': { skills: ['git-workflow'] } },
       skills: { observability: { always: true } },
-      capabilities: { outputStyle: 'verbose' },
-      platformDefaults: { codex: { model: 'gpt-5.5' } },
     };
     const result = await reinit(existing);
     expect(result['agents']).toEqual(existing.agents);
     expect(result['skills']).toEqual(existing.skills);
-    expect(result['capabilities']).toEqual(existing.capabilities);
-    expect(result['platformDefaults']).toEqual(existing.platformDefaults);
     // The mechanical overrides still fire — version/timestamp refresh from fresh.
     expect(result['anaVersion']).toBe('9.9.9');
     expect(result['lastScanAt']).toBe('2026-06-13T00:00:00Z');
@@ -217,7 +210,7 @@ describe('config set — the four configurability fields are known (no unknown-f
     await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
   });
 
-  it('KNOWN_FIELDS (derived from the schema shape) contains all four new fields', () => {
+  it('KNOWN_FIELDS (derived from the schema shape) contains the new fields', () => {
     const fields = Object.keys(AnaJsonSchema.shape);
     for (const field of NEW_CONFIG_FIELDS) {
       expect(fields).toContain(field);
@@ -246,7 +239,7 @@ describe('config set — the four configurability fields are known (no unknown-f
 // ───────────────────────────────────────────────────────────────────────────
 
 describe('AnaJsonSchema — configurability fields: absent stays undefined, NO default', () => {
-  it('all four are undefined when the ana.json omits them (migration-safe, no .default)', () => {
+  it('the new fields are undefined when the ana.json omits them (migration-safe, no .default)', () => {
     const parsed = AnaJsonSchema.parse({ name: 'x' }) as Record<string, unknown>;
     for (const field of NEW_CONFIG_FIELDS) {
       expect(parsed[field]).toBeUndefined();
@@ -258,7 +251,7 @@ describe('AnaJsonSchema — configurability fields: absent stays undefined, NO d
 
   it('a valid agents block round-trips through the schema unchanged', () => {
     const agents = {
-      'ana-build': { skills: ['git-workflow', 'api-patterns'], model: 'opus', enabled: true },
+      'ana-build': { skills: ['git-workflow', 'api-patterns'], model: 'opus' },
     };
     expect(AnaJsonSchema.parse({ name: 'x', agents }).agents).toEqual(agents);
   });
@@ -266,14 +259,6 @@ describe('AnaJsonSchema — configurability fields: absent stays undefined, NO d
   it('a valid skills block round-trips through the schema unchanged', () => {
     const skills = { observability: { always: true } };
     expect(AnaJsonSchema.parse({ name: 'x', skills }).skills).toEqual(skills);
-  });
-
-  it('a valid capabilities / platformDefaults block round-trips unchanged', () => {
-    const capabilities = { commands: { ship: 'body' }, outputStyle: 'concise' };
-    const platformDefaults = { codex: { model: 'gpt-5.5' } };
-    const parsed = AnaJsonSchema.parse({ name: 'x', capabilities, platformDefaults });
-    expect(parsed.capabilities).toEqual(capabilities);
-    expect(parsed.platformDefaults).toEqual(platformDefaults);
   });
 });
 
@@ -309,16 +294,6 @@ describe('AnaJsonSchema — configurability fields degrade per-element, never nu
     const skills = parsed.skills as Record<string, unknown>;
     expect(skills['observability']).toEqual({ always: true });
     expect(skills['broken']).toEqual({});
-  });
-
-  it('a malformed platformDefaults inner value catches to {} (codex sibling survives)', () => {
-    const parsed = AnaJsonSchema.parse({
-      name: 'x',
-      platformDefaults: { codex: { model: 'gpt-5.5' }, cursor: 'nope' },
-    });
-    const pd = parsed.platformDefaults as Record<string, unknown>;
-    expect(pd['codex']).toEqual({ model: 'gpt-5.5' });
-    expect(pd['cursor']).toEqual({});
   });
 
   it('passthrough survives alongside a malformed configurability field (no cross-contamination)', () => {

@@ -33,29 +33,6 @@ import {
 } from '../platforms/registry.js';
 import { resolveAgentMap } from '../manifest.js';
 
-/**
- * Resolve the user-facing agent-suffix → full-agent-name map for a project.
- *
- * Derived from the project's `ana.json` roster ({@link resolveAgentMap}), so a
- * disabled built-in drops out of the dispatch surface and a config-supplied
- * agent becomes runnable. The key is the user-facing argument (e.g. `build`,
- * or `''` for the Think default); the value is the full `--agent` name (e.g.
- * `ana-build`). With no `ana.json.agents` configured this is byte-identical to
- * the prior hardcoded literal. A missing/malformed `ana.json` falls through to
- * the built-in roster — same fail-soft posture as platform resolution.
- *
- * @param projectRoot - Project root directory
- * @returns The suffix→full-name agent map
- */
-function loadAgentMap(projectRoot: string): Record<string, string> {
-  try {
-    const raw = fs.readFileSync(path.join(projectRoot, '.ana', 'ana.json'), 'utf-8');
-    return resolveAgentMap(JSON.parse(raw));
-  } catch {
-    // No / malformed ana.json — the resolver returns the built-in roster map.
-    return resolveAgentMap({});
-  }
-}
 
 /**
  * Agents that run in interactive (TUI) mode on Codex.
@@ -461,10 +438,8 @@ export function executeRun(
     process.exit(1);
   }
 
-  // 2. Resolve agent name — the map is derived from the project's ana.json
-  //    roster, so disabled built-ins drop out and config-supplied agents are
-  //    dispatchable. Absent config → byte-identical to the prior literal.
-  const agentMap = loadAgentMap(projectRoot);
+  // 2. Resolve agent name from the fixed built-in roster map (suffix → full name).
+  const agentMap = resolveAgentMap();
   const agentName = agentMap[agentSuffix];
   if (agentName === undefined) {
     console.error(chalk.red(`Error: Unknown agent "${agentSuffix}".`));

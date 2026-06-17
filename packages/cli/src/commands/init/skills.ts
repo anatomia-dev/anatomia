@@ -33,6 +33,7 @@ import { COMMON_ISSUES } from '../../data/troubleshooting-library.js';
 import { agentCommand } from '../platform.js';
 import { TEST_DIRECTORY_NAMES } from '../../constants.js';
 import { resolveSkillManifest, buildCustomSkillStub } from '../../manifest.js';
+import { atomicWriteFile } from './assets.js';
 import type { InitState } from './types.js';
 import { fileExists, dirExists } from './preflight.js';
 import { makeTestCommandNonInteractive } from './state.js';
@@ -118,13 +119,24 @@ function injectDetectedIfAvailable(
  * platforms) so the scaffold loop's iteration is stable. Absent skills
  * directory → [] (fresh install has nothing on disk yet).
  *
+ * A name that has a BUNDLED template is never "custom" — it's a stock skill
+ * that the scan simply did not trigger this run. Reclassifying it as custom
+ * would route it through the scaffold loop and let injectors/library-rules
+ * keyed by that bundled name (e.g. `api-patterns`) splice content into a
+ * user-authored file — and if that file lacks a `## Detected` heading, at a
+ * wrong insertion point. Excluding bundled names (not just resolved-manifest
+ * members) leaves an untriggered-but-on-disk stock skill untouched, matching
+ * pre-Slice-5 behavior.
+ *
  * @param skillsPath - Path to the .ana/skills/ directory
  * @param known - Names already in the resolved manifest (excluded from result)
+ * @param templatesDir - CLI templates dir, used to detect bundled-skill names
  * @returns Sorted custom-skill names found on disk but not in the manifest
  */
 async function discoverCustomSkills(
   skillsPath: string,
-  known: ReadonlySet<string>
+  known: ReadonlySet<string>,
+  templatesDir: string
 ): Promise<string[]> {
   if (!(await dirExists(skillsPath))) return [];
 
@@ -141,6 +153,10 @@ async function discoverCustomSkills(
     if (!entry.isDirectory()) continue;
     const name = entry.name;
     if (known.has(name)) continue;
+    // A bundled skill that wasn't triggered this run is NOT custom — leave it.
+    if (await fileExists(path.join(templatesDir, '.claude/skills', name, 'SKILL.md'))) {
+      continue;
+    }
     if (await fileExists(path.join(skillsPath, name, 'SKILL.md'))) {
       custom.push(name);
     }
@@ -182,7 +198,7 @@ export async function scaffoldAndSeedSkills(
   const manifest = resolveSkillManifest(anaJson, analysis);
   // User-authored custom skills on disk become manifest members (Slice 5),
   // appended after the resolved manifest and deduped against it.
-  const customSkills = await discoverCustomSkills(skillsPath, new Set(manifest));
+  const customSkills = await discoverCustomSkills(skillsPath, new Set(manifest), templatesDir);
   const skillsToScaffold = [...manifest, ...customSkills];
   const isReinit = initState === 'reinit' || initState === 'upgrade';
 
@@ -291,7 +307,10 @@ export async function scaffoldAndSeedSkills(
       }
     }
 
-    await fs.writeFile(destPath, content, 'utf-8');
+    // Atomic write (tmp + integrity-check + rename) so a crash mid-write can't
+    // truncate an existing SKILL.md — matches the guarantee assets.ts uses for
+    // every other file init writes into the tree.
+    await atomicWriteFile(destPath, content, `${skillName}/SKILL.md`);
 
     // Copy ENRICHMENT.md if it exists in the template (setup agent reads these)
     const enrichmentSource = path.join(templatesDir, '.claude/skills', skillName, 'ENRICHMENT.md');

@@ -16,16 +16,26 @@ describe('collectConfigWarnings', () => {
     expect(collectConfigWarnings(undefined)).toEqual([]);
     expect(
       collectConfigWarnings({
-        agents: { 'ana-build': { skills: ['git-workflow'], model: 'opus', enabled: true } },
+        agents: { 'ana-build': { skills: ['git-workflow'], model: 'opus' } },
         skills: { observability: { always: true } },
-        capabilities: {
-          commands: { ship: 'string body', audit: { run: 'npm run audit', description: 'Audit' } },
-          outputStyle: 'concise',
-          mcpServers: { weather: { command: 'weather-mcp' } },
-        },
-        platformDefaults: { codex: { model: 'gpt-5.5' } },
       }),
     ).toEqual([]);
+  });
+
+  it('a traversing agent name → invalid-name warning, entry skipped', () => {
+    const warnings = collectConfigWarnings({ agents: { '../evil': { skills: [] } } });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toBe(
+      "agents has an invalid agent name '../evil' — ignoring (names may use [A-Za-z0-9._-], excluding '.' and '..').",
+    );
+  });
+
+  it('a traversing skill name (bare ..) → invalid-name warning', () => {
+    const warnings = collectConfigWarnings({ skills: { '..': { always: true } } });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toBe(
+      "skills has an invalid skill name '..' — ignoring (names may use [A-Za-z0-9._-], excluding '.' and '..').",
+    );
   });
 
   it('agents.<a>.skills:"notanarray" → array-of-strings warning naming the field + value', () => {
@@ -43,45 +53,6 @@ describe('collectConfigWarnings', () => {
     expect(warnings[0]).toContain('Got: "totally-wrong"');
   });
 
-  it('capabilities.outputStyle:42 → outputStyle-must-be-a-string warning', () => {
-    const warnings = collectConfigWarnings({ capabilities: { outputStyle: 42 } });
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain('capabilities.outputStyle must be a string');
-    expect(warnings[0]).toContain('Got: 42');
-  });
-
-  it('capabilities.commands:"oops" → commands-must-be-an-object warning', () => {
-    const warnings = collectConfigWarnings({ capabilities: { commands: 'oops' } });
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain('capabilities.commands must be an object');
-    expect(warnings[0]).toContain('Got: "oops"');
-  });
-
-  it('a single bad command entry is named (not the whole map)', () => {
-    const warnings = collectConfigWarnings({
-      capabilities: { commands: { ship: 'fine', broken: 42 } },
-    });
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain('capabilities.commands.broken');
-    expect(warnings[0]).toContain('Got: 42');
-  });
-
-  it('a command object with no usable field is named, hinting unknown keys', () => {
-    const warnings = collectConfigWarnings({
-      capabilities: { commands: { broken: { typo: 'oops' } } },
-    });
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain('capabilities.commands.broken');
-    expect(warnings[0]).toContain('Unrecognized field');
-    expect(warnings[0]).toContain('typo');
-  });
-
-  it('platformDefaults:5 → must-be-an-object warning', () => {
-    const warnings = collectConfigWarnings({ platformDefaults: 5 });
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain('platformDefaults must be an object');
-  });
-
   it('skills.<s>.always:"yes" → boolean warning naming the field', () => {
     const warnings = collectConfigWarnings({ skills: { observability: { always: 'yes' } } });
     expect(warnings).toHaveLength(1);
@@ -92,12 +63,11 @@ describe('collectConfigWarnings', () => {
   it('collects MULTIPLE field-named warnings in one pass', () => {
     const warnings = collectConfigWarnings({
       agents: { 'ana-build': { skills: 'notanarray' } },
-      capabilities: { outputStyle: 42, commands: 'oops' },
+      skills: { observability: { always: 'yes' } },
     });
-    expect(warnings).toHaveLength(3);
+    expect(warnings).toHaveLength(2);
     expect(warnings.some((w) => w.includes('agents.ana-build.skills'))).toBe(true);
-    expect(warnings.some((w) => w.includes('capabilities.outputStyle'))).toBe(true);
-    expect(warnings.some((w) => w.includes('capabilities.commands must be an object'))).toBe(true);
+    expect(warnings.some((w) => w.includes('skills.observability.always'))).toBe(true);
   });
 
   it('never throws on hostile input', () => {

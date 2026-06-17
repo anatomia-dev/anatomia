@@ -44,8 +44,8 @@ const MACHINE_MANAGED_FIELDS: Record<string, string> = {
  *
  * Derived from `AnaJsonSchema.shape` so the set can never drift from the
  * schema: adding an optional field to the schema (e.g. the configurability
- * fields agents/skills/capabilities/platformDefaults) automatically widens
- * the known set, so `config set` stops warning on it without a second edit.
+ * fields agents/skills) automatically widens the known set, so `config set`
+ * stops warning on it without a second edit.
  */
 const KNOWN_FIELDS = new Set(Object.keys(AnaJsonSchema.shape));
 
@@ -85,27 +85,12 @@ const SCHEMA_GROUPS: Array<{ title: string; rows: SchemaRow[] }> = [
     rows: [
       { field: 'agents.<name>.skills', desc: 'Skills projected onto an agent (array of strings)', example: 'ana agents skills ana-build git-workflow,api-patterns' },
       { field: 'agents.<name>.model', desc: "Per-agent model override (e.g. 'opus')", example: 'ana agents model ana-build opus' },
-      { field: 'agents.<name>.enabled', desc: 'Drop a built-in agent (false); the ana core agent is never droppable', example: 'ana config set agents.ana-release.enabled false' },
     ],
   },
   {
     title: 'Skills — custom / always-on skills layered onto the scan manifest',
     rows: [
       { field: 'skills.<name>.always', desc: 'Append this skill to every install regardless of scan (boolean)', example: 'ana config set skills.observability.always true' },
-    ],
-  },
-  {
-    title: 'Capabilities — opt-in managed surfaces (absent = no new files)',
-    rows: [
-      { field: 'capabilities.commands.<name>', desc: 'A slash command: string body, or { run, description, body }', example: 'ana config set capabilities.commands.ship \'{"run":"npm run release","description":"Ship it"}\'' },
-      { field: 'capabilities.outputStyle', desc: 'Claude output style written to settings.json (string)', example: 'ana config set capabilities.outputStyle concise' },
-      { field: 'capabilities.mcpServers.<name>', desc: 'An MCP server written to .mcp.json (object)', example: 'ana config set capabilities.mcpServers.weather \'{"command":"weather-mcp"}\'' },
-    ],
-  },
-  {
-    title: 'Platform defaults — per-platform runtime overrides',
-    rows: [
-      { field: 'platformDefaults.<platform>', desc: 'Override a platform descriptor (e.g. model, sandbox)', example: 'ana config set platformDefaults.codex.model gpt-5.5' },
     ],
   },
 ];
@@ -412,8 +397,6 @@ function displaySchema(): void {
       console.log(chalk.gray(`      e.g. ${row.example}`));
     }
   }
-  console.log('');
-  console.log(chalk.dim('  capabilities.commands.<name> body accepts a string OR { run?, description?, body? }.'));
 }
 
 /**
@@ -453,14 +436,9 @@ export function registerConfigCommand(program: Command): void {
         '  ana config schema          list the configurable surface + examples',
         '',
         'Configurable beyond the basics (run `ana config schema` for the full map):',
-        '  agents.<name>.skills / .model / .enabled   per-agent, projected into',
+        '  agents.<name>.skills / .model              per-agent, projected into',
         '                                             Claude AND Codex in lockstep',
         '  skills.<name>.always                       always-on custom skills',
-        '  capabilities.commands.<name>               slash command (.claude/commands/)',
-        '                                             body: string OR { run, description, body }',
-        '  capabilities.outputStyle                   Claude output style (settings.json)',
-        '  capabilities.mcpServers.<name>             MCP server (.mcp.json)',
-        '  platformDefaults.<platform>                per-platform runtime overrides',
         '',
         'Absent configurability keys = built-in defaults (deleting a key restores stock).',
       ].join('\n'),
