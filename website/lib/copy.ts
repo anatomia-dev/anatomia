@@ -387,7 +387,7 @@ export const copy = {
         { n: "THINK", name: "ana", role: "reads · asks · scopes" },
         { n: "PLAN", name: "ana-plan", role: "specs · contracts" },
         { n: "BUILD", name: "ana-build", role: "implements · tests" },
-        { n: "VERIFY", name: "ana-verify", role: "isolated · mechanical" },
+        { n: "VERIFY", name: "ana-verify", role: "isolated · fault-finds" },
       ],
     },
 
