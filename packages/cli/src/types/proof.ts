@@ -199,6 +199,20 @@ export interface ComplianceVerdictRecord {
    * verbatim (recorded + warned, never dropped) without a cast or data loss.
    */
   reason: VerdictReason | (string & {});
+  /**
+   * The engine channel that produced this verdict: `'deterministic'` (mechanical
+   * predicate match) vs `'llm'` (judge). Mirrors anatrace-core's type-disjoint
+   * `ComplianceVerdict.source` / `JudgeVerdict.source` discriminant; `(string & {})`
+   * keeps it forward-compatible like {@link reason}.
+   *
+   * OPTIONAL by construction (`?:`, never `| null`): records written before
+   * `verifier-verdict-honesty` Component 3 lack it and MUST deserialize as
+   * non-gating. The read-build-report veto fires ONLY on `'deterministic'`; an
+   * absent `source` is treated as non-deterministic, so old records never
+   * retroactively gate (forward-only). Gating keys on `source`, never on the
+   * drift-prone `reason` vocabulary.
+   */
+  source?: 'deterministic' | 'llm' | (string & {});
 }
 
 /**
@@ -285,6 +299,24 @@ export interface ProofChainEntry {
   slug: string;
   feature: string;
   result: 'PASS' | 'FAIL' | 'UNKNOWN';
+  /**
+   * Reasons a PASS headline was coerced to a FAIL `result` (one per contradicting
+   * UNSATISFIED compliance row). Additive and optional — absent on a clean verdict
+   * and on pre-existing entries. Renders on the proof card so the coercion is
+   * observable, never silent.
+   */
+  verdict_contradictions?: string[];
+  /**
+   * Status of the deterministic read-build-report veto (verifier-verdict-honesty
+   * Component 3). When the verify session deterministically read `build_report.md`,
+   * `applied` is `true` and `result` was force-FAILed regardless of the headline.
+   *
+   * ALWAYS recorded when the proof is sealed — `applied: false` with a stated
+   * `reason` (e.g. `'no captured transcript'`) when no veto fired, so the absence
+   * of a veto is never a silent skip. Additive and optional: absent on pre-veto
+   * entries, which are forward-only non-gating.
+   */
+  verdict_veto?: { applied: boolean; reason?: string };
   author: { name: string; email: string };
   contract: ProofSummary['contract'];
   assertions: Array<{

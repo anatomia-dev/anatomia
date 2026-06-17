@@ -14,6 +14,7 @@ import type { ProofAssertion, ProofDeviation } from './proof-parsers.js';
 import { computeChainHealth } from './proof-health.js';
 import type { ChainHealth } from './proof-health.js';
 import { joinCoverage } from '../commands/artifact-validators.js';
+import { deriveVerdict } from './verdict.js';
 import type { ContractSchema } from '../types/contract.js';
 
 // Re-export from proof-parsers for backward compatibility
@@ -31,6 +32,13 @@ export { MIN_FINDINGS_HOT, MIN_ENTRIES_HOT, TRAJECTORY_WINDOW, MIN_ENTRIES_FOR_T
 export interface ProofSummary {
   feature: string;
   result: 'PASS' | 'FAIL' | 'UNKNOWN';
+  /**
+   * Reasons a PASS headline was coerced to a FAIL `result` by {@link deriveVerdict}
+   * (one per contradicting UNSATISFIED compliance row). Additive and optional:
+   * absent on a clean verdict and on old entries. Surfaced on the proof entry so
+   * the coercion is observable, not silent.
+   */
+  verdict_contradictions?: string[];
   author: {
     name: string;
     email: string;
@@ -165,7 +173,7 @@ interface ContractYaml {
  * @param content - Verify report content
  * @returns Array of compliance rows with id, says, status, evidence
  */
-function parseComplianceTable(content: string): Array<{
+export function parseComplianceTable(content: string): Array<{
   id: string;
   says: string;
   status: string;
@@ -202,17 +210,6 @@ function parseComplianceTable(content: string): Array<{
   }
 
   return results;
-}
-
-/**
- * Parse Result line from verify report
- *
- * @param content - Verify report content
- * @returns PASS, FAIL, or UNKNOWN
- */
-function parseResult(content: string): 'PASS' | 'FAIL' | 'UNKNOWN' {
-  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
-  return match && match[1] ? match[1].toUpperCase() as 'PASS' | 'FAIL' : 'UNKNOWN';
 }
 
 /**
@@ -979,6 +976,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     .sort();
 
   let lastResult: 'PASS' | 'FAIL' | 'UNKNOWN' | null = null;
+  let lastContradictions: string[] = [];
   const allFindings: ProofSummary['findings'] = [];
 
   for (const verifyFile of verifyFiles) {
@@ -986,9 +984,14 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     try {
       const verifyContent = fs.readFileSync(verifyPath, 'utf-8');
 
-      // Track result from each phase — last phase determines overall result
-      const phaseResult = parseResult(verifyContent);
-      if (phaseResult !== 'UNKNOWN') lastResult = phaseResult;
+      // Track result from each phase — last phase determines overall result.
+      // deriveVerdict cross-checks the headline against the compliance table and
+      // coerces a contradicted PASS to FAIL; carry its reasons onto the proof.
+      const phaseVerdict = deriveVerdict(verifyContent);
+      if (phaseVerdict.result !== 'UNKNOWN') {
+        lastResult = phaseVerdict.result;
+        lastContradictions = phaseVerdict.contradictions;
+      }
 
       // Accumulate AC results from last phase (most complete). Preserve the
       // `coverage` object — it is computed from scope.md + contract.yaml below,
@@ -1051,6 +1054,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
   }
 
   if (lastResult) summary.result = lastResult;
+  if (lastContradictions.length > 0) summary.verdict_contradictions = lastContradictions;
   summary.findings = allFindings;
 
   // Coverage: join scope.md ACs against the contract's `ac:` links + waivers via

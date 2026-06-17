@@ -40,5 +40,158 @@
   "spec-2": {
     "saved_at": "2026-06-16T21:57:25.530Z",
     "hash": "sha256:b769eb778aba59a6f06637e1795b214586d70d253f52d09b3f8c47f6f775105c"
+  },
+  "build_started_at": "2026-06-16T23:08:56.630Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-16T23:25:04.888Z",
+    "hash": "sha256:f683c4083ee32ccfd40c41428322a96641bf668915e1fbbb666d2e5dfb30dfc8"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-16T23:25:04.889Z",
+    "hash": "sha256:8ec74f34fbdd8d8a63e91b84101215992113459c520e2080f6e172ccf70f2686"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-verify.md",
+    ".codex/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/commands/work-state.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/compliance.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/src/utils/verdict.ts",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/commands/proof-compliance-display.test.ts",
+    "packages/cli/tests/commands/verdict-veto-integration.test.ts",
+    "packages/cli/tests/commands/work-proof-guard.test.ts",
+    "packages/cli/tests/templates/agent-proof-context.test.ts",
+    "packages/cli/tests/utils/compliance.test.ts",
+    "packages/cli/tests/utils/verdict.test.ts"
+  ],
+  "module_churn": {
+    ".claude/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    ".codex/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/artifact-validators.ts": {
+      "added": 6,
+      "deleted": 3
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 12,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/pr.ts": {
+      "added": 4,
+      "deleted": 3
+    },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 55,
+      "deleted": 10
+    },
+    "packages/cli/src/commands/work-proof.ts": {
+      "added": 80,
+      "deleted": 21
+    },
+    "packages/cli/src/commands/work-state.ts": {
+      "added": 8,
+      "deleted": 4
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 8,
+      "deleted": 5
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 32,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 12,
+      "deleted": 3
+    },
+    "packages/cli/src/utils/proofSummary.ts": {
+      "added": 19,
+      "deleted": 15
+    },
+    "packages/cli/src/utils/verdict.ts": {
+      "added": 151,
+      "deleted": 0
+    },
+    "packages/cli/templates/.claude/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/templates/.codex/agents/ana-verify.md": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+      "added": 44,
+      "deleted": 2
+    },
+    "packages/cli/tests/commands/verdict-veto-integration.test.ts": {
+      "added": 213,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-proof-guard.test.ts": {
+      "added": 132,
+      "deleted": 0
+    },
+    "packages/cli/tests/templates/agent-proof-context.test.ts": {
+      "added": 46,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 40,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/verdict.test.ts": {
+      "added": 332,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at_1": "2026-06-16T23:34:13.114Z",
+  "verify_agent_1": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:4ccdd83ffe148da425aad8c8d4b8f85838bada357f60b34d23cd13f0a2694bcd",
+    "run_at": "2026-06-17T00:25:08.124Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-16T23:42:08.548Z",
+    "hash": "sha256:4e30d37b6e81f2c00c883205dbb978fae7958e8ab0c95fdbfd1c8cf84939f6b7"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-16T23:42:08.548Z",
+    "hash": "sha256:32087fac8edf2ad4674062b62f3c64b1cb2a24fab539970f48f18042332ba102"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-17T00:10:06.218Z",
+    "hash": "sha256:86628b364a0c18f7c3faf65f2cb5f9cfcb22fcc7b69c9fc73a3ca09554b656f8"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-17T00:10:06.219Z",
+    "hash": "sha256:a7cd69892d59cb7cb800570cb694596f0a7834b6dbcf95270988b7ae3e4600bd"
+  },
+  "verify_started_at_2": "2026-06-17T00:17:50.933Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-17T00:25:08.154Z",
+    "hash": "sha256:6fe13817f15070a32a7cf6ce2c116873fdf28eaa2f6f86ace3226fddeb40cc34"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-17T00:25:08.154Z",
+    "hash": "sha256:2d234f22b231f71a683750af010f17f8b837fab3380639ec166eb70b5c45392f"
   }
 }

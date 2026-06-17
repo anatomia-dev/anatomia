@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing display test assertion updated to AC6 copy (verdicts no longer 'never a gate' unconditionally); spec-driven expected-value change, not a weakened matcher."
+    file: "packages/cli/tests/commands/proof-compliance-display.test.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "A written proof_chain entry's verdict_veto.applied is always false — guardVerdictVeto exits before the entry is written (mirrors guardFailResult). The APPLIED render path is reachable only via test-constructed entries, not writeProofChain."
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Stale @ana tags from prior contracts (anatrace-core-integration / anatrace-pin) remain in compliance.test.ts and proof-compliance-display.test.ts; same-numbered tags do NOT map to this contract's assertions. Component-3 tests use current IDs."
+    file: "packages/cli/tests/commands/proof-compliance-display.test.ts"
+    severity: observation
+    suggested_action: monitor

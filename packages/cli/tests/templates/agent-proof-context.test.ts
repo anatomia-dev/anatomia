@@ -82,3 +82,49 @@ describe('Agent Proof Context Queries', () => {
     expect(dirFiles).toEqual(constantFiles);
   });
 });
+
+// Component 1 (verifier-verdict-honesty): the verifier prompt forbids reading the
+// build report in two places but used to *license* it in two others. The license
+// is gone; the prohibition and the source-inspection fallback must survive.
+// NOTE: the A001-A008 tags above belong to a prior merged contract; the tags below
+// reference the verifier-verdict-honesty contract.
+describe('Verdict honesty — build-report read license removed', () => {
+  const codexTemplatesDir = path.join(__dirname, '../../templates/.codex/agents');
+  const repoRoot = path.join(__dirname, '../../../..');
+  const BUILD_REPORT_LICENSE = 'check the build report for coverage claims';
+
+  // @ana A001
+  it('claude master ana-verify.md no longer licenses reading the build report', () => {
+    const content = readTemplate('ana-verify.md');
+    expect(content).not.toContain(BUILD_REPORT_LICENSE);
+  });
+
+  // @ana A002
+  it('codex master ana-verify.md no longer licenses reading the build report', () => {
+    const content = readFileSync(path.join(codexTemplatesDir, 'ana-verify.md'), 'utf-8');
+    expect(content).not.toContain(BUILD_REPORT_LICENSE);
+  });
+
+  // @ana A003
+  it('claude master keeps the never-read-the-build-report prohibition', () => {
+    const content = readTemplate('ana-verify.md');
+    expect(content).toContain('never read the build report');
+  });
+
+  // @ana A004
+  it('claude master keeps the source-inspection fallback for untested assertions', () => {
+    const content = readTemplate('ana-verify.md');
+    expect(content).toContain('source inspection');
+  });
+
+  // @ana A005
+  it('both dogfood ana-verify copies match their master byte-for-byte', () => {
+    const claudeMaster = readTemplate('ana-verify.md');
+    const claudeDogfood = readFileSync(path.join(repoRoot, '.claude/agents/ana-verify.md'), 'utf-8');
+    expect(claudeDogfood).toBe(claudeMaster);
+
+    const codexMaster = readFileSync(path.join(codexTemplatesDir, 'ana-verify.md'), 'utf-8');
+    const codexDogfood = readFileSync(path.join(repoRoot, '.codex/agents/ana-verify.md'), 'utf-8');
+    expect(codexDogfood).toBe(codexMaster);
+  });
+});

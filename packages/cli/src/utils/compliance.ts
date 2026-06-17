@@ -19,8 +19,12 @@
  *  2. {@link assembleComplianceAttestations} runs at `ana work complete` and reads
  *     the committed records onto the proof entry — skip-unparseable, never throws.
  *
- * The record is EVIDENCE, never a gate: a `violated` verdict is stored and
- * rendered but never changes a proof's PASS/FAIL.
+ * The record is EVIDENCE, except the allowlisted `ana-verify:verify-independence`
+ * verdict, which gates the proof when `violated` + `source: deterministic`
+ * (Component 3 / verifier-verdict-honesty): the seal force-FAILs because the
+ * verify session deterministically read the build report. All other verdicts
+ * remain non-gating evidence — stored and rendered but never changing a proof's
+ * PASS/FAIL. The gate keys on `source`, never on the drift-prone `reason`.
  */
 
 import { createHash } from 'node:crypto';
@@ -70,7 +74,7 @@ function readCoreVersion(): string {
  * deliberately buys. The real 0.4.0 engine never emits an unknown reason, so this
  * warn path only fires on a future bump.
  *
- * @param verdicts - The core compliance verdicts (claim id, status, reason)
+ * @param verdicts - The core compliance verdicts (claim id, status, reason, and optional determinism `source`)
  * @param saysById - Map of claim id → human-readable obligation (`says`), from the mandate
  * @param coreVersion - The resolved engine version, interpolated into the drift warning (never hardcoded)
  * @returns One compact record per verdict, reason preserved verbatim
@@ -80,6 +84,7 @@ export function projectVerdicts(
     claimId: string;
     status: ComplianceVerdictRecord['status'];
     reason: string;
+    source?: string;
   }>,
   saysById: ReadonlyMap<string, string>,
   coreVersion: string = readCoreVersion(),
@@ -96,6 +101,10 @@ export function projectVerdicts(
       says: saysById.get(v.claimId) ?? '',
       status: v.status,
       reason: v.reason, // verbatim, ALWAYS — never dropped, coerced, or abstained
+      // Persist the determinism channel so the read-build-report veto can read it
+      // (Component 3). Only present when core supplies it; an absent source stays
+      // absent on the record and is treated as non-gating downstream.
+      ...(v.source !== undefined ? { source: v.source } : {}),
     };
   });
 }

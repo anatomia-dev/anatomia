@@ -23,6 +23,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { globSync } from 'glob';
 import type { ProofChainEntry, ProofChain, ComplianceAttestation } from '../types/proof.js';
+import type { ReadBuildReportVeto } from '../utils/verdict.js';
 import { computeCost, PRICES } from '../data/pricing.js';
 import { getSkillsDir, getSkillsDirRel } from './platform.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
@@ -550,9 +551,12 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     }
   }
 
-  // ── Session Attestation (Phase 2; display-only; NEVER influences PASS/FAIL) ──
-  if (entry.compliance?.length) {
-    lines.push(...renderSessionAttestation(entry.compliance, entry.slug, width));
+  // ── Session Attestation (Phase 2; display-only) ──
+  // Records render as non-gating evidence; the verdict_veto status (Component 3)
+  // surfaces here too — even with no records, so "not applied — no captured
+  // transcript" is never silent. The veto itself was decided upstream at the seal.
+  if (entry.compliance?.length || entry.verdict_veto) {
+    lines.push(...renderSessionAttestation(entry.compliance ?? [], entry.slug, width, entry.verdict_veto));
   }
 
   lines.push('');
@@ -579,22 +583,33 @@ function shortHash(hash: string): string {
  *
  * Module-private (`learn-session-memory-C1`: do not over-export from proof.ts) and
  * PRESENTATION ONLY — it reads the already-assembled, already-scrubbed records and
- * mutates nothing. A `violated` verdict renders with a red glyph but the headline
- * PASS/FAIL is computed entirely upstream and is never touched here: behavioral
- * verdicts are evidence, never a gate.
+ * the already-decided veto outcome, and mutates nothing. Behavioral verdicts are
+ * evidence EXCEPT the allowlisted `ana-verify:verify-independence` verdict, which
+ * gates the proof via the read-build-report veto (Component 3). That gate is
+ * computed entirely upstream at the seal; this function only RENDERS its outcome
+ * (applied / not applied, with the forward-only honesty boundary) — it never
+ * computes or changes PASS/FAIL. All other verdicts render as non-gating evidence.
  *
  * @param compliance - The committed behavioral records attached to the entry
  * @param slug - The work-item slug (for the `--json` overflow hint)
  * @param width - The card render width
- * @returns The section lines (empty when there are no records)
+ * @param verdictVeto - The recorded read-build-report veto outcome (rendered even with no records)
+ * @returns The section lines (empty when there are neither records nor a veto outcome)
  */
 function renderSessionAttestation(
   compliance: ComplianceAttestation[],
   slug: string,
   width: number,
+  verdictVeto?: ReadBuildReportVeto,
 ): string[] {
   const lines: string[] = [];
-  if (compliance.length === 0) return lines;
+  if (compliance.length === 0 && !verdictVeto) return lines;
+  if (compliance.length === 0) {
+    // No transcript captured — still surface the veto status (AC4: never silent)
+    // and the forward-only honesty boundary, then stop.
+    lines.push(...renderVerdictVeto(verdictVeto));
+    return lines;
+  }
 
   lines.push('');
   const transcripts = `${compliance.length} transcript${compliance.length === 1 ? '' : 's'}`;
@@ -621,7 +636,8 @@ function renderSessionAttestation(
       else if (v.status === 'violated') violated += 1;
       else unverifiable += 1;
     }
-    // A violated count renders red (a loud signal) but never gates.
+    // A violated count renders red (a loud signal). Counts never gate; only the
+    // allowlisted verify-independence veto (rendered below) can force-FAIL.
     const violatedLabel = violated > 0 ? chalk.red(`${violated} violated`) : `${violated} violated`;
     lines.push(
       `  ${label} · ${rec.coverage.total} claims   ${chalk.green('✓')} ${satisfied} satisfied · ${violatedLabel} · ${unverifiable} unverifiable`,
@@ -651,9 +667,38 @@ function renderSessionAttestation(
   const incomplete = compliance.filter((c) => !c.complete).length;
   if (incomplete > 0) {
     lines.push(
-      `  ${chalk.yellow('⚠')} ${incomplete} record${incomplete === 1 ? '' : 's'} ${incomplete === 1 ? 'has' : 'have'} incomplete coverage — verdicts are evidence, never a gate.`,
+      `  ${chalk.yellow('⚠')} ${incomplete} record${incomplete === 1 ? '' : 's'} ${incomplete === 1 ? 'has' : 'have'} incomplete coverage — verdicts are non-gating evidence (except the verify-independence veto below).`,
     );
   }
+
+  lines.push(...renderVerdictVeto(verdictVeto));
+  return lines;
+}
+
+/**
+ * Render the deterministic read-build-report veto status (Component 3).
+ *
+ * The veto is the ONE behavioral gate: a verify session that deterministically
+ * read `build_report.md` force-FAILs the proof. ALWAYS surfaces the outcome when
+ * one was recorded — `APPLIED` (the headline was overridden) or `not applied` with
+ * its stated reason (e.g. `no captured transcript`) so the absence of a veto is
+ * never a silent skip (AC4). Closes with the forward-only honesty boundary, once.
+ *
+ * @param verdictVeto - The recorded veto outcome, or undefined on pre-veto entries
+ * @returns The veto status lines (empty when no veto outcome was recorded)
+ */
+function renderVerdictVeto(verdictVeto?: ReadBuildReportVeto): string[] {
+  if (!verdictVeto) return [];
+  const lines: string[] = [];
+  if (verdictVeto.applied) {
+    lines.push(
+      `  ${chalk.red('⛔')} verdict veto: APPLIED — ${verdictVeto.reason ?? 'verify read build_report.md'} (forward-only)`,
+    );
+  } else {
+    lines.push(`  verdict veto: not applied — ${verdictVeto.reason ?? 'no captured transcript'}`);
+  }
+  // Forward-only honesty boundary — rendered once, whenever the veto was evaluated.
+  lines.push(`  ${chalk.gray('veto is forward-only; pre-veto verdicts were self-reported.')}`);
   return lines;
 }
 

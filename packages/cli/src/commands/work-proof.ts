@@ -17,6 +17,11 @@ import { agentCommand } from './platform.js';
 import { countPhases } from './work-state.js';
 import { isProcessCaptureEnabled } from '../utils/forensics.js';
 import { assembleComplianceAttestations } from '../utils/compliance.js';
+import {
+  evaluateReadBuildReportVeto,
+  VERIFY_INDEPENDENCE_CLAIM_ID,
+} from '../utils/verdict.js';
+import type { ReadBuildReportVeto } from '../utils/verdict.js';
 
 /** Per-file churn map as stored in `.saves.json`. */
 type ModuleChurnMap = Record<string, { added: number; deleted: number }>;
@@ -189,15 +194,50 @@ export function assembleProcessAttestation(
  *
  * @param result - Verification result string
  * @param context - Optional context (e.g., "Phase 2") for the error message
+ * @param contradictions - Optional contradiction reasons from a coerced PASS; when
+ *   present and non-empty, they are listed instead of the generic FAIL line
  */
-export function guardFailResult(result: string, context?: string): void {
+export function guardFailResult(result: string, context?: string, contradictions?: string[]): void {
   if (result === 'FAIL') {
     const prefix = context ? `${context}: ` : '';
     console.error(chalk.red(`Error: ${prefix}Cannot complete work with a FAIL verification result.`));
-    console.error(chalk.gray('The verify report says FAIL. Fix the issues and re-verify before completing.'));
+    if (contradictions && contradictions.length > 0) {
+      // Coerced PASS: the headline said PASS but the verifier's own table contradicts it.
+      console.error(chalk.gray("The verify headline says PASS but it contradicts the verifier's own report:"));
+      for (const reason of contradictions) {
+        console.error(chalk.gray(`  • ${reason}`));
+      }
+      console.error(chalk.gray('Fix the issues and re-verify before completing.'));
+    } else {
+      console.error(chalk.gray('The verify report says FAIL. Fix the issues and re-verify before completing.'));
+    }
     console.error(chalk.gray(`Run: ${agentCommand('build')} to fix, then ${agentCommand('verify')}`));
     process.exit(1);
   }
+}
+
+/**
+ * Guard against completing work when the deterministic read-build-report veto
+ * fired (verifier-verdict-honesty Component 3). Trust-the-bytes: a verify session
+ * that deterministically read `build_report.md` force-FAILs the proof regardless
+ * of its self-authored PASS headline. Mirrors {@link guardFailResult}'s
+ * print-and-exit shape.
+ *
+ * MUST run upstream of the proof-chain write so the override happens at the seal
+ * decision — a veto computed after the entry is written gates nothing.
+ *
+ * @param veto - The veto outcome from {@link evaluateReadBuildReportVeto}
+ * @param context - Optional context (e.g. "Phase 2") for the error message
+ */
+export function guardVerdictVeto(veto: ReadBuildReportVeto, context?: string): void {
+  if (!veto.applied) return;
+  const prefix = context ? `${context}: ` : '';
+  console.error(chalk.red(`Error: ${prefix}Cannot complete work with a FAIL verification result.`));
+  console.error(chalk.gray('Deterministic veto: the verify session read build_report.md.'));
+  console.error(chalk.gray(`  claim ${VERIFY_INDEPENDENCE_CLAIM_ID} — violated (source: deterministic)`));
+  console.error(chalk.gray('Verify must not read the build report. The PASS headline is overridden.'));
+  console.error(chalk.gray(`Run: ${agentCommand('build')} to fix, then ${agentCommand('verify')}`));
+  process.exit(1);
 }
 
 /**
@@ -286,8 +326,37 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     }
   } catch { /* fall back to empty */ }
 
-  // FAIL result guard — block proof chain entry for failed verification
-  guardFailResult(proof.result);
+  // Assemble the optional behavioral attestations (Phase 2) — one committed
+  // compliance record per transcript. Capture-on only. MUST be assembled HERE,
+  // upstream of every FAIL guard and the proof-chain write, because the
+  // read-build-report veto (Component 3) reads these records to decide whether to
+  // force-FAIL the proof. A veto computed after the entry is written gates nothing.
+  // All verdicts remain non-gating EVIDENCE except the one allowlisted claim the
+  // veto keys on; an incomplete-coverage record is announced loudly but never blocks.
+  const compliance = isProcessCaptureEnabled(projectRoot)
+    ? assembleComplianceAttestations(projectRoot, slug)
+    : [];
+  const incompleteCompliance = compliance.filter((c) => !c.complete);
+  if (incompleteCompliance.length > 0) {
+    console.error(
+      chalk.yellow(
+        `Warning: ${incompleteCompliance.length} session attestation(s) have incomplete coverage — ` +
+          `behavioral verdicts are evidence, never a gate.`,
+      ),
+    );
+  }
+
+  // Deterministic read-build-report veto (Component 3). Evaluate BEFORE the FAIL
+  // guard and the entry write. When it fires, the proof is force-FAILed regardless
+  // of the self-authored headline; when it does not, the outcome (with its stated
+  // reason — including "no captured transcript") is recorded on the entry so the
+  // absence of a veto is never a silent skip.
+  const verdictVeto = evaluateReadBuildReportVeto(compliance);
+  guardVerdictVeto(verdictVeto);
+
+  // FAIL result guard — block proof chain entry for failed verification.
+  // Pass any contradiction reasons so a coerced PASS explains itself.
+  guardFailResult(proof.result, undefined, proof.verdict_contradictions);
 
   // UNKNOWN result warning (AC12)
   const completedPlanDir = path.join(anaDir, 'plans', 'completed', slug);
@@ -334,27 +403,17 @@ export async function writeProofChain(slug: string, proof: ProofSummary, project
     );
   }
 
-  // Assemble the optional behavioral attestations (Phase 2) — one committed
-  // compliance record per transcript. Capture-on only; EVIDENCE, never a gate (a
-  // violated verdict never changes proof.result). A record with incomplete
-  // coverage is announced loudly here but never blocks completion.
-  const compliance = isProcessCaptureEnabled(projectRoot)
-    ? assembleComplianceAttestations(projectRoot, slug)
-    : [];
-  const incompleteCompliance = compliance.filter((c) => !c.complete);
-  if (incompleteCompliance.length > 0) {
-    console.error(
-      chalk.yellow(
-        `Warning: ${incompleteCompliance.length} session attestation(s) have incomplete coverage — ` +
-          `behavioral verdicts are evidence, never a gate.`,
-      ),
-    );
-  }
-
   const entry: ProofChainEntry = {
     slug,
     feature: proof.feature,
     result: proof.result,
+    ...(proof.verdict_contradictions && proof.verdict_contradictions.length > 0
+      ? { verdict_contradictions: proof.verdict_contradictions }
+      : {}),
+    // Record the veto outcome (always not-applied here: an applied veto exits
+    // upstream via guardVerdictVeto). Its stated reason makes the absence of a
+    // veto observable — never a silent skip (forward-only, Component 3).
+    verdict_veto: verdictVeto,
     author: proof.author,
     contract: proof.contract,
     assertions: proof.assertions.map(a => {
