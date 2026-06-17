@@ -57,16 +57,21 @@
     "packages/cli/src/commands/artifact-validators.ts",
     "packages/cli/src/commands/artifact.ts",
     "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/proof.ts",
     "packages/cli/src/commands/work-proof.ts",
     "packages/cli/src/commands/work-state.ts",
     "packages/cli/src/commands/work.ts",
     "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/compliance.ts",
     "packages/cli/src/utils/proofSummary.ts",
     "packages/cli/src/utils/verdict.ts",
     "packages/cli/templates/.claude/agents/ana-verify.md",
     "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/commands/proof-compliance-display.test.ts",
+    "packages/cli/tests/commands/verdict-veto-integration.test.ts",
     "packages/cli/tests/commands/work-proof-guard.test.ts",
     "packages/cli/tests/templates/agent-proof-context.test.ts",
+    "packages/cli/tests/utils/compliance.test.ts",
     "packages/cli/tests/utils/verdict.test.ts"
   ],
   "module_churn": {
@@ -90,9 +95,13 @@
       "added": 4,
       "deleted": 3
     },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 55,
+      "deleted": 10
+    },
     "packages/cli/src/commands/work-proof.ts": {
-      "added": 19,
-      "deleted": 4
+      "added": 80,
+      "deleted": 21
     },
     "packages/cli/src/commands/work-state.ts": {
       "added": 8,
@@ -103,15 +112,19 @@
       "deleted": 5
     },
     "packages/cli/src/types/proof.ts": {
-      "added": 7,
+      "added": 32,
       "deleted": 0
+    },
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 12,
+      "deleted": 3
     },
     "packages/cli/src/utils/proofSummary.ts": {
       "added": 19,
       "deleted": 15
     },
     "packages/cli/src/utils/verdict.ts": {
-      "added": 82,
+      "added": 151,
       "deleted": 0
     },
     "packages/cli/templates/.claude/agents/ana-verify.md": {
@@ -122,16 +135,28 @@
       "added": 2,
       "deleted": 2
     },
+    "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+      "added": 44,
+      "deleted": 2
+    },
+    "packages/cli/tests/commands/verdict-veto-integration.test.ts": {
+      "added": 213,
+      "deleted": 0
+    },
     "packages/cli/tests/commands/work-proof-guard.test.ts": {
-      "added": 77,
+      "added": 132,
       "deleted": 0
     },
     "packages/cli/tests/templates/agent-proof-context.test.ts": {
       "added": 46,
       "deleted": 0
     },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 40,
+      "deleted": 0
+    },
     "packages/cli/tests/utils/verdict.test.ts": {
-      "added": 227,
+      "added": 332,
       "deleted": 0
     }
   },
@@ -150,5 +175,13 @@
   "verify-data-1": {
     "saved_at": "2026-06-16T23:42:08.548Z",
     "hash": "sha256:32087fac8edf2ad4674062b62f3c64b1cb2a24fab539970f48f18042332ba102"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-17T00:10:06.218Z",
+    "hash": "sha256:86628b364a0c18f7c3faf65f2cb5f9cfcb22fcc7b69c9fc73a3ca09554b656f8"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-17T00:10:06.219Z",
+    "hash": "sha256:a7cd69892d59cb7cb800570cb694596f0a7834b6dbcf95270988b7ae3e4600bd"
   }
 }
