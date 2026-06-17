@@ -59848,6 +59848,620 @@
         "base_commit": "fc8b6775837222b89b0405c901c940982c09d820"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "public-surface-honesty",
+      "feature": "Public-surface honesty touch-ups",
+      "result": "PASS",
+      "verdict_veto": {
+        "applied": false,
+        "reason": "verify did not read build_report.md"
+      },
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 4,
+        "satisfied": 4,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The 'Mechanical, not vibes' section title is left unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The 'No LLM grades its own code' line is left unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The manifesto's 'you read the chain' line is left unchanged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 6,
+        "partial": 1,
+        "coverage": {
+          "pinned": 1,
+          "judgment": 4,
+          "retired": 0,
+          "uncovered": 0,
+          "weak_only": 0
+        }
+      },
+      "timing": {
+        "total_minutes": 92,
+        "think": 43,
+        "plan": 9,
+        "build": 12,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:44d42177896ff907cdfa430998a4e32328fd0c5fb7b0cf49c47a5d610f48b833",
+        "contract": "sha256:b7e14c7148b07f019583ea3fc7660bb409bf152cd1802aa981fd017eec5fedd0",
+        "plan": "sha256:71ff92f086faee052627503ef894addaac6c6b4b34e25767f597d675eb6bdfbc",
+        "spec": "sha256:019fab4d369ad63e62ce06c66bc767eb54b60c0225dc3a70e79505e2ba18a906",
+        "build-report": "sha256:ad4df1e6559b8c94e5ce0f43757263b9e84e834ee40930a98464286a8e73264d",
+        "build-data": "sha256:9b9cd416505de361d8ab90edb3efe9cfe9ea6f329f3c5be7f42a8569a64f704b",
+        "verify-report": "sha256:fabd5e0396813c8dd81cdbf432d23e2ae70453ae064dbf0b77da6fb9b013cede",
+        "verify-data": "sha256:101f703c98beea50fe473985c7fe353f84fa81d71411090273c4125ecf7fbcdc"
+      },
+      "completed_at": "2026-06-17T06:45:14.707Z",
+      "modules_touched": [
+        "website/content/docs/concepts/contract.mdx",
+        "website/lib/__tests__/copy.test.ts",
+        "website/lib/copy.ts"
+      ],
+      "scope_summary": "Three honesty touch-ups on Anatomia's public surface — two corrections and one\ndocumentation gap. A product whose entire pitch is *\"verified over trusted\"*\ncannot ship a surface that overclaims. Each fix removes a statement the code\ndoesn't honor; none touch legitimate marketing.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Fix 1 replaces a false CI claim but introduces another — 'coverage gates' is not honored by CI. test.yml:63 runs `pnpm vitest run` with no --coverage flag, and vitest.config.ts defines thresholds but never sets coverage.enabled:true, so coverage thresholds are dormant in CI. The phrase was prescribed verbatim by scope+spec (AC1), so the fix belongs upstream, not in Build.",
+          "file": ".ana/context/project-context.md",
+          "anchor": null,
+          "line": 134,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "public-surface-honesty-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-17T06:45:14.707Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A004 value 'You don' is a weak substring (matches 'You donate...' as readily as 'You don't'). The guard test wisely over-delivers — it also asserts 'have to trust the model. You read the chain.' — but the contract's pinned value itself is low-bar. Future contracts should pin a more distinctive substring.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "public-surface-honesty-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-17T06:45:14.707Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warnings in website (formatAge unused in components/hero or lib/proof-feed; 'latest' unused). 0 errors, gate passes. NOT introduced by this build — the four changed files contain neither symbol. Recorded so the next engineer doesn't attribute them to this change.",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "public-surface-honesty-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Proof context shows two still-present concerns on website/lib/copy.ts from prior cycles: manifesto outbound link points to /#pipeline (no longer exists), and proofFeed copy references clickable rows that are no longer clickable. This build does not touch either — still present, out of scope here.",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "public-surface-honesty-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Fix 3 docs section summarizes the coverage-gate activation as 'on a scope whose criteria it can parse', folding in the underlying '>=1 recovered AC' condition rather than enumerating it. This is per explicit spec instruction (do not overstate the gate). Accurate and deliberately terse — noted, not a defect.",
+          "file": "website/content/docs/concepts/contract.mdx",
+          "anchor": null,
+          "line": 81,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "public-surface-honesty-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Website vitest baseline showed 1 pre-existing failure (docs-platform-content.test.ts → ENOENT public/search-index.json) when run in a fresh worktree before the Next build generated the asset. Not introduced by this build; resolves once `pnpm --filter anatomia-website check` (or any build) regenerates the search index. Final sealed `ana test` run shows 0 failures.",
+          "file": "website/lib/__tests__/docs-platform-content.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warnings (formatAge, latest unused) remain in the website lint output (0 errors, 2 warnings). They are in files outside this spec's four targets and were not touched.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 4,
+          "assertions_total": 4,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "chore",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "website/content/docs/concepts/contract.mdx": {
+            "added": 15,
+            "deleted": 0
+          },
+          "website/lib/__tests__/copy.test.ts": {
+            "added": 32,
+            "deleted": 0
+          },
+          "website/lib/copy.ts": {
+            "added": 1,
+            "deleted": 1
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "66ba4ea5-2ab8-49fb-ada6-73f213ed19d6",
+            "captured_at": "2026-06-17T05:03:56.691Z",
+            "transcript_hash": "sha256:c6693cfcb81818911948460c96a58dc6033023e3ad5a2d52e66b48d794ba7942",
+            "derived": {
+              "tokens": {
+                "input": 7181,
+                "output": 15788,
+                "cache_create": 46876,
+                "cache_read": 849687
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 2603715,
+              "turns": 44,
+              "tool_calls": 22,
+              "commands_run": 11,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:618938726a7e3155530c3b489bc7903db213aa0fafc4fc87ede994ebf8d6f01c",
+            "cli_version": "1.2.2",
+            "session_id": "5d389d45-67b7-49c7-b287-a16dafdd1052",
+            "captured_at": "2026-06-17T05:50:39.557Z",
+            "transcript_hash": "sha256:21e18802ab14463d1d534f9ae82dceb1157a072db3070d1e4616184ecf95d2b6",
+            "derived": {
+              "tokens": {
+                "input": 7276,
+                "output": 25092,
+                "cache_create": 57540,
+                "cache_read": 1040450
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 582677,
+              "turns": 58,
+              "tool_calls": 22,
+              "commands_run": 12,
+              "tests_executed": 11,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "d05bbf02-dbc4-413b-bf16-f477fd16c880",
+            "captured_at": "2026-06-17T06:01:07.215Z",
+            "transcript_hash": "sha256:f88a7e2416521701ce8f68c516680d286f7b56648fb4657db621becdc7099fe6",
+            "derived": {
+              "tokens": {
+                "input": 7884,
+                "output": 25326,
+                "cache_create": 70841,
+                "cache_read": 3044075
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 741661,
+              "turns": 113,
+              "tool_calls": 51,
+              "commands_run": 34,
+              "tests_executed": 15491,
+              "failures_encountered": 3,
+              "files_touched": 7,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:152a8e2d6c99f0d03dfe739ba10d3391d546b94740135c7cfcaef2e9a7cc97d8",
+            "cli_version": "1.2.2",
+            "session_id": "ac12ef9a-731d-4317-939c-a00414e9da4b",
+            "captured_at": "2026-06-17T06:19:51.200Z",
+            "transcript_hash": "sha256:708b9a5035ff2476ad8fe821d6dd0b1a8cce7545caab38d46884fbdfe75a4641",
+            "derived": {
+              "tokens": {
+                "input": 7439,
+                "output": 21523,
+                "cache_create": 71859,
+                "cache_read": 1032131
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 949992,
+              "turns": 59,
+              "tool_calls": 28,
+              "commands_run": 18,
+              "tests_executed": 3876,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "compliance": [
+        {
+          "role": "plan",
+          "harness": "claude",
+          "session_id": "5d389d45-67b7-49c7-b287-a16dafdd1052",
+          "captured_at": "2026-06-17T05:50:39.557Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:054914fa6637d863b34f4f2dc8af4c12f28ff479b6d06b51087655d20a7ab1f2",
+          "transcript_hash": "sha256:21e18802ab14463d1d534f9ae82dceb1157a072db3070d1e4616184ecf95d2b6",
+          "coverage": {
+            "total": 10,
+            "fully_checked": 1,
+            "unverifiable": 9
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-plan:skill:coding-standards",
+              "says": "ana-plan must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-plan:skill:testing-standards",
+              "says": "ana-plan loads the testing-standards skill",
+              "status": "unverifiable",
+              "reason": "absent-signal",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:.ana/context/project-context.md",
+              "says": "edits stay within .ana/context/project-context.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/copy.ts",
+              "says": "edits stay within website/lib/copy.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+              "says": "edits stay within website/content/docs/concepts/contract.mdx",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+              "says": "edits stay within website/lib/__tests__/copy.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "The 'Mechanical, not vibes' section title is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "The 'No LLM grades its own code' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "The manifesto's 'you read the chain' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "build",
+          "harness": "claude",
+          "session_id": "d05bbf02-dbc4-413b-bf16-f477fd16c880",
+          "captured_at": "2026-06-17T06:01:07.215Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:76f18626e6c81c8f94d9dfad3bdbb4bc1935ac01b5af3979234eb6f3c492cd94",
+          "transcript_hash": "sha256:f88a7e2416521701ce8f68c516680d286f7b56648fb4657db621becdc7099fe6",
+          "coverage": {
+            "total": 10,
+            "fully_checked": 2,
+            "unverifiable": 8
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-build:skill:git-workflow",
+              "says": "ana-build must load the git-workflow skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-build:verify-independence",
+              "says": "ana-build never reads the build report",
+              "status": "violated",
+              "reason": "predicate-not-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:.ana/context/project-context.md",
+              "says": "edits stay within .ana/context/project-context.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/copy.ts",
+              "says": "edits stay within website/lib/copy.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+              "says": "edits stay within website/content/docs/concepts/contract.mdx",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+              "says": "edits stay within website/lib/__tests__/copy.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "The 'Mechanical, not vibes' section title is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "The 'No LLM grades its own code' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "The manifesto's 'you read the chain' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "verify",
+          "harness": "claude",
+          "session_id": "ac12ef9a-731d-4317-939c-a00414e9da4b",
+          "captured_at": "2026-06-17T06:19:51.200Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:bf3e30d85d76e90e4b4f1610125caaed546baa6baedca1af825ae9a404f9a777",
+          "transcript_hash": "sha256:708b9a5035ff2476ad8fe821d6dd0b1a8cce7545caab38d46884fbdfe75a4641",
+          "coverage": {
+            "total": 13,
+            "fully_checked": 4,
+            "unverifiable": 9
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-verify:skill:testing-standards",
+              "says": "ana-verify must load the testing-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:skill:coding-standards",
+              "says": "ana-verify must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:verify-independence",
+              "says": "ana-verify never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+              "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+              "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:.ana/context/project-context.md",
+              "says": "edits stay within .ana/context/project-context.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/copy.ts",
+              "says": "edits stay within website/lib/copy.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+              "says": "edits stay within website/content/docs/concepts/contract.mdx",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+              "says": "edits stay within website/lib/__tests__/copy.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "The 'Mechanical, not vibes' section title is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "The 'No LLM grades its own code' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "The manifesto's 'you read the chain' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-17T06:02:06.261Z",
+        "completed_at": "2026-06-17T06:45:14.694Z",
+        "commit_count": 0,
+        "base_commit": "c2f773104e1b65947f86a73c555d3d9db62dcf15"
+      },
+      "surface": "website"
     }
   ],
   "schema": 1,

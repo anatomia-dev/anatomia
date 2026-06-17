@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-207 runs · 279 active · 5 promoted · 923 closed
+208 runs · 282 active · 5 promoted · 925 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
 | cli | 145 | 208 | 2026-06-17 |
-| website | 24 | 23 | 2026-06-01 |
+| website | 25 | 26 | 2026-06-17 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 279 total)
+## Active Findings (30 shown of 282 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -51,11 +51,6 @@
 - **code:** Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics. — *Guard the anatrace-core load and emit the first real attestation records*
 - **code:** captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here. — *Guard the anatrace-core load and emit the first real attestation records*
 - **code:** projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
-
-### packages/cli/src/utils/forensics.ts
-
-- **code:** captureProvenanceAtSave no longer calls deriveTranscript — it re-reads bytes and calls deriveCountsFromBytes directly so the transcript_hash attests the same bytes (read-once). deriveTranscript is now reachable only from tests. Intentional, but the read-bytes+basename+derive sequence is duplicated across the two functions. — *anatrace-core integration (provenance swap + behavioral attestation)*
-- **test:** AC13 totality (a core call throwing mid-capture must not break the save) has no explicit test that forces parseSession/deriveCounts to throw. Covered structurally by the outer try/catch in captureProvenanceAtSave and by the unreadable-transcript omit test, but not directly exercised. — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/src/utils/git-operations.ts
 
@@ -88,10 +83,6 @@
 
 - **test:** A verify session that reads build_report.md via Bash/Grep substring (not the Read tool) is never exercised in Anatomia's own suite — relied on as an anatrace-core engine guarantee (read-paths binds only to Read file_path); a future engine bump could regress it undetected here — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/tests/commands/work-proof-process.test.ts
-
-- **test:** Stray indentation in the prov() shape helper: derive_version sits at 6 spaces while sibling keys are at 8. Lint passes (eslint indent not enforced inside this object literal) but it is inconsistent with the file. — *anatrace-core integration (provenance swap + behavioral attestation)*
-
 ### packages/cli/tests/templates/agent-proof-context.test.ts
 
 - **test:** @ana tags A001-A005 are duplicated within agent-proof-context.test.ts (prior merged contract + this contract) — tag-by-id resolution is ambiguous in this file — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
@@ -104,6 +95,18 @@
 ### packages/cli/tests/utils/proofSummary.test.ts
 
 - **test:** Stale/cross-contract @ana tags in long-lived test files mis-map this contract's assertion IDs — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+
+### website/content/docs/concepts/contract.mdx
+
+- **code:** Fix 3 docs section summarizes the coverage-gate activation as 'on a scope whose criteria it can parse', folding in the underlying '>=1 recovered AC' condition rather than enumerating it. This is per explicit spec instruction (do not overstate the gate). Accurate and deliberately terse — noted, not a defect. — *Public-surface honesty touch-ups*
+
+### website/lib/copy.ts
+
+- **code:** Proof context shows two still-present concerns on website/lib/copy.ts from prior cycles: manifesto outbound link points to /#pipeline (no longer exists), and proofFeed copy references clickable rows that are no longer clickable. This build does not touch either — still present, out of scope here. — *Public-surface honesty touch-ups*
+
+### website/lib/proof-feed.ts
+
+- **code:** Pre-existing lint warnings in website (formatAge unused in components/hero or lib/proof-feed; 'latest' unused). 0 errors, gate passes. NOT introduced by this build — the four changed files contain neither symbol. Recorded so the next engineer doesn't attribute them to this change. — *Public-surface honesty touch-ups*
 
 ### General
 
