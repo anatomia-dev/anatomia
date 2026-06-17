@@ -12,7 +12,10 @@
  */
 
 import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
+import { staleBinaryWarning } from './utils/stale-binary.js';
 import { registerInitCommand } from './commands/init/index.js';
 import { registerScanCommand } from './commands/scan.js';
 import { registerSetupCommand } from './commands/setup.js';
@@ -87,6 +90,11 @@ registerCaptureCommand(program);
 // CRITICAL: Use parseAsync() not parse() for async action handlers
 // See: https://github.com/tj/commander.js#async-action-handlers
 async function main(): Promise<void> {
+  // Surface a stale dev binary (failed post-merge rebuild) on every run. Writes to
+  // stderr so it never corrupts `--json` stdout; never throws (total by contract).
+  const warning = staleBinaryWarning(path.dirname(fileURLToPath(import.meta.url)));
+  if (warning) process.stderr.write(warning);
+
   try {
     await program.parseAsync(process.argv);
   } catch (error) {

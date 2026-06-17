@@ -1,17 +1,63 @@
 #!/usr/bin/env sh
-# Post-merge: rebuild CLI if source files changed.
-# Runs after `git pull` merges. Non-blocking — exits 0 even on build failure.
+# Post-merge: keep the dev CLI binary in sync with merged source/deps.
+#
+# Never blocks git (always exits 0), but a FAILED rebuild is now LOUD and leaves a
+# persistent marker (packages/cli/dist/.build-stale) that every `ana` run surfaces
+# until a successful build clears it. This closes the silent-staleness gap where a
+# merged-but-uninstalled dependency made the rebuild fail unnoticed for days.
 
-set -e
+# Anchor to the repo root so every relative path below resolves correctly
+# regardless of where the hook is invoked from. Bail safely if not in a repo.
+cd "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null || exit 0
 
-# Check if CLI source files changed in the merge
-CHANGED_FILES=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
-CLI_SOURCE_CHANGED=$(echo "$CHANGED_FILES" | grep '^packages/cli/src/' || true)
+MARKER="packages/cli/dist/.build-stale"
 
-if [ -n "$CLI_SOURCE_CHANGED" ]; then
-  echo "[post-merge] CLI source changed — rebuilding packages/cli..."
-  cd packages/cli
-  if ! pnpm run build; then
-    echo "[post-merge] Build failed — CLI binary may be stale. Run 'cd packages/cli && pnpm run build' manually."
-  fi
+# What changed in this merge? Guard against a missing ORIG_HEAD (e.g. first merge).
+if git rev-parse --verify --quiet ORIG_HEAD >/dev/null 2>&1; then
+  CHANGED=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD 2>/dev/null || echo "")
+else
+  CHANGED=""
 fi
+
+# Build-relevant source: src AND the assets/config the build embeds or depends on
+# (templates are copied into dist; tsconfig/tsup config shape the emitted binary).
+SRC_CHANGED=$(printf '%s\n' "$CHANGED" | grep -E '^packages/cli/(src/|templates/|tsconfig.*\.json$|tsup\.config\.ts$)' || true)
+# Dependency changes (require an install before the build can resolve them):
+# the CLI package manifest, and the root manifest/lockfile that govern its tree.
+DEPS_CHANGED=$(printf '%s\n' "$CHANGED" | grep -E '^(packages/cli/package\.json$|package\.json$|pnpm-lock\.yaml$)' || true)
+
+# Nothing that affects the built binary changed — nothing to do.
+if [ -z "$SRC_CHANGED" ] && [ -z "$DEPS_CHANGED" ]; then
+  exit 0
+fi
+
+# Mark the binary stale (loud + persistent), then exit 0 so the pull never blocks.
+mark_stale() {
+  mkdir -p packages/cli/dist 2>/dev/null || true
+  {
+    echo "Rebuild FAILED during post-merge at $(git rev-parse --short HEAD 2>/dev/null)."
+    echo "Reason: $1"
+  } > "$MARKER" 2>/dev/null || true
+  printf '\n\033[41m\033[97m  CLI BINARY IS STALE — post-merge rebuild FAILED  \033[0m\n' >&2
+  echo "  Your local 'ana' is now older than the merged source." >&2
+  echo "  Fix: cd packages/cli && pnpm install && pnpm run build" >&2
+  echo "  (every 'ana' run will warn until a build succeeds)" >&2
+  exit 0
+}
+
+echo "[post-merge] CLI source/deps changed — refreshing the dev binary..."
+
+# Root-cause fix: a dependency change (new or bumped dep) must be INSTALLED before
+# the typecheck/build can resolve it. This is exactly what bit anatrace-core — the
+# old hook rebuilt without installing, so a merged dep left the build unresolvable.
+if [ -n "$DEPS_CHANGED" ]; then
+  echo "[post-merge] dependencies changed — installing..."
+  pnpm install --frozen-lockfile || mark_stale "pnpm install --frozen-lockfile failed"
+fi
+
+# Build (typecheck + bundle). A successful build wipes dist (clearing any prior
+# marker); we also rm it explicitly below for belt-and-suspenders.
+( cd packages/cli && pnpm run build ) || mark_stale "pnpm run build failed (typecheck or bundle)"
+
+rm -f "$MARKER" 2>/dev/null || true
+echo "[post-merge] CLI binary rebuilt and current."
