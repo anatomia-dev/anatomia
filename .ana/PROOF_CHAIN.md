@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-206 runs · 273 active · 5 promoted · 923 closed
+207 runs · 279 active · 5 promoted · 923 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 144 | 202 | 2026-06-17 |
+| cli | 145 | 208 | 2026-06-17 |
 | website | 24 | 23 | 2026-06-01 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 273 total)
+## Active Findings (30 shown of 279 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
@@ -44,22 +44,18 @@
 
 - **code:** Three type docstrings still assert verdicts are 'EVIDENCE, NEVER A GATE' unconditionally, now imprecise for the one allowlisted veto claim — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/src/utils/compliance-context.ts
-
-- **code:** buildRootLaneContext boundary param is inert (void boundary) — accepted and threaded from the call site but has zero effect on output today; spec-sanctioned future seam — *anatrace-core integration (provenance swap + behavioral attestation)*
-
 ### packages/cli/src/utils/compliance.ts
 
+- **code:** loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record. — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here). — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics. — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here. — *Guard the anatrace-core load and emit the first real attestation records*
 - **code:** projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
-- **test:** Malformed-but-readable transcript branch (parseSession returns null) is never exercised; the A022 totality test uses the unreadable-file path instead, leaving compliance.ts:193 uncovered — *anatrace-core integration (provenance swap + behavioral attestation)*
-- **code:** readCoreVersion returns '' on failure; A020 ('exists') would still pass with an empty string, so a record could carry an empty engine version while satisfying the assertion — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/src/utils/forensics.ts
 
 - **code:** captureProvenanceAtSave no longer calls deriveTranscript — it re-reads bytes and calls deriveCountsFromBytes directly so the transcript_hash attests the same bytes (read-once). deriveTranscript is now reachable only from tests. Intentional, but the read-bytes+basename+derive sequence is duplicated across the two functions. — *anatrace-core integration (provenance swap + behavioral attestation)*
 - **test:** AC13 totality (a core call throwing mid-capture must not break the save) has no explicit test that forces parseSession/deriveCounts to throw. Covered structurally by the outer try/catch in captureProvenanceAtSave and by the unreadable-transcript omit test, but not directly exercised. — *anatrace-core integration (provenance swap + behavioral attestation)*
-- **code:** harness_version is still recorded empty — the session-capture build concern is NOT addressed by this phase (the spec explicitly defers filling it from the transcript version key to Phase 2). Noted so it is not assumed closed. — *anatrace-core integration (provenance swap + behavioral attestation)*
-- **code:** resolveTranscriptPath remains exported with zero external importers (cross-machine-provenance-C2 still present). Not introduced by this build and not in scope; the refactor correctly added no NEW zero-importer exports. — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/src/utils/git-operations.ts
 
@@ -75,6 +71,10 @@
 
 - **code:** Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 - **code:** deriveVerdict never coerces a PASS on DEVIATED or UNCOVERED rows — only UNSATISFIED. By design (coverage gating is the separate verifier-intent-coverage feature), but the contradiction signal is intentionally narrow — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+
+### packages/cli/tests/commands/_capture.test.ts
+
+- **test:** Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken. — *Guard the anatrace-core load and emit the first real attestation records*
 
 ### packages/cli/tests/commands/proof-card-golden.test.ts
 
@@ -98,8 +98,8 @@
 
 ### packages/cli/tests/utils/compliance.test.ts
 
+- **test:** Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path. — *Guard the anatrace-core load and emit the first real attestation records*
 - **test:** Real-engine happy-path tests (A052/A053/A054) judge a trivial 'doing work' transcript. A053 guards with verdicts.length > 0 before asserting zero out-of-set reasons, so it cannot pass vacuously — a good defensive assertion worth preserving if the fixture is ever simplified further. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
-- **test:** A023 scrub test cannot isolate the scrub mechanism — the record shape already excludes transcript bytes, so the test passes even if scrubDeep were removed — *anatrace-core integration (provenance swap + behavioral attestation)*
 
 ### packages/cli/tests/utils/proofSummary.test.ts
 

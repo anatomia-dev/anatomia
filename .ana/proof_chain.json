@@ -59175,6 +59175,679 @@
       },
       "surface": "cli",
       "phases": 2
+    },
+    {
+      "slug": "attestation-emit-and-guard",
+      "feature": "Guard the anatrace-core load and emit the first real attestation records",
+      "result": "PASS",
+      "verdict_veto": {
+        "applied": false,
+        "reason": "verify did not read build_report.md"
+      },
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A missing attestation engine never throws out of the save path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "When the engine version is empty, no attestation file is written to disk",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The recorded engine version matches the engine package actually installed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A real attestation always stamps a non-empty engine version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A real attestation under the live engine contains at least one behavioral verdict",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 7,
+        "met": 7,
+        "partial": 0,
+        "coverage": {
+          "pinned": 3,
+          "judgment": 1,
+          "retired": 0,
+          "uncovered": 0,
+          "weak_only": 0
+        }
+      },
+      "timing": {
+        "total_minutes": 100,
+        "think": 15,
+        "plan": 37,
+        "build": 13,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:749084c7c0326bde466616155c8237068787ce5ce6e75278bdf61a7b9b2641dd",
+        "contract": "sha256:8062d586124a7e24f6e2aff5a1d33267f0a0bc6f3cf965f0f57e9ab83fdd2ad4",
+        "plan": "sha256:a1025e1902b486ee8752d1d45d6b3e5ccd427ac2166bcc1af01c4fb9b9ba14f1",
+        "spec": "sha256:28770701e57c413673876f00bc00591de39af06506abeb0e5398e40c0730f237",
+        "build-report": "sha256:abea33d1d6098bede1aebb081677493f6a35a4f5be11bba6b75949fd306b79ad",
+        "build-data": "sha256:d1fa562b5e6dff67d721e501e72c67875f6fc35c9126c544bcb78e1851650742",
+        "verify-report": "sha256:bcca8bdff4efec7bcfc5aa7a75a3e4da14f27d5d3312bdf67569374d5e957afb",
+        "verify-data": "sha256:40fc82748da68a28800aad969ca5735d75f993af37840b7954606007482ee733"
+      },
+      "completed_at": "2026-06-17T02:38:07.577Z",
+      "modules_touched": [
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/tests/utils/compliance.test.ts"
+      ],
+      "scope_summary": "Anatomia's headline differentiator — behavioral attestation — has never produced a record. Two defects, one work item:",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 73,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A001",
+            "A002"
+          ],
+          "id": "attestation-emit-and-guard-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here).",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 84,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001",
+            "A003"
+          ],
+          "id": "attestation-emit-and-guard-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 288,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "attestation-emit-and-guard-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken.",
+          "file": "packages/cli/tests/commands/_capture.test.ts",
+          "anchor": null,
+          "line": 219,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "attestation-emit-and-guard-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 312,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "attestation-emit-and-guard-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 357,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "attestation-emit-and-guard-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Spec/Build-Brief's literal loadCore idiom createRequire('anatrace-core') cannot work — anatrace-core is import-only ESM (no require condition in exports), so the bare specifier throws ERR_PACKAGE_PATH_NOT_EXPORTED. Working loader resolves the package.json export then require()s the ESM entry by absolute path (Node 25 require(esm), still synchronous).",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "severity": "debt",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing lint warning (Unused eslint-disable directive 'no-control-regex') in git-operations.ts:198 — not introduced by this build, out of scope, left untouched.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Dogfood record emit depends on the session env (ANA_ROLE/run-id/session-id) AND a freshly rebuilt main-tree dist on installed core. A stale dist or absent core silently re-emits zero — the exact fragility Move 1 makes loud. Verify confirms the record on disk.",
+          "file": null,
+          "severity": "risk",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Move 2 mutated the main tree's node_modules (pnpm install of anatrace-core@0.4.0) and rebuilt packages/cli/dist. Ratified by spec (Build owns sequencing), flagged before build. The dist reflects main-tree source (old un-guarded import) + installed core until merge.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 12,
+          "assertions_total": 12,
+          "findings": {
+            "risk": 1,
+            "debt": 2,
+            "observation": 3
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 65,
+            "deleted": 19
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 94,
+            "deleted": 11
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "9f16c5e8-5dc0-4f2e-8595-c149777fdf8a",
+            "captured_at": "2026-06-16T21:41:46.494Z",
+            "derived": {
+              "tokens": {
+                "input": 7046,
+                "output": 16240,
+                "cache_create": 42982,
+                "cache_read": 611984
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 895750,
+              "turns": 36,
+              "tool_calls": 16,
+              "commands_run": 9,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:618938726a7e3155530c3b489bc7903db213aa0fafc4fc87ede994ebf8d6f01c",
+            "cli_version": "1.2.2",
+            "session_id": "9392438f-0678-4550-9c43-7ce677a4d6fb",
+            "captured_at": "2026-06-17T01:13:44.610Z",
+            "derived": {
+              "tokens": {
+                "input": 7051,
+                "output": 42239,
+                "cache_create": 87269,
+                "cache_read": 1052147
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2351420,
+              "turns": 43,
+              "tool_calls": 18,
+              "commands_run": 10,
+              "tests_executed": 1,
+              "failures_encountered": 1,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "0f0c4748-b5ff-48d7-ade4-20bfb6e35a48",
+            "captured_at": "2026-06-17T01:56:38.365Z",
+            "transcript_hash": "sha256:aca3bfa77f9ecfc3e92d45228fda6cd926775af553748655af9e6ded4c0954e0",
+            "derived": {
+              "tokens": {
+                "input": 8015,
+                "output": 42412,
+                "cache_create": 101649,
+                "cache_read": 3765180
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 846189,
+              "turns": 117,
+              "tool_calls": 48,
+              "commands_run": 28,
+              "tests_executed": 4029,
+              "failures_encountered": 1,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:152a8e2d6c99f0d03dfe739ba10d3391d546b94740135c7cfcaef2e9a7cc97d8",
+            "cli_version": "1.2.2",
+            "session_id": "8fe837d8-6981-4d97-aaee-8d18f43685e2",
+            "captured_at": "2026-06-17T02:26:11.968Z",
+            "transcript_hash": "sha256:f855cb44a675f93a18656e17c0de1bd4ffd6fedf4cb656fb263b4c666db756b3",
+            "derived": {
+              "tokens": {
+                "input": 7310,
+                "output": 25210,
+                "cache_create": 86617,
+                "cache_read": 1069477
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 447890,
+              "turns": 56,
+              "tool_calls": 26,
+              "commands_run": 18,
+              "tests_executed": 3852,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "compliance": [
+        {
+          "role": "build",
+          "harness": "claude",
+          "session_id": "0f0c4748-b5ff-48d7-ade4-20bfb6e35a48",
+          "captured_at": "2026-06-17T01:56:38.365Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:9fcdae1bfc28a14bb407cb3d7be2eaddd6544d3bc5233b1b02997012d141ec0d",
+          "transcript_hash": "sha256:aca3bfa77f9ecfc3e92d45228fda6cd926775af553748655af9e6ded4c0954e0",
+          "coverage": {
+            "total": 16,
+            "fully_checked": 1,
+            "unverifiable": 15
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-build:skill:git-workflow",
+              "says": "ana-build must load the git-workflow skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-build:verify-independence",
+              "says": "ana-build never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/compliance.ts",
+              "says": "edits stay within packages/cli/src/utils/compliance.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/compliance.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/compliance.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A missing attestation engine never throws out of the save path",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "When the engine version is empty, no attestation file is written to disk",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "The recorded engine version matches the engine package actually installed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A real attestation always stamps a non-empty engine version",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "A real attestation under the live engine contains at least one behavioral verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "verify",
+          "harness": "claude",
+          "session_id": "8fe837d8-6981-4d97-aaee-8d18f43685e2",
+          "captured_at": "2026-06-17T02:26:11.968Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:ca783e405b6de2729d4c7a3e9747d4829589e56c972b50e9b5053bbcde08b0ab",
+          "transcript_hash": "sha256:f855cb44a675f93a18656e17c0de1bd4ffd6fedf4cb656fb263b4c666db756b3",
+          "coverage": {
+            "total": 19,
+            "fully_checked": 2,
+            "unverifiable": 17
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-verify:skill:testing-standards",
+              "says": "ana-verify must load the testing-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:skill:coding-standards",
+              "says": "ana-verify must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:verify-independence",
+              "says": "ana-verify never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+              "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+              "status": "unverifiable",
+              "reason": "command-unresolvable",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+              "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+              "status": "unverifiable",
+              "reason": "command-unresolvable",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/compliance.ts",
+              "says": "edits stay within packages/cli/src/utils/compliance.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/compliance.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/compliance.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A missing attestation engine never throws out of the save path",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "When the engine version is empty, no attestation file is written to disk",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "The recorded engine version matches the engine package actually installed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A real attestation always stamps a non-empty engine version",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "A real attestation under the live engine contains at least one behavioral verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-17T01:57:41.882Z",
+        "completed_at": "2026-06-17T02:38:07.564Z",
+        "commit_count": 0,
+        "base_commit": "fc8b6775837222b89b0405c901c940982c09d820"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
