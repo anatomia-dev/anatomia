@@ -18,5 +18,35 @@
   "spec": {
     "saved_at": "2026-06-17T06:00:28.645Z",
     "hash": "sha256:019fab4d369ad63e62ce06c66bc767eb54b60c0225dc3a70e79505e2ba18a906"
-  }
+  },
+  "build_started_at": "2026-06-17T06:02:06.261Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-17T06:13:36.484Z",
+    "hash": "sha256:ad4df1e6559b8c94e5ce0f43757263b9e84e834ee40930a98464286a8e73264d"
+  },
+  "build-data": {
+    "saved_at": "2026-06-17T06:13:36.485Z",
+    "hash": "sha256:9b9cd416505de361d8ab90edb3efe9cfe9ea6f329f3c5be7f42a8569a64f704b"
+  },
+  "modules_touched": [
+    "website/content/docs/concepts/contract.mdx",
+    "website/lib/__tests__/copy.test.ts",
+    "website/lib/copy.ts"
+  ],
+  "module_churn": {
+    "website/content/docs/concepts/contract.mdx": {
+      "added": 15,
+      "deleted": 0
+    },
+    "website/lib/__tests__/copy.test.ts": {
+      "added": 32,
+      "deleted": 0
+    },
+    "website/lib/copy.ts": {
+      "added": 1,
+      "deleted": 1
+    }
+  },
+  "commit_hygiene": []
 }

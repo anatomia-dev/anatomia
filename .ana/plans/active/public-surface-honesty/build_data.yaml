@@ -1,0 +1,9 @@
+schema: 1
+concerns:
+  - summary: "Website vitest baseline showed 1 pre-existing failure (docs-platform-content.test.ts → ENOENT public/search-index.json) when run in a fresh worktree before the Next build generated the asset. Not introduced by this build; resolves once `pnpm --filter anatomia-website check` (or any build) regenerates the search index. Final sealed `ana test` run shows 0 failures."
+    file: "website/lib/__tests__/docs-platform-content.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Pre-existing lint warnings (formatAge, latest unused) remain in the website lint output (0 errors, 2 warnings). They are in files outside this spec's four targets and were not touched."
+    severity: observation
+    suggested_action: acknowledge
