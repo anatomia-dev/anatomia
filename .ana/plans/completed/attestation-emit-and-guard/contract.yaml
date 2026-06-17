@@ -1,0 +1,118 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "Guard the anatrace-core load and emit the first real attestation records"
+
+assertions:
+  # ── AC1: absent engine degrades loudly instead of crashing the save ──
+  - id: A001
+    ac: AC1
+    says: "When the attestation engine can't be loaded, saving abstains instead of crashing"
+    block: "abstains without throwing when anatrace-core is unresolvable"
+    target: "captureComplianceAtSave result"
+    matcher: "equals"
+    value: null
+
+  - id: A002
+    ac: AC1
+    says: "A missing attestation engine never throws out of the save path"
+    block: "abstains without throwing when anatrace-core is unresolvable"
+    target: "save throws"
+    matcher: "equals"
+    value: false
+
+  - id: A003
+    ac: AC1
+    says: "A missing attestation engine surfaces a loud, visible warning instead of failing silently"
+    block: "abstains without throwing when anatrace-core is unresolvable"
+    target: "stderr warning"
+    matcher: "contains"
+    value: "anatrace-core not resolvable"
+
+  - id: A004
+    ac: AC1
+    says: "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm"
+    block: "stays silent on a benign abstain even when the engine is absent"
+    target: "stderr warning count"
+    matcher: "equals"
+    value: 0
+
+  # ── AC4: version fail-closed + dynamic version-lock stay intact ──
+  - id: A005
+    ac: AC4
+    says: "An empty engine version makes attestation abstain rather than stamp a bogus record"
+    block: "ABSTAINS (returns null, writes no record) when the core version is empty"
+    target: "captureComplianceAtSave result"
+    matcher: "equals"
+    value: null
+
+  - id: A006
+    ac: AC4
+    says: "When the engine version is empty, no attestation file is written to disk"
+    block: "ABSTAINS (returns null, writes no record) when the core version is empty"
+    target: "compliance records on disk"
+    matcher: "equals"
+    value: 0
+
+  - id: A007
+    ac: AC4
+    says: "The recorded engine version matches the engine package actually installed"
+    block: "writes a compact record keyed {role}-{session_id} with version, hashes, coverage, framework"
+    target: "record.anatrace_core_version"
+    matcher: "equals"
+    value: "0.4.0"
+
+  # ── AC3: the live 0.4.0 engine produces a real, well-formed record ──
+  - id: A008
+    ac: AC3
+    says: "A real attestation always stamps a non-empty engine version"
+    block: "stamps a non-empty version equal to the installed engine on a normal capture"
+    target: "record.anatrace_core_version"
+    matcher: "truthy"
+
+  - id: A009
+    ac: AC3
+    says: "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde"
+    block: "pins AND installs anatrace-core at exactly 0.4.0 (no caret/tilde)"
+    target: "package.json anatrace-core dependency"
+    matcher: "equals"
+    value: "0.4.0"
+
+  - id: A010
+    ac: AC3
+    says: "A real attestation under the live engine contains at least one behavioral verdict"
+    block: "writes a compact record keyed {role}-{session_id} with version, hashes, coverage, framework"
+    target: "record.verdicts length"
+    matcher: "greater"
+    value: 0
+
+  - id: A011
+    ac: AC3
+    says: "A real attestation reports non-zero coverage of the behavioral mandate"
+    block: "writes a compact record keyed {role}-{session_id} with version, hashes, coverage, framework"
+    target: "record.coverage.total"
+    matcher: "greater"
+    value: 0
+
+  - id: A012
+    ac: AC3
+    says: "Every verdict reason the live 0.4.0 engine emits is a recognized reason"
+    block: "emits zero out-of-set reasons under the real 0.4.0 engine"
+    target: "out-of-set verdict reasons"
+    matcher: "equals"
+    value: 0
+
+coverage_waivers:
+  - ac: AC2
+    kind: judgment
+    reason: >-
+      Whether the running ana/dist contains the emit code is a build-artifact fact, not a
+      source-level unit test — vitest runs against src, never the built dist. Build verifies it
+      mechanically as a hard gate before the dogfood saves: rebuild the main-tree dist, then
+      grep packages/cli/dist/index.js for captureComplianceAtSave (must be > 0) and confirm
+      realpath $(which ana) resolves to that same file. Confirmed operationally, not via vitest.
+
+file_changes:
+  - path: "packages/cli/src/utils/compliance.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/compliance.test.ts"
+    action: modify

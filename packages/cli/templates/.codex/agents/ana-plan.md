@@ -216,12 +216,13 @@ After writing the spec, write a contract file. This is the verification contract
 **Contract schema:**
 
 ```yaml
-version: "1.0"
+version: "1.1"
 sealed_by: "AnaPlan"
 feature: "{Feature name from scope}"
 
 assertions:
   - id: A001
+    ac: AC1
     says: "Creating a payment returns a successful response"
     block: "creates payment intent"
     target: "response.status"
@@ -229,10 +230,19 @@ assertions:
     value: 200
 
   - id: A002
+    ac: AC1
     says: "Payment response includes a client secret for the frontend"
     block: "creates payment intent"
     target: "response.body.clientSecret"
     matcher: "exists"
+
+# Every scope acceptance criterion must be covered: served by >=1 assertion's
+# `ac:` link, OR excused here with a stated reason. An AC with neither blocks
+# the seal at `ana artifact save`.
+coverage_waivers:
+  - ac: AC4
+    kind: judgment
+    reason: "Error-message helpfulness is a human judgment, not mechanically testable."
 
 file_changes:
   - path: "src/payments/intent.ts"
@@ -241,13 +251,24 @@ file_changes:
     action: create
 ```
 
+**`version` field:** `"1.1"` activates the coverage gate — at save time, every
+scope acceptance criterion must be linked or waived, or the seal is blocked. Emit
+`"1.1"` for all new contracts.
+
 **Required fields per assertion:**
 - `id` — Unique ID, format A001, A002, etc. Sequential.
+- `ac` — The scope acceptance criterion this assertion covers (e.g. `AC1`, or a list `[AC1, AC2]`). This is the coverage link the gate joins on. Every scope AC must be reachable through some assertion's `ac:` or through a `coverage_waivers` entry.
 - `says` — **Mandatory.** One plain-English sentence a non-engineer founder would understand. This appears on the Proof card.
 - `block` — Human-readable test description. Becomes the test's `it()` or `test()` label.
 - `target` — What's being checked. Dot notation for nested properties.
 - `matcher` — One of: `equals`, `exists`, `contains`, `greater`, `truthy`, `not_equals`, `not_contains`
 - `value` — Required for `equals`, `contains`, `greater`, `not_equals`, `not_contains`. Omit for `exists` and `truthy`.
+
+**AC coverage discipline (the seal gate):**
+
+Every acceptance criterion in the scope must be served by at least one assertion's `ac:` link, OR excused by a `coverage_waivers` entry. A `coverage_waivers` entry is `{ ac, kind, reason }` where `kind` is `judgment` (untestable by nature — a human verifies it) or `retired` (deliberately dropped, e.g. superseded after a scope correction), and `reason` is **required** for both. An AC that is neither linked nor waived blocks the seal at `ana artifact save` — the block is plan-time, before any build exists, and instantly fixable.
+
+Do NOT over-waive: a waiver with no real justification is visible because the reason is mandatory. Prefer a linked assertion; reach for a waiver only when the AC genuinely cannot be mechanically pinned.
 
 **`says` field guidance:**
 
@@ -301,6 +322,12 @@ Before writing contract assertions, resolve every value ambiguity in the spec. I
 **Prefer behavior assertions over format assertions.** Test the data model via structured assertions (`target: "response.body.count"`, `matcher: "equals"`). Test human-readable output only for content presence (`matcher: "contains"`), not exact formatting. The builder controls formatting details — your contract should test what the output CONTAINS, not how it's FORMATTED.
 
 ### Step 8: Save Artifacts
+
+**Before saving, preview coverage:**
+```bash
+ana plan coverage {slug}
+```
+This is the read-only, plan-time mirror of the seal gate. It prints a per-AC map showing which criteria are pinned, judgment-only, retired, or UNCOVERED. Fix any UNCOVERED rows (add an `ac:` link or a `coverage_waivers` entry) before saving — the gate at `ana artifact save` will block on them otherwise. The preview never gates and never fails.
 
 Save all plan artifacts at once:
 ```bash

@@ -1,0 +1,338 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "Verifier Intent Coverage — mechanically guarantee the contract covers scope intent"
+
+# NOTE: This contract dogfoods the feature it specifies. It is sealed at
+# version "1.1" with `ac:` links on every assertion, so once Phase 1 merges the
+# coverage gate holds this very contract to its own standard. Every scope
+# acceptance criterion (AC1–AC14) is covered by at least one linked assertion;
+# no coverage_waivers are needed because every AC here is mechanically testable
+# (the prompt-content ACs via template-enforcement tests).
+
+assertions:
+  # ── AC1: extractor accuracy (all four AC forms) + live-corpus measurement ──
+  - id: A001
+    ac: AC1
+    says: "Acceptance criteria written as a dash-bullet are recognized"
+    block: "extractScopeACs recovers ids from the - AC1: bullet form"
+    target: "result.ids"
+    matcher: "contains"
+    value: "AC1"
+
+  - id: A002
+    ac: AC1
+    says: "Acceptance criteria written as a heading are recognized"
+    block: "extractScopeACs recovers ids from the ## AC2 heading form"
+    target: "result.ids"
+    matcher: "contains"
+    value: "AC2"
+
+  - id: A003
+    ac: AC1
+    says: "Acceptance criteria written in bold are recognized"
+    block: "extractScopeACs recovers ids from the **AC3** bold form"
+    target: "result.ids"
+    matcher: "contains"
+    value: "AC3"
+
+  - id: A004
+    ac: AC1
+    says: "Acceptance criteria written as a bare label are recognized"
+    block: "extractScopeACs recovers ids from the bare AC4: form"
+    target: "result.ids"
+    matcher: "contains"
+    value: "AC4"
+
+  - id: A005
+    ac: AC1
+    says: "A well-formed scope is never mistaken for an unreadable one"
+    block: "extractScopeACs marks a clean scope as not ambiguous"
+    target: "result.ambiguous"
+    matcher: "not_equals"
+    value: true
+
+  - id: A006
+    ac: AC1
+    says: "Across every past project scope, none is wrongly judged unreadable"
+    block: "the live completed-scope corpus sweep finds zero false-ambiguous scopes"
+    target: "corpusMeasurement.falseAmbiguousCount"
+    matcher: "equals"
+    value: 0
+
+  - id: A007
+    ac: AC1
+    says: "Across every past project scope, the criteria are always recovered"
+    block: "the live corpus sweep finds zero scopes-with-ACs that extract to an empty set"
+    target: "corpusMeasurement.emptyExtractionCount"
+    matcher: "equals"
+    value: 0
+
+  # ── AC14: fail-open classifier (per-run, per-scope) ──
+  - id: A008
+    ac: AC14
+    says: "A scope in an unfamiliar format is flagged as unreadable, not guessed"
+    block: "extractScopeACs marks an ambiguous/unrecognized AC format as ambiguous"
+    target: "result.ambiguous"
+    matcher: "truthy"
+
+  - id: A009
+    ac: AC14
+    says: "An unreadable scope never blocks the seal — it only warns"
+    block: "evaluateCoverageGate does not block when the scope is ambiguous (fail open)"
+    target: "result.block"
+    matcher: "not_equals"
+    value: true
+
+  # ── AC2: the pre-seal gate blocks iff an AC is uncovered ──
+  - id: A010
+    ac: AC2
+    says: "A contract that drops an acceptance criterion is blocked"
+    block: "evaluateCoverageGate blocks when an AC has no covering assertion and no waiver"
+    target: "result.block"
+    matcher: "truthy"
+
+  - id: A011
+    ac: AC2
+    says: "A contract that covers every acceptance criterion is allowed through"
+    block: "evaluateCoverageGate does not block when every AC has a covering assertion"
+    target: "result.block"
+    matcher: "not_equals"
+    value: true
+
+  - id: A012
+    ac: AC2
+    says: "The block names exactly which acceptance criterion was left uncovered"
+    block: "evaluateCoverageGate lists the uncovered AC id in result.uncovered"
+    target: "result.uncovered"
+    matcher: "contains"
+    value: "AC3"
+
+  - id: A013
+    ac: AC2
+    says: "An acceptance criterion covered only weakly still counts as covered"
+    block: "an AC linked only by weak matchers does not block and is noted as info"
+    target: "result.block"
+    matcher: "not_equals"
+    value: true
+
+  # ── AC4: judgment-only waiver satisfies coverage ──
+  - id: A014
+    ac: AC4
+    says: "An acceptance criterion marked judgment-only is accepted without a test"
+    block: "a coverage_waivers entry with kind judgment satisfies its AC and never blocks"
+    target: "result.block"
+    matcher: "not_equals"
+    value: true
+
+  # ── AC5: retired vs silently-dropped ──
+  - id: A015
+    ac: AC5
+    says: "A deliberately retired criterion, with a stated reason, does not block"
+    block: "a coverage_waivers entry with kind retired and a reason does not block"
+    target: "result.block"
+    matcher: "not_equals"
+    value: true
+
+  - id: A016
+    ac: AC5
+    says: "A criterion dropped with no reason and no test is blocked"
+    block: "an AC with neither an assertion link nor a waiver blocks the seal"
+    target: "result.block"
+    matcher: "truthy"
+
+  # ── AC6: build-only / no-AC scope never gates ──
+  - id: A017
+    ac: AC6
+    says: "A build that has no acceptance criteria is never gated"
+    block: "a scope with no AC section leaves the gate inactive"
+    target: "result.active"
+    matcher: "not_equals"
+    value: true
+
+  # ── AC3: backward compatibility ──
+  - id: A018
+    ac: AC3
+    says: "Every existing contract still passes through untouched"
+    block: "a legacy version 1.0 contract leaves the gate inactive (no-op)"
+    target: "result.active"
+    matcher: "not_equals"
+    value: true
+
+  - id: A019
+    ac: AC3
+    says: "Adding the new coverage fields breaks no existing contract validation"
+    block: "validateContractFormat accepts version 1.1 and the ac/coverage_waivers fields with zero errors"
+    target: "validationErrors.length"
+    matcher: "equals"
+    value: 0
+
+  # ── AC13: a new-regime contract with zero links is surfaced, never silent ──
+  - id: A020
+    ac: AC13
+    says: "A new contract that forgot to link its criteria still activates the gate"
+    block: "a version 1.1 contract with zero ac links but a scope with ACs reports active true"
+    target: "result.active"
+    matcher: "truthy"
+
+  - id: A021
+    ac: AC13
+    says: "That forgotten-link contract is blocked, not silently let through"
+    block: "a version 1.1 contract with zero ac links and uncovered ACs blocks the seal"
+    target: "result.block"
+    matcher: "truthy"
+
+  - id: A022
+    ac: AC13
+    says: "The gate always says out loud what it decided"
+    block: "evaluateCoverageGate always returns a non-empty diagnostic line"
+    target: "result.diagnostic"
+    matcher: "exists"
+
+  # ── AC12: PARTIAL-inside-PASS is surfaced ──
+  - id: A023
+    ac: AC12
+    says: "Criteria that shipped only partially are counted, not hidden"
+    block: "parseACResults returns the count of PARTIAL acceptance-criteria rows"
+    target: "acResult.partial"
+    matcher: "equals"
+    value: 2
+
+  - id: A024
+    ac: AC12
+    says: "The proof card tells the human how many criteria shipped partial"
+    block: "the proof card output surfaces the PARTIAL count when partial is greater than zero"
+    target: "cardOutput"
+    matcher: "contains"
+    value: "PARTIAL"
+
+  # ── AC7: proof honesty — coverage recorded, pinned vs judgment distinguished ──
+  - id: A025
+    ac: AC7
+    says: "Every proof records how each acceptance criterion was covered"
+    block: "generateProofSummary populates acceptance_criteria.coverage"
+    target: "summary.acceptance_criteria.coverage"
+    matcher: "exists"
+
+  - id: A026
+    ac: AC7
+    says: "A pass tells judgment-verified criteria apart from mechanically-pinned ones"
+    block: "the summary coverage records the judgment-only count separately"
+    target: "summary.acceptance_criteria.coverage.judgment"
+    matcher: "equals"
+    value: 1
+
+  - id: A027
+    ac: AC7
+    says: "The proof card shows the coverage breakdown for the human"
+    block: "the proof card output renders the AC coverage line"
+    target: "cardOutput"
+    matcher: "contains"
+    value: "coverage"
+
+  # ── AC11: the read-only ana plan coverage preview ──
+  - id: A028
+    ac: AC11
+    says: "The coverage preview lists each acceptance criterion"
+    block: "ana plan coverage output shows per-AC rows"
+    target: "output"
+    matcher: "contains"
+    value: "AC1"
+
+  - id: A029
+    ac: AC11
+    says: "The preview clearly marks any uncovered criterion"
+    block: "ana plan coverage output marks an uncovered AC as UNCOVERED"
+    target: "output"
+    matcher: "contains"
+    value: "UNCOVERED"
+
+  - id: A030
+    ac: AC11
+    says: "The preview never blocks — it only informs"
+    block: "ana plan coverage exits 0 even when acceptance criteria are uncovered"
+    target: "exitCode"
+    matcher: "equals"
+    value: 0
+
+  - id: A031
+    ac: AC11
+    says: "The new plan command is available to run"
+    block: "the plan command group is registered on the CLI"
+    target: "registeredCommands"
+    matcher: "contains"
+    value: "plan"
+
+  # ── AC8: scoped two-gate + activation in the templates ──
+  - id: A032
+    ac: AC8
+    says: "New plans seal contracts at the version that turns the gate on"
+    block: "the ana-plan template emits a version 1.1 contract"
+    target: "anaPlanTemplate"
+    matcher: "contains"
+    value: 'version: "1.1"'
+
+  - id: A033
+    ac: AC8
+    says: "The verifier treats the contract and the intent as two distinct gates"
+    block: "the ana-verify template states the scoped two-gate"
+    target: "anaVerifyTemplate"
+    matcher: "contains"
+    value: "two-gate"
+
+  # ── AC9: prediction step retained ──
+  - id: A034
+    ac: AC9
+    says: "The verifier still predicts likely mistakes before reading the code"
+    block: "the ana-verify template retains the prediction step"
+    target: "anaVerifyTemplate"
+    matcher: "contains"
+    value: "predict"
+
+  # ── AC10: no re-seal, no return-to-Plan ──
+  - id: A035
+    ac: AC10
+    says: "Rejection never sends work back to planning or re-seals the contract"
+    block: "the ana-verify template introduces no re-seal path"
+    target: "anaVerifyTemplate"
+    matcher: "not_contains"
+    value: "re-seal"
+
+coverage_waivers: []
+
+file_changes:
+  # ── Phase 1 (spec-1.md) ──
+  - path: "packages/cli/src/types/contract.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/coverage-gate.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/scope-ac-corpus.test.ts"
+    action: create
+  # ── Phase 2 (spec-2.md) ──
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/pr.ts"
+    action: modify
+  - path: "packages/cli/src/commands/plan.ts"
+    action: create
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/tests/commands/plan-coverage.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/proofSummary.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/template-coverage-prompts.test.ts"
+    action: create

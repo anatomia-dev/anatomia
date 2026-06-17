@@ -1,0 +1,30 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Fix 1 replaces a false CI claim but introduces another — 'coverage gates' is not honored by CI. test.yml:63 runs `pnpm vitest run` with no --coverage flag, and vitest.config.ts defines thresholds but never sets coverage.enabled:true, so coverage thresholds are dormant in CI. The phrase was prescribed verbatim by scope+spec (AC1), so the fix belongs upstream, not in Build."
+    file: ".ana/context/project-context.md"
+    line: 134
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A001"]
+  - category: upstream
+    summary: "Contract A004 value 'You don' is a weak substring (matches 'You donate...' as readily as 'You don't'). The guard test wisely over-delivers — it also asserts 'have to trust the model. You read the chain.' — but the contract's pinned value itself is low-bar. Future contracts should pin a more distinctive substring."
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A004"]
+  - category: code
+    summary: "Pre-existing lint warnings in website (formatAge unused in components/hero or lib/proof-feed; 'latest' unused). 0 errors, gate passes. NOT introduced by this build — the four changed files contain neither symbol. Recorded so the next engineer doesn't attribute them to this change."
+    file: "website/lib/proof-feed.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - category: code
+    summary: "Proof context shows two still-present concerns on website/lib/copy.ts from prior cycles: manifesto outbound link points to /#pipeline (no longer exists), and proofFeed copy references clickable rows that are no longer clickable. This build does not touch either — still present, out of scope here."
+    file: "website/lib/copy.ts"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Fix 3 docs section summarizes the coverage-gate activation as 'on a scope whose criteria it can parse', folding in the underlying '>=1 recovered AC' condition rather than enumerating it. This is per explicit spec instruction (do not overstate the gate). Accurate and deliberately terse — noted, not a defect."
+    file: "website/content/docs/concepts/contract.mdx"
+    line: 81
+    severity: observation
+    suggested_action: acknowledge

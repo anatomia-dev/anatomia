@@ -1,0 +1,28 @@
+schema: 1
+concerns:
+  - summary: >-
+      Spec/Build-Brief's literal loadCore idiom createRequire('anatrace-core') cannot work —
+      anatrace-core is import-only ESM (no require condition in exports), so the bare specifier
+      throws ERR_PACKAGE_PATH_NOT_EXPORTED. Working loader resolves the package.json export then
+      require()s the ESM entry by absolute path (Node 25 require(esm), still synchronous).
+    file: "packages/cli/src/utils/compliance.ts"
+    severity: debt
+    suggested_action: acknowledge
+  - summary: >-
+      Pre-existing lint warning (Unused eslint-disable directive 'no-control-regex') in
+      git-operations.ts:198 — not introduced by this build, out of scope, left untouched.
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: >-
+      Dogfood record emit depends on the session env (ANA_ROLE/run-id/session-id) AND a
+      freshly rebuilt main-tree dist on installed core. A stale dist or absent core silently
+      re-emits zero — the exact fragility Move 1 makes loud. Verify confirms the record on disk.
+    severity: risk
+    suggested_action: monitor
+  - summary: >-
+      Move 2 mutated the main tree's node_modules (pnpm install of anatrace-core@0.4.0) and
+      rebuilt packages/cli/dist. Ratified by spec (Build owns sequencing), flagged before build.
+      The dist reflects main-tree source (old un-guarded import) + installed core until merge.
+    severity: observation
+    suggested_action: acknowledge

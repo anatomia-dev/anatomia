@@ -676,6 +676,13 @@ describe('buildCaptureEnv', () => {
     expect(a).not.toBe(b);
   });
 
+  it("declares the trusted-launcher capture boundary as 'root' (behavioral coverage is declared, not inferred)", () => {
+    // The launcher captures only the root agent's transcript today; this is the
+    // fact only the launcher knows, read back by buildRootLaneContext (Step 1).
+    expect(buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_CAPTURE_BOUNDARY']).toBe('root');
+    expect(buildCaptureEnv(projectDir, 'verify', 'codex', 'ana-verify')['ANA_CAPTURE_BOUNDARY']).toBe('root');
+  });
+
   it('sets ANA_HARNESS to the platform', () => {
     const env = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build');
     expect(env['ANA_HARNESS']).toBe('claude');

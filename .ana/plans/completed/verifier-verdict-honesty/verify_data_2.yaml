@@ -1,0 +1,28 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Three type docstrings still assert verdicts are 'EVIDENCE, NEVER A GATE' unconditionally, now imprecise for the one allowlisted veto claim"
+    file: "packages/cli/src/types/proof.ts"
+    line: 193
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A030"]
+    anchor: "EVIDENCE, NEVER A GATE"
+  - category: code
+    summary: "User-facing incomplete-coverage warning says 'behavioral verdicts are evidence, never a gate' unqualified, while its sibling display copy in proof.ts:670 was correctly qualified with the veto exception"
+    file: "packages/cli/src/commands/work-proof.ts"
+    line: 345
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A030"]
+  - category: upstream
+    summary: "Spec gotcha enumerated only compliance.ts + proof.ts for the evidence->gate copy flip; types/proof.ts (3 docstrings) and the work-proof.ts stderr warning also carried the invariant but were not listed, so the contradiction the spec warned about leaked into unlisted files"
+    severity: observation
+    suggested_action: promote
+    related_assertions: ["A030"]
+  - category: test
+    summary: "A verify session that reads build_report.md via Bash/Grep substring (not the Read tool) is never exercised in Anatomia's own suite — relied on as an anatrace-core engine guarantee (read-paths binds only to Read file_path); a future engine bump could regress it undetected here"
+    file: "packages/cli/tests/commands/verdict-veto-integration.test.ts"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A021"]

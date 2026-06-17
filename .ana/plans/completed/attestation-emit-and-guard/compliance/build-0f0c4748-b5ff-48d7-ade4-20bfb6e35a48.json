@@ -1,0 +1,130 @@
+{
+  "role": "build",
+  "harness": "claude",
+  "session_id": "0f0c4748-b5ff-48d7-ade4-20bfb6e35a48",
+  "captured_at": "2026-06-17T01:56:38.365Z",
+  "anatrace_core_version": "0.4.0",
+  "framework": "anatomia",
+  "mandate_hash": "sha256:9fcdae1bfc28a14bb407cb3d7be2eaddd6544d3bc5233b1b02997012d141ec0d",
+  "transcript_hash": "sha256:aca3bfa77f9ecfc3e92d45228fda6cd926775af553748655af9e6ded4c0954e0",
+  "coverage": {
+    "total": 16,
+    "fully_checked": 1,
+    "unverifiable": 15
+  },
+  "complete": false,
+  "verdicts": [
+    {
+      "claim_id": "ana-build:skill:git-workflow",
+      "says": "ana-build must load the git-workflow skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-build:verify-independence",
+      "says": "ana-build never reads the build report",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/utils/compliance.ts",
+      "says": "edits stay within packages/cli/src/utils/compliance.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/utils/compliance.test.ts",
+      "says": "edits stay within packages/cli/tests/utils/compliance.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A001",
+      "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A002",
+      "says": "A missing attestation engine never throws out of the save path",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A003",
+      "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A004",
+      "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A005",
+      "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A006",
+      "says": "When the engine version is empty, no attestation file is written to disk",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A007",
+      "says": "The recorded engine version matches the engine package actually installed",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A008",
+      "says": "A real attestation always stamps a non-empty engine version",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A009",
+      "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A010",
+      "says": "A real attestation under the live engine contains at least one behavioral verdict",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A011",
+      "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A012",
+      "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    }
+  ]
+}

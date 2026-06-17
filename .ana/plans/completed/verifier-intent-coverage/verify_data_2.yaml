@@ -1,0 +1,37 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Stale/cross-contract @ana tags in long-lived test files mis-map this contract's assertion IDs"
+    file: "packages/cli/tests/utils/proofSummary.test.ts"
+    line: 693
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A024", "A027"]
+  - category: code
+    summary: "proofSummary.ts continues to grow past the comfort threshold (Phase 2 adds coverage threading)"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: debt
+    suggested_action: monitor
+  - category: code
+    summary: "parseACResults PARTIAL regex false-match risk only partially mitigated; section-scoping helps but in-section bullets containing PARTIAL in prose could still match"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 243
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "plan.ts missing-slug guard prints 'Error:' to stderr but exits 0 — an error condition reports success exit code"
+    file: "packages/cli/src/commands/plan.ts"
+    line: 44
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A030"]
+  - category: upstream
+    summary: "Spec file_changes under-specified the test plan — A024/A027 (cardOutput) and the PR PARTIAL surface required proof.test.ts and pr.test.ts edits the spec did not list; builder added them correctly"
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "plan.ts re-parses coverage_waivers for reason text because joinCoverage does not return the reason; minor duplication of waiver iteration"
+    file: "packages/cli/src/commands/plan.ts"
+    line: 101
+    severity: observation
+    suggested_action: acknowledge

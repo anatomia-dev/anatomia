@@ -56504,6 +56504,3964 @@
         "base_commit": "9f64309a6d102c0f3605431e6819a658cc93f0d7"
       },
       "surface": "cli"
+    },
+    {
+      "slug": "anatrace-core-integration",
+      "feature": "anatrace-core integration (provenance swap + behavioral attestation)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 26,
+        "satisfied": 26,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Provenance counts come from the published anatrace engine, pinned to a known version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Anatomia no longer hand-parses agent transcripts",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Each provenance record states which engine version produced it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Deriving the same session twice produces an identical record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A captured session records a fingerprint of the transcript it was derived from",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "An unreadable transcript still records who ran, never guessed numbers",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Older proof records written before this change still load",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "Codex sessions now report the files they changed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "Raw transcript text never leaks into a committed provenance record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "An unpriced model is shown as unpriced, never as a guessed cost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "The price-table version shown is the one actually used to compute cost",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The transcript engine adds no network capability to the CLI",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Behavioral coverage is declared by the trusted launcher, not inferred",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A claim about sub-agents we did not capture is reported unverifiable, never satisfied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A behavior we could not observe is never reported as satisfied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A runtime test assertion is never faked as a behavioral pass",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "The system never claims to have watched a sub-agent it did not capture",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Every agent session gets its own behavioral record — rework is never collapsed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Each behavioral record is tied to the session that produced it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "Each behavioral record states which engine version judged it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "Each behavioral record states how much of the session it could actually check",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A broken transcript can never break saving your work",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Secrets in a session command never reach committed proof",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "A behavioral concern is recorded as evidence — it never flips a passing run to failing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The proof shows how the session behaved, in its own section",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "When coverage was incomplete, the proof says so loudly",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 10
+      },
+      "timing": {
+        "total_minutes": 195,
+        "think": 34,
+        "plan": 23,
+        "build": 111,
+        "verify": 17,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 34
+          },
+          {
+            "stage": "plan",
+            "minutes": 23
+          },
+          {
+            "stage": "build",
+            "minutes": 75,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 36,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 11,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:e52c193b8c21ef19bf9cd30d141c8739e086303eaa92888d19d9ff8fc916b2bb",
+        "contract": "sha256:59f34b384715784b106096d04f61bbc891730e7c3c21ea3212ecc041baa263a4",
+        "plan": "sha256:f37f61b5a1682acf5fcdd2217ae83e2ab1cb1de0ef50e04f2014b1541ed17ed0",
+        "spec-1": "sha256:62b72a2bb2d9737cfc979719583631a4b8fc0e5ba8438014349feaa90745f37f",
+        "spec-2": "sha256:385d24894d461056c1b53db8ff5d543edbd2c89663286374ea867585f1033578",
+        "spec-3": "sha256:1903173ce13f84f58f5d47d4c9c69b64add5ec343785b513250ec145f288e98b",
+        "build-report-1": "sha256:a5e3830f27fe9c6412d116e6123c0f7c029bdc809a94583e1464577fd06532ca",
+        "build-data-1": "sha256:ce5198342dce12495e8426f72d2e25f6feb51eed301863bbf5f07ef17e3659c1",
+        "verify-report-1": "sha256:2468292d62463d969f5b85fc5017852dd512c0f62017c26b8437706749d3d133",
+        "verify-data-1": "sha256:6f7ce7af07ef6f2694d0e17806554671516d0f232540fdfc4756598e194498bd",
+        "build-report-2": "sha256:7cf9f05a2fe98ed9a4706137c8522e27697ceb9589ed5e3e673399699aeca7fa",
+        "build-data-2": "sha256:252222dab95f83b716c7a932befb6f4dc901c2d68303cd694245c2f41e2a2ee6",
+        "verify-report-2": "sha256:d1ac9654bb249a7ee9f1667ab837d0586e0a2fd7dd59e0609068996768942745",
+        "verify-data-2": "sha256:3e19da5c10cb56fddb21e3343279446e02f84909226e65d93e5e81dc07a41a67"
+      },
+      "completed_at": "2026-06-14T00:04:55.285Z",
+      "modules_touched": [
+        "packages/cli/package.json",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/run.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/data/pricing.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/compliance-context.ts",
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/src/utils/forensics.ts",
+        "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/_capture.test.ts",
+        "packages/cli/tests/commands/proof-card-golden.test.ts",
+        "packages/cli/tests/commands/proof-compliance-display.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/run.test.ts",
+        "packages/cli/tests/commands/work-merge.test.ts",
+        "packages/cli/tests/commands/work-proof-process.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/data/pricing.test.ts",
+        "packages/cli/tests/utils/compliance-context.test.ts",
+        "packages/cli/tests/utils/compliance.test.ts",
+        "packages/cli/tests/utils/forensics-derive.test.ts",
+        "packages/cli/tests/utils/forensics.test.ts",
+        "pnpm-lock.yaml"
+      ],
+      "scope_summary": "Replace Anatomia's hand-rolled transcript forensics with the published `anatrace-core` package, then build a behavioral-attestation layer on top of it. In the user's words: \"properly use and test anatrace within anatomia... use the real anatrace package, test it, and even expand what we currently do by leveraging anatrace.\"",
+      "kind": "milestone",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Golden snapshot fixture INPUTS were changed (cache_read 80k→1M, 900k→1M; model gpt-5-codex→gpt-5) to keep the card within 80 columns once the wider real table-version label is shown — so the golden test no longer proves cost-invariance for unchanged inputs.",
+          "file": "packages/cli/tests/commands/proof-card-golden.test.ts",
+          "anchor": null,
+          "line": 165,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A011"
+          ],
+          "id": "anatrace-core-integration-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "captureProvenanceAtSave no longer calls deriveTranscript — it re-reads bytes and calls deriveCountsFromBytes directly so the transcript_hash attests the same bytes (read-once). deriveTranscript is now reachable only from tests. Intentional, but the read-bytes+basename+derive sequence is duplicated across the two functions.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "line": 419,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "AC13 totality (a core call throwing mid-capture must not break the save) has no explicit test that forces parseSession/deriveCounts to throw. Covered structurally by the outer try/catch in captureProvenanceAtSave and by the unreadable-transcript omit test, but not directly exercised.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "line": 422,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Stray indentation in the prov() shape helper: derive_version sits at 6 spaces while sibling keys are at 8. Lint passes (eslint indent not enforced inside this object literal) but it is inconsistent with the file.",
+          "file": "packages/cli/tests/commands/work-proof-process.test.ts",
+          "anchor": null,
+          "line": 75,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "anatrace-core-integration-C4",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "parseTestCounts best-effort regex (session-capture-C12) is resolved: the helper is deleted and test/failure counting is delegated to anatrace-core's command-tool-gated derive. Codex files_touched=0 build concern is also resolved (A008 now derives from a real patch_apply_end body).",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "resolves": [
+            "session-capture-C12"
+          ],
+          "id": "anatrace-core-integration-C5",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-14T00:04:55.285Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "harness_version is still recorded empty — the session-capture build concern is NOT addressed by this phase (the spec explicitly defers filling it from the transcript version key to Phase 2). Noted so it is not assumed closed.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "resolveTranscriptPath remains exported with zero external importers (cross-machine-provenance-C2 still present). Not introduced by this build and not in scope; the refactor correctly added no NEW zero-importer exports.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-core-integration-C7",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "A023 scrub test cannot isolate the scrub mechanism — the record shape already excludes transcript bytes, so the test passes even if scrubDeep were removed",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 195,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A023"
+          ],
+          "id": "anatrace-core-integration-C8",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Malformed-but-readable transcript branch (parseSession returns null) is never exercised; the A022 totality test uses the unreadable-file path instead, leaving compliance.ts:193 uncovered",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 193,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A022"
+          ],
+          "id": "anatrace-core-integration-C9",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "buildRootLaneContext boundary param is inert (void boundary) — accepted and threaded from the call site but has zero effect on output today; spec-sanctioned future seam",
+          "file": "packages/cli/src/utils/compliance-context.ts",
+          "anchor": null,
+          "line": 75,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A013"
+          ],
+          "id": "anatrace-core-integration-C10",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec referenced canonicalSort for the mandate hash, but the build hashes source-blob bytes (byte-identity) instead — aligns better with AC17; canonicalSort import is unused. Worth acknowledging on next seal",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 107,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "anatrace-core-integration-C11",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-14T00:04:55.285Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "readCoreVersion returns '' on failure; A020 ('exists') would still pass with an empty string, so a record could carry an empty engine version while satisfying the assertion",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 51,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A020"
+          ],
+          "id": "anatrace-core-integration-C12",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "tests/commands/init/template-propagation.test.ts is flaky under full-suite parallel load (5000ms timeout; passes in isolation at ~9s). Pre-existing, unrelated to Phase 2 — raise its timeout or split it",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "anchor": null,
+          "line": 308,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "anatrace-core-integration-C13",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "@ana tag namespace is not contract-scoped: all-scaffolds.test.ts and proofSummary.test.ts reuse A001–A012 for an unrelated contract, colliding with this contract's Phase-1 ids.",
+          "file": "packages/cli/tests/scaffolds/all-scaffolds.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A002 (forensics has no hand-rolled deriveClaude) has no dedicated unit test — satisfied by deletion plus the contract's mechanical not_contains source check, not an @ana-tagged test.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Two timing-sensitive tests (parsing-performance cache-speedup ≥0.80; init template-propagation 5s timeout) flake under concurrent machine load; both pass in isolation and are untouched by this work. Not regressions.",
+          "file": "packages/cli/tests/engine/performance/parsing-performance.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "AC6 fix surfaced a pre-existing latent proof-card layout overflow: the TOTAL footer trailing '(table 2026-06-08)' reaches 81–83 cols for unpriced multi-session runs. Rendering left untouched per spec; two golden stress fixtures trimmed so the realistic card fits 80 cols (user-approved).",
+          "file": "packages/cli/src/utils/render.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "deriveCountsFromBytes casts the string harness to core's Harness union (as Harness). A harness value other than 'claude'/'codex' would still be passed to parseSession, which falls back to shape detection — benign, but the cast hides the narrowing.",
+          "file": "packages/cli/src/utils/forensics.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "captureComplianceAtSave outer try-catch is not separately unit-triggered; only early-return no-record paths are tested (no external input reliably forces a mid-pipeline core throw)",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "parseSession never returns null for in-band garbage — the 'malformed transcript → no record' path is exercised via an unreadable (dangling) transcript, not corrupt bytes; corrupt-but-readable transcripts still produce a record",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "artifact.ts provenancePaths list now holds both compliance and provenance file paths; behavior is correct but the variable name reads narrower than its contents",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing flaky test (not introduced by this build): tests/commands/init/template-propagation.test.ts times out at 5s under full-suite load, passes 21/21 in isolation",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "severity": "debt",
+          "suggested_action": "scope"
+        },
+        {
+          "summary": "anatomiaAdapter does not emit subject.delegates:'include' claims from current Anatomia agent-defs; the A014 delegate-inclusive soundness test augments a real adapter claim's subject (documented deviation). If agent-defs gain delegate-inclusive phrasing the test should switch to native adapter output",
+          "file": "packages/cli/tests/utils/compliance-context.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 26,
+          "assertions_total": 26,
+          "findings": {
+            "risk": 0,
+            "debt": 5,
+            "observation": 8
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "milestone",
+          "multi_phase": true
+        },
+        "module_churn": {
+          "packages/cli/package.json": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 36,
+            "deleted": 14
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 110,
+            "deleted": 5
+          },
+          "packages/cli/src/commands/run.ts": {
+            "added": 12,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/work-proof.ts": {
+            "added": 19,
+            "deleted": 0
+          },
+          "packages/cli/src/data/pricing.ts": {
+            "added": 12,
+            "deleted": 98
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 86,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/compliance-context.ts": {
+            "added": 99,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 299,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/forensics.ts": {
+            "added": 72,
+            "deleted": 334
+          },
+          "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+            "added": 15,
+            "deleted": 15
+          },
+          "packages/cli/tests/commands/_capture.test.ts": {
+            "added": 25,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof-card-golden.test.ts": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+            "added": 131,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/run.test.ts": {
+            "added": 7,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-merge.test.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-proof-process.test.ts": {
+            "added": 42,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 1,
+            "deleted": 0
+          },
+          "packages/cli/tests/data/pricing.test.ts": {
+            "added": 16,
+            "deleted": 9
+          },
+          "packages/cli/tests/utils/compliance-context.test.ts": {
+            "added": 241,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 284,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/forensics-derive.test.ts": {
+            "added": 90,
+            "deleted": 34
+          },
+          "packages/cli/tests/utils/forensics.test.ts": {
+            "added": 25,
+            "deleted": 7
+          },
+          "pnpm-lock.yaml": {
+            "added": 11,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "7e6f6f13-ef0a-4fa2-aa5e-f973041478ac",
+            "captured_at": "2026-06-13T21:18:18.421Z",
+            "derived": {
+              "tokens": {
+                "input": 6900,
+                "output": 64725,
+                "cache_create": 170409,
+                "cache_read": 4870714
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2020917,
+              "turns": 118,
+              "tool_calls": 50,
+              "commands_run": 28,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "6806e699-c2df-45ed-a1c1-e868b137b22a",
+            "captured_at": "2026-06-13T21:59:48.299Z",
+            "derived": {
+              "tokens": {
+                "input": 6716,
+                "output": 92045,
+                "cache_create": 190221,
+                "cache_read": 3625602
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2222766,
+              "turns": 85,
+              "tool_calls": 36,
+              "commands_run": 18,
+              "tests_executed": 164,
+              "failures_encountered": 2,
+              "files_touched": 5,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "884844fc-e709-424e-ac65-f73bc60e7d08",
+            "captured_at": "2026-06-13T22:17:42.250Z",
+            "derived": {
+              "tokens": {
+                "input": 13853,
+                "output": 127212,
+                "cache_create": 246584,
+                "cache_read": 18735070
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2595801,
+              "turns": 270,
+              "tool_calls": 125,
+              "commands_run": 82,
+              "tests_executed": 11738,
+              "failures_encountered": 15,
+              "files_touched": 12,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "8499946b-f271-4858-bc86-5ed29c538ce9",
+            "captured_at": "2026-06-13T23:02:25.330Z",
+            "derived": {
+              "tokens": {
+                "input": 6418,
+                "output": 22904,
+                "cache_create": 95175,
+                "cache_read": 1531390
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 507792,
+              "turns": 68,
+              "tool_calls": 29,
+              "commands_run": 21,
+              "tests_executed": 7416,
+              "failures_encountered": 2,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "be1bf267-35ff-490b-9c4c-5a28d9afc133",
+            "captured_at": "2026-06-13T23:11:34.569Z",
+            "derived": {
+              "tokens": {
+                "input": 10471,
+                "output": 110134,
+                "cache_create": 432631,
+                "cache_read": 19148372
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2140536,
+              "turns": 295,
+              "tool_calls": 150,
+              "commands_run": 75,
+              "tests_executed": 7637,
+              "failures_encountered": 5,
+              "files_touched": 13,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "c6dceb6b-a059-4378-8c53-d5ab0bc2f52c",
+            "captured_at": "2026-06-13T23:48:13.861Z",
+            "derived": {
+              "tokens": {
+                "input": 6546,
+                "output": 23606,
+                "cache_create": 80061,
+                "cache_read": 1415366
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 704578,
+              "turns": 76,
+              "tool_calls": 34,
+              "commands_run": 19,
+              "tests_executed": 3730,
+              "failures_encountered": 1,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-13T22:18:53.922Z",
+        "completed_at": "2026-06-14T00:04:55.250Z",
+        "commit_count": 0,
+        "base_commit": "4f04f5c2c8a1f0007970997bdb0ea6619bb3fa8f"
+      },
+      "surface": "cli",
+      "phases": 2
+    },
+    {
+      "slug": "anatrace-pin-0-4-0",
+      "feature": "Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 11,
+        "satisfied": 11,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A045",
+          "says": "The behavioral engine is installed at version 0.4.0",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A046",
+          "says": "The project pins the engine to exactly 0.4.0",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A047",
+          "says": "A reason the 0.4.0 engine produces is recognized as known",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A048",
+          "says": "A reason the engine does not produce is flagged as unknown",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A049",
+          "says": "An unrecognized reason is kept exactly as the engine reported it, never dropped",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A050",
+          "says": "When the engine version cannot be resolved, no attestation is written",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A051",
+          "says": "An unresolvable engine version leaves no compliance record on disk",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A052",
+          "says": "A written attestation always carries a real, non-empty engine version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A053",
+          "says": "Every verdict reason the real engine emits is one we recognize",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A054",
+          "says": "The recorded engine version matches the engine that actually judged the session",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A055",
+          "says": "An obfuscated forbidden command is caught as a violation under the real engine",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 9,
+        "met": 8
+      },
+      "timing": {
+        "total_minutes": 163,
+        "think": 44,
+        "plan": 84,
+        "build": 36,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:71bf57a97cd2d9ebbebdd40d55acccb402c1f1de632b6ade36e3df30db19ec50",
+        "contract": "sha256:e6c21fdab1c7507013459a9ed2fe9f56dce5a25a33a3cf75421946a36045f5d9",
+        "plan": "sha256:2978d81ce1e51472f34daad57215bc7fc490a5d3f1c02f5b50c9e1d147caf6a3",
+        "spec": "sha256:4bb5374a1212e43c3297d2392a00176d344f4005a9d5748876392a0750d53ccd",
+        "build-report": "sha256:bd25233cb4f9839970a8ec1bf6993115ceed394f8ffbc0453e57f09d5761bc19",
+        "build-data": "sha256:ec8418d83d7408ebc4b70f9a30f577cecc254ffbbc9471df1d1f8ed95b48ae2d",
+        "verify-report": "sha256:a7141d1a9a89ee24083dec87d5a9d8bf2caf1093128199a8e6a5a06ca2d94635",
+        "verify-data": "sha256:65aaa88022cfcabc934934d556642463b9e2dd2067855e824c3336a6a4dd9043"
+      },
+      "completed_at": "2026-06-16T21:30:28.594Z",
+      "modules_touched": [
+        "packages/cli/package.json",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+        "packages/cli/tests/commands/_capture.test.ts",
+        "packages/cli/tests/commands/proof-card-golden.test.ts",
+        "packages/cli/tests/data/pricing.test.ts",
+        "packages/cli/tests/utils/compliance.test.ts",
+        "packages/cli/tests/utils/forensics-derive.test.ts",
+        "packages/cli/tests/utils/forensics.test.ts",
+        "pnpm-lock.yaml"
+      ],
+      "scope_summary": "Anatomia's behavioral-attestation layer is fully wired but has emitted **zero** records, because the engine it consumes (`anatrace-core`) is pinned to a version that is both **uninstalled** and **known-false-PASS** (0.2.0). The product's headline differentiator is therefore undemonstrated, and emitting on 0.2.0/0.3.0 would attest *behind a forgeable engine*.",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Contract file_changes under-scoped the bump ripple — 0.4.0 ships a new PRICE_TABLE_VERSION (2026-06-08 → 2026-06-14) that forced edits to 5 test files the contract never listed (_capture, pricing, forensics, forensics-derive, proof-card-golden + snapshot).",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A045",
+            "A046"
+          ],
+          "id": "anatrace-pin-0-4-0-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T21:30:28.594Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec A055 guidance was factually wrong about where the no-force-push obligation lives — it said use the build mandate (ana-build.md), but the forbidden-command predicate is the engine's built-in VERIFY_FORBIDDEN_COMMANDS for the VERIFY role. Builder correctly adapted to the verify role; following the spec literally would have produced a fixture that never flips to violated.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 396,
+          "severity": "debt",
+          "suggested_action": "promote",
+          "related_assertions": [
+            "A055"
+          ],
+          "id": "anatrace-pin-0-4-0-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T21:30:28.594Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 84,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A049"
+          ],
+          "id": "anatrace-pin-0-4-0-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Real-engine happy-path tests (A052/A053/A054) judge a trivial 'doing work' transcript. A053 guards with verdicts.length > 0 before asserting zero out-of-set reasons, so it cannot pass vacuously — a good defensive assertion worth preserving if the fixture is ever simplified further.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 372,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A053"
+          ],
+          "id": "anatrace-pin-0-4-0-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Observable (non-gating): no compliance record with anatrace_core_version == 0.4.0 is on disk yet for this cycle — it emits at `ana artifact save`, not at test time. Expected to land when the verify report is saved. Absence is a ~5-min follow-on per spec, never a held PR.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "anatrace-pin-0-4-0-C5",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "C12 confirmed FIXED by this build — the fail-closed gate computes the engine version once and abstains (returns null, writes no record) on empty/unresolvable, so no anatrace_core_version: '' record can ever land. Build concern (abstain path had no reliable external trigger) is now ADDRESSED via the deps.readCoreVersion seam.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 200,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A050",
+            "A051",
+            "A052"
+          ],
+          "resolves": [
+            "anatrace-core-integration-C12"
+          ],
+          "id": "anatrace-pin-0-4-0-C6",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T21:30:28.594Z",
+          "closed_by": "mechanical"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "anatrace-core 0.4.0 also moved PRICE_TABLE_VERSION (2026-06-08 → 2026-06-14); cost-metric layer re-baselined as a cosmetic stamp here. Prices themselves are unchanged, but the metric layer should be consciously revalidated.",
+          "file": "packages/cli/tests/data/pricing.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Spec AC4(iii) names ana-build.md as the no-force-push mandate source, but the obligation is the engine's built-in VERIFY_FORBIDDEN_COMMANDS for the VERIFY role (anatrace-core index.mjs:5265,5463). The build mandate has no command predicate; the A055 fixture uses the verify mandate. Spec/plan understanding should be corrected for future cycles.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Spec scoped only compliance.test.ts among test files and never ran the full suite against 0.4.0 (baseline was estimated by counting it() blocks). The bump in fact broke 11 tests across 5 files (price-table stamp + the _capture pin), all fixed here. Future bump specs should run the suite before scoping.",
+          "file": null,
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Non-gating observable (a compliance record with anatrace_core_version == 0.4.0) had not yet landed on disk at build time — it emits at ana artifact save, not ana test. Verify after the build-report save; absence is a ~5-min follow-on ana run per the spec, never a held PR.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 11,
+          "assertions_total": 11,
+          "findings": {
+            "risk": 0,
+            "debt": 2,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/package.json": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 58,
+            "deleted": 2
+          },
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 59,
+            "deleted": 8
+          },
+          "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+            "added": 5,
+            "deleted": 5
+          },
+          "packages/cli/tests/commands/_capture.test.ts": {
+            "added": 11,
+            "deleted": 3
+          },
+          "packages/cli/tests/commands/proof-card-golden.test.ts": {
+            "added": 3,
+            "deleted": 3
+          },
+          "packages/cli/tests/data/pricing.test.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 147,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/forensics-derive.test.ts": {
+            "added": 4,
+            "deleted": 4
+          },
+          "packages/cli/tests/utils/forensics.test.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "pnpm-lock.yaml": {
+            "added": 5,
+            "deleted": 5
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "047ce85b-9183-4298-a8c5-a876cfb2f602",
+            "captured_at": "2026-06-16T19:20:43.321Z",
+            "derived": {
+              "tokens": {
+                "input": 7275,
+                "output": 27628,
+                "cache_create": 55705,
+                "cache_read": 1101972
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2647361,
+              "turns": 50,
+              "tool_calls": 22,
+              "commands_run": 15,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "a637d6b1-75ee-4b49-b020-80ab8666b163",
+            "captured_at": "2026-06-16T20:31:33.387Z",
+            "derived": {
+              "tokens": {
+                "input": 7786,
+                "output": 56132,
+                "cache_create": 127786,
+                "cache_read": 4008918
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 3267800,
+              "turns": 99,
+              "tool_calls": 44,
+              "commands_run": 17,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "546a9f27-6d65-4555-9eba-258ad043ef90",
+            "captured_at": "2026-06-16T20:35:23.740Z",
+            "derived": {
+              "tokens": {
+                "input": 8634,
+                "output": 73662,
+                "cache_create": 160742,
+                "cache_read": 9239866
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2195712,
+              "turns": 186,
+              "tool_calls": 83,
+              "commands_run": 46,
+              "tests_executed": 4073,
+              "failures_encountered": 6,
+              "files_touched": 11,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "04856f8b-0cc7-490e-aca4-855cd705d77f",
+            "captured_at": "2026-06-16T21:20:21.130Z",
+            "derived": {
+              "tokens": {
+                "input": 7597,
+                "output": 25629,
+                "cache_create": 96582,
+                "cache_read": 2107793
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 449364,
+              "turns": 77,
+              "tool_calls": 34,
+              "commands_run": 21,
+              "tests_executed": 3733,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-16T20:36:06.145Z",
+        "completed_at": "2026-06-16T21:30:28.583Z",
+        "commit_count": 0,
+        "base_commit": "8809d5e1da83df6b85266d6fc430e4881aa5f7d1"
+      },
+      "surface": "cli"
+    },
+    {
+      "slug": "verifier-intent-coverage",
+      "feature": "Verifier Intent Coverage — mechanically guarantee the contract covers scope intent",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 35,
+        "satisfied": 35,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "Acceptance criteria written as a dash-bullet are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "Acceptance criteria written as a heading are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "Acceptance criteria written in bold are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Acceptance criteria written as a bare label are recognized",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A well-formed scope is never mistaken for an unreadable one",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "Across every past project scope, none is wrongly judged unreadable",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "Across every past project scope, the criteria are always recovered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A scope in an unfamiliar format is flagged as unreadable, not guessed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "An unreadable scope never blocks the seal — it only warns",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A contract that drops an acceptance criterion is blocked",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A contract that covers every acceptance criterion is allowed through",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "The block names exactly which acceptance criterion was left uncovered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "An acceptance criterion covered only weakly still counts as covered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "An acceptance criterion marked judgment-only is accepted without a test",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "A deliberately retired criterion, with a stated reason, does not block",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A criterion dropped with no reason and no test is blocked",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "A build that has no acceptance criteria is never gated",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Every existing contract still passes through untouched",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "Adding the new coverage fields breaks no existing contract validation",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "A new contract that forgot to link its criteria still activates the gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "That forgotten-link contract is blocked, not silently let through",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "The gate always says out loud what it decided",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Criteria that shipped only partially are counted, not hidden",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The proof card tells the human how many criteria shipped partial",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Every proof records how each acceptance criterion was covered",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "A pass tells judgment-verified criteria apart from mechanically-pinned ones",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "The proof card shows the coverage breakdown for the human",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "The coverage preview lists each acceptance criterion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The preview clearly marks any uncovered criterion",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The preview never blocks — it only informs",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The new plan command is available to run",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "New plans seal contracts at the version that turns the gate on",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "The verifier treats the contract and the intent as two distinct gates",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "The verifier still predicts likely mistakes before reading the code",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A035",
+          "says": "Rejection never sends work back to planning or re-seals the contract",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 0,
+        "met": 0
+      },
+      "timing": {
+        "total_minutes": 16738,
+        "think": 16634,
+        "plan": 22,
+        "build": 51,
+        "verify": 28,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 16634
+          },
+          {
+            "stage": "plan",
+            "minutes": 22
+          },
+          {
+            "stage": "build",
+            "minutes": 22,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 20,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 29,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 8,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:299e88902e431bed57dab56061c27ce1177e3c8f9c3aac316b347b4430b91598",
+        "contract": "sha256:5095b2cec3666d3f8b3c0288ddaec41cc378473a12533bbb4e86e035fe195dd8",
+        "plan": "sha256:769fd994ce674ba505d517b0e42c175f6c53d4fd088c3afb437893e75336590e",
+        "spec-1": "sha256:d5f166565754198655e4c1c495e34f78adafb9dbbba16439846e1b915b1e3dc4",
+        "spec-2": "sha256:665f7fdad48da0667273a0e001ef1fb70b91be6a3529f6075d8192dc44d5c7ed",
+        "build-report-1": "sha256:8aa8795f15fd610420a3effc4b133c3a531ccbfd41c3b094411e523ef5f997d3",
+        "build-data-1": "sha256:dad91d60d5219eb1e900a0cd0ab547eddacd02107f415f4412a228a80e595541",
+        "verify-report-1": "sha256:53b1a8d8bf67e75fb19bd52c4ae6d5f917b026a5c941b5937781a84e7a729c3a",
+        "verify-data-1": "sha256:1cfe055ceeefd190fff26e0cb7c26223383f204cd9642e9c0c4aa2236da75a9b",
+        "build-report-2": "sha256:ed865254234cef3aee42ffde1f1dda2f880d23c91e928b52c6647640586122ac",
+        "build-data-2": "sha256:02a9f1987306b514977f5f68d8c2cf31a2da69c0a4b57f35e246b11bd036bcf1",
+        "verify-report-2": "sha256:3d1f744977093e486275263fc7ef6fc73f20752fa1a999e7ef541e479eaf3a39",
+        "verify-data-2": "sha256:18ccd430e582a08ce1d26ee0a31625ffe219396222411d1ea9cb52e1498ac191"
+      },
+      "completed_at": "2026-06-16T23:07:58.303Z",
+      "modules_touched": [
+        ".claude/agents/ana-plan.md",
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-plan.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/plan.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/types/contract.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/templates/.claude/agents/ana-plan.md",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-plan.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/commands/commit-hygiene.test.ts",
+        "packages/cli/tests/commands/coverage-gate.test.ts",
+        "packages/cli/tests/commands/plan-coverage.test.ts",
+        "packages/cli/tests/commands/pr.test.ts",
+        "packages/cli/tests/commands/proof.test.ts",
+        "packages/cli/tests/commands/scope-ac-corpus.test.ts",
+        "packages/cli/tests/commands/template-coverage-prompts.test.ts",
+        "packages/cli/tests/commands/work-proof-process.test.ts",
+        "packages/cli/tests/utils/proofSummary.test.ts"
+      ],
+      "scope_summary": "Make the contract's fidelity to scope intent **mechanically trustless**. Today the contract is positioned as the authoritative specification, but it is only a *fallible proxy* for what the scope actually asked for. Whether built code satisfies intent rests on the planner's diligence translating intent→assertions and the verifier's disposition to *notice* a thin translation — with **no mechanical check that every acceptance criterion is even covered, and no gating outlet when a gap is found.**",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "test",
+          "summary": "Flaky test in the broader suite — one test failed in the sealed verify run (3766p/1f/2s) but never reproduced across 7 full-suite runs + 5 regression-focus runs. 'Push failed after retry' noise points to a git-operation/retry test, not Phase 1 code.",
+          "file": null,
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "id": "verifier-intent-coverage-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "scope-ac-corpus.test.ts asserts toBe(0) against the live, growing completed-scope corpus (205 today). A future completed scope using '## Acceptance Criteria' with non-AC-id criteria would flip emptyExtractionCount/falseAmbiguousCount and break this test in an unrelated future PR. Intentional safety gate, but couples future greens to historical scope formatting.",
+          "file": "packages/cli/tests/commands/scope-ac-corpus.test.ts",
+          "anchor": null,
+          "line": 87,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006",
+            "A007"
+          ],
+          "id": "verifier-intent-coverage-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Bold-form regex /\\*\\*\\s*(AC\\d+)/ matches **ACn** anywhere on a line, so a prose mention ('see **AC3** above') extracts AC3 as a criterion id. Harmless across the 205-scope corpus and the dogfood (exactly AC1-14, no spurious ids), but a future version-1.1 contract could gain a spurious prose-derived id that becomes a false 'uncovered' block. Latent, low-likelihood.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 526,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A003"
+          ],
+          "id": "verifier-intent-coverage-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Defensive try/catch around joinCoverage in evaluateCoverageGate is effectively unreachable — joinCoverage is total (no throw path), so the 'could not evaluate' diagnostic branch cannot trigger in practice and no test exercises it. Spec explicitly requested defensive depth, so it is intentional, but it is untested dead-ish code.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "anchor": null,
+          "line": 621,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "verifier-intent-coverage-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Stale/cross-contract @ana tags in long-lived test files mis-map this contract's assertion IDs",
+          "file": "packages/cli/tests/utils/proofSummary.test.ts",
+          "anchor": null,
+          "line": 693,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A024",
+            "A027"
+          ],
+          "id": "verifier-intent-coverage-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "proofSummary.ts continues to grow past the comfort threshold (Phase 2 adds coverage threading)",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "id": "verifier-intent-coverage-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "parseACResults PARTIAL regex false-match risk only partially mitigated; section-scoping helps but in-section bullets containing PARTIAL in prose could still match",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 243,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "verifier-intent-coverage-C7",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "plan.ts missing-slug guard prints 'Error:' to stderr but exits 0 — an error condition reports success exit code",
+          "file": "packages/cli/src/commands/plan.ts",
+          "anchor": null,
+          "line": 44,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-intent-coverage-C8",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec file_changes under-specified the test plan — A024/A027 (cardOutput) and the PR PARTIAL surface required proof.test.ts and pr.test.ts edits the spec did not list; builder added them correctly",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "verifier-intent-coverage-C9",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-16T23:07:58.303Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "plan.ts re-parses coverage_waivers for reason text because joinCoverage does not return the reason; minor duplication of waiver iteration",
+          "file": "packages/cli/src/commands/plan.ts",
+          "anchor": null,
+          "line": 101,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "verifier-intent-coverage-C10",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "The gate's blocking path through artifact.ts (print errors + process.exit(1)) is covered only at the unit level (evaluateCoverageGate). No integration test drives saveArtifact/saveAllArtifacts to an actual block, because the gate is inert by design — no version 1.1 contract exists to trigger it until Phase 2. The artifact.ts layer is a thin print+exit mirror of applyTestEvidenceGate.",
+          "file": "packages/cli/src/commands/artifact.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "AC6 (scope: 'a contract with no assertions never triggers the gate, active:false') and AC13 ('a version 1.1 contract with zero ac links over a scope with ACs reports active:true, block:true') are in tension for the zero-assertion + version-1.1 case. Resolved per the contract's explicit pins (A020/A021): activation = version>=1.1 AND scope-has-ACs AND not-ambiguous, independent of assertion count. AC6's no-assertions clause holds in the legacy 1.0 regime and via the no-AC-scope path (A017).",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "extractScopeACs recovers ids only from the four structural forms (bullet, heading, bold, bare label). An AC referenced only mid-prose without bold (e.g. 'see AC3') is intentionally not recovered, for precision. Acceptable while the gate is dormant; worth awareness when Phase 2 activates real contracts.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Syncing root dogfood agents to templates changes the agents this repo itself uses on next re-init (two-gate verifier, 1.1-emitting planner).",
+          "file": ".claude/agents/ana-verify.md",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "`ana plan coverage` is advisory, not an automatic pipeline step; real enforcement is the Phase 1 gate at `ana artifact save`. Don't mistake the preview for a gate.",
+          "file": "packages/cli/src/commands/plan.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "plan.ts reads contract.coverage_waivers directly for waiver reason display (joinCoverage returns status, not reason) — a second site touching the waiver shape.",
+          "file": "packages/cli/src/commands/plan.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Spec File Changes under-specified the .codex template + dogfood edits; the diff touches more files than the table lists (followed the spec's Both-Claude-and-Codex constraint + existing sync tests).",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "commit_hygiene": [
+        {
+          "check": "conflict-marker",
+          "file": "packages/cli/tests/commands/commit-hygiene.test.ts",
+          "severity": "warn",
+          "message": "merge conflict marker in packages/cli/tests/commands/commit-hygiene.test.ts"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 35,
+          "assertions_total": 35,
+          "findings": {
+            "risk": 0,
+            "debt": 3,
+            "observation": 7
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "feature",
+          "multi_phase": true
+        },
+        "module_churn": {
+          ".claude/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          ".claude/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          ".codex/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          ".codex/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/src/commands/artifact-validators.ts": {
+            "added": 299,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 68,
+            "deleted": 1
+          },
+          "packages/cli/src/commands/plan.ts": {
+            "added": 169,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/pr.ts": {
+            "added": 9,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 17,
+            "deleted": 0
+          },
+          "packages/cli/src/index.ts": {
+            "added": 2,
+            "deleted": 0
+          },
+          "packages/cli/src/types/contract.ts": {
+            "added": 34,
+            "deleted": 0
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/src/utils/proofSummary.ts": {
+            "added": 59,
+            "deleted": 5
+          },
+          "packages/cli/templates/.claude/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          "packages/cli/templates/.claude/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/templates/.codex/agents/ana-plan.md": {
+            "added": 28,
+            "deleted": 1
+          },
+          "packages/cli/templates/.codex/agents/ana-verify.md": {
+            "added": 12,
+            "deleted": 5
+          },
+          "packages/cli/tests/commands/commit-hygiene.test.ts": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/coverage-gate.test.ts": {
+            "added": 398,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/plan-coverage.test.ts": {
+            "added": 210,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/pr.test.ts": {
+            "added": 43,
+            "deleted": 1
+          },
+          "packages/cli/tests/commands/proof.test.ts": {
+            "added": 58,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/scope-ac-corpus.test.ts": {
+            "added": 99,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/template-coverage-prompts.test.ts": {
+            "added": 75,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-proof-process.test.ts": {
+            "added": 1,
+            "deleted": 1
+          },
+          "packages/cli/tests/utils/proofSummary.test.ts": {
+            "added": 109,
+            "deleted": 1
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "1622d877-14a4-49c0-8cbb-6b4b4dce75ae",
+            "captured_at": "2026-06-16T17:23:24.719Z",
+            "derived": {
+              "tokens": {
+                "input": 8406,
+                "output": 89993,
+                "cache_create": 181987,
+                "cache_read": 5097110
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 13923196,
+              "turns": 107,
+              "tool_calls": 44,
+              "commands_run": 20,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "051829ad-fb8d-4246-918b-58db883bfc2f",
+            "captured_at": "2026-06-16T21:43:00.656Z",
+            "derived": {
+              "tokens": {
+                "input": 7733,
+                "output": 70486,
+                "cache_create": 179262,
+                "cache_read": 4611292
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1713404,
+              "turns": 94,
+              "tool_calls": 41,
+              "commands_run": 11,
+              "tests_executed": 15,
+              "failures_encountered": 1,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "10d54a7b-2fa1-465e-8a7b-0b278340b7fa",
+            "captured_at": "2026-06-16T21:45:15.036Z",
+            "derived": {
+              "tokens": {
+                "input": 7744,
+                "output": 51887,
+                "cache_create": 126522,
+                "cache_read": 4011587
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 864477,
+              "turns": 102,
+              "tool_calls": 47,
+              "commands_run": 21,
+              "tests_executed": 3940,
+              "failures_encountered": 1,
+              "files_touched": 7,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "896bf565-5a94-4f8a-b05d-5ffb80e9147d",
+            "captured_at": "2026-06-16T22:00:42.272Z",
+            "derived": {
+              "tokens": {
+                "input": 8612,
+                "output": 33120,
+                "cache_create": 109164,
+                "cache_read": 3371918
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1248109,
+              "turns": 104,
+              "tool_calls": 45,
+              "commands_run": 29,
+              "tests_executed": 3769,
+              "failures_encountered": 1,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "1a8427ac-151a-4b40-81e5-ea9b0fc4d469",
+            "captured_at": "2026-06-16T22:17:57.419Z",
+            "derived": {
+              "tokens": {
+                "input": 12048,
+                "output": 87855,
+                "cache_create": 273013,
+                "cache_read": 21387309
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1685324,
+              "turns": 314,
+              "tool_calls": 166,
+              "commands_run": 63,
+              "tests_executed": 7761,
+              "failures_encountered": 3,
+              "files_touched": 20,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:497511dca3ed3e14da39dfb57b86965e0557ab0461d27d35c09d7cc26d00fd78",
+            "cli_version": "1.2.2",
+            "session_id": "f6f988b6-8a51-4a13-923f-c7422893711d",
+            "captured_at": "2026-06-16T22:50:58.284Z",
+            "derived": {
+              "tokens": {
+                "input": 7587,
+                "output": 27293,
+                "cache_create": 101226,
+                "cache_read": 2091315
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 493561,
+              "turns": 90,
+              "tool_calls": 42,
+              "commands_run": 20,
+              "tests_executed": 3797,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-16T21:46:13.608Z",
+        "completed_at": "2026-06-16T23:07:58.289Z",
+        "commit_count": 0,
+        "base_commit": "bd624cad94158c5a68eef2cbf9582b969b6e590c"
+      },
+      "surface": "cli",
+      "phases": 2
+    },
+    {
+      "slug": "verifier-verdict-honesty",
+      "feature": "Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 29,
+        "satisfied": 29,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The verifier's instructions no longer tell it to read the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The Codex verifier's instructions also no longer tell it to read the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The verifier is still told it must never read the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The verifier can still check untested work by inspecting the source",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The shipped and in-repo copies of the verifier definition stay identical",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A clean PASS verdict stays PASS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A PASS that contradicts the verifier's own unsatisfied row is overridden to FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The override explains which unsatisfied row contradicted the PASS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A FAIL verdict stays FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A report with no verdict line is reported as unknown, not assumed passing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Every place that reads the verdict gets the overridden result, not the raw headline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Reading the verdict from a saved file also returns the overridden result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The PR step also sees the overridden result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The verdict is parsed in exactly one place, not copied across the codebase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "When a contradicted PASS blocks completion, the reason is shown to the developer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "A verify report missing its verdict line is still rejected at save time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The verdict code states the honest boundary: not one-word-forgeable, still self-authored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The code never claims the verdict makes the agent unable to lie",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "If the verifier deterministically read the build report, the proof is forced to FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A satisfied verify-independence claim does not trigger the veto",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A non-deterministic (LLM-judged or unmarked) verdict never triggers the veto",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The veto fires on exactly one claim — other claims and other roles never gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The determinism signal is recorded on the verdict so the veto can read it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Verdicts recorded before this feature (no determinism signal) never retroactively gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "With no captured transcript the veto is skipped openly, never silently",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "A verify session that read the build report cannot complete with a PASS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The proof record states whether the byte-level veto was applied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The verifier docs no longer claim behavioral verdicts can never affect PASS/FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The proof states the veto is forward-only and earlier verdicts were self-reported",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 6
+      },
+      "timing": {
+        "total_minutes": 188,
+        "think": 22,
+        "plan": 26,
+        "build": 107,
+        "verify": 15,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 22
+          },
+          {
+            "stage": "plan",
+            "minutes": 26
+          },
+          {
+            "stage": "build",
+            "minutes": 79,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 8,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 28,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:346767c2f1746573d83f659f84863108eafc0826d319aff68936cde8a8aae8e7",
+        "contract": "sha256:4ccdd83ffe148da425aad8c8d4b8f85838bada357f60b34d23cd13f0a2694bcd",
+        "plan": "sha256:4b3d017081a60544f2cdb17cb7038b10896fe3aae8f505dc1281987de7157e0d",
+        "spec-1": "sha256:c42d85bbd819fabcdd516d6563b3d29d6e7144771f1ffc8d1badca5aee51683f",
+        "spec-2": "sha256:b769eb778aba59a6f06637e1795b214586d70d253f52d09b3f8c47f6f775105c",
+        "build-report-1": "sha256:f683c4083ee32ccfd40c41428322a96641bf668915e1fbbb666d2e5dfb30dfc8",
+        "build-data-1": "sha256:8ec74f34fbdd8d8a63e91b84101215992113459c520e2080f6e172ccf70f2686",
+        "verify-report-1": "sha256:4e30d37b6e81f2c00c883205dbb978fae7958e8ab0c95fdbfd1c8cf84939f6b7",
+        "verify-data-1": "sha256:32087fac8edf2ad4674062b62f3c64b1cb2a24fab539970f48f18042332ba102",
+        "build-report-2": "sha256:86628b364a0c18f7c3faf65f2cb5f9cfcb22fcc7b69c9fc73a3ca09554b656f8",
+        "build-data-2": "sha256:a7cd69892d59cb7cb800570cb694596f0a7834b6dbcf95270988b7ae3e4600bd",
+        "verify-report-2": "sha256:6fe13817f15070a32a7cf6ce2c116873fdf28eaa2f6f86ace3226fddeb40cc34",
+        "verify-data-2": "sha256:2d234f22b231f71a683750af010f17f8b837fab3380639ec166eb70b5c45392f"
+      },
+      "completed_at": "2026-06-17T00:29:04.489Z",
+      "modules_touched": [
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/commands/work-state.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/src/utils/verdict.ts",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/commands/proof-compliance-display.test.ts",
+        "packages/cli/tests/commands/verdict-veto-integration.test.ts",
+        "packages/cli/tests/commands/work-proof-guard.test.ts",
+        "packages/cli/tests/templates/agent-proof-context.test.ts",
+        "packages/cli/tests/utils/compliance.test.ts",
+        "packages/cli/tests/utils/verdict.test.ts"
+      ],
+      "scope_summary": "Make Anatomia's PASS/FAIL verdict mean what the product says it means. Today the headline\nverdict is regex-scraped from a prose `**Result:**` line the verify *model* typed — so the\nbrand claim (\"trust the bytes, not the model\") is, at the verdict itself, still\ntrust-the-model. The whole product is positioned on \"Verify never grades its own homework\";\nthe verdict is the one place that promise is currently only *hoped*.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "anchor": null,
+          "line": 18,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006",
+            "A016"
+          ],
+          "id": "verifier-verdict-honesty-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana tags A001-A005 are duplicated within agent-proof-context.test.ts (prior merged contract + this contract) — tag-by-id resolution is ambiguous in this file",
+          "file": "packages/cli/tests/templates/agent-proof-context.test.ts",
+          "anchor": null,
+          "line": 96,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004",
+            "A005"
+          ],
+          "id": "verifier-verdict-honesty-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "deriveVerdict coerces only on an exactly-spelled 'UNSATISFIED' status; a typo'd/garbled status cell falls back to 'UNKNOWN' (proofSummary.ts:205) and will NOT gate a PASS — consistent with the self-authored honesty boundary but fragile",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 205,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "verifier-verdict-honesty-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "deriveVerdict never coerces a PASS on DEVIATED or UNCOVERED rows — only UNSATISFIED. By design (coverage gating is the separate verifier-intent-coverage feature), but the contradiction signal is intentionally narrow",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "anchor": null,
+          "line": 71,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "verifier-verdict-honesty-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warning (unused eslint-disable directive) in git-operations.ts:198 — not in this build's file_changes, not a regression",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "anchor": null,
+          "line": 198,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "verifier-verdict-honesty-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Three type docstrings still assert verdicts are 'EVIDENCE, NEVER A GATE' unconditionally, now imprecise for the one allowlisted veto claim",
+          "file": "packages/cli/src/types/proof.ts",
+          "anchor": "EVIDENCE, NEVER A GATE",
+          "line": 193,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-verdict-honesty-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "User-facing incomplete-coverage warning says 'behavioral verdicts are evidence, never a gate' unqualified, while its sibling display copy in proof.ts:670 was correctly qualified with the veto exception",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "line": 345,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-verdict-honesty-C7",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec gotcha enumerated only compliance.ts + proof.ts for the evidence->gate copy flip; types/proof.ts (3 docstrings) and the work-proof.ts stderr warning also carried the invariant but were not listed, so the contradiction the spec warned about leaked into unlisted files",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "promote",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-verdict-honesty-C8",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-17T00:29:04.489Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A verify session that reads build_report.md via Bash/Grep substring (not the Read tool) is never exercised in Anatomia's own suite — relied on as an anatrace-core engine guarantee (read-paths binds only to Read file_path); a future engine bump could regress it undetected here",
+          "file": "packages/cli/tests/commands/verdict-veto-integration.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "verifier-verdict-honesty-C9",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Name collision: utils/verdict.ts exports deriveVerdict (content -> VerdictResult) while utils/capture-runner.ts already exports a different deriveVerdict (counts, exitCode -> CaptureVerdict). No file imports both, so no compile conflict, but the shared name is confusing. The spec/contract hardcode the name 'deriveVerdict' for the verify-report function, so renaming was not an option.",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Function-only circular import introduced: proofSummary.ts imports deriveVerdict from verdict.ts, and verdict.ts imports parseComplianceTable from proofSummary.ts. ESM resolves this because neither symbol is touched at module-load (only inside function bodies). artifact-validators.ts -> verdict.ts -> proofSummary.ts -> artifact-validators.ts (joinCoverage) is the same shape and already existed for joinCoverage. Build, typecheck, and full suite all green, but the cycle is a latent fragility if any of these modules later needs a top-level use of an imported symbol.",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "readLocalVerifyResult (artifact.ts) and extractVerifyResult (pr.ts) were changed from private to exported solely so contract assertions A014/A015 could have direct tagged unit tests. Both were previously untested. This widens the module surface slightly; the project's risk profile already notes proof.ts/proof-summary over-exporting tendencies.",
+          "file": "packages/cli/src/commands/pr.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing lint warning in src/utils/git-operations.ts:198 (unused eslint-disable directive for no-control-regex) surfaces on every pre-commit run. Not introduced by this build and only a warning, but it rides along in the lint output.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "AC5's proof-entry half (verdict_contradictions rendering on a completed proof entry) is covered by type + writeProofChain wiring and source inspection, not by an end-to-end fixture that completes work with a coerced-PASS report and asserts the field lands in proof_chain.json. The guard-message half IS unit-tested (A017). Verifier should assess whether source-level evidence suffices for the 'on the proof entry' clause.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A016, A019, A020 are verified by source-content tests that read verdict.ts / proofSummary.ts and assert on substrings. These are inherently comment/format-fragile (the project's own risk profile flags a similar purity test as fragile). They faithfully cover the not_contains/contains intent but will break on benign rewording.",
+          "file": "packages/cli/tests/utils/verdict.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing display test assertion updated to AC6 copy (verdicts no longer 'never a gate' unconditionally); spec-driven expected-value change, not a weakened matcher.",
+          "file": "packages/cli/tests/commands/proof-compliance-display.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "A written proof_chain entry's verdict_veto.applied is always false — guardVerdictVeto exits before the entry is written (mirrors guardFailResult). The APPLIED render path is reachable only via test-constructed entries, not writeProofChain.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Stale @ana tags from prior contracts (anatrace-core-integration / anatrace-pin) remain in compliance.test.ts and proof-compliance-display.test.ts; same-numbered tags do NOT map to this contract's assertions. Component-3 tests use current IDs.",
+          "file": "packages/cli/tests/commands/proof-compliance-display.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 29,
+          "assertions_total": 29,
+          "findings": {
+            "risk": 0,
+            "debt": 4,
+            "observation": 5
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "feature",
+          "multi_phase": true
+        },
+        "module_churn": {
+          ".claude/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          ".codex/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/artifact-validators.ts": {
+            "added": 6,
+            "deleted": 3
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 12,
+            "deleted": 4
+          },
+          "packages/cli/src/commands/pr.ts": {
+            "added": 4,
+            "deleted": 3
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 55,
+            "deleted": 10
+          },
+          "packages/cli/src/commands/work-proof.ts": {
+            "added": 80,
+            "deleted": 21
+          },
+          "packages/cli/src/commands/work-state.ts": {
+            "added": 8,
+            "deleted": 4
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 8,
+            "deleted": 5
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 32,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 12,
+            "deleted": 3
+          },
+          "packages/cli/src/utils/proofSummary.ts": {
+            "added": 19,
+            "deleted": 15
+          },
+          "packages/cli/src/utils/verdict.ts": {
+            "added": 151,
+            "deleted": 0
+          },
+          "packages/cli/templates/.claude/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/templates/.codex/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+            "added": 44,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/verdict-veto-integration.test.ts": {
+            "added": 213,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-proof-guard.test.ts": {
+            "added": 132,
+            "deleted": 0
+          },
+          "packages/cli/tests/templates/agent-proof-context.test.ts": {
+            "added": 46,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 40,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/verdict.test.ts": {
+            "added": 332,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "a74df196-d92e-411c-a038-5843f9d5e028",
+            "captured_at": "2026-06-16T21:38:22.312Z",
+            "derived": {
+              "tokens": {
+                "input": 7577,
+                "output": 33667,
+                "cache_create": 91249,
+                "cache_read": 1398331
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1302633,
+              "turns": 62,
+              "tool_calls": 31,
+              "commands_run": 19,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "90590895-cca5-4c1e-bf21-12d77d9c9d48",
+            "captured_at": "2026-06-16T22:06:41.124Z",
+            "derived": {
+              "tokens": {
+                "input": 8064,
+                "output": 61716,
+                "cache_create": 132268,
+                "cache_read": 4430763
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1593153,
+              "turns": 115,
+              "tool_calls": 49,
+              "commands_run": 24,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "22195492-c2df-4082-806d-6dfe7af15cfc",
+            "captured_at": "2026-06-16T22:27:00.099Z",
+            "derived": {
+              "tokens": {
+                "input": 9484,
+                "output": 64559,
+                "cache_create": 140742,
+                "cache_read": 10220245
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1003655,
+              "turns": 212,
+              "tool_calls": 103,
+              "commands_run": 34,
+              "tests_executed": 3990,
+              "failures_encountered": 0,
+              "files_touched": 16,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:f25f27296b05d2ea84b22fe62d8894f6d2f58ec1b94e8ef1ebd785d5971f0062",
+            "cli_version": "1.2.2",
+            "session_id": "efb20074-f1b6-49a2-960e-071370711a27",
+            "captured_at": "2026-06-16T23:31:26.989Z",
+            "derived": {
+              "tokens": {
+                "input": 7450,
+                "output": 27751,
+                "cache_create": 89610,
+                "cache_read": 1426817
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 631140,
+              "turns": 67,
+              "tool_calls": 30,
+              "commands_run": 19,
+              "tests_executed": 3830,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "d51f3d96-f4d2-48ec-a320-48fb0fe6a9de",
+            "captured_at": "2026-06-16T23:44:43.691Z",
+            "derived": {
+              "tokens": {
+                "input": 9175,
+                "output": 77884,
+                "cache_create": 182750,
+                "cache_read": 14765889
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1516704,
+              "turns": 238,
+              "tool_calls": 115,
+              "commands_run": 60,
+              "tests_executed": 11796,
+              "failures_encountered": 1,
+              "files_touched": 12,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:f25f27296b05d2ea84b22fe62d8894f6d2f58ec1b94e8ef1ebd785d5971f0062",
+            "cli_version": "1.2.2",
+            "session_id": "a8a6191e-ed6a-467f-ab6f-e6bb00742d4d",
+            "captured_at": "2026-06-17T00:11:29.678Z",
+            "derived": {
+              "tokens": {
+                "input": 7587,
+                "output": 26186,
+                "cache_create": 102946,
+                "cache_read": 1988653
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 812619,
+              "turns": 79,
+              "tool_calls": 35,
+              "commands_run": 17,
+              "tests_executed": 3852,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-16T23:08:56.630Z",
+        "completed_at": "2026-06-17T00:29:04.476Z",
+        "commit_count": 0,
+        "base_commit": "8dd0d019db5690a280c930419fb7eb21c14120e5"
+      },
+      "surface": "cli",
+      "phases": 2
+    },
+    {
+      "slug": "attestation-emit-and-guard",
+      "feature": "Guard the anatrace-core load and emit the first real attestation records",
+      "result": "PASS",
+      "verdict_veto": {
+        "applied": false,
+        "reason": "verify did not read build_report.md"
+      },
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 12,
+        "satisfied": 12,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A missing attestation engine never throws out of the save path",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "When the engine version is empty, no attestation file is written to disk",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "The recorded engine version matches the engine package actually installed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A real attestation always stamps a non-empty engine version",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "A real attestation under the live engine contains at least one behavioral verdict",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 7,
+        "met": 7,
+        "partial": 0,
+        "coverage": {
+          "pinned": 3,
+          "judgment": 1,
+          "retired": 0,
+          "uncovered": 0,
+          "weak_only": 0
+        }
+      },
+      "timing": {
+        "total_minutes": 100,
+        "think": 15,
+        "plan": 37,
+        "build": 13,
+        "verify": 7
+      },
+      "hashes": {
+        "scope": "sha256:749084c7c0326bde466616155c8237068787ce5ce6e75278bdf61a7b9b2641dd",
+        "contract": "sha256:8062d586124a7e24f6e2aff5a1d33267f0a0bc6f3cf965f0f57e9ab83fdd2ad4",
+        "plan": "sha256:a1025e1902b486ee8752d1d45d6b3e5ccd427ac2166bcc1af01c4fb9b9ba14f1",
+        "spec": "sha256:28770701e57c413673876f00bc00591de39af06506abeb0e5398e40c0730f237",
+        "build-report": "sha256:abea33d1d6098bede1aebb081677493f6a35a4f5be11bba6b75949fd306b79ad",
+        "build-data": "sha256:d1fa562b5e6dff67d721e501e72c67875f6fc35c9126c544bcb78e1851650742",
+        "verify-report": "sha256:bcca8bdff4efec7bcfc5aa7a75a3e4da14f27d5d3312bdf67569374d5e957afb",
+        "verify-data": "sha256:40fc82748da68a28800aad969ca5735d75f993af37840b7954606007482ee733"
+      },
+      "completed_at": "2026-06-17T02:38:07.577Z",
+      "modules_touched": [
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/tests/utils/compliance.test.ts"
+      ],
+      "scope_summary": "Anatomia's headline differentiator — behavioral attestation — has never produced a record. Two defects, one work item:",
+      "kind": "fix",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 73,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A001",
+            "A002"
+          ],
+          "id": "attestation-emit-and-guard-C1",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here).",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 84,
+          "severity": "risk",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001",
+            "A003"
+          ],
+          "id": "attestation-emit-and-guard-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 288,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A005",
+            "A006"
+          ],
+          "id": "attestation-emit-and-guard-C3",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken.",
+          "file": "packages/cli/tests/commands/_capture.test.ts",
+          "anchor": null,
+          "line": 219,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A009"
+          ],
+          "id": "attestation-emit-and-guard-C4",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path.",
+          "file": "packages/cli/tests/utils/compliance.test.ts",
+          "anchor": null,
+          "line": 312,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "attestation-emit-and-guard-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here.",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "anchor": null,
+          "line": 357,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "attestation-emit-and-guard-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Spec/Build-Brief's literal loadCore idiom createRequire('anatrace-core') cannot work — anatrace-core is import-only ESM (no require condition in exports), so the bare specifier throws ERR_PACKAGE_PATH_NOT_EXPORTED. Working loader resolves the package.json export then require()s the ESM entry by absolute path (Node 25 require(esm), still synchronous).",
+          "file": "packages/cli/src/utils/compliance.ts",
+          "severity": "debt",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing lint warning (Unused eslint-disable directive 'no-control-regex') in git-operations.ts:198 — not introduced by this build, out of scope, left untouched.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Dogfood record emit depends on the session env (ANA_ROLE/run-id/session-id) AND a freshly rebuilt main-tree dist on installed core. A stale dist or absent core silently re-emits zero — the exact fragility Move 1 makes loud. Verify confirms the record on disk.",
+          "file": null,
+          "severity": "risk",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Move 2 mutated the main tree's node_modules (pnpm install of anatrace-core@0.4.0) and rebuilt packages/cli/dist. Ratified by spec (Build owns sequencing), flagged before build. The dist reflects main-tree source (old un-guarded import) + installed core until merge.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 12,
+          "assertions_total": 12,
+          "findings": {
+            "risk": 1,
+            "debt": 2,
+            "observation": 3
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "fix",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 65,
+            "deleted": 19
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 94,
+            "deleted": 11
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "9f16c5e8-5dc0-4f2e-8595-c149777fdf8a",
+            "captured_at": "2026-06-16T21:41:46.494Z",
+            "derived": {
+              "tokens": {
+                "input": 7046,
+                "output": 16240,
+                "cache_create": 42982,
+                "cache_read": 611984
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 895750,
+              "turns": 36,
+              "tool_calls": 16,
+              "commands_run": 9,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:618938726a7e3155530c3b489bc7903db213aa0fafc4fc87ede994ebf8d6f01c",
+            "cli_version": "1.2.2",
+            "session_id": "9392438f-0678-4550-9c43-7ce677a4d6fb",
+            "captured_at": "2026-06-17T01:13:44.610Z",
+            "derived": {
+              "tokens": {
+                "input": 7051,
+                "output": 42239,
+                "cache_create": 87269,
+                "cache_read": 1052147
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 2351420,
+              "turns": 43,
+              "tool_calls": 18,
+              "commands_run": 10,
+              "tests_executed": 1,
+              "failures_encountered": 1,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "0f0c4748-b5ff-48d7-ade4-20bfb6e35a48",
+            "captured_at": "2026-06-17T01:56:38.365Z",
+            "transcript_hash": "sha256:aca3bfa77f9ecfc3e92d45228fda6cd926775af553748655af9e6ded4c0954e0",
+            "derived": {
+              "tokens": {
+                "input": 8015,
+                "output": 42412,
+                "cache_create": 101649,
+                "cache_read": 3765180
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 846189,
+              "turns": 117,
+              "tool_calls": 48,
+              "commands_run": 28,
+              "tests_executed": 4029,
+              "failures_encountered": 1,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:152a8e2d6c99f0d03dfe739ba10d3391d546b94740135c7cfcaef2e9a7cc97d8",
+            "cli_version": "1.2.2",
+            "session_id": "8fe837d8-6981-4d97-aaee-8d18f43685e2",
+            "captured_at": "2026-06-17T02:26:11.968Z",
+            "transcript_hash": "sha256:f855cb44a675f93a18656e17c0de1bd4ffd6fedf4cb656fb263b4c666db756b3",
+            "derived": {
+              "tokens": {
+                "input": 7310,
+                "output": 25210,
+                "cache_create": 86617,
+                "cache_read": 1069477
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 447890,
+              "turns": 56,
+              "tool_calls": 26,
+              "commands_run": 18,
+              "tests_executed": 3852,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "compliance": [
+        {
+          "role": "build",
+          "harness": "claude",
+          "session_id": "0f0c4748-b5ff-48d7-ade4-20bfb6e35a48",
+          "captured_at": "2026-06-17T01:56:38.365Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:9fcdae1bfc28a14bb407cb3d7be2eaddd6544d3bc5233b1b02997012d141ec0d",
+          "transcript_hash": "sha256:aca3bfa77f9ecfc3e92d45228fda6cd926775af553748655af9e6ded4c0954e0",
+          "coverage": {
+            "total": 16,
+            "fully_checked": 1,
+            "unverifiable": 15
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-build:skill:git-workflow",
+              "says": "ana-build must load the git-workflow skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-build:verify-independence",
+              "says": "ana-build never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/compliance.ts",
+              "says": "edits stay within packages/cli/src/utils/compliance.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/compliance.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/compliance.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A missing attestation engine never throws out of the save path",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "When the engine version is empty, no attestation file is written to disk",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "The recorded engine version matches the engine package actually installed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A real attestation always stamps a non-empty engine version",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "A real attestation under the live engine contains at least one behavioral verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "verify",
+          "harness": "claude",
+          "session_id": "8fe837d8-6981-4d97-aaee-8d18f43685e2",
+          "captured_at": "2026-06-17T02:26:11.968Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:ca783e405b6de2729d4c7a3e9747d4829589e56c972b50e9b5053bbcde08b0ab",
+          "transcript_hash": "sha256:f855cb44a675f93a18656e17c0de1bd4ffd6fedf4cb656fb263b4c666db756b3",
+          "coverage": {
+            "total": 19,
+            "fully_checked": 2,
+            "unverifiable": 17
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-verify:skill:testing-standards",
+              "says": "ana-verify must load the testing-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:skill:coding-standards",
+              "says": "ana-verify must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:verify-independence",
+              "says": "ana-verify never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+              "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+              "status": "unverifiable",
+              "reason": "command-unresolvable",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+              "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+              "status": "unverifiable",
+              "reason": "command-unresolvable",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/compliance.ts",
+              "says": "edits stay within packages/cli/src/utils/compliance.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/compliance.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/compliance.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "When the attestation engine can't be loaded, saving abstains instead of crashing",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A missing attestation engine never throws out of the save path",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A missing attestation engine surfaces a loud, visible warning instead of failing silently",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "Routine skips like no role or no session stay quiet — the missing-engine warning is not a false alarm",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "An empty engine version makes attestation abstain rather than stamp a bogus record",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "When the engine version is empty, no attestation file is written to disk",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "The recorded engine version matches the engine package actually installed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A real attestation always stamps a non-empty engine version",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "The attestation engine is pinned and installed at exactly version 0.4.0, no caret or tilde",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "A real attestation under the live engine contains at least one behavioral verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A real attestation reports non-zero coverage of the behavioral mandate",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "Every verdict reason the live 0.4.0 engine emits is a recognized reason",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-17T01:57:41.882Z",
+        "completed_at": "2026-06-17T02:38:07.564Z",
+        "commit_count": 0,
+        "base_commit": "fc8b6775837222b89b0405c901c940982c09d820"
+      },
+      "surface": "cli"
+    },
+    {
+      "slug": "public-surface-honesty",
+      "feature": "Public-surface honesty touch-ups",
+      "result": "PASS",
+      "verdict_veto": {
+        "applied": false,
+        "reason": "verify did not read build_report.md"
+      },
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 4,
+        "satisfied": 4,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The 'Mechanical, not vibes' section title is left unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The 'No LLM grades its own code' line is left unchanged",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The manifesto's 'you read the chain' line is left unchanged",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 6,
+        "partial": 1,
+        "coverage": {
+          "pinned": 1,
+          "judgment": 4,
+          "retired": 0,
+          "uncovered": 0,
+          "weak_only": 0
+        }
+      },
+      "timing": {
+        "total_minutes": 92,
+        "think": 43,
+        "plan": 9,
+        "build": 12,
+        "verify": 6
+      },
+      "hashes": {
+        "scope": "sha256:44d42177896ff907cdfa430998a4e32328fd0c5fb7b0cf49c47a5d610f48b833",
+        "contract": "sha256:b7e14c7148b07f019583ea3fc7660bb409bf152cd1802aa981fd017eec5fedd0",
+        "plan": "sha256:71ff92f086faee052627503ef894addaac6c6b4b34e25767f597d675eb6bdfbc",
+        "spec": "sha256:019fab4d369ad63e62ce06c66bc767eb54b60c0225dc3a70e79505e2ba18a906",
+        "build-report": "sha256:ad4df1e6559b8c94e5ce0f43757263b9e84e834ee40930a98464286a8e73264d",
+        "build-data": "sha256:9b9cd416505de361d8ab90edb3efe9cfe9ea6f329f3c5be7f42a8569a64f704b",
+        "verify-report": "sha256:fabd5e0396813c8dd81cdbf432d23e2ae70453ae064dbf0b77da6fb9b013cede",
+        "verify-data": "sha256:101f703c98beea50fe473985c7fe353f84fa81d71411090273c4125ecf7fbcdc"
+      },
+      "completed_at": "2026-06-17T06:45:14.707Z",
+      "modules_touched": [
+        "website/content/docs/concepts/contract.mdx",
+        "website/lib/__tests__/copy.test.ts",
+        "website/lib/copy.ts"
+      ],
+      "scope_summary": "Three honesty touch-ups on Anatomia's public surface — two corrections and one\ndocumentation gap. A product whose entire pitch is *\"verified over trusted\"*\ncannot ship a surface that overclaims. Each fix removes a statement the code\ndoesn't honor; none touch legitimate marketing.",
+      "kind": "chore",
+      "findings": [
+        {
+          "category": "upstream",
+          "summary": "Fix 1 replaces a false CI claim but introduces another — 'coverage gates' is not honored by CI. test.yml:63 runs `pnpm vitest run` with no --coverage flag, and vitest.config.ts defines thresholds but never sets coverage.enabled:true, so coverage thresholds are dormant in CI. The phrase was prescribed verbatim by scope+spec (AC1), so the fix belongs upstream, not in Build.",
+          "file": ".ana/context/project-context.md",
+          "anchor": null,
+          "line": 134,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A001"
+          ],
+          "id": "public-surface-honesty-C1",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-17T06:45:14.707Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "upstream",
+          "summary": "Contract A004 value 'You don' is a weak substring (matches 'You donate...' as readily as 'You don't'). The guard test wisely over-delivers — it also asserts 'have to trust the model. You read the chain.' — but the contract's pinned value itself is low-bar. Future contracts should pin a more distinctive substring.",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A004"
+          ],
+          "id": "public-surface-honesty-C2",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-17T06:45:14.707Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warnings in website (formatAge unused in components/hero or lib/proof-feed; 'latest' unused). 0 errors, gate passes. NOT introduced by this build — the four changed files contain neither symbol. Recorded so the next engineer doesn't attribute them to this change.",
+          "file": "website/lib/proof-feed.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "public-surface-honesty-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Proof context shows two still-present concerns on website/lib/copy.ts from prior cycles: manifesto outbound link points to /#pipeline (no longer exists), and proofFeed copy references clickable rows that are no longer clickable. This build does not touch either — still present, out of scope here.",
+          "file": "website/lib/copy.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "public-surface-honesty-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Fix 3 docs section summarizes the coverage-gate activation as 'on a scope whose criteria it can parse', folding in the underlying '>=1 recovered AC' condition rather than enumerating it. This is per explicit spec instruction (do not overstate the gate). Accurate and deliberately terse — noted, not a defect.",
+          "file": "website/content/docs/concepts/contract.mdx",
+          "anchor": null,
+          "line": 81,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "public-surface-honesty-C5",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Website vitest baseline showed 1 pre-existing failure (docs-platform-content.test.ts → ENOENT public/search-index.json) when run in a fresh worktree before the Next build generated the asset. Not introduced by this build; resolves once `pnpm --filter anatomia-website check` (or any build) regenerates the search index. Final sealed `ana test` run shows 0 failures.",
+          "file": "website/lib/__tests__/docs-platform-content.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing lint warnings (formatAge, latest unused) remain in the website lint output (0 errors, 2 warnings). They are in files outside this spec's four targets and were not touched.",
+          "file": null,
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 4,
+          "assertions_total": 4,
+          "findings": {
+            "risk": 0,
+            "debt": 1,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "small",
+          "kind": "chore",
+          "multi_phase": false
+        },
+        "module_churn": {
+          "website/content/docs/concepts/contract.mdx": {
+            "added": 15,
+            "deleted": 0
+          },
+          "website/lib/__tests__/copy.test.ts": {
+            "added": 32,
+            "deleted": 0
+          },
+          "website/lib/copy.ts": {
+            "added": 1,
+            "deleted": 1
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "66ba4ea5-2ab8-49fb-ada6-73f213ed19d6",
+            "captured_at": "2026-06-17T05:03:56.691Z",
+            "transcript_hash": "sha256:c6693cfcb81818911948460c96a58dc6033023e3ad5a2d52e66b48d794ba7942",
+            "derived": {
+              "tokens": {
+                "input": 7181,
+                "output": 15788,
+                "cache_create": 46876,
+                "cache_read": 849687
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 2603715,
+              "turns": 44,
+              "tool_calls": 22,
+              "commands_run": 11,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:618938726a7e3155530c3b489bc7903db213aa0fafc4fc87ede994ebf8d6f01c",
+            "cli_version": "1.2.2",
+            "session_id": "5d389d45-67b7-49c7-b287-a16dafdd1052",
+            "captured_at": "2026-06-17T05:50:39.557Z",
+            "transcript_hash": "sha256:21e18802ab14463d1d534f9ae82dceb1157a072db3070d1e4616184ecf95d2b6",
+            "derived": {
+              "tokens": {
+                "input": 7276,
+                "output": 25092,
+                "cache_create": 57540,
+                "cache_read": 1040450
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 582677,
+              "turns": 58,
+              "tool_calls": 22,
+              "commands_run": 12,
+              "tests_executed": 11,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "d05bbf02-dbc4-413b-bf16-f477fd16c880",
+            "captured_at": "2026-06-17T06:01:07.215Z",
+            "transcript_hash": "sha256:f88a7e2416521701ce8f68c516680d286f7b56648fb4657db621becdc7099fe6",
+            "derived": {
+              "tokens": {
+                "input": 7884,
+                "output": 25326,
+                "cache_create": 70841,
+                "cache_read": 3044075
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 741661,
+              "turns": 113,
+              "tool_calls": 51,
+              "commands_run": 34,
+              "tests_executed": 15491,
+              "failures_encountered": 3,
+              "files_touched": 7,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:152a8e2d6c99f0d03dfe739ba10d3391d546b94740135c7cfcaef2e9a7cc97d8",
+            "cli_version": "1.2.2",
+            "session_id": "ac12ef9a-731d-4317-939c-a00414e9da4b",
+            "captured_at": "2026-06-17T06:19:51.200Z",
+            "transcript_hash": "sha256:708b9a5035ff2476ad8fe821d6dd0b1a8cce7545caab38d46884fbdfe75a4641",
+            "derived": {
+              "tokens": {
+                "input": 7439,
+                "output": 21523,
+                "cache_create": 71859,
+                "cache_read": 1032131
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 949992,
+              "turns": 59,
+              "tool_calls": 28,
+              "commands_run": 18,
+              "tests_executed": 3876,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "compliance": [
+        {
+          "role": "plan",
+          "harness": "claude",
+          "session_id": "5d389d45-67b7-49c7-b287-a16dafdd1052",
+          "captured_at": "2026-06-17T05:50:39.557Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:054914fa6637d863b34f4f2dc8af4c12f28ff479b6d06b51087655d20a7ab1f2",
+          "transcript_hash": "sha256:21e18802ab14463d1d534f9ae82dceb1157a072db3070d1e4616184ecf95d2b6",
+          "coverage": {
+            "total": 10,
+            "fully_checked": 1,
+            "unverifiable": 9
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-plan:skill:coding-standards",
+              "says": "ana-plan must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-plan:skill:testing-standards",
+              "says": "ana-plan loads the testing-standards skill",
+              "status": "unverifiable",
+              "reason": "absent-signal",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:.ana/context/project-context.md",
+              "says": "edits stay within .ana/context/project-context.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/copy.ts",
+              "says": "edits stay within website/lib/copy.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+              "says": "edits stay within website/content/docs/concepts/contract.mdx",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+              "says": "edits stay within website/lib/__tests__/copy.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "The 'Mechanical, not vibes' section title is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "The 'No LLM grades its own code' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "The manifesto's 'you read the chain' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "build",
+          "harness": "claude",
+          "session_id": "d05bbf02-dbc4-413b-bf16-f477fd16c880",
+          "captured_at": "2026-06-17T06:01:07.215Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:76f18626e6c81c8f94d9dfad3bdbb4bc1935ac01b5af3979234eb6f3c492cd94",
+          "transcript_hash": "sha256:f88a7e2416521701ce8f68c516680d286f7b56648fb4657db621becdc7099fe6",
+          "coverage": {
+            "total": 10,
+            "fully_checked": 2,
+            "unverifiable": 8
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-build:skill:git-workflow",
+              "says": "ana-build must load the git-workflow skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-build:verify-independence",
+              "says": "ana-build never reads the build report",
+              "status": "violated",
+              "reason": "predicate-not-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:.ana/context/project-context.md",
+              "says": "edits stay within .ana/context/project-context.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/copy.ts",
+              "says": "edits stay within website/lib/copy.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+              "says": "edits stay within website/content/docs/concepts/contract.mdx",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+              "says": "edits stay within website/lib/__tests__/copy.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "The 'Mechanical, not vibes' section title is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "The 'No LLM grades its own code' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "The manifesto's 'you read the chain' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "verify",
+          "harness": "claude",
+          "session_id": "ac12ef9a-731d-4317-939c-a00414e9da4b",
+          "captured_at": "2026-06-17T06:19:51.200Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:bf3e30d85d76e90e4b4f1610125caaed546baa6baedca1af825ae9a404f9a777",
+          "transcript_hash": "sha256:708b9a5035ff2476ad8fe821d6dd0b1a8cce7545caab38d46884fbdfe75a4641",
+          "coverage": {
+            "total": 13,
+            "fully_checked": 4,
+            "unverifiable": 9
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-verify:skill:testing-standards",
+              "says": "ana-verify must load the testing-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:skill:coding-standards",
+              "says": "ana-verify must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:verify-independence",
+              "says": "ana-verify never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+              "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+              "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:.ana/context/project-context.md",
+              "says": "edits stay within .ana/context/project-context.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/copy.ts",
+              "says": "edits stay within website/lib/copy.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+              "says": "edits stay within website/content/docs/concepts/contract.mdx",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+              "says": "edits stay within website/lib/__tests__/copy.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "The 'Mechanical, not vibes' section title is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "The 'No LLM grades its own code' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "The manifesto's 'you read the chain' line is left unchanged",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-17T06:02:06.261Z",
+        "completed_at": "2026-06-17T06:45:14.694Z",
+        "commit_count": 0,
+        "base_commit": "c2f773104e1b65947f86a73c555d3d9db62dcf15"
+      },
+      "surface": "website"
     }
   ],
   "schema": 1,

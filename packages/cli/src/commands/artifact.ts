@@ -20,7 +20,8 @@ import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as yaml from 'yaml';
 import { runContractPreCheck } from './verify.js';
-import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat } from './artifact-validators.js';
+import { validatePlanFormat, validateVerifyReportFormat, validateScopeFormat, validateSpecFormat, validateContractFormat, validateVerifyDataFormat, validateBuildDataFormat, validateBuildReportFormat, evaluateCoverageGate } from './artifact-validators.js';
+import type { ContractSchema } from '../types/contract.js';
 import { findProjectRoot, validateSlug } from '../utils/validators.js';
 import { evaluateTestEvidenceGate } from '../utils/capture-marker.js';
 import { resolveTestCommandString } from './test.js';
@@ -28,6 +29,8 @@ import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { readArtifactBranch, getCurrentBranch, readCoAuthor, runGit } from '../utils/git-operations.js';
 import { worktreeExists, getWorktreePath, getMainTreeRoot } from '../utils/worktree.js';
 import { captureProvenanceAtSave } from '../utils/forensics.js';
+import { captureComplianceAtSave } from '../utils/compliance.js';
+import { deriveVerdict } from '../utils/verdict.js';
 import { SECRET_PATTERNS } from '../engine/findings/rules/secrets.js';
 
 // Re-export public validators for backward compatibility
@@ -576,12 +579,19 @@ function buildWasSavedAfterVerify(saves: Record<string, SaveMetadata>, phase: nu
   return Boolean(buildSavedAt && verifySavedAt && new Date(buildSavedAt) > new Date(verifySavedAt));
 }
 
-function readLocalVerifyResult(filePath: string): 'PASS' | 'FAIL' | 'unknown' {
+/**
+ * Read a verify report file and return its effective result via the single
+ * verdict source. A contradicted PASS resolves to `'FAIL'`; a missing file or
+ * absent headline resolves to `'unknown'`.
+ *
+ * @param filePath - Path to the verify report
+ * @returns PASS, FAIL, or unknown
+ */
+export function readLocalVerifyResult(filePath: string): 'PASS' | 'FAIL' | 'unknown' {
   if (!fs.existsSync(filePath)) return 'unknown';
   const content = fs.readFileSync(filePath, 'utf-8');
-  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
-  if (!match?.[1]) return 'unknown';
-  return match[1].toUpperCase() as 'PASS' | 'FAIL';
+  const { result } = deriveVerdict(content);
+  return result === 'UNKNOWN' ? 'unknown' : result;
 }
 
 function getNumberedSpecPhases(slugDir: string): number[] {
@@ -876,6 +886,65 @@ function applyTestEvidenceGate(filePath: string, projectRoot: string): void {
 }
 
 /**
+ * Run the pre-seal scope-coverage gate on a contract being saved.
+ *
+ * Reads the sibling scope.md, parses the contract YAML, and asks
+ * evaluateCoverageGate whether the contract covers every scope acceptance
+ * criterion. ALWAYS prints exactly one diagnostic line (so an inactive gate is
+ * never invisible — AC13). Prints info/warnings yellow and, when the gate
+ * blocks, errors red followed by process.exit(1) BEFORE the seal hash is
+ * written. Inert by design today: every existing contract is version 1.0, so
+ * the gate no-ops everywhere until Phase 2 teaches Plan to emit version 1.1.
+ *
+ * Defensive at the boundary: an unreadable scope or contract degrades the gate
+ * to a benign inactive result rather than throwing — the gate function itself
+ * is already total.
+ *
+ * @param contractPath - Absolute path to the contract.yaml being saved
+ */
+function applyCoverageGate(contractPath: string): void {
+  let scopeContent = '';
+  try {
+    const scopePath = path.join(path.dirname(contractPath), 'scope.md');
+    if (fs.existsSync(scopePath)) {
+      scopeContent = fs.readFileSync(scopePath, 'utf-8');
+    }
+  } catch {
+    scopeContent = '';
+  }
+
+  let contract: ContractSchema = {};
+  try {
+    const parsed = yaml.parse(fs.readFileSync(contractPath, 'utf-8')) as unknown;
+    if (parsed && typeof parsed === 'object') {
+      contract = parsed as ContractSchema;
+    }
+  } catch {
+    contract = {};
+  }
+
+  const gate = evaluateCoverageGate({ scopeContent, contract });
+
+  // Always surface the decision — an inactive gate is never silent (AC13).
+  console.log(`Coverage gate: ${gate.diagnostic}`);
+
+  for (const note of gate.info) {
+    console.log(chalk.gray(`  ${note}`));
+  }
+  for (const warning of gate.warnings) {
+    console.warn(chalk.yellow(`Warning: ${warning}`));
+  }
+
+  if (gate.block) {
+    for (const error of gate.errors) {
+      console.error(chalk.red(`  ${error}`));
+    }
+    console.error(chalk.red('The seal was not written. Fix the contract and re-save.'));
+    process.exit(1);
+  }
+}
+
+/**
  * Save an artifact to git with appropriate validation and commit
  *
  * @param type - Artifact type (e.g., "scope", "spec-2", "build-report")
@@ -1086,6 +1155,10 @@ export function saveArtifact(type: string, slug: string): void {
       }
       process.exit(1);
     }
+    // Pre-seal scope-coverage gate — runs BEFORE the seal hash (writeSaveMetadata).
+    // No-op on legacy version 1.0 contracts; blocks a version 1.1 contract that
+    // silently drops a scope acceptance criterion.
+    applyCoverageGate(filePath);
   }
 
   // 6b. Companion YAML discovery and validation (verify-report / build-report)
@@ -1237,12 +1310,23 @@ export function saveArtifact(type: string, slug: string): void {
     } catch { /* */ }
   }
 
-  // 8a0. Capture this session's provenance (capture v2). Total/never-throws —
-  // returns the committed file path or null. Staged into a SEPARATE list so the
-  // no-changes guard (which checks artifact paths only) never absorbs it — the
-  // transcript always grows between saves, so including it would make every
-  // re-save commit. It rides the SAME commit only when artifacts actually changed.
+  // 8a0. Capture this session's provenance + behavioral compliance (capture v2).
+  // Both total/never-throws — each returns the committed file path or null. Staged
+  // into a SEPARATE list so the no-changes guard (which checks artifact paths only)
+  // never absorbs them — the transcript always grows between saves, so including
+  // them would make every re-save commit. They ride the SAME commit only when
+  // artifacts actually changed. Compliance MUST run before provenance: provenance
+  // consumes (deletes) the pending pointer, and Codex has no env fallback once
+  // it's gone.
   const provenancePaths: string[] = [];
+  const compliancePath = captureComplianceAtSave(projectRoot, slug, process.env);
+  if (compliancePath) {
+    try {
+      const compRelPath = path.relative(projectRoot, compliancePath);
+      runGit(['add', compRelPath], { cwd: projectRoot });
+      provenancePaths.push(compRelPath);
+    } catch { /* capture is non-blocking — a staging failure never fails the save */ }
+  }
   const provenancePath = captureProvenanceAtSave(projectRoot, slug, process.env);
   if (provenancePath) {
     try {
@@ -1252,11 +1336,11 @@ export function saveArtifact(type: string, slug: string): void {
     } catch { /* capture is non-blocking — a staging failure never fails the save */ }
   }
 
-  // 8a. Check if there are staged changes (ARTIFACT paths only — never provenance).
+  // 8a. Check if there are staged changes (ARTIFACT paths only — never provenance/compliance).
   const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
-    // status 0 means no differences — nothing to commit. Un-stage any provenance
-    // we added so a no-work re-validation leaves nothing staged-but-uncommitted.
+    // status 0 means no differences — nothing to commit. Un-stage any provenance/
+    // compliance we added so a no-work re-validation leaves nothing staged-but-uncommitted.
     if (provenancePaths.length > 0) {
       try { runGit(['reset', '--', ...provenancePaths], { cwd: projectRoot }); } catch { /* */ }
     }
@@ -1264,7 +1348,7 @@ export function saveArtifact(type: string, slug: string): void {
     process.exit(0);
   }
 
-  // 9. Commit — artifact + provenance ride the same commit (provenance only when present).
+  // 9. Commit — artifact + provenance + compliance ride the same commit (each only when present).
   const coAuthor = readCoAuthor(projectRoot);
 
   const prefix = isTracked ? 'Update: ' : '';
@@ -1499,6 +1583,9 @@ export function saveAllArtifacts(slug: string): void {
         }
         process.exit(1);
       }
+      // Pre-seal scope-coverage gate — mirror of the single-save wiring.
+      // Both save paths must run it; no-op on legacy version 1.0 contracts.
+      applyCoverageGate(artifact.path);
     }
   }
 
@@ -1661,10 +1748,20 @@ export function saveAllArtifacts(slug: string): void {
     } catch { /* */ }
   }
 
-  // 6a. Capture this session's provenance (capture v2). Same contract as the
-  // single-save site: total/never-throws, staged into a SEPARATE list kept out of
-  // the no-changes guard, folded into the commit only when artifacts changed.
+  // 6a. Capture this session's provenance + behavioral compliance (capture v2).
+  // Same contract as the single-save site: both total/never-throws, staged into a
+  // SEPARATE list kept out of the no-changes guard, folded into the commit only
+  // when artifacts changed. Compliance runs BEFORE provenance (provenance consumes
+  // the pending pointer; Codex has no env fallback once it's gone).
   const provenancePaths: string[] = [];
+  const compliancePath = captureComplianceAtSave(projectRoot, slug, process.env);
+  if (compliancePath) {
+    try {
+      const compRelPath = path.relative(projectRoot, compliancePath);
+      runGit(['add', compRelPath], { cwd: projectRoot });
+      provenancePaths.push(compRelPath);
+    } catch { /* capture is non-blocking — a staging failure never fails the save */ }
+  }
   const provenancePath = captureProvenanceAtSave(projectRoot, slug, process.env);
   if (provenancePath) {
     try {
@@ -1674,7 +1771,7 @@ export function saveAllArtifacts(slug: string): void {
     } catch { /* capture is non-blocking — a staging failure never fails the save */ }
   }
 
-  // 7. Check if there are staged changes (ARTIFACT paths only — never provenance).
+  // 7. Check if there are staged changes (ARTIFACT paths only — never provenance/compliance).
   const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...stagedPaths], { cwd: projectRoot });
   if (diffResult.status === 0) {
     if (provenancePaths.length > 0) {
@@ -1684,7 +1781,7 @@ export function saveAllArtifacts(slug: string): void {
     process.exit(0);
   }
 
-  // 8. Commit — artifacts + provenance ride the same commit (provenance only when present).
+  // 8. Commit — artifacts + provenance + compliance ride the same commit (each only when present).
   const typeNames = artifacts.map(a => a.typeInfo.displayName).join(', ');
   const action = allTracked ? 'Update' : 'Save';
   const commitMessage = `[${slug}] ${action}: ${typeNames}\n\nCo-authored-by: ${coAuthor}`;

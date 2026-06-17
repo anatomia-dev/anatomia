@@ -1,0 +1,109 @@
+{
+  "role": "verify",
+  "harness": "claude",
+  "session_id": "ac12ef9a-731d-4317-939c-a00414e9da4b",
+  "captured_at": "2026-06-17T06:19:51.200Z",
+  "anatrace_core_version": "0.4.0",
+  "framework": "anatomia",
+  "mandate_hash": "sha256:bf3e30d85d76e90e4b4f1610125caaed546baa6baedca1af825ae9a404f9a777",
+  "transcript_hash": "sha256:708b9a5035ff2476ad8fe821d6dd0b1a8cce7545caab38d46884fbdfe75a4641",
+  "coverage": {
+    "total": 13,
+    "fully_checked": 4,
+    "unverifiable": 9
+  },
+  "complete": false,
+  "verdicts": [
+    {
+      "claim_id": "ana-verify:skill:testing-standards",
+      "says": "ana-verify must load the testing-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:skill:coding-standards",
+      "says": "ana-verify must load the coding-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:verify-independence",
+      "says": "ana-verify never reads the build report",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+      "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+      "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:.ana/context/project-context.md",
+      "says": "edits stay within .ana/context/project-context.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/copy.ts",
+      "says": "edits stay within website/lib/copy.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+      "says": "edits stay within website/content/docs/concepts/contract.mdx",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+      "says": "edits stay within website/lib/__tests__/copy.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A001",
+      "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A002",
+      "says": "The 'Mechanical, not vibes' section title is left unchanged",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A003",
+      "says": "The 'No LLM grades its own code' line is left unchanged",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A004",
+      "says": "The manifesto's 'you read the chain' line is left unchanged",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    }
+  ]
+}

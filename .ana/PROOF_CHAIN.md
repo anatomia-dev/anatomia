@@ -1,14 +1,14 @@
 # Proof Chain Dashboard
 
-202 runs · 242 active · 5 promoted · 916 closed
+208 runs · 282 active · 5 promoted · 925 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 140 | 171 | 2026-06-10 |
-| website | 24 | 23 | 2026-06-01 |
+| cli | 145 | 208 | 2026-06-17 |
+| website | 25 | 26 | 2026-06-17 |
 
 ## Hot Modules
 
@@ -24,101 +24,92 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 242 total)
+## Active Findings (30 shown of 282 total)
 
 ### packages/cli/src/commands/artifact-validators.ts
 
-- **code:** validatePlanFormat phase detection recognizes only '- ' bullets (line.startsWith('- ')). A '* ' bullet or tab-prefixed dash would be silently uncounted. This faithfully mirrors countPhases (intentional, commented), so behavior is consistent — but it records a frozen-format fragility shared by both copies for the next engineer. — *Remove the non-authoritative plan.md phase checkbox*
+- **code:** Bold-form regex /\*\*\s*(AC\d+)/ matches **ACn** anywhere on a line, so a prose mention ('see **AC3** above') extracts AC3 as a criterion id. Harmless across the 205-scope corpus and the dogfood (exactly AC1-14, no spurious ids), but a future version-1.1 contract could gain a spurious prose-derived id that becomes a false 'uncovered' block. Latent, low-likelihood. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **code:** Defensive try/catch around joinCoverage in evaluateCoverageGate is effectively unreachable — joinCoverage is total (no throw path), so the 'could not evaluate' diagnostic branch cannot trigger in practice and no test exercises it. Spec explicitly requested defensive depth, so it is intentional, but it is untested dead-ish code. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
-### packages/cli/src/commands/artifact.ts
+### packages/cli/src/commands/plan.ts
 
-- **code:** artifact.ts comments still call the policy 'the capture gate' in prose (1041, 1073, 1495) — concept now named test-evidence gate — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+- **code:** plan.ts missing-slug guard prints 'Error:' to stderr but exits 0 — an error condition reports success exit code — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **code:** plan.ts re-parses coverage_waivers for reason text because joinCoverage does not return the reason; minor duplication of waiver iteration — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
-### packages/cli/src/commands/doctor.ts
+### packages/cli/src/commands/work-proof.ts
 
-- **test:** assessEnforcement parse-failure fallback (all-off) is untested — every enforcement test uses createMinimalProject which always writes a valid ana.json, so the try/catch catch branch never runs — *Move enforcement-gate state from ana work status to ana doctor*
+- **code:** User-facing incomplete-coverage warning says 'behavioral verdicts are evidence, never a gate' unqualified, while its sibling display copy in proof.ts:670 was correctly qualified with the veto exception — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/src/commands/init/assets.ts
+### packages/cli/src/types/proof.ts
 
-- **test:** atomicWriteFile SHA-256 integrity-failure branch still untested; .claude/.codex gitignore writes now route through it — *Merge (not clobber) managed .gitignore files on re-init*
-- **code:** mergeAndWriteGitignore wrapper added beyond the literal spec (which said 'route through atomicWriteFile'). Thin DRY helper used at 3 call sites — good factoring, not scope creep. Over-build check: no unused exports, no dead paths. — *Merge (not clobber) managed .gitignore files on re-init*
+- **code:** Three type docstrings still assert verdicts are 'EVIDENCE, NEVER A GATE' unconditionally, now imprecise for the one allowlisted veto claim — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/src/commands/init/gitignore.ts
+### packages/cli/src/utils/compliance.ts
 
-- **code:** Legacy migration (case 3) strips any user line equal to a current stock value anywhere in the file — a user's own copy of a stock line is absorbed into the managed block on first re-init. Documented benign (still ignored), one-time only. — *Merge (not clobber) managed .gitignore files on re-init*
-
-### packages/cli/src/commands/proof.ts
-
-- **code:** Hot Spots statGrid middle column (findings text) is unbounded — only name (maxWidth:22) and runs columns are constrained; a pathological severity breakdown could push the runs column right. Bounded in practice by small integer counts — *Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card*
-- **code:** Ad-hoc bold sub-header `chalk.bold('  Phase breakdown')` still present inside formatHumanReadable. AC2 says no inline section-header construction should remain; this sub-header (inside the Timing block, multi-phase path) was not converted to a primitive. Carried from the FAIL round — never a blocker (AC2 was PARTIAL), and a defensible call since it is a sub-header inside a section, not a top-level section header. — *Proof card visual redesign on a shared render vocabulary*
-- **code:** Counts-unavailable session (derived absent) renders as a standalone `<label>  counts unavailable` line above the grid (proof.ts:452-455), not as an in-grid row spanning the numeric columns as the spec mockup depicts. This is arguably cleaner (keeps numeric columns from widening) and the substance — the session is shown loudly and contributes nothing to totals — is fully met. No contract assertion governs the exact rendering. — *Proof card visual redesign on a shared render vocabulary*
-- **code:** Empty-chain JSON payload now triplicated — --last empty branch adds a third copy of wrapJsonResponse('proof', { entries }, chain) — *Surface the proof after work complete + ana proof --last*
-- **code:** sortEntriesByRecency kept module-private (not exported) — good restraint given proof.ts's documented history of over-exporting helpers (learn-session-memory-C1) — *Surface the proof after work complete + ana proof --last*
-
-### packages/cli/src/commands/scan.ts
-
-- **code:** scan.ts adopts sparkline but never wires the ascii fallback — the tested ascii path has zero production consumers, so a non-UTF-8 terminal gets block glyphs — *Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card*
-
-### packages/cli/src/commands/work.ts
-
-- **code:** work.ts pull defense gates on porcelain status with !trimStart().startsWith('??'). A staged-deleted ('D ') or renamed ('R ') plan.md is also treated as 'modified' and restored from HEAD. Behavior is benign (restoring a non-authoritative file is desirable), but the comment frames the guard narrowly as 'tracked-modified'. — *Remove the non-authoritative plan.md phase checkbox*
-
-### packages/cli/src/utils/displayNames.ts
-
-- **code:** Seven of eight new validation display-name entries (joi, yup, valibot, superstruct, ajv, pydantic, marshmallow) are unexercised — only 'zod' is reached. Consistent with the map's existing forward-coverage convention, low risk. — *Scan card redesign — shared render vocabulary + gated 'How your team writes' section*
+- **code:** loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record. — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here). — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics. — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here. — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
 
 ### packages/cli/src/utils/git-operations.ts
 
-- **code:** Pre-existing lint warning: unused eslint-disable (no-control-regex) in git-operations.ts — not introduced by this build (file not in diff), surfaced by the full lint run — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+- **code:** Pre-existing lint warning (unused eslint-disable directive) in git-operations.ts:198 — not in this build's file_changes, not a regression — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/src/utils/render.ts
+### packages/cli/src/utils/proofSummary.ts
 
-- **code:** sparkline flat non-zero series renders as all-lowest glyphs (▁▁▁) — a steady weekly-commit series reads visually as near-zero/declining activity; documented spark-tool convention but a perceptual gotcha for this use case — *Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card*
+- **code:** deriveVerdict coerces only on an exactly-spelled 'UNSATISFIED' status; a typo'd/garbled status cell falls back to 'UNKNOWN' (proofSummary.ts:205) and will NOT gate a PASS — consistent with the self-authored honesty boundary but fragile — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+- **code:** proofSummary.ts continues to grow past the comfort threshold (Phase 2 adds coverage threading) — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **code:** parseACResults PARTIAL regex false-match risk only partially mitigated; section-scoping helps but in-section bullets containing PARTIAL in prose could still match — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
-### packages/cli/tests/commands/artifact.test.ts
+### packages/cli/src/utils/verdict.ts
 
-- **test:** A010's tagged test runs on the artifact branch, where the removed verify-report→plan.md staging block was a guarded no-op (!artifactPaths.includes). The test passes identically with or without the fix — it does not discriminate the change it claims to cover. — *Remove the non-authoritative plan.md phase checkbox*
-- **test:** A004's tagged test exercises missing/malformed ana.json, not the precise 'valid config, flag absent' fail-safe; that exact case is covered untagged in init.test.ts — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+- **code:** Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+- **code:** deriveVerdict never coerces a PASS on DEVIATED or UNCOVERED rows — only UNSATISFIED. By design (coverage gating is the separate verifier-intent-coverage feature), but the contradiction signal is intentionally narrow — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/tests/commands/config.test.ts
+### packages/cli/tests/commands/_capture.test.ts
 
-- **test:** config A016-A018 are absence-only assertions (not.toContain 'not a known ana.json field') — they would pass vacuously if the config-set validation path no-op'd; they do not positively confirm the field was written. Contract-aligned (matcher is not_contains) but fragile as regression guards — *Move enforcement-gate state from ana work status to ana doctor*
-
-### packages/cli/tests/commands/doctor.test.ts
-
-- **test:** A014 verified via results.overall === 'pass' proxy, not the literal exit code the contract names (doctorExitCode equals 0) — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
-- **test:** @ana A006 appears on both config.test.ts (this contract's KNOWN_FIELDS assertion) and doctor.test.ts (a predecessor contract's A006) — tags are not globally unique, muddying traceability — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
-
-### packages/cli/tests/commands/init/commit.test.ts
-
-- **test:** Stale @ana A001/A003/A004/A005/A006/A007/A013/A018/A021 tags on pre-existing commit.test.ts tests collide numerically with this contract's IDs, making grep-based @ana coverage ambiguous across contracts — *Merge (not clobber) managed .gitignore files on re-init*
+- **test:** Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken. — *Guard the anatrace-core load and emit the first real attestation records*
 
 ### packages/cli/tests/commands/proof-card-golden.test.ts
 
-- **test:** Golden test pins the timezone by mutating process.env['TZ']='UTC' in beforeAll and restoring in afterAll. Correct and robust for this file (verified green under UTC/Tokyo/New_York, and full suite green under TZ=UTC). But process.env.TZ is process-global: if vitest ever runs this file in a worker shared with another time-dependent test file, that file could transiently observe UTC during this file's run. No leak observed in practice; the restore is clean. — *Proof card visual redesign on a shared render vocabulary*
+- **test:** Golden snapshot fixture INPUTS were changed (cache_read 80k→1M, 900k→1M; model gpt-5-codex→gpt-5) to keep the card within 80 columns once the wider real table-version label is shown — so the golden test no longer proves cost-invariance for unchanged inputs. — *anatrace-core integration (provenance swap + behavioral attestation)*
 
-### packages/cli/tests/commands/proof.test.ts
+### packages/cli/tests/commands/scope-ac-corpus.test.ts
 
-- **test:** Build touches the health header box but relies on the pre-existing weak trailing-gap test (local A005, proof.test.ts:5505) which asserts only toContain('  ') anywhere on the line — already a recurring proof-chain finding, not strengthened here — *Health dashboard + proof list table adopt the shared render vocabulary; sparkline primitive added and adopted in the scan card*
-- **test:** No coverage for `proof --last --json` on an empty/missing chain — A011/A012 only exercise human stdout + exit code, so the new duplicated JSON empty branch is unexercised — *Surface the proof after work complete + ana proof --last*
+- **test:** scope-ac-corpus.test.ts asserts toBe(0) against the live, growing completed-scope corpus (205 today). A future completed scope using '## Acceptance Criteria' with non-AC-id criteria would flip emptyExtractionCount/falseAmbiguousCount and break this test in an unrelated future PR. Intentional safety gate, but couples future greens to historical scope formatting. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
-### packages/cli/tests/commands/scan.test.ts
+### packages/cli/tests/commands/verdict-veto-integration.test.ts
 
-- **test:** Stale @ana tags in scan.test.ts collide with this contract's assertion IDs — *Scan card redesign — shared render vocabulary + gated 'How your team writes' section*
+- **test:** A verify session that reads build_report.md via Bash/Grep substring (not the Read tool) is never exercised in Anatomia's own suite — relied on as an anatrace-core engine guarantee (read-paths binds only to Read file_path); a future engine bump could regress it undetected here — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/tests/commands/work-merge.test.ts
+### packages/cli/tests/templates/agent-proof-context.test.ts
 
-- **test:** Keystone merge test re-declares seedProvenance/readChainEntry helpers that duplicate seedActiveProvenance/readChainEntry in work.test.ts; cross-file duplication is justified by the child_process mock isolation but worth noting — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
+- **test:** @ana tags A001-A005 are duplicated within agent-proof-context.test.ts (prior merged contract + this contract) — tag-by-id resolution is ambiguous in this file — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
-### packages/cli/tests/utils/capture-marker.test.ts
+### packages/cli/tests/utils/compliance.test.ts
 
-- **test:** capture-marker.test.ts edited but absent from contract file_changes — a necessary consequence of renaming the exported evaluateCaptureGate/CaptureGateResult symbols — *Rename captureGate → testEvidenceGate (clean rename, no back-compat)*
+- **test:** Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path. — *Guard the anatrace-core load and emit the first real attestation records*
+- **test:** Real-engine happy-path tests (A052/A053/A054) judge a trivial 'doing work' transcript. A053 guards with verdicts.length > 0 before asserting zero out-of-set reasons, so it cannot pass vacuously — a good defensive assertion worth preserving if the fixture is ever simplified further. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
 
 ### packages/cli/tests/utils/proofSummary.test.ts
 
-- **test:** Stale `@ana A020` tag points at the wrong assertion. In this contract A020 is the findings-overflow no-bare-and-N-more rule, but the tag sits on the single-phase phase-breakdown test in an unmodified file. Pre-existing mis-tag; harmless here (A020 is correctly covered by the golden test at line 251) but would mislead tag-driven verification. Carried from the FAIL round; the fix cycle did not touch this file. — *Proof card visual redesign on a shared render vocabulary*
+- **test:** Stale/cross-contract @ana tags in long-lived test files mis-map this contract's assertion IDs — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
-### packages/cli/vitest.config.ts
+### website/content/docs/concepts/contract.mdx
 
-- **test:** Coverage gate — the spec's designated 'real gate' (vitest.config thresholds 80/75/80/80) — is not mechanically runnable; @vitest/coverage-v8 is not a declared dependency, so the threshold check silently no-ops wherever the provider is absent — *Remove processCaptureStrict — provenance records-and-annotates, never blocks*
+- **code:** Fix 3 docs section summarizes the coverage-gate activation as 'on a scope whose criteria it can parse', folding in the underlying '>=1 recovered AC' condition rather than enumerating it. This is per explicit spec instruction (do not overstate the gate). Accurate and deliberately terse — noted, not a defect. — *Public-surface honesty touch-ups*
+
+### website/lib/copy.ts
+
+- **code:** Proof context shows two still-present concerns on website/lib/copy.ts from prior cycles: manifesto outbound link points to /#pipeline (no longer exists), and proofFeed copy references clickable rows that are no longer clickable. This build does not touch either — still present, out of scope here. — *Public-surface honesty touch-ups*
+
+### website/lib/proof-feed.ts
+
+- **code:** Pre-existing lint warnings in website (formatAge unused in components/hero or lib/proof-feed; 'latest' unused). 0 errors, gate passes. NOT introduced by this build — the four changed files contain neither symbol. Recorded so the next engineer doesn't attribute them to this change. — *Public-surface honesty touch-ups*
+
+### General
+
+- **test:** Flaky test in the broader suite — one test failed in the sealed verify run (3766p/1f/2s) but never reproduced across 7 full-suite runs + 5 regression-focus runs. 'Push failed after retry' noise points to a git-operation/retry test, not Phase 1 code. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **code:** Observable (non-gating): no compliance record with anatrace_core_version == 0.4.0 is on disk yet for this cycle — it emits at `ana artifact save`, not at test time. Expected to land when the verify report is saved. Absence is a ~5-min follow-on per spec, never a held PR. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
 

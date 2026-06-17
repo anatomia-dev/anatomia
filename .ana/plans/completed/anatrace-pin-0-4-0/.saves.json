@@ -1,0 +1,141 @@
+{
+  "work_started_at": "2026-06-16T18:36:32.962Z",
+  "work_agent": "ana",
+  "scope": {
+    "saved_at": "2026-06-16T19:20:43.279Z",
+    "hash": "sha256:71bf57a97cd2d9ebbebdd40d55acccb402c1f1de632b6ade36e3df30db19ec50",
+    "history": [
+      {
+        "saved_at": "2026-06-16T19:05:22.733Z",
+        "hash": "sha256:11b2b9896be0b7e0fab54c660ad39b400e8c575576decc1e75f323276094efd4"
+      }
+    ]
+  },
+  "plan_started_at": "2026-06-16T19:07:03.927Z",
+  "plan_agent": "ana-plan",
+  "contract": {
+    "saved_at": "2026-06-16T20:31:33.348Z",
+    "hash": "sha256:e6c21fdab1c7507013459a9ed2fe9f56dce5a25a33a3cf75421946a36045f5d9",
+    "history": [
+      {
+        "saved_at": "2026-06-16T19:56:25.566Z",
+        "hash": "sha256:f222bea02d07c9bca6ed628d9243818655cd183ee73903ae47b7ec13284fc7d2"
+      }
+    ]
+  },
+  "plan": {
+    "saved_at": "2026-06-16T20:31:33.349Z",
+    "hash": "sha256:2978d81ce1e51472f34daad57215bc7fc490a5d3f1c02f5b50c9e1d147caf6a3",
+    "history": [
+      {
+        "saved_at": "2026-06-16T19:56:25.567Z",
+        "hash": "sha256:b5bd9887708b99424905856462dbac6feb87613a163616106d61f35f5df86036"
+      }
+    ]
+  },
+  "spec": {
+    "saved_at": "2026-06-16T20:31:33.349Z",
+    "hash": "sha256:4bb5374a1212e43c3297d2392a00176d344f4005a9d5748876392a0750d53ccd",
+    "history": [
+      {
+        "saved_at": "2026-06-16T19:56:25.567Z",
+        "hash": "sha256:d89861ec043e410d5a6762eaeb17e221723eea2032d833be259d5e870dede9c6"
+      },
+      {
+        "saved_at": "2026-06-16T20:19:42.865Z",
+        "hash": "sha256:ef8e276f8b51a0a901409be83dca107a4571d94c0ec6e159329b51bb2a9aceaf"
+      }
+    ]
+  },
+  "build_started_at": "2026-06-16T20:36:06.145Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-16T21:12:16.098Z",
+    "hash": "sha256:bd25233cb4f9839970a8ec1bf6993115ceed394f8ffbc0453e57f09d5761bc19"
+  },
+  "build-data": {
+    "saved_at": "2026-06-16T21:12:16.099Z",
+    "hash": "sha256:ec8418d83d7408ebc4b70f9a30f577cecc254ffbbc9471df1d1f8ed95b48ae2d"
+  },
+  "modules_touched": [
+    "packages/cli/package.json",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/compliance.ts",
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/proof-card-golden.test.ts",
+    "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/compliance.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts",
+    "pnpm-lock.yaml"
+  ],
+  "module_churn": {
+    "packages/cli/package.json": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 58,
+      "deleted": 2
+    },
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 59,
+      "deleted": 8
+    },
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+      "added": 5,
+      "deleted": 5
+    },
+    "packages/cli/tests/commands/_capture.test.ts": {
+      "added": 11,
+      "deleted": 3
+    },
+    "packages/cli/tests/commands/proof-card-golden.test.ts": {
+      "added": 3,
+      "deleted": 3
+    },
+    "packages/cli/tests/data/pricing.test.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 147,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/forensics-derive.test.ts": {
+      "added": 4,
+      "deleted": 4
+    },
+    "packages/cli/tests/utils/forensics.test.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "pnpm-lock.yaml": {
+      "added": 5,
+      "deleted": 5
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-16T21:13:19.951Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:e6c21fdab1c7507013459a9ed2fe9f56dce5a25a33a3cf75421946a36045f5d9",
+    "run_at": "2026-06-16T21:20:21.053Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-16T21:19:40.337Z",
+    "hash": "sha256:a7141d1a9a89ee24083dec87d5a9d8bf2caf1093128199a8e6a5a06ca2d94635"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-16T21:20:21.079Z",
+    "hash": "sha256:65aaa88022cfcabc934934d556642463b9e2dd2067855e824c3336a6a4dd9043",
+    "history": [
+      {
+        "saved_at": "2026-06-16T21:19:40.338Z",
+        "hash": "sha256:d965111976aaee83a7456c132e2f6631f9b92a1d2a3ac8d5ef368b807d2097e5"
+      }
+    ]
+  }
+}

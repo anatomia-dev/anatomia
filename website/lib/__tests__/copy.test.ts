@@ -1,6 +1,38 @@
 import { describe, it, expect } from 'vitest';
 import { copy } from '@/lib/copy';
 
+// @ana A001
+describe("ana-verify chip role reads 'isolated · fault-finds'", () => {
+  it('describes Verify as fault-finding, not a machine that computes the verdict', () => {
+    const chip = copy.bento.agents.chips.find((c) => c.name === 'ana-verify');
+    expect(chip).toBeDefined();
+    expect(chip?.role).toBe('isolated · fault-finds');
+  });
+});
+
+// @ana A002
+describe('diff section title is unchanged', () => {
+  it("retains the 'Mechanical, not vibes.' title", () => {
+    expect(copy.bento.diff.title).toBe('Mechanical, not vibes.');
+  });
+});
+
+// @ana A003
+describe('diff section body retains the no-self-grading line', () => {
+  it("contains 'No LLM grades its own code.'", () => {
+    expect(copy.bento.diff.body).toContain('No LLM grades its own code.');
+  });
+});
+
+// @ana A004
+describe('manifesto pull quote is unchanged', () => {
+  it("retains the 'you read the chain' line", () => {
+    // Assert on a substring that avoids the unicode right-single-quote (’).
+    expect(copy.manifesto.pull).toContain('You don');
+    expect(copy.manifesto.pull).toContain('have to trust the model. You read the chain.');
+  });
+});
+
 // @ana A031
 describe('copy has 20 top-level sections', () => {
   it('has all 20 expected sections', () => {

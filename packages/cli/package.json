@@ -42,7 +42,8 @@
     "node": ">=22.0.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/.build-stale"
   ],
   "scripts": {
     "build": "pnpm typecheck && rm -rf dist && tsup && cp -r templates dist/",
@@ -56,6 +57,7 @@
   },
   "dependencies": {
     "@manypkg/get-packages": "^3.1.0",
+    "anatrace-core": "0.4.0",
     "chalk": "^5.3.0",
     "commander": "^14.0.3",
     "get-tsconfig": "^4.13.7",

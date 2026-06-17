@@ -13,6 +13,9 @@ import { parseRejectionCycles, parseFindings, parseBuildOpenIssues, extractScope
 import type { ProofAssertion, ProofDeviation } from './proof-parsers.js';
 import { computeChainHealth } from './proof-health.js';
 import type { ChainHealth } from './proof-health.js';
+import { joinCoverage } from '../commands/artifact-validators.js';
+import { deriveVerdict } from './verdict.js';
+import type { ContractSchema } from '../types/contract.js';
 
 // Re-export from proof-parsers for backward compatibility
 export { parseBuildOpenIssues, extractFileRefs, extractScopeSummary, extractScopeKind, parseFindings, parseRejectionCycles } from './proof-parsers.js';
@@ -29,6 +32,13 @@ export { MIN_FINDINGS_HOT, MIN_ENTRIES_HOT, TRAJECTORY_WINDOW, MIN_ENTRIES_FOR_T
 export interface ProofSummary {
   feature: string;
   result: 'PASS' | 'FAIL' | 'UNKNOWN';
+  /**
+   * Reasons a PASS headline was coerced to a FAIL `result` by {@link deriveVerdict}
+   * (one per contradicting UNSATISFIED compliance row). Additive and optional:
+   * absent on a clean verdict and on old entries. Surfaced on the proof entry so
+   * the coercion is observable, not silent.
+   */
+  verdict_contradictions?: string[];
   author: {
     name: string;
     email: string;
@@ -43,6 +53,28 @@ export interface ProofSummary {
   acceptance_criteria: {
     total: number;
     met: number;
+    /**
+     * Count of acceptance criteria that shipped PARTIAL (a PARTIAL-inside-PASS).
+     * Additive: old proof_chain.json entries lack it — consumers treat absent as 0.
+     */
+    partial: number;
+    /**
+     * Per-AC coverage breakdown from {@link joinCoverage}: how each scope AC is
+     * covered by the contract. Additive and undefined-safe — old entries or a
+     * missing scope/contract yield an all-zero object.
+     */
+    coverage: {
+      /** ACs pinned by >=1 assertion `ac:` link. */
+      pinned: number;
+      /** ACs excused by a judgment-only coverage_waivers entry. */
+      judgment: number;
+      /** ACs excused by a retired coverage_waivers entry. */
+      retired: number;
+      /** ACs with no link and no waiver (would block the seal). */
+      uncovered: number;
+      /** Pinned ACs whose linking assertions all use weak matchers only. */
+      weak_only: number;
+    };
   };
   timing: {
     total_minutes: number;
@@ -141,7 +173,7 @@ interface ContractYaml {
  * @param content - Verify report content
  * @returns Array of compliance rows with id, says, status, evidence
  */
-function parseComplianceTable(content: string): Array<{
+export function parseComplianceTable(content: string): Array<{
   id: string;
   says: string;
   status: string;
@@ -181,23 +213,12 @@ function parseComplianceTable(content: string): Array<{
 }
 
 /**
- * Parse Result line from verify report
- *
- * @param content - Verify report content
- * @returns PASS, FAIL, or UNKNOWN
- */
-function parseResult(content: string): 'PASS' | 'FAIL' | 'UNKNOWN' {
-  const match = content.match(/\*\*Result:\*\*\s*(PASS|FAIL)/i);
-  return match && match[1] ? match[1].toUpperCase() as 'PASS' | 'FAIL' : 'UNKNOWN';
-}
-
-/**
  * Parse AC walkthrough and count results
  *
  * @param content - Verify report content
- * @returns Object with total and met AC counts
+ * @returns Object with total, met, and partial AC counts
  */
-function parseACResults(content: string): { total: number; met: number } {
+function parseACResults(content: string): { total: number; met: number; partial: number } {
   // Scope to the AC Walkthrough section to avoid false matches from other sections
   // (e.g., a Findings bullet containing "PASS" in prose).
   // Fall back to full content if heading is missing (old reports).
@@ -222,7 +243,7 @@ function parseACResults(content: string): { total: number; met: number } {
   const total = passCount + failCount + partialCount + unverifiableCount;
   const met = passCount;
 
-  return { total: total || 0, met };
+  return { total: total || 0, met, partial: partialCount };
 }
 
 /**
@@ -873,6 +894,8 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     acceptance_criteria: {
       total: 0,
       met: 0,
+      partial: 0,
+      coverage: { pinned: 0, judgment: 0, retired: 0, uncovered: 0, weak_only: 0 },
     },
     timing: {
       total_minutes: 0,
@@ -953,6 +976,7 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     .sort();
 
   let lastResult: 'PASS' | 'FAIL' | 'UNKNOWN' | null = null;
+  let lastContradictions: string[] = [];
   const allFindings: ProofSummary['findings'] = [];
 
   for (const verifyFile of verifyFiles) {
@@ -960,12 +984,23 @@ export function generateProofSummary(slugDir: string): ProofSummary {
     try {
       const verifyContent = fs.readFileSync(verifyPath, 'utf-8');
 
-      // Track result from each phase — last phase determines overall result
-      const phaseResult = parseResult(verifyContent);
-      if (phaseResult !== 'UNKNOWN') lastResult = phaseResult;
+      // Track result from each phase — last phase determines overall result.
+      // deriveVerdict cross-checks the headline against the compliance table and
+      // coerces a contradicted PASS to FAIL; carry its reasons onto the proof.
+      const phaseVerdict = deriveVerdict(verifyContent);
+      if (phaseVerdict.result !== 'UNKNOWN') {
+        lastResult = phaseVerdict.result;
+        lastContradictions = phaseVerdict.contradictions;
+      }
 
-      // Accumulate AC results from last phase (most complete)
-      summary.acceptance_criteria = parseACResults(verifyContent);
+      // Accumulate AC results from last phase (most complete). Preserve the
+      // `coverage` object — it is computed from scope.md + contract.yaml below,
+      // not from the verify report, so it must survive this assignment.
+      const acCounts = parseACResults(verifyContent);
+      summary.acceptance_criteria = {
+        ...acCounts,
+        coverage: summary.acceptance_criteria.coverage,
+      };
 
       // Parse compliance table and overlay on assertions (each phase has different IDs)
       const complianceRows = parseComplianceTable(verifyContent);
@@ -1019,7 +1054,30 @@ export function generateProofSummary(slugDir: string): ProofSummary {
   }
 
   if (lastResult) summary.result = lastResult;
+  if (lastContradictions.length > 0) summary.verdict_contradictions = lastContradictions;
   summary.findings = allFindings;
+
+  // Coverage: join scope.md ACs against the contract's `ac:` links + waivers via
+  // the same exported `joinCoverage` the pre-seal gate uses (one implementation,
+  // never forked). Undefined-safe: a missing scope, a legacy 1.0 contract, or any
+  // parse failure degrades to the all-zero default — never throws.
+  try {
+    const scopePath = path.join(slugDir, 'scope.md');
+    if (fs.existsSync(scopePath) && fs.existsSync(contractPath)) {
+      const scopeContent = fs.readFileSync(scopePath, 'utf-8');
+      const coverageContract = yaml.parse(fs.readFileSync(contractPath, 'utf-8')) as ContractSchema;
+      const join = joinCoverage(scopeContent, coverageContract);
+      summary.acceptance_criteria.coverage = {
+        pinned: join.acs.filter(ac => ac.status === 'pinned').length,
+        judgment: join.acs.filter(ac => ac.status === 'judgment').length,
+        retired: join.acs.filter(ac => ac.status === 'retired').length,
+        uncovered: join.acs.filter(ac => ac.status === 'uncovered').length,
+        weak_only: join.acs.filter(ac => ac.status === 'pinned' && ac.weakOnly).length,
+      };
+    }
+  } catch {
+    // Coverage stays at the all-zero default — never block summary generation.
+  }
 
   // Update contract counts from verify statuses (aggregated across all phases)
   summary.contract.satisfied = summary.assertions.filter(a => a.verifyStatus === 'SATISFIED').length;

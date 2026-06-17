@@ -3,7 +3,8 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { execSync, spawnSync } from 'node:child_process';
-import { createPr } from '../../src/commands/pr.js';
+import { createPr, renderProofMarkdown } from '../../src/commands/pr.js';
+import type { ProofSummary } from '../../src/utils/proofSummary.js';
 
 // Mock spawnSync to enable interception of gh CLI calls in PR guard tests.
 // By default passes through to the original; tests override via vi.mocked(spawnSync).
@@ -543,6 +544,47 @@ ${complianceTable}
 
       logSpy.mockRestore();
       errorSpy.mockRestore();
+    });
+  });
+
+  describe('renderProofMarkdown PARTIAL surfacing (AC12)', () => {
+    /**
+     * Build a minimal PASS ProofSummary, overriding acceptance_criteria.
+     */
+    function baseProof(ac: ProofSummary['acceptance_criteria']): ProofSummary {
+      return {
+        feature: 'Test Feature',
+        result: 'PASS',
+        author: { name: 'Dev', email: 'dev@example.com' },
+        assertions: [],
+        contract: { total: 2, satisfied: 2, unsatisfied: 0, deviated: 0 },
+        acceptance_criteria: ac,
+        timing: { total_minutes: 10 },
+        deviations: [],
+        hashes: {},
+        completed_at: '2026-04-01T10:00:00Z',
+        findings: [],
+        rejection_cycles: 0,
+        previous_failures: [],
+        build_concerns: [],
+      };
+    }
+
+    it('appends the PARTIAL count to the summary line when partial > 0', () => {
+      const md = renderProofMarkdown(baseProof({
+        total: 6, met: 6, partial: 2,
+        coverage: { pinned: 4, judgment: 1, retired: 1, uncovered: 0, weak_only: 0 },
+      }));
+      expect(md).toContain('6/6 ACs met (2 PARTIAL)');
+    });
+
+    it('omits the PARTIAL note when partial is 0', () => {
+      const md = renderProofMarkdown(baseProof({
+        total: 6, met: 6, partial: 0,
+        coverage: { pinned: 6, judgment: 0, retired: 0, uncovered: 0, weak_only: 0 },
+      }));
+      expect(md).toContain('6/6 ACs met');
+      expect(md).not.toContain('PARTIAL');
     });
   });
 

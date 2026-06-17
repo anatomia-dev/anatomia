@@ -1,0 +1,229 @@
+{
+  "work_started_at": "2026-06-05T08:01:31.316Z",
+  "work_agent": "ana",
+  "scope": {
+    "saved_at": "2026-06-16T21:15:35.757Z",
+    "hash": "sha256:299e88902e431bed57dab56061c27ce1177e3c8f9c3aac316b347b4430b91598",
+    "history": [
+      {
+        "saved_at": "2026-06-05T08:16:33.700Z",
+        "hash": "sha256:977962d4cf77a3a8d4fc15ed9043f58adc356ce05adfb98d0474db5b407496ad"
+      }
+    ]
+  },
+  "plan_started_at": "2026-06-16T21:15:58.175Z",
+  "plan_agent": "ana-plan",
+  "contract": {
+    "saved_at": "2026-06-16T21:37:35.000Z",
+    "hash": "sha256:5095b2cec3666d3f8b3c0288ddaec41cc378473a12533bbb4e86e035fe195dd8"
+  },
+  "plan": {
+    "saved_at": "2026-06-16T21:37:35.001Z",
+    "hash": "sha256:769fd994ce674ba505d517b0e42c175f6c53d4fd088c3afb437893e75336590e"
+  },
+  "spec-1": {
+    "saved_at": "2026-06-16T21:42:58.568Z",
+    "hash": "sha256:d5f166565754198655e4c1c495e34f78adafb9dbbba16439846e1b915b1e3dc4",
+    "history": [
+      {
+        "saved_at": "2026-06-16T21:37:35.001Z",
+        "hash": "sha256:8bb48fe7dd525fa4ec149faeca82fee956659ccb2e1ba014544242a6a6375a51"
+      }
+    ]
+  },
+  "spec-2": {
+    "saved_at": "2026-06-16T21:43:00.616Z",
+    "hash": "sha256:665f7fdad48da0667273a0e001ef1fb70b91be6a3529f6075d8192dc44d5c7ed",
+    "history": [
+      {
+        "saved_at": "2026-06-16T21:37:35.001Z",
+        "hash": "sha256:da0946679d1417585493a156dbce215b5c0f0b86ad9d8bbc1ec0afe4c88b40ca"
+      }
+    ]
+  },
+  "build_started_at": "2026-06-16T21:46:13.608Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-16T21:59:44.338Z",
+    "hash": "sha256:8aa8795f15fd610420a3effc4b133c3a531ccbfd41c3b094411e523ef5f997d3"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-16T21:59:44.339Z",
+    "hash": "sha256:dad91d60d5219eb1e900a0cd0ab547eddacd02107f415f4412a228a80e595541"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-verify.md",
+    ".codex/agents/ana-plan.md",
+    ".codex/agents/ana-verify.md",
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/plan.ts",
+    "packages/cli/src/commands/pr.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/types/contract.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana-plan.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/tests/commands/commit-hygiene.test.ts",
+    "packages/cli/tests/commands/coverage-gate.test.ts",
+    "packages/cli/tests/commands/plan-coverage.test.ts",
+    "packages/cli/tests/commands/pr.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/scope-ac-corpus.test.ts",
+    "packages/cli/tests/commands/template-coverage-prompts.test.ts",
+    "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/utils/proofSummary.test.ts"
+  ],
+  "module_churn": {
+    ".claude/agents/ana-plan.md": {
+      "added": 28,
+      "deleted": 1
+    },
+    ".claude/agents/ana-verify.md": {
+      "added": 12,
+      "deleted": 5
+    },
+    ".codex/agents/ana-plan.md": {
+      "added": 28,
+      "deleted": 1
+    },
+    ".codex/agents/ana-verify.md": {
+      "added": 12,
+      "deleted": 5
+    },
+    "packages/cli/src/commands/artifact-validators.ts": {
+      "added": 299,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 68,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/plan.ts": {
+      "added": 169,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/pr.ts": {
+      "added": 9,
+      "deleted": 2
+    },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 17,
+      "deleted": 0
+    },
+    "packages/cli/src/index.ts": {
+      "added": 2,
+      "deleted": 0
+    },
+    "packages/cli/src/types/contract.ts": {
+      "added": 34,
+      "deleted": 0
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/src/utils/proofSummary.ts": {
+      "added": 59,
+      "deleted": 5
+    },
+    "packages/cli/templates/.claude/agents/ana-plan.md": {
+      "added": 28,
+      "deleted": 1
+    },
+    "packages/cli/templates/.claude/agents/ana-verify.md": {
+      "added": 12,
+      "deleted": 5
+    },
+    "packages/cli/templates/.codex/agents/ana-plan.md": {
+      "added": 28,
+      "deleted": 1
+    },
+    "packages/cli/templates/.codex/agents/ana-verify.md": {
+      "added": 12,
+      "deleted": 5
+    },
+    "packages/cli/tests/commands/commit-hygiene.test.ts": {
+      "added": 2,
+      "deleted": 2
+    },
+    "packages/cli/tests/commands/coverage-gate.test.ts": {
+      "added": 398,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/plan-coverage.test.ts": {
+      "added": 210,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/pr.test.ts": {
+      "added": 43,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 58,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/scope-ac-corpus.test.ts": {
+      "added": 99,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/template-coverage-prompts.test.ts": {
+      "added": 75,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-proof-process.test.ts": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/utils/proofSummary.test.ts": {
+      "added": 109,
+      "deleted": 1
+    }
+  },
+  "commit_hygiene": [
+    {
+      "check": "conflict-marker",
+      "file": "packages/cli/tests/commands/commit-hygiene.test.ts",
+      "severity": "warn",
+      "message": "merge conflict marker in packages/cli/tests/commands/commit-hygiene.test.ts"
+    }
+  ],
+  "verify_started_at_1": "2026-06-16T22:01:18.880Z",
+  "verify_agent_1": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:5095b2cec3666d3f8b3c0288ddaec41cc378473a12533bbb4e86e035fe195dd8",
+    "run_at": "2026-06-16T22:59:19.115Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-16T22:21:37.249Z",
+    "hash": "sha256:53b1a8d8bf67e75fb19bd52c4ae6d5f917b026a5c941b5937781a84e7a729c3a"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-16T22:21:37.249Z",
+    "hash": "sha256:1cfe055ceeefd190fff26e0cb7c26223383f204cd9642e9c0c4aa2236da75a9b"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-16T22:50:19.415Z",
+    "hash": "sha256:ed865254234cef3aee42ffde1f1dda2f880d23c91e928b52c6647640586122ac"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-16T22:50:19.416Z",
+    "hash": "sha256:02a9f1987306b514977f5f68d8c2cf31a2da69c0a4b57f35e246b11bd036bcf1"
+  },
+  "verify_started_at_2": "2026-06-16T22:51:25.442Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-16T22:59:19.153Z",
+    "hash": "sha256:3d1f744977093e486275263fc7ef6fc73f20752fa1a999e7ef541e479eaf3a39"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-16T22:59:19.154Z",
+    "hash": "sha256:18ccd430e582a08ce1d26ee0a31625ffe219396222411d1ea9cb52e1498ac191"
+  }
+}

@@ -1,0 +1,13 @@
+schema: 1
+concerns:
+  - summary: "The gate's blocking path through artifact.ts (print errors + process.exit(1)) is covered only at the unit level (evaluateCoverageGate). No integration test drives saveArtifact/saveAllArtifacts to an actual block, because the gate is inert by design — no version 1.1 contract exists to trigger it until Phase 2. The artifact.ts layer is a thin print+exit mirror of applyTestEvidenceGate."
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "AC6 (scope: 'a contract with no assertions never triggers the gate, active:false') and AC13 ('a version 1.1 contract with zero ac links over a scope with ACs reports active:true, block:true') are in tension for the zero-assertion + version-1.1 case. Resolved per the contract's explicit pins (A020/A021): activation = version>=1.1 AND scope-has-ACs AND not-ambiguous, independent of assertion count. AC6's no-assertions clause holds in the legacy 1.0 regime and via the no-AC-scope path (A017)."
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "extractScopeACs recovers ids only from the four structural forms (bullet, heading, bold, bare label). An AC referenced only mid-prose without bold (e.g. 'see AC3') is intentionally not recovered, for precision. Acceptable while the gate is dormant; worth awareness when Phase 2 activates real contracts."
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    severity: observation
+    suggested_action: monitor

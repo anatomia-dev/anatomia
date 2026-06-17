@@ -39,6 +39,16 @@ export interface SessionProvenance {
    */
   captured_at: string;
   /**
+   * sha256 of the transcript bytes this session's counts were derived from,
+   * prefixed `sha256:`. A byte-identity ATTESTATION ONLY — it fingerprints the
+   * exact bytes seen at capture so a record can be checked against a retained
+   * transcript. It does NOT imply the provenance can be regenerated without those
+   * retained bytes (the transcript is not committed). Capture metadata on the
+   * wrapper, not part of the deterministic derive. Present iff the transcript was
+   * readable at capture — OMITTED (alongside `derived`) when it was not.
+   */
+  transcript_hash?: string;
+  /**
    * Deterministic provenance counts for this session, derived from the committed
    * transcript at `ana artifact save` time. OMITTED when the transcript was
    * unreadable at capture (e.g. a dangling path) — the session row is still kept
@@ -114,12 +124,149 @@ export interface ProcessAttestation {
 }
 
 /**
+ * The closed set of behavioral verdict reasons the `anatrace-core` engine emits,
+ * locked to the installed 0.4.0 engine. SINGLE SOURCE OF TRUTH — the
+ * {@link VerdictReason} type and the {@link isVerdictReason} guard are both derived
+ * from this one list so the set can never drift between the type and the runtime
+ * check.
+ *
+ * Lives in this otherwise types-only module ON PURPOSE: defining the value here
+ * (rather than in `compliance.ts`) keeps it next to {@link VerdictReason}, avoids
+ * duplicating the member list across two files, and avoids a circular import
+ * (`compliance.ts` imports from `proof.ts`, never the reverse). The 0.4.0 delta vs
+ * 0.2.0 is purely additive (3 added, none removed/renamed), so narrowing the
+ * record field to this set cannot reject a reason a stored 0.2.0-era record carries.
+ */
+export const VERDICT_REASONS = [
+  'predicate-matched',
+  'predicate-not-matched',
+  'routed-to-llm',
+  'runtime-scoped',
+  'low-confidence',
+  'absent-signal',
+  'content-unresolvable',
+  'command-unresolvable',
+  'codex-blind',
+  'subject-unresolvable',
+  'delegate-coverage-incomplete',
+  'channel-coverage-incomplete',
+  'window-unresolvable',
+  'harness-version-unrecognized',
+  'session-parse-suspect',
+] as const;
+
+/**
+ * A verdict reason the installed 0.4.0 engine is known to produce — the closed
+ * union derived from {@link VERDICT_REASONS} (no duplicated member list).
+ */
+export type VerdictReason = (typeof VERDICT_REASONS)[number];
+
+/** O(1) membership set backing {@link isVerdictReason}. */
+const VERDICT_REASON_SET: ReadonlySet<string> = new Set(VERDICT_REASONS);
+
+/**
+ * Membership guard for the closed verdict-reason set.
+ *
+ * @param r - The reason string to test (typically a live engine verdict reason)
+ * @returns `true` (narrowing `r` to {@link VerdictReason}) iff `r` is in {@link VERDICT_REASONS}
+ */
+export function isVerdictReason(r: string): r is VerdictReason {
+  return VERDICT_REASON_SET.has(r);
+}
+
+/**
+ * One behavioral verdict in a committed {@link ComplianceAttestation} (Phase 2).
+ *
+ * COMPACT + SCRUBBED — the durable, Anatomia-owned projection of a core
+ * `ComplianceVerdict`. It deliberately stores only the claim id, its `says`, the
+ * status, and the reason: NEVER copied transcript bytes. (Core verdict evidence
+ * is byte POINTERS, never excerpts — and the whole record passes `scrubDeep`
+ * before write, so an egress command carrying a token never lands in committed
+ * git history.) Snake_case to match the on-disk record, distinct from core's
+ * camelCase runtime shape so the engine can evolve without breaking stored proof.
+ */
+export interface ComplianceVerdictRecord {
+  /** Stable claim id — the join key to the mandate/proof chain. */
+  claim_id: string;
+  /** Human-readable obligation, verbatim from the mandate. */
+  says: string;
+  /** Behavioral verdict: `satisfied` | `violated` | `unverifiable`. EVIDENCE ONLY — never gates. */
+  status: 'satisfied' | 'violated' | 'unverifiable';
+  /**
+   * Coverage-aware verdict reason (subject/context-dependent, e.g. `codex-blind`).
+   * Locked to the closed {@link VerdictReason} set, while `(string & {})` keeps the
+   * field forward-compatible: a reason from a FUTURE engine is still legally stored
+   * verbatim (recorded + warned, never dropped) without a cast or data loss.
+   */
+  reason: VerdictReason | (string & {});
+  /**
+   * The engine channel that produced this verdict: `'deterministic'` (mechanical
+   * predicate match) vs `'llm'` (judge). Mirrors anatrace-core's type-disjoint
+   * `ComplianceVerdict.source` / `JudgeVerdict.source` discriminant; `(string & {})`
+   * keeps it forward-compatible like {@link reason}.
+   *
+   * OPTIONAL by construction (`?:`, never `| null`): records written before
+   * `verifier-verdict-honesty` Component 3 lack it and MUST deserialize as
+   * non-gating. The read-build-report veto fires ONLY on `'deterministic'`; an
+   * absent `source` is treated as non-deterministic, so old records never
+   * retroactively gate (forward-only). Gating keys on `source`, never on the
+   * drift-prone `reason` vocabulary.
+   */
+  source?: 'deterministic' | 'llm' | (string & {});
+}
+
+/**
+ * Behavioral attestation for ONE agent transcript (Phase 2).
+ *
+ * The deterministic, coverage-aware verdict of HOW a session behaved, produced at
+ * `ana artifact save` by {@link captureComplianceAtSave} and committed as
+ * `.ana/plans/active/{slug}/compliance/{role}-{session_id}.json`. One record per
+ * transcript — keyed `{role}-{session_id}` exactly like provenance — so plan,
+ * build, every build-rework attempt, and verify each keep their own record;
+ * rework is never collapsed.
+ *
+ * EVIDENCE, NEVER A GATE — a `violated` verdict is recorded and rendered but never
+ * changes a proof's PASS/FAIL. Mirrors {@link ProcessAttestation}'s decoupling.
+ */
+export interface ComplianceAttestation {
+  /** Pipeline role (`plan` | `build` | `verify` | …). */
+  role: string;
+  /** Harness the session ran on (`claude` | `codex`). */
+  harness: string;
+  /** Harness session id — ties the record to the session that produced it. */
+  session_id: string;
+  /** ISO-8601 wall-clock capture timestamp (carried from the pending pointer when present). */
+  captured_at: string;
+  /** The anatrace-core version that judged this session (read from core's package.json, never hardcoded). */
+  anatrace_core_version: string;
+  /** The mandate framework that judged it (e.g. `anatomia`). */
+  framework: string;
+  /** sha256 of the mandate (agent-def + contract) bytes, prefixed `sha256:`. Byte-identity attestation only. */
+  mandate_hash: string;
+  /** sha256 of the transcript bytes the verdicts were derived from, prefixed `sha256:`. Byte-identity attestation only. */
+  transcript_hash: string;
+  /** How much of the session could actually be checked. */
+  coverage: {
+    /** Total declared obligations (claims). */
+    total: number;
+    /** Claims mechanically checked against the captured transcript. */
+    fully_checked: number;
+    /** Claims that could not be verified (coverage-aware). */
+    unverifiable: number;
+  };
+  /** True when every claim was fully checked (`unverifiable === 0`). Renders a loud warning when false. */
+  complete: boolean;
+  /** The per-claim behavioral verdicts (compact, scrubbed). */
+  verdicts: ComplianceVerdictRecord[];
+}
+
+/**
  * Proof chain JSON entry — one completed slug's verification record.
  *
  * CROSS-CUTTING: Adding a field requires changes in 4+ locations:
  *   1. Type definition below
  *   2. Default in generateProofSummary() (utils/proofSummary.ts)
- *   3. Entry construction in writeProofChain() (commands/work.ts)
+ *   3. Entry construction in writeProofChain() (commands/work-proof.ts)
  *   4. Display in formatHumanReadable() or formatListTable() (commands/proof.ts)
  * Old entries in proof_chain.json may lack new fields — consumers must handle undefined.
  */
@@ -152,6 +299,24 @@ export interface ProofChainEntry {
   slug: string;
   feature: string;
   result: 'PASS' | 'FAIL' | 'UNKNOWN';
+  /**
+   * Reasons a PASS headline was coerced to a FAIL `result` (one per contradicting
+   * UNSATISFIED compliance row). Additive and optional — absent on a clean verdict
+   * and on pre-existing entries. Renders on the proof card so the coercion is
+   * observable, never silent.
+   */
+  verdict_contradictions?: string[];
+  /**
+   * Status of the deterministic read-build-report veto (verifier-verdict-honesty
+   * Component 3). When the verify session deterministically read `build_report.md`,
+   * `applied` is `true` and `result` was force-FAILed regardless of the headline.
+   *
+   * ALWAYS recorded when the proof is sealed — `applied: false` with a stated
+   * `reason` (e.g. `'no captured transcript'`) when no veto fired, so the absence
+   * of a veto is never a silent skip. Additive and optional: absent on pre-veto
+   * entries, which are forward-only non-gating.
+   */
+  verdict_veto?: { applied: boolean; reason?: string };
   author: { name: string; email: string };
   contract: ProofSummary['contract'];
   assertions: Array<{
@@ -207,6 +372,15 @@ export interface ProofChainEntry {
    * absent is complete and valid. Mirrors `commit_hygiene`'s decoupling.
    */
   process?: ProcessAttestation;
+  /**
+   * Optional behavioral attestations — one per agent transcript — assembled at
+   * `ana work complete` when process capture is on and committed `compliance/*.json`
+   * records exist. OPTIONAL by construction: proof integrity never depends on it; a
+   * proof with this field absent is complete and valid, and pre-existing entries
+   * remain valid. EVIDENCE, NEVER A GATE — a `violated` verdict here never changes
+   * `result`. Mirrors {@link process}'s decoupling.
+   */
+  compliance?: ComplianceAttestation[];
   phases?: number;
   worktree?: {
     used: boolean;

@@ -1,0 +1,22 @@
+schema: 1
+concerns:
+  - summary: "@ana tag namespace is not contract-scoped: all-scaffolds.test.ts and proofSummary.test.ts reuse A001–A012 for an unrelated contract, colliding with this contract's Phase-1 ids."
+    file: "packages/cli/tests/scaffolds/all-scaffolds.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "A002 (forensics has no hand-rolled deriveClaude) has no dedicated unit test — satisfied by deletion plus the contract's mechanical not_contains source check, not an @ana-tagged test."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Two timing-sensitive tests (parsing-performance cache-speedup ≥0.80; init template-propagation 5s timeout) flake under concurrent machine load; both pass in isolation and are untouched by this work. Not regressions."
+    file: "packages/cli/tests/engine/performance/parsing-performance.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "AC6 fix surfaced a pre-existing latent proof-card layout overflow: the TOTAL footer trailing '(table 2026-06-08)' reaches 81–83 cols for unpriced multi-session runs. Rendering left untouched per spec; two golden stress fixtures trimmed so the realistic card fits 80 cols (user-approved)."
+    file: "packages/cli/src/utils/render.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "deriveCountsFromBytes casts the string harness to core's Harness union (as Harness). A harness value other than 'claude'/'codex' would still be passed to parseSession, which falls back to shape detection — benign, but the cast hides the narrowing."
+    file: "packages/cli/src/utils/forensics.ts"
+    severity: observation
+    suggested_action: acknowledge
