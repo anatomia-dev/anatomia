@@ -18,5 +18,45 @@
   "spec": {
     "saved_at": "2026-06-17T01:53:00.633Z",
     "hash": "sha256:28770701e57c413673876f00bc00591de39af06506abeb0e5398e40c0730f237"
+  },
+  "build_started_at": "2026-06-17T01:57:41.882Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-17T02:10:51.002Z",
+    "hash": "sha256:abea33d1d6098bede1aebb081677493f6a35a4f5be11bba6b75949fd306b79ad"
+  },
+  "build-data": {
+    "saved_at": "2026-06-17T02:10:51.003Z",
+    "hash": "sha256:d1fa562b5e6dff67d721e501e72c67875f6fc35c9126c544bcb78e1851650742"
+  },
+  "modules_touched": [
+    "packages/cli/src/utils/compliance.ts",
+    "packages/cli/tests/utils/compliance.test.ts"
+  ],
+  "module_churn": {
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 65,
+      "deleted": 19
+    },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 94,
+      "deleted": 11
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-17T02:26:44.993Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:8062d586124a7e24f6e2aff5a1d33267f0a0bc6f3cf965f0f57e9ab83fdd2ad4",
+    "run_at": "2026-06-17T02:33:46.433Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-17T02:33:46.465Z",
+    "hash": "sha256:bcca8bdff4efec7bcfc5aa7a75a3e4da14f27d5d3312bdf67569374d5e957afb"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-17T02:33:46.465Z",
+    "hash": "sha256:40fc82748da68a28800aad969ca5735d75f993af37840b7954606007482ee733"
   }
 }

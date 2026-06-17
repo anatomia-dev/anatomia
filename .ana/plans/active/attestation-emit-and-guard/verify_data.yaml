@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: code
+    summary: "loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record."
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 73
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A001", "A002"]
+  - category: code
+    summary: "Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here)."
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 84
+    severity: risk
+    suggested_action: monitor
+    related_assertions: ["A001", "A003"]
+  - category: code
+    summary: "Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics."
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 288
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A005", "A006"]
+  - category: test
+    summary: "Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken."
+    file: "packages/cli/tests/commands/_capture.test.ts"
+    line: 219
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A009"]
+  - category: test
+    summary: "Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path."
+    file: "packages/cli/tests/utils/compliance.test.ts"
+    line: 312
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A004"]
+  - category: code
+    summary: "captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here."
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 357
+    severity: observation
+    suggested_action: monitor

@@ -31,13 +31,6 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import {
-  anatomiaAdapter,
-  parseSession,
-  runCompliance,
-  scrubDeep,
-  transcriptContentResolver,
-} from 'anatrace-core';
 import type { Harness, Mandate, NamedBlob } from 'anatrace-core';
 import {
   isProcessCaptureEnabled,
@@ -47,6 +40,13 @@ import {
 import { buildRootLaneContext } from './compliance-context.js';
 import { isVerdictReason } from '../types/proof.js';
 import type { ComplianceAttestation, ComplianceVerdictRecord } from '../types/proof.js';
+
+/**
+ * The shape of the `anatrace-core` module. Type-only (`typeof import(...)`) — erased
+ * at compile, so naming it triggers NO runtime resolution and stays crash-safe when
+ * the engine is absent. The runtime load goes through {@link loadCore}.
+ */
+type AnatraceCore = typeof import('anatrace-core');
 
 /**
  * Resolve the installed `anatrace-core` version from its package.json (never hardcoded).
@@ -60,6 +60,36 @@ function readCoreVersion(): string {
     return typeof pkg.version === 'string' ? pkg.version : '';
   } catch {
     return '';
+  }
+}
+
+/**
+ * Load the `anatrace-core` engine synchronously, guarded. Mirrors
+ * {@link readCoreVersion}'s `createRequire` idiom so an absent engine is a `null`
+ * return, never a thrown exception at module load. Keeping this a value-level
+ * `require` (not a top-level `import`) is what lets every `ana artifact save`
+ * survive a missing engine: the crash becomes a loud abstain at the call site.
+ *
+ * @returns The loaded core module, or `null` if it cannot be resolved
+ */
+function loadCore(): AnatraceCore | null {
+  try {
+    const require = createRequire(import.meta.url);
+    // anatrace-core is import-only ESM: its package `exports["."]` map defines an
+    // `import` condition but no `require` condition, so requiring the bare specifier
+    // throws ERR_PACKAGE_PATH_NOT_EXPORTED. Resolve the condition-free `package.json`
+    // export and require the ESM entry it points at by absolute path — Node's stable
+    // require(esm) loads the .mjs synchronously (no await, so the sync call contract
+    // at artifact.ts is preserved). Any failure (absent engine, no export) → null.
+    const pkgPath = require.resolve('anatrace-core/package.json');
+    const pkg = require('anatrace-core/package.json') as {
+      exports?: { ['.']?: { import?: string } };
+    };
+    const entry = pkg.exports?.['.']?.import;
+    if (entry === undefined) return null;
+    return require(path.join(path.dirname(pkgPath), entry)) as AnatraceCore;
+  } catch {
+    return null;
   }
 }
 
@@ -195,22 +225,17 @@ function readMandateBlobs(
  * @param env - Process environment (carries the injected `ANA_*` vars)
  * @param deps - Injected seams for testing (defaults to the module functions)
  * @param deps.readCoreVersion - Override for the engine-version resolver; drives the AC3 abstain path
+ * @param deps.loadCore - Override for the engine loader; a `() => null` simulates an absent engine (drives the loud abstain)
  * @returns The absolute path of the written compliance file, or `null` if none was written
  */
 export function captureComplianceAtSave(
   projectRoot: string,
   slug: string,
   env: Record<string, string | undefined>,
-  deps: { readCoreVersion?: () => string } = {},
+  deps: { readCoreVersion?: () => string; loadCore?: () => AnatraceCore | null } = {},
 ): string | null {
   try {
     if (!isProcessCaptureEnabled(projectRoot)) return null;
-
-    // Resolve the engine version ONCE, fail-closed (AC3): an empty/unresolvable
-    // version means unknown provenance — abstain rather than stamp `""`. The same
-    // value is stamped on the record below and threaded to the drift warning.
-    const coreVersion = (deps.readCoreVersion ?? readCoreVersion)();
-    if (!coreVersion) return null; // unresolvable engine version → write nothing
 
     const role = env['ANA_ROLE'] ?? '';
     if (!role) return null; // no role → nothing to attribute
@@ -247,21 +272,42 @@ export function captureComplianceAtSave(
     }
     const transcriptHash = 'sha256:' + createHash('sha256').update(bytes).digest('hex');
 
+    // Engine guard (LOUD): a record was otherwise due here — capture is on and the
+    // role, session, and transcript all resolved — so an unresolvable engine is a
+    // real failure, not a benign skip. Warn visibly, then abstain. This runs BEFORE
+    // the version guard below: under genuine absence loadCore fails FIRST, so the
+    // loud line is reached instead of being silently swallowed by the version guard.
+    const core = (deps.loadCore ?? loadCore)();
+    if (core === null) {
+      console.warn(
+        '[anatrace] behavioral attestation disabled — anatrace-core not resolvable; reinstall to enable',
+      );
+      return null;
+    }
+
+    // Resolve the engine version, fail-closed (AC4): an empty/unresolvable version
+    // means unknown provenance — abstain SILENTLY rather than stamp `""`. Moved
+    // below loadCore so genuine absence surfaces loudly above; this guard now fires
+    // only when the engine loads but its package.json version is unreadable. The
+    // value is stamped on the record below and threaded to the drift warning.
+    const coreVersion = (deps.readCoreVersion ?? readCoreVersion)();
+    if (!coreVersion) return null; // unresolvable engine version → write nothing
+
     const transcriptName = path.basename(transcriptPath);
     const sessionBlobs: NamedBlob[] = [{ name: transcriptName, bytes }];
-    const session = parseSession(sessionBlobs, harness as Harness);
+    const session = core.parseSession(sessionBlobs, harness as Harness);
     if (session === null) return null; // unparsable transcript → no record
 
     const mandateSource = readMandateBlobs(projectRoot, slug, role, harness);
     if (mandateSource === null) return null; // no agent-def → no mandate
-    const mandate: Mandate | null = anatomiaAdapter.extract(mandateSource.blobs);
+    const mandate: Mandate | null = core.anatomiaAdapter.extract(mandateSource.blobs);
     if (mandate === null || mandate.claims.length === 0) return null; // empty mandate → no record
 
     const context = buildRootLaneContext(session, sessionBlobs, env['ANA_CAPTURE_BOUNDARY']);
-    const result = runCompliance(
+    const result = core.runCompliance(
       mandate,
       session,
-      transcriptContentResolver(session),
+      core.transcriptContentResolver(session),
       undefined,
       projectRoot,
       context,
@@ -301,7 +347,7 @@ export function captureComplianceAtSave(
 
     // Scrub is mandatory — the whole record passes scrubDeep before write so no
     // token-bearing string can ever land in committed git history.
-    const scrubbed = scrubDeep(record);
+    const scrubbed = core.scrubDeep(record);
 
     const dir = path.join(projectRoot, '.ana', 'plans', 'active', slug, 'compliance');
     fs.mkdirSync(dir, { recursive: true });
