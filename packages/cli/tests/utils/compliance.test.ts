@@ -425,6 +425,22 @@ describe('compliance producer + reader', () => {
     });
   });
 
+  // @ana A030 (verifier-verdict-honesty) — the docstring no longer claims verdicts
+  // never gate; it names the one allowlisted gating claim.
+  describe('compliance docstring honesty (source doc)', () => {
+    const complianceSource = fs.readFileSync(
+      path.join(here, '../../src/utils/compliance.ts'),
+      'utf-8',
+    );
+
+    it('names the one gating claim instead of asserting verdicts never gate', () => {
+      expect(complianceSource).toContain('gates the proof');
+      expect(complianceSource).toContain('ana-verify:verify-independence');
+      // The old unconditional "EVIDENCE, never a gate" claim is gone.
+      expect(complianceSource).not.toContain('EVIDENCE, never a gate');
+    });
+  });
+
   describe('assembleComplianceAttestations', () => {
     function seedCompleted(slug: string, file: string, body: string): void {
       const dir = path.join(projectDir, '.ana', 'plans', 'completed', slug, 'compliance');
