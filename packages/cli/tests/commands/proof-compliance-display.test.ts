@@ -106,11 +106,13 @@ describe('Session Attestation section', () => {
     expect(card).not.toContain('FAIL');
   });
 
-  // @ana A026
+  // (Tag is from a prior feature's contract.) Assertion updated to the
+  // verifier-verdict-honesty AC6 copy: the incomplete-coverage warning no longer
+  // claims verdicts "never gate" unconditionally — it names the veto exception.
   it('renders a loud warning when a record has incomplete coverage (AC26)', () => {
     const card = formatHumanReadable(makeEntry({ compliance: [record({ complete: false })] }));
     expect(card).toContain('incomplete');
-    expect(card).toMatch(/incomplete coverage — verdicts are evidence, never a gate/);
+    expect(card).toMatch(/incomplete coverage — verdicts are non-gating evidence \(except the verify-independence veto below\)/);
   });
 
   it('renders no section when there are no compliance records (additive / backward compatible)', () => {
@@ -127,5 +129,45 @@ describe('Session Attestation section', () => {
     }));
     expect(card).toContain('2 transcripts');
     expect(card).toMatch(/build 2 ·/);
+  });
+});
+
+describe('read-build-report veto status (Component 3)', () => {
+  // @ana A031 — an APPLIED veto renders the override line + the forward-only honesty boundary.
+  it('renders the APPLIED override line and the forward-only honesty boundary', () => {
+    const card = formatHumanReadable(makeEntry({
+      compliance: [record({ complete: true, coverage: { total: 2, fully_checked: 2, unverifiable: 0 } })],
+      verdict_veto: { applied: true, reason: 'verify read build_report.md' },
+    }));
+    expect(card).toContain('verdict veto: APPLIED');
+    expect(card).toContain('verify read build_report.md');
+    // The forward-only honesty boundary states earlier verdicts were self-reported.
+    expect(card).toContain('forward-only');
+    expect(card).toContain('pre-veto verdicts were self-reported');
+  });
+
+  // @ana A031 — with no captured transcript the veto status is stated openly, never silent (AC4).
+  it('renders "not applied — no captured transcript" with no compliance records', () => {
+    const card = formatHumanReadable(makeEntry({
+      verdict_veto: { applied: false, reason: 'no captured transcript' },
+    }));
+    // No transcripts → no full Session Attestation rollup, but the veto line still shows.
+    expect(card).toContain('verdict veto: not applied — no captured transcript');
+    expect(card).toContain('forward-only');
+  });
+
+  it('renders the honesty boundary exactly once even alongside records', () => {
+    const card = formatHumanReadable(makeEntry({
+      compliance: [record({ complete: true, coverage: { total: 1, fully_checked: 1, unverifiable: 0 }, verdicts: [] })],
+      verdict_veto: { applied: false, reason: 'verify did not read build_report.md' },
+    }));
+    const occurrences = card.split('veto is forward-only').length - 1;
+    expect(occurrences).toBe(1);
+  });
+
+  it('renders no veto line on a pre-veto entry (verdict_veto absent / backward compatible)', () => {
+    const card = formatHumanReadable(makeEntry({}));
+    expect(card).not.toContain('verdict veto');
+    expect(card).not.toContain('forward-only');
   });
 });
