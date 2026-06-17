@@ -22,8 +22,9 @@ import { fileURLToPath } from 'node:url';
 import { captureComplianceAtSave } from '../../src/utils/compliance.js';
 import { writePendingPointer } from '../../src/utils/forensics.js';
 import { evaluateReadBuildReportVeto, VERIFY_INDEPENDENCE_CLAIM_ID } from '../../src/utils/verdict.js';
-import { guardVerdictVeto } from '../../src/commands/work-proof.js';
-import type { ComplianceAttestation } from '../../src/types/proof.js';
+import { guardVerdictVeto, writeProofChain } from '../../src/commands/work-proof.js';
+import type { ComplianceAttestation, ProofChain } from '../../src/types/proof.js';
+import type { ProofSummary } from '../../src/utils/proofSummary.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const REPO_AGENTS = path.resolve(here, '../../../../.claude/agents');
@@ -169,4 +170,44 @@ describe('read-build-report veto — full engine pipeline', () => {
       expect(effectiveResult(records, 'PASS')).toBe('PASS');
     });
   }
+
+  /** A minimal PASS ProofSummary for a writeProofChain end-to-end. */
+  function minimalProof(): ProofSummary {
+    return {
+      feature: 'veto entry test',
+      result: 'PASS',
+      author: { name: 'Dev', email: 'dev@example.com' },
+      assertions: [],
+      contract: { total: 0, satisfied: 0, unsatisfied: 0, deviated: 0 },
+      acceptance_criteria: { total: 0, met: 0, partial: 0, coverage: { pinned: 0, judgment: 0, retired: 0, uncovered: 0, weak_only: 0 } },
+      timing: { total_minutes: 1 },
+      deviations: [],
+      hashes: {},
+      completed_at: '2026-06-16T00:00:00.000Z',
+      findings: [],
+      rejection_cycles: 0,
+      previous_failures: [],
+      build_concerns: [],
+    };
+  }
+
+  // @ana A029 — the written proof entry carries the verdict_veto status, even with
+  // no captured transcript (capture off): "not applied — no captured transcript",
+  // never a silent skip.
+  it('records verdict_veto on the written proof entry when no transcript was captured', async () => {
+    // Capture OFF → no compliance records → the veto cannot fire, but its outcome
+    // is still recorded openly on the entry.
+    const anaDir = path.join(projectDir, '.ana');
+    fs.mkdirSync(anaDir, { recursive: true });
+    fs.writeFileSync(path.join(anaDir, 'ana.json'), JSON.stringify({ name: 'x', processCapture: 'off' }));
+
+    await writeProofChain('feat', minimalProof(), projectDir);
+
+    const chain = JSON.parse(fs.readFileSync(path.join(anaDir, 'proof_chain.json'), 'utf-8')) as ProofChain;
+    const entry = chain.entries.find((e) => e.slug === 'feat');
+    expect(entry).toBeTruthy();
+    expect(entry!.verdict_veto).toBeTruthy();
+    expect(entry!.verdict_veto!.applied).toBe(false);
+    expect(entry!.verdict_veto!.reason).toContain('no captured transcript');
+  });
 });
