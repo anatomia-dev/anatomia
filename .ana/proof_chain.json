@@ -58458,6 +58458,723 @@
       },
       "surface": "cli",
       "phases": 2
+    },
+    {
+      "slug": "verifier-verdict-honesty",
+      "feature": "Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself",
+      "result": "PASS",
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 29,
+        "satisfied": 29,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "The verifier's instructions no longer tell it to read the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "The Codex verifier's instructions also no longer tell it to read the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "The verifier is still told it must never read the build report",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "The verifier can still check untested work by inspecting the source",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "The shipped and in-repo copies of the verifier definition stay identical",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A clean PASS verdict stays PASS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A PASS that contradicts the verifier's own unsatisfied row is overridden to FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "The override explains which unsatisfied row contradicted the PASS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A FAIL verdict stays FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "A report with no verdict line is reported as unknown, not assumed passing",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Every place that reads the verdict gets the overridden result, not the raw headline",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "Reading the verdict from a saved file also returns the overridden result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "The PR step also sees the overridden result",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "The verdict is parsed in exactly one place, not copied across the codebase",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "When a contradicted PASS blocks completion, the reason is shown to the developer",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "A verify report missing its verdict line is still rejected at save time",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "The verdict code states the honest boundary: not one-word-forgeable, still self-authored",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The code never claims the verdict makes the agent unable to lie",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A021",
+          "says": "If the verifier deterministically read the build report, the proof is forced to FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A022",
+          "says": "A satisfied verify-independence claim does not trigger the veto",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "A non-deterministic (LLM-judged or unmarked) verdict never triggers the veto",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "The veto fires on exactly one claim — other claims and other roles never gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "The determinism signal is recorded on the verdict so the veto can read it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Verdicts recorded before this feature (no determinism signal) never retroactively gate",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "With no captured transcript the veto is skipped openly, never silently",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "A verify session that read the build report cannot complete with a PASS",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "The proof record states whether the byte-level veto was applied",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "The verifier docs no longer claim behavioral verdicts can never affect PASS/FAIL",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The proof states the veto is forward-only and earlier verdicts were self-reported",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 8,
+        "met": 6
+      },
+      "timing": {
+        "total_minutes": 188,
+        "think": 22,
+        "plan": 26,
+        "build": 107,
+        "verify": 15,
+        "segments": [
+          {
+            "stage": "think",
+            "minutes": 22
+          },
+          {
+            "stage": "plan",
+            "minutes": 26
+          },
+          {
+            "stage": "build",
+            "minutes": 79,
+            "phase": 1
+          },
+          {
+            "stage": "verify",
+            "minutes": 8,
+            "phase": 1
+          },
+          {
+            "stage": "build",
+            "minutes": 28,
+            "phase": 2
+          },
+          {
+            "stage": "verify",
+            "minutes": 7,
+            "phase": 2
+          }
+        ]
+      },
+      "hashes": {
+        "scope": "sha256:346767c2f1746573d83f659f84863108eafc0826d319aff68936cde8a8aae8e7",
+        "contract": "sha256:4ccdd83ffe148da425aad8c8d4b8f85838bada357f60b34d23cd13f0a2694bcd",
+        "plan": "sha256:4b3d017081a60544f2cdb17cb7038b10896fe3aae8f505dc1281987de7157e0d",
+        "spec-1": "sha256:c42d85bbd819fabcdd516d6563b3d29d6e7144771f1ffc8d1badca5aee51683f",
+        "spec-2": "sha256:b769eb778aba59a6f06637e1795b214586d70d253f52d09b3f8c47f6f775105c",
+        "build-report-1": "sha256:f683c4083ee32ccfd40c41428322a96641bf668915e1fbbb666d2e5dfb30dfc8",
+        "build-data-1": "sha256:8ec74f34fbdd8d8a63e91b84101215992113459c520e2080f6e172ccf70f2686",
+        "verify-report-1": "sha256:4e30d37b6e81f2c00c883205dbb978fae7958e8ab0c95fdbfd1c8cf84939f6b7",
+        "verify-data-1": "sha256:32087fac8edf2ad4674062b62f3c64b1cb2a24fab539970f48f18042332ba102",
+        "build-report-2": "sha256:86628b364a0c18f7c3faf65f2cb5f9cfcb22fcc7b69c9fc73a3ca09554b656f8",
+        "build-data-2": "sha256:a7cd69892d59cb7cb800570cb694596f0a7834b6dbcf95270988b7ae3e4600bd",
+        "verify-report-2": "sha256:6fe13817f15070a32a7cf6ce2c116873fdf28eaa2f6f86ace3226fddeb40cc34",
+        "verify-data-2": "sha256:2d234f22b231f71a683750af010f17f8b837fab3380639ec166eb70b5c45392f"
+      },
+      "completed_at": "2026-06-17T00:29:04.489Z",
+      "modules_touched": [
+        ".claude/agents/ana-verify.md",
+        ".codex/agents/ana-verify.md",
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/artifact.ts",
+        "packages/cli/src/commands/pr.ts",
+        "packages/cli/src/commands/proof.ts",
+        "packages/cli/src/commands/work-proof.ts",
+        "packages/cli/src/commands/work-state.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/types/proof.ts",
+        "packages/cli/src/utils/compliance.ts",
+        "packages/cli/src/utils/proofSummary.ts",
+        "packages/cli/src/utils/verdict.ts",
+        "packages/cli/templates/.claude/agents/ana-verify.md",
+        "packages/cli/templates/.codex/agents/ana-verify.md",
+        "packages/cli/tests/commands/proof-compliance-display.test.ts",
+        "packages/cli/tests/commands/verdict-veto-integration.test.ts",
+        "packages/cli/tests/commands/work-proof-guard.test.ts",
+        "packages/cli/tests/templates/agent-proof-context.test.ts",
+        "packages/cli/tests/utils/compliance.test.ts",
+        "packages/cli/tests/utils/verdict.test.ts"
+      ],
+      "scope_summary": "Make Anatomia's PASS/FAIL verdict mean what the product says it means. Today the headline\nverdict is regex-scraped from a prose `**Result:**` line the verify *model* typed — so the\nbrand claim (\"trust the bytes, not the model\") is, at the verdict itself, still\ntrust-the-model. The whole product is positioned on \"Verify never grades its own homework\";\nthe verdict is the one place that promise is currently only *hoped*.",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "anchor": null,
+          "line": 18,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A006",
+            "A016"
+          ],
+          "id": "verifier-verdict-honesty-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana tags A001-A005 are duplicated within agent-proof-context.test.ts (prior merged contract + this contract) — tag-by-id resolution is ambiguous in this file",
+          "file": "packages/cli/tests/templates/agent-proof-context.test.ts",
+          "anchor": null,
+          "line": 96,
+          "severity": "debt",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A001",
+            "A002",
+            "A003",
+            "A004",
+            "A005"
+          ],
+          "id": "verifier-verdict-honesty-C2",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "deriveVerdict coerces only on an exactly-spelled 'UNSATISFIED' status; a typo'd/garbled status cell falls back to 'UNKNOWN' (proofSummary.ts:205) and will NOT gate a PASS — consistent with the self-authored honesty boundary but fragile",
+          "file": "packages/cli/src/utils/proofSummary.ts",
+          "anchor": null,
+          "line": 205,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "verifier-verdict-honesty-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "deriveVerdict never coerces a PASS on DEVIATED or UNCOVERED rows — only UNSATISFIED. By design (coverage gating is the separate verifier-intent-coverage feature), but the contradiction signal is intentionally narrow",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "anchor": null,
+          "line": 71,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "related_assertions": [
+            "A007"
+          ],
+          "id": "verifier-verdict-honesty-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Pre-existing lint warning (unused eslint-disable directive) in git-operations.ts:198 — not in this build's file_changes, not a regression",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "anchor": null,
+          "line": 198,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "verifier-verdict-honesty-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Three type docstrings still assert verdicts are 'EVIDENCE, NEVER A GATE' unconditionally, now imprecise for the one allowlisted veto claim",
+          "file": "packages/cli/src/types/proof.ts",
+          "anchor": "EVIDENCE, NEVER A GATE",
+          "line": 193,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-verdict-honesty-C6",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "User-facing incomplete-coverage warning says 'behavioral verdicts are evidence, never a gate' unqualified, while its sibling display copy in proof.ts:670 was correctly qualified with the veto exception",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "anchor": null,
+          "line": 345,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-verdict-honesty-C7",
+          "status": "active"
+        },
+        {
+          "category": "upstream",
+          "summary": "Spec gotcha enumerated only compliance.ts + proof.ts for the evidence->gate copy flip; types/proof.ts (3 docstrings) and the work-proof.ts stderr warning also carried the invariant but were not listed, so the contradiction the spec warned about leaked into unlisted files",
+          "file": null,
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "promote",
+          "related_assertions": [
+            "A030"
+          ],
+          "id": "verifier-verdict-honesty-C8",
+          "status": "closed",
+          "closed_reason": "upstream",
+          "closed_at": "2026-06-17T00:29:04.489Z",
+          "closed_by": "mechanical"
+        },
+        {
+          "category": "test",
+          "summary": "A verify session that reads build_report.md via Bash/Grep substring (not the Read tool) is never exercised in Anatomia's own suite — relied on as an anatrace-core engine guarantee (read-paths binds only to Read file_path); a future engine bump could regress it undetected here",
+          "file": "packages/cli/tests/commands/verdict-veto-integration.test.ts",
+          "anchor": null,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A021"
+          ],
+          "id": "verifier-verdict-honesty-C9",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Name collision: utils/verdict.ts exports deriveVerdict (content -> VerdictResult) while utils/capture-runner.ts already exports a different deriveVerdict (counts, exitCode -> CaptureVerdict). No file imports both, so no compile conflict, but the shared name is confusing. The spec/contract hardcode the name 'deriveVerdict' for the verify-report function, so renaming was not an option.",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Function-only circular import introduced: proofSummary.ts imports deriveVerdict from verdict.ts, and verdict.ts imports parseComplianceTable from proofSummary.ts. ESM resolves this because neither symbol is touched at module-load (only inside function bodies). artifact-validators.ts -> verdict.ts -> proofSummary.ts -> artifact-validators.ts (joinCoverage) is the same shape and already existed for joinCoverage. Build, typecheck, and full suite all green, but the cycle is a latent fragility if any of these modules later needs a top-level use of an imported symbol.",
+          "file": "packages/cli/src/utils/verdict.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "readLocalVerifyResult (artifact.ts) and extractVerifyResult (pr.ts) were changed from private to exported solely so contract assertions A014/A015 could have direct tagged unit tests. Both were previously untested. This widens the module surface slightly; the project's risk profile already notes proof.ts/proof-summary over-exporting tendencies.",
+          "file": "packages/cli/src/commands/pr.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "Pre-existing lint warning in src/utils/git-operations.ts:198 (unused eslint-disable directive for no-control-regex) surfaces on every pre-commit run. Not introduced by this build and only a warning, but it rides along in the lint output.",
+          "file": "packages/cli/src/utils/git-operations.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "AC5's proof-entry half (verdict_contradictions rendering on a completed proof entry) is covered by type + writeProofChain wiring and source inspection, not by an end-to-end fixture that completes work with a coerced-PASS report and asserts the field lands in proof_chain.json. The guard-message half IS unit-tested (A017). Verifier should assess whether source-level evidence suffices for the 'on the proof entry' clause.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "A016, A019, A020 are verified by source-content tests that read verdict.ts / proofSummary.ts and assert on substrings. These are inherently comment/format-fragile (the project's own risk profile flags a similar purity test as fragile). They faithfully cover the not_contains/contains intent but will break on benign rewording.",
+          "file": "packages/cli/tests/utils/verdict.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Pre-existing display test assertion updated to AC6 copy (verdicts no longer 'never a gate' unconditionally); spec-driven expected-value change, not a weakened matcher.",
+          "file": "packages/cli/tests/commands/proof-compliance-display.test.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "A written proof_chain entry's verdict_veto.applied is always false — guardVerdictVeto exits before the entry is written (mirrors guardFailResult). The APPLIED render path is reachable only via test-constructed entries, not writeProofChain.",
+          "file": "packages/cli/src/commands/work-proof.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "Stale @ana tags from prior contracts (anatrace-core-integration / anatrace-pin) remain in compliance.test.ts and proof-compliance-display.test.ts; same-numbered tags do NOT map to this contract's assertions. Component-3 tests use current IDs.",
+          "file": "packages/cli/tests/commands/proof-compliance-display.test.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 29,
+          "assertions_total": 29,
+          "findings": {
+            "risk": 0,
+            "debt": 4,
+            "observation": 5
+          }
+        },
+        "task_shape": {
+          "size": "large",
+          "kind": "feature",
+          "multi_phase": true
+        },
+        "module_churn": {
+          ".claude/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          ".codex/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/src/commands/artifact-validators.ts": {
+            "added": 6,
+            "deleted": 3
+          },
+          "packages/cli/src/commands/artifact.ts": {
+            "added": 12,
+            "deleted": 4
+          },
+          "packages/cli/src/commands/pr.ts": {
+            "added": 4,
+            "deleted": 3
+          },
+          "packages/cli/src/commands/proof.ts": {
+            "added": 55,
+            "deleted": 10
+          },
+          "packages/cli/src/commands/work-proof.ts": {
+            "added": 80,
+            "deleted": 21
+          },
+          "packages/cli/src/commands/work-state.ts": {
+            "added": 8,
+            "deleted": 4
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 8,
+            "deleted": 5
+          },
+          "packages/cli/src/types/proof.ts": {
+            "added": 32,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/compliance.ts": {
+            "added": 12,
+            "deleted": 3
+          },
+          "packages/cli/src/utils/proofSummary.ts": {
+            "added": 19,
+            "deleted": 15
+          },
+          "packages/cli/src/utils/verdict.ts": {
+            "added": 151,
+            "deleted": 0
+          },
+          "packages/cli/templates/.claude/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/templates/.codex/agents/ana-verify.md": {
+            "added": 2,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+            "added": 44,
+            "deleted": 2
+          },
+          "packages/cli/tests/commands/verdict-veto-integration.test.ts": {
+            "added": 213,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work-proof-guard.test.ts": {
+            "added": 132,
+            "deleted": 0
+          },
+          "packages/cli/tests/templates/agent-proof-context.test.ts": {
+            "added": 46,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/compliance.test.ts": {
+            "added": 40,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/verdict.test.ts": {
+            "added": 332,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "present": {
+            "plan": 1,
+            "build": 2,
+            "verify": 2
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "ana",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:b0368b3336e8fec8cb27f76eb45de58f0a26d65132cc55842a312793e2d7f31e",
+            "cli_version": "1.2.2",
+            "session_id": "a74df196-d92e-411c-a038-5843f9d5e028",
+            "captured_at": "2026-06-16T21:38:22.312Z",
+            "derived": {
+              "tokens": {
+                "input": 7577,
+                "output": 33667,
+                "cache_create": 91249,
+                "cache_read": 1398331
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1302633,
+              "turns": 62,
+              "tool_calls": 31,
+              "commands_run": 19,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 1,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:73735a0f9cebc4b5e9293e5484f49f219a78d54debefce75cd9541c6e8cf0929",
+            "cli_version": "1.2.2",
+            "session_id": "90590895-cca5-4c1e-bf21-12d77d9c9d48",
+            "captured_at": "2026-06-16T22:06:41.124Z",
+            "derived": {
+              "tokens": {
+                "input": 8064,
+                "output": 61716,
+                "cache_create": 132268,
+                "cache_read": 4430763
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1593153,
+              "turns": 115,
+              "tool_calls": 49,
+              "commands_run": 24,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 4,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "22195492-c2df-4082-806d-6dfe7af15cfc",
+            "captured_at": "2026-06-16T22:27:00.099Z",
+            "derived": {
+              "tokens": {
+                "input": 9484,
+                "output": 64559,
+                "cache_create": 140742,
+                "cache_read": 10220245
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1003655,
+              "turns": 212,
+              "tool_calls": 103,
+              "commands_run": 34,
+              "tests_executed": 3990,
+              "failures_encountered": 0,
+              "files_touched": 16,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:f25f27296b05d2ea84b22fe62d8894f6d2f58ec1b94e8ef1ebd785d5971f0062",
+            "cli_version": "1.2.2",
+            "session_id": "efb20074-f1b6-49a2-960e-071370711a27",
+            "captured_at": "2026-06-16T23:31:26.989Z",
+            "derived": {
+              "tokens": {
+                "input": 7450,
+                "output": 27751,
+                "cache_create": 89610,
+                "cache_read": 1426817
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 631140,
+              "turns": 67,
+              "tool_calls": 30,
+              "commands_run": 19,
+              "tests_executed": 3830,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.2.2",
+            "session_id": "d51f3d96-f4d2-48ec-a320-48fb0fe6a9de",
+            "captured_at": "2026-06-16T23:44:43.691Z",
+            "derived": {
+              "tokens": {
+                "input": 9175,
+                "output": 77884,
+                "cache_create": 182750,
+                "cache_read": 14765889
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 1516704,
+              "turns": 238,
+              "tool_calls": 115,
+              "commands_run": 60,
+              "tests_executed": 11796,
+              "failures_encountered": 1,
+              "files_touched": 12,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:f25f27296b05d2ea84b22fe62d8894f6d2f58ec1b94e8ef1ebd785d5971f0062",
+            "cli_version": "1.2.2",
+            "session_id": "a8a6191e-ed6a-467f-ab6f-e6bb00742d4d",
+            "captured_at": "2026-06-17T00:11:29.678Z",
+            "derived": {
+              "tokens": {
+                "input": 7587,
+                "output": 26186,
+                "cache_create": 102946,
+                "cache_read": 1988653
+              },
+              "price_table_version": "2026-06-08",
+              "duration_ms": 812619,
+              "turns": 79,
+              "tool_calls": 35,
+              "commands_run": 17,
+              "tests_executed": 3852,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "worktree": {
+        "used": true,
+        "created_at": "2026-06-16T23:08:56.630Z",
+        "completed_at": "2026-06-17T00:29:04.476Z",
+        "commit_count": 0,
+        "base_commit": "8dd0d019db5690a280c930419fb7eb21c14120e5"
+      },
+      "surface": "cli",
+      "phases": 2
     }
   ],
   "schema": 1,
