@@ -15,7 +15,8 @@ import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
 import type { EngineResult } from '../../engine/types/engineResult.js';
 import { createEmptyEngineResult } from '../../engine/types/engineResult.js';
-import { getStackSummary, CONTEXT_FILES, CORE_SKILLS, computeSkillManifest, DOCS_QUICKSTART } from '../../constants.js';
+import { getStackSummary, CONTEXT_FILES, CORE_SKILLS, DOCS_QUICKSTART } from '../../constants.js';
+import { resolveSkillManifest } from '../../manifest.js';
 import { matchGotchas } from '../../utils/gotchas.js';
 import { buildSymbolIndex } from '../symbol-index.js';
 import { AnaJsonSchema } from './anaJsonSchema.js';
@@ -23,6 +24,7 @@ import { mergeGitignore, ANA_GITIGNORE_STOCK } from './gitignore.js';
 import { getCurrentBranch } from '../../utils/git-operations.js';
 import { isNonProductPath } from '../../engine/detectors/surfaces.js';
 import { getSkillsDirRel, agentCommand } from '../platform.js';
+import { platformDetectProbes, DEFAULT_PLATFORM_ID } from '../../platforms/registry.js';
 
 /**
  * Prompt user for confirmation
@@ -1012,7 +1014,10 @@ export function displaySuccessMessage(engineResult: EngineResult | null, project
   // Skills — dynamic count with Core/Detected breakdown
   if (engineResult) {
     const analysis = engineResult;
-    const manifest = computeSkillManifest(analysis);
+    // Resolve through ana.json so the post-init count display matches the
+    // scaffolded set when a config-added (always-on) skill is present. Absent
+    // config falls through to the computed manifest verbatim.
+    const manifest = resolveSkillManifest(anaConfig ?? {}, analysis);
     // Widen coreSkills to string[] so .includes() accepts the any-string
     // manifest entries (CORE_SKILLS is a readonly literal union tuple,
     // .includes() expects its narrow union, manifest is string[]).
@@ -1147,15 +1152,19 @@ export function detectPlatforms(): string[] {
   const platforms: string[] = [];
   const cmd = process.platform === 'win32' ? 'where' : 'which';
 
-  for (const name of ['claude', 'codex']) {
-    const result = spawnSync(cmd, [name], { encoding: 'utf-8', stdio: 'pipe' });
+  // Probe executables from the platform registry, in registry order. This is
+  // byte-identical to the prior `['claude', 'codex']` literal — those are the
+  // only descriptors with a `detectExecutable`, in that order. A new platform
+  // becomes auto-detectable purely by declaring its executable on its descriptor.
+  for (const { id, executable } of platformDetectProbes()) {
+    const result = spawnSync(cmd, [executable], { encoding: 'utf-8', stdio: 'pipe' });
     if (result.status === 0) {
-      platforms.push(name);
+      platforms.push(id);
     }
   }
 
   // Default to claude if nothing detected
-  return platforms.length > 0 ? platforms : ['claude'];
+  return platforms.length > 0 ? platforms : [DEFAULT_PLATFORM_ID];
 }
 
 /**

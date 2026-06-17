@@ -31,9 +31,11 @@ import { matchGotchas, matchTriggers } from '../../utils/gotchas.js';
 import { RULES } from '../../data/rules-library.js';
 import { COMMON_ISSUES } from '../../data/troubleshooting-library.js';
 import { agentCommand } from '../platform.js';
-import { TEST_DIRECTORY_NAMES, computeSkillManifest } from '../../constants.js';
+import { TEST_DIRECTORY_NAMES } from '../../constants.js';
+import { resolveSkillManifest, buildCustomSkillStub } from '../../manifest.js';
+import { atomicWriteFile } from './assets.js';
 import type { InitState } from './types.js';
-import { fileExists } from './preflight.js';
+import { fileExists, dirExists } from './preflight.js';
 import { makeTestCommandNonInteractive } from './state.js';
 
 import type { PatternConfidence, MultiPattern } from '../../engine/types/patterns.js';
@@ -67,7 +69,7 @@ function extractDominanceFromEvidence(
 /**
  * Scaffold and seed skill files using dynamic manifest.
  *
- * Uses computeSkillManifest() to determine which skills to scaffold.
+ * Uses resolveSkillManifest() to determine which skills to scaffold.
  * Fresh init: copy template + inject Detected.
  * Re-init: read existing file, REPLACE ## Detected section, preserve human content.
  * Custom user skills (not in manifest) are never touched.
@@ -103,26 +105,101 @@ function injectDetectedIfAvailable(
 }
 
 /**
+ * Discover user-authored custom skills living on disk under `skillsPath`.
+ *
+ * A custom skill is any `.ana/skills/<name>/SKILL.md` whose `<name>` is NOT
+ * already in the resolved manifest — i.e. the user (or a prior `ana setup`)
+ * authored a skill that ships no bundled template and is not declared in
+ * `ana.json.skills`. Slice 5 makes these first-class manifest members so a
+ * re-init refreshes their machine-owned ## Detected section and never drops
+ * them, rather than the old behavior where any skill lacking a bundled
+ * template was skipped entirely.
+ *
+ * Returns the discovered names in sorted order (deterministic across
+ * platforms) so the scaffold loop's iteration is stable. Absent skills
+ * directory → [] (fresh install has nothing on disk yet).
+ *
+ * A name that has a BUNDLED template is never "custom" — it's a stock skill
+ * that the scan simply did not trigger this run. Reclassifying it as custom
+ * would route it through the scaffold loop and let injectors/library-rules
+ * keyed by that bundled name (e.g. `api-patterns`) splice content into a
+ * user-authored file — and if that file lacks a `## Detected` heading, at a
+ * wrong insertion point. Excluding bundled names (not just resolved-manifest
+ * members) leaves an untriggered-but-on-disk stock skill untouched, matching
+ * pre-Slice-5 behavior.
+ *
+ * @param skillsPath - Path to the .ana/skills/ directory
+ * @param known - Names already in the resolved manifest (excluded from result)
+ * @param templatesDir - CLI templates dir, used to detect bundled-skill names
+ * @returns Sorted custom-skill names found on disk but not in the manifest
+ */
+async function discoverCustomSkills(
+  skillsPath: string,
+  known: ReadonlySet<string>,
+  templatesDir: string
+): Promise<string[]> {
+  if (!(await dirExists(skillsPath))) return [];
+
+  let entries;
+  try {
+    entries = await fs.readdir(skillsPath, { withFileTypes: true });
+  } catch {
+    // Unreadable skills dir — degrade to no custom skills rather than crash.
+    return [];
+  }
+
+  const custom: string[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const name = entry.name;
+    if (known.has(name)) continue;
+    // A bundled skill that wasn't triggered this run is NOT custom — leave it.
+    if (await fileExists(path.join(templatesDir, '.claude/skills', name, 'SKILL.md'))) {
+      continue;
+    }
+    if (await fileExists(path.join(skillsPath, name, 'SKILL.md'))) {
+      custom.push(name);
+    }
+  }
+  return custom.sort();
+}
+
+/**
  * Scaffold and seed skill files using dynamic manifest.
  *
- * Uses computeSkillManifest() to determine which skills to scaffold.
- * Fresh init: copy template + inject Detected + optional gotchas.
- * Re-init: read existing file, REPLACE ## Detected section, preserve
- * human content (and skip gotcha injection).
+ * Uses resolveSkillManifest() to determine which skills to scaffold, then
+ * unions in any user-authored custom skills already on disk (Slice 5). For
+ * each member:
+ *   - existing file (bundled-derived OR user-authored custom) → REPLACE the
+ *     machine-owned ## Detected section, preserve human content;
+ *   - no existing file, bundled template present → copy template (fresh path);
+ *   - no existing file, NO bundled template (a config-declared custom skill
+ *     with nothing on disk yet) → write a minimal stub SKILL.md so the skill
+ *     is real on disk instead of being silently dropped.
+ *
+ * Custom skills have no Detected injector, so injectDetectedIfAvailable is a
+ * no-op for them (it returns content unchanged) — their human-authored body
+ * survives untouched on re-init.
  *
  * @param skillsPath - Path to .claude/skills/ directory
  * @param templatesDir - Path to CLI templates directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
  * @param initState - Installation state (fresh/reinit/upgrade/corrupted)
+ * @param anaJson - Parsed ana.json driving config-added skills (absent = today)
  */
 export async function scaffoldAndSeedSkills(
   skillsPath: string,
   templatesDir: string,
   engineResult: EngineResult | null,
-  initState: InitState
+  initState: InitState,
+  anaJson: unknown = {}
 ): Promise<void> {
   const analysis = engineResult || createEmptyEngineResult();
-  const skillsToScaffold = computeSkillManifest(analysis);
+  const manifest = resolveSkillManifest(anaJson, analysis);
+  // User-authored custom skills on disk become manifest members (Slice 5),
+  // appended after the resolved manifest and deduped against it.
+  const customSkills = await discoverCustomSkills(skillsPath, new Set(manifest), templatesDir);
+  const skillsToScaffold = [...manifest, ...customSkills];
   const isReinit = initState === 'reinit' || initState === 'upgrade';
 
   for (const skillName of skillsToScaffold) {
@@ -130,8 +207,7 @@ export async function scaffoldAndSeedSkills(
     const destPath = path.join(destDir, 'SKILL.md');
     const sourcePath = path.join(templatesDir, '.claude/skills', skillName, 'SKILL.md');
 
-    if (!(await fileExists(sourcePath))) continue;
-
+    const hasBundledTemplate = await fileExists(sourcePath);
     const existingSkill = await fileExists(destPath);
     let content: string;
     let allowGotchaInjection: boolean;
@@ -149,7 +225,7 @@ export async function scaffoldAndSeedSkills(
       // semantic explicit instead of control-flow-implicit.
       content = await fs.readFile(destPath, 'utf-8');
       allowGotchaInjection = false;
-    } else {
+    } else if (hasBundledTemplate) {
       // Path C: no existing file — copy template, allow gotcha injection
       // only on a fresh install (not re-init/upgrade where pre-populated
       // gotchas would be noise on top of already-confirmed user content).
@@ -168,6 +244,17 @@ export async function scaffoldAndSeedSkills(
             `*Rules not yet configured for this stack. Run \`${agentCommand('setup')}\` to add conventions for your project.*\n`);
         }
       }
+    } else {
+      // Path D (Slice 5): a manifest-named skill (e.g. declared
+      // `always:true` in ana.json.skills) that ships NO bundled template and
+      // has NO file on disk yet. Instead of silently dropping it (the old
+      // `continue`), write a minimal stub SKILL.md so the skill is real on
+      // disk and discoverable on the next init. Stubs carry no library
+      // Rules/gotchas (those are template- and stack-specific), so gotcha
+      // injection stays off.
+      await fs.mkdir(destDir, { recursive: true });
+      content = buildCustomSkillStub(skillName, agentCommand('setup'));
+      allowGotchaInjection = false;
     }
 
     // Shared: inject Detected across all paths (single helper, no duplication)
@@ -220,7 +307,10 @@ export async function scaffoldAndSeedSkills(
       }
     }
 
-    await fs.writeFile(destPath, content, 'utf-8');
+    // Atomic write (tmp + integrity-check + rename) so a crash mid-write can't
+    // truncate an existing SKILL.md — matches the guarantee assets.ts uses for
+    // every other file init writes into the tree.
+    await atomicWriteFile(destPath, content, `${skillName}/SKILL.md`);
 
     // Copy ENRICHMENT.md if it exists in the template (setup agent reads these)
     const enrichmentSource = path.join(templatesDir, '.claude/skills', skillName, 'ENRICHMENT.md');

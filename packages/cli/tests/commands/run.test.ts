@@ -17,7 +17,7 @@ vi.mock('node:child_process', () => ({
 }));
 
 import { spawnSync } from 'node:child_process';
-import { executeRun, resolvePlatform, parseSimpleToml, buildCaptureEnv } from '../../src/commands/run.js';
+import { executeRun, resolvePlatform, parseSimpleToml, buildCaptureEnv, resolveDispatchKind } from '../../src/commands/run.js';
 
 const mockedSpawnSync = vi.mocked(spawnSync);
 
@@ -601,6 +601,22 @@ describe('ana run', () => {
         fs.rmSync(emptyDir, { recursive: true, force: true });
       }
     });
+  });
+});
+
+describe('resolveDispatchKind — dispatch guard', () => {
+  it('maps the wired platforms to their dispatcher', () => {
+    expect(resolveDispatchKind('claude')).toBe('claude');
+    expect(resolveDispatchKind('codex')).toBe('codex');
+  });
+
+  it('returns null for any other platform → executeRun errors instead of spawning claude', () => {
+    // A future `known:true` descriptor that has no wired dispatcher (e.g. cursor)
+    // must NOT fall through to the Claude dispatcher. null forces the explicit
+    // "no dispatcher wired" error path in executeRun.
+    expect(resolveDispatchKind('cursor')).toBeNull();
+    expect(resolveDispatchKind('unknown-platform')).toBeNull();
+    expect(resolveDispatchKind('')).toBeNull();
   });
 });
 

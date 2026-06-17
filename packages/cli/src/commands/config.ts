@@ -22,6 +22,7 @@ import chalk from 'chalk';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { findProjectRoot } from '../utils/validators.js';
+import { AnaJsonSchema } from './init/anaJsonSchema.js';
 
 /**
  * Machine-managed fields that `config set` rejects.
@@ -40,27 +41,100 @@ const MACHINE_MANAGED_FIELDS: Record<string, string> = {
 /**
  * Known top-level fields in the ana.json schema.
  * Used for the unknown-key warning on `config set`.
+ *
+ * Derived from `AnaJsonSchema.shape` so the set can never drift from the
+ * schema: adding an optional field to the schema (e.g. the configurability
+ * fields agents/skills) automatically widens the known set, so `config set`
+ * stops warning on it without a second edit.
  */
-const KNOWN_FIELDS = new Set([
-  'anaVersion',
-  'name',
-  'language',
-  'framework',
-  'packageManager',
-  'commands',
-  'surfaces',
-  'platforms',
-  'platformFlags',
-  'coAuthor',
-  'artifactBranch',
-  'branchPrefix',
-  'mergeStrategy',
-  'setupPhase',
-  'lastScanAt',
-  'testEvidenceGate',
-  'processCapture',
-  'custom',
-]);
+const KNOWN_FIELDS = new Set(Object.keys(AnaJsonSchema.shape));
+
+/**
+ * One row of the configurable surface: a field, its one-line purpose, and a
+ * copy-pasteable example. Drives `ana config schema` (the discoverability fix)
+ * so users can SEE what is configurable, not just what is currently set.
+ */
+interface SchemaRow {
+  /** Dot-path or top-level key. */
+  field: string;
+  /** One-line description of what the key does. */
+  desc: string;
+  /** A copy-pasteable `ana config set` / `ana agents` example. */
+  example: string;
+}
+
+/**
+ * The configurable surface, grouped. Hand-curated (not schema-derived) because
+ * the value is the human description + example, not just the key name. Kept
+ * next to KNOWN_FIELDS so a new configurable key is documented here when added.
+ */
+const SCHEMA_GROUPS: Array<{ title: string; rows: SchemaRow[] }> = [
+  {
+    title: 'Workflow',
+    rows: [
+      { field: 'coAuthor', desc: 'Co-author trailer added to commits', example: 'ana config set coAuthor "Anatomia <bot@x>"' },
+      { field: 'artifactBranch', desc: 'Branch for proof/work artifacts', example: 'ana config set artifactBranch ana-artifacts' },
+      { field: 'branchPrefix', desc: 'Branch name prefix (string or per-kind map)', example: 'ana config set branchPrefix feature/' },
+      { field: 'mergeStrategy', desc: 'PR merge strategy: merge | squash | rebase', example: 'ana config set mergeStrategy squash' },
+      { field: 'testEvidenceGate', desc: 'Require test evidence on proofs: on | off', example: 'ana config set testEvidenceGate on' },
+      { field: 'processCapture', desc: 'Capture session transcripts: on | off', example: 'ana config set processCapture on' },
+    ],
+  },
+  {
+    title: 'Agents — per-agent skills projected into Claude + Codex',
+    rows: [
+      { field: 'agents.<name>.skills', desc: 'Skills projected onto an agent (array of strings)', example: 'ana agents skills ana-build git-workflow,api-patterns' },
+    ],
+  },
+  {
+    title: 'Skills — custom / always-on skills layered onto the scan manifest',
+    rows: [
+      { field: 'skills.<name>.always', desc: 'Append this skill to every install regardless of scan (boolean)', example: 'ana config set skills.observability.always true' },
+    ],
+  },
+];
+
+/**
+ * Compute the Levenshtein edit distance between two strings (small inputs).
+ *
+ * @param a - First string
+ * @param b - Second string
+ * @returns The minimum single-character edits to turn `a` into `b`
+ */
+function editDistance(a: string, b: string): number {
+  const dp: number[] = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = dp[0]!;
+    dp[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = dp[j]!;
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j]!, dp[j - 1]!);
+      prev = tmp;
+    }
+  }
+  return dp[b.length]!;
+}
+
+/**
+ * Suggest the closest known top-level field for an unknown one, when a typo is
+ * plausible (edit distance ≤ a third of the field length, min 2).
+ *
+ * @param field - The unknown top-level key the user typed
+ * @returns The closest known field, or null when nothing is close enough
+ */
+function suggestField(field: string): string | null {
+  let best: string | null = null;
+  let bestDist = Infinity;
+  for (const known of KNOWN_FIELDS) {
+    const d = editDistance(field.toLowerCase(), known.toLowerCase());
+    if (d < bestDist) {
+      bestDist = d;
+      best = known;
+    }
+  }
+  const threshold = Math.max(2, Math.floor(field.length / 3));
+  return best !== null && bestDist <= threshold ? best : null;
+}
 
 /**
  * Read ana.json as raw JSON (not through Zod schema).
@@ -305,6 +379,26 @@ function displayValue(value: unknown, json: boolean): void {
 }
 
 /**
+ * Print the configurable surface — every configurable key with a one-line
+ * description and a copy-pasteable example. This is the discoverability fix:
+ * `config show/get` reveal current STATE, but nothing listed what is
+ * CONFIGURABLE (the keys, their shapes). `config schema` is that map.
+ */
+function displaySchema(): void {
+  console.log(chalk.bold('Configurable surface (ana.json):'));
+  console.log(chalk.dim('  Absent keys = built-in defaults. Set with `ana config set <field> <value>`.'));
+  for (const group of SCHEMA_GROUPS) {
+    console.log('');
+    console.log(chalk.bold(`  ${group.title}`));
+    for (const row of group.rows) {
+      console.log(`    ${chalk.cyan(row.field)}`);
+      console.log(`      ${row.desc}`);
+      console.log(chalk.gray(`      e.g. ${row.example}`));
+    }
+  }
+}
+
+/**
  * Find the project root, converting the thrown error to a user-friendly message.
  *
  * @returns Project root path
@@ -328,7 +422,32 @@ function resolveRoot(): string {
  */
 export function registerConfigCommand(program: Command): void {
   const configCommand = new Command('config')
-    .description('Read and write ana.json settings');
+    .description('Read and write ana.json settings')
+    .addHelpText(
+      'after',
+      [
+        '',
+        'Subcommands:',
+        '  ana config                 show all current settings',
+        '  ana config get <field>     read one field (dot notation)',
+        '  ana config set <field> <v> write one field (JSON-parsed, string fallback)',
+        '  ana config delete <field>  remove a field',
+        '  ana config schema          list the configurable surface + examples',
+        '',
+        'Configurable beyond the basics (run `ana config schema` for the full map):',
+        '  agents.<name>.skills                       per-agent skills, projected',
+        '                                             into Claude AND Codex in lockstep',
+        '  skills.<name>.always                       always-on custom skills',
+        '',
+        'Absent configurability keys = built-in defaults (deleting a key restores stock).',
+      ].join('\n'),
+    );
+
+  const schemaCommand = new Command('schema')
+    .description('List the configurable surface — every key, its shape, and an example')
+    .action(() => {
+      displaySchema();
+    });
 
   // "show" subcommand handles bare `config` and `config --json`
   // Implemented as default action via Commander's default command
@@ -357,6 +476,18 @@ export function registerConfigCommand(program: Command): void {
         const config = readRawConfig(root);
         const value = getByPath(config, field);
         displayValue(value, options.json === true);
+        // Unknown/unset field → suggest the closest known key + point at schema.
+        if (value === undefined && !options.json) {
+          const topLevelKey = field.split('.')[0]!;
+          if (!KNOWN_FIELDS.has(topLevelKey) && topLevelKey !== 'custom') {
+            const suggestion = suggestField(topLevelKey);
+            if (suggestion) {
+              console.error(chalk.gray(`  '${topLevelKey}' is not a known field. Did you mean '${suggestion}'?`));
+            } else {
+              console.error(chalk.gray(`  '${topLevelKey}' is not a known field. Run \`ana config schema\` to list configurable keys.`));
+            }
+          }
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(chalk.red(msg));
@@ -401,10 +532,14 @@ export function registerConfigCommand(program: Command): void {
           return;
         }
 
-        // Unknown key warning
+        // Unknown key warning — with a closest-field suggestion when plausible.
         if (!KNOWN_FIELDS.has(topLevelKey) && !field.startsWith('custom.') && topLevelKey !== 'custom') {
+          const suggestion = suggestField(topLevelKey);
+          const hint = suggestion
+            ? ` Did you mean '${suggestion}'?`
+            : ` Run \`ana config schema\` to list configurable keys.`;
           console.error(
-            `Warning: '${topLevelKey}' is not a known ana.json field. Use 'custom.${topLevelKey}' to avoid future collisions.`
+            `Warning: '${topLevelKey}' is not a known ana.json field.${hint} Use 'custom.${topLevelKey}' to avoid future collisions.`
           );
         }
 
@@ -486,5 +621,6 @@ export function registerConfigCommand(program: Command): void {
   configCommand.addCommand(getCommand);
   configCommand.addCommand(setCommand);
   configCommand.addCommand(deleteCommand);
+  configCommand.addCommand(schemaCommand);
   program.addCommand(configCommand);
 }

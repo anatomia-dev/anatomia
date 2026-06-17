@@ -9,6 +9,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
+import { agentsDirSegmentsFor } from '../platforms/registry.js';
 
 /**
  * Resolve the agents directory for the given project root.
@@ -18,11 +19,11 @@ import { AnaJsonSchema } from './init/anaJsonSchema.js';
  * @returns Absolute path to the agents directory
  */
 export function getAgentsDir(cwd: string, platform?: string): string {
-  const p = platform ?? 'claude';
-  if (p === 'codex') {
-    return path.join(cwd, '.codex', 'agents');
-  }
-  return path.join(cwd, '.claude', 'agents');
+  // Route through the platform registry: the agents-dir shape is now a data
+  // field on each descriptor, so a third platform resolves its dir without a
+  // new branch here. Unknown / undefined platform falls back to claude's
+  // segments — byte-identical to the prior `?? 'claude'` default.
+  return path.join(cwd, ...agentsDirSegmentsFor(platform));
 }
 
 /**
