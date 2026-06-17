@@ -1,0 +1,36 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict"
+    file: "packages/cli/src/utils/verdict.ts"
+    line: 18
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A006", "A016"]
+  - category: test
+    summary: "@ana tags A001-A005 are duplicated within agent-proof-context.test.ts (prior merged contract + this contract) — tag-by-id resolution is ambiguous in this file"
+    file: "packages/cli/tests/templates/agent-proof-context.test.ts"
+    line: 96
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A001", "A002", "A003", "A004", "A005"]
+  - category: code
+    summary: "deriveVerdict coerces only on an exactly-spelled 'UNSATISFIED' status; a typo'd/garbled status cell falls back to 'UNKNOWN' (proofSummary.ts:205) and will NOT gate a PASS — consistent with the self-authored honesty boundary but fragile"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 205
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A007"]
+  - category: code
+    summary: "deriveVerdict never coerces a PASS on DEVIATED or UNCOVERED rows — only UNSATISFIED. By design (coverage gating is the separate verifier-intent-coverage feature), but the contradiction signal is intentionally narrow"
+    file: "packages/cli/src/utils/verdict.ts"
+    line: 71
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A007"]
+  - category: code
+    summary: "Pre-existing lint warning (unused eslint-disable directive) in git-operations.ts:198 — not in this build's file_changes, not a regression"
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: observation
+    suggested_action: monitor

@@ -1,0 +1,43 @@
+schema: 1
+findings:
+  - category: test
+    summary: "A023 scrub test cannot isolate the scrub mechanism — the record shape already excludes transcript bytes, so the test passes even if scrubDeep were removed"
+    file: "packages/cli/tests/utils/compliance.test.ts"
+    line: 195
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A023"]
+  - category: test
+    summary: "Malformed-but-readable transcript branch (parseSession returns null) is never exercised; the A022 totality test uses the unreadable-file path instead, leaving compliance.ts:193 uncovered"
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 193
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A022"]
+  - category: code
+    summary: "buildRootLaneContext boundary param is inert (void boundary) — accepted and threaded from the call site but has zero effect on output today; spec-sanctioned future seam"
+    file: "packages/cli/src/utils/compliance-context.ts"
+    line: 75
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A013"]
+  - category: upstream
+    summary: "Spec referenced canonicalSort for the mandate hash, but the build hashes source-blob bytes (byte-identity) instead — aligns better with AC17; canonicalSort import is unused. Worth acknowledging on next seal"
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 107
+    severity: observation
+    suggested_action: acknowledge
+    related_assertions: ["A020"]
+  - category: code
+    summary: "readCoreVersion returns '' on failure; A020 ('exists') would still pass with an empty string, so a record could carry an empty engine version while satisfying the assertion"
+    file: "packages/cli/src/utils/compliance.ts"
+    line: 51
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A020"]
+  - category: test
+    summary: "tests/commands/init/template-propagation.test.ts is flaky under full-suite parallel load (5000ms timeout; passes in isolation at ~9s). Pre-existing, unrelated to Phase 2 — raise its timeout or split it"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    line: 308
+    severity: debt
+    suggested_action: scope

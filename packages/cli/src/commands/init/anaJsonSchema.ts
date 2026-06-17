@@ -115,6 +115,49 @@ export const AnaJsonSchema = z
       .catch(undefined),
     lastScanAt: z.string().nullable().optional().default(null).catch(null),
     custom: z.record(z.string(), z.unknown()).optional().default({}).catch({}),
+    // ── Ultimate-configurability fields (additive, NO `.default`) ──────────
+    //
+    // These make the hardcoded constants the *default value of* ana.json.
+    // The resolver in src/manifest.ts treats "key absent" as the identity
+    // function (absent = today). They are deliberately optional with NO
+    // `.default`: absent must stay `undefined` so an absent key survives
+    // re-init untouched and reads as "use the built-in default" — the same
+    // migration-safe posture as testEvidenceGate/processCapture above.
+    //
+    // Each field carries a per-element `.catch` so a single malformed entry
+    // falls through to the built-in default rather than nuking the config
+    // (the no-regression contract: degrade, never crash, never clobber).
+
+    // Per-agent `skills` projected onto the built-in roster — flows into Claude
+    // frontmatter + Codex `.agent.toml` / `## Skills`. (Per-agent model is set
+    // directly on the agent file by `ana agents model`, not via ana.json.)
+    agents: z
+      .record(
+        z.string(),
+        z
+          .object({
+            skills: z.array(z.string()).optional().catch(undefined),
+          })
+          .passthrough()
+          .catch({}),
+      )
+      .optional()
+      .catch(undefined),
+
+    // Custom / always-on skills layered onto the computed manifest. A skill
+    // marked `always:true` is appended to every install regardless of scan.
+    skills: z
+      .record(
+        z.string(),
+        z
+          .object({
+            always: z.boolean().optional().catch(undefined),
+          })
+          .passthrough()
+          .catch({}),
+      )
+      .optional()
+      .catch(undefined),
   })
   .passthrough();
 

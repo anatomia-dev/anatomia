@@ -1,0 +1,254 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself"
+
+assertions:
+  # ---- Component 1: prompt de-contradiction (Spec 1) ----
+  - id: A001
+    says: "The verifier's instructions no longer tell it to read the build report"
+    block: "ana-verify claude master drops the build-report read license"
+    target: "agentDef.claudeMaster"
+    matcher: "not_contains"
+    value: "check the build report for coverage claims"
+
+  - id: A002
+    says: "The Codex verifier's instructions also no longer tell it to read the build report"
+    block: "ana-verify codex master drops the build-report read license"
+    target: "agentDef.codexMaster"
+    matcher: "not_contains"
+    value: "check the build report for coverage claims"
+
+  - id: A003
+    says: "The verifier is still told it must never read the build report"
+    block: "ana-verify master keeps the build-report prohibition"
+    target: "agentDef.claudeMaster"
+    matcher: "contains"
+    value: "never read the build report"
+
+  - id: A004
+    says: "The verifier can still check untested work by inspecting the source"
+    block: "source-inspection fallback survives the edit"
+    target: "agentDef.claudeMaster"
+    matcher: "contains"
+    value: "source inspection"
+
+  - id: A005
+    says: "The shipped and in-repo copies of the verifier definition stay identical"
+    block: "dogfood agent defs match shipped templates byte-for-byte (both harnesses)"
+    target: "agentDef.dogfoodMatchesTemplate"
+    matcher: "truthy"
+
+  # ---- Component 2: one verdict function (Spec 1) ----
+  - id: A006
+    says: "A clean PASS verdict stays PASS"
+    block: "deriveVerdict returns PASS for a passing report with no contradictions"
+    target: "deriveVerdict.cleanPass.result"
+    matcher: "equals"
+    value: "PASS"
+
+  - id: A007
+    says: "A PASS that contradicts the verifier's own unsatisfied row is overridden to FAIL"
+    block: "deriveVerdict coerces PASS to FAIL when a compliance row is UNSATISFIED"
+    target: "deriveVerdict.unsatisfiedRow.result"
+    matcher: "equals"
+    value: "FAIL"
+
+  - id: A008
+    says: "The override explains which unsatisfied row contradicted the PASS"
+    block: "deriveVerdict reports the UNSATISFIED contradiction reason"
+    target: "deriveVerdict.unsatisfiedRow.contradictions"
+    matcher: "contains"
+    value: "UNSATISFIED row"
+
+  # A009/A010 removed: findings (severity: risk) live in verify_data.yaml, not the
+  # report .md (ana-verify.md:139), so a content-only deriveVerdict cannot read them;
+  # and risk findings do not prevent PASS (ana-verify.md:412) — only UNSATISFIED rows do.
+  # The UNSATISFIED-row contradiction is covered by A007/A008.
+
+  - id: A011
+    says: "A FAIL verdict stays FAIL"
+    block: "deriveVerdict returns FAIL for a FAIL headline"
+    target: "deriveVerdict.failHeadline.result"
+    matcher: "equals"
+    value: "FAIL"
+
+  - id: A012
+    says: "A report with no verdict line is reported as unknown, not assumed passing"
+    block: "deriveVerdict returns UNKNOWN when no Result line exists"
+    target: "deriveVerdict.noHeadline.result"
+    matcher: "equals"
+    value: "UNKNOWN"
+
+  - id: A013
+    says: "Every place that reads the verdict gets the overridden result, not the raw headline"
+    block: "getVerifyResult returns FAIL for a contradicted-PASS report"
+    target: "getVerifyResult.contradictedPass"
+    matcher: "equals"
+    value: "FAIL"
+
+  - id: A014
+    says: "Reading the verdict from a saved file also returns the overridden result"
+    block: "readLocalVerifyResult returns FAIL for a contradicted-PASS report"
+    target: "readLocalVerifyResult.contradictedPass"
+    matcher: "equals"
+    value: "FAIL"
+
+  - id: A015
+    says: "The PR step also sees the overridden result"
+    block: "pr.ts extractVerifyResult returns FAIL for a contradicted-PASS report"
+    target: "extractVerifyResult.contradictedPass"
+    matcher: "equals"
+    value: "FAIL"
+
+  - id: A016
+    says: "The verdict is parsed in exactly one place, not copied across the codebase"
+    block: "the old duplicate parseResult is gone from proofSummary"
+    target: "source.proofSummary"
+    matcher: "not_contains"
+    value: "function parseResult"
+
+  - id: A017
+    says: "When a contradicted PASS blocks completion, the reason is shown to the developer"
+    block: "guardFailResult prints the contradiction reason"
+    target: "guardFailResult.message"
+    matcher: "contains"
+    value: "contradicts"
+
+  - id: A018
+    says: "A verify report missing its verdict line is still rejected at save time"
+    block: "validateVerifyReportFormat keeps its presence check"
+    target: "validateVerifyReportFormat.missingResult"
+    matcher: "exists"
+
+  - id: A019
+    says: "The verdict code states the honest boundary: not one-word-forgeable, still self-authored"
+    block: "deriveVerdict doc carries the honesty framing"
+    target: "source.verdict"
+    matcher: "contains"
+    value: "self-authored"
+
+  - id: A020
+    says: "The code never claims the verdict makes the agent unable to lie"
+    block: "no over-claim in the verdict module"
+    target: "source.verdict"
+    matcher: "not_contains"
+    value: "can't lie"
+
+  # ---- Component 3: deterministic read-build-report veto (Spec 2) ----
+  - id: A021
+    says: "If the verifier deterministically read the build report, the proof is forced to FAIL"
+    block: "veto applies when role=verify, claim=verify-independence, violated, source=deterministic"
+    target: "evaluateReadBuildReportVeto.fullMatch.applied"
+    matcher: "truthy"
+
+  - id: A022
+    says: "A satisfied verify-independence claim does not trigger the veto"
+    block: "veto does not apply when status is satisfied"
+    target: "evaluateReadBuildReportVeto.satisfied.applied"
+    matcher: "not_equals"
+    value: true
+
+  - id: A023
+    says: "A non-deterministic (LLM-judged or unmarked) verdict never triggers the veto"
+    block: "veto does not apply when source is not deterministic"
+    target: "evaluateReadBuildReportVeto.nonDeterministic.applied"
+    matcher: "not_equals"
+    value: true
+
+  - id: A024
+    says: "The veto fires on exactly one claim — other claims and other roles never gate"
+    block: "veto does not apply for a different claim id or a non-verify role"
+    target: "evaluateReadBuildReportVeto.wrongClaimOrRole.applied"
+    matcher: "not_equals"
+    value: true
+
+  - id: A025
+    says: "The determinism signal is recorded on the verdict so the veto can read it"
+    block: "projectVerdicts persists source onto the compliance record"
+    target: "projectVerdicts.record.source"
+    matcher: "equals"
+    value: "deterministic"
+
+  - id: A026
+    says: "Verdicts recorded before this feature (no determinism signal) never retroactively gate"
+    block: "a record without source is non-gating (forward-only)"
+    target: "evaluateReadBuildReportVeto.legacyRecord.applied"
+    matcher: "not_equals"
+    value: true
+
+  - id: A027
+    says: "With no captured transcript the veto is skipped openly, never silently"
+    block: "no compliance record yields not-applied with a stated reason"
+    target: "evaluateReadBuildReportVeto.noRecord.reason"
+    matcher: "contains"
+    value: "no captured transcript"
+
+  - id: A028
+    says: "A verify session that read the build report cannot complete with a PASS"
+    block: "build-report-read fixture force-FAILs the proof despite a PASS headline"
+    target: "workComplete.buildReportRead.result"
+    matcher: "equals"
+    value: "FAIL"
+
+  - id: A029
+    says: "The proof record states whether the byte-level veto was applied"
+    block: "the proof entry carries verdict_veto status"
+    target: "proofEntry.verdict_veto"
+    matcher: "exists"
+
+  - id: A030
+    says: "The verifier docs no longer claim behavioral verdicts can never affect PASS/FAIL"
+    block: "compliance docstring names the one gating claim"
+    target: "source.compliance"
+    matcher: "contains"
+    value: "gates the proof"
+
+  - id: A031
+    says: "The proof states the veto is forward-only and earlier verdicts were self-reported"
+    block: "honesty-boundary line renders on the attestation"
+    target: "renderSessionAttestation.output"
+    matcher: "contains"
+    value: "forward-only"
+
+file_changes:
+  # Component 1 — agent-def (tracked: 2 masters + 2 dogfood; dist is gitignored)
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  - path: ".claude/agents/ana-verify.md"
+    action: modify
+  - path: ".codex/agents/ana-verify.md"
+    action: modify
+  # Component 2 — one verdict function (Spec 1)
+  - path: "packages/cli/src/utils/verdict.ts"
+    action: create
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-state.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/pr.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/verdict.test.ts"
+    action: create
+  - path: "packages/cli/tests/templates/agent-proof-context.test.ts"
+    action: modify
+  # Component 3 — deterministic veto (Spec 2)
+  - path: "packages/cli/src/utils/compliance.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/compliance.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/proof-compliance-display.test.ts"
+    action: modify

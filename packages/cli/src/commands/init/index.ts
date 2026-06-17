@@ -57,6 +57,7 @@ import {
   getCliVersion,
 } from './state.js';
 import { scaffoldAndSeedSkills } from './skills.js';
+import { collectConfigWarnings } from './configWarnings.js';
 
 /**
  * Register the `init` command.
@@ -108,6 +109,20 @@ export function registerInitCommand(program: Command): void {
       const { ASTCache } = await import('../../engine/index.js');
       const tmpCacheDir = path.join(tmpAnaPath, 'state', 'cache');
       ASTCache.setCacheDir(tmpCacheDir);
+
+      // Read the RAW pre-merge ana.json (before the Zod schema's per-field
+      // `.catch` strips malformed values) so the fail-soft validation pass can
+      // warn on fields like `agents.<a>.skills:"notanarray"` that
+      // preserveUserState would otherwise silently drop. Captured here, before
+      // the swap mutates `.ana/`. A fresh install has no prior config → [].
+      let rawPriorAnaJson: unknown = {};
+      if (preflight.anaExisted) {
+        try {
+          rawPriorAnaJson = JSON.parse(await fs.readFile(path.join(anaPath, 'ana.json'), 'utf-8'));
+        } catch {
+          // Missing/unparseable prior ana.json — nothing to validate against.
+        }
+      }
 
       const scanStart = Date.now();
       // Persist the Slice-2 import graph into the staging state dir so it
@@ -161,17 +176,39 @@ export function registerInitCommand(program: Command): void {
       // Skills go to .ana/skills/ (canonical location, shared by all platforms)
       const skillsPath = path.join(anaPath, 'skills');
       const templatesDir = getTemplatesDir();
-      await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState);
+      // Read the just-written ana.json so config-added skills (ana.json.skills)
+      // are scaffolded alongside the scan-computed manifest. Absent/malformed
+      // config falls through to the computed manifest (resolver is fail-soft).
+      let anaJsonForSkills: unknown = {};
+      try {
+        anaJsonForSkills = JSON.parse(await fs.readFile(anaJsonPath, 'utf-8'));
+      } catch {
+        // ana.json missing or malformed — resolver falls back to computed manifest
+      }
+
+      // Fail-soft validation pass — make malformed configurability keys LOUD.
+      // The resolvers still degrade to stock (never crash, never clobber); this
+      // surfaces a clear, field-named warning for each value being ignored so a
+      // typo like `agents.x.skills:"notanarray"` is not silently swallowed.
+      // Validates the RAW pre-merge config (rawPriorAnaJson) so per-field
+      // schema `.catch` stripping doesn't hide the bad value; on a fresh install
+      // there is no prior config, so it falls back to the just-written file.
+      const configToValidate = preflight.anaExisted ? rawPriorAnaJson : anaJsonForSkills;
+      for (const w of collectConfigWarnings(configToValidate)) {
+        preflight.warnings.push(`Config ignored: ${w}`);
+      }
+
+      await scaffoldAndSeedSkills(skillsPath, templatesDir, engineResult, preflight.initState, anaJsonForSkills);
 
       // Platform-conditional configuration.
       // Re-init refreshes agent instruction bodies + CLAUDE.md from stock;
       // the returned lists name files whose instruction content actually changed.
       const changedFiles: string[] = [];
       if (platforms.includes('claude')) {
-        changedFiles.push(...await createClaudeConfiguration(cwd, engineResult, preflight.initState));
+        changedFiles.push(...await createClaudeConfiguration(cwd, engineResult, preflight.initState, anaJsonForSkills));
       }
       if (platforms.includes('codex')) {
-        changedFiles.push(...await createCodexConfiguration(cwd, preflight.initState));
+        changedFiles.push(...await createCodexConfiguration(cwd, preflight.initState, anaJsonForSkills));
       }
 
       // Content-gated consolidated warning — one entry listing only the files

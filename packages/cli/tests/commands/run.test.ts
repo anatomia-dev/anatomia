@@ -17,7 +17,7 @@ vi.mock('node:child_process', () => ({
 }));
 
 import { spawnSync } from 'node:child_process';
-import { executeRun, resolvePlatform, parseSimpleToml, buildCaptureEnv } from '../../src/commands/run.js';
+import { executeRun, resolvePlatform, parseSimpleToml, buildCaptureEnv, resolveDispatchKind } from '../../src/commands/run.js';
 
 const mockedSpawnSync = vi.mocked(spawnSync);
 
@@ -604,6 +604,22 @@ describe('ana run', () => {
   });
 });
 
+describe('resolveDispatchKind — dispatch guard', () => {
+  it('maps the wired platforms to their dispatcher', () => {
+    expect(resolveDispatchKind('claude')).toBe('claude');
+    expect(resolveDispatchKind('codex')).toBe('codex');
+  });
+
+  it('returns null for any other platform → executeRun errors instead of spawning claude', () => {
+    // A future `known:true` descriptor that has no wired dispatcher (e.g. cursor)
+    // must NOT fall through to the Claude dispatcher. null forces the explicit
+    // "no dispatcher wired" error path in executeRun.
+    expect(resolveDispatchKind('cursor')).toBeNull();
+    expect(resolveDispatchKind('unknown-platform')).toBeNull();
+    expect(resolveDispatchKind('')).toBeNull();
+  });
+});
+
 describe('buildCaptureEnv', () => {
   let projectDir: string;
 
@@ -645,6 +661,13 @@ describe('buildCaptureEnv', () => {
     const a = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_RUN_ID'];
     const b = buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_RUN_ID'];
     expect(a).not.toBe(b);
+  });
+
+  it("declares the trusted-launcher capture boundary as 'root' (behavioral coverage is declared, not inferred)", () => {
+    // The launcher captures only the root agent's transcript today; this is the
+    // fact only the launcher knows, read back by buildRootLaneContext (Step 1).
+    expect(buildCaptureEnv(projectDir, 'build', 'claude', 'ana-build')['ANA_CAPTURE_BOUNDARY']).toBe('root');
+    expect(buildCaptureEnv(projectDir, 'verify', 'codex', 'ana-verify')['ANA_CAPTURE_BOUNDARY']).toBe('root');
   });
 
   it('sets ANA_HARNESS to the platform', () => {

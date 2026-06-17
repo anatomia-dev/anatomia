@@ -1,0 +1,26 @@
+{
+  "role": "build",
+  "harness": "claude",
+  "model": "claude-opus-4-8",
+  "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+  "cli_version": "1.2.2",
+  "session_id": "d51f3d96-f4d2-48ec-a320-48fb0fe6a9de",
+  "captured_at": "2026-06-16T23:44:43.691Z",
+  "derived": {
+    "tokens": {
+      "input": 9175,
+      "output": 77884,
+      "cache_create": 182750,
+      "cache_read": 14765889
+    },
+    "price_table_version": "2026-06-08",
+    "duration_ms": 1516704,
+    "turns": 238,
+    "tool_calls": 115,
+    "commands_run": 60,
+    "tests_executed": 11796,
+    "failures_encountered": 1,
+    "files_touched": 12,
+    "model": "claude-opus-4-8"
+  }
+}

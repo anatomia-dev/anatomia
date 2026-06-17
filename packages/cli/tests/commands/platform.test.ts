@@ -143,18 +143,15 @@ describe('AnaJsonSchema platforms fields', () => {
 
 describe('config KNOWN_FIELDS', () => {
   // @ana A008, A009
-  it('includes platforms and platformFlags', async () => {
-    // Import config module and check KNOWN_FIELDS via the config command behavior.
-    // Since KNOWN_FIELDS is not exported, we verify indirectly by checking the
-    // source file for the entries.
-    const configSource = await import('node:fs').then(fs =>
-      fs.readFileSync(
-        new URL('../../src/commands/config.ts', import.meta.url).pathname,
-        'utf-8'
-      )
-    );
-    expect(configSource).toContain("'platforms'");
-    expect(configSource).toContain("'platformFlags'");
+  it('includes platforms and platformFlags', () => {
+    // KNOWN_FIELDS is derived from AnaJsonSchema.shape (single source of truth),
+    // so the behavioral contract is "the schema knows about these fields."
+    // Assert against the schema shape rather than config.ts source text — this
+    // survives the derivation refactor and is a stronger statement than a
+    // string-presence check on the source.
+    const fields = Object.keys(AnaJsonSchema.shape);
+    expect(fields).toContain('platforms');
+    expect(fields).toContain('platformFlags');
   });
 });
 

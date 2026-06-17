@@ -1,0 +1,219 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "anatrace-core integration (provenance swap + behavioral attestation)"
+
+assertions:
+  # ── Phase 1 — Provenance swap ───────────────────────────────────────────────
+  - id: A001
+    says: "Provenance counts come from the published anatrace engine, pinned to a known version"
+    block: "anatrace-core is a pinned exact dependency"
+    target: "package.json.dependencies.anatrace-core"
+    matcher: "equals"
+    value: "0.2.0"
+
+  - id: A002
+    says: "Anatomia no longer hand-parses agent transcripts"
+    block: "forensics no longer derives transcripts by hand"
+    target: "forensics.ts.source"
+    matcher: "not_contains"
+    value: "function deriveClaude"
+
+  - id: A003
+    says: "Each provenance record states which engine version produced it"
+    block: "derived provenance carries the core derive_version"
+    target: "provenance.derived.derive_version"
+    matcher: "equals"
+    value: "3"
+
+  - id: A004
+    says: "Deriving the same session twice produces an identical record"
+    block: "the derive is deterministic"
+    target: "derive.deterministic"
+    matcher: "truthy"
+
+  - id: A005
+    says: "A captured session records a fingerprint of the transcript it was derived from"
+    block: "a captured provenance record carries a transcript hash"
+    target: "provenance.transcript_hash"
+    matcher: "exists"
+
+  - id: A006
+    says: "An unreadable transcript still records who ran, never guessed numbers"
+    block: "an unreadable transcript still writes an identity-only provenance row"
+    target: "provenance.session_id"
+    matcher: "exists"
+
+  - id: A007
+    says: "Older proof records written before this change still load"
+    block: "a legacy provenance record without engine fields still reads"
+    target: "legacy.read_ok"
+    matcher: "truthy"
+
+  - id: A008
+    says: "Codex sessions now report the files they changed"
+    block: "Codex files_touched is derived from a real apply_patch body"
+    target: "codex.derived.files_touched"
+    matcher: "greater"
+    value: 0
+
+  - id: A009
+    says: "Raw transcript text never leaks into a committed provenance record"
+    block: "no raw transcript body escapes into a committed provenance record"
+    target: "provenance.committed_text"
+    matcher: "not_contains"
+    value: "SECRET_TRANSCRIPT_BODY_DO_NOT_PERSIST"
+
+  - id: A010
+    says: "An unpriced model is shown as unpriced, never as a guessed cost"
+    block: "an unknown model is reported unpriced"
+    target: "cost.priced"
+    matcher: "equals"
+    value: false
+
+  - id: A011
+    says: "The price-table version shown is the one actually used to compute cost"
+    block: "displayed price-table version matches the table actually used"
+    target: "cost.price_table_version"
+    matcher: "equals"
+    value: "2026-06-08"
+
+  - id: A012
+    says: "The transcript engine adds no network capability to the CLI"
+    block: "anatrace-core introduces no network-capable runtime dependency"
+    target: "deps.disallowed_count"
+    matcher: "equals"
+    value: 0
+
+  # ── Phase 2a — Soundness spike ──────────────────────────────────────────────
+  - id: A013
+    says: "Behavioral coverage is declared by the trusted launcher, not inferred"
+    block: "the evaluation context declares trusted-launcher capture coverage"
+    target: "context.captureCoverage.source"
+    matcher: "equals"
+    value: "trusted-launcher"
+
+  - id: A014
+    says: "A claim about sub-agents we did not capture is reported unverifiable, never satisfied"
+    block: "a delegate-inclusive negative resolves unverifiable under root-only capture"
+    target: "verdict.delegate_inclusive.status"
+    matcher: "equals"
+    value: "unverifiable"
+
+  - id: A015
+    says: "A behavior we could not observe is never reported as satisfied"
+    block: "a channel absent from the captured root transcript never resolves satisfied"
+    target: "verdict.unobserved_channel.status"
+    matcher: "not_equals"
+    value: "satisfied"
+
+  - id: A016
+    says: "A runtime test assertion is never faked as a behavioral pass"
+    block: "a runtime contract assertion never resolves as a satisfied behavioral verdict"
+    target: "verdict.runtime_assertion.status"
+    matcher: "not_equals"
+    value: "satisfied"
+
+  - id: A017
+    says: "The system never claims to have watched a sub-agent it did not capture"
+    block: "the context construction never marks a delegate lane captured"
+    target: "context.any_delegate_captured"
+    matcher: "equals"
+    value: false
+
+  # ── Phase 2b — Producer + display ───────────────────────────────────────────
+  - id: A018
+    says: "Every agent session gets its own behavioral record — rework is never collapsed"
+    block: "two build sessions write two compliance records"
+    target: "compliance.record_count"
+    matcher: "equals"
+    value: 2
+
+  - id: A019
+    says: "Each behavioral record is tied to the session that produced it"
+    block: "each compliance record carries its session id"
+    target: "compliance.record.session_id"
+    matcher: "exists"
+
+  - id: A020
+    says: "Each behavioral record states which engine version judged it"
+    block: "the compliance record records the anatrace-core version"
+    target: "compliance.record.anatrace_core_version"
+    matcher: "exists"
+
+  - id: A021
+    says: "Each behavioral record states how much of the session it could actually check"
+    block: "the compliance record carries a coverage summary"
+    target: "compliance.record.coverage.total"
+    matcher: "exists"
+
+  - id: A022
+    says: "A broken transcript can never break saving your work"
+    block: "a malformed transcript leaves the save intact with no compliance record"
+    target: "compliance.save_intact"
+    matcher: "truthy"
+
+  - id: A023
+    says: "Secrets in a session command never reach committed proof"
+    block: "a credential in a transcript command is scrubbed from the committed compliance record"
+    target: "compliance.committed_text"
+    matcher: "not_contains"
+    value: "tok_SECRET_DO_NOT_PERSIST"
+
+  - id: A024
+    says: "A behavioral concern is recorded as evidence — it never flips a passing run to failing"
+    block: "a violated behavioral verdict leaves the proof result PASS"
+    target: "entry.result"
+    matcher: "equals"
+    value: "PASS"
+
+  - id: A025
+    says: "The proof shows how the session behaved, in its own section"
+    block: "ana proof renders the Session Attestation section"
+    target: "proof.rendered"
+    matcher: "contains"
+    value: "Session Attestation"
+
+  - id: A026
+    says: "When coverage was incomplete, the proof says so loudly"
+    block: "an incomplete-coverage record renders a loud warning"
+    target: "proof.rendered_incomplete"
+    matcher: "contains"
+    value: "incomplete"
+
+file_changes:
+  - path: "packages/cli/package.json"
+    action: modify
+  - path: "packages/cli/pnpm-lock.yaml"
+    action: modify
+  - path: "packages/cli/src/data/pricing.ts"
+    action: modify
+  - path: "packages/cli/src/utils/forensics.ts"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/src/commands/run.ts"
+    action: modify
+  - path: "packages/cli/src/commands/artifact.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work-proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/compliance-context.ts"
+    action: create
+  - path: "packages/cli/src/utils/compliance.ts"
+    action: create
+  - path: "packages/cli/tests/utils/forensics-derive.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/forensics.test.ts"
+    action: modify
+  - path: "packages/cli/tests/data/pricing.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/_capture.test.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/compliance-context.test.ts"
+    action: create
+  - path: "packages/cli/tests/utils/compliance.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/proof-compliance-display.test.ts"
+    action: create

@@ -1,0 +1,26 @@
+schema: 1
+concerns:
+  - summary: "Name collision: utils/verdict.ts exports deriveVerdict (content -> VerdictResult) while utils/capture-runner.ts already exports a different deriveVerdict (counts, exitCode -> CaptureVerdict). No file imports both, so no compile conflict, but the shared name is confusing. The spec/contract hardcode the name 'deriveVerdict' for the verify-report function, so renaming was not an option."
+    file: "packages/cli/src/utils/verdict.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Function-only circular import introduced: proofSummary.ts imports deriveVerdict from verdict.ts, and verdict.ts imports parseComplianceTable from proofSummary.ts. ESM resolves this because neither symbol is touched at module-load (only inside function bodies). artifact-validators.ts -> verdict.ts -> proofSummary.ts -> artifact-validators.ts (joinCoverage) is the same shape and already existed for joinCoverage. Build, typecheck, and full suite all green, but the cycle is a latent fragility if any of these modules later needs a top-level use of an imported symbol."
+    file: "packages/cli/src/utils/verdict.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "readLocalVerifyResult (artifact.ts) and extractVerifyResult (pr.ts) were changed from private to exported solely so contract assertions A014/A015 could have direct tagged unit tests. Both were previously untested. This widens the module surface slightly; the project's risk profile already notes proof.ts/proof-summary over-exporting tendencies."
+    file: "packages/cli/src/commands/pr.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Pre-existing lint warning in src/utils/git-operations.ts:198 (unused eslint-disable directive for no-control-regex) surfaces on every pre-commit run. Not introduced by this build and only a warning, but it rides along in the lint output."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "AC5's proof-entry half (verdict_contradictions rendering on a completed proof entry) is covered by type + writeProofChain wiring and source inspection, not by an end-to-end fixture that completes work with a coerced-PASS report and asserts the field lands in proof_chain.json. The guard-message half IS unit-tested (A017). Verifier should assess whether source-level evidence suffices for the 'on the proof entry' clause."
+    file: "packages/cli/src/commands/work-proof.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "A016, A019, A020 are verified by source-content tests that read verdict.ts / proofSummary.ts and assert on substrings. These are inherently comment/format-fragile (the project's own risk profile flags a similar purity test as fragile). They faithfully cover the not_contains/contains intent but will break on benign rewording."
+    file: "packages/cli/tests/utils/verdict.test.ts"
+    severity: observation
+    suggested_action: monitor

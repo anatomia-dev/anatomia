@@ -1,0 +1,94 @@
+version: "1.0"
+sealed_by: "AnaPlan"
+feature: "Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)"
+
+assertions:
+  # --- AC1: pin + install resolved (the single 0.4.0 literal lives here) ---
+  - id: A045
+    says: "The behavioral engine is installed at version 0.4.0"
+    block: "anatrace-core resolves to 0.4.0"
+    target: "installed anatrace-core package.json version"
+    matcher: "equals"
+    value: "0.4.0"
+
+  - id: A046
+    says: "The project pins the engine to exactly 0.4.0"
+    block: "package.json pins anatrace-core to 0.4.0 exact"
+    target: "packages/cli/package.json dependencies.anatrace-core"
+    matcher: "equals"
+    value: "0.4.0"
+
+  # --- AC2: reason locked to the closed set, forward-compatibly ---
+  - id: A047
+    says: "A reason the 0.4.0 engine produces is recognized as known"
+    block: "isVerdictReason recognizes a 0.4.0 member"
+    target: "isVerdictReason('command-unresolvable')"
+    matcher: "truthy"
+
+  - id: A048
+    says: "A reason the engine does not produce is flagged as unknown"
+    block: "isVerdictReason rejects an out-of-set reason"
+    target: "isVerdictReason('not-a-real-reason')"
+    matcher: "equals"
+    value: false
+
+  - id: A049
+    says: "An unrecognized reason is kept exactly as the engine reported it, never dropped"
+    block: "projectVerdicts records an unknown reason verbatim and warns"
+    target: "projected verdict reason for an unknown input"
+    matcher: "equals"
+    value: "totally-made-up"
+
+  # --- AC3: fail-closed abstain on empty/unresolvable core version ---
+  - id: A050
+    says: "When the engine version cannot be resolved, no attestation is written"
+    block: "captureComplianceAtSave abstains on an empty core version"
+    target: "captureComplianceAtSave return value when core version is empty"
+    matcher: "equals"
+    value: null
+
+  - id: A051
+    says: "An unresolvable engine version leaves no compliance record on disk"
+    block: "no record file written when core version is empty"
+    target: "compliance record count after an empty-version abstain"
+    matcher: "equals"
+    value: 0
+
+  - id: A052
+    says: "A written attestation always carries a real, non-empty engine version"
+    block: "happy-path record stamps a non-empty engine version"
+    target: "record.anatrace_core_version on a normal capture"
+    matcher: "truthy"
+
+  # --- AC4: real-engine assertions ---
+  - id: A053
+    says: "Every verdict reason the real engine emits is one we recognize"
+    block: "real-engine record has zero out-of-set reasons"
+    target: "count of emitted reasons outside VERDICT_REASONS"
+    matcher: "equals"
+    value: 0
+
+  - id: A054
+    says: "The recorded engine version matches the engine that actually judged the session"
+    block: "emitted version stamp equals the installed engine version"
+    target: "record.anatrace_core_version === installed engine version"
+    matcher: "truthy"
+
+  - id: A055
+    says: "An obfuscated forbidden command is caught as a violation under the real engine"
+    block: "ANSI-C-decodable force-push fixture reads violated under 0.4.0"
+    target: "status of the forbidden-command verdict for the ANSI-C force-push fixture"
+    matcher: "equals"
+    value: "violated"
+
+file_changes:
+  - path: "packages/cli/package.json"
+    action: modify
+  - path: "pnpm-lock.yaml"
+    action: modify
+  - path: "packages/cli/src/types/proof.ts"
+    action: modify
+  - path: "packages/cli/src/utils/compliance.ts"
+    action: modify
+  - path: "packages/cli/tests/utils/compliance.test.ts"
+    action: modify

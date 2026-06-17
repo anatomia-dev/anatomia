@@ -26,21 +26,13 @@ import { createHash, randomUUID } from 'node:crypto';
 import { getPlatformFlags } from './platform.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 import { detectWorktreeSlug } from '../utils/worktree.js';
+import {
+  agentsDirSegmentsFor,
+  knownPlatformIds,
+  resolvePlatformDescriptor,
+} from '../platforms/registry.js';
+import { resolveAgentMap } from '../manifest.js';
 
-/**
- * Known agent suffix mappings.
- *
- * The key is the user-facing argument. The value is the full
- * `--agent` value passed to the underlying platform executable.
- */
-const AGENT_MAP: Record<string, string> = {
-  '': 'ana',
-  build: 'ana-build',
-  plan: 'ana-plan',
-  verify: 'ana-verify',
-  setup: 'ana-setup',
-  learn: 'ana-learn',
-};
 
 /**
  * Agents that run in interactive (TUI) mode on Codex.
@@ -54,8 +46,15 @@ const AGENT_MAP: Record<string, string> = {
 // doesn't work for pipeline agents that need to read files, write code,
 // run tests, and iterate.
 
-/** Platforms recognized by ana run. Unknown values are rejected. */
-const KNOWN_PLATFORMS = new Set(['claude', 'codex']);
+/**
+ * Platforms recognized by ana run. Unknown values are rejected.
+ *
+ * Derived from the platform registry (descriptors flagged `known:true`) instead
+ * of a hardcoded literal — byte-identical to `['claude', 'codex']` today because
+ * only those two descriptors carry `known:true`. A registry-only descriptor
+ * (e.g. cursor) stays out until its dispatcher is wired.
+ */
+const KNOWN_PLATFORMS = knownPlatformIds();
 
 /**
  * Read the CLI version synchronously from the package.json.
@@ -93,8 +92,10 @@ function getCliVersionSync(): string {
  * @returns Absolute path to the resolved agent-def file
  */
 function resolveAgentDefPath(projectRoot: string, platform: string, agentName: string): string {
-  const dir = platform === 'codex' ? '.codex' : '.claude';
-  return path.join(projectRoot, dir, 'agents', `${agentName}.md`);
+  // The agents-dir shape comes from the platform registry, so this path is
+  // correct for any descriptor without a per-platform branch. Unknown platform
+  // falls back to claude's segments — byte-identical to the prior ternary.
+  return path.join(projectRoot, ...agentsDirSegmentsFor(platform), `${agentName}.md`);
 }
 
 /**
@@ -111,6 +112,13 @@ function resolveAgentDefPath(projectRoot: string, platform: string, agentName: s
  *                          SessionStart hook's pending pointer and the in-session
  *                          `ana artifact save` that consumes it (cross-harness,
  *                          concurrency-safe correlation)
+ * - `ANA_CAPTURE_BOUNDARY` ← the trusted launcher's capture-boundary declaration:
+ *                          which lanes it captured. `'root'` today (the launcher
+ *                          captures only the root agent's transcript, never
+ *                          delegate transcripts). This is a fact only the launcher
+ *                          knows — behavioral coverage is DECLARED here, not
+ *                          inferred. A future delegate-capturing phase changes
+ *                          this one value.
  *
  * Every field degrades cleanly: an unreadable agent-def file yields an empty
  * hash, a missing worktree slug yields an empty `ANA_SLUG`. Never throws.
@@ -120,7 +128,7 @@ function resolveAgentDefPath(projectRoot: string, platform: string, agentName: s
  * @param platform - Target platform ('claude' | 'codex')
  * @param agentName - Full agent name (e.g. 'ana-build')
  * @param slugOption - Value of `--slug` (consumed only when agentSuffix === 'plan')
- * @returns A record of the six `ANA_*` variables
+ * @returns A record of the seven `ANA_*` variables
  */
 export function buildCaptureEnv(
   projectRoot: string,
@@ -154,6 +162,10 @@ export function buildCaptureEnv(
     ANA_CLI_VERSION: getCliVersionSync(),
     ANA_AGENT_DEF_HASH: agentDefHash,
     ANA_RUN_ID: randomUUID(),
+    // The trusted launcher captures only the root agent's transcript today. This
+    // declares that boundary at the one place that knows it (Step 1 reads it via
+    // buildRootLaneContext; absence defaults to 'root').
+    ANA_CAPTURE_BOUNDARY: 'root',
   };
 }
 
@@ -276,10 +288,13 @@ function dispatchToCodex(
   // Advisory pipeline state check (same as Claude dispatch)
   advisoryPipelineCheck(projectRoot, agentSuffix);
 
-  // Read TOML manifest
+  // Read TOML manifest. The model / sandbox fallbacks come from the codex
+  // platform descriptor (platforms/registry.ts) rather than inline literals —
+  // byte-identical to the prior `?? 'gpt-5.5'` / `?? 'danger-full-access'`.
   const toml = readAgentToml(projectRoot, agentName);
-  const model = toml?.['model'] ?? 'gpt-5.5';
-  const sandboxMode = toml?.['sandbox_mode'] ?? 'danger-full-access';
+  const runDefaults = resolvePlatformDescriptor('codex').runDefaults;
+  const model = toml?.['model'] ?? runDefaults.model ?? 'gpt-5.5';
+  const sandboxMode = toml?.['sandbox_mode'] ?? runDefaults.sandboxMode ?? 'danger-full-access';
 
   // Read prompt file path
   const promptPath = path.join(projectRoot, '.codex', 'agents', `${agentName}.md`);
@@ -423,11 +438,12 @@ export function executeRun(
     process.exit(1);
   }
 
-  // 2. Resolve agent name
-  const agentName = AGENT_MAP[agentSuffix];
+  // 2. Resolve agent name from the fixed built-in roster map (suffix → full name).
+  const agentMap = resolveAgentMap();
+  const agentName = agentMap[agentSuffix];
   if (agentName === undefined) {
     console.error(chalk.red(`Error: Unknown agent "${agentSuffix}".`));
-    console.error(chalk.gray(`Available agents: ${Object.keys(AGENT_MAP).filter(k => k !== '').join(', ')}`));
+    console.error(chalk.gray(`Available agents: ${Object.keys(agentMap).filter(k => k !== '').join(', ')}`));
     process.exit(1);
   }
 
@@ -441,14 +457,41 @@ export function executeRun(
     process.exit(1);
   }
 
-  // 4. Dispatch to platform
-  if (platform === 'codex') {
+  // 4. Dispatch to platform via an explicit per-platform branch. A platform can
+  //    be known:true (passes the KNOWN_PLATFORMS allowlist) yet have no wired
+  //    dispatcher — error clearly instead of silently falling through to the
+  //    Claude dispatcher (which would spawn `claude` with the wrong agent dir).
+  const dispatchKind = resolveDispatchKind(platform);
+  if (dispatchKind === 'codex') {
     dispatchToCodex(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
     return;
   }
+  if (dispatchKind === 'claude') {
+    dispatchToClaude(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
+    return;
+  }
+  console.error(chalk.red(`Error: platform "${platform}" is recognized but has no dispatcher wired (supported: claude, codex).`));
+  console.error(chalk.gray('This is a CLI bug — please report it.'));
+  process.exit(1);
+}
 
-  // Claude dispatch (existing behavior)
-  dispatchToClaude(projectRoot, agentSuffix, agentName, passthroughArgs, slugOption);
+/**
+ * Map a validated platform id to its wired dispatcher, or `null` if none exists.
+ *
+ * A platform can be `known:true` (and so pass {@link KNOWN_PLATFORMS}) yet have
+ * no dispatch path wired — only claude and codex have one today. Returning null
+ * for any other id lets {@link executeRun} error explicitly instead of silently
+ * dispatching it as claude with the wrong agent directory. Keep this in lockstep
+ * with the registry's `known` flags: a platform should not be `known:true`
+ * without a branch here.
+ *
+ * @param platform - The resolved, allowlisted platform id
+ * @returns The dispatcher kind, or null when no dispatcher is wired
+ */
+export function resolveDispatchKind(platform: string): 'claude' | 'codex' | null {
+  if (platform === 'claude') return 'claude';
+  if (platform === 'codex') return 'codex';
+  return null;
 }
 
 /**

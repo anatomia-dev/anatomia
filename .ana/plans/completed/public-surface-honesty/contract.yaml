@@ -1,0 +1,64 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "Public-surface honesty touch-ups"
+
+# Only Fix 2 (the website copy chip) is mechanically assertable — and it is the
+# over-edit-prone fix the scope flags as the #1 risk, so it is the one we pin with
+# a guard test. Fix 1 (dogfood context file), Fix 3 (docs prose), and AC5 (clean
+# build) are human/Verify judgment or a build-gate concern and carry stated waivers.
+assertions:
+  - id: A001
+    ac: AC2
+    says: "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict"
+    block: "ana-verify chip role reads 'isolated · fault-finds'"
+    target: "copy.bento.agents.chips[name=ana-verify].role"
+    matcher: "equals"
+    value: "isolated · fault-finds"
+
+  - id: A002
+    ac: AC2
+    says: "The 'Mechanical, not vibes' section title is left unchanged"
+    block: "diff section title is unchanged"
+    target: "copy.bento.diff.title"
+    matcher: "equals"
+    value: "Mechanical, not vibes."
+
+  - id: A003
+    ac: AC2
+    says: "The 'No LLM grades its own code' line is left unchanged"
+    block: "diff section body retains the no-self-grading line"
+    target: "copy.bento.diff.body"
+    matcher: "contains"
+    value: "No LLM grades its own code."
+
+  - id: A004
+    ac: AC2
+    says: "The manifesto's 'you read the chain' line is left unchanged"
+    block: "manifesto pull quote is unchanged"
+    target: "copy.manifesto.pull"
+    matcher: "contains"
+    value: "You don"
+
+coverage_waivers:
+  - ac: AC1
+    kind: judgment
+    reason: "The CI-matrix correction lives in .ana/context/project-context.md, a dogfood context file (not a shipped, website-testable surface). Accuracy is verified by reading it against .github/workflows/test.yml and vitest.config.ts — Verify's judgment, not a runtime assertion."
+  - ac: AC3
+    kind: judgment
+    reason: "Docs-section accuracy to shipped code is prose judgment. A keyword check would prove a word is present, not that the explanation is correct; Verify reads the new section against contract.ts, artifact-validators.ts, and plan.ts."
+  - ac: AC4
+    kind: judgment
+    reason: "The honesty-bound statement is a prose claim about what coverage does and does not prove. Its presence and correctness are human/Verify judgment, not mechanically assertable."
+  - ac: AC5
+    kind: judgment
+    reason: "Clean build plus no out-of-scope edits is verified by the website check gate (lint + typecheck + build) Verify runs, plus diff review — a build/process gate, not a unit assertion."
+
+file_changes:
+  - path: ".ana/context/project-context.md"
+    action: modify
+  - path: "website/lib/copy.ts"
+    action: modify
+  - path: "website/content/docs/concepts/contract.mdx"
+    action: modify
+  - path: "website/lib/__tests__/copy.test.ts"
+    action: modify

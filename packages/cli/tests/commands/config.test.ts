@@ -93,6 +93,23 @@ describe('ana config', () => {
     return errorSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
   }
 
+  describe('config schema (configurable surface)', () => {
+    it('lists the wired ana.json fields and NOT the cut surfaces', async () => {
+      const program = await createProgram();
+      await runCommand(program, ['config', 'schema']);
+      const out = getOutput();
+      // Wired, advertised config keys:
+      expect(out).toContain('agents.<name>.skills');
+      expect(out).toContain('skills.<name>.always');
+      // Cut surfaces must NOT be advertised as configurable (regression guard:
+      // these were removed as inert/half-baked; re-adding a row here fails this).
+      expect(out).not.toContain('capabilities');
+      expect(out).not.toContain('platformDefaults');
+      expect(out).not.toContain('agents.<name>.model');
+      expect(out).not.toContain('agents.<name>.enabled');
+    });
+  });
+
   describe('display all', () => {
     it('displays all ana.json fields', async () => {
       await writeConfig(TEST_CONFIG);

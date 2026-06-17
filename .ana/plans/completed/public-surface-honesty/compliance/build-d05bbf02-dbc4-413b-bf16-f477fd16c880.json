@@ -1,0 +1,88 @@
+{
+  "role": "build",
+  "harness": "claude",
+  "session_id": "d05bbf02-dbc4-413b-bf16-f477fd16c880",
+  "captured_at": "2026-06-17T06:01:07.215Z",
+  "anatrace_core_version": "0.4.0",
+  "framework": "anatomia",
+  "mandate_hash": "sha256:76f18626e6c81c8f94d9dfad3bdbb4bc1935ac01b5af3979234eb6f3c492cd94",
+  "transcript_hash": "sha256:f88a7e2416521701ce8f68c516680d286f7b56648fb4657db621becdc7099fe6",
+  "coverage": {
+    "total": 10,
+    "fully_checked": 2,
+    "unverifiable": 8
+  },
+  "complete": false,
+  "verdicts": [
+    {
+      "claim_id": "ana-build:skill:git-workflow",
+      "says": "ana-build must load the git-workflow skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-build:verify-independence",
+      "says": "ana-build never reads the build report",
+      "status": "violated",
+      "reason": "predicate-not-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:.ana/context/project-context.md",
+      "says": "edits stay within .ana/context/project-context.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/copy.ts",
+      "says": "edits stay within website/lib/copy.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/content/docs/concepts/contract.mdx",
+      "says": "edits stay within website/content/docs/concepts/contract.mdx",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/__tests__/copy.test.ts",
+      "says": "edits stay within website/lib/__tests__/copy.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A001",
+      "says": "The verifier chip describes Verify as fault-finding, not as a machine that computes the verdict",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A002",
+      "says": "The 'Mechanical, not vibes' section title is left unchanged",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A003",
+      "says": "The 'No LLM grades its own code' line is left unchanged",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A004",
+      "says": "The manifesto's 'you read the chain' line is left unchanged",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    }
+  ]
+}

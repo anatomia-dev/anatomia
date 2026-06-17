@@ -1,0 +1,22 @@
+schema: 1
+concerns:
+  - summary: "captureComplianceAtSave outer try-catch is not separately unit-triggered; only early-return no-record paths are tested (no external input reliably forces a mid-pipeline core throw)"
+    file: "packages/cli/src/utils/compliance.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "parseSession never returns null for in-band garbage — the 'malformed transcript → no record' path is exercised via an unreadable (dangling) transcript, not corrupt bytes; corrupt-but-readable transcripts still produce a record"
+    file: "packages/cli/src/utils/compliance.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "artifact.ts provenancePaths list now holds both compliance and provenance file paths; behavior is correct but the variable name reads narrower than its contents"
+    file: "packages/cli/src/commands/artifact.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing flaky test (not introduced by this build): tests/commands/init/template-propagation.test.ts times out at 5s under full-suite load, passes 21/21 in isolation"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "anatomiaAdapter does not emit subject.delegates:'include' claims from current Anatomia agent-defs; the A014 delegate-inclusive soundness test augments a real adapter claim's subject (documented deviation). If agent-defs gain delegate-inclusive phrasing the test should switch to native adapter output"
+    file: "packages/cli/tests/utils/compliance-context.test.ts"
+    severity: observation
+    suggested_action: acknowledge

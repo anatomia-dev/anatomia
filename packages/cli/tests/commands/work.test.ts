@@ -1457,6 +1457,7 @@ describe('ana work status', () => {
             derived: {
               tokens: { input: 1000, output: 100, cache_create: 0, cache_read: 0 },
               price_table_version: '2026-06-01',
+              derive_version: '3',
               duration_ms: 1000,
               turns: 1,
               tool_calls: 1,

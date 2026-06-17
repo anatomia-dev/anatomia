@@ -796,6 +796,64 @@ describe('ana proof', () => {
     });
   });
 
+  /**
+   * Entry carrying the Phase 2 coverage + PARTIAL fields (AC7, AC12).
+   */
+  const coverageEntry = {
+    ...sampleEntry,
+    slug: 'coverage-feature',
+    feature: 'Coverage Feature',
+    acceptance_criteria: {
+      total: 6,
+      met: 6,
+      partial: 2,
+      coverage: { pinned: 4, judgment: 1, retired: 1, uncovered: 0, weak_only: 0 },
+    },
+  };
+
+  // @ana A027
+  describe('displays AC coverage breakdown (AC7)', () => {
+    it('renders the AC coverage line distinguishing pinned/judgment/retired', async () => {
+      await createProofChain([coverageEntry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['coverage-feature']);
+      expect(stdout).toContain('AC coverage:');
+      expect(stdout).toContain('4 pinned');
+      expect(stdout).toContain('1 judgment-only');
+      expect(stdout).toContain('1 retired');
+    });
+
+    it('omits the coverage line for legacy entries without coverage data', async () => {
+      // sampleEntry has acceptance_criteria { total, met } only — undefined-safe.
+      await createProofChain([sampleEntry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['stripe-payments']);
+      expect(stdout).not.toContain('AC coverage:');
+    });
+  });
+
+  // @ana A024
+  describe('surfaces PARTIAL-inside-PASS (AC12)', () => {
+    it('renders the PARTIAL count when partial > 0', async () => {
+      await createProofChain([coverageEntry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['coverage-feature']);
+      expect(stdout).toContain('PARTIAL');
+      expect(stdout).toMatch(/2 acceptance criteria shipped PARTIAL/);
+    });
+
+    it('omits the PARTIAL line for legacy entries (undefined-safe)', async () => {
+      await createProofChain([sampleEntry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['stripe-payments']);
+      expect(stdout).not.toContain('shipped PARTIAL');
+    });
+  });
+
   // @ana A005, A006, A007
   describe('displays assertions with status icons', () => {
     it('shows checkmark for satisfied assertions', async () => {
@@ -5092,6 +5150,7 @@ describe('ana proof', () => {
         derived: {
           tokens: { input: 1400, output: 6200, cache_create: 0, cache_read: 0 },
           price_table_version: '2026-06-01',
+          derive_version: '3',
           duration_ms: 1000,
           turns: 31,
           tool_calls: 58,

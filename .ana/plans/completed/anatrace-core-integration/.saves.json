@@ -1,0 +1,221 @@
+{
+  "work_started_at": "2026-06-13T20:44:40.277Z",
+  "work_agent": "ana",
+  "scope": {
+    "saved_at": "2026-06-13T21:18:18.375Z",
+    "hash": "sha256:e52c193b8c21ef19bf9cd30d141c8739e086303eaa92888d19d9ff8fc916b2bb",
+    "history": [
+      {
+        "saved_at": "2026-06-13T21:06:19.183Z",
+        "hash": "sha256:1d2f5d32ba92911889b2db397a93a117de9e1f8351c60a4957c8a5d1f51aaf66"
+      }
+    ]
+  },
+  "plan_started_at": "2026-06-13T21:23:08.170Z",
+  "plan_agent": "ana-plan",
+  "contract": {
+    "saved_at": "2026-06-13T21:46:20.847Z",
+    "hash": "sha256:59f34b384715784b106096d04f61bbc891730e7c3c21ea3212ecc041baa263a4"
+  },
+  "plan": {
+    "saved_at": "2026-06-13T21:59:48.253Z",
+    "hash": "sha256:f37f61b5a1682acf5fcdd2217ae83e2ab1cb1de0ef50e04f2014b1541ed17ed0",
+    "history": [
+      {
+        "saved_at": "2026-06-13T21:46:20.848Z",
+        "hash": "sha256:3527cb3acb4cbe91ae46a7d756c24f73acd792b41f3695ed9c53f8ca64182330"
+      }
+    ]
+  },
+  "spec-1": {
+    "saved_at": "2026-06-13T21:46:20.848Z",
+    "hash": "sha256:62b72a2bb2d9737cfc979719583631a4b8fc0e5ba8438014349feaa90745f37f"
+  },
+  "spec-2": {
+    "saved_at": "2026-06-13T21:59:48.255Z",
+    "hash": "sha256:385d24894d461056c1b53db8ff5d543edbd2c89663286374ea867585f1033578",
+    "history": [
+      {
+        "saved_at": "2026-06-13T21:46:20.848Z",
+        "hash": "sha256:85aaf1268ed98ed7ec82125c34275c91f37c2d7b12117903245f00405ba1618f"
+      }
+    ]
+  },
+  "spec-3": {
+    "saved_at": "2026-06-13T21:46:20.848Z",
+    "hash": "sha256:1903173ce13f84f58f5d47d4c9c69b64add5ec343785b513250ec145f288e98b"
+  },
+  "build_started_at": "2026-06-13T22:18:53.922Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-13T23:01:00.205Z",
+    "hash": "sha256:a5e3830f27fe9c6412d116e6123c0f7c029bdc809a94583e1464577fd06532ca"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-13T23:01:00.206Z",
+    "hash": "sha256:ce5198342dce12495e8426f72d2e25f6feb51eed301863bbf5f07ef17e3659c1"
+  },
+  "modules_touched": [
+    "packages/cli/package.json",
+    "packages/cli/src/commands/artifact.ts",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/commands/run.ts",
+    "packages/cli/src/commands/work-proof.ts",
+    "packages/cli/src/data/pricing.ts",
+    "packages/cli/src/types/proof.ts",
+    "packages/cli/src/utils/compliance-context.ts",
+    "packages/cli/src/utils/compliance.ts",
+    "packages/cli/src/utils/forensics.ts",
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap",
+    "packages/cli/tests/commands/_capture.test.ts",
+    "packages/cli/tests/commands/proof-card-golden.test.ts",
+    "packages/cli/tests/commands/proof-compliance-display.test.ts",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/commands/run.test.ts",
+    "packages/cli/tests/commands/work-merge.test.ts",
+    "packages/cli/tests/commands/work-proof-process.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/data/pricing.test.ts",
+    "packages/cli/tests/utils/compliance-context.test.ts",
+    "packages/cli/tests/utils/compliance.test.ts",
+    "packages/cli/tests/utils/forensics-derive.test.ts",
+    "packages/cli/tests/utils/forensics.test.ts",
+    "pnpm-lock.yaml"
+  ],
+  "module_churn": {
+    "packages/cli/package.json": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/artifact.ts": {
+      "added": 36,
+      "deleted": 14
+    },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 110,
+      "deleted": 5
+    },
+    "packages/cli/src/commands/run.ts": {
+      "added": 12,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/work-proof.ts": {
+      "added": 19,
+      "deleted": 0
+    },
+    "packages/cli/src/data/pricing.ts": {
+      "added": 12,
+      "deleted": 98
+    },
+    "packages/cli/src/types/proof.ts": {
+      "added": 86,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/compliance-context.ts": {
+      "added": 99,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/compliance.ts": {
+      "added": 299,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/forensics.ts": {
+      "added": 72,
+      "deleted": 334
+    },
+    "packages/cli/tests/commands/__snapshots__/proof-card-golden.test.ts.snap": {
+      "added": 15,
+      "deleted": 15
+    },
+    "packages/cli/tests/commands/_capture.test.ts": {
+      "added": 25,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof-card-golden.test.ts": {
+      "added": 12,
+      "deleted": 5
+    },
+    "packages/cli/tests/commands/proof-compliance-display.test.ts": {
+      "added": 131,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/run.test.ts": {
+      "added": 7,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-merge.test.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work-proof-process.test.ts": {
+      "added": 42,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/data/pricing.test.ts": {
+      "added": 16,
+      "deleted": 9
+    },
+    "packages/cli/tests/utils/compliance-context.test.ts": {
+      "added": 241,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/compliance.test.ts": {
+      "added": 284,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/forensics-derive.test.ts": {
+      "added": 90,
+      "deleted": 34
+    },
+    "packages/cli/tests/utils/forensics.test.ts": {
+      "added": 25,
+      "deleted": 7
+    },
+    "pnpm-lock.yaml": {
+      "added": 11,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at_1": "2026-06-13T23:04:15.015Z",
+  "verify_agent_1": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:59f34b384715784b106096d04f61bbc891730e7c3c21ea3212ecc041baa263a4",
+    "run_at": "2026-06-14T00:00:05.826Z"
+  },
+  "verify-report-1": {
+    "saved_at": "2026-06-13T23:10:58.645Z",
+    "hash": "sha256:2468292d62463d969f5b85fc5017852dd512c0f62017c26b8437706749d3d133"
+  },
+  "verify-data-1": {
+    "saved_at": "2026-06-13T23:10:58.646Z",
+    "hash": "sha256:6f7ce7af07ef6f2694d0e17806554671516d0f232540fdfc4756598e194498bd"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-13T23:47:20.426Z",
+    "hash": "sha256:7cf9f05a2fe98ed9a4706137c8522e27697ceb9589ed5e3e673399699aeca7fa"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-13T23:47:20.427Z",
+    "hash": "sha256:252222dab95f83b716c7a932befb6f4dc901c2d68303cd694245c2f41e2a2ee6"
+  },
+  "verify_started_at_2": "2026-06-13T23:49:30.836Z",
+  "verify_agent_2": "ana-verify",
+  "verify-report-2": {
+    "saved_at": "2026-06-14T00:00:05.876Z",
+    "hash": "sha256:d1ac9654bb249a7ee9f1667ab837d0586e0a2fd7dd59e0609068996768942745"
+  },
+  "verify-data-2": {
+    "saved_at": "2026-06-14T00:00:05.876Z",
+    "hash": "sha256:3e19da5c10cb56fddb21e3343279446e02f84909226e65d93e5e81dc07a41a67"
+  }
+}

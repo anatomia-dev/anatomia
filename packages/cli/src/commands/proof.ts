@@ -22,8 +22,9 @@ import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { globSync } from 'glob';
-import type { ProofChainEntry, ProofChain } from '../types/proof.js';
-import { computeCost } from '../data/pricing.js';
+import type { ProofChainEntry, ProofChain, ComplianceAttestation } from '../types/proof.js';
+import type { ReadBuildReportVeto } from '../utils/verdict.js';
+import { computeCost, PRICES } from '../data/pricing.js';
 import { getSkillsDir, getSkillsDirRel } from './platform.js';
 import { findProjectRoot, validateSkillName } from '../utils/validators.js';
 import {
@@ -289,14 +290,17 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
   if (entry.process) {
     for (const s of entry.process.sessions) {
       if (!s.derived) continue;
-      const c = computeCost(s.derived.tokens, s.derived.model);
+      const c = computeCost(s.derived.tokens, s.derived.model, { priceTable: PRICES });
       if (c.priced) {
         provTotalCost += c.cost_usd;
         provPriced = true;
       } else {
         provUnpriced += 1;
       }
-      if (!provTableVersion) provTableVersion = s.derived.price_table_version;
+      // Source the displayed table version from the CostResult — the version the
+      // cost was actually computed against — never the per-record stamp (which
+      // could disagree once the shared table moves forward).
+      if (!provTableVersion) provTableVersion = c.price_table_version;
     }
   }
 
@@ -356,6 +360,23 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
   lines.push(
     `  ${countedLead}${ct.satisfied} satisfied · ${ct.unsatisfied} unsatisfied · ${ct.deviated} deviated`
   );
+  // AC coverage honesty (AC7) + PARTIAL surfacing (AC12). Both undefined-safe:
+  // old proof_chain.json entries predate these fields, so render nothing.
+  const ac = entry.acceptance_criteria;
+  const cov = ac?.coverage;
+  if (cov && cov.pinned + cov.judgment + cov.retired + cov.uncovered > 0) {
+    const segs = [`${cov.pinned} pinned`, `${cov.judgment} judgment-only`, `${cov.retired} retired`];
+    if (cov.uncovered > 0) segs.push(`${chalk.red(`${cov.uncovered} uncovered`)}`);
+    lines.push(`  AC coverage: ${segs.join(' · ')}`);
+    if (cov.weak_only > 0) {
+      lines.push(chalk.gray(`  ${cov.weak_only} AC covered by weak matcher only (info)`));
+    }
+  }
+  if (ac?.partial && ac.partial > 0) {
+    lines.push(
+      `  ${chalk.yellow('⚠')} ${ac.partial} acceptance criteri${ac.partial === 1 ? 'on' : 'a'} shipped PARTIAL`
+    );
+  }
   // Exceptional assertions render individually (the old standalone Deviations
   // section folds in here); passing assertions stay collapsed in the line above.
   for (const a of entry.assertions) {
@@ -461,7 +482,7 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     for (const s of p.sessions) {
       const d = s.derived;
       if (!d) continue;
-      const cost = computeCost(d.tokens, d.model);
+      const cost = computeCost(d.tokens, d.model, { priceTable: PRICES });
       // Unpriced model -> "n/a", never a misleading "$0.00".
       const costLabel = cost.priced ? `$${cost.cost_usd.toFixed(2)}` : 'n/a';
       rows.push([
@@ -530,9 +551,155 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
     }
   }
 
+  // ── Session Attestation (Phase 2; display-only) ──
+  // Records render as non-gating evidence; the verdict_veto status (Component 3)
+  // surfaces here too — even with no records, so "not applied — no captured
+  // transcript" is never silent. The veto itself was decided upstream at the seal.
+  if (entry.compliance?.length || entry.verdict_veto) {
+    lines.push(...renderSessionAttestation(entry.compliance ?? [], entry.slug, width, entry.verdict_veto));
+  }
+
   lines.push('');
 
   return lines.join('\n');
+}
+
+/**
+ * Abbreviate a `sha256:`-prefixed byte-identity hash for compact display.
+ *
+ * @param hash - The full `sha256:<hex>` hash (or any string)
+ * @returns A short `sha256:abcdef…` form, or `—` when absent
+ */
+function shortHash(hash: string): string {
+  if (!hash) return '—';
+  const m = hash.match(/^sha256:([0-9a-f]+)/);
+  if (m && m[1]) return `sha256:${m[1].slice(0, 6)}…`;
+  return hash.length > 12 ? `${hash.slice(0, 12)}…` : hash;
+}
+
+/**
+ * Render the Session Attestation section — the deterministic, coverage-aware
+ * behavioral verdicts for each captured agent transcript (Phase 2).
+ *
+ * Module-private (`learn-session-memory-C1`: do not over-export from proof.ts) and
+ * PRESENTATION ONLY — it reads the already-assembled, already-scrubbed records and
+ * the already-decided veto outcome, and mutates nothing. Behavioral verdicts are
+ * evidence EXCEPT the allowlisted `ana-verify:verify-independence` verdict, which
+ * gates the proof via the read-build-report veto (Component 3). That gate is
+ * computed entirely upstream at the seal; this function only RENDERS its outcome
+ * (applied / not applied, with the forward-only honesty boundary) — it never
+ * computes or changes PASS/FAIL. All other verdicts render as non-gating evidence.
+ *
+ * @param compliance - The committed behavioral records attached to the entry
+ * @param slug - The work-item slug (for the `--json` overflow hint)
+ * @param width - The card render width
+ * @param verdictVeto - The recorded read-build-report veto outcome (rendered even with no records)
+ * @returns The section lines (empty when there are neither records nor a veto outcome)
+ */
+function renderSessionAttestation(
+  compliance: ComplianceAttestation[],
+  slug: string,
+  width: number,
+  verdictVeto?: ReadBuildReportVeto,
+): string[] {
+  const lines: string[] = [];
+  if (compliance.length === 0 && !verdictVeto) return lines;
+  if (compliance.length === 0) {
+    // No transcript captured — still surface the veto status (AC4: never silent)
+    // and the forward-only honesty boundary, then stop.
+    lines.push(...renderVerdictVeto(verdictVeto));
+    return lines;
+  }
+
+  lines.push('');
+  const transcripts = `${compliance.length} transcript${compliance.length === 1 ? '' : 's'}`;
+  lines.push(sectionRule('Session Attestation', { width, rollup: chalk.gray(transcripts) }));
+
+  // Engine identity (shared across records — read off the first).
+  const first = compliance[0]!;
+  lines.push(
+    `  ${chalk.gray('core')} v${first.anatrace_core_version || '?'} · ${chalk.gray('framework')} ${first.framework || '?'}`,
+  );
+
+  const MAX_DETAIL = 3;
+  // Stable rework index per role (e.g. `build 2`), mirroring the Provenance section.
+  const roleSeen: Record<string, number> = {};
+  for (const rec of compliance) {
+    const n = (roleSeen[rec.role] = (roleSeen[rec.role] ?? 0) + 1);
+    const label = n > 1 ? `${rec.role} ${n}` : rec.role;
+
+    let satisfied = 0;
+    let violated = 0;
+    let unverifiable = 0;
+    for (const v of rec.verdicts) {
+      if (v.status === 'satisfied') satisfied += 1;
+      else if (v.status === 'violated') violated += 1;
+      else unverifiable += 1;
+    }
+    // A violated count renders red (a loud signal). Counts never gate; only the
+    // allowlisted verify-independence veto (rendered below) can force-FAIL.
+    const violatedLabel = violated > 0 ? chalk.red(`${violated} violated`) : `${violated} violated`;
+    lines.push(
+      `  ${label} · ${rec.coverage.total} claims   ${chalk.green('✓')} ${satisfied} satisfied · ${violatedLabel} · ${unverifiable} unverifiable`,
+    );
+    lines.push(
+      `        coverage ${rec.coverage.fully_checked}/${rec.coverage.total} checked · ${rec.coverage.unverifiable} unverifiable`,
+    );
+
+    // Compact (already-scrubbed) detail for the notable verdicts only.
+    const notable = rec.verdicts.filter((v) => v.status !== 'satisfied');
+    for (const v of notable.slice(0, MAX_DETAIL)) {
+      const glyph = v.status === 'violated' ? chalk.red('⚠') : chalk.yellow('⚠');
+      lines.push(`        ${glyph} ${v.claim_id}  ${v.status} (${v.reason})`);
+    }
+    if (notable.length > MAX_DETAIL) {
+      lines.push(`        ${notable.length - MAX_DETAIL} more — see \`ana proof ${slug} --json\``);
+    }
+
+    lines.push(
+      `        mandate ${shortHash(rec.mandate_hash)} · transcript ${shortHash(rec.transcript_hash)}`,
+    );
+    if (!rec.complete) {
+      lines.push(`        ${chalk.yellow('⚠')} incomplete coverage`);
+    }
+  }
+
+  const incomplete = compliance.filter((c) => !c.complete).length;
+  if (incomplete > 0) {
+    lines.push(
+      `  ${chalk.yellow('⚠')} ${incomplete} record${incomplete === 1 ? '' : 's'} ${incomplete === 1 ? 'has' : 'have'} incomplete coverage — verdicts are non-gating evidence (except the verify-independence veto below).`,
+    );
+  }
+
+  lines.push(...renderVerdictVeto(verdictVeto));
+  return lines;
+}
+
+/**
+ * Render the deterministic read-build-report veto status (Component 3).
+ *
+ * The veto is the ONE behavioral gate: a verify session that deterministically
+ * read `build_report.md` force-FAILs the proof. ALWAYS surfaces the outcome when
+ * one was recorded — `APPLIED` (the headline was overridden) or `not applied` with
+ * its stated reason (e.g. `no captured transcript`) so the absence of a veto is
+ * never a silent skip (AC4). Closes with the forward-only honesty boundary, once.
+ *
+ * @param verdictVeto - The recorded veto outcome, or undefined on pre-veto entries
+ * @returns The veto status lines (empty when no veto outcome was recorded)
+ */
+function renderVerdictVeto(verdictVeto?: ReadBuildReportVeto): string[] {
+  if (!verdictVeto) return [];
+  const lines: string[] = [];
+  if (verdictVeto.applied) {
+    lines.push(
+      `  ${chalk.red('⛔')} verdict veto: APPLIED — ${verdictVeto.reason ?? 'verify read build_report.md'} (forward-only)`,
+    );
+  } else {
+    lines.push(`  verdict veto: not applied — ${verdictVeto.reason ?? 'no captured transcript'}`);
+  }
+  // Forward-only honesty boundary — rendered once, whenever the veto was evaluated.
+  lines.push(`  ${chalk.gray('veto is forward-only; pre-veto verdicts were self-reported.')}`);
+  return lines;
 }
 
 /**
