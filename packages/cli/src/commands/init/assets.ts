@@ -233,7 +233,7 @@ async function mergeAndWriteGitignore(
  * @param cwd - Project root directory
  * @param engineResult - Engine result for skill seeding (null if skipped)
  * @param _initState - Installation state (unused — skills scaffolding moved to orchestrator)
- * @param anaJson - Parsed ana.json driving per-agent skill/model projection (absent = today; stock)
+ * @param anaJson - Parsed ana.json driving per-agent skill projection (absent = today; stock)
  * @returns Filenames whose instruction content changed (empty on a fresh install or no-op re-init)
  */
 export async function createClaudeConfiguration(cwd: string, engineResult: EngineResult | null, _initState: InitState, anaJson: unknown = {}): Promise<string[]> {
@@ -442,7 +442,7 @@ function buildCodexAgentToml(baseName: string): string {
 export async function copyAgentFiles(agentsPath: string, templatesDir: string, anaJson: unknown = {}): Promise<string[]> {
   const changed: string[] = [];
   // The roster is the fixed built-in set; ana.json only PROJECTS per-agent
-  // skills/model onto these (it does not add/remove agents).
+  // skills onto these (it does not add/remove agents).
   for (const baseName of resolveAgentRoster()) {
     const agentFile = `${baseName}.md`;
     const destPath = path.join(agentsPath, agentFile);

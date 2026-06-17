@@ -81,10 +81,9 @@ const SCHEMA_GROUPS: Array<{ title: string; rows: SchemaRow[] }> = [
     ],
   },
   {
-    title: 'Agents — per-agent overrides (projected into Claude + Codex)',
+    title: 'Agents — per-agent skills projected into Claude + Codex',
     rows: [
       { field: 'agents.<name>.skills', desc: 'Skills projected onto an agent (array of strings)', example: 'ana agents skills ana-build git-workflow,api-patterns' },
-      { field: 'agents.<name>.model', desc: "Per-agent model override (e.g. 'opus')", example: 'ana agents model ana-build opus' },
     ],
   },
   {
@@ -436,8 +435,8 @@ export function registerConfigCommand(program: Command): void {
         '  ana config schema          list the configurable surface + examples',
         '',
         'Configurable beyond the basics (run `ana config schema` for the full map):',
-        '  agents.<name>.skills / .model              per-agent, projected into',
-        '                                             Claude AND Codex in lockstep',
+        '  agents.<name>.skills                       per-agent skills, projected',
+        '                                             into Claude AND Codex in lockstep',
         '  skills.<name>.always                       always-on custom skills',
         '',
         'Absent configurability keys = built-in defaults (deleting a key restores stock).',

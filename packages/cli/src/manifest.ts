@@ -25,7 +25,6 @@ import { computeSkillManifest, CORE_SKILLS, AGENT_FILES } from './constants.js';
 /** Per-agent config block as it appears under `ana.json.agents.<name>`. */
 interface AgentConfigEntry {
   skills?: string[];
-  model?: string;
 }
 
 /** Single skill config block under `ana.json.skills.<name>`. */
@@ -50,15 +49,14 @@ function asRecord(value: unknown): Record<string, unknown> | null {
  * True when `name` is safe to use verbatim as a single filesystem path
  * segment — letters, digits, `.`, `_`, `-`, and NOT `.`/`..` themselves.
  *
- * Config-supplied agent and skill names become directory/file paths during
- * init (`.ana/skills/<name>/SKILL.md`, `.claude/agents/<name>.md`). A name
- * containing a path separator — or a bare `.`/`..` (both pass the character
- * class, since `.` is allowed) — would escape the intended directory. The
- * same guard protects capability command names (assets.ts / configWarnings),
- * so this is the single source of truth all three name→path sites share, and
- * the agent/skill paths can no longer drift from the command path's rule.
+ * A config-declared skill name becomes a directory/file path during init
+ * (`.ana/skills/<name>/SKILL.md`). A name containing a path separator — or a
+ * bare `.`/`..` (both pass the character class, since `.` is allowed) — would
+ * escape the intended directory. Shared by {@link resolveSkillManifest} (the
+ * skill name→path site) and configWarnings (the agents/skills warning surface),
+ * so the guard is one source of truth and cannot drift between them.
  *
- * @param name - Candidate name from `ana.json` (agents/skills/commands key)
+ * @param name - Candidate name from `ana.json` (an agents/skills key)
  * @returns Whether the name is a safe, non-traversing path segment
  */
 export function isSafeNameSegment(name: string): boolean {
@@ -155,12 +153,11 @@ export function resolveSkillManifest(anaJson: unknown, engineResult: EngineResul
  *
  * The roster is ALWAYS the built-in {@link BUILTIN_AGENT_ROSTER} (the stock six).
  * `ana.json.agents` does NOT mutate the roster — it only PROJECTS per-agent
- * `skills`/`model` onto these built-ins ({@link resolveAgentSkills}). Adding or
- * disabling agents via config is intentionally NOT supported here: those paths
- * (custom agent templates under `.ana/agent-templates/`, `enabled:false` pruning)
- * are deferred until they can be built with full re-init durability and dispatch
- * consistency. Keeping the roster fixed makes "absent = today" trivially true and
- * removes the dispatch-suffix-collision and lost-template-on-re-init footguns.
+ * `skills` onto these built-ins ({@link resolveAgentSkills}). Adding or disabling
+ * agents via config is intentionally NOT supported: keeping the roster fixed
+ * makes "absent = today" trivially true and removes the dispatch-suffix-collision
+ * and lost-template-on-re-init footguns. (Per-agent model is set directly on the
+ * agent file by `ana agents model`, not projected from ana.json.)
  *
  * @returns The built-in agent base names (e.g. ['ana', 'ana-plan', ...])
  */

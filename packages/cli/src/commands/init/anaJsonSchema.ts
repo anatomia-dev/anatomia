@@ -128,15 +128,15 @@ export const AnaJsonSchema = z
     // falls through to the built-in default rather than nuking the config
     // (the no-regression contract: degrade, never crash, never clobber).
 
-    // Per-agent overrides projected onto the built-in roster: `skills` and
-    // `model` flow into Claude frontmatter + Codex `.agent.toml` / `## Skills`.
+    // Per-agent `skills` projected onto the built-in roster — flows into Claude
+    // frontmatter + Codex `.agent.toml` / `## Skills`. (Per-agent model is set
+    // directly on the agent file by `ana agents model`, not via ana.json.)
     agents: z
       .record(
         z.string(),
         z
           .object({
             skills: z.array(z.string()).optional().catch(undefined),
-            model: z.string().optional().catch(undefined),
           })
           .passthrough()
           .catch({}),

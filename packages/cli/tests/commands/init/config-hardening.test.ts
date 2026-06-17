@@ -2,7 +2,7 @@
  * Ultimate-configurability — comprehensive hardening suite.
  *
  * The per-slice suites pin each slice's own behavior (manifest.test.ts,
- * platforms/registry.test.ts, assets-agent-skills/-roster/-managed-blocks,
+ * platforms/registry.test.ts, assets-agent-skills/-managed-blocks,
  * skills-custom). This file closes the CROSS-CUTTING acceptance criteria that
  * span more than one slice and live in no single slice's home — the
  * no-regression contract the spec demands be "bulletproof":
@@ -91,9 +91,9 @@ describe('re-init: the configurability fields survive preserveUserState untouche
     return JSON.parse(await fs.readFile(path.join(tmpAnaPath, 'ana.json'), 'utf-8'));
   }
 
-  it('preserves a full agents block (skills + model) verbatim across re-init', async () => {
+  it('preserves a full agents (skills) block verbatim across re-init', async () => {
     const agents = {
-      'ana-build': { skills: ['git-workflow', 'api-patterns'], model: 'opus' },
+      'ana-build': { skills: ['git-workflow', 'api-patterns'] },
       'ana-release': { skills: ['git-workflow'] },
     };
     const result = await reinit({ name: 'test', agents });
@@ -134,7 +134,7 @@ describe('re-init: the configurability fields survive preserveUserState untouche
     expect(result['lastScanAt']).toBe('2026-06-13T00:00:00Z');
   });
 
-  it('absent = today: a config with none of the four gains none of them on re-init', async () => {
+  it('absent = today: a config with none of them gains none on re-init', async () => {
     const result = await reinit({ name: 'test', artifactBranch: 'main' });
     for (const field of NEW_CONFIG_FIELDS) {
       expect(field in result).toBe(false);
@@ -157,10 +157,10 @@ describe('re-init: the configurability fields survive preserveUserState untouche
 });
 
 // ───────────────────────────────────────────────────────────────────────────
-// 2. config set does not warn on the four new fields (KNOWN_FIELDS derivation)
+// 2. config set does not warn on the new fields (KNOWN_FIELDS derivation)
 // ───────────────────────────────────────────────────────────────────────────
 
-describe('config set — the four configurability fields are known (no unknown-field warning)', () => {
+describe('config set — the configurability fields are known (no unknown-field warning)', () => {
   let tmpDir: string;
   let originalCwd: string;
   let logSpy: ReturnType<typeof vi.spyOn>;
@@ -235,7 +235,7 @@ describe('config set — the four configurability fields are known (no unknown-f
 });
 
 // ───────────────────────────────────────────────────────────────────────────
-// 3. Schema posture: absent = undefined, per-element degrade (all four fields)
+// 3. Schema posture: absent = undefined, per-element degrade
 // ───────────────────────────────────────────────────────────────────────────
 
 describe('AnaJsonSchema — configurability fields: absent stays undefined, NO default', () => {
@@ -251,7 +251,7 @@ describe('AnaJsonSchema — configurability fields: absent stays undefined, NO d
 
   it('a valid agents block round-trips through the schema unchanged', () => {
     const agents = {
-      'ana-build': { skills: ['git-workflow', 'api-patterns'], model: 'opus' },
+      'ana-build': { skills: ['git-workflow', 'api-patterns'] },
     };
     expect(AnaJsonSchema.parse({ name: 'x', agents }).agents).toEqual(agents);
   });

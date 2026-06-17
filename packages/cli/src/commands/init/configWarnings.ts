@@ -15,9 +15,8 @@
  *   Warning: agents.ana-build.skills must be an array of strings — ignoring
  *   (using stock). Got: "notanarray"
  *
- * Kept separate from the resolvers (manifest.ts) and the capability readers
- * (assets.ts) so the validation surface is one auditable list, and so the
- * resolvers stay pure (no logging side effects).
+ * Kept separate from the resolvers (manifest.ts) so the validation surface is
+ * one auditable list, and so the resolvers stay pure (no logging side effects).
  */
 
 import { isSafeNameSegment } from '../../manifest.js';
@@ -80,7 +79,7 @@ export function collectConfigWarnings(raw: unknown): string[] {
         const e = asRecord(entry);
         if (!e) {
           warnings.push(
-            `agents.${name} must be an object (e.g. { "skills": [...], "model": "opus" }) `
+            `agents.${name} must be an object (e.g. { "skills": [...] }) `
             + `— ignoring. Got: ${describe(entry)}`,
           );
           continue;
@@ -89,11 +88,6 @@ export function collectConfigWarnings(raw: unknown): string[] {
           warnings.push(
             `agents.${name}.skills must be an array of strings — ignoring (using stock). `
             + `Got: ${describe(e['skills'])}`,
-          );
-        }
-        if (e['model'] !== undefined && typeof e['model'] !== 'string') {
-          warnings.push(
-            `agents.${name}.model must be a string — ignoring. Got: ${describe(e['model'])}`,
           );
         }
       }
