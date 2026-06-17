@@ -125,7 +125,7 @@ describe('compliance producer + reader', () => {
     return JSON.parse(fs.readFileSync(p, 'utf-8')) as ComplianceAttestation;
   }
 
-  // @ana A019, A020, A021
+  // @ana A019, A020, A021, A010, A011 (A010 verdicts>0 line 154; A011 coverage.total>0 line 149)
   it('writes a compact record keyed {role}-{session_id} with version, hashes, coverage, framework', () => {
     writeAnaJson('on');
     installAgentDef('verify');
@@ -256,6 +256,74 @@ describe('compliance producer + reader', () => {
     expect(rec.complete).toBe(false);
   });
 
+  // ── AC1: the anatrace-core load guard — loud on absence, quiet on benign skip ──
+  describe('anatrace-core load guard (AC1)', () => {
+    // @ana A001, A002, A003
+    it('abstains LOUDLY without throwing when anatrace-core is unresolvable', () => {
+      writeAnaJson('on');
+      installAgentDef('verify');
+      writeContract('feat');
+
+      const transcript = writeClaudeTranscript('sess-noengine.jsonl');
+      writePendingPointer('run-noengine', {
+        session_id: 'sess-noengine', transcript_path: transcript, model: 'claude-opus-4-6',
+        source: 'startup', captured_at: '2026-06-07T22:00:00.000Z',
+      });
+
+      const warnings: string[] = [];
+      const original = console.warn;
+      console.warn = (...args: unknown[]): void => { warnings.push(args.join(' ')); };
+      let result: string | null = 'unset';
+      try {
+        // A002: a missing engine must never throw out of the save path. Inject an
+        // absent engine via deps.loadCore (never by uninstalling core).
+        expect(() => {
+          result = captureComplianceAtSave(
+            projectDir, 'feat',
+            env({ ANA_RUN_ID: 'run-noengine', ANA_CAPTURE_BOUNDARY: 'root' }),
+            { loadCore: () => null },
+          );
+        }).not.toThrow();
+      } finally {
+        console.warn = original;
+      }
+      // A001: abstained (returns null) rather than crashing.
+      expect(result).toBeNull();
+      // A003: exactly one loud, visible warning naming the unresolvable engine.
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain('anatrace-core not resolvable');
+      // No record written.
+      const dir = path.join(projectDir, '.ana', 'plans', 'active', 'feat', 'compliance');
+      expect(fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')) : []).toEqual([]);
+    });
+
+    // @ana A004
+    it('stays QUIET on a benign abstain (no role) even when the engine is absent', () => {
+      writeAnaJson('on');
+      installAgentDef('verify');
+      writeContract('feat');
+
+      const warnings: string[] = [];
+      const original = console.warn;
+      console.warn = (...args: unknown[]): void => { warnings.push(args.join(' ')); };
+      let result: string | null = 'unset';
+      try {
+        // No ANA_ROLE → the benign role guard returns BEFORE loadCore runs, so the
+        // missing-engine warning is never reached: a benign skip is not a false alarm.
+        result = captureComplianceAtSave(
+          projectDir, 'feat',
+          env({ ANA_ROLE: undefined, ANA_RUN_ID: 'run-benign', ANA_CAPTURE_BOUNDARY: 'root' }),
+          { loadCore: () => null },
+        );
+      } finally {
+        console.warn = original;
+      }
+      // A004: benign skip → null AND zero warnings (the guard was never reached).
+      expect(result).toBeNull();
+      expect(warnings).toHaveLength(0);
+    });
+  });
+
   // ── anatrace-core 0.4.0: reason lock (AC2), fail-closed emit (AC3), real engine (AC4) ──
   describe('0.4.0 reason lock + fail-closed emit + real-engine assertions', () => {
     /**
@@ -347,7 +415,7 @@ describe('compliance producer + reader', () => {
       expect(projected[0]!.source).toBeUndefined();
     });
 
-    // @ana A050, A051
+    // @ana A005, A006 (current contract; was A050/A051 in the prior cycle's contract)
     it('ABSTAINS (returns null, writes no record) when the core version is empty', () => {
       writeAnaJson('on');
       installAgentDef('verify');
@@ -358,20 +426,35 @@ describe('compliance producer + reader', () => {
         session_id: 'sess-empty', transcript_path: transcript, model: 'claude-opus-4-6',
         source: 'startup', captured_at: '2026-06-07T22:00:00.000Z',
       });
-      const result = captureComplianceAtSave(
-        projectDir, 'feat',
-        env({ ANA_RUN_ID: 'run-empty', ANA_CAPTURE_BOUNDARY: 'root' }),
-        { readCoreVersion: () => '' },
-      );
-      // A050: abstained.
+
+      // NON-VACUITY PIN (post-reorder): only readCoreVersion is overridden — loadCore
+      // is NOT, so the REAL engine loads and passes the loud guard. Capturing warn lets
+      // us assert the abstain happens at the VERSION guard (silent), not the loadCore
+      // guard (loud): zero "not resolvable" warnings proves we reached the version path.
+      const warnings: string[] = [];
+      const original = console.warn;
+      console.warn = (...args: unknown[]): void => { warnings.push(args.join(' ')); };
+      let result: string | null = 'unset';
+      try {
+        result = captureComplianceAtSave(
+          projectDir, 'feat',
+          env({ ANA_RUN_ID: 'run-empty', ANA_CAPTURE_BOUNDARY: 'root' }),
+          { readCoreVersion: () => '' },
+        );
+      } finally {
+        console.warn = original;
+      }
+      // A005: abstained.
       expect(result).toBeNull();
-      // A051: no `""`-version record landed on disk.
+      // Reached the version guard specifically — the loadCore (loud) guard did NOT fire.
+      expect(warnings.filter((w) => w.includes('not resolvable'))).toHaveLength(0);
+      // A006: no `""`-version record landed on disk.
       const dir = path.join(projectDir, '.ana', 'plans', 'active', 'feat', 'compliance');
       const records = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')) : [];
       expect(records).toHaveLength(0);
     });
 
-    // @ana A052, A054
+    // @ana A052, A054, A007, A008 (A008 version truthy; A007 version equals installed 0.4.0)
     it('stamps a non-empty version equal to the installed engine on a normal capture', () => {
       writeAnaJson('on');
       installAgentDef('verify');
@@ -385,7 +468,7 @@ describe('compliance producer + reader', () => {
       expect(rec.anatrace_core_version).toBe(installed);
     });
 
-    // @ana A053
+    // @ana A053, A010, A012 (A010 verdicts>0 line 395; A012 zero out-of-set reasons)
     it('emits zero out-of-set reasons under the real 0.4.0 engine', () => {
       writeAnaJson('on');
       installAgentDef('verify');
