@@ -68,6 +68,21 @@ A contract is what makes a verifier possible. Without it, "done" is opinion.
 
 Plan writes assertion A001. Build writes a test tagged `// @ana A001` whose describe/it text matches the assertion's `block` field. Verify checks that each assertion ID has a matching test tag and that the test passes independently. The `block` field is the bridge — it tells Build what the test should be named, and Verify uses it to locate the test.
 
+## Acceptance-criteria coverage
+
+A contract must account for every acceptance criterion in the scope. An assertion claims one with an `ac` field — `ac: "AC1"` or `ac: ["AC1", "AC2"]`. An AC that no assertion can mechanically pin is excused with a `coverage_waivers` entry: `ac`, `kind`, and `reason`, where `kind` is `judgment` (untestable by nature) or `retired` (deliberately dropped). `reason` is required for both.
+
+```yaml
+coverage_waivers:
+  - ac: AC4
+    kind: judgment
+    reason: "Error-message helpfulness is a human judgment, not mechanically testable."
+```
+
+At `ana artifact save`, a pre-seal coverage gate blocks the seal when a scope AC has neither a covering assertion nor a waiver. It runs only for contract version 1.1 or higher, on a scope whose criteria it can parse; legacy 1.0 contracts and unparseable scopes no-op, warning without blocking. `ana plan coverage <slug>` is the read-only, plan-time preview of the same join — run it while writing the contract.
+
+Coverage is a structural guarantee: a link exists. It does not prove the linked test actually exercises the AC — that remains a judgment for Verify.
+
 ## Writing good assertions
 
 Good assertions are specific, testable, and mechanical. "The code is well-structured" is not an assertion. "Slugs with shell injection characters are rejected before any operation" is. The `says` field is for humans; the `matcher`, `target`, and `value` are for machines. The `block` names the test.
