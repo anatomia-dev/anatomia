@@ -98,7 +98,7 @@ What's the real problem? "Add pagination" might really be "the API returns all r
 
 1. **Clarify intent** — what exactly, why, who benefits
 2. **Assess size** — how many files, new system or modification
-3. **Check proof chain** — run `ana proof context {files}` to surface relevant findings for the affected modules. If the scope touches hot modules, run `ana proof health` to check trajectory — a worsening trend changes what the scope should prioritize.
+3. **Check proof chain** — for any scope that touches existing code, running `ana proof context {files}` is **not optional**. Once you've identified the files this change will touch (from step 2's sizing — refine the query as exploration in step 4 surfaces more), run it on those files. It surfaces relevant findings for the affected modules and, under **Shaped by**, the verified work items that made each file the way it is — read that history as orientation on intent, *why this file is the way it is*, before you propose changing it. Drill a specific item with `ana proof <slug> --why` when its reasoning matters. If the scope touches hot modules, also run `ana proof health` to check trajectory — a worsening trend changes what the scope should prioritize.
 4. **Explore the codebase** — read relevant source files, understand what exists
 
 Find the **structural analog** — existing code with the same SHAPE, not the same topic. A status command is structurally similar to another status command, not to a health-check that shares vocabulary. Also identify the **functional analog** (same domain, different shape). Read both.
