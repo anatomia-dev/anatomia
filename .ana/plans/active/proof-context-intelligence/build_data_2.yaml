@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "ParsedFile.file schema comment says 'relative to project root' but parseProjectFiles emits absolute paths; graph wiring relies on the absolute value"
+    file: "packages/cli/src/engine/types/parsed.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "template-propagation.test.ts '.codex tree' case is flaky under full parallel load (passes in isolation and in the sealed run); pre-existing, in a touched module"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Pre-existing unused eslint-disable directive warning surfaces in repo-wide lint; not introduced by this build"
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge

@@ -16,6 +16,10 @@ import type { ChainHealth } from './proof-health.js';
 import { joinCoverage } from '../commands/artifact-validators.js';
 import { deriveVerdict } from './verdict.js';
 import type { ContractSchema } from '../types/contract.js';
+import { computeCoChange } from '../engine/analyzers/proof-history/index.js';
+import type { CoChangePartner } from '../engine/analyzers/proof-history/index.js';
+import { readCodeGraph } from '../engine/analyzers/graph/readGraph.js';
+import type { CodeGraph } from '../engine/analyzers/graph/buildGraph.js';
 
 // Re-export from proof-parsers for backward compatibility
 export { parseBuildOpenIssues, extractFileRefs, extractScopeSummary, extractScopeKind, parseFindings, parseRejectionCycles } from './proof-parsers.js';
@@ -1169,14 +1173,57 @@ export interface ProofContextResult {
   }>;
   touch_count: number;
   last_touched: string | null;
+  /**
+   * Verified work items that shaped this file, most-recent-first by
+   * `completed_at`. Optional and additive — absent when no proof chain entry
+   * touches the queried file, so the JSON shape for old callers is unaffected.
+   */
+  shaped_by?: Array<{
+    slug: string;
+    kind?: string;
+    completed_at: string;
+    scope_summary: string;
+  }>;
+  /**
+   * Files that change together with this one — the **Also changes with**
+   * section. Two layers in one structure:
+   *  - `proof_partners` — files co-touched across ≥2 verified work items,
+   *    each flagged `hidden`/`imports`/`unknown` against the import graph;
+   *  - `imported_by` / `imports` — the day-1 static import blast-radius from
+   *    `code-graph.json`, deduped against the proof partners (a partner that
+   *    is also an import edge appears once, as the proof row).
+   *
+   * Optional and additive (AC8): absent when there is neither proof co-change
+   * nor any import-graph relationship for the queried file, so the JSON shape
+   * for old callers is unaffected.
+   */
+  also_changes_with?: {
+    proof_partners: Array<{
+      file: string;
+      coTouchCount: number;
+      relation: 'hidden' | 'imports' | 'unknown';
+      slugs: string[];
+    }>;
+    /** Total surviving proof partners (the cap footer reports "top 3 of N"). */
+    proof_total: number;
+    /** Files that import the query (who breaks if I change this), deduped & sorted. */
+    imported_by: string[];
+    /** Files the query imports, deduped against proof partners & sorted. */
+    imports: string[];
+    /** True when a same-stem test partner was suppressed from the proof layer. */
+    suppressed_test_partner: boolean;
+  };
 }
 
 /**
  * Proof chain entry structure for getProofContext (minimal projection)
  */
 interface ProofChainEntryForContext {
+  slug?: string;
   feature: string;
   completed_at?: string;
+  kind?: string;
+  scope_summary?: string;
   modules_touched?: string[];
   findings?: Array<{
     id: string;
@@ -1209,11 +1256,14 @@ interface ProofChainEntryForContext {
  *
  * Path-boundary checks ('/' prefix) prevent false positives from partial names.
  *
+ * Exported so the proof co-change engine can reuse the exact same matcher
+ * (passed in as `FileMatcher`) rather than introducing a second one.
+ *
  * @param stored - File path from proof chain finding/concern
  * @param queried - File path from user query
  * @returns Whether the files match
  */
-function fileMatches(stored: string, queried: string): boolean {
+export function fileMatches(stored: string, queried: string): boolean {
   // Exact match
   if (stored === queried) return true;
 
@@ -1241,6 +1291,74 @@ function fileMatches(stored: string, queried: string): boolean {
 }
 
 /**
+ * Resolve a queried file to its node identity in the import graph.
+ *
+ * @param query - The queried file (basename, relative, or absolute).
+ * @param graph - The import graph.
+ * @returns The matching node path, or `null` when the query is off-graph.
+ */
+function resolveQueryNode(query: string, graph: CodeGraph): string | null {
+  if (graph.nodes.includes(query)) return query;
+  return graph.nodes.find((n) => fileMatches(n, query)) ?? null;
+}
+
+/**
+ * Build the optional `also_changes_with` structure for one queried file.
+ *
+ * Joins the proof co-change layer (`computeCoChange`) with the day-1 import
+ * blast-radius layer (the query's edges in the graph), deduping the import
+ * layer against the proof partners so a partner that is also an import edge
+ * appears once (as the proof row). Returns `undefined` when neither layer has
+ * any content, so the section is honestly absent (AC7) and old callers see no
+ * new field (AC8).
+ *
+ * @param entries - Parsed proof-chain entries.
+ * @param query - The queried file path.
+ * @param graph - The import graph, or `null` when none is available.
+ * @returns The assembled structure, or `undefined` when there is nothing to show.
+ */
+function assembleAlsoChangesWith(
+  entries: ProofChainEntryForContext[],
+  query: string,
+  graph: CodeGraph | null,
+): ProofContextResult['also_changes_with'] {
+  const co = computeCoChange(entries, query, graph, fileMatches);
+
+  // Day-1 import layer from the graph's edges for the query node.
+  let importedBy: string[] = [];
+  let imports: string[] = [];
+  if (graph) {
+    const queryNode = resolveQueryNode(query, graph);
+    if (queryNode) {
+      importedBy = Array.from(
+        new Set(graph.edges.filter((e) => e.to === queryNode).map((e) => e.from)),
+      ).sort();
+      imports = Array.from(
+        new Set(graph.edges.filter((e) => e.from === queryNode).map((e) => e.to)),
+      ).sort();
+    }
+  }
+
+  // Dedup: a file already shown as a proof partner is never repeated in the
+  // import layer (it renders once, as the flagged proof row).
+  const isProofPartner = (file: string): boolean =>
+    co.partners.some((p: CoChangePartner) => p.file === file || fileMatches(p.file, file));
+  importedBy = importedBy.filter((f) => !isProofPartner(f));
+  imports = imports.filter((f) => !isProofPartner(f));
+
+  const hasContent = co.partners.length > 0 || importedBy.length > 0 || imports.length > 0;
+  if (!hasContent) return undefined;
+
+  return {
+    proof_partners: co.partners,
+    proof_total: co.total,
+    imported_by: importedBy,
+    imports,
+    suppressed_test_partner: co.suppressedTestPartner,
+  };
+}
+
+/**
  * Query proof chain for context about specific files.
  *
  * Reads proof_chain.json, matches findings and build concerns against
@@ -1256,29 +1374,29 @@ function fileMatches(stored: string, queried: string): boolean {
 export function getProofContext(queries: string[], projectRoot: string, options?: { includeAll?: boolean }): ProofContextResult[] {
   const chainPath = path.join(projectRoot, '.ana', 'proof_chain.json');
 
-  if (!fs.existsSync(chainPath)) {
-    return queries.map(q => ({
-      query: q,
-      findings: [],
-      build_concerns: [],
-      touch_count: 0,
-      last_touched: null,
-    }));
-  }
+  // Read the import graph once (Phase 2 reader; `null` when absent). The day-1
+  // import blast-radius layer is available the moment `ana init` has run — even
+  // with no proof chain — so the graph is read regardless of chain presence,
+  // and the no-chain case no longer short-circuits (it can still surface the
+  // day-1 layer).
+  const graph = readCodeGraph(projectRoot);
 
   let entries: ProofChainEntryForContext[] = [];
-  try {
-    const content = fs.readFileSync(chainPath, 'utf-8');
-    const chain = JSON.parse(content);
-    entries = chain.entries ?? [];
-  } catch {
-    entries = [];
+  if (fs.existsSync(chainPath)) {
+    try {
+      const content = fs.readFileSync(chainPath, 'utf-8');
+      const chain = JSON.parse(content);
+      entries = chain.entries ?? [];
+    } catch {
+      entries = [];
+    }
   }
 
   return queries.map(query => {
     const matchedFindings: ProofContextResult['findings'] = [];
     const matchedConcerns: ProofContextResult['build_concerns'] = [];
     const touchDates: string[] = [];
+    const shapedBy: NonNullable<ProofContextResult['shaped_by']> = [];
 
     for (const entry of entries) {
       let entryTouches = false;
@@ -1327,10 +1445,28 @@ export function getProofContext(queries: string[], projectRoot: string, options?
       if (entryTouches && entryDate) {
         touchDates.push(entryDate);
       }
+
+      // A touching entry is a "shaper" of this file. Collect its intent so the
+      // command can answer "why is this file the way it is". Guard every
+      // optional read — legacy entries predate slug/kind/scope_summary.
+      if (entryTouches) {
+        const row: NonNullable<ProofContextResult['shaped_by']>[number] = {
+          slug: entry.slug ?? '',
+          completed_at: entryDate,
+          scope_summary: entry.scope_summary ?? '',
+        };
+        if (entry.kind !== undefined) row.kind = entry.kind;
+        shapedBy.push(row);
+      }
     }
 
     // Sort dates descending to find most recent
     touchDates.sort((a, b) => b.localeCompare(a));
+
+    // Rank shapers most-recent-first: recency answers "why is it like this now".
+    shapedBy.sort((a, b) => b.completed_at.localeCompare(a.completed_at));
+
+    const alsoChangesWith = assembleAlsoChangesWith(entries, query, graph);
 
     return {
       query,
@@ -1338,6 +1474,8 @@ export function getProofContext(queries: string[], projectRoot: string, options?
       build_concerns: matchedConcerns,
       touch_count: touchDates.length,
       last_touched: touchDates[0] ?? null,
+      ...(shapedBy.length > 0 ? { shaped_by: shapedBy } : {}),
+      ...(alsoChangesWith ? { also_changes_with: alsoChangesWith } : {}),
     };
   });
 }

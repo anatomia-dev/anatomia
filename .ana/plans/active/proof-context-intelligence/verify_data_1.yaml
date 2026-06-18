@@ -1,0 +1,25 @@
+schema: 1
+findings:
+  - category: upstream
+    summary: "Contract file_changes omits the repo-root dogfood agent copies (.claude/agents/*, .codex/agents/*) even though existing tests enforce byte-for-byte parity with templates; build correctly synced them but the contract under-specified the change surface"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A030", "A031", "A032", "A034"]
+  - category: test
+    summary: "A006 (--why omits Provenance) has no positive-control guard asserting the full card DOES contain 'Provenance'; only A007's Timing has that guard, so A006 could silently pass if the Provenance label were renamed. Live-verified this round, but the test alone is weaker than A007's"
+    file: "packages/cli/tests/commands/proof.test.ts"
+    line: 780
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A006"]
+  - category: code
+    summary: "--why flag is silently ignored when `ana proof` is invoked in list mode (no slug, no --last); harmless but the flag accepts input it does nothing with"
+    file: "packages/cli/src/commands/proof.ts"
+    line: 3137
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "proofSummary.ts (+32) and proof.ts (+113) continue growth past the comfort threshold flagged by prior findings (decompose-proof-summary-C1, audit-matrix-orientation-C7); additive and well-contained here but the trajectory persists"
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor

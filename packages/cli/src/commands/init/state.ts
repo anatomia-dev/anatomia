@@ -61,16 +61,24 @@ export async function confirm(message: string, defaultYes: boolean): Promise<boo
  * Graceful degradation: if analyzer fails, returns null (empty scaffolds created).
  *
  * @param rootPath - Project root directory
+ * @param persistGraphTo - Optional `.ana/state` staging directory to persist the
+ *   import graph (`code-graph.json`) into. Passed only by the init build (the
+ *   same staging dir `buildSymbolIndexSafe` writes into, so it survives the
+ *   atomic swap); omitted by callers that must not write a graph.
  * @returns EngineResult or null if failed
  */
 export async function runAnalyzer(
-  rootPath: string
+  rootPath: string,
+  persistGraphTo?: string
 ): Promise<EngineResult | null> {
   const spinner = ora('Analyzing project...').start();
 
   try {
     const { scanProject } = await import('../../engine/scan-engine.js');
-    const engineResult = await scanProject(rootPath, { depth: 'deep' });
+    const engineResult = await scanProject(
+      rootPath,
+      persistGraphTo ? { depth: 'deep', persistGraphTo } : { depth: 'deep' }
+    );
 
     // Spinner message depends on blind spot severity
     const hasAnalyzerBlindSpot = engineResult.blindSpots.some(bs => bs.area === 'Analyzer');

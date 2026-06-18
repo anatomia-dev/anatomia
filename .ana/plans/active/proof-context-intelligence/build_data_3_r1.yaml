@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "template-propagation 'Claude-only never creates .codex' test runs two ana init subprocesses under the 5s default timeout — at the edge (5014/5430ms) and tipped over by added parallel subprocess load. Fixed with a 30s budget; sibling multi-init tests may share the pattern."
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "Pre-existing unused eslint-disable directive warning in git-operations.ts:198 — not introduced by this build, surfaces on every lint run."
+    file: "packages/cli/src/utils/git-operations.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Day-1 import layer and hidden/imports relation flags depend on code-graph.json, which is written at ana init/scan and not committed — absent in this worktree, so live `ana proof context` shows all partners as unknown with no import layer. Correct fail-soft behaviour; graph paths are exercised by fixture-graph tests only."
+    severity: observation
+    suggested_action: monitor
+  - summary: "computeCoChange is recomputed per query inside getProofContext's map (touch counts walk all entries per query). Negligible for typical 1-3 file queries; O(files × entries) for a large multi-file query against a large chain."
+    file: "packages/cli/src/utils/proofSummary.ts"
+    severity: observation
+    suggested_action: monitor

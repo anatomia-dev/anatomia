@@ -1,0 +1,403 @@
+{
+  "role": "verify",
+  "harness": "claude",
+  "session_id": "d9f6bb2f-d473-4691-a3ad-8d3208e9ddbb",
+  "captured_at": "2026-06-18T19:31:14.142Z",
+  "anatrace_core_version": "0.4.0",
+  "framework": "anatomia",
+  "mandate_hash": "sha256:d57fe0ffd475325ce9d6dd310574b2aeda16d899f2c0cddc8b110c797e284739",
+  "transcript_hash": "sha256:04a0ba2d46170ac2ec5363e597559ca994a785722a57b711123fdf05da6df0c0",
+  "coverage": {
+    "total": 55,
+    "fully_checked": 4,
+    "unverifiable": 51
+  },
+  "complete": false,
+  "verdicts": [
+    {
+      "claim_id": "ana-verify:skill:testing-standards",
+      "says": "ana-verify must load the testing-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:skill:coding-standards",
+      "says": "ana-verify must load the coding-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:verify-independence",
+      "says": "ana-verify never reads the build report",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+      "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+      "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/utils/proofSummary.ts",
+      "says": "edits stay within packages/cli/src/utils/proofSummary.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/commands/proof.ts",
+      "says": "edits stay within packages/cli/src/commands/proof.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/templates/.claude/agents/ana.md",
+      "says": "edits stay within packages/cli/templates/.claude/agents/ana.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/templates/.claude/agents/ana-plan.md",
+      "says": "edits stay within packages/cli/templates/.claude/agents/ana-plan.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/templates/.claude/agents/ana-verify.md",
+      "says": "edits stay within packages/cli/templates/.claude/agents/ana-verify.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/templates/.codex/agents/ana.md",
+      "says": "edits stay within packages/cli/templates/.codex/agents/ana.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/templates/.codex/agents/ana-plan.md",
+      "says": "edits stay within packages/cli/templates/.codex/agents/ana-plan.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/templates/.codex/agents/ana-verify.md",
+      "says": "edits stay within packages/cli/templates/.codex/agents/ana-verify.md",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/engine/analyzers/graph/buildGraph.ts",
+      "says": "edits stay within packages/cli/src/engine/analyzers/graph/buildGraph.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/engine/analyzers/graph/readGraph.ts",
+      "says": "edits stay within packages/cli/src/engine/analyzers/graph/readGraph.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/engine/scan-engine.ts",
+      "says": "edits stay within packages/cli/src/engine/scan-engine.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/commands/init/state.ts",
+      "says": "edits stay within packages/cli/src/commands/init/state.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts",
+      "says": "edits stay within packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/engine/analyzers/graph/readGraph.test.ts",
+      "says": "edits stay within packages/cli/tests/engine/analyzers/graph/readGraph.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/src/engine/analyzers/proof-history/index.ts",
+      "says": "edits stay within packages/cli/src/engine/analyzers/proof-history/index.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/engine/analyzers/proof-history.test.ts",
+      "says": "edits stay within packages/cli/tests/engine/analyzers/proof-history.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A001",
+      "says": "Proof context tells you which verified work items shaped a file",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A002",
+      "says": "Each shaping work item carries its slug, kind, date, and intent",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A003",
+      "says": "The proof context output shows a 'Shaped by' section",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A004",
+      "says": "When more than three work items shaped a file, a drill-down hint points to the cheap detail view",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A005",
+      "says": "The --why view shows the work item's intent",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A006",
+      "says": "The --why view hides provenance noise like cost and token accounting",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A007",
+      "says": "The --why view hides timing breakdowns",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A008",
+      "says": "A long work-item intent is truncated, not dumped whole, in Shaped by",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A009",
+      "says": "Proof context lists other files that change together with this one",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A010",
+      "says": "The output shows an 'Also changes with' section",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A011",
+      "says": "When more co-change partners exist than are shown, a 'top N' footer says so",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A012",
+      "says": "With an import graph present, proof context shows who imports a file",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A013",
+      "says": "The import blast-radius layer renders even with no proof history",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A014",
+      "says": "A file's own test file is not listed as something that changes with it",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A015",
+      "says": "When a test partner is suppressed, the output says so in one line",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A016",
+      "says": "Each co-change partner is labelled by how it relates to the import graph",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A017",
+      "says": "With no import graph, a partner is honestly 'unknown', never guessed",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A018",
+      "says": "Querying with no import graph never crashes",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A019",
+      "says": "A file touched fewer than three times never appears as a co-change couple",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A020",
+      "says": "A co-change couple needs at least two shared work items to appear",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A021",
+      "says": "One giant refactor touching many files cannot manufacture co-change pairs by itself",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A022",
+      "says": "With no proof history, the 'Shaped by' section is absent, not faked",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A023",
+      "says": "With no history and no graph, 'Also changes with' is absent entirely",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A024",
+      "says": "Existing proof-context fields still work after the new ones are added",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A025",
+      "says": "The existing findings list is unchanged by the new sections",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A026",
+      "says": "A hot file with dozens of partners still shows only the top few",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A027",
+      "says": "A hot file's output stays a first-screen, with an overflow footer",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A028",
+      "says": "A fresh project install writes the import graph so blast-radius works day one",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A029",
+      "says": "Reading a missing import graph returns nothing instead of crashing",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A030",
+      "says": "The scoping agent is told to run proof context on the files a change touches",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A031",
+      "says": "The reviewer no longer treats proof history as an optional aside",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A032",
+      "says": "The reviewer is told to form findings independently of the shaped-by history",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A033",
+      "says": "The planner passes co-change partners into the Build Brief so the builder won't forget them",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A034",
+      "says": "The same guidance reaches Codex users, not just Claude users",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    }
+  ]
+}

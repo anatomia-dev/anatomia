@@ -441,6 +441,10 @@ Run `ana proof context {affected files}` for each file in the File Changes secti
 - Flag any finding whose `related_assertions` overlap with current contract assertions
 - If no active findings exist for affected files, state: "No active proof findings for affected files."
 
+The output's **Shaped by** section — the verified work items that shaped each file, most-recent-first — orients you on *intent history*: why a file is the way it is before you design changes to it. Drill a specific item with `ana proof <slug> --why` when its reasoning bears on your design. Treat it as orientation, not a constraint.
+
+The **Also changes with** section names each file's co-change partners — files historically touched alongside it across verified work items, plus its import blast radius. **Include these co-change partners for every affected file in the Build Brief** so Build inherits "don't forget B when you touch A" as blast-radius awareness — Build stays spec-only and never runs the command itself, so this is how that signal reaches it.
+
 This delivers institutional memory to Build — awareness of known issues that could inform implementation decisions.
 
 ### Checkpoint Commands

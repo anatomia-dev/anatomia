@@ -1,0 +1,39 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Pre-existing flaky test: template-propagation 'Claude-only never touches .codex tree' times out at ~5025ms under full-suite concurrency (passes 100% in isolation). Reproduced on main (failed 1/4 runs at 5025ms with no Phase 2 changes), so NOT a regression. Phase 2 adds import-graph build to every `ana init`, which may marginally raise the flake rate. Root cause: a single test spawns the real CLI `init` twice under the default 5000ms timeout. Fix: raise the timeout on these CLI-spawning init tests."
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    line: 308
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A028"]
+  - category: test
+    summary: "Spec-mandated `ana scan` byte-parity regression test is missing — no test asserts scanProject writes no code-graph.json when persistGraphTo is unset. The read-only contract is verified by source inspection only (guarded by `if (options.persistGraphTo)`)."
+    file: "packages/cli/src/engine/scan-engine.ts"
+    line: 875
+    severity: debt
+    suggested_action: scope
+  - category: test
+    summary: "New init integration test uses `git init` without `-b main`, violating the documented testing standard (CI runners vary init.defaultBranch — has caused CI failures 3 times). Mirrors the pre-existing flawed pattern in template-propagation.test.ts."
+    file: "packages/cli/tests/commands/init/code-graph-init.test.ts"
+    line: 45
+    severity: risk
+    suggested_action: scope
+  - category: code
+    summary: "Stale harvested JSDoc: CodeGraph.filesAnalyzed is a `number` count but its JSDoc reads 'Files whose imports were considered (the parse universe), sorted' — describes an array. Doc drifted from the field during the verbatim harvest."
+    file: "packages/cli/src/engine/analyzers/graph/buildGraph.ts"
+    line: 64
+    severity: observation
+    suggested_action: acknowledge
+  - category: code
+    summary: "Harvested-but-unused surface in Phase 2: CodeGraph.barrelFiles, generatedFiles, inDegree and the readCodeGraph reader have zero src consumers this phase. By design — spec frames Phase 2 as an inert artifact consumed in Phase 3, and instructed harvesting the full type verbatim. Sanctioned, not YAGNI; flagged so Phase 3 closes the loop."
+    file: "packages/cli/src/engine/analyzers/graph/readGraph.ts"
+    line: 35
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "Init ordering asymmetry: code-graph.json is written (runAnalyzer, index.ts:131) before createDirectoryStructure (134), while symbol-index.json is written after (138). Safe today because createDirectoryStructure uses idempotent recursive mkdir, but a latent footgun if that ever clears the staging state dir."
+    file: "packages/cli/src/commands/init/index.ts"
+    line: 131
+    severity: observation
+    suggested_action: monitor

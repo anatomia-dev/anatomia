@@ -125,7 +125,10 @@ export function registerInitCommand(program: Command): void {
       }
 
       const scanStart = Date.now();
-      const engineResult = await runAnalyzer(cwd);
+      // Persist the import graph into the staging `.ana/state` dir (the same
+      // dir buildSymbolIndexSafe writes into) so a fresh `ana init` produces
+      // `code-graph.json` and it survives the atomic swap below.
+      const engineResult = await runAnalyzer(cwd, path.join(tmpAnaPath, 'state'));
 
       ASTCache.setCacheDir(null);
       await createDirectoryStructure(tmpAnaPath);

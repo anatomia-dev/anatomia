@@ -2734,3 +2734,256 @@ describe('computeTiming with per-phase start keys', () => {
     expect(summary.timing.verify).toBe(22); // 8 + 14
   });
 });
+
+describe('getProofContext shaped_by', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'shaped-by-test-'));
+    await fs.promises.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  function writeChain(entries: unknown[]): void {
+    fs.writeFileSync(
+      path.join(tempDir, '.ana', 'proof_chain.json'),
+      JSON.stringify({ entries }, null, 2),
+    );
+  }
+
+  function entryTouching(over: Record<string, unknown>): Record<string, unknown> {
+    return {
+      slug: 'some-slug',
+      feature: 'Some Feature',
+      completed_at: '2026-05-01T10:00:00Z',
+      kind: 'feature',
+      scope_summary: 'Default intent text.',
+      findings: [
+        { id: 'f1', category: 'code', summary: 'finding', file: 'packages/cli/src/target.ts', anchor: null, status: 'active' },
+      ],
+      ...over,
+    };
+  }
+
+  // @ana A001, A002
+  it('produces a shaped_by row with slug, kind, completed_at, and scope_summary for a touching entry', () => {
+    writeChain([entryTouching({ slug: 'shaper-one', kind: 'fix', scope_summary: 'Intent for shaper one.' })]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.shaped_by).toBeDefined();
+    expect(results[0]!.shaped_by!.length).toBe(1);
+    const row = results[0]!.shaped_by![0]!;
+    expect(row.slug).toBe('shaper-one');
+    expect(row.kind).toBe('fix');
+    expect(row.completed_at).toBe('2026-05-01T10:00:00Z');
+    expect(row.scope_summary).toBe('Intent for shaper one.');
+  });
+
+  // @ana A001
+  it('orders shaped_by rows most-recent-first by completed_at', () => {
+    writeChain([
+      entryTouching({ slug: 'older', completed_at: '2026-01-01T00:00:00Z' }),
+      entryTouching({ slug: 'newest', completed_at: '2026-06-01T00:00:00Z' }),
+      entryTouching({ slug: 'middle', completed_at: '2026-03-01T00:00:00Z' }),
+    ]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.shaped_by!.map((s) => s.slug)).toEqual(['newest', 'middle', 'older']);
+  });
+
+  // @ana A022
+  it('omits shaped_by entirely when no proof chain entry touches the file', () => {
+    writeChain([entryTouching({})]);
+    const results = getProofContext(['packages/cli/src/untouched.ts'], tempDir);
+
+    expect(results[0]!.shaped_by).toBeUndefined();
+  });
+
+  it('omits shaped_by when there is no proof chain at all', () => {
+    // No chain file written.
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+    expect(results[0]!.shaped_by).toBeUndefined();
+  });
+
+  it('produces a shaped_by row for a legacy entry lacking scope_summary without crashing', () => {
+    const legacy = entryTouching({ slug: 'legacy' });
+    delete legacy['scope_summary'];
+    delete legacy['kind'];
+    writeChain([legacy]);
+
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+    expect(results[0]!.shaped_by!.length).toBe(1);
+    expect(results[0]!.shaped_by![0]!.scope_summary).toBe('');
+    expect(results[0]!.shaped_by![0]!.kind).toBeUndefined();
+  });
+
+  // @ana A024, A025
+  it('leaves existing touch_count and findings fields intact alongside shaped_by', () => {
+    writeChain([entryTouching({ slug: 'shaper' })]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.touch_count).toBe(1);
+    expect(results[0]!.findings.length).toBe(1);
+    expect(results[0]!.shaped_by!.length).toBe(1);
+  });
+
+  it('treats a build-concern-only match as a shaper (no findings on the file)', () => {
+    const entry = entryTouching({
+      slug: 'concern-only',
+      findings: [],
+      build_concerns: [
+        { summary: 'a concern', file: 'packages/cli/src/target.ts' },
+      ],
+    });
+    writeChain([entry]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.findings.length).toBe(0);
+    expect(results[0]!.shaped_by!.length).toBe(1);
+    expect(results[0]!.shaped_by![0]!.slug).toBe('concern-only');
+  });
+});
+
+describe('getProofContext — also_changes_with (Phase 3)', () => {
+  let tempDir: string;
+  const QUERY = 'packages/cli/src/a.ts';
+  const PARTNER = 'packages/cli/src/b.ts';
+
+  beforeEach(async () => {
+    tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'also-changes-test-'));
+    await fs.promises.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  function writeChain(entries: unknown[]): void {
+    fs.writeFileSync(
+      path.join(tempDir, '.ana', 'proof_chain.json'),
+      JSON.stringify({ entries }, null, 2),
+    );
+  }
+
+  /** Write an import graph at .ana/state/code-graph.json. */
+  function writeGraph(nodes: string[], edges: Array<[string, string]>): void {
+    fs.mkdirSync(path.join(tempDir, '.ana', 'state'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tempDir, '.ana', 'state', 'code-graph.json'),
+      JSON.stringify({
+        generated: '2026-06-18T00:00:00Z',
+        nodes: [...nodes].sort(),
+        edges: edges.map(([from, to]) => ({ from, to, names: [] })),
+        filesAnalyzed: nodes.length,
+        unresolved: 0,
+        inDegree: {},
+        barrelFiles: [],
+        generatedFiles: [],
+      }),
+    );
+  }
+
+  /** A coupling of QUERY + PARTNER across three verified items (both gated). */
+  function coupledChain(): void {
+    writeChain([
+      { slug: 's1', feature: 'F1', modules_touched: [QUERY, PARTNER] },
+      { slug: 's2', feature: 'F2', modules_touched: [QUERY, PARTNER] },
+      { slug: 's3', feature: 'F3', modules_touched: [QUERY, PARTNER] },
+    ]);
+  }
+
+  // @ana A009
+  it('returns also_changes_with proof partners for a co-changed file', () => {
+    coupledChain();
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with).toBeDefined();
+    expect(results[0]!.also_changes_with!.proof_partners.map((p) => p.file)).toContain(PARTNER);
+  });
+
+  // @ana A020
+  it('reports a coTouchCount above the MIN_COTOUCH floor', () => {
+    coupledChain();
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with!.proof_partners[0]!.coTouchCount).toBeGreaterThan(1);
+  });
+
+  // @ana A016
+  it('each proof partner carries a relation flag', () => {
+    coupledChain();
+    writeGraph([QUERY, PARTNER], [[QUERY, PARTNER]]);
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with!.proof_partners[0]!.relation).toBe('imports');
+  });
+
+  // @ana A017, A018
+  it('flags partners unknown and never crashes when no graph is present', () => {
+    coupledChain();
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.query).toBe(QUERY);
+    expect(results[0]!.also_changes_with!.proof_partners[0]!.relation).toBe('unknown');
+  });
+
+  // @ana A012
+  it('carries a day-1 imported_by layer from the graph', () => {
+    coupledChain();
+    // run.ts imports QUERY → QUERY is imported_by run.ts.
+    writeGraph([QUERY, PARTNER, 'packages/cli/src/run.ts'], [['packages/cli/src/run.ts', QUERY]]);
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with!.imported_by).toBeDefined();
+    expect(results[0]!.also_changes_with!.imported_by).toContain('packages/cli/src/run.ts');
+  });
+
+  // @ana A014
+  it('sets suppressed_test_partner when the query\'s own test file co-changes', () => {
+    const testFile = 'packages/cli/src/a.test.ts';
+    writeChain([
+      { slug: 's1', feature: 'F1', modules_touched: [QUERY, testFile, PARTNER] },
+      { slug: 's2', feature: 'F2', modules_touched: [QUERY, testFile, PARTNER] },
+      { slug: 's3', feature: 'F3', modules_touched: [QUERY, testFile, PARTNER] },
+    ]);
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with!.suppressed_test_partner).toBe(true);
+    // the suppressed test file is NOT listed as a partner; the real one is.
+    const files = results[0]!.also_changes_with!.proof_partners.map((p) => p.file);
+    expect(files).not.toContain(testFile);
+    expect(files).toContain(PARTNER);
+  });
+
+  it('dedupes a proof partner out of the import layer (shown once)', () => {
+    coupledChain();
+    // PARTNER both co-changes AND is imported by QUERY — must appear only as the
+    // proof row, never repeated under Imports.
+    writeGraph([QUERY, PARTNER], [[QUERY, PARTNER]]);
+    const results = getProofContext([QUERY], tempDir);
+    const also = results[0]!.also_changes_with!;
+    expect(also.proof_partners.map((p) => p.file)).toContain(PARTNER);
+    expect(also.imports).not.toContain(PARTNER);
+  });
+
+  // @ana A023
+  it('leaves also_changes_with undefined with no chain and no graph', () => {
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with).toBeUndefined();
+  });
+
+  // @ana A024, A025
+  it('keeps existing touch_count and findings fields intact (additive)', () => {
+    coupledChain();
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.touch_count).toBeGreaterThanOrEqual(0);
+    expect(Array.isArray(results[0]!.findings)).toBe(true);
+    expect(results[0]!.also_changes_with).toBeDefined();
+  });
+
+  it('surfaces a day-1 import layer even with no proof chain (fresh repo)', () => {
+    // Graph only — no proof_chain.json written.
+    writeGraph([QUERY, 'packages/cli/src/run.ts'], [['packages/cli/src/run.ts', QUERY]]);
+    const results = getProofContext([QUERY], tempDir);
+    expect(results[0]!.also_changes_with).toBeDefined();
+    expect(results[0]!.also_changes_with!.imported_by).toContain('packages/cli/src/run.ts');
+    expect(results[0]!.also_changes_with!.proof_partners).toEqual([]);
+  });
+});
