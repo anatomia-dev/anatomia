@@ -14,17 +14,18 @@
 
 import { describe, it, expect } from 'vitest';
 import { buildReadingOrder, type IntentCoupleInput } from '../../src/engine/analyzers/reading-order/index.js';
+import type { ImportEdge } from '../../src/engine/analyzers/graph/buildGraph.js';
 
 describe('reading-order fusion latency (deep tier, 750-node graph)', () => {
   it('fuses centrality + bug-magnet + co-change over a 750-node graph in well under 1s', () => {
     const N = 750;
     const nodes = Array.from({ length: N }, (_, i) => `src/mod${i}.ts`);
-    const edges: Array<{ from: string; to: string }> = [];
+    const edges: ImportEdge[] = [];
     for (let i = 0; i < N; i++) {
       // Each file imports up to 5 lower-indexed siblings — a realistic fan-out
       // (~3.7k edges), the same shape as the import-graph latency gate.
       for (let k = 1; k <= 5 && i - k >= 0; k++) {
-        edges.push({ from: `src/mod${i}.ts`, to: `src/mod${i - k}.ts` });
+        edges.push({ from: `src/mod${i}.ts`, to: `src/mod${i - k}.ts`, names: [] });
       }
     }
 
