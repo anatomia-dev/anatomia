@@ -1182,10 +1182,17 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
   //      failure (WASM crash, git edge case, disk error) must NEVER surface or
   //      block. Gated on a material source delta so doc/config-only merges don't
   //      churn scan.json. Runs only from the main tree (step 0a already guards
-  //      against worktrees, so the scan.ts:470 worktree concern can't apply).
+  //      against worktrees, so the scan.ts `--save`-from-worktree warning can't
+  //      apply here).
   try {
     if (hasMaterialSourceDelta(projectRoot)) {
       const { scanProject } = await import('../engine/scan-engine.js');
+      // Refresh scan.json only — NOT the import-graph artifact. Persisting the
+      // graph here would write `.ana/state/code-graph.json`, leaving an untracked
+      // file in the working tree after completion (it's only gitignored once
+      // `ana init` has run). Nothing reads code-graph.json on the live path, so
+      // the marginal freshness isn't worth churning the tree; it refreshes on the
+      // next `ana init`. `work complete` must leave a clean tree.
       const scanResult = await scanProject(projectRoot, { depth: 'deep' });
 
       const anaDir = path.join(projectRoot, '.ana');
