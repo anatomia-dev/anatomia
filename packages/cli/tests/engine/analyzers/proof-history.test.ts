@@ -162,6 +162,33 @@ describe('readProofHistory — synthetic fixtures', () => {
     expect(couples[0]?.slugs).toEqual(['alpha', 'beta', 'gamma']);
   });
 
+  it('ranks by FULL path with exact counts on a frozen fixture (no basename collapse)', async () => {
+    // The "verified premises" the build spec independently confirmed — full-path
+    // ranking and exact touch counts — locked against a FROZEN synthetic chain
+    // instead of the live ledger, so the numbers never drift. Two `proof.ts`
+    // files at different paths must stay distinct rows (the real-repo hazard).
+    await writeChain(tmp, [
+      entry('s1', ['src/commands/work.ts', 'src/commands/proof.ts', 'src/types/proof.ts'], { findings: 2 }),
+      entry('s2', ['src/commands/work.ts', 'src/commands/proof.ts'], { findings: 2 }),
+      entry('s3', ['src/commands/work.ts', 'src/commands/proof.ts'], { findings: 2 }),
+      entry('s4', ['src/commands/work.ts', 'src/types/proof.ts'], { findings: 2 }),
+      entry('s5', ['src/commands/work.ts'], { findings: 2 }),
+    ]);
+
+    const result = (await readProofHistory(tmp)) as ProofHistory;
+    const byFile = new Map(result.bugMagnetFiles.map((m) => [m.file, m]));
+
+    // Exact, frozen premises: work.ts in 5 items, commands/proof.ts in 3,
+    // types/proof.ts in 2 (below the gate → absent).
+    expect(byFile.get('src/commands/work.ts')?.touchCount).toBe(5);
+    expect(byFile.get('src/commands/proof.ts')?.touchCount).toBe(3);
+    expect(byFile.has('src/types/proof.ts')).toBe(false); // 2 touches < gate
+
+    // Two same-basename files: ranked by FULL path, never collapsed to basename.
+    const proofTs = result.bugMagnetFiles.filter((m) => m.file.endsWith('/proof.ts'));
+    expect(new Set(proofTs.map((m) => m.file)).size).toBe(proofTs.length);
+  });
+
   it('is deterministic — repeated reads are byte-identical', async () => {
     await writeChain(tmp, [
       entry('a', ['x.ts', 'y.ts'], { findings: 4, rejections: 1 }),
@@ -249,10 +276,12 @@ describe('readProofHistory — real .ana/proof_chain.json', () => {
     expect(result).not.toBeNull();
     const magnets = (result as ProofHistory).bugMagnetFiles;
 
-    // Full-path ranking: two proof.ts files exist, so we match on full path.
+    // work.ts is the documented #1 risk file. Assert the RANK, not an exact
+    // touch count: that count climbs every time a work item touches work.ts, so
+    // pinning it couples this test to the live, ever-growing ledger. Exact-count
+    // premises are locked against a FROZEN fixture below instead.
     expect(magnets[0]?.file).toBe('packages/cli/src/commands/work.ts');
-    // Verified premise from the build spec: work.ts = 68 touches.
-    expect(magnets[0]?.touchCount).toBe(68);
+    expect(magnets[0]?.touchCount).toBeGreaterThanOrEqual(3);
 
     // Every ranked file cleared the >=3-touch gate.
     expect(magnets.every((m) => m.touchCount >= 3)).toBe(true);
@@ -275,35 +304,25 @@ describe('readProofHistory — real .ana/proof_chain.json', () => {
     }
   });
 
-  it('matches the build spec verified premises exactly (full-path touch counts)', async () => {
-    // These are the spec's independently-confirmed numbers (line 13). Locking
-    // them in turns a silent regression in ledger parsing into a red test.
-    const result = (await readProofHistory(REPO_ROOT)) as ProofHistory;
-    const byFile = new Map(result.bugMagnetFiles.map((m) => [m.file, m]));
-
-    expect(byFile.get('packages/cli/src/commands/work.ts')?.touchCount).toBe(68);
-    expect(byFile.get('packages/cli/src/commands/proof.ts')?.touchCount).toBe(42);
-    expect(byFile.get('packages/cli/src/utils/proofSummary.ts')?.touchCount).toBe(36);
-
-    // Two `proof.ts` files exist; ranking is by FULL path, not basename. The
-    // commands/proof.ts row above must NOT be conflated with src/types/proof.ts.
-    const proofTs = result.bugMagnetFiles.filter((m) => m.file.endsWith('/proof.ts'));
-    const distinctPaths = new Set(proofTs.map((m) => m.file));
-    expect(distinctPaths.has('packages/cli/src/commands/proof.ts')).toBe(true);
-    // Each path is its own ranked row (no basename collapse).
-    expect(distinctPaths.size).toBe(proofTs.length);
-  });
-
-  it('survives the 2 legacy entries that lack modules_touched (?? [] guard)', async () => {
-    // 2 of 202 real entries predate modules_touched. The analyzer must skip
+  it('skips legacy entries lacking modules_touched on the real chain (?? [] guard)', async () => {
+    // Some early real entries predate modules_touched. The analyzer must skip
     // them via `?? []` and still produce a populated map — never crash, never
-    // count a legacy entry as a touch.
+    // count a legacy entry as a touch. Count-agnostic: the exact number of legacy
+    // entries changes as the ledger grows, so assert the INVARIANT, not a number.
+    const raw = JSON.parse(await fs.readFile(REAL_CHAIN, 'utf-8')) as {
+      entries: Array<{ modules_touched?: string[] }>;
+    };
+    const entriesWithModules = raw.entries.filter(
+      (e) => Array.isArray(e.modules_touched) && e.modules_touched.length > 0,
+    ).length;
+
     const result = await readProofHistory(REPO_ROOT);
     expect(result).not.toBeNull();
     expect((result as ProofHistory).bugMagnetFiles.length).toBeGreaterThan(0);
-    // No file's touch count can exceed the 200 entries that carry the field.
+    // No file can be touched by more work items than actually carry the field.
     for (const m of (result as ProofHistory).bugMagnetFiles) {
-      expect(m.touchCount).toBeLessThanOrEqual(200);
+      expect(m.touchCount).toBeGreaterThanOrEqual(3);
+      expect(m.touchCount).toBeLessThanOrEqual(entriesWithModules);
     }
   });
 });

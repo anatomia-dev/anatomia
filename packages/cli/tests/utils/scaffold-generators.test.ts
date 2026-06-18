@@ -109,4 +109,27 @@ describe('generateReadingOrderBlock', () => {
     expect(block).not.toContain('`src/mod7.ts`');
     expect(block).toContain('+3 more');
   });
+
+  it('claims co-change in the subtitle only when it actually contributed (honesty by construction)', () => {
+    // No co-change reason present → the subtitle must NOT claim a third signal.
+    const twoSignal = generateReadingOrderBlock({
+      budget: 1000,
+      personalizedTo: null,
+      coverageNote: null,
+      entries: [{ file: 'src/a.ts', score: 1, reasons: ['5 work items', 'import centrality 1.00'] }],
+    });
+    expect(twoSignal).toContain('Fused from import centrality and proven rework risk');
+    expect(twoSignal).not.toContain('co-change');
+
+    // A co-change reason present → the subtitle claims all three.
+    const threeSignal = generateReadingOrderBlock({
+      budget: 1000,
+      personalizedTo: null,
+      coverageNote: null,
+      entries: [
+        { file: 'src/a.ts', score: 1, reasons: ['changed together with b.ts in 4 verified items', 'import centrality 1.00'] },
+      ],
+    });
+    expect(threeSignal).toContain('import centrality, proven rework risk, and co-change');
+  });
 });

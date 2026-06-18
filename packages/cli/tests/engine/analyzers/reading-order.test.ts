@@ -45,7 +45,7 @@ function baseInput(overrides: Partial<ReadingOrderInput> = {}): ReadingOrderInpu
   return {
     graph: hubGraph(),
     bugMagnets: [],
-    coChange: [],
+    intentCouples: [],
     scopeFiles: [],
     scopeSlug: null,
     ...overrides,
@@ -78,7 +78,7 @@ describe('buildReadingOrder — ranking', () => {
   it('is deterministic — two runs are byte-identical', () => {
     const input = baseInput({
       bugMagnets: [{ file: 'hub.ts', touchCount: 5, findingsPerTouch: 1.2, rejectionCycles: 3 }],
-      coChange: [{ fileA: 'a.ts', fileB: 'hub.ts', coChangePercentage: 80, hasImportRelationship: null }],
+      intentCouples: [{ fileA: 'a.ts', fileB: 'hub.ts', coTouchCount: 4 }],
     });
     const first = JSON.stringify(buildReadingOrder(input));
     const second = JSON.stringify(buildReadingOrder(input));
@@ -107,14 +107,83 @@ describe('buildReadingOrder — fused signals', () => {
     expect(hub.reasons).toContain('1 work item, 1 rework cycle');
   });
 
-  it('names the strongest co-change partner with its percentage', () => {
+  it('names the strongest co-change partner by verified-item count (no percentage)', () => {
+    // hub.ts and a.ts share an import edge in hubGraph (a.ts -> hub.ts), so the
+    // coupling is structural, not hidden. Provenance is the verified-item count.
     const order = buildReadingOrder(
       baseInput({
-        coChange: [{ fileA: 'hub.ts', fileB: 'a.ts', coChangePercentage: 72, hasImportRelationship: true }],
+        intentCouples: [{ fileA: 'a.ts', fileB: 'hub.ts', coTouchCount: 7 }],
       }),
     )!;
     const hub = order.entries.find((e) => e.file === 'hub.ts')!;
-    expect(hub.reasons).toContain('changed together with a.ts (72%)');
+    expect(hub.reasons).toContain('changed together with a.ts in 7 verified items');
+    // Never a synthetic percentage.
+    expect(hub.reasons.some((r) => /%/.test(r))).toBe(false);
+  });
+
+  it('flags hidden coupling when a co-change pair shares no import edge', () => {
+    // hub.ts and types.ts both exist in the graph but have NO edge between them
+    // (types.ts is imported only by a.ts). That is the relationship structure
+    // alone can't see — the differentiated proof-chain signal.
+    const order = buildReadingOrder(
+      baseInput({
+        intentCouples: [{ fileA: 'hub.ts', fileB: 'types.ts', coTouchCount: 3 }],
+      }),
+    )!;
+    const hub = order.entries.find((e) => e.file === 'hub.ts')!;
+    expect(
+      hub.reasons.some((r) =>
+        r.startsWith('changed together with types.ts in 3 verified items') && r.includes('hidden coupling'),
+      ),
+    ).toBe(true);
+  });
+
+  it('co-change reorders files against the path tie-break (affects rank, not just reasons)', () => {
+    // a.ts/b.ts/c.ts/d.ts are equal-centrality pure importers of hub.ts; with no
+    // co-change they rank by path (a < b < c < d), so d.ts sorts LAST. Give
+    // co-change only to d.ts (2 partners, the most) — it must OVERTAKE a.ts. This
+    // fails if the co-change score term is removed, so it is not tautological:
+    // it proves the signal changes the ORDER, not merely the reason strings.
+    const without = buildReadingOrder(baseInput())!;
+    const withD = buildReadingOrder(
+      baseInput({
+        intentCouples: [
+          { fileA: 'a.ts', fileB: 'd.ts', coTouchCount: 3 },
+          { fileA: 'b.ts', fileB: 'd.ts', coTouchCount: 3 },
+        ],
+      }),
+    )!;
+    const rank = (o: typeof without, f: string) => o.entries.findIndex((e) => e.file === f);
+    expect(rank(without, 'd.ts')).toBeGreaterThan(rank(without, 'a.ts')); // path tie-break
+    expect(rank(withD, 'd.ts')).toBeLessThan(rank(withD, 'a.ts')); // co-change flips it
+  });
+
+  it('picks the same top co-change partner regardless of intentCouples order', () => {
+    // Two partners tie on coTouchCount. The named partner must be deterministic
+    // (lexicographically smaller) independent of input array order — proving the
+    // fusion self-determinizes rather than leaking caller iteration order.
+    const couples = [
+      { fileA: 'a.ts', fileB: 'hub.ts', coTouchCount: 3 },
+      { fileA: 'b.ts', fileB: 'hub.ts', coTouchCount: 3 },
+    ];
+    const reasonFor = (cs: typeof couples) =>
+      buildReadingOrder(baseInput({ intentCouples: cs }))!
+        .entries.find((e) => e.file === 'hub.ts')!
+        .reasons.find((r) => r.startsWith('changed together'));
+    expect(reasonFor(couples)).toBe(reasonFor([...couples].reverse()));
+    expect(reasonFor(couples)).toContain('changed together with a.ts'); // a < b tie-break
+  });
+
+  it('gates out a one-off co-touch (coTouchCount below MIN_COTOUCH)', () => {
+    // A single shared work item is not "verified co-change" — it must not
+    // produce a co-change reason or contribute to the score.
+    const order = buildReadingOrder(
+      baseInput({
+        intentCouples: [{ fileA: 'a.ts', fileB: 'hub.ts', coTouchCount: 1 }],
+      }),
+    )!;
+    const hub = order.entries.find((e) => e.file === 'hub.ts')!;
+    expect(hub.reasons.some((r) => r.startsWith('changed together'))).toBe(false);
   });
 
   it('ignores bug-magnet rows whose touchCount is null (unmeasured)', () => {
@@ -387,6 +456,29 @@ describe('buildReadingOrder — coverage caveat (TARGET 2)', () => {
       baseInput({ totalSourceFiles: 6, primaryLanguageIsGraphLanguage: true }),
     )!;
     expect(order.coverageNote).toBeNull();
+  });
+
+  it('attaches a caveat when the graph was SAMPLED even if coverage looks high', () => {
+    // The honesty hole: a mid-size repo (≈750–2500 files) covers >30% with the
+    // 750-cap, so the coverage ratio alone stays silent. graphSampled must still
+    // force a caveat so a partial ranking is never presented as whole-repo.
+    const order = buildReadingOrder(
+      baseInput({ totalSourceFiles: 2400, primaryLanguageIsGraphLanguage: true, graphSampled: true }),
+    )!;
+    expect(order.coverageNote).toMatch(/sampled subset of the repo/);
+  });
+
+  it('frames the polyglot caveat by LANGUAGE, never a misleading percentage', () => {
+    // A polyglot repo whose JS island happens to be ~100% of the graph must not
+    // read "subgraph only (~100%)" — that implies whole-repo coverage. The caveat
+    // names the language gap instead, and carries no percentage.
+    const order = buildReadingOrder(
+      baseInput({ totalSourceFiles: 6, primaryLanguageIsGraphLanguage: false }),
+    )!;
+    expect(order.coverageNote).toBe(
+      "ranking covers the TS/JS import subgraph only, not the repo's primary language",
+    );
+    expect(order.coverageNote).not.toMatch(/%/);
   });
 });
 
