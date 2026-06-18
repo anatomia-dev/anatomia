@@ -119,7 +119,7 @@
       "deleted": 0
     },
     "packages/cli/src/engine/analyzers/proof-history/index.ts": {
-      "added": 299,
+      "added": 309,
       "deleted": 0
     },
     "packages/cli/src/engine/scan-engine.ts": {
@@ -175,7 +175,7 @@
       "deleted": 0
     },
     "packages/cli/tests/engine/analyzers/proof-history.test.ts": {
-      "added": 320,
+      "added": 342,
       "deleted": 0
     },
     "packages/cli/tests/templates/agent-proof-context.test.ts": {
@@ -222,12 +222,24 @@
     "hash": "sha256:3f5f4baaf1ec25aef0cb447cd45439130d4a8f206dd1d63180b94cf2d1c3349d"
   },
   "build-report-3": {
-    "saved_at": "2026-06-18T18:27:38.315Z",
-    "hash": "sha256:2e41b6a6850130049ed197c9518ecb47c9ed89b7cd4fa2670d1c46b6a054d134"
+    "saved_at": "2026-06-18T20:09:50.449Z",
+    "hash": "sha256:6711982afa4030d2cfc2446f569d910fa1260b9ee762444a2ea64a7ad30b4cf2",
+    "history": [
+      {
+        "saved_at": "2026-06-18T18:27:38.315Z",
+        "hash": "sha256:2e41b6a6850130049ed197c9518ecb47c9ed89b7cd4fa2670d1c46b6a054d134"
+      }
+    ]
   },
   "build-data-3": {
-    "saved_at": "2026-06-18T18:27:38.318Z",
-    "hash": "sha256:d4968172d182b726c6c8bb730e854edd1383ff52e1dc6ce0dc0bf8c6c22b2c86"
+    "saved_at": "2026-06-18T20:09:50.449Z",
+    "hash": "sha256:2520c7d4672fd335993b7d42957bb382c30d91789c73ac2edb07550fed0d0af9",
+    "history": [
+      {
+        "saved_at": "2026-06-18T18:27:38.318Z",
+        "hash": "sha256:d4968172d182b726c6c8bb730e854edd1383ff52e1dc6ce0dc0bf8c6c22b2c86"
+      }
+    ]
   },
   "verify_started_at_3": "2026-06-18T18:45:32.298Z",
   "verify_agent_3": "ana-verify",

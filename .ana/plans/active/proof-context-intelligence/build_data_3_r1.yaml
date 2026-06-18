@@ -1,9 +1,5 @@
 schema: 1
 concerns:
-  - summary: "Fix cycle: isSameStemTestPartner now compares via fileMatches (same matcher as pairing) on normalized forms, so suppression inherits pairing's bare-basename/suffix tolerance — a query collapsing to a single bare segment (e.g. top-level src/index.ts) could match a same-basename test in another module. This is the tolerance the verify report asked for; the /-boundary protects all multi-segment paths."
-    file: "packages/cli/src/engine/analyzers/proof-history/index.ts"
-    severity: observation
-    suggested_action: monitor
   - summary: "template-propagation 'Claude-only never creates .codex' test runs two ana init subprocesses under the 5s default timeout — at the edge (5014/5430ms) and tipped over by added parallel subprocess load. Fixed with a 30s budget; sibling multi-init tests may share the pattern."
     file: "packages/cli/tests/commands/init/template-propagation.test.ts"
     severity: debt
