@@ -1,0 +1,342 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "Empirical Proof Benchmark — the measuring instrument (ruler)"
+
+assertions:
+  # ── AC1: ported onto main, gated, shipped-surface imports only ──────────────
+  - id: A001
+    ac: AC1
+    says: "The benchmark suite is OFF by default and only turns on when explicitly enabled"
+    block: "benchmarkEnabled — the CI gate"
+    target: "benchmarkEnabled({})"
+    matcher: "equals"
+    value: false
+
+  - id: A002
+    ac: AC1
+    says: "The benchmark suite turns on only when the enable switch is set to exactly on"
+    block: "benchmarkEnabled — the CI gate"
+    target: "benchmarkEnabled({ ANA_BENCH: '1' })"
+    matcher: "equals"
+    value: true
+
+  - id: A003
+    ac: AC1
+    says: "A stray or partial value never accidentally turns the benchmark suite on"
+    block: "benchmarkEnabled — the CI gate"
+    target: "benchmarkEnabled({ ANA_BENCH: '0' })"
+    matcher: "equals"
+    value: false
+
+  - id: A004
+    ac: AC1
+    says: "The benchmark scorer never depends on the never-deploy branch it was ported from"
+    block: "scorer imports resolve only to shipped surfaces"
+    target: "scorer.ts source imports"
+    matcher: "not_contains"
+    value: "devday-scan"
+
+  - id: A005
+    ac: AC1
+    says: "The fixed localization task loads with its pinned commit and relevant-file set"
+    block: "task loading"
+    target: "loadTask('proof-history-touch-gate').relevantFiles.length"
+    matcher: "equals"
+    value: 3
+
+  - id: A006
+    ac: AC1
+    says: "Asking for a task that does not exist returns nothing instead of crashing"
+    block: "task loading"
+    target: "loadTask('no-such-task')"
+    matcher: "equals"
+    value: null
+
+  # ── AC2: ported suite scores a real transcript with exact counts ────────────
+  - id: A007
+    ac: AC2
+    says: "Scoring a real session transcript succeeds rather than abstaining"
+    block: "BARE arm — mechanical scoring of a real transcript"
+    target: "scoreTranscript(bare-claude, task, 'bare').outcome"
+    matcher: "equals"
+    value: "scored"
+
+  - id: A008
+    ac: AC2
+    says: "The scorer counts exactly how many distinct files the agent opened"
+    block: "BARE arm — mechanical scoring of a real transcript"
+    target: "row.distinctFilesRead"
+    matcher: "equals"
+    value: 5
+
+  - id: A009
+    ac: AC2
+    says: "The scorer counts how many of those files were off-target (the reliability signal)"
+    block: "BARE arm — mechanical scoring of a real transcript"
+    target: "row.wrongFileReads"
+    matcher: "equals"
+    value: 3
+
+  - id: A010
+    ac: AC2
+    says: "Total tool calls come from the shipped provenance engine, not a re-implementation"
+    block: "BARE arm — mechanical scoring of a real transcript"
+    target: "row.toolCalls"
+    matcher: "equals"
+    value: 6
+
+  - id: A011
+    ac: AC2
+    says: "The scorer records which model ran the session"
+    block: "BARE arm — mechanical scoring of a real transcript"
+    target: "row.model"
+    matcher: "equals"
+    value: "claude-opus-4-8"
+
+  # ── AC3: $/task via shipped computeCost, priced flag preserved ──────────────
+  - id: A012
+    ac: AC3
+    says: "Each scored run carries a dollar cost computed from the shipped price table"
+    block: "cost — $/task via shipped computeCost"
+    target: "row.costUsd"
+    matcher: "equals"
+    value: 0.12
+
+  - id: A013
+    ac: AC3
+    says: "A run on a known model is marked as priced, so its cost is real, not a guess"
+    block: "cost — $/task via shipped computeCost"
+    target: "row.priced"
+    matcher: "equals"
+    value: true
+
+  - id: A014
+    ac: [AC3, AC7]
+    says: "An unknown model is marked unpriced rather than being shown as free"
+    block: "cost — unpriced models surface as unpriced, never $0"
+    target: "scoreTranscript(unknown-model).row.priced"
+    matcher: "equals"
+    value: false
+
+  # ── AC4: the five reliability metrics ───────────────────────────────────────
+  - id: A015
+    ac: AC4
+    says: "Reports how many file reads were wasteful repeats of files already opened"
+    block: "reliability metrics — redundant reads"
+    target: "row.redundantReads"
+    matcher: "equals"
+    value: 0
+
+  - id: A016
+    ac: AC4
+    says: "Reports the redundant-read ratio without dividing by zero on a no-read run"
+    block: "reliability metrics — redundant-read ratio"
+    target: "row.redundantReadRatio"
+    matcher: "equals"
+    value: 0
+
+  - id: A017
+    ac: AC4
+    says: "Reports the peak amount of context the agent held at once during the session"
+    block: "reliability metrics — peak context tokens"
+    target: "row.peakContextTokens"
+    matcher: "equals"
+    value: 2900
+
+  - id: A018
+    ac: AC4
+    says: "Reports peak context as a real percentage of the model's window, not a guess"
+    block: "reliability metrics — context utilization ratio"
+    target: "row.contextUtilization"
+    matcher: "equals"
+    value: 0.0145
+
+  - id: A019
+    ac: AC4
+    says: "On an edit task, reports the wall-clock time until the first correct edit"
+    block: "reliability metrics — wall-clock to first correct edit"
+    target: "scoreTranscript(edit-claude, editTask).row.wallClockMsToFirstCorrectEdit"
+    matcher: "equals"
+    value: 10000
+
+  - id: A020
+    ac: AC4
+    says: "On an edit task, reports how many turns it took to reach the first correct edit"
+    block: "reliability metrics — turns to resolution"
+    target: "scoreTranscript(edit-claude, editTask).row.turnsToResolution"
+    matcher: "equals"
+    value: 2
+
+  - id: A021
+    ac: AC4
+    says: "Breaks tokens into input, output, and cache columns for credible accounting"
+    block: "reliability metrics — cache-decomposed token columns"
+    target: "row.inputTokens"
+    matcher: "equals"
+    value: 16700
+
+  - id: A022
+    ac: AC4
+    says: "The cache token columns are present and separated from fresh input/output"
+    block: "reliability metrics — cache-decomposed token columns"
+    target: "row.cacheReadTokens"
+    matcher: "equals"
+    value: 0
+
+  - id: A023
+    ac: AC4
+    says: "On a read-only task, the time-to-edit metrics are blank rather than fabricated"
+    block: "reliability metrics — read-only task leaves edit metrics null"
+    target: "row.tokensToFirstCorrectEdit"
+    matcher: "equals"
+    value: null
+
+  # ── AC4 / abstain trinary: never fabricate a row from untrustworthy bytes ────
+  - id: A024
+    ac: AC4
+    says: "An unreadable transcript is abstained on, never scored as a low-token win"
+    block: "abstain-on-unknown (trinary, never fabricate)"
+    target: "runArm(task, 'bare', missing-path).outcome"
+    matcher: "equals"
+    value: "abstain"
+
+  - id: A025
+    ac: AC4
+    says: "An empty transcript abstains because there is no evidence to score"
+    block: "abstain-on-unknown (trinary, never fabricate)"
+    target: "runArm(task, 'bare', empty.jsonl).reason"
+    matcher: "contains"
+    value: "zero lines"
+
+  - id: A026
+    ac: AC4
+    says: "A transcript from an unsupported agent abstains rather than guessing"
+    block: "abstain-on-unknown (trinary, never fabricate)"
+    target: "runArm(task, 'bare', bare-claude, 'gemini').reason"
+    matcher: "contains"
+    value: "unknown harness"
+
+  # ── AC5: aggregate statistics layer ─────────────────────────────────────────
+  - id: A027
+    ac: AC5
+    says: "Averages a metric correctly across multiple runs of the same setup"
+    block: "aggregate — per-cell mean"
+    target: "aggregate(rows[1,2,3]).cell.mean"
+    matcher: "equals"
+    value: 2
+
+  - id: A028
+    ac: AC5
+    says: "Reports the spread (variance) of a metric across the runs of a cell"
+    block: "aggregate — within-cell variance"
+    target: "aggregate(rows[1,2,3]).cell.sampleVariance"
+    matcher: "equals"
+    value: 1
+
+  - id: A029
+    ac: AC5
+    says: "The 95% confidence interval is honest for small samples (wider than a naive interval)"
+    block: "aggregate — Student's t confidence interval"
+    target: "aggregate(rows[1,2,3]).cell.ci95.high"
+    matcher: "greater"
+    value: 3.2
+
+  - id: A030
+    ac: AC5
+    says: "A single run never crashes the stats — variance is flagged undefined, not invented"
+    block: "aggregate — single run (k=1) edge case"
+    target: "aggregate(singleRow).cell.sampleVariance"
+    matcher: "equals"
+    value: null
+
+  - id: A031
+    ac: AC5
+    says: "A single run is explicitly flagged so a reader knows variance is unavailable"
+    block: "aggregate — single run (k=1) edge case"
+    target: "aggregate(singleRow).cell.singleRun"
+    matcher: "equals"
+    value: true
+
+  - id: A032
+    ac: AC5
+    says: "Reports how often the Anatomia arm beat the bare arm across paired runs"
+    block: "aggregate — per-task win-rate"
+    target: "aggregate(pairedRuns).comparison.winRate.wins"
+    matcher: "equals"
+    value: 3
+
+  - id: A033
+    ac: AC5
+    says: "Abstained runs are counted, never silently dropped from the totals"
+    block: "aggregate — abstains are counted, not hidden"
+    target: "aggregate(twoAbstainsPlusScored).abstainedRuns"
+    matcher: "equals"
+    value: 2
+
+  - id: A034
+    ac: AC5
+    says: "Given identical input, the aggregate output is byte-identical every time"
+    block: "aggregate — determinism"
+    target: "JSON.stringify(aggregate(rows)) === JSON.stringify(aggregate(rows))"
+    matcher: "equals"
+    value: true
+
+  # ── AC6: Arm type widening ──────────────────────────────────────────────────
+  - id: A035
+    ac: AC6
+    says: "The scorer accepts more than two benchmark arms without a breaking change"
+    block: "Arm widening — a third arm scores without a type rewrite"
+    target: "scoreTranscript(bare-claude, task, 'context-only').row.arm"
+    matcher: "equals"
+    value: "context-only"
+
+  # ── AC7: no metric built on best-effort regex fields ────────────────────────
+  - id: A036
+    ac: AC7
+    says: "No credibility metric is built on the engine's flaky best-effort counts"
+    block: "AC7 — no best-effort field leakage in the scorer"
+    target: "scorer.ts source"
+    matcher: "not_contains"
+    value: "tests_executed"
+
+  - id: A037
+    ac: AC7
+    says: "The scorer never reads the best-effort files-touched count for any metric"
+    block: "AC7 — no best-effort field leakage in the scorer"
+    target: "scorer.ts source"
+    matcher: "not_contains"
+    value: "files_touched"
+
+  # ── AC8: anatrace-core unmodified ───────────────────────────────────────────
+  - id: A038
+    ac: AC8
+    says: "The published measurement engine is consumed, never edited, for the benchmark"
+    block: "AC8 — anatrace-core is unmodified"
+    target: "git diff --name-only against node_modules/anatrace-core"
+    matcher: "equals"
+    value: 0
+
+coverage_waivers:
+  - ac: AC2
+    kind: judgment
+    reason: "The 'test count does not decrease' half of AC2 is a CI/process gate verified by the full-suite run and the no-regression check, not a single transcript assertion — the scored-transcript assertions (A007–A011) cover the suite-passes half. The headcount gate is enforced mechanically at CI, not by a tagged unit test."
+
+file_changes:
+  - path: "packages/cli/tests/benchmark/scorer.ts"
+    action: create
+  - path: "packages/cli/tests/benchmark/harness.ts"
+    action: create
+  - path: "packages/cli/tests/benchmark/harness.test.ts"
+    action: create
+  - path: "packages/cli/tests/benchmark/aggregate.ts"
+    action: create
+  - path: "packages/cli/tests/benchmark/aggregate.test.ts"
+    action: create
+  - path: "packages/cli/tests/benchmark/fixtures/bare-claude.jsonl"
+    action: create
+  - path: "packages/cli/tests/benchmark/fixtures/edit-claude.jsonl"
+    action: create
+  - path: "packages/cli/tests/benchmark/fixtures/empty.jsonl"
+    action: create
+  - path: "packages/cli/tests/benchmark/tasks/proof-history-touch-gate.json"
+    action: create
