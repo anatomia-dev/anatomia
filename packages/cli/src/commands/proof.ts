@@ -565,6 +565,84 @@ export function formatHumanReadable(entry: ProofChainEntry): string {
 }
 
 /**
+ * Render the signal-only `--why` view for `ana proof <slug>`.
+ *
+ * The pull-depth valve behind the Shaped-by footer: it shows only a work item's
+ * intent and exceptional signal — `scope_summary`, assertions needing attention
+ * (failed/deviated with their reasons), open findings, and `modules_touched`.
+ *
+ * Built as an omission renderer, never a stripper: it renders only the allowed
+ * fields, so cost, token counts, the six sha256 hashes, Timing, Provenance, and
+ * attestation can never leak in — a future field added to the full card cannot
+ * appear here by default.
+ *
+ * @param entry - Proof chain entry to summarize
+ * @returns Formatted signal-only string
+ */
+export function formatWhy(entry: ProofChainEntry): string {
+  const lines: string[] = [];
+
+  lines.push(`${entry.slug} — why`);
+  lines.push('');
+
+  // Scope — the work item's intent, raw.
+  lines.push('Scope:');
+  if (entry.scope_summary) {
+    lines.push(`  ${entry.scope_summary}`);
+  } else {
+    lines.push(`  ${chalk.gray('(no scope summary recorded)')}`);
+  }
+  lines.push('');
+
+  // Assertions needing attention — failed/deviated only, with deviation reasons.
+  lines.push('Assertions needing attention:');
+  const exceptional = entry.assertions.filter((a) => a.status !== 'SATISFIED');
+  if (exceptional.length === 0) {
+    lines.push(`  ${chalk.green('✓')} all ${entry.assertions.length} satisfied`);
+  } else {
+    for (const a of exceptional) {
+      lines.push(`  ${statusGlyph(a.status)} ${a.id}  ${a.says}`);
+      if (a.status === 'DEVIATED' && a.deviation) {
+        lines.push(`        → ${a.deviation}`);
+      }
+    }
+  }
+  lines.push('');
+
+  // Open findings — active only; closed/promoted are not "open".
+  lines.push('Open findings:');
+  const openFindings = (entry.findings ?? []).filter((f) => !f.status || f.status === 'active');
+  if (openFindings.length === 0) {
+    lines.push('  (none)');
+  } else {
+    const MAX_FINDINGS = 5;
+    for (const f of openFindings.slice(0, MAX_FINDINGS)) {
+      const anchor = f.anchor ? ` ${f.anchor} —` : '';
+      lines.push(
+        `  ${chalk.dim(`[${f.category}]`)} ${f.id}${anchor} ${truncateSummary(f.summary, 140)}`
+      );
+    }
+    if (openFindings.length > MAX_FINDINGS) {
+      lines.push(`  ${openFindings.length - MAX_FINDINGS} more — see \`ana proof ${entry.slug} --json\``);
+    }
+  }
+  lines.push('');
+
+  // Modules touched — guard the optional array; some entries predate the field.
+  const modules = entry.modules_touched ?? [];
+  lines.push(`Modules touched (${modules.length}):`);
+  const MAX_MODULES = 8;
+  for (const m of modules.slice(0, MAX_MODULES)) {
+    lines.push(`  ${m}`);
+  }
+  if (modules.length > MAX_MODULES) {
+    lines.push('  …');
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Abbreviate a `sha256:`-prefixed byte-identity hash for compact display.
  *
  * @param hash - The full `sha256:<hex>` hash (or any string)
@@ -997,10 +1075,11 @@ export function formatListTable(entries: ProofChainEntry[]): string {
  * @param options - Command options
  * @param options.json - Output JSON format
  * @param options.last - Select the most-recent proof instead of naming a slug
+ * @param options.why - Render the signal-only `--why` view instead of the full card
  */
 async function handleProofList(
   slug: string | undefined,
-  options: { json?: boolean; last?: boolean }
+  options: { json?: boolean; last?: boolean; why?: boolean }
 ): Promise<void> {
   const proofRoot = findProjectRoot();
   const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
@@ -1045,7 +1124,7 @@ async function handleProofList(
     if (options.json) {
       console.log(JSON.stringify(wrapJsonResponse(`proof ${entry.slug}`, entry, chain), null, 2));
     } else {
-      console.log(formatHumanReadable(entry));
+      console.log(options.why ? formatWhy(entry) : formatHumanReadable(entry));
     }
     return;
   }
@@ -1112,7 +1191,7 @@ async function handleProofList(
   if (options.json) {
     console.log(JSON.stringify(wrapJsonResponse(`proof ${slug}`, entry, chain), null, 2));
   } else {
-    console.log(formatHumanReadable(entry));
+    console.log(options.why ? formatWhy(entry) : formatHumanReadable(entry));
   }
 }
 
@@ -3055,6 +3134,7 @@ export function registerProofCommand(program: Command): void {
     .option('--json', 'Output JSON format for programmatic consumption')
     // Order `--latest, --last` so commander's canonical key is `options.last`.
     .option('--latest, --last', 'Show the most recent proof')
+    .option('--why', 'Show signal only — intent, exceptional assertions, open findings, modules')
     .action(async (slug, options) => handleProofList(slug, options));
 
   const contextCommand = new Command('context')
@@ -3156,7 +3236,9 @@ export function registerProofCommand(program: Command): void {
  * @returns Formatted string
  */
 function formatContextResult(result: ProofContextResult): string {
-  const hasData = result.findings.length > 0 || result.build_concerns.length > 0;
+  const shapers = result.shaped_by ?? [];
+  const hasData =
+    result.findings.length > 0 || result.build_concerns.length > 0 || shapers.length > 0;
 
   if (!hasData) {
     return `No proof context found for ${result.query}`;
@@ -3173,6 +3255,29 @@ function formatContextResult(result: ProofContextResult): string {
     );
   }
   lines.push('');
+
+  // Shaped by — verified work items that touched this file, most-recent-first.
+  // Capped at the top 3 so default output stays a first-screen; a gating footer
+  // names `--why` (the cheap detail view) when more shapers exist. `scope_summary`
+  // is truncated raw via truncateSummary — never reworded or embellished.
+  if (shapers.length > 0) {
+    const MAX_SHAPERS = 3;
+    lines.push('Shaped by:');
+    for (const s of shapers.slice(0, MAX_SHAPERS)) {
+      const dateStr = s.completed_at ? formatLocalDate(s.completed_at) : 'unknown';
+      const meta = s.kind ? `${s.kind} · ${dateStr}` : dateStr;
+      lines.push(`  ${chalk.green('✓')} ${s.slug} (${meta})`);
+      if (s.scope_summary) {
+        lines.push(`      ${truncateSummary(s.scope_summary, 140)}`);
+      }
+    }
+    if (shapers.length > MAX_SHAPERS) {
+      lines.push(
+        `  ${shapers.length - MAX_SHAPERS} more — drill a specific one with \`ana proof <slug> --why\``
+      );
+    }
+    lines.push('');
+  }
 
   // Findings
   if (result.findings.length > 0) {

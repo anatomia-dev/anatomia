@@ -590,6 +590,206 @@ describe('ana proof', () => {
     });
   });
 
+  // ─── Shaped by Section Tests (Phase 1) ────────────────────────────
+
+  /**
+   * Build a proof entry that touches `file` via a finding, with a controllable
+   * slug / kind / completed_at / scope_summary for shaped-by render tests.
+   */
+  function shaperEntry(over: {
+    slug: string;
+    completedAt: string;
+    kind?: string;
+    scopeSummary?: string;
+    file?: string;
+  }): Record<string, unknown> {
+    const file = over.file ?? 'packages/cli/src/engine/census.ts';
+    return {
+      slug: over.slug,
+      feature: `Feature ${over.slug}`,
+      result: 'PASS',
+      author: { name: 'Developer', email: 'dev@example.com' },
+      contract: { total: 4, covered: 4, uncovered: 0, satisfied: 4, unsatisfied: 0, deviated: 0 },
+      assertions: [{ id: 'A001', says: 'works', status: 'SATISFIED' }],
+      acceptance_criteria: { total: 1, met: 1 },
+      timing: { total_minutes: 30 },
+      hashes: {},
+      completed_at: over.completedAt,
+      kind: over.kind ?? 'feature',
+      scope_summary: over.scopeSummary ?? `Intent for ${over.slug}.`,
+      modules_touched: [file],
+      findings: [
+        { id: `${over.slug}-C1`, category: 'code', summary: 'a finding', file, anchor: null, status: 'active' },
+      ],
+      build_concerns: [],
+    };
+  }
+
+  // @ana A003
+  describe('proof context shows a Shaped by section', () => {
+    it('renders Shaped by with slug and truncated scope summary', async () => {
+      await createProofChain([shaperEntry({ slug: 'shaper-a', completedAt: '2026-05-01T10:00:00Z', kind: 'fix', scopeSummary: 'Intent text for A.' })]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['context', 'census.ts']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Shaped by:');
+      expect(stdout).toContain('shaper-a');
+      expect(stdout).toContain('fix');
+      expect(stdout).toContain('Intent text for A.');
+    });
+  });
+
+  // @ana A004
+  describe('proof context shaped-by footer', () => {
+    it('shows a --why drill-down footer when more than 3 shapers exist', async () => {
+      await createProofChain([
+        shaperEntry({ slug: 'sh-1', completedAt: '2026-05-01T00:00:00Z' }),
+        shaperEntry({ slug: 'sh-2', completedAt: '2026-05-02T00:00:00Z' }),
+        shaperEntry({ slug: 'sh-3', completedAt: '2026-05-03T00:00:00Z' }),
+        shaperEntry({ slug: 'sh-4', completedAt: '2026-05-04T00:00:00Z' }),
+        shaperEntry({ slug: 'sh-5', completedAt: '2026-05-05T00:00:00Z' }),
+      ]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['context', 'census.ts']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('--why');
+      expect(stdout).toContain('2 more'); // 5 shapers − top 3
+    });
+
+    it('caps the shaped-by list at 3 and shows the most recent first', async () => {
+      await createProofChain([
+        shaperEntry({ slug: 'oldest', completedAt: '2026-05-01T00:00:00Z' }),
+        shaperEntry({ slug: 'mid', completedAt: '2026-05-03T00:00:00Z' }),
+        shaperEntry({ slug: 'newest', completedAt: '2026-05-05T00:00:00Z' }),
+        shaperEntry({ slug: 'extra', completedAt: '2026-05-02T00:00:00Z' }),
+      ]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', 'census.ts']);
+      // Three most-recent shaper slugs shown; the 4th (oldest-but-one) is in the footer.
+      expect(stdout).toContain('newest');
+      expect(stdout).toContain('mid');
+      expect(stdout).toContain('extra');
+      // newest appears before mid in the rendered output (recency order)
+      expect(stdout.indexOf('newest')).toBeLessThan(stdout.indexOf('mid'));
+    });
+
+    it('omits the footer when exactly 3 shapers exist', async () => {
+      await createProofChain([
+        shaperEntry({ slug: 'one', completedAt: '2026-05-01T00:00:00Z' }),
+        shaperEntry({ slug: 'two', completedAt: '2026-05-02T00:00:00Z' }),
+        shaperEntry({ slug: 'three', completedAt: '2026-05-03T00:00:00Z' }),
+      ]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', 'census.ts']);
+      expect(stdout).toContain('Shaped by:');
+      expect(stdout).not.toContain('more — drill');
+    });
+  });
+
+  // @ana A008
+  describe('proof context truncates shaper scope summary', () => {
+    it('truncates a long scope summary, never dumping past the cap', async () => {
+      const longSummary = 'word '.repeat(40) + 'SENTINEL_PAST_CAP';
+      await createProofChain([shaperEntry({ slug: 'long-shaper', completedAt: '2026-05-01T00:00:00Z', scopeSummary: longSummary })]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', 'census.ts']);
+      expect(stdout).toContain('Shaped by:');
+      expect(stdout).not.toContain('SENTINEL_PAST_CAP');
+    });
+  });
+
+  // @ana A022
+  describe('proof context omits Shaped by with no proof history', () => {
+    it('does not render Shaped by when no entry touches the file', async () => {
+      await createProofChain([shaperEntry({ slug: 'sh', completedAt: '2026-05-01T00:00:00Z' })]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', 'some-unrelated-file.ts']);
+      expect(stdout).not.toContain('Shaped by');
+    });
+  });
+
+  // ─── proof <slug> --why Tests (Phase 1) ───────────────────────────
+
+  const whyEntry = {
+    slug: 'why-feature',
+    feature: 'Why Feature',
+    result: 'PASS' as const,
+    author: { name: 'Developer', email: 'dev@example.com' },
+    contract: { total: 3, covered: 3, uncovered: 0, satisfied: 2, unsatisfied: 0, deviated: 1 },
+    assertions: [
+      { id: 'A001', says: 'works', status: 'SATISFIED' },
+      { id: 'A002', says: 'also works', status: 'SATISFIED' },
+      { id: 'A003', says: 'webhook updates order', status: 'DEVIATED', deviation: 'Used event mock instead of DB assertion' },
+    ],
+    acceptance_criteria: { total: 2, met: 2 },
+    timing: { total_minutes: 90, think: 10, plan: 25, build: 40, verify: 15 },
+    hashes: { scope: 'sha256:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcab', contract: 'sha256:def' },
+    completed_at: '2026-05-01T16:30:00Z',
+    scope_summary: 'WHY_SCOPE_INTENT — the reason this work exists.',
+    kind: 'feature',
+    modules_touched: ['packages/cli/src/commands/why-target.ts', 'packages/cli/tests/why-target.test.ts'],
+    findings: [
+      { id: 'why-C1', category: 'code', summary: 'an open finding', file: 'packages/cli/src/commands/why-target.ts', anchor: null, status: 'active' },
+    ],
+    build_concerns: [],
+  };
+
+  // @ana A005
+  describe('proof <slug> --why shows signal only', () => {
+    it('renders scope intent and modules touched', async () => {
+      await createProofChain([whyEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['why-feature', '--why']);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Scope');
+      expect(stdout).toContain('WHY_SCOPE_INTENT');
+      expect(stdout).toContain('Modules touched');
+      expect(stdout).toContain('packages/cli/src/commands/why-target.ts');
+    });
+
+    it('renders a deviated assertion with its reason', async () => {
+      await createProofChain([whyEntry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['why-feature', '--why']);
+      expect(stdout).toContain('A003');
+      expect(stdout).toContain('Used event mock instead of DB assertion');
+    });
+
+    // @ana A006, A007
+    it('omits provenance, timing, cost, and hashes', async () => {
+      await createProofChain([whyEntry]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['why-feature', '--why']);
+      expect(stdout).not.toContain('Provenance');
+      expect(stdout).not.toContain('Timing');
+      expect(stdout).not.toContain('$');
+      // No 64-hex-char sha256 run leaks into the signal-only view.
+      expect(stdout).not.toMatch(/[0-9a-f]{64}/);
+    });
+  });
+
+  // @ana A006, A007
+  describe('proof <slug> (no --why) still shows the full card', () => {
+    it('renders Timing and Provenance-class detail without --why', async () => {
+      await createProofChain([whyEntry]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['why-feature']);
+      expect(exitCode).toBe(0);
+      // Full card retains the Timing section the --why view drops.
+      expect(stdout).toContain('Timing');
+    });
+  });
+
   // ─── Detail View Tests (existing, unchanged) ──────────────────────
 
   // @ana A015, A016
