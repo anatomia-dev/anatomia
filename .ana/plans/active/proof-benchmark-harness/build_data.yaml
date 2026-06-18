@@ -1,0 +1,17 @@
+schema: 1
+concerns:
+  - summary: "A038 (anatrace-core unmodified) is a git/process gate, not a unit test — node_modules is untracked so no test can assert a git diff. Verified mechanically: `git diff --name-only -- '*anatrace-core*'` is empty and the scorer only imports/reads the package."
+    file: "packages/cli/tests/benchmark/scorer.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "Spec mockup ci95.high for [1,2,3] is 4.484438 (uses a rounded t-critical); the implementation uses the precise textbook t(0.975, df=2)=4.302653, yielding ci95.high=4.48414. Contract A029 only asserts >3.2, which holds. The small numeric difference is correct, not a defect."
+    file: "packages/cli/tests/benchmark/aggregate.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "The scorer reads the transcript file three times (parseTranscript for localization lines, deriveTranscript for counts, and a third readFileSync for parseSession/analyze context bytes). The spec endorses the double parse for surface clarity; the third read is the added context-facts surface. Transcripts are tiny, so this is intentional, not a perf concern — flagged for visibility."
+    file: "packages/cli/tests/benchmark/scorer.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "The pre-commit lint hook reports 1 warning (0 errors) over the staged set; the warning is not in any benchmark file (scoped eslint on the five new files is clean). Pre-existing, not introduced by this build."
+    severity: observation
+    suggested_action: acknowledge
