@@ -1,0 +1,14 @@
+schema: 1
+concerns:
+  - summary: "Pre-existing @ana tags (A001-A024) from a prior contract collide with this contract's IDs in proof.test.ts, proofSummary.test.ts, and agent-proof-context.test.ts; verifier should map tags from the new Phase-1 tests only."
+    file: "packages/cli/tests/commands/proof.test.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Spec File Changes omitted the 6 repo-root dogfood agent copies (.claude/.codex), but the byte-for-byte dogfood-sync test required editing them in lockstep with the templates."
+    file: "packages/cli/tests/templates/agent-proof-context.test.ts"
+    severity: debt
+    suggested_action: scope
+  - summary: "Truncated 140-char scope_summary can soft-wrap to a second physical line in narrow terminals — terminal wrapping, not a render bug; matches the spec mockup budget."
+    file: "packages/cli/src/commands/proof.ts"
+    severity: observation
+    suggested_action: acknowledge

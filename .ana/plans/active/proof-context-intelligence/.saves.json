@@ -32,5 +32,105 @@
   "spec-3": {
     "saved_at": "2026-06-18T16:22:42.801Z",
     "hash": "sha256:4f4c9f06e8321d4356964f260a12303e0e2add858b8f8c5e1ae336ca4d7b4d8c"
-  }
+  },
+  "build_started_at": "2026-06-18T16:24:13.788Z",
+  "build_agent": "ana-build",
+  "build-report-1": {
+    "saved_at": "2026-06-18T16:44:50.533Z",
+    "hash": "sha256:d7e9c1c781c15fc8515f3d1450bc3f016437e636cbd4f9af2b8daab00d71101d"
+  },
+  "build-data-1": {
+    "saved_at": "2026-06-18T16:44:50.534Z",
+    "hash": "sha256:c16c2fcb1385e28dee0a835a37f478b8e37afbb4d008486ac440bf05334523b4"
+  },
+  "modules_touched": [
+    ".claude/agents/ana-plan.md",
+    ".claude/agents/ana-verify.md",
+    ".claude/agents/ana.md",
+    ".codex/agents/ana-plan.md",
+    ".codex/agents/ana-verify.md",
+    ".codex/agents/ana.md",
+    "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/utils/proofSummary.ts",
+    "packages/cli/templates/.claude/agents/ana-plan.md",
+    "packages/cli/templates/.claude/agents/ana-verify.md",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/templates/.codex/agents/ana-plan.md",
+    "packages/cli/templates/.codex/agents/ana-verify.md",
+    "packages/cli/templates/.codex/agents/ana.md",
+    "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/templates/agent-proof-context.test.ts",
+    "packages/cli/tests/utils/proofSummary.test.ts"
+  ],
+  "module_churn": {
+    ".claude/agents/ana-plan.md": {
+      "added": 2,
+      "deleted": 0
+    },
+    ".claude/agents/ana-verify.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    ".claude/agents/ana.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    ".codex/agents/ana-plan.md": {
+      "added": 2,
+      "deleted": 0
+    },
+    ".codex/agents/ana-verify.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    ".codex/agents/ana.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/proof.ts": {
+      "added": 109,
+      "deleted": 4
+    },
+    "packages/cli/src/utils/proofSummary.ts": {
+      "added": 32,
+      "deleted": 0
+    },
+    "packages/cli/templates/.claude/agents/ana-plan.md": {
+      "added": 2,
+      "deleted": 0
+    },
+    "packages/cli/templates/.claude/agents/ana-verify.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/templates/.claude/agents/ana.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/templates/.codex/agents/ana-plan.md": {
+      "added": 2,
+      "deleted": 0
+    },
+    "packages/cli/templates/.codex/agents/ana-verify.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/templates/.codex/agents/ana.md": {
+      "added": 1,
+      "deleted": 1
+    },
+    "packages/cli/tests/commands/proof.test.ts": {
+      "added": 200,
+      "deleted": 0
+    },
+    "packages/cli/tests/templates/agent-proof-context.test.ts": {
+      "added": 32,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/proofSummary.test.ts": {
+      "added": 112,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": []
 }
