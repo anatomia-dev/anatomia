@@ -1,0 +1,321 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "Proof-Context Intelligence — why this file exists and what moves with it"
+
+assertions:
+  # ── AC1 — Shaped by section ──────────────────────────────────────────────
+  - id: A001
+    ac: AC1
+    says: "Proof context tells you which verified work items shaped a file"
+    block: "getProofContext returns a shaped_by list for a touched file"
+    target: "result.shaped_by"
+    matcher: "exists"
+
+  - id: A002
+    ac: AC1
+    says: "Each shaping work item carries its slug, kind, date, and intent"
+    block: "shaped_by rows include slug and scope_summary"
+    target: "result.shaped_by[0].slug"
+    matcher: "exists"
+
+  - id: A003
+    ac: AC1
+    says: "The proof context output shows a 'Shaped by' section"
+    block: "formatContextResult renders a Shaped by section"
+    target: "rendered.contextOutput"
+    matcher: "contains"
+    value: "Shaped by"
+
+  - id: A004
+    ac: [AC1, AC6]
+    says: "When more than three work items shaped a file, a drill-down hint points to the cheap detail view"
+    block: "shaped_by footer names ana proof <slug> --why when more than 3 exist"
+    target: "rendered.contextOutput"
+    matcher: "contains"
+    value: "--why"
+
+  # ── AC6 — --why signal-only drill-down ───────────────────────────────────
+  - id: A005
+    ac: AC6
+    says: "The --why view shows the work item's intent"
+    block: "ana proof <slug> --why renders scope_summary"
+    target: "rendered.whyOutput"
+    matcher: "contains"
+    value: "Scope"
+
+  - id: A006
+    ac: AC6
+    says: "The --why view hides provenance noise like cost and token accounting"
+    block: "ana proof <slug> --why omits the Provenance grid"
+    target: "rendered.whyOutput"
+    matcher: "not_contains"
+    value: "Provenance"
+
+  - id: A007
+    ac: AC6
+    says: "The --why view hides timing breakdowns"
+    block: "ana proof <slug> --why omits the Timing section"
+    target: "rendered.whyOutput"
+    matcher: "not_contains"
+    value: "Timing"
+
+  # ── AC9 — truncation, never embellished ──────────────────────────────────
+  - id: A008
+    ac: AC9
+    says: "A long work-item intent is truncated, not dumped whole, in Shaped by"
+    block: "scope_summary past the cap is truncated in formatContextResult"
+    target: "rendered.contextOutput"
+    matcher: "not_contains"
+    value: "SENTINEL_PAST_CAP"
+
+  # ── AC2 — proof co-change layer ──────────────────────────────────────────
+  - id: A009
+    ac: AC2
+    says: "Proof context lists other files that change together with this one"
+    block: "getProofContext returns also_changes_with proof partners"
+    target: "result.also_changes_with"
+    matcher: "exists"
+
+  - id: A010
+    ac: AC2
+    says: "The output shows an 'Also changes with' section"
+    block: "formatContextResult renders the Also changes with section"
+    target: "rendered.contextOutput"
+    matcher: "contains"
+    value: "Also changes with"
+
+  - id: A011
+    ac: AC2
+    says: "When more co-change partners exist than are shown, a 'top N' footer says so"
+    block: "co-change footer shows top 3 of N"
+    target: "rendered.contextOutput"
+    matcher: "contains"
+    value: "top 3 of"
+
+  # ── AC2b — day-1 import layer ─────────────────────────────────────────────
+  - id: A012
+    ac: AC2b
+    says: "With an import graph present, proof context shows who imports a file"
+    block: "also_changes_with carries an imported_by layer from the graph"
+    target: "result.also_changes_with.imported_by"
+    matcher: "exists"
+
+  - id: A013
+    ac: AC2b
+    says: "The import blast-radius layer renders even with no proof history"
+    block: "fresh repo (graph, no chain) renders Imported by"
+    target: "rendered.freshRepoOutput"
+    matcher: "contains"
+    value: "Imported by"
+
+  # ── AC3 — same-stem test-partner suppression ─────────────────────────────
+  - id: A014
+    ac: AC3
+    says: "A file's own test file is not listed as something that changes with it"
+    block: "same-stem test partner is suppressed from co-change"
+    target: "result.also_changes_with.suppressed_test_partner"
+    matcher: "equals"
+    value: true
+
+  - id: A015
+    ac: AC3
+    says: "When a test partner is suppressed, the output says so in one line"
+    block: "render emits a suppression note"
+    target: "rendered.contextOutput"
+    matcher: "contains"
+    value: "suppressed"
+
+  # ── AC4 — hidden / imports / unknown trichotomy ──────────────────────────
+  - id: A016
+    ac: AC4
+    says: "Each co-change partner is labelled by how it relates to the import graph"
+    block: "proof partner carries a relation flag"
+    target: "result.also_changes_with.proof_partners[0].relation"
+    matcher: "exists"
+
+  - id: A017
+    ac: AC4
+    says: "With no import graph, a partner is honestly 'unknown', never guessed"
+    block: "absent graph yields relation unknown, not hidden"
+    target: "result.also_changes_with.proof_partners[0].relation"
+    matcher: "equals"
+    value: "unknown"
+
+  - id: A018
+    ac: [AC4, AC7]
+    says: "Querying with no import graph never crashes"
+    block: "getProofContext returns a result when graph is absent"
+    target: "result.query"
+    matcher: "exists"
+
+  # ── AC5 — gates ──────────────────────────────────────────────────────────
+  - id: A019
+    ac: AC5
+    says: "A file touched fewer than three times never appears as a co-change couple"
+    block: "MIN_TOUCHES gate excludes under-touched files"
+    target: "result.coChangeProofPartnerCount"
+    matcher: "equals"
+    value: 0
+
+  - id: A020
+    ac: AC5
+    says: "A co-change couple needs at least two shared work items to appear"
+    block: "shown partners clear MIN_COTOUCH"
+    target: "result.also_changes_with.proof_partners[0].coTouchCount"
+    matcher: "greater"
+    value: 1
+
+  - id: A021
+    ac: AC5
+    says: "One giant refactor touching many files cannot manufacture co-change pairs by itself"
+    block: "oversized item is excluded from pair generation"
+    target: "result.coChangeFromOversizedItemOnly"
+    matcher: "equals"
+    value: 0
+
+  # ── AC7 — honest absence ─────────────────────────────────────────────────
+  - id: A022
+    ac: AC7
+    says: "With no proof history, the 'Shaped by' section is absent, not faked"
+    block: "no-chain output omits Shaped by"
+    target: "rendered.noChainOutput"
+    matcher: "not_contains"
+    value: "Shaped by"
+
+  - id: A023
+    ac: AC7
+    says: "With no history and no graph, 'Also changes with' is absent entirely"
+    block: "no-chain no-graph output omits Also changes with"
+    target: "rendered.noChainOutput"
+    matcher: "not_contains"
+    value: "Also changes with"
+
+  # ── AC8 — optional fields, old callers unaffected ────────────────────────
+  - id: A024
+    ac: AC8
+    says: "Existing proof-context fields still work after the new ones are added"
+    block: "touch_count remains on the result"
+    target: "result.touch_count"
+    matcher: "exists"
+
+  - id: A025
+    ac: AC8
+    says: "The existing findings list is unchanged by the new sections"
+    block: "findings array remains on the result"
+    target: "result.findings"
+    matcher: "exists"
+
+  # ── AC10 — first-screen caps ──────────────────────────────────────────────
+  - id: A026
+    ac: AC10
+    says: "A hot file with dozens of partners still shows only the top few"
+    block: "co-change display caps proof partners at 3 for a hot file"
+    target: "rendered.hotFileProofPartnerLineCount"
+    matcher: "equals"
+    value: 3
+
+  - id: A027
+    ac: AC10
+    says: "A hot file's output stays a first-screen, with an overflow footer"
+    block: "hot file render includes a top-N footer"
+    target: "rendered.hotFileOutput"
+    matcher: "contains"
+    value: "of"
+
+  # ── AC2b precondition / Phase 2 — graph written at init ──────────────────
+  - id: A028
+    ac: AC2b
+    says: "A fresh project install writes the import graph so blast-radius works day one"
+    block: "ana init writes a non-empty code-graph.json"
+    target: "initGraph.nodes.length"
+    matcher: "greater"
+    value: 0
+
+  - id: A029
+    ac: [AC2b, AC4]
+    says: "Reading a missing import graph returns nothing instead of crashing"
+    block: "readCodeGraph returns null when the file is absent"
+    target: "readCodeGraph.absentResult"
+    matcher: "equals"
+    value: null
+
+  # ── AC11 — adoption (ana.md) ──────────────────────────────────────────────
+  - id: A030
+    ac: AC11
+    says: "The scoping agent is told to run proof context on the files a change touches"
+    block: "ana.md template instructs running ana proof context"
+    target: "template.anaMd"
+    matcher: "contains"
+    value: "ana proof context"
+
+  # ── AC12 — verify framing ─────────────────────────────────────────────────
+  - id: A031
+    ac: AC12
+    says: "The reviewer no longer treats proof history as an optional aside"
+    block: "ana-verify.md drops the 'context, not a checklist' hedge"
+    target: "template.anaVerifyMd"
+    matcher: "not_contains"
+    value: "context, not a checklist"
+
+  - id: A032
+    ac: AC12
+    says: "The reviewer is told to form findings independently of the shaped-by history"
+    block: "ana-verify.md reaffirms independent findings"
+    target: "template.anaVerifyMd"
+    matcher: "contains"
+    value: "independent"
+
+  # ── AC13 — plan Build Brief co-change ─────────────────────────────────────
+  - id: A033
+    ac: AC13
+    says: "The planner passes co-change partners into the Build Brief so the builder won't forget them"
+    block: "ana-plan.md instructs including co-change partners in the Build Brief"
+    target: "template.anaPlanMd"
+    matcher: "contains"
+    value: "co-change"
+
+  # ── AC14 — codex mirrors ──────────────────────────────────────────────────
+  - id: A034
+    ac: AC14
+    says: "The same guidance reaches Codex users, not just Claude users"
+    block: "codex ana-verify mirror carries the independence framing"
+    target: "template.codexAnaVerifyMd"
+    matcher: "contains"
+    value: "independent"
+
+file_changes:
+  # Phase 1
+  - path: "packages/cli/src/utils/proofSummary.ts"
+    action: modify
+  - path: "packages/cli/src/commands/proof.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana-verify.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-plan.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana-verify.md"
+    action: modify
+  # Phase 2
+  - path: "packages/cli/src/engine/analyzers/graph/buildGraph.ts"
+    action: create
+  - path: "packages/cli/src/engine/analyzers/graph/readGraph.ts"
+    action: create
+  - path: "packages/cli/src/engine/scan-engine.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts"
+    action: create
+  - path: "packages/cli/tests/engine/analyzers/graph/readGraph.test.ts"
+    action: create
+  # Phase 3
+  - path: "packages/cli/src/engine/analyzers/proof-history/index.ts"
+    action: create
+  - path: "packages/cli/tests/engine/analyzers/proof-history.test.ts"
+    action: create
