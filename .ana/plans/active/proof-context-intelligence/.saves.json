@@ -50,7 +50,12 @@
     ".codex/agents/ana-plan.md",
     ".codex/agents/ana-verify.md",
     ".codex/agents/ana.md",
+    "packages/cli/src/commands/init/index.ts",
+    "packages/cli/src/commands/init/state.ts",
     "packages/cli/src/commands/proof.ts",
+    "packages/cli/src/engine/analyzers/graph/buildGraph.ts",
+    "packages/cli/src/engine/analyzers/graph/readGraph.ts",
+    "packages/cli/src/engine/scan-engine.ts",
     "packages/cli/src/utils/proofSummary.ts",
     "packages/cli/templates/.claude/agents/ana-plan.md",
     "packages/cli/templates/.claude/agents/ana-verify.md",
@@ -58,7 +63,10 @@
     "packages/cli/templates/.codex/agents/ana-plan.md",
     "packages/cli/templates/.codex/agents/ana-verify.md",
     "packages/cli/templates/.codex/agents/ana.md",
+    "packages/cli/tests/commands/init/code-graph-init.test.ts",
     "packages/cli/tests/commands/proof.test.ts",
+    "packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts",
+    "packages/cli/tests/engine/analyzers/graph/readGraph.test.ts",
     "packages/cli/tests/templates/agent-proof-context.test.ts",
     "packages/cli/tests/utils/proofSummary.test.ts"
   ],
@@ -87,9 +95,29 @@
       "added": 1,
       "deleted": 1
     },
+    "packages/cli/src/commands/init/index.ts": {
+      "added": 4,
+      "deleted": 1
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 10,
+      "deleted": 2
+    },
     "packages/cli/src/commands/proof.ts": {
       "added": 109,
       "deleted": 4
+    },
+    "packages/cli/src/engine/analyzers/graph/buildGraph.ts": {
+      "added": 560,
+      "deleted": 0
+    },
+    "packages/cli/src/engine/analyzers/graph/readGraph.ts": {
+      "added": 63,
+      "deleted": 0
+    },
+    "packages/cli/src/engine/scan-engine.ts": {
+      "added": 22,
+      "deleted": 1
     },
     "packages/cli/src/utils/proofSummary.ts": {
       "added": 32,
@@ -119,8 +147,20 @@
       "added": 1,
       "deleted": 1
     },
+    "packages/cli/tests/commands/init/code-graph-init.test.ts": {
+      "added": 87,
+      "deleted": 0
+    },
     "packages/cli/tests/commands/proof.test.ts": {
       "added": 200,
+      "deleted": 0
+    },
+    "packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts": {
+      "added": 216,
+      "deleted": 0
+    },
+    "packages/cli/tests/engine/analyzers/graph/readGraph.test.ts": {
+      "added": 82,
       "deleted": 0
     },
     "packages/cli/tests/templates/agent-proof-context.test.ts": {
@@ -147,5 +187,13 @@
   "verify-data-1": {
     "saved_at": "2026-06-18T17:00:31.283Z",
     "hash": "sha256:41c36185d1d12c93cae30d51e29fbd658f4f6e97d041c3f354fa440440fe9b60"
+  },
+  "build-report-2": {
+    "saved_at": "2026-06-18T17:15:26.835Z",
+    "hash": "sha256:ddc4f4185482cfa3af9704e1c4c51719ea7b2547913dedb73e30acaffffff34c"
+  },
+  "build-data-2": {
+    "saved_at": "2026-06-18T17:15:26.836Z",
+    "hash": "sha256:39b757765b6da65d9d54f764c5ea20d6dc0f308a6464817900c20e618408c6f8"
   }
 }
