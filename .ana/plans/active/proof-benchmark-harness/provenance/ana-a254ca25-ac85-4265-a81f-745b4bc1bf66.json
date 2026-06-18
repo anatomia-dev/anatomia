@@ -1,0 +1,28 @@
+{
+  "role": "ana",
+  "harness": "claude",
+  "model": "claude-opus-4-8",
+  "agent_def_hash": "sha256:0a8a78925acd39f2d8f20373712664dbf980bff46d4831025ffe37b69d897468",
+  "cli_version": "1.2.2",
+  "session_id": "a254ca25-ac85-4265-a81f-745b4bc1bf66",
+  "captured_at": "2026-06-18T22:27:41.954Z",
+  "transcript_hash": "sha256:fdffe490f067d88e43b18bb31b637ffc57fa111b1b053ca673482a858b66480c",
+  "derived": {
+    "tokens": {
+      "input": 7363,
+      "output": 25976,
+      "cache_create": 56657,
+      "cache_read": 1390876
+    },
+    "price_table_version": "2026-06-14",
+    "derive_version": "3",
+    "duration_ms": 1476240,
+    "turns": 51,
+    "tool_calls": 21,
+    "commands_run": 14,
+    "tests_executed": 0,
+    "failures_encountered": 0,
+    "files_touched": 1,
+    "model": "claude-opus-4-8"
+  }
+}
