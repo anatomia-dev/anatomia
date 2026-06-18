@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-208 runs · 282 active · 5 promoted · 925 closed
+209 runs · 296 active · 5 promoted · 927 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 145 | 208 | 2026-06-17 |
+| cli | 146 | 222 | 2026-06-18 |
 | website | 25 | 26 | 2026-06-17 |
 
 ## Hot Modules
@@ -15,30 +15,45 @@
 | File | Active | Entries |
 |------|--------|--------|
 | packages/cli/src/commands/work.ts | 16 | 11 |
+| packages/cli/src/commands/proof.ts | 10 | 7 |
+| packages/cli/src/utils/proofSummary.ts | 9 | 5 |
 | packages/cli/src/commands/init/assets.ts | 9 | 4 |
-| packages/cli/tests/commands/artifact.test.ts | 8 | 7 |
-| packages/cli/tests/commands/work.test.ts | 8 | 7 |
-| packages/cli/src/commands/proof.ts | 8 | 6 |
+| packages/cli/tests/commands/proof.test.ts | 8 | 7 |
 
 ## Promoted Rules
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 282 total)
+## Active Findings (30 shown of 296 total)
 
-### packages/cli/src/commands/artifact-validators.ts
+### packages/cli/src/commands/init/index.ts
 
-- **code:** Bold-form regex /\*\*\s*(AC\d+)/ matches **ACn** anywhere on a line, so a prose mention ('see **AC3** above') extracts AC3 as a criterion id. Harmless across the 205-scope corpus and the dogfood (exactly AC1-14, no spurious ids), but a future version-1.1 contract could gain a spurious prose-derived id that becomes a false 'uncovered' block. Latent, low-likelihood. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
-- **code:** Defensive try/catch around joinCoverage in evaluateCoverageGate is effectively unreachable — joinCoverage is total (no throw path), so the 'could not evaluate' diagnostic branch cannot trigger in practice and no test exercises it. Spec explicitly requested defensive depth, so it is intentional, but it is untested dead-ish code. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **code:** Init ordering asymmetry: code-graph.json is written (runAnalyzer, index.ts:131) before createDirectoryStructure (134), while symbol-index.json is written after (138). Safe today because createDirectoryStructure uses idempotent recursive mkdir, but a latent footgun if that ever clears the staging state dir. — *Proof-Context Intelligence — why this file exists and what moves with it*
 
-### packages/cli/src/commands/plan.ts
+### packages/cli/src/commands/proof.ts
 
-- **code:** plan.ts missing-slug guard prints 'Error:' to stderr but exits 0 — an error condition reports success exit code — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
-- **code:** plan.ts re-parses coverage_waivers for reason text because joinCoverage does not return the reason; minor duplication of waiver iteration — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **code:** --why flag is silently ignored when `ana proof` is invoked in list mode (no slug, no --last); harmless but the flag accepts input it does nothing with — *Proof-Context Intelligence — why this file exists and what moves with it*
+- **test:** Carried forward from verify_report_3 (unchanged). Live run could not exercise the hidden/imports render path: this worktree has no .ana/state/code-graph.json, so every co-change partner renders under the `unknown` group (`Changed together:`). The graph-present render (hidden/imports grouping, imported_by/imports layers) is covered only by unit/integration tests that write a synthetic graph, not by an end-to-end run against the real repo. Reduced live confidence on that path only. — *Proof-Context Intelligence — why this file exists and what moves with it*
 
 ### packages/cli/src/commands/work-proof.ts
 
 - **code:** User-facing incomplete-coverage warning says 'behavioral verdicts are evidence, never a gate' unqualified, while its sibling display copy in proof.ts:670 was correctly qualified with the veto exception — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+
+### packages/cli/src/engine/analyzers/graph/buildGraph.ts
+
+- **code:** Stale harvested JSDoc: CodeGraph.filesAnalyzed is a `number` count but its JSDoc reads 'Files whose imports were considered (the parse universe), sorted' — describes an array. Doc drifted from the field during the verbatim harvest. — *Proof-Context Intelligence — why this file exists and what moves with it*
+
+### packages/cli/src/engine/analyzers/graph/readGraph.ts
+
+- **code:** Harvested-but-unused surface in Phase 2: CodeGraph.barrelFiles, generatedFiles, inDegree and the readCodeGraph reader have zero src consumers this phase. By design — spec frames Phase 2 as an inert artifact consumed in Phase 3, and instructed harvesting the full type verbatim. Sanctioned, not YAGNI; flagged so Phase 3 closes the loop. — *Proof-Context Intelligence — why this file exists and what moves with it*
+
+### packages/cli/src/engine/analyzers/proof-history/index.ts
+
+- **code:** AC3 path-form suppression bug from verify_report_3 is FIXED. isSameStemTestPartner now takes the pairing FileMatcher and routes the final comparison through match(normalizeForTestMatch(partner), normalizeForTestMatch(query)) instead of normalized exact-equality, so suppression is exactly as path-form-tolerant as pairing. Verified live: `node dist/index.js proof context src/utils/proofSummary.ts` (package-relative) and `... packages/cli/src/utils/proofSummary.ts` (repo-relative) BOTH render `top 3 of 39` + `(note: same-stem test partner suppressed)`; grep for proofSummary.test.ts in both outputs returns 0. — *Proof-Context Intelligence — why this file exists and what moves with it*
+
+### packages/cli/src/engine/scan-engine.ts
+
+- **test:** Spec-mandated `ana scan` byte-parity regression test is missing — no test asserts scanProject writes no code-graph.json when persistGraphTo is unset. The read-only contract is verified by source inspection only (guarded by `if (options.persistGraphTo)`). — *Proof-Context Intelligence — why this file exists and what moves with it*
 
 ### packages/cli/src/types/proof.ts
 
@@ -50,7 +65,6 @@
 - **code:** Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here). — *Guard the anatrace-core load and emit the first real attestation records*
 - **code:** Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics. — *Guard the anatrace-core load and emit the first real attestation records*
 - **code:** captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here. — *Guard the anatrace-core load and emit the first real attestation records*
-- **code:** projectVerdicts default param `coreVersion: string = readCoreVersion()` re-invokes the resolver. The sole production caller passes coreVersion explicitly so it never fires today, but a future caller relying on the default would bypass the fail-closed gate and interpolate an empty `anatrace-core@` into the drift warning. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
 
 ### packages/cli/src/utils/git-operations.ts
 
@@ -58,9 +72,10 @@
 
 ### packages/cli/src/utils/proofSummary.ts
 
+- **code:** proofSummary.ts (+32) and proof.ts (+113) continue growth past the comfort threshold flagged by prior findings (decompose-proof-summary-C1, audit-matrix-orientation-C7); additive and well-contained here but the trajectory persists — *Proof-Context Intelligence — why this file exists and what moves with it*
+- **code:** Carried forward from verify_report_3 (unchanged — re-build touched only proof-history/index.ts). Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer regardless of directory. Low likelihood (requires legacy bare-basename modules_touched); silently drops real import edges if it occurs. — *Proof-Context Intelligence — why this file exists and what moves with it*
+- **code:** Carried forward from verify_report_3 (unchanged — the re-build added 0 lines to proofSummary.ts). proofSummary.ts remains oversized after Phase 3's ~138-line addition; proof context confirms decompose-proof-summary-C1 and audit-matrix-orientation-C7 are still active. The also_changes_with assembly/dedup glue could live in the pure engine module rather than the already-large util. — *Proof-Context Intelligence — why this file exists and what moves with it*
 - **code:** deriveVerdict coerces only on an exactly-spelled 'UNSATISFIED' status; a typo'd/garbled status cell falls back to 'UNKNOWN' (proofSummary.ts:205) and will NOT gate a PASS — consistent with the self-authored honesty boundary but fragile — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
-- **code:** proofSummary.ts continues to grow past the comfort threshold (Phase 2 adds coverage threading) — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
-- **code:** parseACResults PARTIAL regex false-match risk only partially mitigated; section-scoping helps but in-section bullets containing PARTIAL in prose could still match — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
 ### packages/cli/src/utils/verdict.ts
 
@@ -71,17 +86,21 @@
 
 - **test:** Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken. — *Guard the anatrace-core load and emit the first real attestation records*
 
-### packages/cli/tests/commands/proof-card-golden.test.ts
+### packages/cli/tests/commands/init/code-graph-init.test.ts
 
-- **test:** Golden snapshot fixture INPUTS were changed (cache_read 80k→1M, 900k→1M; model gpt-5-codex→gpt-5) to keep the card within 80 columns once the wider real table-version label is shown — so the golden test no longer proves cost-invariance for unchanged inputs. — *anatrace-core integration (provenance swap + behavioral attestation)*
+- **test:** New init integration test uses `git init` without `-b main`, violating the documented testing standard (CI runners vary init.defaultBranch — has caused CI failures 3 times). Mirrors the pre-existing flawed pattern in template-propagation.test.ts. — *Proof-Context Intelligence — why this file exists and what moves with it*
 
-### packages/cli/tests/commands/scope-ac-corpus.test.ts
+### packages/cli/tests/commands/init/template-propagation.test.ts
 
-- **test:** scope-ac-corpus.test.ts asserts toBe(0) against the live, growing completed-scope corpus (205 today). A future completed scope using '## Acceptance Criteria' with non-AC-id criteria would flip emptyExtractionCount/falseAmbiguousCount and break this test in an unrelated future PR. Intentional safety gate, but couples future greens to historical scope formatting. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
+- **test:** Pre-existing flaky test: template-propagation 'Claude-only never touches .codex tree' times out at ~5025ms under full-suite concurrency (passes 100% in isolation). Reproduced on main (failed 1/4 runs at 5025ms with no Phase 2 changes), so NOT a regression. Phase 2 adds import-graph build to every `ana init`, which may marginally raise the flake rate. Root cause: a single test spawns the real CLI `init` twice under the default 5000ms timeout. Fix: raise the timeout on these CLI-spawning init tests. — *Proof-Context Intelligence — why this file exists and what moves with it*
 
-### packages/cli/tests/commands/verdict-veto-integration.test.ts
+### packages/cli/tests/commands/proof.test.ts
 
-- **test:** A verify session that reads build_report.md via Bash/Grep substring (not the Read tool) is never exercised in Anatomia's own suite — relied on as an anatrace-core engine guarantee (read-paths binds only to Read file_path); a future engine bump could regress it undetected here — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+- **test:** A006 (--why omits Provenance) has no positive-control guard asserting the full card DOES contain 'Provenance'; only A007's Timing has that guard, so A006 could silently pass if the Provenance label were renamed. Live-verified this round, but the test alone is weaker than A007's — *Proof-Context Intelligence — why this file exists and what moves with it*
+
+### packages/cli/tests/engine/analyzers/proof-history.test.ts
+
+- **test:** Path-form-mismatch test gap from verify_report_3 is FIXED. proof-history.test.ts:200 (@ana A014) exercises a package-relative query (src/commands/work.ts) against a repo-relative stored partner (packages/cli/tests/commands/work.test.ts) and asserts suppressedTestPartner === true, the test mirror absent, and the real partner present — the exact red-before/green-after case the prior fix brief specified. Suite went 4068 -> 4069 passing, 0 failed. — *Proof-Context Intelligence — why this file exists and what moves with it*
 
 ### packages/cli/tests/templates/agent-proof-context.test.ts
 
@@ -90,11 +109,6 @@
 ### packages/cli/tests/utils/compliance.test.ts
 
 - **test:** Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path. — *Guard the anatrace-core load and emit the first real attestation records*
-- **test:** Real-engine happy-path tests (A052/A053/A054) judge a trivial 'doing work' transcript. A053 guards with verdicts.length > 0 before asserting zero out-of-set reasons, so it cannot pass vacuously — a good defensive assertion worth preserving if the fixture is ever simplified further. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
-
-### packages/cli/tests/utils/proofSummary.test.ts
-
-- **test:** Stale/cross-contract @ana tags in long-lived test files mis-map this contract's assertion IDs — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
 
 ### website/content/docs/concepts/contract.mdx
 
@@ -107,9 +121,4 @@
 ### website/lib/proof-feed.ts
 
 - **code:** Pre-existing lint warnings in website (formatAge unused in components/hero or lib/proof-feed; 'latest' unused). 0 errors, gate passes. NOT introduced by this build — the four changed files contain neither symbol. Recorded so the next engineer doesn't attribute them to this change. — *Public-surface honesty touch-ups*
-
-### General
-
-- **test:** Flaky test in the broader suite — one test failed in the sealed verify run (3766p/1f/2s) but never reproduced across 7 full-suite runs + 5 regression-focus runs. 'Push failed after retry' noise points to a git-operation/retry test, not Phase 1 code. — *Verifier Intent Coverage — mechanically guarantee the contract covers scope intent*
-- **code:** Observable (non-gating): no compliance record with anatrace_core_version == 0.4.0 is on disk yet for this cycle — it emits at `ana artifact save`, not at test time. Expected to land when the verify report is saved. Absence is a ~5-min follow-on per spec, never a held PR. — *Bump anatrace-core 0.2.0 → 0.4.0 (pin, fail-closed emit, reason lock, real-engine CI)*
 
