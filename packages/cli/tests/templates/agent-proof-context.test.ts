@@ -160,3 +160,47 @@ describe('Proof-context adoption framing (proof-context-intelligence Phase 1)', 
     expect(content).toContain('independent');
   });
 });
+
+// Phase 3 of proof-context-intelligence — co-change template guidance.
+describe('Co-change template guidance (proof-context-intelligence Phase 3)', () => {
+  const phaseCodexTemplatesDir = path.join(__dirname, '../../templates/.codex/agents');
+  const codexTemplate = (file: string): string =>
+    readFileSync(path.join(phaseCodexTemplatesDir, file), 'utf-8');
+
+  // @ana A033
+  it('ana-plan.md instructs including co-change partners in the Build Brief', () => {
+    const content = readTemplate('ana-plan.md');
+    expect(content).toContain('co-change');
+    expect(content).toContain('Build Brief');
+  });
+
+  // @ana A033, A014 (codex mirror)
+  it('codex ana-plan.md mirrors the co-change Build Brief guidance', () => {
+    expect(codexTemplate('ana-plan.md')).toContain('co-change');
+  });
+
+  // @ana A032 (co-change consumption, independence preserved)
+  it('ana-verify.md directs consuming co-change while keeping findings independent', () => {
+    const content = readTemplate('ana-verify.md');
+    expect(content).toContain('co-change');
+    expect(content).toContain('independent');
+  });
+
+  // @ana A034 (codex mirror carries co-change consumption)
+  it('codex ana-verify.md mirrors the co-change consumption guidance', () => {
+    const content = codexTemplate('ana-verify.md');
+    expect(content).toContain('co-change');
+    expect(content).toContain('independent');
+  });
+
+  // @ana A030 (Also changes with framed as blast radius in scoping)
+  it('ana.md frames Also changes with as blast-radius discovery', () => {
+    const content = readTemplate('ana.md');
+    expect(content).toContain('Also changes with');
+    expect(content).toContain('blast radius');
+  });
+
+  it('codex ana.md mirrors the Also changes with blast-radius framing', () => {
+    expect(codexTemplate('ana.md')).toContain('Also changes with');
+  });
+});
