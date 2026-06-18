@@ -197,6 +197,28 @@ describe('computeCoChange — same-stem test-partner suppression', () => {
     expect(result.partners.map((p) => p.file)).toContain('packages/cli/src/commands/pr.ts');
   });
 
+  // @ana A014
+  it('suppresses the test partner when the query path form differs from the stored partner', () => {
+    // Live failure mode (verify_report_3 blocker): running `ana proof context`
+    // from `packages/cli` yields a package-relative query (`src/commands/work.ts`)
+    // while `modules_touched` stores repo-relative paths
+    // (`packages/cli/tests/commands/work.test.ts`). Pairing matches across the
+    // two forms via fileMatches, so suppression must be exactly as path-tolerant
+    // — otherwise the query's own test file leaks into the co-change list.
+    const query = 'src/commands/work.ts';
+    const storedSrc = 'packages/cli/src/commands/work.ts';
+    const testMirror = 'packages/cli/tests/commands/work.test.ts';
+    const entries = [
+      entry('s1', [storedSrc, testMirror, 'packages/cli/src/commands/pr.ts']),
+      entry('s2', [storedSrc, testMirror, 'packages/cli/src/commands/pr.ts']),
+      entry('s3', [storedSrc, testMirror, 'packages/cli/src/commands/pr.ts']),
+    ];
+    const result = computeCoChange(entries, query, null, fileMatches);
+    expect(result.suppressedTestPartner).toBe(true);
+    expect(result.partners.map((p) => p.file)).not.toContain(testMirror);
+    expect(result.partners.map((p) => p.file)).toContain('packages/cli/src/commands/pr.ts');
+  });
+
   it('does NOT suppress a same-stem test from a different module', () => {
     // src/x/index.ts must not suppress src/y/index.test.ts — different modules.
     const q = 'src/x/index.ts';

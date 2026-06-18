@@ -137,16 +137,22 @@ function normalizeForTestMatch(filePath: string): string {
  * versa). Net-new in Phase 3 — the harvested analyzer does not suppress
  * partners.
  *
- * Requires exactly one side to be a test file, then matches on the normalized
- * path (which aligns the `src/`↔`tests/` mirror common in this codebase). A
+ * Requires exactly one side to be a test file, then aligns the `src/`↔`tests/`
+ * mirror via `normalizeForTestMatch` and compares the normalized forms with the
+ * SAME `match` (`fileMatches`) used for query↔partner pairing. Routing the final
+ * comparison through the one matcher — instead of a divergent normalized
+ * exact-equality — makes suppression exactly as path-form-tolerant as pairing,
+ * so a package-relative query (`src/commands/work.ts`) still suppresses a
+ * repo-relative test partner (`packages/cli/tests/commands/work.test.ts`). A
  * bare-basename query/partner falls back to stem equality, since there is no
  * directory structure to mirror.
  *
  * @param query - The queried file path.
  * @param partner - A candidate co-change partner path.
+ * @param match - File matcher reused from pairing (no second matcher).
  * @returns Whether the partner should be suppressed as a same-stem test file.
  */
-function isSameStemTestPartner(query: string, partner: string): boolean {
+function isSameStemTestPartner(query: string, partner: string, match: FileMatcher): boolean {
   // Exactly one side must be a test file — two non-tests or two tests are real
   // co-change, not a file/its-own-test pairing.
   if (isTestFile(query) === isTestFile(partner)) return false;
@@ -156,7 +162,11 @@ function isSameStemTestPartner(query: string, partner: string): boolean {
     return stemOf(query) === stemOf(partner);
   }
 
-  return normalizeForTestMatch(query) === normalizeForTestMatch(partner);
+  // Align the src/↔tests/ mirror, then defer to the pairing matcher's
+  // `/`-boundary suffix tolerance — `match` reconciles differing path prefixes
+  // (package-relative vs repo-relative) the same way it does for pairing, while
+  // the `/` boundary still keeps genuinely different modules distinct.
+  return match(normalizeForTestMatch(partner), normalizeForTestMatch(query));
 }
 
 /**
@@ -263,7 +273,7 @@ export function computeCoChange(
     if (acc.items < MIN_COTOUCH) continue;
 
     // 3. Same-stem test-partner suppression (net-new).
-    if (isSameStemTestPartner(queryFile, file)) {
+    if (isSameStemTestPartner(queryFile, file, match)) {
       suppressedTestPartner = true;
       continue;
     }
