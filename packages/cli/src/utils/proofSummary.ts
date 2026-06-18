@@ -1223,11 +1223,14 @@ interface ProofChainEntryForContext {
  *
  * Path-boundary checks ('/' prefix) prevent false positives from partial names.
  *
+ * Exported so the proof co-change engine can reuse the exact same matcher
+ * (passed in as `FileMatcher`) rather than introducing a second one.
+ *
  * @param stored - File path from proof chain finding/concern
  * @param queried - File path from user query
  * @returns Whether the files match
  */
-function fileMatches(stored: string, queried: string): boolean {
+export function fileMatches(stored: string, queried: string): boolean {
   // Exact match
   if (stored === queried) return true;
 
