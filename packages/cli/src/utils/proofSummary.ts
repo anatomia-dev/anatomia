@@ -1169,14 +1169,28 @@ export interface ProofContextResult {
   }>;
   touch_count: number;
   last_touched: string | null;
+  /**
+   * Verified work items that shaped this file, most-recent-first by
+   * `completed_at`. Optional and additive — absent when no proof chain entry
+   * touches the queried file, so the JSON shape for old callers is unaffected.
+   */
+  shaped_by?: Array<{
+    slug: string;
+    kind?: string;
+    completed_at: string;
+    scope_summary: string;
+  }>;
 }
 
 /**
  * Proof chain entry structure for getProofContext (minimal projection)
  */
 interface ProofChainEntryForContext {
+  slug?: string;
   feature: string;
   completed_at?: string;
+  kind?: string;
+  scope_summary?: string;
   modules_touched?: string[];
   findings?: Array<{
     id: string;
@@ -1279,6 +1293,7 @@ export function getProofContext(queries: string[], projectRoot: string, options?
     const matchedFindings: ProofContextResult['findings'] = [];
     const matchedConcerns: ProofContextResult['build_concerns'] = [];
     const touchDates: string[] = [];
+    const shapedBy: NonNullable<ProofContextResult['shaped_by']> = [];
 
     for (const entry of entries) {
       let entryTouches = false;
@@ -1327,10 +1342,26 @@ export function getProofContext(queries: string[], projectRoot: string, options?
       if (entryTouches && entryDate) {
         touchDates.push(entryDate);
       }
+
+      // A touching entry is a "shaper" of this file. Collect its intent so the
+      // command can answer "why is this file the way it is". Guard every
+      // optional read — legacy entries predate slug/kind/scope_summary.
+      if (entryTouches) {
+        const row: NonNullable<ProofContextResult['shaped_by']>[number] = {
+          slug: entry.slug ?? '',
+          completed_at: entryDate,
+          scope_summary: entry.scope_summary ?? '',
+        };
+        if (entry.kind !== undefined) row.kind = entry.kind;
+        shapedBy.push(row);
+      }
     }
 
     // Sort dates descending to find most recent
     touchDates.sort((a, b) => b.localeCompare(a));
+
+    // Rank shapers most-recent-first: recency answers "why is it like this now".
+    shapedBy.sort((a, b) => b.completed_at.localeCompare(a.completed_at));
 
     return {
       query,
@@ -1338,6 +1369,7 @@ export function getProofContext(queries: string[], projectRoot: string, options?
       build_concerns: matchedConcerns,
       touch_count: touchDates.length,
       last_touched: touchDates[0] ?? null,
+      ...(shapedBy.length > 0 ? { shaped_by: shapedBy } : {}),
     };
   });
 }

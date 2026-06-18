@@ -2734,3 +2734,115 @@ describe('computeTiming with per-phase start keys', () => {
     expect(summary.timing.verify).toBe(22); // 8 + 14
   });
 });
+
+describe('getProofContext shaped_by', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'shaped-by-test-'));
+    await fs.promises.mkdir(path.join(tempDir, '.ana'), { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  });
+
+  function writeChain(entries: unknown[]): void {
+    fs.writeFileSync(
+      path.join(tempDir, '.ana', 'proof_chain.json'),
+      JSON.stringify({ entries }, null, 2),
+    );
+  }
+
+  function entryTouching(over: Record<string, unknown>): Record<string, unknown> {
+    return {
+      slug: 'some-slug',
+      feature: 'Some Feature',
+      completed_at: '2026-05-01T10:00:00Z',
+      kind: 'feature',
+      scope_summary: 'Default intent text.',
+      findings: [
+        { id: 'f1', category: 'code', summary: 'finding', file: 'packages/cli/src/target.ts', anchor: null, status: 'active' },
+      ],
+      ...over,
+    };
+  }
+
+  // @ana A001, A002
+  it('produces a shaped_by row with slug, kind, completed_at, and scope_summary for a touching entry', () => {
+    writeChain([entryTouching({ slug: 'shaper-one', kind: 'fix', scope_summary: 'Intent for shaper one.' })]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.shaped_by).toBeDefined();
+    expect(results[0]!.shaped_by!.length).toBe(1);
+    const row = results[0]!.shaped_by![0]!;
+    expect(row.slug).toBe('shaper-one');
+    expect(row.kind).toBe('fix');
+    expect(row.completed_at).toBe('2026-05-01T10:00:00Z');
+    expect(row.scope_summary).toBe('Intent for shaper one.');
+  });
+
+  // @ana A001
+  it('orders shaped_by rows most-recent-first by completed_at', () => {
+    writeChain([
+      entryTouching({ slug: 'older', completed_at: '2026-01-01T00:00:00Z' }),
+      entryTouching({ slug: 'newest', completed_at: '2026-06-01T00:00:00Z' }),
+      entryTouching({ slug: 'middle', completed_at: '2026-03-01T00:00:00Z' }),
+    ]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.shaped_by!.map((s) => s.slug)).toEqual(['newest', 'middle', 'older']);
+  });
+
+  // @ana A022
+  it('omits shaped_by entirely when no proof chain entry touches the file', () => {
+    writeChain([entryTouching({})]);
+    const results = getProofContext(['packages/cli/src/untouched.ts'], tempDir);
+
+    expect(results[0]!.shaped_by).toBeUndefined();
+  });
+
+  it('omits shaped_by when there is no proof chain at all', () => {
+    // No chain file written.
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+    expect(results[0]!.shaped_by).toBeUndefined();
+  });
+
+  it('produces a shaped_by row for a legacy entry lacking scope_summary without crashing', () => {
+    const legacy = entryTouching({ slug: 'legacy' });
+    delete legacy['scope_summary'];
+    delete legacy['kind'];
+    writeChain([legacy]);
+
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+    expect(results[0]!.shaped_by!.length).toBe(1);
+    expect(results[0]!.shaped_by![0]!.scope_summary).toBe('');
+    expect(results[0]!.shaped_by![0]!.kind).toBeUndefined();
+  });
+
+  // @ana A024, A025
+  it('leaves existing touch_count and findings fields intact alongside shaped_by', () => {
+    writeChain([entryTouching({ slug: 'shaper' })]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.touch_count).toBe(1);
+    expect(results[0]!.findings.length).toBe(1);
+    expect(results[0]!.shaped_by!.length).toBe(1);
+  });
+
+  it('treats a build-concern-only match as a shaper (no findings on the file)', () => {
+    const entry = entryTouching({
+      slug: 'concern-only',
+      findings: [],
+      build_concerns: [
+        { summary: 'a concern', file: 'packages/cli/src/target.ts' },
+      ],
+    });
+    writeChain([entry]);
+    const results = getProofContext(['packages/cli/src/target.ts'], tempDir);
+
+    expect(results[0]!.findings.length).toBe(0);
+    expect(results[0]!.shaped_by!.length).toBe(1);
+    expect(results[0]!.shaped_by![0]!.slug).toBe('concern-only');
+  });
+});
