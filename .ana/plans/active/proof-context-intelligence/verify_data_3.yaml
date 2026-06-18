@@ -1,38 +1,38 @@
 schema: 1
 findings:
   - category: code
-    summary: "AC3 test-partner suppression fails for package-relative queries — query's own test file leaks into co-change list. Pairing uses fileMatches (suffix-tolerant) but suppression uses normalizeForTestMatch (prefix-sensitive exact), so the two disagree when query and stored partner have different path prefixes (e.g. `src/utils/x.ts` vs `packages/cli/tests/utils/x.test.ts`). Reproduced live: `cd packages/cli && node dist/index.js proof context src/utils/proofSummary.ts` lists proofSummary.test.ts as a partner with no suppression note (top 3 of 40); the full repo-relative query suppresses correctly (top 3 of 39)."
+    summary: "AC3 path-form suppression bug from verify_report_3 is FIXED. isSameStemTestPartner now takes the pairing FileMatcher and routes the final comparison through match(normalizeForTestMatch(partner), normalizeForTestMatch(query)) instead of normalized exact-equality, so suppression is exactly as path-form-tolerant as pairing. Verified live: `node dist/index.js proof context src/utils/proofSummary.ts` (package-relative) and `... packages/cli/src/utils/proofSummary.ts` (repo-relative) BOTH render `top 3 of 39` + `(note: same-stem test partner suppressed)`; grep for proofSummary.test.ts in both outputs returns 0."
     file: "packages/cli/src/engine/analyzers/proof-history/index.ts"
-    line: 149
-    severity: risk
-    suggested_action: scope
+    line: 169
+    severity: observation
+    suggested_action: acknowledge
     related_assertions: ["A014", "A015"]
   - category: test
-    summary: "No test covers a path-form mismatch between query and stored partner in suppression. Every suppression test (proof-history.test.ts, proofSummary.test.ts) uses aligned path forms — both repo-relative or both package-relative — so the live failure mode (package-relative query vs repo-relative modules_touched) is never exercised. The spec's own gotcha flagged monorepo path reconciliation as a risk."
+    summary: "Path-form-mismatch test gap from verify_report_3 is FIXED. proof-history.test.ts:200 (@ana A014) exercises a package-relative query (src/commands/work.ts) against a repo-relative stored partner (packages/cli/tests/commands/work.test.ts) and asserts suppressedTestPartner === true, the test mirror absent, and the real partner present — the exact red-before/green-after case the prior fix brief specified. Suite went 4068 -> 4069 passing, 0 failed."
     file: "packages/cli/tests/engine/analyzers/proof-history.test.ts"
-    line: 185
-    severity: debt
-    suggested_action: scope
+    line: 200
+    severity: observation
+    suggested_action: acknowledge
     related_assertions: ["A014"]
   - category: upstream
-    summary: "Contract assertions A014/A015 are too narrow to cover AC3's intent. Their tagged tests use aligned path forms (both repo-relative or both package-relative), so they pass while the real failure mode (package-relative query vs repo-relative modules_touched) leaks the query's own test file. A future contract revision should assert suppression holds across path-form mismatch, not just the aligned case."
-    severity: risk
-    suggested_action: scope
+    summary: "Contract A014/A015 text remains narrow: the assertions still describe the aligned-path case only. In practice the new @ana A014 unit test now exercises the path-form mismatch, closing the runtime gap, but the contract sentence itself does not mandate cross-path-form suppression. A future contract revision should encode 'suppression holds across path-form mismatch' so the guarantee is sealed, not just incidentally tested. Contract is sealed this cycle (INTACT) — do not edit now."
+    severity: observation
+    suggested_action: monitor
     related_assertions: ["A014", "A015"]
   - category: code
-    summary: "Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer, even ones in different directories. Low likelihood (requires legacy bare-basename modules_touched) but silently drops real import edges when it occurs."
+    summary: "Carried forward from verify_report_3 (unchanged — re-build touched only proof-history/index.ts). Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer regardless of directory. Low likelihood (requires legacy bare-basename modules_touched); silently drops real import edges if it occurs."
     file: "packages/cli/src/utils/proofSummary.ts"
-    line: 1339
+    line: 1345
     severity: observation
     suggested_action: monitor
   - category: test
-    summary: "Live run could not exercise the hidden/imports render path: this worktree has no .ana/state/code-graph.json, so every partner renders as `unknown` (Changed together:). The graph-present render (hidden/imports grouping, imported_by/imports layers) is covered only by unit/integration tests that write a synthetic graph, not by an end-to-end run against the real repo."
+    summary: "Carried forward from verify_report_3 (unchanged). Live run could not exercise the hidden/imports render path: this worktree has no .ana/state/code-graph.json, so every co-change partner renders under the `unknown` group (`Changed together:`). The graph-present render (hidden/imports grouping, imported_by/imports layers) is covered only by unit/integration tests that write a synthetic graph, not by an end-to-end run against the real repo. Reduced live confidence on that path only."
     file: "packages/cli/src/commands/proof.ts"
     line: 3320
     severity: observation
     suggested_action: monitor
   - category: code
-    summary: "proofSummary.ts grew ~138 lines (assembleAlsoChangesWith + resolveQueryNode + the also_changes_with interface) — assembly/dedup logic that could live in the pure engine module instead of the already-oversized util. Continues the file-growth trend tracked by decompose-proof-summary-C1 / audit-matrix-orientation-C7."
+    summary: "Carried forward from verify_report_3 (unchanged — the re-build added 0 lines to proofSummary.ts). proofSummary.ts remains oversized after Phase 3's ~138-line addition; proof context confirms decompose-proof-summary-C1 and audit-matrix-orientation-C7 are still active. The also_changes_with assembly/dedup glue could live in the pure engine module rather than the already-large util."
     file: "packages/cli/src/utils/proofSummary.ts"
     line: 1311
     severity: observation
