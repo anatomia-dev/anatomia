@@ -320,7 +320,10 @@ describe('template propagation — fresh and single-harness (built CLI)', () => 
       .then(() => true)
       .catch(() => false);
     expect(codexStillAbsent).toBe(false);
-  });
+    // Two sequential `ana init` subprocesses sit right at the 5s default; give
+    // them a realistic budget so heavy parallel runs don't tip it into a
+    // spurious timeout (the assertions are unchanged).
+  }, 30000);
 });
 
 describe('template propagation — preserve-contract regression guard (AC5, exhaustive)', () => {
