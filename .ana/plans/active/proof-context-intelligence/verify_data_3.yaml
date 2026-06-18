@@ -14,6 +14,11 @@ findings:
     severity: debt
     suggested_action: scope
     related_assertions: ["A014"]
+  - category: upstream
+    summary: "Contract assertions A014/A015 are too narrow to cover AC3's intent. Their tagged tests use aligned path forms (both repo-relative or both package-relative), so they pass while the real failure mode (package-relative query vs repo-relative modules_touched) leaks the query's own test file. A future contract revision should assert suppression holds across path-form mismatch, not just the aligned case."
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A014", "A015"]
   - category: code
     summary: "Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer, even ones in different directories. Low likelihood (requires legacy bare-basename modules_touched) but silently drops real import edges when it occurs."
     file: "packages/cli/src/utils/proofSummary.ts"

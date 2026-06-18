@@ -1,6 +1,6 @@
 # Verify Report: Proof-Context Intelligence — Phase 3 ("Also changes with")
 
-**Result:** PASS
+**Result:** FAIL
 **Created by:** AnaVerify
 **Date:** 2026-06-18
 **Spec:** .ana/plans/active/proof-context-intelligence/spec-3.md
@@ -56,6 +56,8 @@ All assertions covering Phase 3's acceptance criteria. A028/A029 are Phase 2-own
 
 **25 of 25 in-scope assertions SATISFIED.** No UNSATISFIED, no DEVIATED.
 
+**However — this verify is FAIL (Gate 2, intent).** Every sealed contract assertion passes mechanically (Gate 1 green), but the AC3 acceptance criterion is not met across plausible invocations: a package-relative query leaks the query's own test file into the co-change list (reproduced live, below). The A014/A015 tagged tests pass only because they use aligned path forms; they are too narrow to exercise the failure. A wall of green assertions is not a pass when the AC walkthrough shows the criterion isn't truly met — so this goes back to Build. The fix is code + a test (the contract is sealed and stays as-is; its narrowness is recorded as an upstream finding).
+
 ## Independent Findings
 
 The engine (`proof-history/index.ts`) is genuinely clean: pure, synchronous, zero IO, zero chalk, single typed import of `CodeGraph`. Gates, oversized-item exclusion, trichotomy, and ordering are implemented exactly as the spec's harvested logic prescribes, and the tests assert specific values (`relation === 'imports'`, `coTouchCount === 2`, `total === 0`) rather than mere existence — even the `exists`-matcher assertions flagged "weak" by the coverage map are backed by tests that check concrete values. Lookup structures (node/edge sets) are precomputed once, not per partner. The two-layer dedup and the honest `unknown` state are correctly preserved.
@@ -73,7 +75,7 @@ The engine (`proof-history/index.ts`) is genuinely clean: pure, synchronous, zer
 
 - **AC2** ✅ PASS — proof co-touched files listed with co-touch count, capped top 3, "top 3 of N" footer (live: `top 3 of 39`). proof.test.ts A010/A011.
 - **AC2b** ✅ PASS — graph-present import layer (imported_by/imports), capped, renders on fresh repo with only the graph. proofSummary "surfaces day-1 layer … no chain" + proof.test.ts A013.
-- **AC3** ⚠️ PARTIAL — suppression + one-line note work correctly for repo-relative queries (the form `modules_touched` stores and the form agents emit from contract file_changes; live: `top 3 of 39` + suppression note). They **fail for package-relative queries** (`cd packages/cli && … proof context src/utils/proofSummary.ts`): the query's own test file is listed as a partner with no note (`top 3 of 40`). Contract A014/A015 are mechanically SATISFIED (their tagged tests use aligned paths), but the AC3 intent is not met across all plausible invocation forms. See Finding 1.
+- **AC3** ❌ FAIL — suppression + one-line note work for repo-relative queries (live: `top 3 of 39` + note) but **fail for package-relative queries**: `cd packages/cli && node dist/index.js proof context src/utils/proofSummary.ts` lists the query's own test file `packages/cli/tests/utils/proofSummary.test.ts` as a co-change partner with no suppression note (`top 3 of 40`). "A file's own test file is not listed as something that changes with it" is the AC, and it is violated in a normal CLI invocation. Contract A014/A015 are mechanically SATISFIED but too narrow to catch this. **This is the blocker.** See Finding 1 for the fix direction.
 - **AC4** ✅ PASS — `hidden`/`imports`/`unknown` trichotomy, never fabricated; absent graph → `unknown`, no crash. proof-history A016/A017; live no-graph run shows `unknown` group only (honest).
 - **AC5** ✅ PASS — MIN_TOUCHES (3) + MIN_COTOUCH (2) gates; oversized items (>40 files) excluded from pairing, touch-counting unaffected. proof-history A019/A020/A021.
 - **AC7** ✅ PASS — no chain → Shaped by + proof co-change absent; no chain + no graph → whole section absent; `getProofContext` returns cleanly. A022/A023.
@@ -85,7 +87,15 @@ The engine (`proof-history/index.ts`) is genuinely clean: pure, synchronous, zer
 
 ## Blockers
 
-None. I specifically searched for: contract assertions not backed by a value-checking test (none — every tagged test asserts concrete values); unhandled crash paths in `getProofContext` when chain/graph absent (handled — both existence-gated, JSON path falls back to empty envelope); engine purity violations (none — no chalk/IO/fs in proof-history); unused exports or dead branches in the new engine (none); regressions in Phase 1 Shaped-by render below which the new section inserts (none — 4068 pass, 0 fail). The AC3 package-relative gap is a real defect but not a hard contract failure: all 25 in-scope assertions are mechanically SATISFIED and the canonical agent invocation path (repo-relative paths from contract file_changes) works correctly. It is documented as a risk finding for a decision before/after merge.
+**BLOCKER — AC3 test-partner suppression fails for package-relative queries.** Reproduced live: from `packages/cli`, `node dist/index.js proof context src/utils/proofSummary.ts` lists `packages/cli/tests/utils/proofSummary.test.ts` as a co-change partner with no suppression note (`top 3 of 40`); the full repo-relative query suppresses it (`top 3 of 39` + note). AC3 ("a file's own test file is not listed as something that changes with it") is violated in a normal invocation.
+
+### Fix brief for AnaBuild
+- **Root cause:** query↔partner pairing uses `fileMatches` (suffix-tolerant, reconciles `src/…` ↔ `packages/cli/src/…`), but `isSameStemTestPartner` → `normalizeForTestMatch` compares with exact `===`, which requires the directory prefixes to align. When the query path form differs from the stored partner form, the query matches partners for pairing yet fails test-counterpart detection. The spec gotcha warned: *"do not introduce a second matcher."*
+- **Direction:** make the final comparison in `isSameStemTestPartner` as path-tolerant as pairing — change the normalized exact-equality to a `/`-boundary **suffix** match (so `/utils/proofSummary.ts` matches `packages/cli/utils/proofSummary.ts`). Must preserve all existing behaviors: `src/a.ts`↔`src/a.test.ts` suppress; `packages/cli/src/commands/work.ts`↔`packages/cli/tests/commands/work.test.ts` (parallel tree) suppress; `src/x/index.ts`↔`src/y/index.test.ts` (different module) NOT suppressed — the `/`-boundary protects this.
+- **Test (the second finding):** add a suppression case in `proof-history.test.ts` where the query is package-relative and the partner is repo-relative (e.g. query `src/commands/work.ts`, partner `packages/cli/tests/commands/work.test.ts`) and assert `suppressedTestPartner === true`. This is the case that would have caught the bug; it must be red before the fix and green after.
+- **Out of scope:** the contract is sealed — do not edit it. A014/A015's narrowness is recorded as an upstream finding for a future contract revision, not this cycle.
+
+Everything else is clean — I searched for and ruled out: contract assertions not backed by value-checking tests (none); unhandled crash paths in `getProofContext` when chain/graph absent (handled — both existence-gated, JSON path falls back to an empty envelope); engine purity violations (none — no chalk/IO/fs in proof-history); unused exports or dead branches in the new engine (none); Phase 1 Shaped-by render regressions (none — 4068 pass, 0 fail).
 
 ## Findings
 
@@ -97,10 +107,10 @@ None. I specifically searched for: contract assertions not backed by a value-che
 
 ## Deployer Handoff
 
-Phase 3 is the final phase; with this PASS, all three phases of `proof-context-intelligence` are verified and a PR can be created. **One thing to decide before merge:** the AC3 same-stem test-partner suppression works for repo-relative queries (what agents emit from contract file_changes) but leaks the query's own test file when invoked with a package-relative path (`cd packages/cli && ana proof context src/...`). It is honest output (nothing fabricated) and the contract is fully satisfied, but a human running the command from inside a package will see the test file listed as a co-change partner. If you want that closed before shipping, it is a small, well-scoped fix (route suppression through the same path reconciliation as pairing) and re-build/re-verify — see Finding 1. Otherwise it ships as a known, documented gap. Note also: no `code-graph.json` exists in this worktree, so the hidden/imports relation labels were not exercised live (integration-tested only).
+Do not merge yet. Phase 3 is the final phase, but it FAILs on the AC3 suppression gap above — going back to Build for a code+test fix, then I re-verify. PR #332 was opened on the earlier PASS read; it is now premature — convert it to draft or leave it pending until the re-verify lands (the branch updates the same PR). Everything else in Phase 3 is solid: 4068 tests pass, build/lint clean, the engine is pure, the feature works for repo-relative queries. The fix is narrow (one comparison + one test) — this should be a fast cycle. Note: no `code-graph.json` exists in this worktree, so the hidden/imports relation labels were exercised by integration tests, not the live run.
 
 ## Verdict
 
-**Shippable:** YES
+**Shippable:** NO
 
-All 25 in-scope contract assertions are SATISFIED with contract-aligned, value-checking tests; build and lint are clean (the lone lint warning is pre-existing and on an untouched file); 4068 tests pass with 0 failures; the engine is pure and the feature works end-to-end on the real repo for its primary invocation path. I would stake my name on this shipping — with the AC3 package-relative suppression gap flagged for the deployer as a documented, well-scoped follow-up rather than a hidden surprise.
+The sealed contract is mechanically satisfied (Gate 1), but the AC3 acceptance criterion fails in a normal CLI invocation (Gate 2): a package-relative query leaks the query's own test file into the co-change list. A green assertion wall doesn't override an intent the walkthrough shows isn't met. The defect is well-understood, the fix is small (route suppression through the same path tolerance as pairing) and must ship with the test that exercises the path-form mismatch. Back to Build, then re-verify.
