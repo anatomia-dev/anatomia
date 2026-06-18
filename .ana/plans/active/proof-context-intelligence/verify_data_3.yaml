@@ -32,4 +32,3 @@ findings:
     line: 1311
     severity: observation
     suggested_action: monitor
-    resolves: []

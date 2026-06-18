@@ -2,11 +2,11 @@
   "role": "verify",
   "harness": "claude",
   "session_id": "d9f6bb2f-d473-4691-a3ad-8d3208e9ddbb",
-  "captured_at": "2026-06-18T18:28:07.947Z",
+  "captured_at": "2026-06-18T18:54:10.606Z",
   "anatrace_core_version": "0.4.0",
   "framework": "anatomia",
   "mandate_hash": "sha256:d57fe0ffd475325ce9d6dd310574b2aeda16d899f2c0cddc8b110c797e284739",
-  "transcript_hash": "sha256:0b79338500760d5d1838db6e7b11ded8c9797c945a0269ffca68572bf231176b",
+  "transcript_hash": "sha256:3c1e0d57903b0930e9fade493400f99cfdb0adf9324d1885c3576db9e8d2d5c6",
   "coverage": {
     "total": 55,
     "fully_checked": 4,
