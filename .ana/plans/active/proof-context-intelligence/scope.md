@@ -7,10 +7,12 @@
 
 Turn `ana proof context {files}` from a "what's wrong here" lookup into the orientation surface an agent reads before touching code. It already returns `findings + build_concerns + touch_count + last_touched` (`proofSummary.ts:1147`). Add the two highest-value questions an agent has and can't answer anywhere else:
 
-- **Shaped by** — the verified, contract-passed work items that shaped this file, with their stated intent. The "why is this the way it is." Grounded in `scope_summary` (populated 208/208 in our chain, decision-bearing), not git-blame inference.
-- **Also changes with** — the files co-touched across verified work items, flagged `hidden` when they share no import edge. The "what else will I have to touch" — including the files the agent didn't know to name.
+- **Shaped by** — the verified, contract-passed work items that shaped this file, with their stated intent. The "why is this the way it is." Grounded in `scope_summary` (populated 208/208 in our chain, decision-bearing), not git-blame inference. **Proof-only** — never faked from commit messages.
+- **Also changes with** — the "what else will I have to touch," **gracefully degrading by what data exists**: a day-1 static layer from the import graph (what imports this / what it imports — *visible* blast radius, available the moment `ana init` runs, on any repo) and, as the proof chain accrues, the surprising layer on top — files that change with it but share *no* import edge (`hidden`). The import layer is not a fresh-repo consolation prize: it is the baseline the `hidden` flag is defined against, so heavy users need both.
 
 This rides the **pull surface** (on-demand, scoped to files at hand), not scan.json. Zero scan cost, zero always-on load. It is the next extraction from the proof chain — Anatomia's one un-copyable asset — and "why is this here, and what moves with it, *provably*" is a sentence no competitor can say.
+
+**Day-1 value vs compounds-with-use.** Most of this surface's power is proof-derived and therefore dormant until a team has run the pipeline (fresh repos have no proof chain). The import-graph blast-radius layer of **Also changes with** breaks that dormancy: it needs only `ana init`, so a brand-new user gets real "what depends on this" value immediately, and the section enriches (gains `hidden` co-change) as proof accrues. The "why" stays honestly absent on fresh repos rather than faked from low-trust commit messages.
 
 The non-negotiable constraint, set by the user: **every vector is a context-bloat risk, and complexity is its own cost.** The default output is a first-screen, not a record. We minimize the big risk (bloat dumped into agent context) and accept reasonable residuals — we do not 2x complexity to shave 10% off one shape. No per-agent output flag. One uniform, hard-capped output.
 
@@ -37,7 +39,11 @@ Enrich a typed, read-only command — don't bolt on a feature, don't touch the s
 
 **Phase 1 — The "why" + bloat discipline + adoption.** Add `shaped_by` to `ana proof context` (verified work items + truncated intent, hard-capped). Add the signal-only `ana proof <slug> --why` drill-down so depth is *pulled*, never dumped. Fix the agent templates so the command is actually run at the right moment with the right framing. This phase has no graph dependency and ships value on the dogfood install immediately — it is the uncopyable core.
 
-**Phase 2 — What moves with it.** Add `also_changes_with` (proof-derived co-change) by harvesting the `proof-history` analyzer (reads only the proof chain; gates `MIN_TOUCHES=3` / `MIN_COTOUCH=2` already kill mega-refactor artifacts and are already tested). Add the two things the branch left undone: same-stem test-partner suppression, and a reader for the persisted import graph that powers the `hidden` flag. Co-change marks each partner `hidden` / `imports` / `unknown` — never a fabricated relationship.
+**Phase 2 — What moves with it.** Add `also_changes_with` as a two-layer, gracefully-degrading section:
+- The **day-1 import layer** (imported-by / imports), read from the persisted import graph (`.ana/state/code-graph.json`, written on `ana init`). Available on any repo with zero pipeline cycles — this is the fresh-repo value and the baseline the `hidden` flag is defined against.
+- The **proof co-change layer**, harvested from the `proof-history` analyzer (reads only the proof chain; gates `MIN_TOUCHES=3` / `MIN_COTOUCH=2` already kill mega-refactor artifacts and are already tested), with the two things the branch left undone: same-stem test-partner suppression, and the graph reader. Each proof partner marks `hidden` / `imports` / `unknown` — never fabricated.
+
+The graph reader does **double duty**: it powers the day-1 import layer and defines the `hidden` flag for the proof layer. One new reader, two payoffs.
 
 **One uniform output, hard-capped.** No `--for` role flag — flag bloat and per-agent output logic are not worth the marginal token savings over a capped output. Every agent gets the same first-screen; the small amount each agent should weight differently is handled in its template wording, not in command machinery. The single new flag is `--why`, justified because the drill-down cascade is the largest bloat vector.
 
@@ -45,12 +51,13 @@ Enrich a typed, read-only command — don't bolt on a feature, don't touch the s
 
 ## Acceptance Criteria
 - AC1: `ana proof context {file}` output includes a **Shaped by** section listing verified work items that touched the file (`slug`, `kind`, `completed_at`, truncated `scope_summary`), capped at top 3, with a "N more · `ana proof <slug> --why`" footer when more exist.
-- AC2: `ana proof context {file}` output includes an **Also changes with** section: files co-touched across ≥2 verified work items, with the co-touch count, capped at top 3, with a "top 3 of N" footer.
-- AC3: Same-stem test partners (e.g. `work.ts` ↔ `work.test.ts`) are suppressed from **Also changes with**, with a one-line note that a partner was suppressed.
-- AC4: Each co-change partner is flagged `hidden` (in graph, no import edge), `imports` (edge exists), or `unknown` (file absent from graph, or no graph present) — **never a fabricated relationship**. Absence of the graph yields `unknown`, not a crash and not `hidden`.
+- AC2: `ana proof context {file}` output includes an **Also changes with** section: proof co-touched files across ≥2 verified work items, with the co-touch count, capped at top 3, with a "top 3 of N" footer. When no proof chain exists, this proof-derived layer is absent (see AC2b).
+- AC2b: **Day-1 import layer.** When the persisted import graph (`.ana/state/code-graph.json`) is present, **Also changes with** surfaces the file's direct import relationships (imported-by / imports) as a static blast-radius layer, capped, available with only `ana init` run — no proof chain required. This layer renders on fresh repos and enriches with the proof layer on mature ones. With neither graph nor proof chain, the section is absent (AC7).
+- AC3: Same-stem test partners (e.g. `work.ts` ↔ `work.test.ts`) are suppressed from the proof co-change layer of **Also changes with**, with a one-line note that a partner was suppressed.
+- AC4: Each **proof co-change** partner is flagged `hidden` (in graph, no import edge), `imports` (edge exists), or `unknown` (file absent from graph, or no graph present) — **never a fabricated relationship**. Absence of the graph yields `unknown`, not a crash and not `hidden`. The day-1 import layer (AC2b) is not flagged — it *is* the import edges.
 - AC5: Co-change couples appear only when both files clear `MIN_TOUCHES` (≥3 work items) and the couple clears `MIN_COTOUCH` (≥2 shared verified items) — the harvested mega-refactor guard.
 - AC6: `ana proof <slug> --why` renders **signal only** — `scope_summary`, failed/deviated assertions with reasons, open findings, `modules_touched` — and **omits** cost, token counts, hashes, timing, provenance, and attestation.
-- AC7: With no proof chain (or a chain lacking the data), both new sections are **absent**, not fabricated — honest "compounds with use." `getProofContext` returns cleanly.
+- AC7: With no proof chain, **Shaped by** and the proof co-change layer are **absent**, not fabricated — honest "compounds with use." With no proof chain *and* no import graph, **Also changes with** is absent entirely. `getProofContext` returns cleanly in every case.
 - AC8: `ProofContextResult` gains `shaped_by` and `also_changes_with` as **optional** fields; existing consumers and the JSON shape for old callers are unaffected.
 - AC9: `scope_summary` is truncated to a hard character cap in **Shaped by**; never reworded or embellished.
 - AC10: The default `ana proof context` first-screen for a hot file (e.g. `work.ts`: 69 shapers, 9 partners) renders within the caps — a first-screen, not a record.
@@ -67,13 +74,15 @@ Enrich a typed, read-only command — don't bolt on a feature, don't touch the s
 - **scope_summary quality varies by customer.** It's only as good as their scope.md. Truncate; never embellish. Dogfood-strong, weaker on undisciplined repos — acceptable, it compounds with use.
 - **Mega-work-item spurious pairs.** One item touching 100 files manufactures pairs — held by `MIN_COTOUCH=2` (harvested, tested). The branch has **no** oversized-item cap beyond the gate; confirm the gate is sufficient on our 208-entry chain or add a cap.
 - **Monorepo path forms.** `modules_touched` is repo-relative; the query path must reconcile. The branch uses paths as-is with no normalization — Plan must verify the query-path-to-`modules_touched` match handles our path forms (the same reconciliation the REQ flagged).
-- **Fresh-repo dormancy (accepted).** No proof chain → no co-change, no shaped_by. This is a compounds-with-use signal, not a day-1 one. Stated, not hidden. (AC7.)
+- **Fresh-repo dormancy (mitigated, not eliminated).** No proof chain → no `shaped_by`, no proof co-change layer. But the **day-1 import layer** (AC2b) fires on any repo with `ana init`, so a fresh repo still gets real blast radius — the section enriches as proof accrues. The "why" stays honestly absent (never faked). Stated, not hidden. (AC2b, AC7.)
+- **Day-1 layer must not be redundant noise for heavy users.** The import layer and the proof layer are complementary (visible vs hidden coupling), not duplicative — but Plan must ensure they render as one coherent section, not two overlapping lists. When a proof partner *is* an import edge (`imports`), it should not also be repeated in the import layer.
 - **Adoption regression.** Adding sections without fixing the templates makes the command heavier *and* still under-run. The template work (AC11–14) is not optional polish — it is half the value.
 
 ## Rejected Approaches
 - **A `--for {think|plan|verify}` role-targeted output.** Considered and cut. Per-agent output logic + a flag is added complexity and CLI surface for a marginal token saving over a hard-capped uniform output. "Every vector is a risk; minimize the big one." The big risk (bloat) is handled by caps; per-role tailoring is the 10%-gain-for-2x-complexity trap. Per-agent nuance lives in template wording, which is free.
 - **A scan.json field for any of this.** The `feature/devday-scan` mistake — global, always-loaded, ~11k-token dump to every agent every run. The pull surface is the correct home. (*The elegant solution removes.*)
-- **Git-derived co-change here.** That was `scan-coupling-conventions`. Proof-derived is higher-trust and produces the `hidden` flag git can't. The git path is being retired with that scope.
+- **Git-derived co-change here (v1).** Git's one genuine gift is fresh-repo *hidden* coupling (the import graph can't show hidden by definition; proof needs history). But pulling it in re-imports the entire squash-merge / rename / shallow-clone edge-case surface set down with `scan-coupling-conventions`, for a noisier, lower-trust version of a blast-radius signal the day-1 import layer (AC2b) already serves cleanly. That is the "2x complexity for 10%" line. **Held as a deliberate future option (Phase 3), not a v1 hedge** — revisit only if fresh-repo hidden coupling proves a real felt gap once this ships.
+- **Faking "why" from git on fresh repos.** Commit-message mining is the inferred-why already rejected as off-thesis, and it is worst exactly where there is no proof (vibe-coded sniper-customer repos with "wip / fix" commits). Fresh repos get honest absence on "why," not a diluted differentiator.
 - **Inferred "why" (git blame / commit-message mining).** Lower evidence tier, off-thesis. Only verified-work-item intent.
 - **Rebuilding co-change from scratch.** The branch's analyzer lifts cleanly; rebuilding is waste.
 - **A new Build caller.** Build stays spec-only; it gets co-change through Plan's Build Brief (AC13).
@@ -85,6 +94,8 @@ Enrich a typed, read-only command — don't bolt on a feature, don't touch the s
 - **Graph staleness surfacing** — silently use the persisted graph, or note its age when it's old? Lean: silent + `unknown` for off-graph files; revisit only if staleness proves misleading.
 - **Oversized-item cap** — is `MIN_COTOUCH=2` sufficient on our chain, or is an explicit per-item file-count cap warranted? Empirical — calibrate against the 208-entry chain.
 - **Where `also_changes_with` assembly lives** — extend `getProofContext` directly, or call the harvested `proof-history` analyzer and join? Lean: call the analyzer (it already returns `intentCouples`), join in `getProofContext`.
+- **How the two `also_changes_with` layers compose visually** — one merged ranked list (import edges + hidden co-change interleaved by signal), or two labeled sub-groups ("Imports" / "Changes together — hidden")? And the dedup rule when a proof partner is also an import edge. Lean: a single list, hidden co-change ranked first (it's the surprising, higher-value signal), import edges below, no entry shown twice. Plan to decide the exact render.
+- **Day-1 import layer cap and direction** — cap imported-by vs imports separately or together? A widely-imported module could have 50 importers. Calibrate the cap; consider whether imported-by (who breaks if I change this) outranks imports (what I depend on) for an editing agent.
 
 ## Exploration Findings
 
@@ -131,7 +142,8 @@ Enrich a typed, read-only command — don't bolt on a feature, don't touch the s
 - The cascade: `--why` must ship in the same phase as any drill-down hint, or the hint is a bloat trap. Do not add a `shaped_by` drill-down hint before `--why` exists.
 - Hidden flag honesty: off-graph → `unknown`, never `hidden`/`imports`.
 - Test-partner suppression is net-new — the branch doesn't do it; don't assume the harvest covers it.
-- The graph reader is net-new — the branch persists but never reads `code-graph.json`.
+- The graph reader is net-new — the branch persists but never reads `code-graph.json`. It now serves two purposes (day-1 import layer + the `hidden` flag), so build it as a shared reader, not buried inside the co-change path.
+- `code-graph.json` is written at `ana init` and `work complete` — confirm `ana init` write path actually fires for a fresh user so the day-1 layer is genuinely day-1 (verify, don't assume).
 - `scope_summary` truncation must not embellish — hard char cap, raw text.
 - Monorepo path reconciliation between query path and repo-relative `modules_touched`.
 - Codex mirrors must move in lockstep — never scope a template change that assumes one platform.
