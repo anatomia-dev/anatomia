@@ -1,7 +1,7 @@
 ---
 title: Scan and surfaces
 description: "The scan is the entry point. It reads your codebase, detects your stack, identifies which packages you actually deploy, and writes the configuration every agent reads."
-readingTime: 6
+readingTime: 7
 ---
 
 ## What the scan detects
@@ -15,6 +15,18 @@ Everything the scan detects is stored, not recomputed. Agents read `scan.json` o
 This means the scan is a point-in-time snapshot. If you add a new framework dependency between scans, agents won&apos;t know about it until the next `ana init`.
 
 Manual overrides via `ana config set` survive re-init — the scan updates detected values but preserves your corrections. Override the test command, change the branch prefix, add a surface the scan missed — all of it persists.
+
+## Where to start reading
+
+A deep scan doesn&apos;t just inventory your codebase — it ranks the files worth reading first and writes that order into both the scan card and the project-context scaffold every agent reads. The ranking fuses three independent, measured signals:
+
+- **Import-graph centrality** — PageRank over the resolved TS/JS import graph, weighted toward architectural signal (entry points, data/domain seams) and away from ubiquitous &ldquo;stopword&rdquo; files imported almost everywhere.
+- **Proven rework risk** — which files keep attracting findings and rework, drawn from the proof chain: completed, contract-verified work items, not raw git churn.
+- **Proof-derived co-change** — files that repeatedly changed together across verified work items. When a pair changes together but shares no import edge, the scan flags it as *hidden coupling* — a relationship the dependency graph alone can&apos;t see. This signal is the proof chain&apos;s alone; no commodity tool that mines git history can derive it.
+
+The ranking is **deterministic**: two scans over identical source produce byte-identical orders, and every entry states its measured reasons — the import fan-in, the verified work-item counts, the co-change provenance — never a fabricated justification. The co-change clause is only claimed when it actually contributed.
+
+It is also honest about its own coverage. The import graph is TS/JS only; on a polyglot repo, or when the sampled graph covers only a minority of source files, the ranking carries an explicit caveat so it&apos;s never mistaken for a whole-repo reading order. At surface tier (`--quick`) there is no graph, so no ranking is emitted at all.
 
 ## Surfaces
 

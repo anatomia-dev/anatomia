@@ -7,6 +7,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+- **"Read these first" reading order (deep scan).** Deep scans now rank the highest-leverage files to read before making a change and write that order into the `ana scan` card and the project-context scaffold. The ranking fuses three measured signals: import-graph **PageRank centrality** (weighted toward architectural signal, away from ubiquitous "stopword" files), **proven rework risk** from the proof chain, and **proof-derived co-change** (files that repeatedly changed together across verified work items). The order is deterministic — two scans over identical source are byte-identical — and every entry states its measured reasons, never a fabricated justification.
+- **Proof-history risk map.** A scan signal grounded in completed, contract-verified work items (not git churn): which files keep attracting findings and rework, gated at ≥3 touches so a single noisy item can't rank.
+- **TS/JS import graph + PageRank.** A resolved file→file import graph (alias/tsconfig-path resolution, workspace packages, CJS) drives the centrality signal. Bounded by the 750-file sample cap; the reading order carries an explicit coverage caveat when the graph covers only a minority of source files or the repo's primary language isn't TS/JS.
+- **Hidden-coupling detection.** When two files repeatedly change together but share no import edge, the reading order flags the pair as "hidden coupling" — a relationship the dependency graph alone can't see. This signal is derived from the proof chain, not git history.
+- **Rescan-on-complete.** `ana work complete` refreshes `scan.json` (and the local import-graph artifact) after a merge, gated on a material source delta, so the next agent reads a ranking that reflects the work that just landed. Best-effort: it can never block or fail completion.
+
+### Fixed
+
+- **Honesty: co-change is now real, not asserted.** The reading-order scaffold previously claimed three fused signals while co-change was computed but never threaded into the ranking. Co-change is now wired end-to-end from the proof chain (gated to ≥2 verified items, with honest "changed together in N verified items" provenance — never a synthetic percentage), and the scaffold's co-change claim is conditional on the signal actually contributing.
+
 ## [1.2.2] - 2026-06-02
 
 ### Added
