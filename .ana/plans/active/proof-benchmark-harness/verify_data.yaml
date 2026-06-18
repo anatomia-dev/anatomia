@@ -1,0 +1,47 @@
+schema: 1
+findings:
+  - category: code
+    summary: "Dead export `totalTokens` — defined with full JSDoc, never called anywhere (cost uses derived.tokens; the edit-token walk inlines its own input+output sum)"
+    file: "packages/cli/tests/benchmark/scorer.ts"
+    line: 137
+    severity: debt
+    suggested_action: scope
+
+  - category: code
+    summary: "aggregate treats 'lower is better' for every numeric metric, including distinctFilesRead/inputTokens/turns — an arm that reads fewer files (even by missing relevant ones) scores a 'win'. Spec-endorsed simplification, but a semantic foot-gun for the next reader."
+    file: "packages/cli/tests/benchmark/aggregate.ts"
+    line: 81
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A032"]
+
+  - category: test
+    summary: "AC7 guard (A036/A037) is a textual substring assertion on scorer.ts source — a future read of a best-effort field via destructuring-rename or computed key would slip past. Legitimate enforcement test, but textual not semantic."
+    file: "packages/cli/tests/benchmark/harness.test.ts"
+    line: 305
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A036", "A037"]
+
+  - category: code
+    summary: "The three to-first-correct-edit metrics can disagree on null-ness: wallClockMsToFirstCorrectEdit is null when the editing line lacks a parseable timestamp, even while turnsToResolution/tokensToFirstCorrectEdit are populated. Latent inconsistency; not triggered by the committed fixtures."
+    file: "packages/cli/tests/benchmark/scorer.ts"
+    line: 321
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A019", "A020"]
+
+  - category: test
+    summary: "Determinism test (A034) only asserts same-input idempotence, not stability across input permutations. Implementation genuinely sorts by (task,metric,arm) so cross-permutation determinism holds, but the test would pass even if the explicit sort were removed."
+    file: "packages/cli/tests/benchmark/aggregate.test.ts"
+    line: 197
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A034"]
+
+  - category: code
+    summary: "Pre-existing lint failure: `pnpm run lint` exits 1 due to an unused eslint-disable directive in src/utils/git-operations.ts:198. NOT introduced by this build (file untouched, identical to main) — but the CI lint gate is currently red on main and will fail this branch's lint check too."
+    file: "packages/cli/src/utils/git-operations.ts"
+    line: 198
+    severity: risk
+    suggested_action: scope

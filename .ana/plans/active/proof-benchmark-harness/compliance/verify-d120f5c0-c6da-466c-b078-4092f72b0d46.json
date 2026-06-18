@@ -1,0 +1,382 @@
+{
+  "role": "verify",
+  "harness": "claude",
+  "session_id": "d120f5c0-c6da-466c-b078-4092f72b0d46",
+  "captured_at": "2026-06-18T23:32:01.980Z",
+  "anatrace_core_version": "0.4.0",
+  "framework": "anatomia",
+  "mandate_hash": "sha256:d09a15fdb40cb25a439a4bc169a210e6700530f86b5ac2fbc5492cd1715f2970",
+  "transcript_hash": "sha256:6462242ad26f208f0f95fe0f6349457f28513b30ae222c4cd13f72ca52a6af60",
+  "coverage": {
+    "total": 52,
+    "fully_checked": 2,
+    "unverifiable": 50
+  },
+  "complete": false,
+  "verdicts": [
+    {
+      "claim_id": "ana-verify:skill:testing-standards",
+      "says": "ana-verify must load the testing-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:skill:coding-standards",
+      "says": "ana-verify must load the coding-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:verify-independence",
+      "says": "ana-verify never reads the build report",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+      "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+      "status": "unverifiable",
+      "reason": "command-unresolvable",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+      "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+      "status": "unverifiable",
+      "reason": "command-unresolvable",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/scorer.ts",
+      "says": "edits stay within packages/cli/tests/benchmark/scorer.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/harness.ts",
+      "says": "edits stay within packages/cli/tests/benchmark/harness.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/harness.test.ts",
+      "says": "edits stay within packages/cli/tests/benchmark/harness.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/aggregate.ts",
+      "says": "edits stay within packages/cli/tests/benchmark/aggregate.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/aggregate.test.ts",
+      "says": "edits stay within packages/cli/tests/benchmark/aggregate.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/fixtures/bare-claude.jsonl",
+      "says": "edits stay within packages/cli/tests/benchmark/fixtures/bare-claude.jsonl",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/fixtures/edit-claude.jsonl",
+      "says": "edits stay within packages/cli/tests/benchmark/fixtures/edit-claude.jsonl",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/fixtures/empty.jsonl",
+      "says": "edits stay within packages/cli/tests/benchmark/fixtures/empty.jsonl",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:packages/cli/tests/benchmark/tasks/proof-history-touch-gate.json",
+      "says": "edits stay within packages/cli/tests/benchmark/tasks/proof-history-touch-gate.json",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A001",
+      "says": "The benchmark suite is OFF by default and only turns on when explicitly enabled",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A002",
+      "says": "The benchmark suite turns on only when the enable switch is set to exactly on",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A003",
+      "says": "A stray or partial value never accidentally turns the benchmark suite on",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A004",
+      "says": "The benchmark scorer never depends on the never-deploy branch it was ported from",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A005",
+      "says": "The fixed localization task loads with its pinned commit and relevant-file set",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A006",
+      "says": "Asking for a task that does not exist returns nothing instead of crashing",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A007",
+      "says": "Scoring a real session transcript succeeds rather than abstaining",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A008",
+      "says": "The scorer counts exactly how many distinct files the agent opened",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A009",
+      "says": "The scorer counts how many of those files were off-target (the reliability signal)",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A010",
+      "says": "Total tool calls come from the shipped provenance engine, not a re-implementation",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A011",
+      "says": "The scorer records which model ran the session",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A012",
+      "says": "Each scored run carries a dollar cost computed from the shipped price table",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A013",
+      "says": "A run on a known model is marked as priced, so its cost is real, not a guess",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A014",
+      "says": "An unknown model is marked unpriced rather than being shown as free",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A015",
+      "says": "Reports how many file reads were wasteful repeats of files already opened",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A016",
+      "says": "Reports the redundant-read ratio without dividing by zero on a no-read run",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A017",
+      "says": "Reports the peak amount of context the agent held at once during the session",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A018",
+      "says": "Reports peak context as a real percentage of the model's window, not a guess",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A019",
+      "says": "On an edit task, reports the wall-clock time until the first correct edit",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A020",
+      "says": "On an edit task, reports how many turns it took to reach the first correct edit",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A021",
+      "says": "Breaks tokens into input, output, and cache columns for credible accounting",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A022",
+      "says": "The cache token columns are present and separated from fresh input/output",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A023",
+      "says": "On a read-only task, the time-to-edit metrics are blank rather than fabricated",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A024",
+      "says": "An unreadable transcript is abstained on, never scored as a low-token win",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A025",
+      "says": "An empty transcript abstains because there is no evidence to score",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A026",
+      "says": "A transcript from an unsupported agent abstains rather than guessing",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A027",
+      "says": "Averages a metric correctly across multiple runs of the same setup",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A028",
+      "says": "Reports the spread (variance) of a metric across the runs of a cell",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A029",
+      "says": "The 95% confidence interval is honest for small samples (wider than a naive interval)",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A030",
+      "says": "A single run never crashes the stats — variance is flagged undefined, not invented",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A031",
+      "says": "A single run is explicitly flagged so a reader knows variance is unavailable",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A032",
+      "says": "Reports how often the Anatomia arm beat the bare arm across paired runs",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A033",
+      "says": "Abstained runs are counted, never silently dropped from the totals",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A034",
+      "says": "Given identical input, the aggregate output is byte-identical every time",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A035",
+      "says": "The scorer accepts more than two benchmark arms without a breaking change",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A036",
+      "says": "No credibility metric is built on the engine's flaky best-effort counts",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A037",
+      "says": "The scorer never reads the best-effort files-touched count for any metric",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A038",
+      "says": "The published measurement engine is consumed, never edited, for the benchmark",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    }
+  ]
+}
