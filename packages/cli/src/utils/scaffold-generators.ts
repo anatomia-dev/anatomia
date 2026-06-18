@@ -56,8 +56,17 @@ export function generateReadingOrderBlock(
   const scoped = readingOrder.personalizedTo
     ? ` (scoped to \`${readingOrder.personalizedTo}\`)`
     : '';
+  // Only claim co-change when it actually contributed to a ranking — otherwise
+  // the subtitle would assert a third signal that didn't fire (e.g. a repo with
+  // a thin proof chain). Honesty by construction: the claim tracks the output.
+  const hasCoChange = readingOrder.entries.some((e) =>
+    e.reasons.some((r) => r.startsWith('changed together')),
+  );
+  const fusedFrom = hasCoChange
+    ? 'import centrality, proven rework risk, and co-change'
+    : 'import centrality and proven rework risk';
   let block = `## Start Here${scoped}\n\n`;
-  block += `*Fused from import centrality, proven rework risk, and co-change — read these first.*\n\n`;
+  block += `*Fused from ${fusedFrom} — read these first.*\n\n`;
   if (readingOrder.coverageNote) {
     block += `> Note: ${readingOrder.coverageNote}.\n\n`;
   }

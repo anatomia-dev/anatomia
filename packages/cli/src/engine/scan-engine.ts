@@ -1149,10 +1149,13 @@ export async function scanProject(
   // other gitIntelligence sub-fields (churn/busFactor/co-change) belong to the
   // git-churn path and remain null here.
   const proofHistory = await readProofHistory(rootPath);
-  let gitIntelligence: EngineResult['gitIntelligence'] = proofHistory
+  const gitIntelligence: EngineResult['gitIntelligence'] = proofHistory
     ? {
         churnHotspots: null,
         busFactor: null,
+        // Reserved for a future git-churn co-change path; the live co-change
+        // signal is proof-derived (intent couples), threaded into the reading
+        // order below — not stored here (this field would demand a percentage).
         coChangeCoupling: null,
         bugMagnetFiles: toBugMagnetFiles(proofHistory),
       }
@@ -1160,26 +1163,26 @@ export async function scanProject(
 
   // Slice 3: Fused reading list. Deep-tier only — it runs PageRank over the
   // in-memory Slice-2 import graph and fuses centrality with Slice-1 bug-magnet
-  // rate and co-change into a token-budgeted "read these first" list,
-  // personalized toward the active scope's "Files affected" when exactly one is
-  // active. `null` below the edge threshold (too-sparse graph) or at surface
-  // tier (no graph). As a side effect it cross-references co-change rows against
-  // the graph to resolve `hasImportRelationship` (null when low-confidence).
+  // rate and Slice-1 proof-derived co-change (intent couples) into a
+  // token-budgeted "read these first" list, personalized toward the active
+  // scope's "Files affected" when exactly one is active. `null` below the edge
+  // threshold (too-sparse graph) or at surface tier (no graph). The fusion gates
+  // co-change to >= 2 verified items and flags hidden coupling (a co-change pair
+  // with no shared import edge) against the graph.
   let readingOrder: EngineResult['readingOrder'] = null;
   if (codeGraph) {
     try {
-      const { buildReadingOrder, resolveImportRelationships } = await import('./analyzers/reading-order/index.js');
+      const { buildReadingOrder } = await import('./analyzers/reading-order/index.js');
       const { findActiveScope } = await import('./analyzers/reading-order/scope.js');
 
-      // Resolve hasImportRelationship on any co-change rows against the graph,
-      // then fuse the resolved rows into the reading list.
-      if (gitIntelligence && gitIntelligence.coChangeCoupling) {
-        gitIntelligence = {
-          ...gitIntelligence,
-          coChangeCoupling: resolveImportRelationships(gitIntelligence.coChangeCoupling, codeGraph),
-        };
-      }
-      const coChange = gitIntelligence?.coChangeCoupling ?? [];
+      // Third signal: proof-derived co-change. Slice 1 already computed the
+      // verified intent couples (files co-touched across completed work items)
+      // on `proofHistory`; thread them straight into the fusion — no synthetic
+      // percentage, no git churn. The fusion gates them to >= 2 verified items.
+      // `gitIntelligence.coChangeCoupling` stays null on purpose: that schema
+      // field is reserved for a future git-churn path and is NOT populated here
+      // (populating it would force a fabricated percentage the field demands).
+      const intentCouples = proofHistory?.intentCouples ?? [];
 
       const activeScope = await findActiveScope(rootPath);
       // The import graph is always TS/JS. When the repo's primary language is
@@ -1187,14 +1190,19 @@ export async function scanProject(
       // so the reading order carries an honest scope caveat rather than
       // presenting that island as the whole-repo order.
       const primaryLanguageIsGraphLanguage = projectTypeResult.type === 'node';
+      // The parse/graph sample is capped at 750 files; when the sample hit that
+      // cap the graph saw only a subset of the repo, so the reading order must
+      // disclose it (honesty for mid-size repos where coverage still looks high).
+      const graphSampled = sampledFiles.length >= 750;
       readingOrder = buildReadingOrder({
         graph: codeGraph,
         bugMagnets: gitIntelligence?.bugMagnetFiles ?? [],
-        coChange,
+        intentCouples,
         scopeFiles: activeScope?.files ?? [],
         scopeSlug: activeScope?.slug ?? null,
         totalSourceFiles: files.source,
         primaryLanguageIsGraphLanguage,
+        graphSampled,
       });
     } catch {
       // Best-effort: the reading list is a derived convenience, never a gate.

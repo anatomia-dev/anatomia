@@ -5,16 +5,20 @@
  * token-budgeted "read these first" list —
  *   1. import-graph PageRank centrality (Slice 2 — structural importance),
  *   2. proof-chain bug-magnet RATE (Slice 1 — proven rework risk), and
- *   3. git co-change coupling (the in-flight churn path),
+ *   3. proof-derived co-change (Slice 1 — files that repeatedly changed together
+ *      across verified work items; gated to >= MIN_COTOUCH so a one-off or a
+ *      mega-refactor artifact never counts),
  * then trims the ranked result to a ~1k-token budget and, when an active
  * `scope.md` "Files affected" list is present, personalizes the ranking toward
  * the task at hand.
  *
  * Honesty by construction: every entry's `reasons[]` states the *measured*
- * basis for its rank (centrality, work items, rework cycles, co-change) — never
- * a fabricated justification. Below an edge threshold (a too-sparse graph) the
- * whole result is `null`, so consumers can distinguish "nothing worth ranking"
- * from "ranked it and here's the order".
+ * basis for its rank (centrality, work items, rework cycles, and — for
+ * co-change — the verified-item count, never a synthetic percentage). The
+ * co-change signal is the proof-chain's alone: it comes from intent couples
+ * (files co-touched across completed work items), not git churn. Below an edge
+ * threshold (a too-sparse graph) the whole result is `null`, so consumers can
+ * distinguish "nothing worth ranking" from "ranked it and here's the order".
  *
  * Determinism: PageRank is fixed-iteration, ties break on file path, and the
  * budget trim is a deterministic binary search — two runs over identical inputs
@@ -33,10 +37,29 @@ import { pageRank } from '../graph/pagerank.js';
 export type ReadingOrder = NonNullable<EngineResult['readingOrder']>;
 /** One ranked entry in the reading list. */
 export type ReadingEntry = ReadingOrder['entries'][number];
-/** The co-change rows the fusion reads (proof-chain or git-churn path). */
+/**
+ * A git-churn co-change row, as carried by the (frozen, currently-unpopulated)
+ * `gitIntelligence.coChangeCoupling` schema field. Read only by
+ * {@link resolveImportRelationships}; the live fusion uses {@link IntentCoupleInput}.
+ */
 export type CoChangeRow = NonNullable<
   NonNullable<EngineResult['gitIntelligence']>['coChangeCoupling']
 >[number];
+
+/**
+ * A proof-derived co-change couple the fusion reads: two files co-touched across
+ * `coTouchCount` completed, contract-verified work items. There is deliberately
+ * no percentage — the honest provenance is the verified-item count itself, so a
+ * reason reads "changed together in N verified items", never a synthetic "N%".
+ */
+export interface IntentCoupleInput {
+  /** Lexicographically first file of the pair (matches graph node identity). */
+  fileA: string;
+  /** Lexicographically second file of the pair. */
+  fileB: string;
+  /** Distinct completed work items that touched both files. */
+  coTouchCount: number;
+}
 
 /**
  * The proof-chain bug-magnet rate signal, narrowed to just the fields the
@@ -65,8 +88,13 @@ export interface ReadingOrderInput {
     Partial<Pick<CodeGraph, 'inDegree' | 'barrelFiles' | 'generatedFiles'>>;
   /** Slice-1 proof-chain bug-magnet rates (may be empty). */
   bugMagnets: BugMagnetRate[];
-  /** Git/proof co-change rows used for the co-change signal (may be empty). */
-  coChange: CoChangeRow[];
+  /**
+   * Slice-1 proof-derived intent couples (verified co-change). Passed raw; the
+   * fusion itself gates them to >= {@link MIN_COTOUCH} verified items, so a
+   * one-off co-touch — or the thousands of spurious pairs a single huge refactor
+   * would manufacture — never becomes a coupling. May be empty.
+   */
+  intentCouples: IntentCoupleInput[];
   /**
    * Repo-relative files from the active `scope.md` "Files affected" list, used
    * to personalize the ranking. Empty when no active scope.
@@ -90,6 +118,13 @@ export interface ReadingOrderInput {
    * language is Python/Go/PHP/Ruby — which also triggers the scope caveat.
    */
   primaryLanguageIsGraphLanguage?: boolean;
+  /**
+   * Whether the import graph was built from the truncated 750-file sample (i.e.
+   * the repo has more files than the cap), so the graph saw only a subset of the
+   * repo. Triggers a coverage caveat even when the covered fraction looks high —
+   * without it, a mid-size repo would present a partial ranking as whole-repo.
+   */
+  graphSampled?: boolean;
 }
 
 /** Default token budget — roughly the "read these first" header of a context. */
@@ -106,6 +141,15 @@ const MIN_EDGES = 3;
 const W_CENTRALITY = 1.0;
 const W_BUGMAGNET = 0.6;
 const W_COCHANGE = 0.4;
+/**
+ * Minimum verified work items two files must share before the fusion treats them
+ * as co-changed. At >= 2 the coupling is "changed together repeatedly", not "fell
+ * inside one work item once" — which both denoises the signal and is what makes
+ * it honestly *verified* co-change. It also dissolves the artifact of a single
+ * sweeping refactor (one work item touching dozens of files would otherwise
+ * manufacture every pairwise couple at coTouchCount 1).
+ */
+const MIN_COTOUCH = 2;
 /** Multiplicative boost applied to a file named in the active scope. */
 const SCOPE_BOOST = 1.5;
 /**
@@ -256,7 +300,7 @@ function trimToBudget(entries: ReadingEntry[], budget: number): ReadingEntry[] {
  *   threshold.
  */
 export function buildReadingOrder(input: ReadingOrderInput): ReadingOrder | null {
-  const { graph, bugMagnets, coChange, scopeFiles, scopeSlug } = input;
+  const { graph, bugMagnets, intentCouples, scopeFiles, scopeSlug } = input;
   const budget = input.budget ?? DEFAULT_BUDGET;
 
   if (graph.edges.length < MIN_EDGES) return null;
@@ -303,16 +347,43 @@ export function buildReadingOrder(input: ReadingOrderInput): ReadingOrder | null
     if (m.rejectionCycles !== null && m.rejectionCycles > maxRejections) maxRejections = m.rejectionCycles;
   }
 
-  // 3. Co-change — per-file partner count + the strongest coupling percentage,
-  //    so a heavily-coupled file ranks up and we can name a concrete partner.
-  const coChangeByFile = new Map<string, { partners: number; topPct: number; topPartner: string }>();
-  for (const row of coChange) {
-    for (const [self, other] of [[row.fileA, row.fileB], [row.fileB, row.fileA]] as const) {
-      const acc = coChangeByFile.get(self) ?? { partners: 0, topPct: 0, topPartner: '' };
+  // 3. Co-change — proof-derived intent couples (verified co-change). Per file:
+  //    how many distinct partners it changed together with, plus the strongest
+  //    partner (by verified-item count) to name concretely. Gated to >=
+  //    MIN_COTOUCH verified items so one-off co-touches and mega-refactor
+  //    artifacts never count. Each couple is cross-referenced against the import
+  //    graph: a pair with NO shared edge is "hidden coupling" — the relationship
+  //    the structural graph alone can't see, which only the proof chain reveals.
+  const edgeSet = new Set<string>();
+  for (const e of graph.edges) {
+    edgeSet.add(`${e.from}\0${e.to}`);
+    edgeSet.add(`${e.to}\0${e.from}`);
+  }
+  const graphNodeSet = new Set(graph.nodes);
+  const coChangeByFile = new Map<
+    string,
+    { partners: number; topCoTouch: number; topPartner: string; topHidden: boolean }
+  >();
+  for (const couple of intentCouples) {
+    if (couple.coTouchCount < MIN_COTOUCH) continue;
+    for (const [self, other] of [[couple.fileA, couple.fileB], [couple.fileB, couple.fileA]] as const) {
+      const acc = coChangeByFile.get(self) ?? { partners: 0, topCoTouch: 0, topPartner: '', topHidden: false };
       acc.partners += 1;
-      if (row.coChangePercentage > acc.topPct) {
-        acc.topPct = row.coChangePercentage;
+      // Strongest partner by co-touch count; ties broken on partner path so the
+      // chosen partner (and its hidden-coupling flag) is independent of the input
+      // couple order — buildReadingOrder is self-determinizing, not reliant on the
+      // caller pre-sorting intentCouples.
+      if (
+        couple.coTouchCount > acc.topCoTouch ||
+        (couple.coTouchCount === acc.topCoTouch && (acc.topPartner === '' || other < acc.topPartner))
+      ) {
+        acc.topCoTouch = couple.coTouchCount;
         acc.topPartner = other;
+        // Hidden coupling: both files are graph nodes yet share no import edge,
+        // so the relationship is invisible to structure alone. A partner the
+        // graph never saw is NOT claimed hidden — we genuinely can't tell.
+        acc.topHidden =
+          graphNodeSet.has(self) && graphNodeSet.has(other) && !edgeSet.has(`${self}\0${other}`);
       }
       coChangeByFile.set(self, acc);
     }
@@ -398,8 +469,19 @@ export function buildReadingOrder(input: ReadingOrderInput): ReadingOrder | null
     if (coc && coc.partners > 0) {
       const normPartners = maxPartners > 0 ? coc.partners / maxPartners : 0;
       score += W_COCHANGE * normPartners;
-      const partnerName = coc.topPartner.split('/').pop() ?? coc.topPartner;
-      reasons.push(`changed together with ${partnerName} (${Math.round(coc.topPct)}%)`);
+      // Name the partner by basename, but disambiguate when it collides with
+      // THIS file's basename (e.g. two `census.ts` at different paths) so the
+      // reason never reads as a file coupled to itself.
+      const selfBase = file.split('/').pop() ?? file;
+      const partnerBase = coc.topPartner.split('/').pop() ?? coc.topPartner;
+      const partnerName =
+        partnerBase === selfBase ? coc.topPartner.split('/').slice(-2).join('/') : partnerBase;
+      // Honest provenance: the verified-item count from the proof chain, never a
+      // synthetic percentage. Flag hidden coupling (changed together with no
+      // shared import edge) — the relationship structure alone would miss.
+      const items = `${coc.topCoTouch} verified item${coc.topCoTouch === 1 ? '' : 's'}`;
+      const hidden = coc.topHidden ? ' (hidden coupling)' : '';
+      reasons.push(`changed together with ${partnerName} in ${items}${hidden}`);
     }
 
     // Lead with the concrete in-degree citation (the honest, measured basis)
@@ -440,6 +522,7 @@ export function buildReadingOrder(input: ReadingOrderInput): ReadingOrder | null
     graph.nodes.length,
     input.totalSourceFiles ?? null,
     input.primaryLanguageIsGraphLanguage ?? true,
+    input.graphSampled ?? false,
   );
 
   return {
@@ -702,16 +785,39 @@ function computeCoverageNote(
   graphNodeCount: number,
   totalSourceFiles: number | null,
   primaryLanguageIsGraphLanguage: boolean,
+  graphWasSampled: boolean,
 ): string | null {
-  if (totalSourceFiles && totalSourceFiles > 0) {
-    const coverage = graphNodeCount / totalSourceFiles;
-    if (!primaryLanguageIsGraphLanguage || coverage < MIN_COVERAGE) {
-      const pct = Math.round(coverage * 100);
-      return `ranking covers the TS/JS import subgraph only (~${pct}% of source files)`;
-    }
-  } else if (!primaryLanguageIsGraphLanguage) {
+  // Percentage of source files the graph actually covers, clamped to [0, 100]
+  // (the graph's nodes are a subset of source files, so coverage can't exceed
+  // 100% in practice — the clamp just guards against any counting drift).
+  const pct =
+    totalSourceFiles && totalSourceFiles > 0
+      ? Math.min(100, Math.round((graphNodeCount / totalSourceFiles) * 100))
+      : null;
+
+  // 1. Polyglot: the graph's language isn't the repo's primary language. This is
+  //    a LANGUAGE caveat, not a coverage one — frame it as such (a misleading
+  //    "~100%" would otherwise read as "covered the whole repo").
+  if (!primaryLanguageIsGraphLanguage) {
     return 'ranking covers the TS/JS import subgraph only, not the repo\'s primary language';
   }
+
+  // 2. Sampled: the import graph was built from the truncated 750-file sample, so
+  //    it did not see the whole repo even when the covered fraction looks high.
+  //    Without this, a mid-size repo (≈750–2500 files) would emit a confident
+  //    whole-repo ranking over a partial sample with no caveat at all.
+  if (graphWasSampled) {
+    return pct !== null
+      ? `ranking computed over a sampled subset of the repo (~${pct}% of source files)`
+      : 'ranking computed over a sampled subset of the repo';
+  }
+
+  // 3. Low coverage even without sampling (e.g. a small TS/JS island in a repo of
+  //    mostly isolated or non-import files): disclose the partial coverage.
+  if (pct !== null && graphNodeCount / (totalSourceFiles as number) < MIN_COVERAGE) {
+    return `ranking covers the TS/JS import subgraph only (~${pct}% of source files)`;
+  }
+
   return null;
 }
 
