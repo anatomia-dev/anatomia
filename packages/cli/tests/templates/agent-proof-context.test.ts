@@ -128,3 +128,35 @@ describe('Verdict honesty — build-report read license removed', () => {
     expect(codexDogfood).toBe(codexMaster);
   });
 });
+
+// Phase 1 of proof-context-intelligence — tags use THIS contract's IDs
+// (.ana/plans/active/proof-context-intelligence/contract.yaml), distinct from
+// the prior-contract @ana tags reused elsewhere in this file.
+describe('Proof-context adoption framing (proof-context-intelligence Phase 1)', () => {
+  const phaseCodexTemplatesDir = path.join(__dirname, '../../templates/.codex/agents');
+
+  // @ana A030
+  it('ana.md instructs running ana proof context as a non-optional scope step', () => {
+    const content = readTemplate('ana.md');
+    expect(content).toContain('ana proof context');
+    expect(content).toContain('not optional');
+  });
+
+  // @ana A031
+  it('ana-verify.md drops the "context, not a checklist" hedge', () => {
+    const content = readTemplate('ana-verify.md');
+    expect(content).not.toContain('context, not a checklist');
+  });
+
+  // @ana A032
+  it('ana-verify.md reaffirms forming findings independently', () => {
+    const content = readTemplate('ana-verify.md');
+    expect(content).toContain('independent');
+  });
+
+  // @ana A034
+  it('codex ana-verify mirror carries the independence framing', () => {
+    const content = readFileSync(path.join(phaseCodexTemplatesDir, 'ana-verify.md'), 'utf-8');
+    expect(content).toContain('independent');
+  });
+});
