@@ -55,6 +55,7 @@
     "packages/cli/src/commands/proof.ts",
     "packages/cli/src/engine/analyzers/graph/buildGraph.ts",
     "packages/cli/src/engine/analyzers/graph/readGraph.ts",
+    "packages/cli/src/engine/analyzers/proof-history/index.ts",
     "packages/cli/src/engine/scan-engine.ts",
     "packages/cli/src/utils/proofSummary.ts",
     "packages/cli/templates/.claude/agents/ana-plan.md",
@@ -64,15 +65,17 @@
     "packages/cli/templates/.codex/agents/ana-verify.md",
     "packages/cli/templates/.codex/agents/ana.md",
     "packages/cli/tests/commands/init/code-graph-init.test.ts",
+    "packages/cli/tests/commands/init/template-propagation.test.ts",
     "packages/cli/tests/commands/proof.test.ts",
     "packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts",
     "packages/cli/tests/engine/analyzers/graph/readGraph.test.ts",
+    "packages/cli/tests/engine/analyzers/proof-history.test.ts",
     "packages/cli/tests/templates/agent-proof-context.test.ts",
     "packages/cli/tests/utils/proofSummary.test.ts"
   ],
   "module_churn": {
     ".claude/agents/ana-plan.md": {
-      "added": 2,
+      "added": 4,
       "deleted": 0
     },
     ".claude/agents/ana-verify.md": {
@@ -84,7 +87,7 @@
       "deleted": 1
     },
     ".codex/agents/ana-plan.md": {
-      "added": 2,
+      "added": 4,
       "deleted": 0
     },
     ".codex/agents/ana-verify.md": {
@@ -104,8 +107,8 @@
       "deleted": 2
     },
     "packages/cli/src/commands/proof.ts": {
-      "added": 109,
-      "deleted": 4
+      "added": 199,
+      "deleted": 8
     },
     "packages/cli/src/engine/analyzers/graph/buildGraph.ts": {
       "added": 560,
@@ -115,16 +118,20 @@
       "added": 63,
       "deleted": 0
     },
+    "packages/cli/src/engine/analyzers/proof-history/index.ts": {
+      "added": 299,
+      "deleted": 0
+    },
     "packages/cli/src/engine/scan-engine.ts": {
       "added": 22,
       "deleted": 1
     },
     "packages/cli/src/utils/proofSummary.ts": {
-      "added": 32,
-      "deleted": 0
+      "added": 154,
+      "deleted": 16
     },
     "packages/cli/templates/.claude/agents/ana-plan.md": {
-      "added": 2,
+      "added": 4,
       "deleted": 0
     },
     "packages/cli/templates/.claude/agents/ana-verify.md": {
@@ -136,7 +143,7 @@
       "deleted": 1
     },
     "packages/cli/templates/.codex/agents/ana-plan.md": {
-      "added": 2,
+      "added": 4,
       "deleted": 0
     },
     "packages/cli/templates/.codex/agents/ana-verify.md": {
@@ -151,8 +158,12 @@
       "added": 87,
       "deleted": 0
     },
+    "packages/cli/tests/commands/init/template-propagation.test.ts": {
+      "added": 4,
+      "deleted": 1
+    },
     "packages/cli/tests/commands/proof.test.ts": {
-      "added": 200,
+      "added": 347,
       "deleted": 0
     },
     "packages/cli/tests/engine/analyzers/graph/buildGraph.test.ts": {
@@ -163,12 +174,16 @@
       "added": 82,
       "deleted": 0
     },
+    "packages/cli/tests/engine/analyzers/proof-history.test.ts": {
+      "added": 320,
+      "deleted": 0
+    },
     "packages/cli/tests/templates/agent-proof-context.test.ts": {
-      "added": 32,
+      "added": 76,
       "deleted": 0
     },
     "packages/cli/tests/utils/proofSummary.test.ts": {
-      "added": 112,
+      "added": 253,
       "deleted": 0
     }
   },
@@ -205,5 +220,13 @@
   "verify-data-2": {
     "saved_at": "2026-06-18T17:41:16.640Z",
     "hash": "sha256:3f5f4baaf1ec25aef0cb447cd45439130d4a8f206dd1d63180b94cf2d1c3349d"
+  },
+  "build-report-3": {
+    "saved_at": "2026-06-18T18:27:38.315Z",
+    "hash": "sha256:2e41b6a6850130049ed197c9518ecb47c9ed89b7cd4fa2670d1c46b6a054d134"
+  },
+  "build-data-3": {
+    "saved_at": "2026-06-18T18:27:38.318Z",
+    "hash": "sha256:d4968172d182b726c6c8bb730e854edd1383ff52e1dc6ce0dc0bf8c6c22b2c86"
   }
 }
