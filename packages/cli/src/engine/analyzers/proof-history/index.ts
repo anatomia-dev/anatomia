@@ -113,16 +113,34 @@ function isTestFile(filePath: string): boolean {
   return /\.(test|spec)\.[^.]+$/i.test(base);
 }
 
-/** Directory portion of a path, or '' for a bare basename. */
-function dirOf(filePath: string): string {
-  return filePath.includes('/') ? filePath.slice(0, filePath.lastIndexOf('/')) : '';
+/**
+ * Normalize a path so a source file and its own test align, even when tests
+ * live in a parallel tree. Strips a `.test`/`.spec` infix from the basename
+ * (`work.test.ts` → `work.ts`) and collapses `src`/`tests`/`test`/`__tests__`
+ * directory segments, so `src/commands/work.ts` and
+ * `tests/commands/work.test.ts` both normalize to `commands/work.ts` — while
+ * files in genuinely different modules stay distinct (`src/x/index.ts` ≠
+ * `src/y/index.test.ts`).
+ *
+ * @param filePath - A repo-relative path.
+ * @returns The normalized path for test-counterpart comparison.
+ */
+function normalizeForTestMatch(filePath: string): string {
+  // Strip a `.test`/`.spec` infix while keeping the real extension.
+  const noInfix = filePath.replace(/\.(test|spec)(\.[^.]+)$/i, '$2');
+  // Collapse parallel source/test tree segments so mirrors line up.
+  return noInfix.replace(/(^|\/)(src|tests|test|__tests__)(?=\/)/gi, '$1');
 }
 
 /**
  * Whether `partner` is the same-stem test counterpart of `query` (or vice
- * versa): exactly one of them is a test file, their stems are equal, and they
- * share a directory (or one path is a basename / suffix of the other). This is
- * net-new in Phase 3 — the harvested analyzer does not suppress partners.
+ * versa). Net-new in Phase 3 — the harvested analyzer does not suppress
+ * partners.
+ *
+ * Requires exactly one side to be a test file, then matches on the normalized
+ * path (which aligns the `src/`↔`tests/` mirror common in this codebase). A
+ * bare-basename query/partner falls back to stem equality, since there is no
+ * directory structure to mirror.
  *
  * @param query - The queried file path.
  * @param partner - A candidate co-change partner path.
@@ -132,18 +150,13 @@ function isSameStemTestPartner(query: string, partner: string): boolean {
   // Exactly one side must be a test file — two non-tests or two tests are real
   // co-change, not a file/its-own-test pairing.
   if (isTestFile(query) === isTestFile(partner)) return false;
-  if (stemOf(query) !== stemOf(partner)) return false;
 
-  const qDir = dirOf(query);
-  const pDir = dirOf(partner);
-  // Same directory, a bare-basename query/partner, or a path-suffix relation.
-  return (
-    qDir === pDir ||
-    qDir === '' ||
-    pDir === '' ||
-    query.endsWith('/' + partner) ||
-    partner.endsWith('/' + query)
-  );
+  // Bare basename on either side: no tree to mirror — compare stems directly.
+  if (!query.includes('/') || !partner.includes('/')) {
+    return stemOf(query) === stemOf(partner);
+  }
+
+  return normalizeForTestMatch(query) === normalizeForTestMatch(partner);
 }
 
 /**

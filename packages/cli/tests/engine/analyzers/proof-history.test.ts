@@ -181,6 +181,35 @@ describe('computeCoChange — same-stem test-partner suppression', () => {
     expect(result.suppressedTestPartner).toBe(false);
     expect(result.partners.map((p) => p.file)).toContain('src/other.test.ts');
   });
+
+  it('suppresses a test in a parallel tests/ tree (src↔tests mirror)', () => {
+    // Real-repo layout: src/commands/work.ts ↔ tests/commands/work.test.ts.
+    const q = 'packages/cli/src/commands/work.ts';
+    const testMirror = 'packages/cli/tests/commands/work.test.ts';
+    const entries = [
+      entry('s1', [q, testMirror, 'packages/cli/src/commands/pr.ts']),
+      entry('s2', [q, testMirror, 'packages/cli/src/commands/pr.ts']),
+      entry('s3', [q, testMirror, 'packages/cli/src/commands/pr.ts']),
+    ];
+    const result = computeCoChange(entries, q, null, fileMatches);
+    expect(result.suppressedTestPartner).toBe(true);
+    expect(result.partners.map((p) => p.file)).not.toContain(testMirror);
+    expect(result.partners.map((p) => p.file)).toContain('packages/cli/src/commands/pr.ts');
+  });
+
+  it('does NOT suppress a same-stem test from a different module', () => {
+    // src/x/index.ts must not suppress src/y/index.test.ts — different modules.
+    const q = 'src/x/index.ts';
+    const otherModuleTest = 'src/y/index.test.ts';
+    const entries = [
+      entry('s1', [q, otherModuleTest]),
+      entry('s2', [q, otherModuleTest]),
+      entry('s3', [q, otherModuleTest]),
+    ];
+    const result = computeCoChange(entries, q, null, fileMatches);
+    expect(result.suppressedTestPartner).toBe(false);
+    expect(result.partners.map((p) => p.file)).toContain(otherModuleTest);
+  });
 });
 
 describe('computeCoChange — hidden/imports/unknown trichotomy', () => {
