@@ -1,0 +1,35 @@
+schema: 1
+findings:
+  - category: code
+    summary: "AC3 test-partner suppression fails for package-relative queries — query's own test file leaks into co-change list. Pairing uses fileMatches (suffix-tolerant) but suppression uses normalizeForTestMatch (prefix-sensitive exact), so the two disagree when query and stored partner have different path prefixes (e.g. `src/utils/x.ts` vs `packages/cli/tests/utils/x.test.ts`). Reproduced live: `cd packages/cli && node dist/index.js proof context src/utils/proofSummary.ts` lists proofSummary.test.ts as a partner with no suppression note (top 3 of 40); the full repo-relative query suppresses correctly (top 3 of 39)."
+    file: "packages/cli/src/engine/analyzers/proof-history/index.ts"
+    line: 149
+    severity: risk
+    suggested_action: scope
+    related_assertions: ["A014", "A015"]
+  - category: test
+    summary: "No test covers a path-form mismatch between query and stored partner in suppression. Every suppression test (proof-history.test.ts, proofSummary.test.ts) uses aligned path forms — both repo-relative or both package-relative — so the live failure mode (package-relative query vs repo-relative modules_touched) is never exercised. The spec's own gotcha flagged monorepo path reconciliation as a risk."
+    file: "packages/cli/tests/engine/analyzers/proof-history.test.ts"
+    line: 185
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A014"]
+  - category: code
+    summary: "Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer, even ones in different directories. Low likelihood (requires legacy bare-basename modules_touched) but silently drops real import edges when it occurs."
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 1339
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "Live run could not exercise the hidden/imports render path: this worktree has no .ana/state/code-graph.json, so every partner renders as `unknown` (Changed together:). The graph-present render (hidden/imports grouping, imported_by/imports layers) is covered only by unit/integration tests that write a synthetic graph, not by an end-to-end run against the real repo."
+    file: "packages/cli/src/commands/proof.ts"
+    line: 3320
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "proofSummary.ts grew ~138 lines (assembleAlsoChangesWith + resolveQueryNode + the also_changes_with interface) — assembly/dedup logic that could live in the pure engine module instead of the already-oversized util. Continues the file-growth trend tracked by decompose-proof-summary-C1 / audit-matrix-orientation-C7."
+    file: "packages/cli/src/utils/proofSummary.ts"
+    line: 1311
+    severity: observation
+    suggested_action: monitor
+    resolves: []

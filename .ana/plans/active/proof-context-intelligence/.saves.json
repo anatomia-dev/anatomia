@@ -193,7 +193,7 @@
   "pre-check": {
     "seal": "INTACT",
     "seal_hash": "sha256:10c99c610fde35bfec8bb5edb2c1c60f3436cad702f3a8e52ea33e8ce44e43e0",
-    "run_at": "2026-06-18T17:41:16.606Z"
+    "run_at": "2026-06-18T18:53:59.966Z"
   },
   "verify-report-1": {
     "saved_at": "2026-06-18T17:00:31.283Z",
@@ -228,5 +228,15 @@
   "build-data-3": {
     "saved_at": "2026-06-18T18:27:38.318Z",
     "hash": "sha256:d4968172d182b726c6c8bb730e854edd1383ff52e1dc6ce0dc0bf8c6c22b2c86"
+  },
+  "verify_started_at_3": "2026-06-18T18:45:32.298Z",
+  "verify_agent_3": "ana-verify",
+  "verify-report-3": {
+    "saved_at": "2026-06-18T18:53:59.999Z",
+    "hash": "sha256:7522192f6dd989fea08e5b3b749181c6db3d08796a1afcce4de250370a3cdb20"
+  },
+  "verify-data-3": {
+    "saved_at": "2026-06-18T18:54:00.000Z",
+    "hash": "sha256:fefc2b750f43d577e3ef6b0c52fb4fa4be5218e3c651b2559301a52b9a22498a"
   }
 }
