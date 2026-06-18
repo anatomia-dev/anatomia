@@ -708,7 +708,7 @@ function extractStructureFromDirect(
  */
 export async function scanProject(
   rootPath: string,
-  options: { depth: 'surface' | 'deep' } = { depth: 'deep' }
+  options: { depth: 'surface' | 'deep'; persistGraphTo?: string } = { depth: 'deep' }
 ): Promise<EngineResult> {
   const projectName = await getProjectName(rootPath);
   const now = new Date().toISOString();
@@ -857,6 +857,27 @@ export async function scanProject(
           preSampledFiles: sampledFiles,
           tsconfigEntries: census.configs.tsconfigs,
         });
+
+        // Import graph: a pure function of the deep-tier `parsed`/`census` the
+        // scan already computed (no re-parse). Persisted ONLY when a write
+        // context passes `persistGraphTo` — `ana scan` passes nothing, so it
+        // stays read-only and byte-stable. Own try/catch: a derived artifact
+        // must never invalidate the scan (engine graceful degradation).
+        try {
+          const { buildImportGraph, persistCodeGraph } = await import('./analyzers/graph/buildGraph.js');
+          const workspacePackages = new Map<string, string>();
+          for (const sr of census.sourceRoots) {
+            if (sr.packageName && sr.relativePath && sr.relativePath !== '.') {
+              workspacePackages.set(sr.packageName, sr.relativePath);
+            }
+          }
+          const codeGraph = buildImportGraph(parsed, census.configs.tsconfigs, rootPath, workspacePackages);
+          if (options.persistGraphTo) {
+            await persistCodeGraph(options.persistGraphTo, codeGraph);
+          }
+        } catch {
+          // Best-effort: the import graph is a derived artifact, never a gate.
+        }
       }
     } catch (err) {
       analyzerFailure = err instanceof Error ? err.message : 'unknown error';
