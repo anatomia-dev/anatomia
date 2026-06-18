@@ -294,8 +294,11 @@ export function aggregate(results: ScoreResult[]): AggregateReport {
           let total = 0;
           let reductionSum = 0;
           for (let i = 0; i < pairedRuns; i++) {
-            const bv = metricValue(baselineRows[i], metric);
-            const cv = metricValue(comparisonRows[i], metric);
+            const baselineRow = baselineRows[i];
+            const comparisonRow = comparisonRows[i];
+            if (!baselineRow || !comparisonRow) continue;
+            const bv = metricValue(baselineRow, metric);
+            const cv = metricValue(comparisonRow, metric);
             if (bv === null || cv === null) continue;
             total += 1;
             if (cv < bv) wins += 1;
