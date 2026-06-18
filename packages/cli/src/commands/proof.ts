@@ -1210,9 +1210,12 @@ async function handleProofContext(
 ): Promise<void> {
   const proofRoot = findProjectRoot();
   const proofChainPath = path.join(proofRoot, '.ana', 'proof_chain.json');
+  const graphPath = path.join(proofRoot, '.ana', 'state', 'code-graph.json');
 
-  // Check if proof chain exists
-  if (!fs.existsSync(proofChainPath)) {
+  // The day-1 import blast-radius layer works from `code-graph.json` alone, so
+  // only bail when BOTH the proof chain and the import graph are absent — there
+  // is genuinely nothing to show then.
+  if (!fs.existsSync(proofChainPath) && !fs.existsSync(graphPath)) {
     console.log('No proof chain found. Complete pipeline cycles to build proof context.');
     return;
   }
@@ -1222,8 +1225,11 @@ async function handleProofContext(
   const useJson = options.json || parentJson;
 
   if (useJson) {
-    const chainContent = fs.readFileSync(proofChainPath, 'utf-8');
-    const chain: ProofChain = JSON.parse(chainContent);
+    // The chain may be absent (graph-only, day-1 layer); fall back to an empty
+    // chain envelope so JSON output never throws on a missing file.
+    const chain: ProofChain = fs.existsSync(proofChainPath)
+      ? (JSON.parse(fs.readFileSync(proofChainPath, 'utf-8')) as ProofChain)
+      : ({ entries: [] } as unknown as ProofChain);
     console.log(JSON.stringify(wrapJsonResponse('proof context', { results }, chain), null, 2));
     return;
   }
@@ -3238,7 +3244,10 @@ export function registerProofCommand(program: Command): void {
 function formatContextResult(result: ProofContextResult): string {
   const shapers = result.shaped_by ?? [];
   const hasData =
-    result.findings.length > 0 || result.build_concerns.length > 0 || shapers.length > 0;
+    result.findings.length > 0 ||
+    result.build_concerns.length > 0 ||
+    shapers.length > 0 ||
+    result.also_changes_with !== undefined;
 
   if (!hasData) {
     return `No proof context found for ${result.query}`;
@@ -3305,5 +3314,82 @@ function formatContextResult(result: ProofContextResult): string {
     lines.push('');
   }
 
+  // Also changes with — the single, capped "what else will I have to touch"
+  // section. Proof co-change first (hidden → imports → unknown, the higher-
+  // value surprising signal up top), then the day-1 import blast-radius layer.
+  renderAlsoChangesWith(lines, result.also_changes_with);
+
   return lines.join('\n');
+}
+
+/** First-screen cap shared by the co-change proof layer and each import sub-direction. */
+const ALSO_CHANGES_CAP = 3;
+
+/**
+ * Render the **Also changes with** section onto `lines`.
+ *
+ * Proof partners render first, grouped by relation in priority order
+ * (`hidden` → `imports` → `unknown`) and capped to the first screen with a
+ * "top N of M" drill footer. A suppressed same-stem test partner gets a
+ * one-line note. The day-1 import layer (`Imported by` / `Imports`) follows,
+ * each sub-direction capped independently with its own overflow footer.
+ *
+ * @param lines - The output line buffer to append to.
+ * @param also - The assembled co-change structure, or `undefined` (no-op).
+ */
+function renderAlsoChangesWith(
+  lines: string[],
+  also: ProofContextResult['also_changes_with'],
+): void {
+  if (!also) return;
+
+  const { proof_partners: partners, proof_total: total, imported_by: importedBy, imports } = also;
+  lines.push('Also changes with:');
+
+  // ── Proof co-change layer (capped, hidden-first) ──
+  const shown = partners.slice(0, ALSO_CHANGES_CAP);
+  const groups: Array<{ relation: 'hidden' | 'imports' | 'unknown'; label: string }> = [
+    { relation: 'hidden', label: 'Changed together (hidden — no import edge):' },
+    { relation: 'imports', label: 'Changed together (also imports):' },
+    { relation: 'unknown', label: 'Changed together:' },
+  ];
+  for (const group of groups) {
+    const rows = shown.filter((p) => p.relation === group.relation);
+    if (rows.length === 0) continue;
+    lines.push(`  ${group.label}`);
+    for (const p of rows) {
+      const items = `${p.coTouchCount} work item${p.coTouchCount === 1 ? '' : 's'}`;
+      lines.push(`    ${p.file}  ·  ${items}`);
+    }
+  }
+  if (total > shown.length) {
+    lines.push(
+      `  top ${shown.length} of ${total} — drill a work item with \`ana proof <slug> --why\``
+    );
+  }
+  if (also.suppressed_test_partner) {
+    lines.push('  (note: same-stem test partner suppressed)');
+  }
+
+  // ── Day-1 import blast-radius layer (each direction capped) ──
+  const renderImportDirection = (label: string, files: string[]): void => {
+    if (files.length === 0) return;
+    lines.push(`  ${label}`);
+    for (const f of files.slice(0, ALSO_CHANGES_CAP)) {
+      lines.push(`    ${f}`);
+    }
+    if (files.length > ALSO_CHANGES_CAP) {
+      lines.push(
+        `    + ${files.length - ALSO_CHANGES_CAP} more — see \`ana proof context --json\``
+      );
+    }
+  };
+  if (importedBy.length > 0 || imports.length > 0) {
+    // Blank separator only when proof rows preceded the import layer.
+    if (partners.length > 0) lines.push('');
+    renderImportDirection('Imported by:', importedBy);
+    renderImportDirection('Imports:', imports);
+  }
+
+  lines.push('');
 }

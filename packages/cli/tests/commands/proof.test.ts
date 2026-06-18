@@ -714,6 +714,153 @@ describe('ana proof', () => {
     });
   });
 
+  // ─── Also changes with Section Tests (Phase 3) ────────────────────
+
+  /** Write an import graph at .ana/state/code-graph.json in the temp project. */
+  async function writeGraph(nodes: string[], edges: Array<[string, string]>): Promise<void> {
+    const stateDir = path.join(tempDir, '.ana', 'state');
+    await fs.mkdir(stateDir, { recursive: true });
+    await fs.writeFile(
+      path.join(stateDir, 'code-graph.json'),
+      JSON.stringify({
+        generated: '2026-06-18T00:00:00Z',
+        nodes: [...nodes].sort(),
+        edges: edges.map(([from, to]) => ({ from, to, names: [] })),
+        filesAnalyzed: nodes.length,
+        unresolved: 0,
+        inDegree: {},
+        barrelFiles: [],
+        generatedFiles: [],
+      })
+    );
+  }
+
+  /** A proof entry touching exactly `files` in one verified item. */
+  function coChangeEntry(slug: string, files: string[]): Record<string, unknown> {
+    return { slug, feature: `Feature ${slug}`, result: 'PASS', completed_at: '2026-05-01T00:00:00Z', modules_touched: files };
+  }
+
+  const Q = 'packages/cli/src/a.ts';
+
+  // @ana A010
+  describe('proof context renders an Also changes with section', () => {
+    it('shows the section header and a co-change partner', async () => {
+      await createProofChain([
+        coChangeEntry('s1', [Q, 'packages/cli/src/b.ts']),
+        coChangeEntry('s2', [Q, 'packages/cli/src/b.ts']),
+        coChangeEntry('s3', [Q, 'packages/cli/src/b.ts']),
+      ]);
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['context', Q]);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Also changes with:');
+      expect(stdout).toContain('packages/cli/src/b.ts');
+    });
+  });
+
+  // @ana A011, A026, A027
+  describe('proof context caps co-change partners to a first-screen', () => {
+    it('caps proof partners at 3 with a top-N footer for a hot file', async () => {
+      // Query co-changes with four partners across three items each.
+      const partners = ['b', 'c', 'd', 'e'].map((n) => `packages/cli/src/${n}.ts`);
+      await createProofChain([
+        coChangeEntry('s1', [Q, ...partners]),
+        coChangeEntry('s2', [Q, ...partners]),
+        coChangeEntry('s3', [Q, ...partners]),
+      ]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', Q]);
+      // Proof partner rows carry "· N work items"; exactly 3 survive the cap.
+      const partnerLines = stdout.split('\n').filter((l) => /·\s+\d+ work item/.test(l));
+      expect(partnerLines.length).toBe(3);
+      expect(stdout).toContain('top 3 of 4');
+      expect(stdout).toContain('of'); // overflow footer present
+    });
+  });
+
+  // @ana A015
+  describe('proof context notes a suppressed test partner', () => {
+    it('emits a one-line suppression note for the query\'s own test file', async () => {
+      const testFile = 'packages/cli/src/a.test.ts';
+      const real = 'packages/cli/src/b.ts';
+      await createProofChain([
+        coChangeEntry('s1', [Q, testFile, real]),
+        coChangeEntry('s2', [Q, testFile, real]),
+        coChangeEntry('s3', [Q, testFile, real]),
+      ]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', Q]);
+      expect(stdout).toContain('suppressed');
+      expect(stdout).not.toContain('a.test.ts');
+    });
+  });
+
+  describe('proof context co-change ordering and dedup', () => {
+    it('renders hidden partners before imports partners', async () => {
+      const hidden = 'packages/cli/src/hidden.ts';
+      const imported = 'packages/cli/src/imported.ts';
+      await createProofChain([
+        coChangeEntry('s1', [Q, hidden, imported]),
+        coChangeEntry('s2', [Q, hidden, imported]),
+        coChangeEntry('s3', [Q, hidden, imported]),
+      ]);
+      await writeGraph([Q, hidden, imported], [[Q, imported]]); // edge only to imported
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', Q]);
+      expect(stdout).toContain('hidden — no import edge');
+      expect(stdout.indexOf(hidden)).toBeLessThan(stdout.indexOf(imported));
+    });
+
+    it('shows a partner that is also an import edge only once', async () => {
+      const partner = 'packages/cli/src/b.ts';
+      await createProofChain([
+        coChangeEntry('s1', [Q, partner]),
+        coChangeEntry('s2', [Q, partner]),
+        coChangeEntry('s3', [Q, partner]),
+      ]);
+      await writeGraph([Q, partner], [[Q, partner]]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', Q]);
+      const occurrences = stdout.split('\n').filter((l) => l.includes(partner)).length;
+      expect(occurrences).toBe(1);
+    });
+  });
+
+  // @ana A013
+  describe('proof context day-1 import layer (fresh repo)', () => {
+    it('renders Imported by from the graph with no proof chain', async () => {
+      // Fresh repo: graph present, NO proof chain.
+      await createTestProject(tempDir);
+      await writeGraph(
+        [Q, 'packages/cli/src/run.ts'],
+        [['packages/cli/src/run.ts', Q]]
+      );
+      process.chdir(tempDir);
+
+      const { stdout, exitCode } = runProof(['context', Q]);
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain('Also changes with:');
+      expect(stdout).toContain('Imported by:');
+      expect(stdout).toContain('packages/cli/src/run.ts');
+    });
+  });
+
+  // @ana A023
+  describe('proof context omits Also changes with with no chain and no graph', () => {
+    it('does not render the section when neither chain nor graph exists', async () => {
+      await createProofChain([coChangeEntry('s1', ['packages/cli/src/unrelated.ts'])]);
+      process.chdir(tempDir);
+
+      const { stdout } = runProof(['context', 'packages/cli/src/never-touched.ts']);
+      expect(stdout).not.toContain('Also changes with');
+    });
+  });
+
   // ─── proof <slug> --why Tests (Phase 1) ───────────────────────────
 
   const whyEntry = {
