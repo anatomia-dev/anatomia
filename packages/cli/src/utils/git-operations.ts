@@ -195,7 +195,6 @@ export function readCoAuthor(projectRoot?: string): string {
 
   // Strip newlines and control characters — co-author comes from user config,
   // not an attack vector, so strip silently rather than reject.
-  // eslint-disable-next-line no-control-regex
   return coAuthor.replace(/[\x00-\x1f\x7f]/g, '');
 }
 
