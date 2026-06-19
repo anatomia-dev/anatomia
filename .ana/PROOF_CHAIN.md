@@ -1,13 +1,13 @@
 # Proof Chain Dashboard
 
-209 runs · 296 active · 5 promoted · 927 closed
+210 runs · 302 active · 5 promoted · 927 closed
 
 ## By Surface
 
 | Surface | Runs | Active | Latest |
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
-| cli | 146 | 222 | 2026-06-18 |
+| cli | 147 | 228 | 2026-06-19 |
 | website | 25 | 26 | 2026-06-17 |
 
 ## Hot Modules
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 296 total)
+## Active Findings (30 shown of 302 total)
 
 ### packages/cli/src/commands/init/index.ts
 
@@ -34,10 +34,6 @@
 
 - **code:** --why flag is silently ignored when `ana proof` is invoked in list mode (no slug, no --last); harmless but the flag accepts input it does nothing with — *Proof-Context Intelligence — why this file exists and what moves with it*
 - **test:** Carried forward from verify_report_3 (unchanged). Live run could not exercise the hidden/imports render path: this worktree has no .ana/state/code-graph.json, so every co-change partner renders under the `unknown` group (`Changed together:`). The graph-present render (hidden/imports grouping, imported_by/imports layers) is covered only by unit/integration tests that write a synthetic graph, not by an end-to-end run against the real repo. Reduced live confidence on that path only. — *Proof-Context Intelligence — why this file exists and what moves with it*
-
-### packages/cli/src/commands/work-proof.ts
-
-- **code:** User-facing incomplete-coverage warning says 'behavioral verdicts are evidence, never a gate' unqualified, while its sibling display copy in proof.ts:670 was correctly qualified with the veto exception — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
 ### packages/cli/src/engine/analyzers/graph/buildGraph.ts
 
@@ -55,10 +51,6 @@
 
 - **test:** Spec-mandated `ana scan` byte-parity regression test is missing — no test asserts scanProject writes no code-graph.json when persistGraphTo is unset. The read-only contract is verified by source inspection only (guarded by `if (options.persistGraphTo)`). — *Proof-Context Intelligence — why this file exists and what moves with it*
 
-### packages/cli/src/types/proof.ts
-
-- **code:** Three type docstrings still assert verdicts are 'EVIDENCE, NEVER A GATE' unconditionally, now imprecise for the one allowlisted veto claim — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
-
 ### packages/cli/src/utils/compliance.ts
 
 - **code:** loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record. — *Guard the anatrace-core load and emit the first real attestation records*
@@ -68,19 +60,34 @@
 
 ### packages/cli/src/utils/git-operations.ts
 
-- **code:** Pre-existing lint warning (unused eslint-disable directive) in git-operations.ts:198 — not in this build's file_changes, not a regression — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+- **code:** Long-standing benign lint warning (NOT a failure): `pnpm run lint` passes exit 0 but emits one 'Unused eslint-disable directive (no-control-regex)' warning in src/utils/git-operations.ts:198. Root cause: commit 83b2446d [security-hardening] added the directive for a rule the cli eslint.config.js never enables (no @eslint/js recommended), so it was redundant from commit; ESLint v9+ reports redundant directives. Untouched by this build; flagged across ~12 prior cycles. Fix is a one-line deletion of the redundant directive (zero behavior change). — *Empirical Proof Benchmark — the measuring instrument (ruler)*
 
 ### packages/cli/src/utils/proofSummary.ts
 
 - **code:** proofSummary.ts (+32) and proof.ts (+113) continue growth past the comfort threshold flagged by prior findings (decompose-proof-summary-C1, audit-matrix-orientation-C7); additive and well-contained here but the trajectory persists — *Proof-Context Intelligence — why this file exists and what moves with it*
 - **code:** Carried forward from verify_report_3 (unchanged — re-build touched only proof-history/index.ts). Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer regardless of directory. Low likelihood (requires legacy bare-basename modules_touched); silently drops real import edges if it occurs. — *Proof-Context Intelligence — why this file exists and what moves with it*
 - **code:** Carried forward from verify_report_3 (unchanged — the re-build added 0 lines to proofSummary.ts). proofSummary.ts remains oversized after Phase 3's ~138-line addition; proof context confirms decompose-proof-summary-C1 and audit-matrix-orientation-C7 are still active. The also_changes_with assembly/dedup glue could live in the pure engine module rather than the already-large util. — *Proof-Context Intelligence — why this file exists and what moves with it*
-- **code:** deriveVerdict coerces only on an exactly-spelled 'UNSATISFIED' status; a typo'd/garbled status cell falls back to 'UNKNOWN' (proofSummary.ts:205) and will NOT gate a PASS — consistent with the self-authored honesty boundary but fragile — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
 ### packages/cli/src/utils/verdict.ts
 
 - **code:** Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
-- **code:** deriveVerdict never coerces a PASS on DEVIATED or UNCOVERED rows — only UNSATISFIED. By design (coverage gating is the separate verifier-intent-coverage feature), but the contradiction signal is intentionally narrow — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
+
+### packages/cli/tests/benchmark/aggregate.test.ts
+
+- **test:** Determinism test (A034) only asserts same-input idempotence, not stability across input permutations. Implementation genuinely sorts by (task,metric,arm) so cross-permutation determinism holds, but the test would pass even if the explicit sort were removed. — *Empirical Proof Benchmark — the measuring instrument (ruler)*
+
+### packages/cli/tests/benchmark/aggregate.ts
+
+- **code:** aggregate treats 'lower is better' for every numeric metric, including distinctFilesRead/inputTokens/turns — an arm that reads fewer files (even by missing relevant ones) scores a 'win'. Spec-endorsed simplification, but a semantic foot-gun for the next reader. — *Empirical Proof Benchmark — the measuring instrument (ruler)*
+
+### packages/cli/tests/benchmark/harness.test.ts
+
+- **test:** AC7 guard (A036/A037) is a textual substring assertion on scorer.ts source — a future read of a best-effort field via destructuring-rename or computed key would slip past. Legitimate enforcement test, but textual not semantic. — *Empirical Proof Benchmark — the measuring instrument (ruler)*
+
+### packages/cli/tests/benchmark/scorer.ts
+
+- **code:** Dead export `totalTokens` — defined with full JSDoc, never called anywhere (cost uses derived.tokens; the edit-token walk inlines its own input+output sum) — *Empirical Proof Benchmark — the measuring instrument (ruler)*
+- **code:** The three to-first-correct-edit metrics can disagree on null-ness: wallClockMsToFirstCorrectEdit is null when the editing line lacks a parseable timestamp, even while turnsToResolution/tokensToFirstCorrectEdit are populated. Latent inconsistency; not triggered by the committed fixtures. — *Empirical Proof Benchmark — the measuring instrument (ruler)*
 
 ### packages/cli/tests/commands/_capture.test.ts
 
@@ -101,10 +108,6 @@
 ### packages/cli/tests/engine/analyzers/proof-history.test.ts
 
 - **test:** Path-form-mismatch test gap from verify_report_3 is FIXED. proof-history.test.ts:200 (@ana A014) exercises a package-relative query (src/commands/work.ts) against a repo-relative stored partner (packages/cli/tests/commands/work.test.ts) and asserts suppressedTestPartner === true, the test mirror absent, and the real partner present — the exact red-before/green-after case the prior fix brief specified. Suite went 4068 -> 4069 passing, 0 failed. — *Proof-Context Intelligence — why this file exists and what moves with it*
-
-### packages/cli/tests/templates/agent-proof-context.test.ts
-
-- **test:** @ana tags A001-A005 are duplicated within agent-proof-context.test.ts (prior merged contract + this contract) — tag-by-id resolution is ambiguous in this file — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
 ### packages/cli/tests/utils/compliance.test.ts
 
