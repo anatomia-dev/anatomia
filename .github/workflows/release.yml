@@ -35,7 +35,7 @@ jobs:
 
       - run: cd packages/cli && pnpm lint
 
-      - run: cd packages/cli && pnpm vitest run
+      - run: cd packages/cli && pnpm coverage
 
       - name: Verify version matches tag
         run: |

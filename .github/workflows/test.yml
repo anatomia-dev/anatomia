@@ -60,7 +60,13 @@ jobs:
 
       - name: Run tests
         timeout-minutes: 15
+        if: matrix.node-version != 22
         run: cd packages/cli && pnpm vitest run
+
+      - name: Run tests with coverage
+        timeout-minutes: 15
+        if: matrix.node-version == 22
+        run: cd packages/cli && pnpm coverage
 
       - name: Upload coverage (Node 22 only)
         if: matrix.node-version == 22
