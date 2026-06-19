@@ -7,6 +7,9 @@
   border-bottom: 1px solid var(--hairline);
   overflow: hidden;
 }
+@media (min-width: 768px) {
+  .section { margin-top: -80px; }
+}
 
 .label {
   font-family: var(--font-mono);
