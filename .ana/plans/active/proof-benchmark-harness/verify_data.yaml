@@ -40,8 +40,8 @@ findings:
     related_assertions: ["A034"]
 
   - category: code
-    summary: "Pre-existing lint failure: `pnpm run lint` exits 1 due to an unused eslint-disable directive in src/utils/git-operations.ts:198. NOT introduced by this build (file untouched, identical to main) — but the CI lint gate is currently red on main and will fail this branch's lint check too."
+    summary: "Long-standing benign lint warning (NOT a failure): `pnpm run lint` passes exit 0 but emits one 'Unused eslint-disable directive (no-control-regex)' warning in src/utils/git-operations.ts:198. Root cause: commit 83b2446d [security-hardening] added the directive for a rule the cli eslint.config.js never enables (no @eslint/js recommended), so it was redundant from commit; ESLint v9+ reports redundant directives. Untouched by this build; flagged across ~12 prior cycles. Fix is a one-line deletion of the redundant directive (zero behavior change)."
     file: "packages/cli/src/utils/git-operations.ts"
     line: 198
-    severity: risk
+    severity: debt
     suggested_action: scope

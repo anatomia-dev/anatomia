@@ -22,9 +22,9 @@ Seal status: **INTACT** — contract unmodified since AnaPlan sealed it.
 - Benchmark suite (focused): `(cd packages/cli && pnpm vitest run tests/benchmark)` — **48 passed / 0 failed**, 2 files.
 - Full suite (sealed verify evidence via `ana test --stage verify`): **4117 passed, 0 failed, 2 skipped — verdict: pass.**
   - Sealed marker: `<!-- ana:capture stage=verify slug=proof-benchmark-harness counts=4117p/0f/2s verdict=pass sha256=d530cd49ec828bb0656d0c88420daed11d31ca8b74c0f787b51658ec6cef6620 -->`
-- Lint: `pnpm run lint` — **exit 1**, but the sole problem is a **pre-existing** unused-eslint-disable warning in `src/utils/git-operations.ts:198`, a file this build does not touch (identical to `main`). Not a regression — see Findings / Deployer Handoff.
+- Lint: `pnpm run lint` — **passes (exit 0)**. One **pre-existing** warning ("Unused eslint-disable directive") in `src/utils/git-operations.ts:198`, a file this build does not touch (identical to `main`). Warnings do not change eslint's exit code (the script has no `--max-warnings 0`), so lint is green. Not a regression — see Findings / Deployer Handoff.
 
-Tests: 4117 passed, 0 failed, 2 skipped. Build: clean. Lint: pre-existing failure unrelated to this build (no benchmark-introduced lint problems).
+Tests: 4117 passed, 0 failed, 2 skipped. Build: clean. Lint: passes (exit 0), 1 pre-existing warning unrelated to this build (no benchmark-introduced lint problems).
 
 ## Contract Compliance
 
@@ -99,20 +99,20 @@ All 38 assertions SATISFIED. Each tagged test was read and confirmed to do what 
 - **AC6 — Arm widening, no breaking change:** ✅ PASS. A035 — third arm `'context-only'` scores and carries through.
 - **AC7 — no metric on best-effort regex fields:** ✅ PASS. A036/A037 + full-dir grep confirm no best-effort field is read anywhere in source.
 - **AC8 — anatrace-core unmodified:** ✅ PASS. A038 — 0 anatrace-core files in the diff; package consumed read-only via `parseSession`/`analyze`.
-- **New — vitest green, tsc clean, lint clean:** ⚠️ PARTIAL. Vitest green and `tsc --noEmit` clean. Lint exits 1, but solely on a **pre-existing** warning in `git-operations.ts` (untouched by this build). No benchmark-introduced lint problem. Flagged because the CI lint gate is red independent of this work.
+- **New — vitest green, tsc clean, lint clean:** ✅ PASS. Vitest green, `tsc --noEmit` clean, and `pnpm run lint` passes (exit 0). The one warning is a **pre-existing** unused-eslint-disable in `git-operations.ts:198` (untouched by this build); warnings don't fail the lint gate. No benchmark-introduced lint problem.
 - **New — benchmark tests reachable without ANA_BENCH=1:** ✅ PASS. Verified — suite runs and passes with the env var unset.
 
 ## Blockers
 
 None. Searched specifically for:
 - **Contract failures** — all 38 assertions SATISFIED, every tagged test read and confirmed against its matcher/value.
-- **Unverified ACs** — all 8 ACs PASS (one ⚠️ PARTIAL only because of a pre-existing, out-of-scope lint failure, not this build's code).
+- **Unverified ACs** — all 8 ACs PASS. (Build/typecheck/lint all green: lint exits 0 with one pre-existing, out-of-scope warning.)
 - **Regressions** — full suite 4117/0; all changes are net-new files under `tests/benchmark/` importing shipped surfaces read-only; no existing source or test file modified.
 - **Fabricated/sentinel tests** — none; assertions are exact-value against committed ground-truth fixtures.
 - **anatrace-core / branch leakage** — none (A004/A038 + inspection).
 - **Unhandled error paths** — abstain trinary, null-task, unreadable/empty/unknown-harness all covered and tested.
 
-The pre-existing lint failure is documented as a finding, not a blocker, because it is not introduced by this build (the file is byte-identical to `main`).
+The pre-existing lint warning (lint passes, exit 0) is documented as a finding, not a blocker — it is not introduced by this build (the file is byte-identical to `main`).
 
 ## Findings
 
@@ -121,17 +121,17 @@ The pre-existing lint failure is documented as a finding, not a blocker, because
 - **Test — AC7 guard is textual, not semantic:** `packages/cli/tests/benchmark/harness.test.ts:305` — A036/A037 assert the scorer *source* does not contain `tests_executed`/`files_touched`. Legitimate enforcement test, but a future read via destructuring-rename or computed key (`derived['files_'+'touched']`) would slip past the substring check. Low risk given the field names are the documented ones; flagged so the next change to the scorer's field access doesn't lean on this guard for safety.
 - **Code — to-first-edit metrics can disagree on null-ness:** `packages/cli/tests/benchmark/scorer.ts:321` — `wallClockMsToFirstCorrectEdit` is null when the editing line lacks a parseable `timestamp`, even when `turnsToResolution`/`tokensToFirstCorrectEdit` are populated. Not triggered by the committed fixtures (which carry timestamps), but a real transcript missing one timestamp would emit a partially-null edit-metric triplet. Consider documenting that wall-clock is best-effort relative to the other two.
 - **Test — determinism test under-covers the contract intent:** `packages/cli/tests/benchmark/aggregate.test.ts:198` — A034 asserts `JSON.stringify(aggregate(x)) === JSON.stringify(aggregate(x))` (same input twice). The implementation genuinely sorts by `(task, metric, arm)` (aggregate.ts:325), so byte-stability across input permutations holds — but the test would still pass if that explicit sort were removed (Map insertion order is also stable for identical input). A stronger test would shuffle the input rows and assert identical output. The behavior is correct; the test is just weaker than the guarantee.
-- **Code (pre-existing, not this build) — lint gate is red:** `packages/cli/src/utils/git-operations.ts:198` — `pnpm run lint` exits 1 on an "Unused eslint-disable directive (no-control-regex)" warning. This file is **untouched** by this build (byte-identical to `main`), so the failure is inherited from `main`, not a regression. But CI gates lint, so this branch's lint check will fail until the stray directive is removed. Surfaced for the deployer / a separate cleanup task.
+- **Code (pre-existing, not this build) — long-standing benign lint warning:** `packages/cli/src/utils/git-operations.ts:198` — `pnpm run lint` emits one warning, "Unused eslint-disable directive (no-control-regex)", but **passes (exit 0)**. Root cause: commit `83b2446d [security-hardening]` added `// eslint-disable-next-line no-control-regex` above a control-char strip in `readCoAuthor`, but the cli `eslint.config.js` never enables `no-control-regex` (it doesn't extend `@eslint/js` recommended), so the directive was redundant from the moment it was committed; ESLint v9+ surfaces redundant directives as warnings by default. The file is untouched by this build (byte-identical to `main`). This warning is documented across ~12 prior cycles (active: `verifier-verdict-honesty-C5`; also `simplify-seal-and-test-core-C7`, `cross-machine-provenance-C15`, `rename-capturegate-testevidencegate-C6`). It does **not** fail the lint gate. The clean fix is a one-line deletion of the redundant directive (zero behavior change); worth a `learn`/cleanup task so it stops recurring as noise in every verify.
 
 ## Deployer Handoff
 
 - **What ships:** a hermetic, env-gated benchmark "ruler" — scorer, harness, aggregate stats layer, fixtures, and one fixed task — entirely under `packages/cli/tests/benchmark/`. No production command, schema, template, or `anatrace-core` change. Pure addition; zero regression surface.
 - **The benchmark mechanism tests run on every `pnpm test`** (they are hermetic). Only the future agent-RUN suite is gated behind `ANA_BENCH=1`.
-- **Heads-up — lint is currently red on `main`** due to an unused eslint-disable in `src/utils/git-operations.ts:198`, unrelated to this work. If your merge gate runs `pnpm run lint`, it will fail on this pre-existing issue. Either land a one-line cleanup (drop the stray `// eslint-disable-next-line no-control-regex`) alongside or before this merge, or merge with the known-red lint and fix separately. This PR does not cause it and does not fix it.
+- **`pnpm run lint` passes (exit 0).** There is one long-standing, benign warning — an unused eslint-disable in `src/utils/git-operations.ts:198`, unrelated to this work and present on `main` for ~12 cycles. It does not block the lint gate. If you want to silence it permanently, drop the redundant `// eslint-disable-next-line no-control-regex` line in `readCoAuthor` — a zero-behavior one-liner, best handled as a separate cleanup/`learn` task. This PR neither causes nor fixes it.
 - **`totalTokens` is dead code** — fine to ship, but a good candidate for the cleanup pass; don't build on it assuming it's wired in.
 
 ## Verdict
 
 **Shippable:** YES
 
-All 38 contract assertions SATISFIED against committed ground-truth fixtures, all 8 acceptance criteria PASS, build and typecheck clean, full suite 4117 passed / 0 failed with sealed verify-stage evidence. The code is disciplined: shipped-surface consumption only, anatrace-core untouched, abstain trinary preserved, determinism genuinely enforced by explicit sorting. The findings are observations and debt for the next engineer — a dead export, a textual AC7 guard, an under-covering determinism test, and a documented "lower-is-better" modeling choice — none of which block shipping. The only red signal, the lint failure, is pre-existing on `main` and not introduced here; I would stake my name on this benchmark code shipping, with the lint cleanup tracked as separate work.
+All 38 contract assertions SATISFIED against committed ground-truth fixtures, all 8 acceptance criteria PASS, build and typecheck clean, full suite 4117 passed / 0 failed with sealed verify-stage evidence. The code is disciplined: shipped-surface consumption only, anatrace-core untouched, abstain trinary preserved, determinism genuinely enforced by explicit sorting. The findings are observations and debt for the next engineer — a dead export, a textual AC7 guard, an under-covering determinism test, and a documented "lower-is-better" modeling choice — none of which block shipping. Lint passes (exit 0); the single warning is a long-standing, benign unused-eslint-disable on `main`, not introduced here, and tracked across many prior cycles. I would stake my name on this benchmark code shipping, with the optional one-line lint cleanup tracked as separate work.
