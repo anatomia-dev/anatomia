@@ -18,5 +18,86 @@
   "spec": {
     "saved_at": "2026-06-18T23:09:50.909Z",
     "hash": "sha256:2fdb300af086781266c3b3b41e84058044fdc3ea3cfe809c33887bf4794d08ae"
+  },
+  "build_started_at": "2026-06-18T23:12:59.619Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-06-18T23:29:36.300Z",
+    "hash": "sha256:ae25482f383d7ab6342fec575393607020b89a9087da7e5ea818a4d616b1fd94"
+  },
+  "build-data": {
+    "saved_at": "2026-06-18T23:29:36.301Z",
+    "hash": "sha256:c54658f79ab790892d39e4b5756bf6e94ed2555479cf405bdeaa4dd3666b14c9"
+  },
+  "modules_touched": [
+    "packages/cli/tests/benchmark/aggregate.test.ts",
+    "packages/cli/tests/benchmark/aggregate.ts",
+    "packages/cli/tests/benchmark/fixtures/bare-claude.jsonl",
+    "packages/cli/tests/benchmark/fixtures/edit-claude.jsonl",
+    "packages/cli/tests/benchmark/fixtures/empty.jsonl",
+    "packages/cli/tests/benchmark/harness.test.ts",
+    "packages/cli/tests/benchmark/harness.ts",
+    "packages/cli/tests/benchmark/scorer.ts",
+    "packages/cli/tests/benchmark/tasks/proof-history-touch-gate.json"
+  ],
+  "module_churn": {
+    "packages/cli/tests/benchmark/aggregate.test.ts": {
+      "added": 206,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/aggregate.ts": {
+      "added": 339,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/fixtures/bare-claude.jsonl": {
+      "added": 13,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/fixtures/edit-claude.jsonl": {
+      "added": 5,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/fixtures/empty.jsonl": {
+      "added": 1,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/harness.test.ts": {
+      "added": 389,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/harness.ts": {
+      "added": 183,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/scorer.ts": {
+      "added": 491,
+      "deleted": 0
+    },
+    "packages/cli/tests/benchmark/tasks/proof-history-touch-gate.json": {
+      "added": 11,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at": "2026-06-18T23:46:50.011Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:16f4c23ccc2af8e4886474bd18ee69cd8d13710534d46cd02948ea5fa37b38ae",
+    "run_at": "2026-06-19T00:10:29.455Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-06-19T00:10:29.494Z",
+    "hash": "sha256:dbd4865ea635110c4dc0a05da2ba7c985ac2605429a081ce8a50ca4036c47625"
+  },
+  "verify-data": {
+    "saved_at": "2026-06-19T00:10:29.494Z",
+    "hash": "sha256:298df85eb4cb841d3f0b03af9fa9b7a4205246dd8dd552f82d807f6dc3c30c25",
+    "history": [
+      {
+        "saved_at": "2026-06-18T23:53:22.785Z",
+        "hash": "sha256:d4eaa3b2ff9f80ec8847c186a5992823cc43d2f234715a1ac5eb81fc2cb4e98b"
+      }
+    ]
   }
 }
