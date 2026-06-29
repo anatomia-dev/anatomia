@@ -6,7 +6,7 @@
 
 Anatomia is an **engine and a methodology** for verified AI development — not a prompt library. The CLI (`ana`) scans a project into validated, machine-readable context, then runs every change through a four-agent pipeline — Think, Plan, Build, Verify — with a fifth, Learn, tending the record between cycles. It works with Claude Code and Codex today, and the platform layer extends to other CLI agents cheaply.
 
-The fit is the product: the **engine** scans your codebase into ground truth (not a stale README), the **CLI** enforces mechanically what a prompt can only request (validate, hash, seal, exit non-zero — no skipped check, no miscount), and the **pipeline** hands typed artifacts cleanly down the line. **Because that scaffolding is real, "verification" carries weight instead of being a word:** Verify never reads Build's report — two independent accounts, no grading its own homework — and every run leaves a proof, the mechanical audit trail of that change. *Other harnesses are prompt libraries the agent can ignore; Anatomia has an engine it can't skip.*
+The fit is the product: the **engine** scans your codebase into ground truth (not a stale README), the **CLI** enforces mechanically what a prompt can only request (validate, hash, seal, exit non-zero — no skipped check, no miscount), and the **pipeline** hands typed artifacts cleanly down the line. **Because that scaffolding is real, "verification" carries weight instead of being a word:** Verify never reads Build's report — two independent accounts, no grading its own homework — and every run leaves a proof, the mechanical audit trail of that change. *Other harnesses are prompt libraries the agent can ignore; in Anatomia the checks live in the engine, not the prompt.*
 
 **The foil is the normal AI coding session** — a diff merged naked, the reasoning gone when the session ends; it looks right, tests pass, and months later nobody knows why. Building got nearly free; building the *wrong* thing did not — so AI teams accrue technical debt nobody chose, crept scope, and code nobody understands, faster than ever. **The bet:** the constraint was never throughput; it's trust, quality, and "did we build the right thing" — all three made worse by free building. The answer is output you can vouch for: think more, build less, surface tradeoffs instead of rushing to implementation.
 
@@ -97,7 +97,7 @@ Re-running `ana init` is designed to be safe. The function `preserveUserState` (
 
 **Infrastructure vs. pipeline commit boundary.** `ana init commit` commits project configuration and context. `ana artifact save` commits pipeline artifacts (scopes, specs, build reports). `ana work complete` commits proof chain data. Each subsystem manages its own git lifecycle. These never cross.
 
-**The proof chain compounds, it doesn't just record.** Recurring findings graduate (via Learn) into deterministic checks, so each cycle re-derives less and quality ratchets up with use.
+**The proof chain compounds, it doesn't just record.** Recurring findings graduate (via Learn) into version-controlled skill rules, so each cycle re-derives less and quality ratchets up with use.
 
 **Two-tier scanning.** Surface tier (dependency-based, fast, no WASM) and deep tier (tree-sitter AST for conventions, patterns, naming). `--quick` forces surface-only.
 

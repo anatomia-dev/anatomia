@@ -373,7 +373,7 @@ First stable release.
 - Context file validation via `ana setup check`
 
 #### Infrastructure
-- CI: 3 OS (Ubuntu, macOS, Windows) x 2 Node versions (20, 22)
+- CI: Ubuntu x 2 Node versions (22, 24)
 - Pre-commit hooks: typecheck + lint
 - Atomic init with crash-safe rollback
 
