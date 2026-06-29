@@ -7,6 +7,48 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-28
+
+This release lands Anatomia's behavioral-attestation milestone and hardens the
+two places the "verified over trusted" promise was previously only hoped: the
+PASS/FAIL verdict and the test-evidence seal. It also adds proof-context
+intelligence, a deterministic benchmark, and a redesigned terminal surface.
+
+### Added
+
+- **anatrace-core integration — behavioral attestation (milestone).** Replaced Anatomia's hand-rolled transcript forensics with the published `anatrace-core` engine, then built a behavioral-attestation layer on top: each pipeline run now emits tamper-evident provenance and per-claim attestation records to disk. Provenance and pricing are sourced from the engine rather than re-derived. This is the headline differentiator finally producing real records.
+- **Captured, seal-gated test evidence.** The most-trusted number in a build — did the tests pass, how many — is no longer the agent's self-report. `ana test` captures real test-run output and seals it into the build/verify report; `build_report.md` saves are gated on carrying genuine captured evidence (configurable via `testEvidenceGate`). An agent that types "all tests pass" no longer seals like one that ran them.
+- **Session capture & cross-machine provenance.** Every pipeline agent conversation (Think/Plan/Build/Verify/Learn) on both Claude Code and Codex records its session pointer plus full provenance — model, tokens, churn, outcome (cost derived at display). A work item's committed proof now carries every role's record regardless of which machine each session ran on.
+- **Verifier intent coverage.** A mechanical check that every scope acceptance criterion is covered by a contract assertion, with a gating outlet when a gap is found. Adds a read-only `ana plan coverage` preview command.
+- **Verifier verdict honesty.** The headline PASS/FAIL verdict is now derived from contract compliance rather than scraped from a prose `**Result:**` line the verify model typed. One emoji edit no longer flips the gate.
+- **Proof-context intelligence.** `ana proof context {files}` graduates from a "what's wrong here" lookup into an orientation surface: it now answers *why this file exists* (the verified work items that shaped it — "Shaped by") and *what moves with it* (co-change partners + import blast radius — "Also changes with"), so agents read the true blast radius before touching code.
+- **Empirical proof benchmark.** A deterministic A/B "ruler" that takes two Claude Code session transcripts (one with Anatomia, one vanilla) and emits a tamper-evident, reproducible comparison of tokens, tool calls, cost, and reliability metrics.
+- **`ana proof --last` / `--latest`** plus a completion hint that surfaces the freshly minted proof after `ana work complete` — no more remembering and retyping a slug.
+- **Redesigned terminal surface.** The proof card (`ana proof`), scan card (`ana scan`), health dashboard (`ana proof health`), and proof list table now share one render vocabulary (`utils/render.ts`), with a new sparkline primitive. Replaces the dated cyan-box idiom, hard `... and N more` truncation, and the Provenance cost that looked like bad math.
+- **`turbo.jsonc` detection** for Turborepo workspace labeling.
+
+### Changed
+
+- **Test-evidence gate driven by committed config.** Enablement moved from a hidden, gitignored, per-working-copy `.ana/state/capture.json` self-arming file to a visible, git-tracked `ana.json` flag. The gate, seal, and capture engine are unchanged — only *when enforcement turns on* is now a committed fact.
+- **`captureGate` renamed to `testEvidenceGate`** in `ana.json`. "Capture" was overloaded across the seal subsystem and the unrelated provenance subsystem; the new name says what the flag does (gates whether a build report carries real captured test evidence).
+- **Process-capture hooks always install.** The flag is now a single runtime switch rather than an install-time decision.
+- **Enforcement-gate state moved from `ana work status` to `ana doctor`.** The gate is mechanically enforced at the action; printing its state on every `work status` was chrome that changed no agent's behavior.
+- **`ana test` simplified** to its deterministic, load-bearing core (mechanical seal).
+- **The capture seal is compact.** It no longer inlines raw test output — the `retire-capture-self-arming` report alone carried ~3,100 lines / 246 KB of inlined output.
+
+### Fixed
+
+- **Behavioral attestation emitted zero records.** `anatrace-core` was pinned to an uninstalled, known-false-PASS 0.2.0. Bumped to 0.4.0 with a fail-closed emit path, a locked verdict-reason set, and real-engine CI. The anatrace-core load is now guarded — an unresolvable engine abstains loudly instead of crashing.
+- **Process provenance could block completion.** `processCaptureStrict` blocked `ana work complete` when provenance was incomplete. Provenance is metadata — it now records and annotates, never blocks. Flag removed.
+- **Machine-owned templates never reached existing customers.** Re-init conservatively skipped every file that already existed, unable to tell stock from customized. Re-init now refreshes machine-owned templates (agent definitions, CLAUDE.md) while preserving user-authored content, warning (git-recoverable) on any changed file it overwrites.
+- **Re-init clobbered managed `.gitignore` files.** User-added lines in `.claude/.gitignore` / `.ana/.gitignore` vanished silently, and `.codex/` shipped none. Re-init now merges rather than clobbers, and the Claude Code runtime lock (`.claude/scheduled_tasks.lock`) is ignored by stock so it no longer re-dirties the tree.
+- **Non-authoritative `plan.md` phase checkbox removed.** Phase completion was tracked twice — mechanically (the only source code reads) and as a hand-edited markdown checkbox no code reads. The redundant copy produced split-brain state and a dirty tree that could block `ana work complete --merge`.
+- **SQL table counting under-reported tables.** Schema-qualified quoted identifiers (`CREATE TABLE "public"."page"`) were counted as the schema name, collapsing tables. Supabase-style migrations now count correctly.
+- **Price table corrected.** Added current Opus model rows, corrected stale rates, and surfaced unpriced models (`ana proof` no longer shows est. $0.00 for priced sessions).
+- **Session capture guarded against empty `session_id`** — no junk rows.
+- **Dev-binary staleness guard** — guards against silently running a stale local build.
+- **Refuse an explicit sealing-stage run through the checkpoint form.**
+
 ## [1.2.2] - 2026-06-02
 
 ### Added
@@ -381,7 +423,8 @@ First stable release.
 
 Previous development history is preserved in git log.
 
-[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/anatomia-dev/anatomia/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/anatomia-dev/anatomia/compare/v1.2.2...v1.3.0
 [1.2.1]: https://github.com/anatomia-dev/anatomia/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/anatomia-dev/anatomia/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/anatomia-dev/anatomia/compare/v1.1.4...v1.1.5
