@@ -17,6 +17,8 @@ Verify reads the spec and the code — never the build report. Eight steps:
 7. **Walk acceptance criteria** — each one gets PASS, FAIL, PARTIAL, or UNVERIFIABLE
 8. **Write findings and verdict** — PASS or FAIL, one word
 
+Before evaluating assertions, Verify runs `ana proof context` on the changed files — surfacing prior findings, the verified work items that shaped each file, and its co-change partners — so the review is oriented by history, not just the diff at HEAD.
+
 ## The asymmetry
 
 Both agents read the same planning artifacts and project config. The difference is one file: `build_report.md`. Only the developer sees both reports.
@@ -46,6 +48,8 @@ Verify produces two files: a markdown report for the developer and a YAML compan
 
 After the ledger: **Findings** (categorized observations with severity and suggested actions — these enter the proof chain), **AC Walkthrough** (each acceptance criterion: PASS, FAIL, PARTIAL, or UNVERIFIABLE), **Blockers**, **Deployer Handoff**, and the **Verdict**. On re-verification, a **Previous Findings Resolution** section shows how each prior issue was addressed.
 
+The AC Walkthrough is anchored by the coverage map (`ana plan coverage <slug>`), which links each acceptance criterion to the assertions that claim to cover it. This makes "every assertion passed" and "intent was met" two separate gates — a contract can satisfy every assertion and still leave an acceptance criterion uncovered.
+
 ## PASS and FAIL
 
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"16px",marginBottom:"16px"}}>
@@ -60,6 +64,8 @@ After the ledger: **Findings** (categorized observations with severity and sugge
 </div>
 
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>Findings measure depth of review. The verdict measures contract compliance. They're independent.</p>
+
+<p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>The headline verdict isn&apos;t taken on the model&apos;s word. It&apos;s cross-checked against the Contract Compliance ledger — a PASS that contradicts an UNSATISFIED row is automatically coerced to FAIL, so the one-word verdict can&apos;t drift from the per-assertion evidence.</p>
 
 ## When Verify fails
 
@@ -98,6 +104,7 @@ After PASS, you have `build_report.md` and `verify_report.md`. Read both before 
 - **Test quality.** Build reports test counts. Verify reports whether those tests actually prove anything. A test tagged `@ana A003` that uses `toBeDefined()` passes on both correct and incorrect implementations — Verify catches that.
 - **Open issues vs findings.** Build's "Open Issues" are honest admissions. Verify's "Findings" are independent observations. Overlap means the issue is real. A finding that Build didn't mention means Build missed something.
 - **Over-building.** Verify flags code that exists but wasn't in the spec. Build's report won't mention it because Build wrote it intentionally. The gap itself is the signal.
+- **Sealed test evidence.** Both reports carry a compact, SHA-sealed marker from `ana test` — Build seals `--stage build`, Verify seals `--stage verify` (the full project). The captured counts should agree; a divergence between the two sealed markers is worth reading.
 
 <NextCards cards={[
   {

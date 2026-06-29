@@ -36,7 +36,7 @@ Verify can return FAIL. When it does, the work goes back to Build: fix the issue
 
 Learn runs between cycles, not during them. It triages the proof chain — closing resolved findings, retiring stale ones, and surfacing what needs attention next. Its most common output is a suggested scope: "these three findings share a root cause, here's a Think prompt to fix it."
 
-Findings are useful immediately. Every pipeline run, Think and Plan query the proof chain mechanically (`ana proof context`) for any modules the current work touches. A finding about a weak test matcher in `auth.ts` reaches the next agent that scopes work on `auth.ts` — automatically, without anyone routing it.
+Findings are useful immediately. Every pipeline run, Think and Plan query the proof chain mechanically (`ana proof context`) for any modules the current work touches. A finding about a weak test matcher in `auth.ts` reaches the next agent that scopes work on `auth.ts` — automatically, without anyone routing it. The same query also returns the verified work items that shaped each file and the files that historically change alongside it — so the agent sees the true blast radius before touching code, not just the file it started from.
 
 When a pattern recurs across multiple cycles, Learn can promote it to a permanent skill rule — a finding becomes a constraint that shapes every future build.
 
@@ -46,7 +46,7 @@ When a pattern recurs across multiple cycles, Learn can promote it to a permanen
 
 Every completed pipeline run produces a proof chain entry: contract assertions with pass/fail, independent findings with severity, timing per stage, and SHA-256 hashes of every artifact. The chain is the mechanical record of what was built, how it was verified, and what was found. [Browse our proofs](/docs/proof).
 
-The chain powers `ana proof health` (quality trajectory), `ana proof audit` (finding clustering), and `ana proof context` (relevant findings for the files you're working on).
+The chain powers `ana proof health` (quality trajectory), `ana proof audit` (finding clustering), and `ana proof context` (for the files you're working on: relevant findings, the verified work items that shaped each file, and the files that historically change alongside it).
 
 <NextCards cards={[
   {

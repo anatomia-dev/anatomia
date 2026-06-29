@@ -13,7 +13,7 @@ After `ana work complete`, run `ana proof <slug>` to see the summary:
 <span style={{color:"var(--ink-45)",textTransform:"uppercase",letterSpacing:"0.06em",fontSize:"10px"}}>bash</span>
 </div>
 <pre style={{padding:"14px 16px",color:"var(--ink-75)",overflowX:"auto",whiteSpace:"pre",margin:0,background:"transparent",fontSize:"inherit",lineHeight:"inherit",fontFamily:"inherit"}}>
-{"$ "}<span style={{color:"var(--pass)"}}>ana proof</span>{" security-hardening\n\n  Result: PASS\n  27/27 satisfied · 0 unsatisfied · 0 deviated\n\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" Slugs with shell injection characters are rejected before any operation\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" Valid kebab-case slugs pass validation\n  "}<span style={{color:"var(--pass)"}}>✓</span>{" No direct shell execution calls remain in command or utility files\n"}<span style={{color:"var(--ink-45)"}}>{"    ...24 more"}</span>{"\n\n  Timing: 74m (Think 2m · Plan 15m · Build 53m · Verify 5m)\n\n  [debt · scope] No dedicated integration tests for...\n  [obs · monitor] getCurrentBranch still uses execSync\n"}<span style={{color:"var(--ink-45)"}}>{"    ...and 8 more findings"}</span>
+{"$ "}<span style={{color:"var(--pass)"}}>ana proof</span>{" security-hardening\n\n"}<span style={{color:"var(--ink-45)"}}>{"╭───────────────────────────────────────────────────────╮\n│"}</span>{"  "}<span style={{color:"var(--pass)"}}>{"✓ PASS"}</span>{" · security-hardening                          "}<span style={{color:"var(--ink-45)"}}>{"│\n│"}</span>{"  cli · 74 min                             2026-05-04  "}<span style={{color:"var(--ink-45)"}}>{"│\n╰───────────────────────────────────────────────────────╯"}</span>{"\n\n"}<span style={{color:"var(--ink-45)"}}>{"── Contract ──────────────────────────────────── "}</span>{"27/27 "}<span style={{color:"var(--pass)"}}>{"✓"}</span>{"\n  "}<span style={{color:"var(--pass)"}}>{"███████████████████████████████████████████████████"}</span>{"\n  "}<span style={{color:"var(--pass)"}}>{"✓"}</span>{" 27 satisfied · 0 unsatisfied · 0 deviated\n\n"}<span style={{color:"var(--ink-45)"}}>{"── Timing ─────────────────────────────────────────────"}</span>{"\n  Total      74 min\n  Think       2 min\n  Plan       15 min\n  Build      53 min\n  Verify      5 min\n\n"}<span style={{color:"var(--ink-45)"}}>{"── Findings ──────────────────────────────── "}</span>{"3 debt · 7 obs\n  [debt · scope] No dedicated integration tests for injection rejection\n  [obs · monitor] getCurrentBranch still uses execSync\n  "}<span style={{color:"var(--ink-45)"}}>{"8 more — see `ana proof security-hardening --json`"}</span>
 </pre>
 </div>
 
@@ -103,6 +103,37 @@ Each finding has a severity and a suggested action, rendered as a two-part tag:
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>Security-hardening's findings focus on test coverage gaps. Other proofs surface different catches: `process.exit(1)` on a rebase conflict without running `git rebase --abort`, leaving dirty state. `JSON.parse` on CLI stdout with no try/catch — malformed response crashes. Path normalization that breaks on Windows backslashes. A race condition where a file deleted between filter and `readFileSync` crashes `completeWork`.</p>
 
 <p style={{fontSize:"13px",color:"var(--ink-60)",margin:"0 0 16px"}}>To triage findings after shipping, run `ana run learn`. See [Using ana-learn](/docs/guides/using-ana-learn).</p>
+
+## Provenance
+
+Below the findings, the proof records who did the work and at what cost. For each pipeline session it captures the model, turns, tool calls, input/output and cached tokens, and a derived cost — totaled across sessions — plus the code churn (files touched, lines added and removed) and a completeness check that every expected session was captured.
+
+```text
+── Provenance ──────────────────────────────────────────
+  model  claude-opus-4-8
+  session  turns  tools    in    out  cache   cost
+  ana         51     21  7.4k  26.0k   1.4M  $1.74
+  plan        70     30  7.3k  53.1k   1.9M  $2.98
+  build      115     52  7.8k  62.6k   5.1M  $4.92
+  verify     120     53  8.1k  37.3k   4.6M  $3.97
+  churn  9 files · +1638/−0
+  completeness  ✓ complete (plan 1/1 · build 1/1 · verify 1/1)
+```
+
+Provenance is display-only. It tells you what the run *cost*, not whether it was correct — none of these numbers affect the PASS/FAIL verdict.
+
+## Session attestation
+
+The last section is behavioral attestation, produced by the `anatrace-core` engine from each agent's session transcript. For every captured session it checks the agent's claims — that it ran the commands it said it ran, touched the files it said it touched, consulted the skills it was told to — and marks each `satisfied`, `violated`, or `unverifiable`.
+
+```text
+── Session Attestation ───────────────────── 3 transcripts
+  core v0.4.0 · framework anatomia
+  plan · 49 claims   ✓ 1 satisfied · 0 violated · 48 unverifiable
+        coverage 1/49 checked · 48 unverifiable
+```
+
+Most claims read `unverifiable` — attestation only asserts what the transcript can prove, and abstains otherwise rather than guessing. Like provenance, session attestation is informational and does **not** gate the verdict — with one exception: if an agent's transcript shows it read a forbidden artifact (Verify reading the build report), that is a process violation that vetoes the run.
 
 ## The integrity seal
 
