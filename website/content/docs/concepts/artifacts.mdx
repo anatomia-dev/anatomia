@@ -6,7 +6,9 @@ readingTime: 6
 
 ## Where artifacts live
 
-All artifacts for a work item live in a single directory. During work: `.ana/plans/active/{slug}/`. After `ana work complete`: archived to `.ana/plans/completed/{slug}/`. Artifacts are committed to the artifact branch configured in `ana.json`. Everything is plain text — markdown and YAML, human-readable, version-controlled.
+All artifacts for a work item live in a single directory. During work: `.ana/plans/active/{slug}/`. After `ana work complete`: archived to `.ana/plans/completed/{slug}/`. Artifacts are committed to the artifact branch configured in `ana.json`. Everything is plain text — markdown, YAML, and JSON, human-readable, version-controlled.
+
+Alongside the eight artifacts, each pipeline session writes per-session records into two subdirectories: `provenance/` (model, tokens, churn, and outcome for each agent run) and `compliance/` (behavioral attestation from anatrace-core). These travel with the work item and feed the proof chain entry.
 
 Build and Verify each produce a pair: a markdown report for the developer and a YAML companion for the CLI. Think and Plan produce markdown and YAML separately.
 
@@ -38,7 +40,7 @@ The mechanical definition of "done." Contains assertions with IDs, human-readabl
 
 **Written by:** ana-build. **Read by:** developer, ana-build (on rejection). **Forbidden from:** ana-verify.
 
-What Build claims to have done. Test results, acceptance criteria coverage, deviations from the contract, implementation decisions, open issues. The developer reads this alongside Verify's report — discrepancies are the signal.
+What Build claims to have done. Test results, acceptance criteria coverage, deviations from the contract, implementation decisions, open issues. The test results are a compact marker sealed by `ana test` — captured, not hand-typed — and when a test command resolves with `testEvidenceGate` on, `ana artifact save build-report` rejects a report whose marker isn't a valid seal. The developer reads this alongside Verify's report — discrepancies are the signal.
 
 ## build_data.yaml
 
@@ -50,7 +52,7 @@ Structured companion to the build report. Machine-readable: acceptance criteria 
 
 **Written by:** ana-verify. **Read by:** developer, ana-build (on rejection).
 
-What Verify found independently. Contract assertion evaluation, code findings with severity and location, concerns. This is the second opinion — written without reading Build's claims.
+What Verify found independently. Contract assertion evaluation, code findings with severity and location, concerns. This is the second opinion — written without reading Build's claims. Like the build report, it carries a sealed `ana test` marker (from the full-project `--stage verify` run); unlike the build report, the verify save is never gated on it.
 
 ## verify_data.yaml
 

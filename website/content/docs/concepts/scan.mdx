@@ -36,9 +36,9 @@ A monorepo with three surfaces gets three independent test commands. Agents run 
 
 ## Application shape
 
-The scan assigns your project one of nine application shapes: web-app, api, cli, mobile, desktop, library, monorepo, static-site, or fullstack. Single-surface projects get the shape of their one surface. Multi-surface projects are classified as monorepo or fullstack depending on what the surfaces contain.
+The scan assigns your project one application shape from a fixed set: `web-app`, `api-server`, `full-stack`, `cli`, `library`, `mobile-app`, `worker`, `mcp-server`, or `ai-agent` — or `unknown` when nothing matches. The shape is detected once, from the signals of your primary package; it is not derived by counting surfaces. Whether a project is a monorepo is a separate fact the scan records on its own.
 
-Shape is determined by framework evidence — a project with Next.js is a web-app, not "a Node project with React dependencies." Framework signals outrank dependency signals. A project with both a CLI entry point and a React frontend is fullstack, not cli.
+Shape is determined by a priority chain in which the most specific signal wins, and framework evidence outranks dependency and entry-point signals. A project with a browser UI framework like Next.js is a `web-app`, not "a Node project with React dependencies." A project with both a CLI entry point and a React frontend is a `web-app` — the framework outranks the `bin` field — not `cli`. `full-stack` is reserved for a server framework combined with browser-UI dependencies.
 
 Shape affects how the scan describes your project (the header line agents see on startup), how `ana init` scaffolds descriptions, and what context agents receive about your architecture.
 

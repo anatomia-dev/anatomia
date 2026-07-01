@@ -9,7 +9,7 @@ Scan → init → setup → first pipeline run. Once you complete one end-to-end
 
 <TroubleCard title="How do I know if my installation is healthy?">
 
-Run `ana doctor`. It checks five dimensions — CLI version, scan freshness, context quality, skill enrichment, and proof chain health — and prints a single dashboard. Use `ana doctor --json` for CI or structured output. Fix any red (✗) items it surfaces before running the pipeline.
+Run `ana doctor`. It checks six dimensions — CLI version, scan freshness, context quality, skill enrichment, proof chain health, and surfaces — plus an enforcement readout of the mechanical gates (test-evidence gate and process capture), and prints a single dashboard. Use `ana doctor --json` for CI or structured output. Fix any red (✗) items it surfaces before running the pipeline.
 
 </TroubleCard>
 
@@ -111,6 +111,16 @@ Use `ana run learn` for proof-chain triage between pipeline cycles. Both platfor
 
 </TroubleCard>
 
+<TroubleCard title="Build report rejected: no valid captured test evidence">
+
+1. **Symptom:** `ana artifact save build-report` exits with "build_report.md has no valid captured test evidence."
+2. **Cause:** This project's test-evidence gate is on (`testEvidenceGate: "on"` in `ana.json`), so a build report must carry a real captured seal — not hand-typed test output. The report was saved without running tests through `ana test`.
+3. **Fix:** Run `ana test` (it seals a harmless abstain even when no tests run), then re-save the build report. Under the pipeline, Build runs this for you.
+4. **Check state:** `ana doctor` — the enforcement readout shows the gate's current value.
+5. **Escape hatch:** to turn the gate off for this project, set `"testEvidenceGate": "off"` in `.ana/ana.json` (or `ana config set testEvidenceGate off`).
+
+</TroubleCard>
+
 <TroubleCard title="Tests fail in pipeline but pass locally">
 
 1. **Database or service not running.** Pipeline agents run your test command exactly as configured. If tests need PostgreSQL, Redis, or Docker — start them first.
@@ -123,7 +133,7 @@ Use `ana run learn` for proof-chain triage between pipeline cycles. Both platfor
 
 <TroubleCard title="My finding count is huge">
 
-Usually means the spec was too vague. Vague specs produce vague implementations, and Verify finds more to fault. Tighten the scope, write more specific acceptance criteria, and re-plan. A good contract has 15–30 assertions. Over 40 suggests the scope should be split.
+Usually means the spec was too vague. Vague specs produce vague implementations, and Verify finds more to fault. Tighten the scope, write more specific acceptance criteria, and re-plan. A good contract has 15–30 assertions. Over 40 suggests the scope should be split. Before re-planning, run `ana plan coverage <slug>` — it shows which acceptance criteria each assertion covers and which are uncovered, so you can see where the contract is thin.
 
 </TroubleCard>
 

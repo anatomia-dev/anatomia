@@ -25,7 +25,7 @@ What `ana artifact save scope` does:
 7. Commits with a standardized message format
 8. Pushes to the artifact branch
 
-One command. Eight checks. Correct every time. Similar validation exists for every artifact type — contracts validate YAML schema and assertion format, verify reports require a PASS/FAIL verdict, plans require phase checklists with spec references.
+One command. Eight checks. Correct every time. Similar validation exists for every artifact type — contracts validate YAML schema and assertion format, verify reports require a PASS/FAIL verdict, and multi-phase plans require a Phases section where each phase carries a spec reference.
 
 ## What each agent runs
 
@@ -34,11 +34,13 @@ Every agent runs `ana work status` on startup to discover pipeline state. Beyond
 | Agent | Toolbelt commands |
 |-------|-------------------|
 | `ana` | [`ana work start`](/docs/reference/cli), [`ana artifact save scope`](/docs/reference/cli), [`ana proof context`](/docs/reference/cli) |
-| `ana-plan` | [`ana work start`](/docs/reference/cli), [`ana artifact save-all`](/docs/reference/cli), [`ana proof context`](/docs/reference/cli) |
-| `ana-build` | [`ana work start`](/docs/reference/cli), [`ana artifact save build-report`](/docs/reference/cli), build/test/lint from `ana.json` |
-| `ana-verify` | [`ana verify pre-check`](/docs/reference/cli), [`ana artifact save verify-report`](/docs/reference/cli), [`ana pr create`](/docs/reference/cli) |
+| `ana-plan` | [`ana work start`](/docs/reference/cli), [`ana artifact save-all`](/docs/reference/cli), [`ana proof context`](/docs/reference/cli), [`ana plan coverage`](/docs/reference/cli) |
+| `ana-build` | [`ana work start`](/docs/reference/cli), [`ana test --stage build`](/docs/reference/cli), [`ana artifact save build-report`](/docs/reference/cli) |
+| `ana-verify` | [`ana verify pre-check`](/docs/reference/cli), [`ana plan coverage`](/docs/reference/cli), [`ana test --stage verify`](/docs/reference/cli), [`ana artifact save verify-report`](/docs/reference/cli), [`ana pr create`](/docs/reference/cli) |
 | `ana-learn` | [`ana proof audit`](/docs/reference/cli) (+ `--new`), [`ana proof promote`](/docs/reference/cli), [`ana proof close`](/docs/reference/cli), [`ana proof stale`](/docs/reference/cli), [`ana learn end`](/docs/reference/cli) |
 | `ana-setup` | [`ana init commit`](/docs/reference/cli) — persists infrastructure to the artifact branch after setup completes |
+
+Build and Verify don&apos;t run the raw test command directly — they run [`ana test`](/docs/reference/cli), a shell-free capturing runner that records the outcome (stage, counts, verdict) and SHA-seals a compact marker into the report. When `testEvidenceGate` is on, `ana artifact save build-report` rejects a build report whose test evidence isn&apos;t a valid seal — so "all tests pass" can&apos;t be typed, only captured.
 
 ## Why this matters
 
