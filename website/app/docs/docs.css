@@ -15,8 +15,8 @@
    ------------------------------------------------------------------- */
 .docs-layout {
   scroll-padding-top: 66px;
-  /* Docs paints its own paper (marketing site keeps globals.css --bg).
-     Without this the body's --bg showed through under docs content. */
+  /* Paint the paper explicitly so the docs region is always solid brand
+     cream edge-to-edge (guards against body bleed under the layout). */
   background: var(--bg);
   min-height: 100dvh;
 }
@@ -26,27 +26,17 @@
    These differ from the marketing site's globals.css values.
    ------------------------------------------------------------------- */
 [data-theme="light"] .docs-layout {
-  /* Paper: Porcelain — a faintly cool neutral white. Replaces the warm
-     ivory (#F5F0E8) that read pink against white cards. Docs-scoped only. */
-  --bg: #F2F3F1;
-  --bg-deep: #E8EAE8;
-  /* Ink retuned to a cool neutral so text/tokens sit right on Porcelain. */
-  --fg: #0c0e0d;
-  --fg-strong: #000000;
-  --ink-75: rgba(12, 16, 15, 0.78);
-  --ink-60: rgba(12, 16, 15, 0.58);
-  --ink-45: rgba(12, 16, 15, 0.44);
-  /* #06 elevation basics: card floats on Porcelain via a soft diffuse
-     shadow, borders softened toward borderless. Component CSS untouched. */
-  --bg-card: #FCFDFC;
-  --bg-elev: #FFFFFF;
-  --nav-bg: rgba(242, 243, 241, 0.82);
-  --border: rgba(12, 16, 15, 0.09);
-  --border-soft: rgba(12, 16, 15, 0.06);
-  --hairline: rgba(12, 16, 15, 0.05);
+  /* Paper + ink inherit the unified brand cream (#F4F2EC, globals.css) so
+     marketing and docs share one paper. Docs only overrides the #06
+     elevation trim below: softened borders + a soft diffuse shadow. Cards
+     inherit the paper (flat editorial — lift comes from shadow, not a
+     lighter fill), which is what removed the original white-on-paper clash. */
+  --border: rgba(11, 11, 16, 0.09);
+  --border-soft: rgba(11, 11, 16, 0.06);
+  --hairline: rgba(11, 11, 16, 0.05);
+  --ink-25: rgba(11, 11, 16, 0.16);
+  --code-bg: rgba(11, 11, 16, 0.035);
   --brand-soft: rgba(122, 27, 27, 0.10);
-  --ink-25: rgba(12, 16, 15, 0.16);
-  --code-bg: rgba(12, 16, 15, 0.035);
   --brand-light: #9B2E2E;
   --info: #1d4ed8;
   --info-bg: rgba(29, 78, 216, 0.05);
@@ -57,8 +47,8 @@
   --warn-bg: rgba(180, 83, 9, 0.06);
   --fail: #dc2626;
   --fail-bg: rgba(220, 38, 38, 0.06);
-  /* Soft, diffuse, low-contrast — the #06 signature (vs. the old tight shadow). */
-  --shadow: 0 1px 2px rgba(16, 20, 18, 0.04), 0 14px 34px -16px rgba(16, 20, 18, 0.16);
+  /* Soft, diffuse, low-contrast — the #06 elevation signature. */
+  --shadow: 0 1px 2px rgba(40, 30, 15, 0.04), 0 14px 34px -16px rgba(40, 30, 15, 0.16);
 }
 
 [data-theme="dark"] .docs-layout {

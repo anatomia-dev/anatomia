@@ -5,7 +5,7 @@
   Ported from Anatomia Landing Refresh handoff.html, locked to:
 
      brand color    #7A1B1B       (oxblood)
-     paper          "ivory"       (warm ivory #F5F0E8 in light mode)
+     paper          "cream"       (warm-neutral cream #F4F2EC in light mode)
      pattern        "noise"       (SVG fractal grain, no grid)
      typography     "grotesk"     (Geist — Geist Mono for code — Fraunces for serif)
      radius         "medium"      (6 / 10 / 14 px)
@@ -73,17 +73,18 @@
 
 /* ===================================================================
    LIGHT THEME  ([data-theme="light"])
-   "ivory" paper: warm ivory #F5F0E8
+   "cream" paper: warm-neutral cream #F4F2EC (de-pinked ivory — unified
+   across marketing + docs so both surfaces share one brand paper)
    =================================================================== */
 [data-theme="light"] {
   --fg: #0b0b10;
   --fg-strong: #000000;
-  --bg: #F5F0E8;
-  --bg-elev: #F5F0E8;
-  --bg-deep: #EDE8DF;
-  --bg-card: #F5F0E8;
-  --nav-bg: rgba(245, 240, 232, 0.85);
-  --footer-bg: #EDE8DF;
+  --bg: #F4F2EC;
+  --bg-elev: #F4F2EC;
+  --bg-deep: #ECEAE2;
+  --bg-card: #F4F2EC;
+  --nav-bg: rgba(244, 242, 236, 0.85);
+  --footer-bg: #ECEAE2;
   --border: rgba(11, 11, 16, 0.12);
   --border-soft: rgba(11, 11, 16, 0.08);
   --hairline: rgba(11, 11, 16, 0.06);
@@ -96,7 +97,7 @@
   --btn-2-border: rgba(11, 11, 16, 0.22);
   --btn-2-text: #0b0b10;
   --terminal-bg: #0b0b10;
-  --terminal-fg: #F5F0E8;
+  --terminal-fg: #F4F2EC;
   --paper-texture: radial-gradient(rgba(11, 11, 16, 0.045) 1px, transparent 1px);
   --brand-mark: var(--color-brand);
 }

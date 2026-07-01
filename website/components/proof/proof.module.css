@@ -160,13 +160,14 @@
   pointer-events: none;
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
-  box-shadow: 0 1px 0 rgba(245, 240, 232, 0.6) inset;
+  box-shadow: 0 1px 0 rgba(244, 242, 236, 0.6) inset;
 }
-.pile1 { top: -8px;  left: 14px;  right: 14px;  height: 22px;  opacity: 0.95; background: #F5F0E8; }
-.pile2 { top: -16px; left: 30px;  right: 30px;  height: 22px;  opacity: 0.85; background: #EDE8DF; }
-.pile3 { top: -24px; left: 48px;  right: 48px;  height: 22px;  opacity: 0.70; background: #E5E0D7; }
-.pile4 { top: -32px; left: 68px;  right: 68px;  height: 22px;  opacity: 0.55; background: #E9E6DD; }
-.pile5 { top: -40px; left: 90px;  right: 90px;  height: 22px;  opacity: 0.40; background: #E4E0D5; }
+/* Stacked-paper ramp — de-pinked to the unified cream family (#F4F2EC). */
+.pile1 { top: -8px;  left: 14px;  right: 14px;  height: 22px;  opacity: 0.95; background: #F4F2EC; }
+.pile2 { top: -16px; left: 30px;  right: 30px;  height: 22px;  opacity: 0.85; background: #ECEAE2; }
+.pile3 { top: -24px; left: 48px;  right: 48px;  height: 22px;  opacity: 0.70; background: #E4E2D8; }
+.pile4 { top: -32px; left: 68px;  right: 68px;  height: 22px;  opacity: 0.55; background: #E8E6DD; }
+.pile5 { top: -40px; left: 90px;  right: 90px;  height: 22px;  opacity: 0.40; background: #E3E1D6; }
 .pile6 { top: -48px; left: 116px; right: 116px; height: 22px;  opacity: 0.26; background: #DFDACD; }
 
 /* Tiny dates printed on the receding edges */
