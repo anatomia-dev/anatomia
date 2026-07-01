@@ -3,6 +3,19 @@ import { CopyButton } from "./CopyButton";
 
 type PreProps = ComponentPropsWithoutRef<"pre">;
 
+/** Fence languages treated as runnable shell (drives the "$" affordance +
+ *  prompt-stripping copy). Everything else is treated as file/config content. */
+const SHELL_LANGS = new Set([
+  "bash",
+  "sh",
+  "shell",
+  "shellscript",
+  "shell-session",
+  "shellsession",
+  "console",
+  "zsh",
+]);
+
 /**
  * CodeBlock — matches supermock .code exactly.
  * Container: bg-card, border, border-radius, mono 12.5px.
@@ -21,8 +34,23 @@ export function CodeBlock(props: PreProps) {
     | string
     | undefined;
 
-  const textContent = extractText(children);
-  const label = title ?? language;
+  const rawText = extractText(children);
+
+  // Shell blocks are commands to RUN; everything else (yaml/json/toml/ts/md)
+  // is file/config content to PLACE somewhere. That distinction drives copy:
+  const isShell = language
+    ? SHELL_LANGS.has(language.toLowerCase())
+    : false;
+
+  // Bash: copy the runnable command — strip a leading prompt so the user
+  // never pastes "$ ". Config/YAML: copy VERBATIM (whitespace is significant).
+  const copyText = isShell
+    ? rawText.split("\n").map((l) => l.replace(/^(\s*)[$❯]\s+/, "$1")).join("\n")
+    : rawText;
+
+  // Label: a file/config shows its filename (title) when given; a shell block
+  // shows the language, prefixed with a "$" affordance (rendered below).
+  const label = title ?? language ?? (isShell ? "shell" : "");
 
   return (
     <div
@@ -60,9 +88,12 @@ export function CodeBlock(props: PreProps) {
             fontSize: "10px",
           }}
         >
-          {label || ""}
+          {isShell && (
+            <span style={{ color: "rgba(230, 179, 74, 0.9)", marginRight: "6px" }}>$</span>
+          )}
+          {label}
         </span>
-        <CopyButton text={textContent} />
+        <CopyButton text={copyText} />
       </div>
       <pre
         {...rest}

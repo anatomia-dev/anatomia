@@ -288,14 +288,16 @@
 }
 
 /* T4 dark terminal — force the dark Shiki palette on tokens so the code
-   reads on the dark block regardless of site theme. --shiki-dark is always
-   emitted in dual-theme output; both theme keys map to github-dark, so this
-   is stable. Non-token (.line) spans fall back to the pre's cream color. */
-.docs-prose pre.shiki,
-.docs-prose pre.shiki code {
+   reads on the dark block. Scoped to .docs-layout (NOT just .docs-prose) so
+   reference pages get it too — that scope gap left half the blocks uncolored.
+   --shiki-dark is always emitted in dual-theme output (fumadocs uses
+   defaultColor:false → colors live only in these vars). Non-token (.line)
+   spans fall back to the pre's cream color. */
+.docs-layout pre.shiki,
+.docs-layout pre.shiki code {
   background: transparent !important;
 }
-.docs-prose pre code span {
+.docs-layout pre code span {
   color: var(--shiki-dark, currentColor) !important;
   background-color: transparent !important;
 }
