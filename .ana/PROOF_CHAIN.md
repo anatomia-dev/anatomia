@@ -1,6 +1,6 @@
 # Proof Chain Dashboard
 
-210 runs · 302 active · 5 promoted · 927 closed
+211 runs · 308 active · 5 promoted · 927 closed
 
 ## By Surface
 
@@ -8,7 +8,7 @@
 |---------|------|--------|--------|
 | Unscoped | 38 | 48 | 2026-06-09 |
 | cli | 147 | 228 | 2026-06-19 |
-| website | 25 | 26 | 2026-06-17 |
+| website | 26 | 32 | 2026-07-01 |
 
 ## Hot Modules
 
@@ -24,7 +24,7 @@
 
 *No promoted rules yet.*
 
-## Active Findings (30 shown of 302 total)
+## Active Findings (30 shown of 308 total)
 
 ### packages/cli/src/commands/init/index.ts
 
@@ -54,9 +54,6 @@
 ### packages/cli/src/utils/compliance.ts
 
 - **code:** loadCore deviates from spec's prescribed bare-require idiom — resolves package.json, reads exports['.'].import, and require()s the ESM entry by absolute path. Necessary (anatrace-core is import-only ESM; bare require throws ERR_PACKAGE_PATH_NOT_EXPORTED) and well-commented; proven working by the emitted build record. — *Guard the anatrace-core load and emit the first real attestation records*
-- **code:** Node version portability: loadCore uses require() on an ESM .mjs entry. Unflagged require(ESM) landed in Node 22.12.0; README states 'Node 22+'. On Node 22.0-22.11 an installed engine would throw ERR_REQUIRE_ESM, get caught, and falsely surface the loud 'anatrace-core not resolvable' line. Works on current toolchain (Node 25 here). — *Guard the anatrace-core load and emit the first real attestation records*
-- **code:** Spec's documented edge 'core present but package.json unreadable -> loadCore succeeds, version guard abstains silently' is no longer true. loadCore now reads package.json to find the ESM entry, so an unreadable package.json yields a LOUD abstain, not a silent version abstain. The version guard's production reachability narrows to a present-but-missing/non-string version field (plus the test injection seam). Arguably more correct, but deviates from documented semantics. — *Guard the anatrace-core load and emit the first real attestation records*
-- **code:** captureComplianceAtSave's outer try/catch (compliance.ts:237-359) swallows any mid-pipeline core throw (parseSession/extract/runCompliance/scrubDeep) into a silent null abstain. The reorder preserves this; the catch path remains not separately unit-triggered. Pre-existing, not introduced here. — *Guard the anatrace-core load and emit the first real attestation records*
 
 ### packages/cli/src/utils/git-operations.ts
 
@@ -67,10 +64,6 @@
 - **code:** proofSummary.ts (+32) and proof.ts (+113) continue growth past the comfort threshold flagged by prior findings (decompose-proof-summary-C1, audit-matrix-orientation-C7); additive and well-contained here but the trajectory persists — *Proof-Context Intelligence — why this file exists and what moves with it*
 - **code:** Carried forward from verify_report_3 (unchanged — re-build touched only proof-history/index.ts). Import-layer dedup (isProofPartner) uses fileMatches, whose tier-3 basename rule returns true when a proof partner is stored as a bare basename (legacy data). A legacy bare-basename proof partner would suppress ALL same-basename files from the import layer regardless of directory. Low likelihood (requires legacy bare-basename modules_touched); silently drops real import edges if it occurs. — *Proof-Context Intelligence — why this file exists and what moves with it*
 - **code:** Carried forward from verify_report_3 (unchanged — the re-build added 0 lines to proofSummary.ts). proofSummary.ts remains oversized after Phase 3's ~138-line addition; proof context confirms decompose-proof-summary-C1 and audit-matrix-orientation-C7 are still active. The also_changes_with assembly/dedup glue could live in the pure engine module rather than the already-large util. — *Proof-Context Intelligence — why this file exists and what moves with it*
-
-### packages/cli/src/utils/verdict.ts
-
-- **code:** Circular import between verdict.ts and proofSummary.ts — verdict.ts imports parseComplianceTable, proofSummary.ts imports deriveVerdict — *Verifier Verdict Honesty (light) — the PASS/FAIL verdict stops grading itself*
 
 ### packages/cli/tests/benchmark/aggregate.test.ts
 
@@ -89,10 +82,6 @@
 - **code:** Dead export `totalTokens` — defined with full JSDoc, never called anywhere (cost uses derived.tokens; the edit-token walk inlines its own input+output sum) — *Empirical Proof Benchmark — the measuring instrument (ruler)*
 - **code:** The three to-first-correct-edit metrics can disagree on null-ness: wallClockMsToFirstCorrectEdit is null when the editing line lacks a parseable timestamp, even while turnsToResolution/tokensToFirstCorrectEdit are populated. Latent inconsistency; not triggered by the committed fixtures. — *Empirical Proof Benchmark — the measuring instrument (ruler)*
 
-### packages/cli/tests/commands/_capture.test.ts
-
-- **test:** Tag drift: this contract's A009 (package.json anatrace-core dependency == '0.4.0') has no matching @ana A009 tag. The pin test that actually enforces it (tests/commands/_capture.test.ts:220) carries stale IDs '@ana A001, A045, A046' from a prior cycle's contract. A009 verified by source inspection (pin literal '0.4.0', store resolves anatrace-core@0.4.0), but the tag linkage is broken. — *Guard the anatrace-core load and emit the first real attestation records*
-
 ### packages/cli/tests/commands/init/code-graph-init.test.ts
 
 - **test:** New init integration test uses `git init` without `-b main`, violating the documented testing standard (CI runners vary init.defaultBranch — has caused CI failures 3 times). Mirrors the pre-existing flawed pattern in template-propagation.test.ts. — *Proof-Context Intelligence — why this file exists and what moves with it*
@@ -109,17 +98,31 @@
 
 - **test:** Path-form-mismatch test gap from verify_report_3 is FIXED. proof-history.test.ts:200 (@ana A014) exercises a package-relative query (src/commands/work.ts) against a repo-relative stored partner (packages/cli/tests/commands/work.test.ts) and asserts suppressedTestPartner === true, the test mirror absent, and the real partner present — the exact red-before/green-after case the prior fix brief specified. Suite went 4068 -> 4069 passing, 0 failed. — *Proof-Context Intelligence — why this file exists and what moves with it*
 
-### packages/cli/tests/utils/compliance.test.ts
+### website/components/docs/proof/ProvenanceTable.tsx
 
-- **test:** Quiet-direction test (A004) covers only the no-role benign path; spec named 'no role OR no session'. loadCore: () => null is injected but never invoked because the role guard short-circuits first — so the test cannot distinguish a correctly-quiet benign path from a broken loud guard. It correctly pins the ordering intent, but is single-path. — *Guard the anatrace-core load and emit the first real attestation records*
+- **code:** Honest-unpriced path (n/a cost cell + n/a total) is dormant in the entire 210-entry corpus — 0 unpriced sessions, so the feature is correct and unit-tested at session level but unexercised end-to-end — *Web proof page — Provenance & Session Attestation*
+
+### website/components/docs/proof/SessionAttestation.tsx
+
+- **test:** JSX components (ProvenanceTable, SessionAttestation) have no automated tests for palette/positioning (AC4/AC5/AC6 visual dimension) — env limitation acknowledged in spec; verified by build success + code read only — *Web proof page — Provenance & Session Attestation*
+- **code:** JSDoc comment contains an &apos; HTML entity inside a plain JS block comment (ledger&apos;s) — unnecessary escaping, renders literally in source — *Web proof page — Provenance & Session Attestation*
 
 ### website/content/docs/concepts/contract.mdx
 
 - **code:** Fix 3 docs section summarizes the coverage-gate activation as 'on a scope whose criteria it can parse', folding in the underlying '>=1 recovered AC' condition rather than enumerating it. This is per explicit spec instruction (do not overstate the gate). Accurate and deliberately terse — noted, not a defect. — *Public-surface honesty touch-ups*
 
+### website/lib/__tests__/docs-data/provenance.test.ts
+
+- **test:** Markdown helpers asserted only by length, not content — format regressions (n/a total, churn line, separators) would pass unnoticed — *Web proof page — Provenance & Session Attestation*
+
 ### website/lib/copy.ts
 
 - **code:** Proof context shows two still-present concerns on website/lib/copy.ts from prior cycles: manifesto outbound link points to /#pipeline (no longer exists), and proofFeed copy references clickable rows that are no longer clickable. This build does not touch either — still present, out of scope here. — *Public-surface honesty touch-ups*
+
+### website/lib/docs-data/provenance.ts
+
+- **test:** The all-unpriced TOTAL='n/a' branch is never exercised — unpricedProcess() keeps session 0 priced, so totals.costUsd is never 0 while unpriced>0 — *Web proof page — Provenance & Session Attestation*
+- **code:** Redundant guard: model field uses `allSameModel && rawSessions.length > 0` but allSameModel already requires length > 0 — dead sub-condition — *Web proof page — Provenance & Session Attestation*
 
 ### website/lib/proof-feed.ts
 
