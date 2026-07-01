@@ -28,8 +28,11 @@ export function CodeBlock(props: PreProps) {
     <div
       style={{
         background: "var(--bg-card)",
-        border: "1px solid var(--border)",
+        // #06 soft elevation: hairline border + soft diffuse shadow so the
+        // block floats off the paper (card = paper now, so lift IS the shadow).
+        border: "1px solid var(--border-soft)",
         borderRadius: "var(--radius-md)",
+        boxShadow: "var(--shadow)",
         margin: "8px 0 18px",
         fontFamily: "var(--font-mono)",
         fontSize: "12.5px",
