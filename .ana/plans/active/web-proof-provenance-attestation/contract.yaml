@@ -1,0 +1,288 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "Web proof page — Provenance & Session Attestation"
+
+# All assertions target the pure helpers in lib/docs-data/ (provenance.ts,
+# attestation.ts), which is the only layer the website's node-env Vitest can
+# exercise (component JSX is not collected — include glob is lib/__tests__/**).
+# Canonical fixtures the assertions assume (Build constructs these; a stub
+# priceFn returns deterministic CostResults so cost math is asserted without
+# anatrace-core):
+#
+#   PROVENANCE fixture (2 sessions, same model "claude-opus-4-8"):
+#     S1 role=ana:   turns 10, tool_calls 5,
+#                    tokens {input:1000, output:2000, cache_create:3000, cache_read:4000}
+#                    priceFn → { cost_usd:1.5, priced:true, price_table_version:"2026-06-14" }
+#     S2 role=build: turns 20, tool_calls 8,
+#                    tokens {input:100, output:200, cache_create:300, cache_read:400}
+#                    priceFn → { cost_usd:2.5, priced:true, price_table_version:"2026-06-14" }
+#     module_churn { "a.ts":{added:100,deleted:0}, "b.ts":{added:38,deleted:0} }
+#     completeness { complete:true, ... }
+#   UNPRICED variant: one session model "unknown-model" → priceFn { cost_usd:0, priced:false }
+#   ATTESTATION fixture (1 agent, role=plan):
+#     anatrace_core_version "0.4.0", framework "anatomia",
+#     coverage {total:49, fully_checked:1, unverifiable:48}, complete:false,
+#     verdicts: 1 satisfied + 48 unverifiable
+#   VETO fixtures: {applied:false, reason:"verify did not read build_report.md"}
+#                  {applied:true,  reason:"verify read build_report.md"}
+
+assertions:
+  # ── AC1: full data renders, matching the CLI information ──
+  - id: A001
+    ac: AC1
+    says: "The provenance view lists one row for every pipeline session"
+    block: "deriveProvenance returns one row per session"
+    target: "provenance.sessions.length"
+    matcher: "equals"
+    value: 2
+
+  - id: A002
+    ac: AC1
+    says: "Each session's cache figure combines cache-create and cache-read tokens"
+    block: "deriveProvenance sums cache_create + cache_read into tokens.cache"
+    target: "provenance.sessions[0].tokens.cache"
+    matcher: "equals"
+    value: 7000
+
+  - id: A003
+    ac: [AC1, AC7]
+    says: "The total cost is the sum of the priced sessions"
+    block: "deriveProvenance totals.costUsd sums priced session costs"
+    target: "provenance.totals.costUsd"
+    matcher: "equals"
+    value: 4
+
+  - id: A004
+    ac: AC1
+    says: "The totals row reports how many sessions the run had"
+    block: "deriveProvenance totals.sessions counts sessions"
+    target: "provenance.totals.sessions"
+    matcher: "equals"
+    value: 2
+
+  - id: A005
+    ac: AC1
+    says: "Code churn adds up the lines changed across all touched files"
+    block: "deriveProvenance churn.added sums added lines across files"
+    target: "provenance.churn.added"
+    matcher: "equals"
+    value: 138
+
+  - id: A006
+    ac: AC1
+    says: "The completeness check reports whether every expected session was captured"
+    block: "deriveProvenance passes completeness.complete through"
+    target: "provenance.completeness.complete"
+    matcher: "equals"
+    value: true
+
+  - id: A007
+    ac: [AC1, AC9]
+    says: "Session attestation counts how many claims were unverifiable per agent"
+    block: "summarizeAttestation counts unverifiable verdicts per agent"
+    target: "attestation.agents[0].unverifiable"
+    matcher: "equals"
+    value: 48
+
+  - id: A008
+    ac: AC1
+    says: "Session attestation shows how many of an agent's claims were actually checked"
+    block: "summarizeAttestation exposes coverage.checked"
+    target: "attestation.agents[0].coverage.checked"
+    matcher: "equals"
+    value: 1
+
+  - id: A009
+    ac: AC1
+    says: "Session attestation records which engine version judged the run"
+    block: "summarizeAttestation surfaces the anatrace-core version"
+    target: "attestation.coreVersion"
+    matcher: "equals"
+    value: "0.4.0"
+
+  - id: A010
+    ac: AC1
+    says: "When every session ran on one model, that model is shown once"
+    block: "deriveProvenance collapses to a shared model when all sessions match"
+    target: "provenance.model"
+    matcher: "equals"
+    value: "claude-opus-4-8"
+
+  # ── AC2: pre-1.3.0 proofs are byte-identical (no section, TOC, or markdown) ──
+  - id: A011
+    ac: AC2
+    says: "A proof with no provenance data adds no Provenance entry to the page outline"
+    block: "provenanceTocItem returns null when the proof has no provenance"
+    target: "provenanceTocItem(entryWithoutProvenance)"
+    matcher: "equals"
+    value: null
+
+  - id: A012
+    ac: AC2
+    says: "A proof with no provenance data adds no Provenance text to the copyable page"
+    block: "provenanceMarkdownLines is empty when the proof has no provenance"
+    target: "provenanceMarkdownLines(entryWithoutProvenance).length"
+    matcher: "equals"
+    value: 0
+
+  - id: A013
+    ac: AC2
+    says: "A proof with no attestation data adds no Attestation entry to the page outline"
+    block: "attestationTocItem returns null when the proof has no attestation"
+    target: "attestationTocItem(entryWithoutAttestation)"
+    matcher: "equals"
+    value: null
+
+  # ── AC3: Provenance and Attestation are independently conditional ──
+  - id: A014
+    ac: AC3
+    says: "A provenance-only proof still shows its Provenance section"
+    block: "provenanceTocItem is present for a provenance-only proof"
+    target: "provenanceTocItem(provenanceOnlyEntry).title"
+    matcher: "contains"
+    value: "Provenance"
+
+  - id: A015
+    ac: AC3
+    says: "A provenance-only proof does not show a Session Attestation section"
+    block: "attestationTocItem is null for a provenance-only proof"
+    target: "attestationTocItem(provenanceOnlyEntry)"
+    matcher: "equals"
+    value: null
+
+  # ── AC4: Provenance carries no verdict/pass-fail semantics in its data ──
+  - id: A016
+    ac: AC4
+    says: "Provenance data holds no pass or fail status — it cannot read as gating"
+    block: "deriveProvenance session objects expose no status/verdict field"
+    target: "Object.keys(provenance.sessions[0])"
+    matcher: "not_contains"
+    value: "status"
+
+  # ── AC5: attestation neutral/violated distinction, coverage prominent ──
+  - id: A017
+    ac: AC5
+    says: "Unverifiable claims are tallied separately from violations, not as failures"
+    block: "summarizeAttestation keeps violated at 0 while unverifiable is nonzero"
+    target: "attestation.agents[0].violated"
+    matcher: "equals"
+    value: 0
+
+  - id: A018
+    ac: [AC5, AC9]
+    says: "The coverage ratio is available for prominent display"
+    block: "summarizeAttestation exposes coverage.total for the ratio"
+    target: "attestation.agents[0].coverage.total"
+    matcher: "equals"
+    value: 49
+
+  - id: A019
+    ac: AC5
+    says: "A genuine violation is surfaced in the violated count"
+    block: "summarizeAttestation counts a violated verdict (violated-fixture)"
+    target: "attestation.agents[0].violated"
+    matcher: "equals"
+    value: 1
+
+  # ── AC6: verdict veto renders both branches, wired from schema ──
+  - id: A020
+    ac: AC6
+    says: "An unexercised veto reports as not applied"
+    block: "summarizeVeto maps applied:false through"
+    target: "verdictVeto.applied"
+    matcher: "equals"
+    value: false
+
+  - id: A021
+    ac: AC6
+    says: "The veto explains itself with the reason recorded in the proof"
+    block: "summarizeVeto passes the veto reason through verbatim"
+    target: "verdictVeto.reason"
+    matcher: "contains"
+    value: "build_report.md"
+
+  - id: A022
+    ac: AC6
+    says: "An applied veto reports as applied"
+    block: "summarizeVeto maps applied:true through (applied-fixture)"
+    target: "verdictVeto.applied"
+    matcher: "equals"
+    value: true
+
+  # ── AC7: cost derived from pricing.ts single source, honest unpriced ──
+  - id: A023
+    ac: AC7
+    says: "A session's cost comes from the shared price table, not a stored figure"
+    block: "deriveProvenance takes per-session cost from the injected priceFn"
+    target: "provenance.sessions[0].costUsd"
+    matcher: "equals"
+    value: 1.5
+
+  - id: A024
+    ac: AC7
+    says: "An unpriced model shows no cost rather than a misleading zero"
+    block: "deriveProvenance sets costUsd to null for an unpriced session"
+    target: "provenance.sessions[1].costUsd"
+    matcher: "equals"
+    value: null
+
+  - id: A025
+    ac: AC7
+    says: "The totals row reports how many sessions could not be priced"
+    block: "deriveProvenance totals.unpriced counts unpriced sessions (unpriced-fixture)"
+    target: "provenance.totals.unpriced"
+    matcher: "equals"
+    value: 1
+
+  - id: A026
+    ac: AC7
+    says: "The price-table version shown is the one the cost was computed against"
+    block: "deriveProvenance sources priceTableVersion from the CostResult"
+    target: "provenance.priceTableVersion"
+    matcher: "equals"
+    value: "2026-06-14"
+
+  # ── AC8: TOC and copy-markdown are conditional on data presence ──
+  - id: A027
+    ac: AC8
+    says: "When provenance exists, it appears in the copyable page text"
+    block: "provenanceMarkdownLines is non-empty when provenance is present"
+    target: "provenanceMarkdownLines(entryWithProvenance).length"
+    matcher: "greater"
+    value: 0
+
+  - id: A028
+    ac: AC8
+    says: "When attestation is absent, no attestation text is added to the copyable page"
+    block: "attestationMarkdownLines is empty when attestation is absent"
+    target: "attestationMarkdownLines(entryWithoutAttestation).length"
+    matcher: "equals"
+    value: 0
+
+# AC10 is documentation coherence between the page and reading-a-proof.mdx.
+# The prose already ships and describes all three sections in matching order and
+# framing; coherence is a human read, not a mechanical check.
+coverage_waivers:
+  - ac: AC10
+    kind: judgment
+    reason: "Page/MDX coherence (section names, order, honesty framing) is a human read; the prose already ships describing all three sections and no MDX change is expected."
+
+file_changes:
+  - path: "website/lib/docs-data/types.ts"
+    action: modify
+  - path: "website/lib/docs-data/provenance.ts"
+    action: create
+  - path: "website/lib/docs-data/attestation.ts"
+    action: create
+  - path: "website/scripts/extract-docs-data.ts"
+    action: modify
+  - path: "website/components/docs/proof/ProvenanceTable.tsx"
+    action: create
+  - path: "website/components/docs/proof/SessionAttestation.tsx"
+    action: create
+  - path: "website/app/docs/proof/[slug]/page.tsx"
+    action: modify
+  - path: "website/lib/__tests__/docs-data/provenance.test.ts"
+    action: create
+  - path: "website/lib/__tests__/docs-data/attestation.test.ts"
+    action: create

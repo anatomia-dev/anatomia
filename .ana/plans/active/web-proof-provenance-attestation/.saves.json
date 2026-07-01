@@ -6,5 +6,17 @@
     "hash": "sha256:d08f2a3b464f604f00ab85354dc8da6a2f4992b1abb24546a2db3d161bb02f15"
   },
   "plan_started_at": "2026-07-01T03:36:50.569Z",
-  "plan_agent": "ana-plan"
+  "plan_agent": "ana-plan",
+  "contract": {
+    "saved_at": "2026-07-01T03:49:04.209Z",
+    "hash": "sha256:05c3fdedae3f49b2d123079112d1614efc389b0b8d421dcf058b84fc46a621d5"
+  },
+  "plan": {
+    "saved_at": "2026-07-01T03:49:04.210Z",
+    "hash": "sha256:393294f8b33a2edc4cb0e2487db262e8a88559a8f615e211f5ecaf67fe91befa"
+  },
+  "spec": {
+    "saved_at": "2026-07-01T03:49:04.210Z",
+    "hash": "sha256:bdb3229c1761214e35e7b4ff8c7af4241f97a50972ad87b284525d469263de99"
+  }
 }
