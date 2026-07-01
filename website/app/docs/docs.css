@@ -357,7 +357,9 @@
   letter-spacing: 0.06em;
   color: var(--ink-45);
   border-bottom: 1px solid var(--border);
-  background: var(--bg-elev);
+  /* Transparent so the header shares the page tone — no white band /
+     two-tone split between the header and the data rows. */
+  background: transparent;
 }
 
 .docs-prose table td {
