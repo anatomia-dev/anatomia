@@ -30,7 +30,8 @@ export function CopyButton({ text }: CopyButtonProps) {
       className="copy-btn"
       style={{
         fontSize: "10.5px",
-        color: "var(--ink-60)",
+        // Light — sits on the dark code-block header (T4 dark terminal).
+        color: "rgba(242, 240, 236, 0.5)",
         cursor: "pointer",
         background: "none",
         border: "none",

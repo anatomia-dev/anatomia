@@ -166,9 +166,9 @@
   max-width: none !important;
 }
 
-/* Copy button hover — matches supermock .code-head .copy:hover */
+/* Copy button hover — light, on the dark code-block header (T4 terminal) */
 .copy-btn:hover {
-  color: var(--fg) !important;
+  color: rgba(242, 240, 236, 0.9) !important;
 }
 
 /* TroubleCard — fix children styling */
@@ -285,6 +285,19 @@
   border-radius: 0;
   background: transparent;
   border: none;
+}
+
+/* T4 dark terminal — force the dark Shiki palette on tokens so the code
+   reads on the dark block regardless of site theme. --shiki-dark is always
+   emitted in dual-theme output; both theme keys map to github-dark, so this
+   is stable. Non-token (.line) spans fall back to the pre's cream color. */
+.docs-prose pre.shiki,
+.docs-prose pre.shiki code {
+  background: transparent !important;
+}
+.docs-prose pre code span {
+  color: var(--shiki-dark, currentColor) !important;
+  background-color: transparent !important;
 }
 
 /* Links — supermock .prose a.link */

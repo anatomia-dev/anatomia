@@ -27,12 +27,12 @@ export function CodeBlock(props: PreProps) {
   return (
     <div
       style={{
-        background: "var(--bg-card)",
-        // #06 soft elevation: hairline border + soft diffuse shadow so the
-        // block floats off the paper (card = paper now, so lift IS the shadow).
-        border: "1px solid var(--border-soft)",
+        // T4 dark terminal: the block is a dark material on the page (no
+        // shadow — separation is the color difference). Same on light + dark
+        // pages, mirroring the marketing hero terminal.
+        background: "#111117",
+        border: "1px solid rgba(11, 11, 16, 0.06)",
         borderRadius: "var(--radius-md)",
-        boxShadow: "var(--shadow)",
         margin: "8px 0 18px",
         fontFamily: "var(--font-mono)",
         fontSize: "12.5px",
@@ -46,15 +46,15 @@ export function CodeBlock(props: PreProps) {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "8px 14px",
-          borderBottom: "1px solid var(--hairline)",
-          background: "var(--bg-elev)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
+          background: "#0B0B10",
           fontSize: "11px",
-          color: "var(--ink-60)",
+          color: "rgba(242, 240, 236, 0.5)",
         }}
       >
         <span
           style={{
-            color: "var(--ink-45)",
+            color: "rgba(242, 240, 236, 0.4)",
             textTransform: "uppercase",
             letterSpacing: "0.06em",
             fontSize: "10px",
@@ -68,7 +68,7 @@ export function CodeBlock(props: PreProps) {
         {...rest}
         style={{
           padding: "14px 16px",
-          color: "var(--ink-75)",
+          color: "rgba(242, 240, 236, 0.86)",
           overflowX: "auto",
           whiteSpace: "pre",
           margin: 0,

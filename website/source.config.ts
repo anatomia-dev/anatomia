@@ -34,6 +34,10 @@ export default defineConfig({
       [
         rehypeCode,
         {
+          // Docs code blocks are dark on both light + dark pages (T4 dark
+          // terminal — mirrors the marketing hero terminal). A single dark
+          // Shiki theme colors tokens for a dark surface unconditionally.
+          themes: { light: "github-dark", dark: "github-dark" },
           transformers: [transformerPreserveLanguage],
         },
       ],
