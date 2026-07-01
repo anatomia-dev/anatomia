@@ -285,6 +285,6 @@ Surface is `website`. Use the website surface commands from ana.json.
 Run the website test command and record exact counts before building.
 - Command: `(cd 'website' && pnpm vitest run)`
 - Current test files: 11 (`lib/__tests__/**`)
-- Current tests: ~88 (grep estimate; capture the exact `vitest run` number as the baseline).
-- After build: expected baseline + new provenance/attestation helper tests, across 2 new test files.
+- Current tests: 88 (exact, captured 2026-06-30 via `pnpm vitest run` → "Tests 88 passed (88)").
+- After build: expected 88 + new provenance/attestation helper tests, across 13 test files (11 + 2 new).
 - Regression focus: `lib/__tests__/docs-data/data-integrity.test.ts` and `proofs.test.ts` (they read the generated `proof-entries.json`); `page.tsx` render path for old proofs (byte-identical requirement).

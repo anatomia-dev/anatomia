@@ -16,7 +16,13 @@
     "hash": "sha256:393294f8b33a2edc4cb0e2487db262e8a88559a8f615e211f5ecaf67fe91befa"
   },
   "spec": {
-    "saved_at": "2026-07-01T03:49:04.210Z",
-    "hash": "sha256:bdb3229c1761214e35e7b4ff8c7af4241f97a50972ad87b284525d469263de99"
+    "saved_at": "2026-07-01T03:49:16.756Z",
+    "hash": "sha256:2499a11f3d0c2cddc280054f239f8684e8ceb00c312e459bb8d9c3f6b2eda289",
+    "history": [
+      {
+        "saved_at": "2026-07-01T03:49:04.210Z",
+        "hash": "sha256:bdb3229c1761214e35e7b4ff8c7af4241f97a50972ad87b284525d469263de99"
+      }
+    ]
   }
 }

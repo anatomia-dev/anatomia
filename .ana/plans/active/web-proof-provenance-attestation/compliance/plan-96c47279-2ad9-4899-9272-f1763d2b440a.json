@@ -2,11 +2,11 @@
   "role": "plan",
   "harness": "claude",
   "session_id": "96c47279-2ad9-4899-9272-f1763d2b440a",
-  "captured_at": "2026-07-01T03:22:33.200Z",
+  "captured_at": "2026-07-01T03:49:16.851Z",
   "anatrace_core_version": "0.4.0",
   "framework": "anatomia",
   "mandate_hash": "sha256:001351b68c0881882e3ea78ab65432b7259661d61faf1c4df81dc056ae4c7777",
-  "transcript_hash": "sha256:362264fb1036f1e1b887a845be4dc33780797e73d92c131b0b33d9c622fbeb26",
+  "transcript_hash": "sha256:45f628334ab9e2e414834a6789051d1b298b8d3f367a0fe129cdec2c85be669c",
   "coverage": {
     "total": 39,
     "fully_checked": 1,
