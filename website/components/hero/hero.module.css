@@ -20,7 +20,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 1vh;
+  justify-content: center;      /* fill the vertical space — center the block */
+  /* Wider than the shared 1320px Container, hero-only. !important overrides
+     Container's max-w-[1320px] utility. */
+  max-width: 1520px !important;
+  padding-top: 2vh;
 }
 @media (min-height: 900px) { .inner { padding-top: 3vh; } }
 
@@ -189,12 +193,12 @@
 
 /* --- Headline --- */
 .headline {
-  font-size: clamp(38px, 6.1vw, 88px);
-  line-height: 0.98;
+  font-size: clamp(44px, 7.6vw, 124px);
+  line-height: 0.96;
   letter-spacing: -0.04em;
   font-weight: 600;
-  margin-bottom: 28px;
-  max-width: 18ch;
+  margin-bottom: 30px;
+  max-width: 22ch;
 }
 .headline :global(em) {
   font-family: var(--font-serif);
@@ -229,10 +233,10 @@
 
 /* --- Subhead --- */
 .sub {
-  font-size: clamp(16px, 1.4vw, 19px);
+  font-size: clamp(17px, 1.55vw, 22px);
   line-height: 1.55;
   color: var(--ink-60);
-  max-width: 58ch;
+  max-width: 62ch;
   margin-bottom: 44px;
 }
 
