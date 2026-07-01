@@ -1,0 +1,40 @@
+schema: 1
+findings:
+  - category: test
+    summary: "Markdown helpers asserted only by length, not content — format regressions (n/a total, churn line, separators) would pass unnoticed"
+    file: "website/lib/__tests__/docs-data/provenance.test.ts"
+    line: 192
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A027", "A028"]
+  - category: test
+    summary: "The all-unpriced TOTAL='n/a' branch is never exercised — unpricedProcess() keeps session 0 priced, so totals.costUsd is never 0 while unpriced>0"
+    file: "website/lib/docs-data/provenance.ts"
+    line: 221
+    severity: debt
+    suggested_action: monitor
+    related_assertions: ["A025"]
+  - category: code
+    summary: "Honest-unpriced path (n/a cost cell + n/a total) is dormant in the entire 210-entry corpus — 0 unpriced sessions, so the feature is correct and unit-tested at session level but unexercised end-to-end"
+    file: "website/components/docs/proof/ProvenanceTable.tsx"
+    line: 31
+    severity: observation
+    suggested_action: monitor
+  - category: test
+    summary: "JSX components (ProvenanceTable, SessionAttestation) have no automated tests for palette/positioning (AC4/AC5/AC6 visual dimension) — env limitation acknowledged in spec; verified by build success + code read only"
+    file: "website/components/docs/proof/SessionAttestation.tsx"
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A016", "A017"]
+  - category: code
+    summary: "JSDoc comment contains an &apos; HTML entity inside a plain JS block comment (ledger&apos;s) — unnecessary escaping, renders literally in source"
+    file: "website/components/docs/proof/SessionAttestation.tsx"
+    line: 19
+    severity: observation
+    suggested_action: acknowledge
+  - category: code
+    summary: "Redundant guard: model field uses `allSameModel && rawSessions.length > 0` but allSameModel already requires length > 0 — dead sub-condition"
+    file: "website/lib/docs-data/provenance.ts"
+    line: 176
+    severity: observation
+    suggested_action: acknowledge
