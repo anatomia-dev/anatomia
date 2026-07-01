@@ -31,6 +31,17 @@ import type {
 import { stripJsx } from '../lib/docs-data/stripJsx';
 
 import { buildDocsStatValues, resolveDocsStatTags } from '../lib/docs-data/docsStatValues.js';
+import {
+  deriveProvenance,
+  type ProvenanceProcessInput,
+  type ProvenancePriceFn,
+} from '../lib/docs-data/provenance.js';
+import {
+  summarizeAttestation,
+  summarizeVeto,
+  type AttestationRecordInput,
+  type VetoInput,
+} from '../lib/docs-data/attestation.js';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -126,11 +137,18 @@ function categorizeEntry(entry: { modules_touched?: string[]; scope_summary?: st
   return 'Infra';
 }
 
-function extractProofEntries(): ProofEntry[] {
+async function extractProofEntries(): Promise<ProofEntry[]> {
   const chainPath = path.join(MONOREPO_ROOT, '.ana', 'proof_chain.json');
   const raw = JSON.parse(fs.readFileSync(chainPath, 'utf-8'));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- proof chain entries have dynamic shape
   const entries: Record<string, any>[] = raw.entries;
+
+  // Bind the cost function once from the CLI's single price source. The
+  // anatrace-core coupling is confined to this one dynamic import (tsx resolves
+  // the .ts directly, mirroring extractGotchas); the pure helper stays injectable.
+  const pricing = await import(path.join(CLI_PKG, 'src', 'data', 'pricing.ts'));
+  const priceFn: ProvenancePriceFn = (tokens, model) =>
+    pricing.computeCost(tokens, model, { priceTable: pricing.PRICES });
 
   const mapped = entries.map((entry) => {
     // Normalize assertions
@@ -185,6 +203,20 @@ function extractProofEntries(): ProofEntry[] {
       else findingSeverity.observation++;
     }
 
+    // 1.3.0 proof-schema branches — each independently conditional so pre-1.3.0
+    // entries (which lack these keys) serialize byte-identically. Cost is baked
+    // in here at extraction so the price-table version travels with the data.
+    const provenance = entry.process
+      ? deriveProvenance(entry.process as ProvenanceProcessInput, priceFn)
+      : undefined;
+    const attestation =
+      Array.isArray(entry.compliance) && entry.compliance.length > 0
+        ? summarizeAttestation(entry.compliance as AttestationRecordInput[])
+        : undefined;
+    const verdictVeto = entry.verdict_veto
+      ? (summarizeVeto(entry.verdict_veto as VetoInput) ?? undefined)
+      : undefined;
+
     return {
       slug: entry.slug,
       feature: entry.feature,
@@ -202,6 +234,9 @@ function extractProofEntries(): ProofEntry[] {
       findings,
       timing,
       ...(entry.phases ? { phases: entry.phases as number } : {}),
+      ...(provenance ? { provenance } : {}),
+      ...(attestation ? { attestation } : {}),
+      ...(verdictVeto ? { verdictVeto } : {}),
       hashes: entry.hashes || {},
       findingSeverity,
       duration: timing.totalMinutes,
@@ -1121,7 +1156,7 @@ async function main(): Promise<void> {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // Extract all data sources
-  const proofEntries = extractProofEntries();
+  const proofEntries = await extractProofEntries();
   writeJSON('proof-entries.json', proofEntries);
 
   const commands = extractCommands();
