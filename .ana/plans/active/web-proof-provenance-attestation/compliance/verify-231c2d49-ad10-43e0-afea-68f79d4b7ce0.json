@@ -1,0 +1,312 @@
+{
+  "role": "verify",
+  "harness": "claude",
+  "session_id": "231c2d49-ad10-43e0-afea-68f79d4b7ce0",
+  "captured_at": "2026-07-01T05:17:52.997Z",
+  "anatrace_core_version": "0.4.0",
+  "framework": "anatomia",
+  "mandate_hash": "sha256:1ce03dbac550caf898de0a70d12348597d3408ac4e0e1434a1123eef0b628b61",
+  "transcript_hash": "sha256:169e66e418dee1d9398827bb13216bdf142b8ea3d39cd17df2694aa23dbab2dd",
+  "coverage": {
+    "total": 42,
+    "fully_checked": 2,
+    "unverifiable": 40
+  },
+  "complete": false,
+  "verdicts": [
+    {
+      "claim_id": "ana-verify:skill:testing-standards",
+      "says": "ana-verify must load the testing-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:skill:coding-standards",
+      "says": "ana-verify must load the coding-standards skill",
+      "status": "satisfied",
+      "reason": "predicate-matched",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:verify-independence",
+      "says": "ana-verify never reads the build report",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+      "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+      "status": "unverifiable",
+      "reason": "command-unresolvable",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+      "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+      "status": "unverifiable",
+      "reason": "command-unresolvable",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/docs-data/types.ts",
+      "says": "edits stay within website/lib/docs-data/types.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/docs-data/provenance.ts",
+      "says": "edits stay within website/lib/docs-data/provenance.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/docs-data/attestation.ts",
+      "says": "edits stay within website/lib/docs-data/attestation.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/scripts/extract-docs-data.ts",
+      "says": "edits stay within website/scripts/extract-docs-data.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/components/docs/proof/ProvenanceTable.tsx",
+      "says": "edits stay within website/components/docs/proof/ProvenanceTable.tsx",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/components/docs/proof/SessionAttestation.tsx",
+      "says": "edits stay within website/components/docs/proof/SessionAttestation.tsx",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/app/docs/proof/[slug]/page.tsx",
+      "says": "edits stay within website/app/docs/proof/[slug]/page.tsx",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/__tests__/docs-data/provenance.test.ts",
+      "says": "edits stay within website/lib/__tests__/docs-data/provenance.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:file-scope:website/lib/__tests__/docs-data/attestation.test.ts",
+      "says": "edits stay within website/lib/__tests__/docs-data/attestation.test.ts",
+      "status": "unverifiable",
+      "reason": "channel-coverage-incomplete",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A001",
+      "says": "The provenance view lists one row for every pipeline session",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A002",
+      "says": "Each session's cache figure combines cache-create and cache-read tokens",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A003",
+      "says": "The total cost is the sum of the priced sessions",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A004",
+      "says": "The totals row reports how many sessions the run had",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A005",
+      "says": "Code churn adds up the lines changed across all touched files",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A006",
+      "says": "The completeness check reports whether every expected session was captured",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A007",
+      "says": "Session attestation counts how many claims were unverifiable per agent",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A008",
+      "says": "Session attestation shows how many of an agent's claims were actually checked",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A009",
+      "says": "Session attestation records which engine version judged the run",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A010",
+      "says": "When every session ran on one model, that model is shown once",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A011",
+      "says": "A proof with no provenance data adds no Provenance entry to the page outline",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A012",
+      "says": "A proof with no provenance data adds no Provenance text to the copyable page",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A013",
+      "says": "A proof with no attestation data adds no Attestation entry to the page outline",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A014",
+      "says": "A provenance-only proof still shows its Provenance section",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A015",
+      "says": "A provenance-only proof does not show a Session Attestation section",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A016",
+      "says": "Provenance data holds no pass or fail status — it cannot read as gating",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A017",
+      "says": "Unverifiable claims are tallied separately from violations, not as failures",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A018",
+      "says": "The coverage ratio is available for prominent display",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A019",
+      "says": "A genuine violation is surfaced in the violated count",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A020",
+      "says": "An unexercised veto reports as not applied",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A021",
+      "says": "The veto explains itself with the reason recorded in the proof",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A022",
+      "says": "An applied veto reports as applied",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A023",
+      "says": "A session's cost comes from the shared price table, not a stored figure",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A024",
+      "says": "An unpriced model shows no cost rather than a misleading zero",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A025",
+      "says": "The totals row reports how many sessions could not be priced",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A026",
+      "says": "The price-table version shown is the one the cost was computed against",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A027",
+      "says": "When provenance exists, it appears in the copyable page text",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    },
+    {
+      "claim_id": "contract:A028",
+      "says": "When attestation is absent, no attestation text is added to the copyable page",
+      "status": "unverifiable",
+      "reason": "runtime-scoped",
+      "source": "deterministic"
+    }
+  ]
+}
