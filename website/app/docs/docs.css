@@ -377,7 +377,9 @@
   letter-spacing: 0.06em;
   color: var(--ink-45);
   border-bottom: 1px solid var(--border);
-  background: var(--bg-elev);
+  /* Transparent header — sits on the paper, separated by its bottom rule.
+     Was var(--bg-elev) (#FFFFFF), which painted a white band on Porcelain. */
+  background: transparent;
 }
 
 .docs-prose table td {
