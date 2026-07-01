@@ -7,8 +7,12 @@ import { PipelineGantt } from "@/components/docs/proof/PipelineGantt";
 import { AssertionLedger } from "@/components/docs/proof/AssertionLedger";
 import { FindingsList } from "@/components/docs/proof/FindingsList";
 import { IntegritySeal } from "@/components/docs/proof/IntegritySeal";
+import { ProvenanceTable } from "@/components/docs/proof/ProvenanceTable";
+import { SessionAttestation } from "@/components/docs/proof/SessionAttestation";
 import type { ProofEntry } from "@/lib/docs-data/types";
 import { getProofEntries, getProofBySlug } from "@/lib/docs-data";
+import { provenanceTocItem, provenanceMarkdownLines } from "@/lib/docs-data/provenance";
+import { attestationTocItem, attestationMarkdownLines } from "@/lib/docs-data/attestation";
 import { getBuildMeta } from "@/lib/docs-data/meta";
 import { HeadingWithAnchor } from "@/components/docs/content/HeadingWithAnchor";
 
@@ -66,6 +70,8 @@ function buildProofMarkdown(entry: ProofEntry): string {
     "",
     "## Findings",
     ...entry.findings.map(f => `- [${f.severity}] ${f.summary}`),
+    ...provenanceMarkdownLines(entry),
+    ...attestationMarkdownLines(entry),
     "",
     "## Integrity",
     ...Object.entries(entry.hashes).map(([key, hash]) => `${key}: ${hash}`),
@@ -167,8 +173,10 @@ export default async function ProofDetailPage({ params }: ProofDetailProps) {
     { title: "Pipeline timeline", url: "#timeline", depth: 2 },
     { title: "Assertion ledger", url: "#assertions", depth: 2 },
     { title: "Findings", url: "#findings", depth: 2 },
+    provenanceTocItem(entry),
+    attestationTocItem(entry),
     { title: "Integrity seal", url: "#integrity", depth: 2 },
-  ];
+  ].filter((item): item is { title: string; url: string; depth: number } => item !== null);
 
   return (
     <div style={{ display: "flex" }}>
@@ -202,6 +210,26 @@ export default async function ProofDetailPage({ params }: ProofDetailProps) {
           </span>
         </HeadingWithAnchor>
         <FindingsList findings={entry.findings} />
+
+        {entry.provenance && (
+          <>
+            <HeadingWithAnchor id="provenance" style={{ scrollMarginTop: "120px" }}>Provenance</HeadingWithAnchor>
+            <p style={{ fontSize: "13.5px", color: "var(--ink-60)", maxWidth: "none" }}>
+              Who ran what, and what it cost. Recomputable estimates from the shared price table — subordinate to the verdict, never gating.
+            </p>
+            <ProvenanceTable provenance={entry.provenance} />
+          </>
+        )}
+
+        {(entry.attestation || entry.verdictVeto) && (
+          <>
+            <HeadingWithAnchor id="attestation" style={{ scrollMarginTop: "120px" }}>Session attestation</HeadingWithAnchor>
+            <p style={{ fontSize: "13.5px", color: "var(--ink-60)", maxWidth: "none" }}>
+              How each agent session behaved, coverage-aware. Evidence, not a gate — unverifiable is honest abstention, not a failure.
+            </p>
+            <SessionAttestation attestation={entry.attestation} verdictVeto={entry.verdictVeto} />
+          </>
+        )}
 
         <HeadingWithAnchor id="integrity" style={{ scrollMarginTop: "120px" }}>Integrity seal</HeadingWithAnchor>
         <IntegritySeal hashes={entry.hashes} slug={entry.slug} />
