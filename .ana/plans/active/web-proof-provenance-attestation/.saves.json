@@ -24,5 +24,70 @@
         "hash": "sha256:bdb3229c1761214e35e7b4ff8c7af4241f97a50972ad87b284525d469263de99"
       }
     ]
-  }
+  },
+  "build_started_at": "2026-07-01T04:29:02.412Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-07-01T04:42:21.404Z",
+    "hash": "sha256:e9a219348c522d5312b2f068d397ddc7b2128e8f42ded8a8699e77ca6c1ec85e"
+  },
+  "build-data": {
+    "saved_at": "2026-07-01T04:42:21.405Z",
+    "hash": "sha256:48321b03bf7dc216cfe11210d3c5f1e2e4cdafa774737f73dfb9066edc7d9b47"
+  },
+  "modules_touched": [
+    "website/app/docs/proof/[slug]/page.tsx",
+    "website/components/docs/proof/ProvenanceTable.tsx",
+    "website/components/docs/proof/SessionAttestation.tsx",
+    "website/lib/__tests__/docs-data/attestation.test.ts",
+    "website/lib/__tests__/docs-data/provenance.test.ts",
+    "website/lib/docs-data/attestation.ts",
+    "website/lib/docs-data/index.ts",
+    "website/lib/docs-data/provenance.ts",
+    "website/lib/docs-data/types.ts",
+    "website/scripts/extract-docs-data.ts"
+  ],
+  "module_churn": {
+    "website/app/docs/proof/[slug]/page.tsx": {
+      "added": 29,
+      "deleted": 1
+    },
+    "website/components/docs/proof/ProvenanceTable.tsx": {
+      "added": 167,
+      "deleted": 0
+    },
+    "website/components/docs/proof/SessionAttestation.tsx": {
+      "added": 151,
+      "deleted": 0
+    },
+    "website/lib/__tests__/docs-data/attestation.test.ts": {
+      "added": 159,
+      "deleted": 0
+    },
+    "website/lib/__tests__/docs-data/provenance.test.ts": {
+      "added": 194,
+      "deleted": 0
+    },
+    "website/lib/docs-data/attestation.ts": {
+      "added": 179,
+      "deleted": 0
+    },
+    "website/lib/docs-data/index.ts": {
+      "added": 8,
+      "deleted": 0
+    },
+    "website/lib/docs-data/provenance.ts": {
+      "added": 236,
+      "deleted": 0
+    },
+    "website/lib/docs-data/types.ts": {
+      "added": 121,
+      "deleted": 0
+    },
+    "website/scripts/extract-docs-data.ts": {
+      "added": 37,
+      "deleted": 2
+    }
+  },
+  "commit_hygiene": []
 }

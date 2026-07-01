@@ -1,0 +1,16 @@
+schema: 1
+concerns:
+  - summary: "Extractor's dynamic import of packages/cli/src/data/pricing.ts is untyped (any); a rename of computeCost/PRICES in anatrace-core would not be caught at website compile time."
+    file: "website/scripts/extract-docs-data.ts"
+    severity: observation
+    suggested_action: monitor
+  - summary: "The unpriced-cost path (costUsd:null, totals.unpriced, 'n/a' render) is exercised only by unit tests — all 18 real provenance cohorts are fully priced, so the 'n/a' rendering is unverified against a real built page."
+    severity: observation
+    suggested_action: monitor
+  - summary: "The verdict-veto applied:true 'serious treatment' JSX is unverified against real data — all 4 real veto records are applied:false. The data mapping is unit-tested (A022) but the alarm-styled render is craft-only."
+    file: "website/components/docs/proof/SessionAttestation.tsx"
+    severity: observation
+    suggested_action: monitor
+  - summary: "Palette/positioning for AC4/AC5/AC6 (no verdict color on provenance; neutral unverifiable; restrained satisfied; violated-only alarm) is craft-reviewed, not unit-tested — the node-env Vitest does not collect component JSX. Needs a human read of the built page across the 5 cohorts."
+    severity: observation
+    suggested_action: monitor
