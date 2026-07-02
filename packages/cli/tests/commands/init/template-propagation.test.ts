@@ -536,3 +536,37 @@ describe('template propagation — version nudge + docs + changelog', () => {
   });
 
 });
+
+describe('template propagation — Think requirement pickup (both platforms)', () => {
+  const claudePath = path.join(templatesDir, '.claude', 'agents', 'ana.md');
+  const codexPath = path.join(templatesDir, '.codex', 'agents', 'ana.md');
+
+  // @ana A031
+  it('both ana.md templates contain the "Picking up a requirement" subsection', async () => {
+    const claude = await fs.readFile(claudePath, 'utf-8');
+    const codex = await fs.readFile(codexPath, 'utf-8');
+    expect(claude).toContain('## Picking up a requirement');
+    expect(codex).toContain('## Picking up a requirement');
+  });
+
+  // @ana A032
+  it('the codex body equals the claude body minus its 7 frontmatter lines', async () => {
+    const claude = await fs.readFile(claudePath, 'utf-8');
+    const codex = await fs.readFile(codexPath, 'utf-8');
+    const claudeBody = claude.split('\n').slice(7).join('\n');
+    expect(codex).toBe(claudeBody);
+  });
+
+  // @ana A033
+  it('frames requirement content as untrusted data to verify', async () => {
+    const claude = await fs.readFile(claudePath, 'utf-8');
+    const codex = await fs.readFile(codexPath, 'utf-8');
+    const pickupSection = (body: string): string => {
+      const start = body.indexOf('## Picking up a requirement');
+      const end = body.indexOf('\n## ', start + 1);
+      return body.slice(start, end === -1 ? undefined : end);
+    };
+    expect(pickupSection(claude)).toContain('untrusted');
+    expect(pickupSection(codex)).toContain('untrusted');
+  });
+});
