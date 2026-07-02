@@ -1,0 +1,284 @@
+version: "1.1"
+sealed_by: "AnaPlan"
+feature: "The requirements contract — validated upstream intake for the pipeline"
+
+assertions:
+  # ── AC1: ana req new scaffolds a valid requirement ──
+  - id: A001
+    ac: AC1
+    says: "A newly scaffolded requirement passes validation with no edits"
+    block: "req new scaffold validates unmodified"
+    target: "validationError"
+    matcher: "equals"
+    value: null
+  - id: A002
+    ac: AC1
+    says: "A new requirement starts open, unprioritized, and marked hand-written"
+    block: "req new scaffold has correct default frontmatter"
+    target: "frontmatter.status"
+    matcher: "equals"
+    value: "open"
+  - id: A003
+    ac: AC1
+    says: "A new requirement includes the Leads section for optional solution input"
+    block: "req new scaffold includes Leads section"
+    target: "scaffoldBody"
+    matcher: "contains"
+    value: "## Leads"
+  - id: A004
+    ac: AC1
+    says: "A new requirement is stamped with the date it was created"
+    block: "req new scaffold sets created date"
+    target: "frontmatter.created"
+    matcher: "exists"
+
+  # ── AC2: ana req validate rejects each violation class ──
+  - id: A005
+    ac: AC2
+    says: "A well-formed requirement is accepted"
+    block: "validate accepts a valid requirement"
+    target: "validationError"
+    matcher: "equals"
+    value: null
+  - id: A006
+    ac: AC2
+    says: "A requirement with an unknown frontmatter field is rejected"
+    block: "validate rejects unknown frontmatter field"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A007
+    ac: AC2
+    says: "A requirement whose priority is not an allowed value is rejected"
+    block: "validate rejects non-enum priority"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A008
+    ac: AC2
+    says: "A requirement whose id does not match its filename is rejected"
+    block: "validate rejects req id mismatched with filename stem"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A009
+    ac: AC2
+    says: "A non-archived requirement that carries a resolution is rejected"
+    block: "validate rejects resolution on a non-archived requirement"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A010
+    ac: AC2
+    says: "An archived requirement missing its resolution is rejected"
+    block: "validate rejects archived requirement with no resolution"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A011
+    ac: AC2
+    says: "A requirement missing a required section is rejected"
+    block: "validate rejects missing required section"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A012
+    ac: AC2
+    says: "An empty appetite value is rejected when the field is present"
+    block: "validate rejects empty appetite when present"
+    target: "validationError"
+    matcher: "truthy"
+  - id: A013
+    ac: AC2
+    says: "Priority and status values are accepted regardless of letter case"
+    block: "validate matches enums case-insensitively"
+    target: "validationError"
+    matcher: "equals"
+    value: null
+
+  # ── AC3: section aliases grandfather the hand-written corpus ──
+  - id: A014
+    ac: AC3
+    says: "A legacy requirement using older section names still validates once frontmatter is added"
+    block: "validate accepts aliased section headings"
+    target: "validationError"
+    matcher: "equals"
+    value: null
+
+  # ── AC4: ana req list ──
+  - id: A015
+    ac: AC4
+    says: "Listing requirements shows each one's id, priority, status, age, and title"
+    block: "req list renders a requirement row"
+    target: "listOutput"
+    matcher: "contains"
+    value: "REQ-"
+  - id: A016
+    ac: AC4
+    says: "A malformed requirement is flagged, not allowed to crash the list"
+    block: "req list marks malformed files and does not throw"
+    target: "malformedRow.malformed"
+    matcher: "truthy"
+  - id: A017
+    ac: AC4
+    says: "Requirements can be listed as structured JSON for other tools"
+    block: "req list --json emits a structured array"
+    target: "listJson.length"
+    matcher: "greater"
+    value: 0
+  - id: A018
+    ac: AC4
+    says: "Higher-priority requirements are listed before lower-priority ones"
+    block: "req list sorts by priority"
+    target: "listJson.0.priority"
+    matcher: "equals"
+    value: "critical"
+
+  # ── AC5: stale claim detection ──
+  - id: A019
+    ac: AC5
+    says: "A requirement claimed by work that no longer exists is flagged as stale"
+    block: "req list flags stale claimed requirement"
+    target: "staleRow.stale"
+    matcher: "truthy"
+
+  # ── AC6: work status surfacing ──
+  - id: A020
+    ac: AC6
+    says: "The pipeline status shows an open-requirements note when any exist"
+    block: "work status prints the open-requirements info line"
+    target: "statusOutput"
+    matcher: "contains"
+    value: "open requirement"
+  - id: A021
+    ac: AC6
+    says: "The status JSON reports how many requirements are open"
+    block: "work status --json includes requirements.open"
+    target: "statusJson.requirements.open"
+    matcher: "equals"
+    value: 2
+  - id: A022
+    ac: AC6
+    says: "With no requirements, the status output is unchanged from before this feature"
+    block: "work status has no requirements field when the folder is absent"
+    target: "statusJsonHasRequirementsField"
+    matcher: "equals"
+    value: false
+
+  # ── AC7: --req claim ──
+  - id: A023
+    ac: AC7
+    says: "Starting work with a requirement marks that requirement as claimed"
+    block: "work start --req sets status to claimed"
+    target: "claimedFrontmatter.status"
+    matcher: "equals"
+    value: "claimed"
+  - id: A024
+    ac: AC7
+    says: "A claimed requirement points back to the work item that claimed it"
+    block: "work start --req records claimed_by slug"
+    target: "claimedFrontmatter.claimed_by"
+    matcher: "exists"
+  - id: A025
+    ac: AC7
+    says: "Claiming a requirement that is missing or not open fails clearly"
+    block: "work start --req errors on a non-open requirement"
+    target: "claimError"
+    matcher: "truthy"
+  - id: A026
+    ac: AC7
+    says: "Starting work without naming a requirement leaves requirements untouched"
+    block: "plain work start does not change requirements"
+    target: "untouchedFrontmatter.status"
+    matcher: "equals"
+    value: "open"
+
+  # ── AC8: archive on complete ──
+  - id: A027
+    ac: AC8
+    says: "Completing work moves its claimed requirement into the archive"
+    block: "work complete archives the claimed requirement"
+    target: "archivedFileExists"
+    matcher: "truthy"
+  - id: A028
+    ac: AC8
+    says: "An archived requirement is marked resolved as completed"
+    block: "work complete sets resolution to completed"
+    target: "archivedFrontmatter.resolution"
+    matcher: "equals"
+    value: "completed"
+  - id: A029
+    ac: AC8
+    says: "If archiving a requirement fails, the work still completes"
+    block: "archive failure never blocks completion"
+    target: "completionSucceeded"
+    matcher: "truthy"
+
+  # ── AC9: re-init preservation ──
+  - id: A030
+    ac: AC9
+    says: "Re-running setup never deletes the requirements backlog"
+    block: "re-init preserves .ana/requirements byte-identically"
+    target: "requirementsPreservedIdentical"
+    matcher: "truthy"
+
+  # ── AC10: Think template touchpoints (both platforms) ──
+  - id: A031
+    ac: AC10
+    says: "The Think agent is told how to pick up a requirement (both platforms)"
+    block: "both ana.md templates contain the Picking up a requirement subsection"
+    target: "templatesHavePickupSection"
+    matcher: "truthy"
+  - id: A032
+    ac: AC10
+    says: "The Claude and Codex Think agents carry identical requirement instructions"
+    block: "codex ana.md body matches claude body minus frontmatter"
+    target: "templateBodiesIdentical"
+    matcher: "truthy"
+  - id: A033
+    ac: AC10
+    says: "The Think agent is told to treat requirement content as untrusted data to verify"
+    block: "template frames requirement content as untrusted"
+    target: "pickupSectionText"
+    matcher: "contains"
+    value: "untrusted"
+
+  # ── AC11: additive-only / commits by default ──
+  - id: A034
+    ac: AC11
+    says: "Requirement files are committed to the repo by default, not ignored"
+    block: "requirements are not gitignored"
+    target: "requirementIgnored"
+    matcher: "equals"
+    value: false
+
+# AC12 ("test count does not decrease") is a suite-level process guarantee that
+# Verify checks mechanically against the build's test-count evidence — not a
+# single behavioral assertion. Its concrete sub-cases (the AC6 empty/absent
+# byte-identity case and the AC9 preservation case) ARE pinned, by A022 and A030.
+coverage_waivers:
+  - ac: AC12
+    kind: judgment
+    reason: "Test-count-non-decrease is a suite-level invariant verified by Verify's mechanical count check; its named sub-cases (byte-identity, preservation) are pinned by A022 and A030."
+
+file_changes:
+  - path: "packages/cli/src/utils/req-frontmatter.ts"
+    action: create
+  - path: "packages/cli/src/commands/artifact-validators.ts"
+    action: modify
+  - path: "packages/cli/src/commands/req-state.ts"
+    action: create
+  - path: "packages/cli/src/commands/req.ts"
+    action: create
+  - path: "packages/cli/src/index.ts"
+    action: modify
+  - path: "packages/cli/src/commands/work.ts"
+    action: modify
+  - path: "packages/cli/src/commands/init/state.ts"
+    action: modify
+  - path: "packages/cli/templates/.claude/agents/ana.md"
+    action: modify
+  - path: "packages/cli/templates/.codex/agents/ana.md"
+    action: modify
+  - path: "packages/cli/tests/utils/req-frontmatter.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/req.test.ts"
+    action: create
+  - path: "packages/cli/tests/commands/work.test.ts"
+    action: modify
+  - path: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    action: modify
