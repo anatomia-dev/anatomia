@@ -12,6 +12,7 @@ import * as os from 'node:os';
 import { validateReqFormat } from '../../src/commands/artifact-validators.js';
 import { buildRequirementScaffold } from '../../src/commands/req.js';
 import { buildRequirementList } from '../../src/commands/req-state.js';
+import { ANA_GITIGNORE_STOCK } from '../../src/commands/init/gitignore.js';
 
 let tmpDir: string;
 
@@ -154,6 +155,13 @@ The finish line.
 `;
     const p = writeReq('REQ-foo.md', reqFile(VALID_FM, body));
     expect(validateReqFormat(p)).toBeNull();
+  });
+});
+
+describe('requirements are committed by default', () => {
+  // @ana A034
+  it('the stock .ana/.gitignore does not ignore the requirements directory', () => {
+    expect(ANA_GITIGNORE_STOCK).not.toContain('requirements');
   });
 });
 
