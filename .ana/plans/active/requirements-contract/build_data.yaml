@@ -1,0 +1,22 @@
+schema: 1
+concerns:
+  - summary: "Dogfood .claude/.codex ana.md agent files had to be synced with the templates — an out-of-spec but test-enforced consequence of the AC10 template edit. Any future Think template change must update both the template and the dogfood copy or the dogfood consistency tests fail."
+    file: ".claude/agents/ana.md"
+    severity: observation
+    suggested_action: monitor
+  - summary: "claimRequirement's signature gained a `slug` parameter the spec's stated signature omitted (the spec body required writing claimed_by: <slug> but wrote the signature as claimRequirement(projectRoot, reqId)). Resolved by adding slug; behavior matches AC7."
+    file: "packages/cli/src/commands/req-state.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "validateReqContent(content, stem) was extracted as a content-based core of validateReqFormat so req list can flag malformed rows off-branch (git ls-tree mode) with the same messages. Additive to the spec's stated (filePath) signature; keeps a single validation implementation."
+    file: "packages/cli/src/commands/artifact-validators.ts"
+    severity: observation
+    suggested_action: acknowledge
+  - summary: "commitSaves gained an optional extraPaths parameter so a --req-claimed requirement rides in the same 'Start work' commit; the function previously scoped its commit strictly to .saves.json. Backward compatible (default empty)."
+    file: "packages/cli/src/commands/work.ts"
+    severity: debt
+    suggested_action: monitor
+  - summary: "req list falls back to git ls-tree (off-branch) mode when getCurrentBranch() returns null (e.g. a commitless repo), which yields an empty list. Benign — a real project always has commits — but the empty result is silent."
+    file: "packages/cli/src/commands/req-state.ts"
+    severity: observation
+    suggested_action: monitor
