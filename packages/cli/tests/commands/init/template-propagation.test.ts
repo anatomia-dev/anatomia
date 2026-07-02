@@ -448,6 +448,38 @@ describe('template propagation — preserve-contract regression guard (AC5, exha
     expect(skill).toContain('My example');
   });
 
+  // @ana A030
+  it('preserves .ana/requirements/ byte-identically (root + archived)', async () => {
+    const existingAnaPath = path.join(tmpDir, '.ana-existing');
+    const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+    await fs.mkdir(existingAnaPath, { recursive: true });
+    await createDirectoryStructure(tmpAnaPath);
+
+    await fs.writeFile(
+      path.join(existingAnaPath, 'ana.json'),
+      JSON.stringify({ name: 'p', artifactBranch: 'main', setupPhase: 'complete' }),
+    );
+
+    // Populate the backlog: an open requirement at the root and an archived one.
+    await fs.mkdir(path.join(existingAnaPath, 'requirements', 'archived'), { recursive: true });
+    const openContent = '---\nreq: REQ-open\nstatus: open\n---\n\n## Problem\nkeep me\n';
+    const archivedContent = '---\nreq: REQ-done\nstatus: archived\nresolution: completed\n---\n\n## Problem\nkeep me too\n';
+    await fs.writeFile(path.join(existingAnaPath, 'requirements', 'REQ-open.md'), openContent);
+    await fs.writeFile(path.join(existingAnaPath, 'requirements', 'archived', 'REQ-done.md'), archivedContent);
+
+    await preserveUserState(existingAnaPath, tmpAnaPath, {
+      anaVersion: '2.0.0',
+      lastScanAt: '2026-05-18T00:00:00Z',
+      name: 'p',
+      language: null,
+      framework: null,
+      packageManager: null,
+    });
+
+    expect(await fs.readFile(path.join(tmpAnaPath, 'requirements', 'REQ-open.md'), 'utf-8')).toBe(openContent);
+    expect(await fs.readFile(path.join(tmpAnaPath, 'requirements', 'archived', 'REQ-done.md'), 'utf-8')).toBe(archivedContent);
+  });
+
   // @ana A029
   it('does NOT carry setup-progress.json when setup is complete', async () => {
     const existingAnaPath = path.join(tmpDir, '.ana-existing');
