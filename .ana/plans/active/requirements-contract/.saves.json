@@ -24,5 +24,110 @@
   "spec": {
     "saved_at": "2026-07-02T05:10:22.053Z",
     "hash": "sha256:12b2510adae82fad6c9e4a00b6dc7aa915b444025a59a2fc2328975a942a1873"
+  },
+  "build_started_at": "2026-07-02T05:22:11.068Z",
+  "build_agent": "ana-build",
+  "build-report": {
+    "saved_at": "2026-07-02T05:53:25.871Z",
+    "hash": "sha256:53c85f306aa9927e5921cc17cd28a91f500a9364e33ea4e3415886b4f79c4508"
+  },
+  "build-data": {
+    "saved_at": "2026-07-02T05:53:25.872Z",
+    "hash": "sha256:4c5506b5d575f49a7cee297b84254d4f9f522e1d91d61bd9732a24988efff1ea"
+  },
+  "modules_touched": [
+    ".claude/agents/ana.md",
+    ".codex/agents/ana.md",
+    "packages/cli/src/commands/artifact-validators.ts",
+    "packages/cli/src/commands/init/state.ts",
+    "packages/cli/src/commands/req-state.ts",
+    "packages/cli/src/commands/req.ts",
+    "packages/cli/src/commands/work.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/utils/req-frontmatter.ts",
+    "packages/cli/templates/.claude/agents/ana.md",
+    "packages/cli/templates/.codex/agents/ana.md",
+    "packages/cli/tests/commands/init/template-propagation.test.ts",
+    "packages/cli/tests/commands/req.test.ts",
+    "packages/cli/tests/commands/work.test.ts",
+    "packages/cli/tests/utils/req-frontmatter.test.ts"
+  ],
+  "module_churn": {
+    ".claude/agents/ana.md": {
+      "added": 32,
+      "deleted": 0
+    },
+    ".codex/agents/ana.md": {
+      "added": 32,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/artifact-validators.ts": {
+      "added": 180,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/init/state.ts": {
+      "added": 16,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/req-state.ts": {
+      "added": 340,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/req.ts": {
+      "added": 238,
+      "deleted": 0
+    },
+    "packages/cli/src/commands/work.ts": {
+      "added": 101,
+      "deleted": 10
+    },
+    "packages/cli/src/index.ts": {
+      "added": 2,
+      "deleted": 0
+    },
+    "packages/cli/src/utils/req-frontmatter.ts": {
+      "added": 149,
+      "deleted": 0
+    },
+    "packages/cli/templates/.claude/agents/ana.md": {
+      "added": 32,
+      "deleted": 0
+    },
+    "packages/cli/templates/.codex/agents/ana.md": {
+      "added": 32,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/init/template-propagation.test.ts": {
+      "added": 66,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/req.test.ts": {
+      "added": 268,
+      "deleted": 0
+    },
+    "packages/cli/tests/commands/work.test.ts": {
+      "added": 180,
+      "deleted": 0
+    },
+    "packages/cli/tests/utils/req-frontmatter.test.ts": {
+      "added": 123,
+      "deleted": 0
+    }
+  },
+  "commit_hygiene": [],
+  "verify_started_at": "2026-07-02T06:05:26.958Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f6651c2967232570a5441c61c2e51c581c33b302dc4b110111c0ce0bf8353b7a",
+    "run_at": "2026-07-02T06:13:09.230Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-07-02T06:13:09.254Z",
+    "hash": "sha256:417c0479a12082fddbf33c85a21c9c84a37f026ade866566912be5886527706f"
+  },
+  "verify-data": {
+    "saved_at": "2026-07-02T06:13:09.254Z",
+    "hash": "sha256:57e8a2ff1c7116431e65aac73446ea527a759b4e0f553d073ce1b618ed99fca3"
   }
 }

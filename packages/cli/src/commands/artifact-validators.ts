@@ -11,6 +11,13 @@ import * as path from 'node:path';
 import * as yaml from 'yaml';
 import { findProjectRoot } from '../utils/validators.js';
 import { RESULT_HEADLINE_PATTERN } from '../utils/verdict.js';
+import {
+  parseRequirement,
+  canonicalizeEnumValue,
+  PRIORITY_VALUES,
+  STATUS_VALUES,
+  RESOLUTION_VALUES,
+} from '../utils/req-frontmatter.js';
 import type { ContractSchema } from '../types/contract.js';
 
 /**
@@ -277,6 +284,179 @@ export function validateScopeFormat(filePath: string): string | null {
   // Check for Edge Cases section
   if (!content.match(/##\s+Edge\s+Cases/i)) {
     return "Missing 'Edge Cases' section. Scope must identify edge cases and risks.";
+  }
+
+  return null; // valid
+}
+
+/**
+ * Frontmatter keys a requirement is allowed to carry. Unknown keys are rejected
+ * by the validator (the strict machine gate) even though the frontmatter
+ * primitive preserves them on round-trip (the lenient forward-compat layer). When
+ * a new metadata key becomes official, it joins this allowlist.
+ */
+const KNOWN_REQ_KEYS = new Set([
+  'req', 'title', 'priority', 'status', 'created', 'source', 'appetite', 'claimed_by', 'resolution',
+]);
+
+/**
+ * Required requirement sections and their accepted aliases (canonical heading OR
+ * any alias satisfies the section). Aliases grandfather the team's hand-written
+ * corpus.
+ */
+const REQUIRED_REQ_SECTIONS: Array<{ canonical: string; aliases: string[] }> = [
+  { canonical: 'Problem', aliases: ['Problem', 'Disease'] },
+  { canonical: 'Evidence', aliases: ['Evidence', 'Why This Matters'] },
+  { canonical: 'Done Looks Like', aliases: ['Done Looks Like', 'What to Build'] },
+];
+
+/**
+ * Extract the trimmed content of the first `## ` section whose heading matches one
+ * of `names` (case-insensitive). Content runs until the next `## ` heading.
+ *
+ * @param body - The requirement markdown body (after frontmatter)
+ * @param names - Accepted heading names (canonical + aliases)
+ * @returns The trimmed section content, or null when no matching heading exists
+ */
+function extractReqSection(body: string, names: string[]): string | null {
+  const wanted = new Set(names.map(n => n.toLowerCase()));
+  const lines = body.split('\n');
+  let capturing = false;
+  const collected: string[] = [];
+
+  for (const line of lines) {
+    const heading = line.match(/^##\s+(.+?)\s*$/);
+    if (heading) {
+      if (capturing) break; // reached the next section
+      const name = (heading[1] ?? '').trim().toLowerCase();
+      if (wanted.has(name)) {
+        capturing = true;
+      }
+      continue;
+    }
+    if (capturing) collected.push(line);
+  }
+
+  if (!capturing) return null;
+  return collected.join('\n').trim();
+}
+
+/**
+ * Validate requirement (`.ana/requirements/REQ-*.md`) format — the hard machine
+ * gate for `ana req validate`.
+ *
+ * Checks, in order, returning a specific human message on the first violation:
+ * frontmatter present & parseable; no unknown frontmatter keys; `req` equals the
+ * filename stem; `priority`/`status` in enum (case-insensitive); `created` parses
+ * as a date; `resolution` present iff `status: archived` (and in enum when
+ * present); `appetite` non-empty when the key is present; required sections
+ * present and non-empty (accepting aliases). Returns `null` when valid.
+ *
+ * @param filePath - Path to the requirement file
+ * @returns Error message if invalid, null if valid
+ */
+export function validateReqFormat(filePath: string): string | null {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  return validateReqContent(content, path.basename(filePath, '.md'));
+}
+
+/**
+ * Content-based core of {@link validateReqFormat}. Takes the raw file content and
+ * the expected `req` id (the filename stem) so it works for on-disk files AND for
+ * requirement content read from a git branch (where no path exists). `req list`
+ * reuses this to flag malformed rows with the same messages the validator prints.
+ *
+ * @param content - Raw requirement file content
+ * @param stem - The expected `req` value (filename without `.md`)
+ * @returns Error message if invalid, null if valid
+ */
+export function validateReqContent(content: string, stem: string): string | null {
+  let parsed;
+  try {
+    parsed = parseRequirement(content);
+  } catch (e) {
+    return `Frontmatter is not parseable: ${e instanceof Error ? e.message : 'invalid YAML'}`;
+  }
+
+  const { frontmatter: fm, body, hadFrontmatter } = parsed;
+  if (!hadFrontmatter) {
+    return "Missing frontmatter. A requirement must begin with a '---' YAML block.";
+  }
+
+  // Unknown-key allowlist.
+  for (const key of Object.keys(fm)) {
+    if (!KNOWN_REQ_KEYS.has(key)) {
+      return `Unknown frontmatter field '${key}'. Allowed: ${[...KNOWN_REQ_KEYS].join(', ')}.`;
+    }
+  }
+
+  // req must equal the filename stem.
+  if (fm['req'] !== stem) {
+    return `req must equal the filename stem. Expected '${stem}', got '${fm['req'] ?? '(missing)'}'.`;
+  }
+
+  // priority enum.
+  const priority = canonicalizeEnumValue(fm['priority']);
+  if (!priority) {
+    return `priority is required. Must be one of: ${PRIORITY_VALUES.join(', ')}.`;
+  }
+  if (!(PRIORITY_VALUES as readonly string[]).includes(priority)) {
+    return `priority must be one of: ${PRIORITY_VALUES.join(', ')}. Got: '${fm['priority']}'.`;
+  }
+
+  // status enum.
+  const status = canonicalizeEnumValue(fm['status']);
+  if (!status) {
+    return `status is required. Must be one of: ${STATUS_VALUES.join(', ')}.`;
+  }
+  if (!(STATUS_VALUES as readonly string[]).includes(status)) {
+    return `status must be one of: ${STATUS_VALUES.join(', ')}. Got: '${fm['status']}'.`;
+  }
+
+  // created must be a parseable date.
+  const created = fm['created'];
+  if (created === undefined || created === null || created === '') {
+    return 'created is required. Add an ISO date (e.g. 2026-07-01).';
+  }
+  const createdDate = created instanceof Date ? created : new Date(String(created));
+  if (isNaN(createdDate.getTime())) {
+    return `created must be a valid date. Got: '${String(created)}'.`;
+  }
+
+  // resolution present iff archived.
+  const hasResolution = fm['resolution'] !== undefined && fm['resolution'] !== null && fm['resolution'] !== '';
+  if (status === 'archived') {
+    if (!hasResolution) {
+      return `Archived requirements must carry a resolution. Add one of: ${RESOLUTION_VALUES.join(', ')}.`;
+    }
+    const resolution = canonicalizeEnumValue(fm['resolution']);
+    if (!(RESOLUTION_VALUES as readonly string[]).includes(resolution)) {
+      return `resolution must be one of: ${RESOLUTION_VALUES.join(', ')}. Got: '${fm['resolution']}'.`;
+    }
+  } else if (hasResolution) {
+    return "resolution is only allowed on archived requirements (status: archived).";
+  }
+
+  // appetite non-empty when present.
+  if ('appetite' in fm) {
+    const appetite = fm['appetite'];
+    if (typeof appetite !== 'string' || !appetite.trim()) {
+      return 'appetite, when present, must be a non-empty value.';
+    }
+  }
+
+  // Required sections present and non-empty (aliases accepted).
+  for (const section of REQUIRED_REQ_SECTIONS) {
+    const sectionContent = extractReqSection(body, section.aliases);
+    if (sectionContent === null) {
+      const aliasNote = section.aliases.length > 1
+        ? ` (or alias: ${section.aliases.slice(1).join(', ')})`
+        : '';
+      return `Missing required section '## ${section.canonical}'${aliasNote}.`;
+    }
+    if (!sectionContent) {
+      return `Section '## ${section.canonical}' is empty. It must have content.`;
+    }
   }
 
   return null; // valid

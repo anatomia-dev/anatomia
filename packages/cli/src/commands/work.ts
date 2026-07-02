@@ -30,6 +30,7 @@ import type { ScanFreshnessResult } from '../utils/scan-freshness.js';
 import { getWorkBranch, countPhases, getVerifyResult, discoverSlugs, gatherArtifactState, determineStage, resolvePhase, compareTimestamp, CONCURRENCY_TIMEOUT_MS } from './work-state.js';
 import type { ArtifactState } from './work-state.js';
 import { writeProofChain, guardFailResult } from './work-proof.js';
+import { getRequirementsSummary, claimRequirement, archiveRequirementsForSlug, assertRequirementClaimable } from './req-state.js';
 import { deriveVerdict } from '../utils/verdict.js';
 import { AnaJsonSchema } from './init/anaJsonSchema.js';
 
@@ -67,6 +68,12 @@ interface StatusOutput {
   projectMismatch: { cliVersion: string; projectVersion: string } | null;
   scanStale: ScanFreshnessResult | null;
   items: WorkItem[];
+  /**
+   * Open-requirements summary — present ONLY when at least one open requirement
+   * exists. Omitted entirely when the requirements folder is absent/empty, so
+   * `--json` stays byte-identical to pre-feature output in that case (AC6/AC12).
+   */
+  requirements?: { open: number; highestPriority: string };
 }
 
 type MergeStrategy = 'merge' | 'squash' | 'rebase';
@@ -311,6 +318,12 @@ function printNotifications(output: StatusOutput): void {
       `ℹ Scan is ${output.scanStale.daysSinceScan} days old${commitPart}. Run: ana init`
     ));
   }
+  if (output.requirements && output.requirements.open > 0) {
+    const { open, highestPriority } = output.requirements;
+    console.log(chalk.gray(
+      `ℹ ${open} open requirement${open === 1 ? '' : 's'} (highest: ${highestPriority}). Run: ana req list`
+    ));
+  }
 }
 
 /**
@@ -482,6 +495,13 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
   }
   const scanFreshness = checkScanFreshness(lastScanAt, projectRoot);
 
+  // Requirements probe — run ONCE, before the empty-slugs branch, so open
+  // requirements surface even with zero active work. Reads only the requirements
+  // directory (no config reads — getWorkStatus already parses ana.json). Returns
+  // null when there are no open requirements or on any error.
+  const reqSummary = getRequirementsSummary(projectRoot, artifactBranch, onArtifactBranch);
+  const reqField = reqSummary ? { requirements: reqSummary } : {};
+
   // Discover slugs
   const slugs = discoverSlugs(artifactBranch, onArtifactBranch, projectRoot);
 
@@ -495,6 +515,7 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
         projectMismatch: versionCheck.projectMismatch,
         scanStale: scanFreshness?.isStale ? scanFreshness : null,
         items: [],
+        ...reqField,
       }, null, 2));
     } else {
       printNotifications({
@@ -505,6 +526,7 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
         projectMismatch: versionCheck.projectMismatch,
         scanStale: scanFreshness?.isStale ? scanFreshness : null,
         items: [],
+        ...reqField,
       });
       console.log(chalk.gray(`\nNo active work. Run: ${agentCommand('')} to scope new work.`));
     }
@@ -547,6 +569,7 @@ export async function getWorkStatus(options: { json?: boolean; session?: boolean
     projectMismatch: versionCheck.projectMismatch,
     scanStale: scanFreshness?.isStale ? scanFreshness : null,
     items,
+    ...reqField,
   };
 
   if (options.json) {
@@ -1179,6 +1202,34 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
     // Silently continue if remote branch doesn't exist or was already deleted
   }
 
+  // 12b. Archive any requirement claimed by this slug (best-effort). A failure
+  //      here NEVER blocks completion — it warns and continues. Moving a
+  //      requirement to archived/ with resolution: completed keeps the gate
+  //      metric computable, but is asymmetric with the loud `--req` claim.
+  try {
+    const archivedReqPaths = archiveRequirementsForSlug(projectRoot, slug);
+    if (archivedReqPaths.length > 0) {
+      const relPaths = archivedReqPaths.map(p => path.relative(projectRoot, p));
+      try {
+        runGit(['add', '.ana/requirements/'], { cwd: projectRoot });
+        const reqCommitMessage = `[${slug}] Archive claimed requirement(s)\n\nCo-authored-by: ${coAuthor}`;
+        const reqCommit = spawnSync('git', ['commit', '--no-verify', '-m', reqCommitMessage, '--', '.ana/requirements/'], { stdio: 'pipe', cwd: projectRoot });
+        if (reqCommit.status === 0) {
+          runGit(['push'], { cwd: projectRoot });
+        }
+      } catch {
+        // Best-effort commit — moved files remain on disk even if the commit fails
+      }
+      if (!options?.json) {
+        console.log(chalk.gray(`  Archived ${relPaths.length} requirement${relPaths.length !== 1 ? 's' : ''} to .ana/requirements/archived/`));
+      }
+    }
+  } catch (err) {
+    if (!options?.json) {
+      console.log(chalk.yellow(`⚠ Warning: Could not archive requirement(s): ${err instanceof Error ? err.message : String(err)}`));
+    }
+  }
+
   // 13. Read chain once for both meta and health change detection
   const chainPath = path.join(projectRoot, '.ana', 'proof_chain.json');
   let mainChain: { entries: Array<{ slug?: string; findings?: Array<{ id?: string; status?: string; severity?: string; category?: string; suggested_action?: string; summary?: string; file?: string | null; promoted_to?: string }> }> } = { entries: [] };
@@ -1271,10 +1322,12 @@ export async function completeWork(slug: string, options?: { json?: boolean; mer
  * @param slug - Kebab-case slug for the work item
  * @param options - Optional settings
  * @param options.force - When true, override active session concurrency guards
+ * @param options.req - Requirement id to claim (only meaningful on new-item creation)
  * @returns void — exits with code 1 on validation failures
  */
-export async function startWork(slug: string, options?: { force?: boolean }): Promise<void> {
+export async function startWork(slug: string, options?: { force?: boolean; req?: string }): Promise<void> {
   const force = options?.force ?? false;
+  const reqId = options?.req;
   // 1. Validate slug format
   try {
     validateSlug(slug);
@@ -1395,6 +1448,18 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
       process.exit(1);
     }
 
+    // --req: validate the requirement is claimable BEFORE any work-item state is
+    // created. Claiming is explicit user intent, so failure is loud (exit 1).
+    // Validating before mkdir avoids a half-started item pointing at a bad req.
+    if (reqId !== undefined) {
+      try {
+        assertRequirementClaimable(projectRoot, reqId);
+      } catch (err) {
+        console.error(chalk.red(`Error: ${err instanceof Error ? err.message : String(err)}`));
+        process.exit(1);
+      }
+    }
+
     // Pull latest
     const remotes = runGit(['remote'], { cwd: projectRoot }).stdout;
     if (remotes) {
@@ -1431,9 +1496,28 @@ export async function startWork(slug: string, options?: { force?: boolean }): Pr
 
     // Write work_started_at
     await writeTimestamp(activePath, 'work_started_at', 'ana', false, sessionTimestamp);
-    commitSaves(projectRoot, slug, `[${slug}] Start work`);
 
-    console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
+    // --req: claim the requirement now that the work item exists, and include the
+    // rewritten requirement file in the "Start work" commit. Pre-validated above,
+    // but claimRequirement re-checks (defense in depth) — surface any failure loudly.
+    let claimedReqPath: string | undefined;
+    if (reqId !== undefined) {
+      try {
+        const { path: reqPath } = claimRequirement(projectRoot, reqId, slug);
+        claimedReqPath = path.relative(projectRoot, reqPath);
+      } catch (err) {
+        console.error(chalk.red(`Error: ${err instanceof Error ? err.message : String(err)}`));
+        process.exit(1);
+      }
+    }
+
+    commitSaves(projectRoot, slug, `[${slug}] Start work`, claimedReqPath ? [claimedReqPath] : []);
+
+    if (claimedReqPath) {
+      console.log(`Started work item \`${slug}\` (claimed ${reqId}). Write your scope, then run \`ana artifact save scope ${slug}\`.`);
+    } else {
+      console.log(`Started work item \`${slug}\`. Write your scope, then run \`ana artifact save scope ${slug}\`.`);
+    }
     return;
   }
 
@@ -1978,19 +2062,22 @@ async function writeTimestamp(activePath: string, key: string, agent?: string, f
  * @param projectRoot - Project root directory
  * @param slug - Work item slug
  * @param message - Commit message (without co-author trailer)
+ * @param extraPaths - Additional repo-relative paths to stage and commit alongside
+ *   the slug's .saves.json (e.g. a requirement file claimed via `--req`)
  */
-function commitSaves(projectRoot: string, slug: string, message: string): void {
+function commitSaves(projectRoot: string, slug: string, message: string, extraPaths: string[] = []): void {
   const savesRelPath = path.join('.ana', 'plans', 'active', slug, '.saves.json');
+  const paths = [savesRelPath, ...extraPaths];
 
   try {
-    runGit(['add', savesRelPath], { cwd: projectRoot });
+    runGit(['add', ...paths], { cwd: projectRoot });
   } catch {
     // Nothing to stage
     return;
   }
 
   // Check if there are staged changes — status 0 means no differences
-  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', savesRelPath], { cwd: projectRoot });
+  const diffResult = spawnSync('git', ['diff', '--staged', '--quiet', '--', ...paths], { cwd: projectRoot });
   if (diffResult.status === 0) {
     return;
   }
@@ -1998,7 +2085,7 @@ function commitSaves(projectRoot: string, slug: string, message: string): void {
   const coAuthor = readCoAuthor(projectRoot);
   const commitMessage = `${message}\n\nCo-authored-by: ${coAuthor}`;
   try {
-    const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', savesRelPath], { stdio: 'pipe', cwd: projectRoot });
+    const commitResult = spawnSync('git', ['commit', '--no-verify', '-m', commitMessage, '--', ...paths], { stdio: 'pipe', cwd: projectRoot });
     if (commitResult.status !== 0) throw new Error(commitResult.stderr?.toString() || 'Commit failed');
   } catch {
     // Silent failure — don't block the user's workflow for a convenience commit
@@ -2026,9 +2113,13 @@ export function registerWorkCommand(program: Command): void {
     .description('Start a new work item')
     .argument('<slug>', 'Kebab-case slug for the work item')
     .option('--force', 'Override active session concurrency guards')
-    .addHelpText('after', '\nEXAMPLES\n  $ ana work start fix-auth-timeout')
-    .action(async (slug: string, cmdOptions: { force?: boolean }) => {
-      await startWork(slug, cmdOptions.force ? { force: true } : undefined);
+    .option('--req <id>', 'Claim a requirement (REQ-<id>) when starting new work')
+    .addHelpText('after', '\nEXAMPLES\n  $ ana work start fix-auth-timeout\n  $ ana work start fix-auth-timeout --req REQ-auth-bug')
+    .action(async (slug: string, cmdOptions: { force?: boolean; req?: string }) => {
+      const startOptions: { force?: boolean; req?: string } = {};
+      if (cmdOptions.force) startOptions.force = true;
+      if (cmdOptions.req !== undefined) startOptions.req = cmdOptions.req;
+      await startWork(slug, Object.keys(startOptions).length > 0 ? startOptions : undefined);
     });
 
   const completeCommand = new Command('complete')

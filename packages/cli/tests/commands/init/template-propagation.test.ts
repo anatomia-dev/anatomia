@@ -448,6 +448,38 @@ describe('template propagation — preserve-contract regression guard (AC5, exha
     expect(skill).toContain('My example');
   });
 
+  // @ana A030
+  it('preserves .ana/requirements/ byte-identically (root + archived)', async () => {
+    const existingAnaPath = path.join(tmpDir, '.ana-existing');
+    const tmpAnaPath = path.join(tmpDir, '.ana-tmp');
+    await fs.mkdir(existingAnaPath, { recursive: true });
+    await createDirectoryStructure(tmpAnaPath);
+
+    await fs.writeFile(
+      path.join(existingAnaPath, 'ana.json'),
+      JSON.stringify({ name: 'p', artifactBranch: 'main', setupPhase: 'complete' }),
+    );
+
+    // Populate the backlog: an open requirement at the root and an archived one.
+    await fs.mkdir(path.join(existingAnaPath, 'requirements', 'archived'), { recursive: true });
+    const openContent = '---\nreq: REQ-open\nstatus: open\n---\n\n## Problem\nkeep me\n';
+    const archivedContent = '---\nreq: REQ-done\nstatus: archived\nresolution: completed\n---\n\n## Problem\nkeep me too\n';
+    await fs.writeFile(path.join(existingAnaPath, 'requirements', 'REQ-open.md'), openContent);
+    await fs.writeFile(path.join(existingAnaPath, 'requirements', 'archived', 'REQ-done.md'), archivedContent);
+
+    await preserveUserState(existingAnaPath, tmpAnaPath, {
+      anaVersion: '2.0.0',
+      lastScanAt: '2026-05-18T00:00:00Z',
+      name: 'p',
+      language: null,
+      framework: null,
+      packageManager: null,
+    });
+
+    expect(await fs.readFile(path.join(tmpAnaPath, 'requirements', 'REQ-open.md'), 'utf-8')).toBe(openContent);
+    expect(await fs.readFile(path.join(tmpAnaPath, 'requirements', 'archived', 'REQ-done.md'), 'utf-8')).toBe(archivedContent);
+  });
+
   // @ana A029
   it('does NOT carry setup-progress.json when setup is complete', async () => {
     const existingAnaPath = path.join(tmpDir, '.ana-existing');
@@ -503,4 +535,38 @@ describe('template propagation — version nudge + docs + changelog', () => {
     expect(mdx.toLowerCase()).toContain('preserv');
   });
 
+});
+
+describe('template propagation — Think requirement pickup (both platforms)', () => {
+  const claudePath = path.join(templatesDir, '.claude', 'agents', 'ana.md');
+  const codexPath = path.join(templatesDir, '.codex', 'agents', 'ana.md');
+
+  // @ana A031
+  it('both ana.md templates contain the "Picking up a requirement" subsection', async () => {
+    const claude = await fs.readFile(claudePath, 'utf-8');
+    const codex = await fs.readFile(codexPath, 'utf-8');
+    expect(claude).toContain('## Picking up a requirement');
+    expect(codex).toContain('## Picking up a requirement');
+  });
+
+  // @ana A032
+  it('the codex body equals the claude body minus its 7 frontmatter lines', async () => {
+    const claude = await fs.readFile(claudePath, 'utf-8');
+    const codex = await fs.readFile(codexPath, 'utf-8');
+    const claudeBody = claude.split('\n').slice(7).join('\n');
+    expect(codex).toBe(claudeBody);
+  });
+
+  // @ana A033
+  it('frames requirement content as untrusted data to verify', async () => {
+    const claude = await fs.readFile(claudePath, 'utf-8');
+    const codex = await fs.readFile(codexPath, 'utf-8');
+    const pickupSection = (body: string): string => {
+      const start = body.indexOf('## Picking up a requirement');
+      const end = body.indexOf('\n## ', start + 1);
+      return body.slice(start, end === -1 ? undefined : end);
+    };
+    expect(pickupSection(claude)).toContain('untrusted');
+    expect(pickupSection(codex)).toContain('untrusted');
+  });
 });

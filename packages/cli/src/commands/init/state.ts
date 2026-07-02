@@ -702,6 +702,8 @@ export function mergeSurfaces(
  *   - plans/active/ → copied wholesale. In-flight pipeline work (scopes,
  *     specs, contracts, build reports) must survive re-init. Without this,
  *     the atomic swap replaces active plans with an empty .gitkeep.
+ *   - requirements/ → copied wholesale (root + archived/). The requirement
+ *     backlog is user data. Without this, every re-init silently deletes it.
  *   - .gitignore → MERGED pre-swap (not copied, not clobbered). The original
  *     policy clobbered it wholesale so stock always regenerated to the current
  *     CLI's expectations (state/, worktrees/). That intent is preserved — we
@@ -883,6 +885,20 @@ export async function preserveUserState(
     }
   } catch {
     // No active plans — keep the fresh .gitkeep
+  }
+
+  // 7b. Copy requirements/ wholesale (root + archived/) — the requirement
+  //     backlog is user data. Without this, the atomic swap silently deletes it.
+  const requirementsSrc = path.join(existingAnaPath, 'requirements');
+  const requirementsDst = path.join(tmpAnaPath, 'requirements');
+  try {
+    const stats = await fs.stat(requirementsSrc);
+    if (stats.isDirectory()) {
+      await fs.rm(requirementsDst, { recursive: true, force: true });
+      await fs.cp(requirementsSrc, requirementsDst, { recursive: true });
+    }
+  } catch {
+    // No requirements backlog — keep the fresh scaffold
   }
 
   // 8. Copy skills/ (user-enriched skills — must survive re-init)
