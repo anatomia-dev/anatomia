@@ -1,0 +1,41 @@
+schema: 1
+findings:
+  - category: code
+    summary: "getRequirementsSummary counts validation-malformed requirements as open — `ana work status` reports 3 open while `ana req list` reports 1 open + 2 malformed for the same backlog"
+    file: "packages/cli/src/commands/req-state.ts"
+    line: 219
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A020", "A021"]
+  - category: test
+    summary: "The `req list --json` emission path (runReqList) is never directly tested — A017/A018 are verified against buildRequirementList data, not the JSON mapping that reshapes malformed rows to {req, malformed, error}"
+    file: "packages/cli/tests/commands/req.test.ts"
+    line: 208
+    severity: debt
+    suggested_action: scope
+    related_assertions: ["A017"]
+  - category: test
+    summary: "@ana tag namespace collision in template-propagation.test.ts — pre-existing A029/A030 tags (a prior contract) coexist with this contract's A029/A030 in the same file; a naive tag scan could match the wrong test"
+    file: "packages/cli/tests/commands/init/template-propagation.test.ts"
+    line: 340
+    severity: observation
+    suggested_action: monitor
+    related_assertions: ["A029", "A030"]
+  - category: code
+    summary: "Archive-on-complete commit stages the whole `.ana/requirements/` dir (`git add .ana/requirements/`) rather than only the moved files — can sweep unrelated requirement edits into the completion commit"
+    file: "packages/cli/src/commands/work.ts"
+    line: 1211
+    severity: observation
+    suggested_action: monitor
+  - category: code
+    summary: "claimRequirement reads the requirement file twice (assertRequirementClaimable + claimRequirement each readFileSync the same path) — minor redundant IO, harmless in a single-process CLI"
+    file: "packages/cli/src/commands/req-state.ts"
+    line: 296
+    severity: observation
+    suggested_action: acknowledge
+  - category: code
+    summary: "Root-level .claude/agents/ana.md and .codex/agents/ana.md were modified beyond the contract's file_changes list (which names only packages/cli/templates/...) — additive, byte-identical to the template edits, and correct dogfooding, but outside declared scope"
+    file: ".claude/agents/ana.md"
+    line: 65
+    severity: observation
+    suggested_action: acknowledge

@@ -114,5 +114,20 @@
       "deleted": 0
     }
   },
-  "commit_hygiene": []
+  "commit_hygiene": [],
+  "verify_started_at": "2026-07-02T06:05:26.958Z",
+  "verify_agent": "ana-verify",
+  "pre-check": {
+    "seal": "INTACT",
+    "seal_hash": "sha256:f6651c2967232570a5441c61c2e51c581c33b302dc4b110111c0ce0bf8353b7a",
+    "run_at": "2026-07-02T06:13:09.230Z"
+  },
+  "verify-report": {
+    "saved_at": "2026-07-02T06:13:09.254Z",
+    "hash": "sha256:417c0479a12082fddbf33c85a21c9c84a37f026ade866566912be5886527706f"
+  },
+  "verify-data": {
+    "saved_at": "2026-07-02T06:13:09.254Z",
+    "hash": "sha256:57e8a2ff1c7116431e65aac73446ea527a759b4e0f553d073ce1b618ed99fca3"
+  }
 }
