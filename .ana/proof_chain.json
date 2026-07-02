@@ -68071,6 +68071,1652 @@
         "base_commit": "19bbb82d1d245821427178e6b05937e4d1e179af"
       },
       "surface": "website"
+    },
+    {
+      "slug": "requirements-contract",
+      "feature": "The requirements contract — validated upstream intake for the pipeline",
+      "result": "PASS",
+      "verdict_veto": {
+        "applied": false,
+        "reason": "verify did not read build_report.md"
+      },
+      "author": {
+        "name": "Ryan Smith",
+        "email": "ryan@rsmith.ai"
+      },
+      "contract": {
+        "total": 34,
+        "satisfied": 32,
+        "unsatisfied": 0,
+        "deviated": 0
+      },
+      "assertions": [
+        {
+          "id": "A001",
+          "says": "A newly scaffolded requirement passes validation with no edits",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A002",
+          "says": "A new requirement starts open, unprioritized, and marked hand-written",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A003",
+          "says": "A new requirement includes the Leads section for optional solution input",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A004",
+          "says": "A new requirement is stamped with the date it was created",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A005",
+          "says": "A well-formed requirement is accepted",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A006",
+          "says": "A requirement with an unknown frontmatter field is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A007",
+          "says": "A requirement whose priority is not an allowed value is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A008",
+          "says": "A requirement whose id does not match its filename is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A009",
+          "says": "A non-archived requirement that carries a resolution is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A010",
+          "says": "An archived requirement missing its resolution is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A011",
+          "says": "A requirement missing a required section is rejected",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A012",
+          "says": "An empty appetite value is rejected when the field is present",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A013",
+          "says": "Priority and status values are accepted regardless of letter case",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A014",
+          "says": "A legacy requirement using older section names still validates once frontmatter is added",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A015",
+          "says": "Listing requirements shows each one's id, priority, status, age, and title",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A016",
+          "says": "A malformed requirement is flagged, not allowed to crash the list",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A017",
+          "says": "Requirements can be listed as structured JSON for other tools",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A018",
+          "says": "Higher-priority requirements are listed before lower-priority ones",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A019",
+          "says": "A requirement claimed by work that no longer exists is flagged as stale",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A020",
+          "says": "The pipeline status shows an open-requirements note when any exist",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A021",
+          "says": "The status JSON reports how many requirements are open",
+          "status": "UNVERIFIED"
+        },
+        {
+          "id": "A022",
+          "says": "With no requirements, the status output is unchanged from before this feature",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A023",
+          "says": "Starting work with a requirement marks that requirement as claimed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A024",
+          "says": "A claimed requirement points back to the work item that claimed it",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A025",
+          "says": "Claiming a requirement that is missing or not open fails clearly",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A026",
+          "says": "Starting work without naming a requirement leaves requirements untouched",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A027",
+          "says": "Completing work moves its claimed requirement into the archive",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A028",
+          "says": "An archived requirement is marked resolved as completed",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A029",
+          "says": "If archiving a requirement fails, the work still completes",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A030",
+          "says": "Re-running setup never deletes the requirements backlog",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A031",
+          "says": "The Think agent is told how to pick up a requirement (both platforms)",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A032",
+          "says": "The Claude and Codex Think agents carry identical requirement instructions",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A033",
+          "says": "The Think agent is told to treat requirement content as untrusted data to verify",
+          "status": "SATISFIED"
+        },
+        {
+          "id": "A034",
+          "says": "Requirement files are committed to the repo by default, not ignored",
+          "status": "SATISFIED"
+        }
+      ],
+      "acceptance_criteria": {
+        "total": 12,
+        "met": 12,
+        "partial": 0,
+        "coverage": {
+          "pinned": 11,
+          "judgment": 1,
+          "retired": 0,
+          "uncovered": 0,
+          "weak_only": 3
+        }
+      },
+      "timing": {
+        "total_minutes": 105,
+        "think": 25,
+        "plan": 11,
+        "build": 31,
+        "verify": 8
+      },
+      "hashes": {
+        "scope": "sha256:fa985119b5dbd5562ed522e7e89b3bc73717c83c956131c7ca1e4936da690629",
+        "contract": "sha256:f6651c2967232570a5441c61c2e51c581c33b302dc4b110111c0ce0bf8353b7a",
+        "plan": "sha256:4efffb04654e35ed7df6d11b063013647116bef234667eba1f02ef06d754fe01",
+        "spec": "sha256:12b2510adae82fad6c9e4a00b6dc7aa915b444025a59a2fc2328975a942a1873",
+        "build-report": "sha256:53c85f306aa9927e5921cc17cd28a91f500a9364e33ea4e3415886b4f79c4508",
+        "build-data": "sha256:4c5506b5d575f49a7cee297b84254d4f9f522e1d91d61bd9732a24988efff1ea",
+        "verify-report": "sha256:417c0479a12082fddbf33c85a21c9c84a37f026ade866566912be5886527706f",
+        "verify-data": "sha256:57e8a2ff1c7116431e65aac73446ea527a759b4e0f553d073ce1b618ed99fca3"
+      },
+      "completed_at": "2026-07-02T06:19:47.497Z",
+      "modules_touched": [
+        ".claude/agents/ana.md",
+        ".codex/agents/ana.md",
+        "packages/cli/src/commands/artifact-validators.ts",
+        "packages/cli/src/commands/init/state.ts",
+        "packages/cli/src/commands/req-state.ts",
+        "packages/cli/src/commands/req.ts",
+        "packages/cli/src/commands/work.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/utils/req-frontmatter.ts",
+        "packages/cli/templates/.claude/agents/ana.md",
+        "packages/cli/templates/.codex/agents/ana.md",
+        "packages/cli/tests/commands/init/template-propagation.test.ts",
+        "packages/cli/tests/commands/req.test.ts",
+        "packages/cli/tests/commands/work.test.ts",
+        "packages/cli/tests/utils/req-frontmatter.test.ts"
+      ],
+      "scope_summary": "Make work intake a **validated artifact instead of a conversation**. A requirement file (`.ana/requirements/REQ-<id>.md`) captures upstream intent — the problem, the evidence, what done looks like, priority — *before* any work item exists. `ana work status` surfaces open requirements; Think picks one up, skips re-interviewing the user about what and why, and redirects that energy into scrutiny. In the founder's words: \"It has everything the engineering human on your team and the local Anas need to use the pipeline normally.\"",
+      "kind": "feature",
+      "findings": [
+        {
+          "category": "code",
+          "summary": "getRequirementsSummary counts validation-malformed requirements as open — `ana work status` reports 3 open while `ana req list` reports 1 open + 2 malformed for the same backlog",
+          "file": "packages/cli/src/commands/req-state.ts",
+          "anchor": null,
+          "line": 219,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A020",
+            "A021"
+          ],
+          "id": "requirements-contract-C1",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "The `req list --json` emission path (runReqList) is never directly tested — A017/A018 are verified against buildRequirementList data, not the JSON mapping that reshapes malformed rows to {req, malformed, error}",
+          "file": "packages/cli/tests/commands/req.test.ts",
+          "anchor": null,
+          "line": 208,
+          "severity": "debt",
+          "suggested_action": "scope",
+          "related_assertions": [
+            "A017"
+          ],
+          "id": "requirements-contract-C2",
+          "status": "active"
+        },
+        {
+          "category": "test",
+          "summary": "@ana tag namespace collision in template-propagation.test.ts — pre-existing A029/A030 tags (a prior contract) coexist with this contract's A029/A030 in the same file; a naive tag scan could match the wrong test",
+          "file": "packages/cli/tests/commands/init/template-propagation.test.ts",
+          "anchor": null,
+          "line": 340,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "related_assertions": [
+            "A029",
+            "A030"
+          ],
+          "id": "requirements-contract-C3",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Archive-on-complete commit stages the whole `.ana/requirements/` dir (`git add .ana/requirements/`) rather than only the moved files — can sweep unrelated requirement edits into the completion commit",
+          "file": "packages/cli/src/commands/work.ts",
+          "anchor": null,
+          "line": 1211,
+          "severity": "observation",
+          "suggested_action": "monitor",
+          "id": "requirements-contract-C4",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "claimRequirement reads the requirement file twice (assertRequirementClaimable + claimRequirement each readFileSync the same path) — minor redundant IO, harmless in a single-process CLI",
+          "file": "packages/cli/src/commands/req-state.ts",
+          "anchor": null,
+          "line": 296,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "requirements-contract-C5",
+          "status": "active"
+        },
+        {
+          "category": "code",
+          "summary": "Root-level .claude/agents/ana.md and .codex/agents/ana.md were modified beyond the contract's file_changes list (which names only packages/cli/templates/...) — additive, byte-identical to the template edits, and correct dogfooding, but outside declared scope",
+          "file": ".claude/agents/ana.md",
+          "anchor": null,
+          "line": 65,
+          "severity": "observation",
+          "suggested_action": "acknowledge",
+          "id": "requirements-contract-C6",
+          "status": "active"
+        }
+      ],
+      "rejection_cycles": 0,
+      "previous_failures": [],
+      "build_concerns": [
+        {
+          "summary": "Dogfood .claude/.codex ana.md agent files had to be synced with the templates — an out-of-spec but test-enforced consequence of the AC10 template edit. Any future Think template change must update both the template and the dogfood copy or the dogfood consistency tests fail.",
+          "file": ".claude/agents/ana.md",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "claimRequirement's signature gained a `slug` parameter the spec's stated signature omitted (the spec body required writing claimed_by: <slug> but wrote the signature as claimRequirement(projectRoot, reqId)). Resolved by adding slug; behavior matches AC7.",
+          "file": "packages/cli/src/commands/req-state.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "validateReqContent(content, stem) was extracted as a content-based core of validateReqFormat so req list can flag malformed rows off-branch (git ls-tree mode) with the same messages. Additive to the spec's stated (filePath) signature; keeps a single validation implementation.",
+          "file": "packages/cli/src/commands/artifact-validators.ts",
+          "severity": "observation",
+          "suggested_action": "acknowledge"
+        },
+        {
+          "summary": "commitSaves gained an optional extraPaths parameter so a --req-claimed requirement rides in the same 'Start work' commit; the function previously scoped its commit strictly to .saves.json. Backward compatible (default empty).",
+          "file": "packages/cli/src/commands/work.ts",
+          "severity": "debt",
+          "suggested_action": "monitor"
+        },
+        {
+          "summary": "req list falls back to git ls-tree (off-branch) mode when getCurrentBranch() returns null (e.g. a commitless repo), which yields an empty list. Benign — a real project always has commits — but the empty result is silent.",
+          "file": "packages/cli/src/commands/req-state.ts",
+          "severity": "observation",
+          "suggested_action": "monitor"
+        }
+      ],
+      "process": {
+        "outcome": {
+          "first_pass_verify": true,
+          "assertions_satisfied": 32,
+          "assertions_total": 34,
+          "findings": {
+            "risk": 0,
+            "debt": 2,
+            "observation": 4
+          }
+        },
+        "task_shape": {
+          "size": "medium",
+          "kind": "feature",
+          "multi_phase": false
+        },
+        "module_churn": {
+          ".claude/agents/ana.md": {
+            "added": 32,
+            "deleted": 0
+          },
+          ".codex/agents/ana.md": {
+            "added": 32,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/artifact-validators.ts": {
+            "added": 180,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/init/state.ts": {
+            "added": 16,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/req-state.ts": {
+            "added": 340,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/req.ts": {
+            "added": 238,
+            "deleted": 0
+          },
+          "packages/cli/src/commands/work.ts": {
+            "added": 101,
+            "deleted": 10
+          },
+          "packages/cli/src/index.ts": {
+            "added": 2,
+            "deleted": 0
+          },
+          "packages/cli/src/utils/req-frontmatter.ts": {
+            "added": 149,
+            "deleted": 0
+          },
+          "packages/cli/templates/.claude/agents/ana.md": {
+            "added": 32,
+            "deleted": 0
+          },
+          "packages/cli/templates/.codex/agents/ana.md": {
+            "added": 32,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/init/template-propagation.test.ts": {
+            "added": 66,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/req.test.ts": {
+            "added": 268,
+            "deleted": 0
+          },
+          "packages/cli/tests/commands/work.test.ts": {
+            "added": 180,
+            "deleted": 0
+          },
+          "packages/cli/tests/utils/req-frontmatter.test.ts": {
+            "added": 123,
+            "deleted": 0
+          }
+        },
+        "completeness": {
+          "complete": true,
+          "expected": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "present": {
+            "plan": 1,
+            "build": 1,
+            "verify": 1
+          },
+          "gaps": []
+        },
+        "sessions": [
+          {
+            "role": "plan",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:f5eea5ff5f8a6539cf3d0578a013c0ba33551bdba4f5b2b0ecc9eb0d7877eda9",
+            "cli_version": "1.3.0",
+            "session_id": "b92e78c2-920e-4b29-a3fe-c6debb7ca515",
+            "captured_at": "2026-07-02T04:59:16.798Z",
+            "transcript_hash": "sha256:280d33c89550567be91793f54f4c6a56f79f61852bdfbbf308b29379efa133e0",
+            "derived": {
+              "tokens": {
+                "input": 10247,
+                "output": 43225,
+                "cache_create": 150855,
+                "cache_read": 2350886
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 658589,
+              "turns": 81,
+              "tool_calls": 37,
+              "commands_run": 17,
+              "tests_executed": 0,
+              "failures_encountered": 0,
+              "files_touched": 3,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "build",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:cce6589797e70beede66560a8f16218a48ea1e2bd27be896196dc7c9d4668a23",
+            "cli_version": "1.3.0",
+            "session_id": "0e185d02-20b5-4e8f-ba3d-f4c7cebeaa75",
+            "captured_at": "2026-07-02T05:16:54.845Z",
+            "transcript_hash": "sha256:53c1740b99bf1bf8a0157a2499f1c134314e48739ccc0c5e456514116e928735",
+            "derived": {
+              "tokens": {
+                "input": 10186,
+                "output": 111280,
+                "cache_create": 272583,
+                "cache_read": 26975949
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 2185051,
+              "turns": 280,
+              "tool_calls": 139,
+              "commands_run": 57,
+              "tests_executed": 12660,
+              "failures_encountered": 4,
+              "files_touched": 15,
+              "model": "claude-opus-4-8"
+            }
+          },
+          {
+            "role": "verify",
+            "harness": "claude",
+            "model": "claude-opus-4-8",
+            "agent_def_hash": "sha256:7f29eb6dd87e85693b6ed296782c9719bbbe057fad6238053ec1283943dc7343",
+            "cli_version": "1.3.0",
+            "session_id": "407dc30e-65ee-422d-bc97-7ce76a2f1136",
+            "captured_at": "2026-07-02T06:02:16.579Z",
+            "transcript_hash": "sha256:de59556ef6c70ee6c0c05c721bf4ad6b382efcddf5dd90dab74c0e0cd9377035",
+            "derived": {
+              "tokens": {
+                "input": 5197,
+                "output": 29206,
+                "cache_create": 101473,
+                "cache_read": 1920796
+              },
+              "price_table_version": "2026-06-14",
+              "derive_version": "3",
+              "duration_ms": 646727,
+              "turns": 81,
+              "tool_calls": 34,
+              "commands_run": 22,
+              "tests_executed": 4158,
+              "failures_encountered": 0,
+              "files_touched": 2,
+              "model": "claude-opus-4-8"
+            }
+          }
+        ]
+      },
+      "compliance": [
+        {
+          "role": "plan",
+          "harness": "claude",
+          "session_id": "b92e78c2-920e-4b29-a3fe-c6debb7ca515",
+          "captured_at": "2026-07-02T04:59:16.798Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:08bfcfaddb19d5d9d162a4f152a1134200f56e62f7e2a851dd98a1cd163a382c",
+          "transcript_hash": "sha256:280d33c89550567be91793f54f4c6a56f79f61852bdfbbf308b29379efa133e0",
+          "coverage": {
+            "total": 49,
+            "fully_checked": 2,
+            "unverifiable": 47
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-plan:skill:coding-standards",
+              "says": "ana-plan must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-plan:skill:testing-standards",
+              "says": "ana-plan loads the testing-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/req-frontmatter.ts",
+              "says": "edits stay within packages/cli/src/utils/req-frontmatter.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/artifact-validators.ts",
+              "says": "edits stay within packages/cli/src/commands/artifact-validators.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/req-state.ts",
+              "says": "edits stay within packages/cli/src/commands/req-state.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/req.ts",
+              "says": "edits stay within packages/cli/src/commands/req.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/index.ts",
+              "says": "edits stay within packages/cli/src/index.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/work.ts",
+              "says": "edits stay within packages/cli/src/commands/work.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/init/state.ts",
+              "says": "edits stay within packages/cli/src/commands/init/state.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/templates/.claude/agents/ana.md",
+              "says": "edits stay within packages/cli/templates/.claude/agents/ana.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/templates/.codex/agents/ana.md",
+              "says": "edits stay within packages/cli/templates/.codex/agents/ana.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/req-frontmatter.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/req-frontmatter.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/req.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/req.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/work.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/work.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/init/template-propagation.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/init/template-propagation.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "A newly scaffolded requirement passes validation with no edits",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A new requirement starts open, unprioritized, and marked hand-written",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A new requirement includes the Leads section for optional solution input",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "A new requirement is stamped with the date it was created",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "A well-formed requirement is accepted",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "A requirement with an unknown frontmatter field is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "A requirement whose priority is not an allowed value is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A requirement whose id does not match its filename is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "A non-archived requirement that carries a resolution is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "An archived requirement missing its resolution is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A requirement missing a required section is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "An empty appetite value is rejected when the field is present",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A013",
+              "says": "Priority and status values are accepted regardless of letter case",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A014",
+              "says": "A legacy requirement using older section names still validates once frontmatter is added",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A015",
+              "says": "Listing requirements shows each one's id, priority, status, age, and title",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A016",
+              "says": "A malformed requirement is flagged, not allowed to crash the list",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A017",
+              "says": "Requirements can be listed as structured JSON for other tools",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A018",
+              "says": "Higher-priority requirements are listed before lower-priority ones",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A019",
+              "says": "A requirement claimed by work that no longer exists is flagged as stale",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A020",
+              "says": "The pipeline status shows an open-requirements note when any exist",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A021",
+              "says": "The status JSON reports how many requirements are open",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A022",
+              "says": "With no requirements, the status output is unchanged from before this feature",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A023",
+              "says": "Starting work with a requirement marks that requirement as claimed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A024",
+              "says": "A claimed requirement points back to the work item that claimed it",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A025",
+              "says": "Claiming a requirement that is missing or not open fails clearly",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A026",
+              "says": "Starting work without naming a requirement leaves requirements untouched",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A027",
+              "says": "Completing work moves its claimed requirement into the archive",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A028",
+              "says": "An archived requirement is marked resolved as completed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A029",
+              "says": "If archiving a requirement fails, the work still completes",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A030",
+              "says": "Re-running setup never deletes the requirements backlog",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A031",
+              "says": "The Think agent is told how to pick up a requirement (both platforms)",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A032",
+              "says": "The Claude and Codex Think agents carry identical requirement instructions",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A033",
+              "says": "The Think agent is told to treat requirement content as untrusted data to verify",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A034",
+              "says": "Requirement files are committed to the repo by default, not ignored",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "build",
+          "harness": "claude",
+          "session_id": "0e185d02-20b5-4e8f-ba3d-f4c7cebeaa75",
+          "captured_at": "2026-07-02T05:16:54.845Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:0e421682133410e8adb28b214a34441a53dbaca3a2f2ddb45aad0e5b0991d9c8",
+          "transcript_hash": "sha256:53c1740b99bf1bf8a0157a2499f1c134314e48739ccc0c5e456514116e928735",
+          "coverage": {
+            "total": 49,
+            "fully_checked": 1,
+            "unverifiable": 48
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-build:skill:git-workflow",
+              "says": "ana-build must load the git-workflow skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-build:verify-independence",
+              "says": "ana-build never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/req-frontmatter.ts",
+              "says": "edits stay within packages/cli/src/utils/req-frontmatter.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/artifact-validators.ts",
+              "says": "edits stay within packages/cli/src/commands/artifact-validators.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/req-state.ts",
+              "says": "edits stay within packages/cli/src/commands/req-state.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/req.ts",
+              "says": "edits stay within packages/cli/src/commands/req.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/index.ts",
+              "says": "edits stay within packages/cli/src/index.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/work.ts",
+              "says": "edits stay within packages/cli/src/commands/work.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/init/state.ts",
+              "says": "edits stay within packages/cli/src/commands/init/state.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/templates/.claude/agents/ana.md",
+              "says": "edits stay within packages/cli/templates/.claude/agents/ana.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/templates/.codex/agents/ana.md",
+              "says": "edits stay within packages/cli/templates/.codex/agents/ana.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/req-frontmatter.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/req-frontmatter.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/req.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/req.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/work.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/work.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/init/template-propagation.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/init/template-propagation.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "A newly scaffolded requirement passes validation with no edits",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A new requirement starts open, unprioritized, and marked hand-written",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A new requirement includes the Leads section for optional solution input",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "A new requirement is stamped with the date it was created",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "A well-formed requirement is accepted",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "A requirement with an unknown frontmatter field is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "A requirement whose priority is not an allowed value is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A requirement whose id does not match its filename is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "A non-archived requirement that carries a resolution is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "An archived requirement missing its resolution is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A requirement missing a required section is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "An empty appetite value is rejected when the field is present",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A013",
+              "says": "Priority and status values are accepted regardless of letter case",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A014",
+              "says": "A legacy requirement using older section names still validates once frontmatter is added",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A015",
+              "says": "Listing requirements shows each one's id, priority, status, age, and title",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A016",
+              "says": "A malformed requirement is flagged, not allowed to crash the list",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A017",
+              "says": "Requirements can be listed as structured JSON for other tools",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A018",
+              "says": "Higher-priority requirements are listed before lower-priority ones",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A019",
+              "says": "A requirement claimed by work that no longer exists is flagged as stale",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A020",
+              "says": "The pipeline status shows an open-requirements note when any exist",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A021",
+              "says": "The status JSON reports how many requirements are open",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A022",
+              "says": "With no requirements, the status output is unchanged from before this feature",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A023",
+              "says": "Starting work with a requirement marks that requirement as claimed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A024",
+              "says": "A claimed requirement points back to the work item that claimed it",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A025",
+              "says": "Claiming a requirement that is missing or not open fails clearly",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A026",
+              "says": "Starting work without naming a requirement leaves requirements untouched",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A027",
+              "says": "Completing work moves its claimed requirement into the archive",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A028",
+              "says": "An archived requirement is marked resolved as completed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A029",
+              "says": "If archiving a requirement fails, the work still completes",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A030",
+              "says": "Re-running setup never deletes the requirements backlog",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A031",
+              "says": "The Think agent is told how to pick up a requirement (both platforms)",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A032",
+              "says": "The Claude and Codex Think agents carry identical requirement instructions",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A033",
+              "says": "The Think agent is told to treat requirement content as untrusted data to verify",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A034",
+              "says": "Requirement files are committed to the repo by default, not ignored",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        },
+        {
+          "role": "verify",
+          "harness": "claude",
+          "session_id": "407dc30e-65ee-422d-bc97-7ce76a2f1136",
+          "captured_at": "2026-07-02T06:02:16.579Z",
+          "anatrace_core_version": "0.4.0",
+          "framework": "anatomia",
+          "mandate_hash": "sha256:cf434aa52ea5e53258d9bc5a15772252f01e2d08d54553e57d5da22403f30d15",
+          "transcript_hash": "sha256:de59556ef6c70ee6c0c05c721bf4ad6b382efcddf5dd90dab74c0e0cd9377035",
+          "coverage": {
+            "total": 52,
+            "fully_checked": 2,
+            "unverifiable": 50
+          },
+          "complete": false,
+          "verdicts": [
+            {
+              "claim_id": "ana-verify:skill:testing-standards",
+              "says": "ana-verify must load the testing-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:skill:coding-standards",
+              "says": "ana-verify must load the coding-standards skill",
+              "status": "satisfied",
+              "reason": "predicate-matched",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:verify-independence",
+              "says": "ana-verify never reads the build report",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-rebase",
+              "says": "ana-verify is read-only on the codebase and must not run `git rebase` (rewrites the code branch)",
+              "status": "unverifiable",
+              "reason": "command-unresolvable",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "ana-verify:no-code-branch-mutation:git-push---force",
+              "says": "ana-verify is read-only on the codebase and must not run `git push --force` (rewrites the code branch)",
+              "status": "unverifiable",
+              "reason": "command-unresolvable",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/utils/req-frontmatter.ts",
+              "says": "edits stay within packages/cli/src/utils/req-frontmatter.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/artifact-validators.ts",
+              "says": "edits stay within packages/cli/src/commands/artifact-validators.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/req-state.ts",
+              "says": "edits stay within packages/cli/src/commands/req-state.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/req.ts",
+              "says": "edits stay within packages/cli/src/commands/req.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/index.ts",
+              "says": "edits stay within packages/cli/src/index.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/work.ts",
+              "says": "edits stay within packages/cli/src/commands/work.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/src/commands/init/state.ts",
+              "says": "edits stay within packages/cli/src/commands/init/state.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/templates/.claude/agents/ana.md",
+              "says": "edits stay within packages/cli/templates/.claude/agents/ana.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/templates/.codex/agents/ana.md",
+              "says": "edits stay within packages/cli/templates/.codex/agents/ana.md",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/utils/req-frontmatter.test.ts",
+              "says": "edits stay within packages/cli/tests/utils/req-frontmatter.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/req.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/req.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/work.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/work.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:file-scope:packages/cli/tests/commands/init/template-propagation.test.ts",
+              "says": "edits stay within packages/cli/tests/commands/init/template-propagation.test.ts",
+              "status": "unverifiable",
+              "reason": "channel-coverage-incomplete",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A001",
+              "says": "A newly scaffolded requirement passes validation with no edits",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A002",
+              "says": "A new requirement starts open, unprioritized, and marked hand-written",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A003",
+              "says": "A new requirement includes the Leads section for optional solution input",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A004",
+              "says": "A new requirement is stamped with the date it was created",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A005",
+              "says": "A well-formed requirement is accepted",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A006",
+              "says": "A requirement with an unknown frontmatter field is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A007",
+              "says": "A requirement whose priority is not an allowed value is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A008",
+              "says": "A requirement whose id does not match its filename is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A009",
+              "says": "A non-archived requirement that carries a resolution is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A010",
+              "says": "An archived requirement missing its resolution is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A011",
+              "says": "A requirement missing a required section is rejected",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A012",
+              "says": "An empty appetite value is rejected when the field is present",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A013",
+              "says": "Priority and status values are accepted regardless of letter case",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A014",
+              "says": "A legacy requirement using older section names still validates once frontmatter is added",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A015",
+              "says": "Listing requirements shows each one's id, priority, status, age, and title",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A016",
+              "says": "A malformed requirement is flagged, not allowed to crash the list",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A017",
+              "says": "Requirements can be listed as structured JSON for other tools",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A018",
+              "says": "Higher-priority requirements are listed before lower-priority ones",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A019",
+              "says": "A requirement claimed by work that no longer exists is flagged as stale",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A020",
+              "says": "The pipeline status shows an open-requirements note when any exist",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A021",
+              "says": "The status JSON reports how many requirements are open",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A022",
+              "says": "With no requirements, the status output is unchanged from before this feature",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A023",
+              "says": "Starting work with a requirement marks that requirement as claimed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A024",
+              "says": "A claimed requirement points back to the work item that claimed it",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A025",
+              "says": "Claiming a requirement that is missing or not open fails clearly",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A026",
+              "says": "Starting work without naming a requirement leaves requirements untouched",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A027",
+              "says": "Completing work moves its claimed requirement into the archive",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A028",
+              "says": "An archived requirement is marked resolved as completed",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A029",
+              "says": "If archiving a requirement fails, the work still completes",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A030",
+              "says": "Re-running setup never deletes the requirements backlog",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A031",
+              "says": "The Think agent is told how to pick up a requirement (both platforms)",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A032",
+              "says": "The Claude and Codex Think agents carry identical requirement instructions",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A033",
+              "says": "The Think agent is told to treat requirement content as untrusted data to verify",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            },
+            {
+              "claim_id": "contract:A034",
+              "says": "Requirement files are committed to the repo by default, not ignored",
+              "status": "unverifiable",
+              "reason": "runtime-scoped",
+              "source": "deterministic"
+            }
+          ]
+        }
+      ],
+      "worktree": {
+        "used": true,
+        "created_at": "2026-07-02T05:22:11.068Z",
+        "completed_at": "2026-07-02T06:19:47.486Z",
+        "commit_count": 0,
+        "base_commit": "28fd358f81cba5eebe0931bb5c0cdebad0595d8b"
+      },
+      "surface": "cli"
     }
   ],
   "schema": 1,
