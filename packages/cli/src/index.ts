@@ -21,6 +21,7 @@ import { registerScanCommand } from './commands/scan.js';
 import { registerSetupCommand } from './commands/setup.js';
 import { registerArtifactCommand } from './commands/artifact.js';
 import { registerWorkCommand } from './commands/work.js';
+import { registerReqCommand } from './commands/req.js';
 import { registerProofCommand } from './commands/proof.js';
 import { registerPrCommand } from './commands/pr.js';
 import { registerAgentsCommand } from './commands/agents.js';
@@ -67,6 +68,7 @@ registerDoctorCommand(program);
 
 program.commandsGroup('PIPELINE');
 registerWorkCommand(program);
+registerReqCommand(program);
 registerRunCommand(program);
 registerArtifactCommand(program);
 registerVerifyCommand(program);
