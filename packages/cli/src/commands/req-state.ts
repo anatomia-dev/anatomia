@@ -262,6 +262,27 @@ function resolveRequirementPath(projectRoot: string, reqId: string): string {
 }
 
 /**
+ * Resolve a requirement id and assert it is claimable (`status: open`) WITHOUT
+ * mutating it. The read-only pre-check the `--req` claim runs before creating any
+ * work-item state, so a bad requirement fails before a half-started item exists.
+ * Throws the same typed errors (missing, ambiguous, not open) as the claim.
+ *
+ * @param projectRoot - Project root path
+ * @param reqId - Requirement id to check
+ * @returns The resolved requirement file path
+ * @throws When the requirement is missing, ambiguous, or not `open`
+ */
+export function assertRequirementClaimable(projectRoot: string, reqId: string): { path: string } {
+  const reqPath = resolveRequirementPath(projectRoot, reqId);
+  const { frontmatter } = parseRequirement(fs.readFileSync(reqPath, 'utf-8'));
+  const status = canonicalizeEnumValue(frontmatter['status']);
+  if (status !== 'open') {
+    throw new Error(`Requirement '${path.basename(reqPath, '.md')}' is '${status || 'unknown'}', not 'open'. Only open requirements can be claimed.`);
+  }
+  return { path: reqPath };
+}
+
+/**
  * Claim a requirement for a work item: rewrite frontmatter to `status: claimed`
  * and `claimed_by: <slug>`. Throws typed errors (missing, ambiguous, not open)
  * the caller surfaces — claiming is explicit user intent, so failure is loud.
@@ -273,15 +294,8 @@ function resolveRequirementPath(projectRoot: string, reqId: string): string {
  * @throws When the requirement is missing, ambiguous, or not `open`
  */
 export function claimRequirement(projectRoot: string, reqId: string, slug: string): { path: string } {
-  const reqPath = resolveRequirementPath(projectRoot, reqId);
-  const content = fs.readFileSync(reqPath, 'utf-8');
-  const { frontmatter, body } = parseRequirement(content);
-
-  const status = canonicalizeEnumValue(frontmatter['status']);
-  if (status !== 'open') {
-    throw new Error(`Requirement '${path.basename(reqPath, '.md')}' is '${status || 'unknown'}', not 'open'. Only open requirements can be claimed.`);
-  }
-
+  const { path: reqPath } = assertRequirementClaimable(projectRoot, reqId);
+  const { frontmatter, body } = parseRequirement(fs.readFileSync(reqPath, 'utf-8'));
   const updated: Record<string, unknown> = { ...frontmatter, status: 'claimed', claimed_by: slug };
   fs.writeFileSync(reqPath, serializeRequirement(updated, body), 'utf-8');
   return { path: reqPath };

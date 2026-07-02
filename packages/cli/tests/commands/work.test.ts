@@ -13,6 +13,7 @@ vi.mock('node:child_process', async (importOriginal) => {
 });
 import { getWorkStatus, completeWork, startWork, checkConcurrencyGuard } from '../../src/commands/work.js';
 import { resolvePhase, isTimestampRecent, compareTimestamp } from '../../src/commands/work-state.js';
+import { parseRequirement } from '../../src/utils/req-frontmatter.js';
 import type { ArtifactState } from '../../src/commands/work-state.js';
 
 /**
@@ -854,6 +855,120 @@ describe('ana work status', () => {
     });
   });
 
+  describe('requirements surfacing and --req claim', () => {
+    /**
+     * Write a requirement file under .ana/requirements/ and commit it on main.
+     *
+     * @param reqId - Requirement id (e.g. REQ-foo)
+     * @param opts - Frontmatter overrides
+     */
+    async function addRequirement(
+      reqId: string,
+      opts: { status?: string; priority?: string; claimed_by?: string } = {},
+    ): Promise<void> {
+      const reqDir = path.join(tempDir, '.ana', 'requirements');
+      await fs.mkdir(reqDir, { recursive: true });
+      const status = opts.status ?? 'open';
+      const priority = opts.priority ?? 'high';
+      const claimedLine = opts.claimed_by ? `\nclaimed_by: ${opts.claimed_by}` : '';
+      const content = `---
+req: ${reqId}
+title: A thing
+priority: ${priority}
+status: ${status}
+created: 2026-06-28
+source: hand-written${claimedLine}
+---
+
+## Problem
+The disease.
+
+## Evidence
+The proof.
+
+## Done Looks Like
+The finish line.
+`;
+      await fs.writeFile(path.join(reqDir, `${reqId}.md`), content, 'utf-8');
+      execSync('git add -A && git commit -m "add requirement"', { cwd: tempDir, stdio: 'ignore' });
+    }
+
+    // @ana A020
+    it('prints the open-requirements info line when open requirements exist', async () => {
+      await createWorkTestProject({});
+      await addRequirement('REQ-a', { priority: 'high' });
+      await addRequirement('REQ-b', { priority: 'medium' });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: false }));
+      expect(output).toContain('2 open requirements');
+      expect(output).toContain('highest: high');
+      expect(output).toContain('ana req list');
+    });
+
+    // @ana A021
+    it('reports requirements.open in --json when open requirements exist', async () => {
+      await createWorkTestProject({});
+      await addRequirement('REQ-a', { priority: 'high' });
+      await addRequirement('REQ-b', { priority: 'medium' });
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const parsed = JSON.parse(output);
+      expect(parsed.requirements.open).toBe(2);
+      expect(parsed.requirements.highestPriority).toBe('high');
+    });
+
+    // @ana A022
+    it('omits the requirements field entirely when the folder is absent (byte-identity)', async () => {
+      await createWorkTestProject({});
+
+      const output = await captureOutput(async () => await getWorkStatus({ json: true }));
+      const parsed = JSON.parse(output);
+      expect('requirements' in parsed).toBe(false);
+    });
+
+    // @ana A023, A024
+    it('claims a requirement on work start --req (status claimed, claimed_by slug)', async () => {
+      await createWorkTestProject({});
+      await addRequirement('REQ-foo', { priority: 'high' });
+
+      await startWork('new-slug', { req: 'REQ-foo' });
+
+      const reqPath = path.join(tempDir, '.ana', 'requirements', 'REQ-foo.md');
+      const { frontmatter } = parseRequirement(fsSync.readFileSync(reqPath, 'utf-8'));
+      expect(frontmatter['status']).toBe('claimed');
+      expect(frontmatter['claimed_by']).toBe('new-slug');
+    });
+
+    // @ana A025
+    it('errors when --req names a requirement that is not open', async () => {
+      await createWorkTestProject({});
+      await addRequirement('REQ-foo', { status: 'claimed', claimed_by: 'someone-else', priority: 'high' });
+
+      const mockExit = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+        throw new Error(`process.exit(${code})`);
+      }) as never);
+      try {
+        await expect(startWork('new-slug', { req: 'REQ-foo' })).rejects.toThrow();
+        // The half-started work item must NOT exist.
+        expect(fsSync.existsSync(path.join(tempDir, '.ana', 'plans', 'active', 'new-slug'))).toBe(false);
+      } finally {
+        mockExit.mockRestore();
+      }
+    });
+
+    // @ana A026
+    it('leaves requirements untouched on a plain work start (no --req)', async () => {
+      await createWorkTestProject({});
+      await addRequirement('REQ-foo', { priority: 'high' });
+
+      await startWork('new-slug');
+
+      const reqPath = path.join(tempDir, '.ana', 'requirements', 'REQ-foo.md');
+      const { frontmatter } = parseRequirement(fsSync.readFileSync(reqPath, 'utf-8'));
+      expect(frontmatter['status']).toBe('open');
+    });
+  });
+
   describe('multiple work items', () => {
     it('shows multiple slugs at different stages', async () => {
       const planContent = `# Plan\n## Phases\n- [ ] Phase 1\n  Spec: spec.md`;
@@ -1415,6 +1530,71 @@ describe('ana work status', () => {
 
         const parsed = JSON.parse(output);
         expect(parsed.results.next_command).toBe('ana proof test-slug');
+      });
+    });
+
+    describe('requirement archive on complete', () => {
+      /**
+       * Write a requirement claimed by `slug` under .ana/requirements/ and commit
+       * it on main.
+       *
+       * @param slug - The claiming work-item slug
+       * @param reqId - Requirement id
+       */
+      async function addClaimedRequirement(slug: string, reqId = 'REQ-foo'): Promise<void> {
+        const reqDir = path.join(tempDir, '.ana', 'requirements');
+        await fs.mkdir(reqDir, { recursive: true });
+        const content = `---
+req: ${reqId}
+title: A thing
+priority: high
+status: claimed
+created: 2026-06-28
+source: hand-written
+claimed_by: ${slug}
+---
+
+## Problem
+The disease.
+
+## Evidence
+The proof.
+
+## Done Looks Like
+The finish line.
+`;
+        await fs.writeFile(path.join(reqDir, `${reqId}.md`), content, 'utf-8');
+        execSync('git add -A && git commit -m "add claimed requirement"', { cwd: tempDir, stdio: 'ignore' });
+      }
+
+      // @ana A027, A028
+      it('archives a claimed requirement with resolution completed', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+        await addClaimedRequirement('test-slug');
+
+        await completeWork('test-slug');
+
+        const archivedPath = path.join(tempDir, '.ana', 'requirements', 'archived', 'REQ-foo.md');
+        const rootPath = path.join(tempDir, '.ana', 'requirements', 'REQ-foo.md');
+        expect(fsSync.existsSync(archivedPath)).toBe(true); // A027
+        expect(fsSync.existsSync(rootPath)).toBe(false);
+        const { frontmatter } = parseRequirement(fsSync.readFileSync(archivedPath, 'utf-8'));
+        expect(frontmatter['status']).toBe('archived');
+        expect(frontmatter['resolution']).toBe('completed'); // A028
+      });
+
+      // @ana A029
+      it('completes even when archiving fails (best-effort never blocks)', async () => {
+        await createMergedProject({ slug: 'test-slug', phases: 1 });
+        await addClaimedRequirement('test-slug');
+        // Sabotage: put a FILE where the archived/ directory must be created, so
+        // the archive move throws — completion must still succeed.
+        await fs.writeFile(path.join(tempDir, '.ana', 'requirements', 'archived'), 'not a dir', 'utf-8');
+        execSync('git add -A && git commit -m "sabotage archived path"', { cwd: tempDir, stdio: 'ignore' });
+
+        await expect(completeWork('test-slug')).resolves.not.toThrow(); // A029
+        // Completion happened despite the archive failure.
+        expect(fsSync.existsSync(path.join(tempDir, '.ana', 'plans', 'completed', 'test-slug'))).toBe(true);
       });
     });
 
